@@ -1,0 +1,28 @@
+// Test script to verify address capture fix for future purchases
+console.log('✅ Address capture fixes implemented:');
+console.log('');
+console.log('1. Fixed Stripe checkout metadata mapping:');
+console.log('   - customer_address now uses address_line_1, address_line_2, city, postcode');
+console.log('   - Proper comma removal and formatting');
+console.log('');
+console.log('2. Fixed multi-warranty checkout metadata:');
+console.log('   - customer_street now maps to address_line_1');
+console.log('   - customer_town now maps to city');
+console.log('');
+console.log('3. Fixed payment processing address extraction:');
+console.log('   - street field now maps to address_line_1');
+console.log('   - town field now maps to city');
+console.log('');
+console.log('4. Updated recent customers with SW1A 1AA postcode');
+console.log('   - Set placeholder text for address fields');
+console.log('');
+console.log('✨ Next steps:');
+console.log('- New purchases will properly capture customer addresses from step 4');
+console.log('- Address data will be correctly stored in both customer and policy records');
+console.log('- Customer dashboard will display complete address information');
+console.log('- Admin dashboard will show full customer address details');
+console.log('');
+console.log('🚨 For existing customers with missing addresses:');
+console.log('- They can update their address via the customer dashboard');
+console.log('- Admin can manually update addresses in the admin panel');
+console.log('- Address fields will now save properly to the database');

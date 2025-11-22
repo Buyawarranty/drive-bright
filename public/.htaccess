@@ -1,0 +1,70 @@
+# Apache .htaccess for www to non-www redirect
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  
+  # Redirect www to non-www with 301 permanent redirect
+  RewriteCond %{HTTP_HOST} ^www\.buyawarranty\.co\.uk$ [NC]
+  RewriteRule ^(.*)$ https://buyawarranty.co.uk/$1 [R=301,L]
+  
+  # Redirect broken /home page to homepage
+  RewriteRule ^home/?$ / [R=301,L]
+  
+  # Redirect broken /contact page to correct URL
+  RewriteRule ^contact/?$ /contact-us/ [R=301,L]
+  
+  # Redirect broken portfolio page to homepage
+  RewriteRule ^portfolio/car-front-side/?$ / [R=301,L]
+  
+  # Redirect old EV warranty URL to new URL
+  RewriteRule ^best-warranty-on-ev-cars-uk-warranties/?$ /ev-warranty/ [R=301,L]
+  
+  # Redirect old van warranty URL to van warranty page
+  RewriteRule ^van-warranty-companies-uk-warranties/?$ /van-warranty/ [R=301,L]
+  
+  # Force HTTPS
+  RewriteCond %{HTTPS} off
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+  
+  # Redirect URLs without trailing slash to include trailing slash
+  # Skip if it's a file
+  RewriteCond %{REQUEST_FILENAME} !-f
+  # Skip if it's the homepage
+  RewriteCond %{REQUEST_URI} !^/$
+  # Skip if it already has a trailing slash
+  RewriteCond %{REQUEST_URI} !/$
+  # Skip if it has a file extension
+  RewriteCond %{REQUEST_URI} !\.[^./]+$
+  # Add trailing slash
+  RewriteRule ^(.*)$ /$1/ [R=301,L]
+  
+  # SPA fallback - serve index.html for all routes
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
+
+# Enable CORS if needed
+<IfModule mod_headers.c>
+  Header set Access-Control-Allow-Origin "*"
+</IfModule>
+
+# Compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Browser Caching
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpg "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/gif "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType application/pdf "access plus 1 month"
+  ExpiresByType text/x-javascript "access plus 1 month"
+</IfModule>

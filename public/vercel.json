@@ -1,0 +1,65 @@
+{
+  "redirects": [
+    {
+      "source": "https://www.buyawarranty.co.uk/:path*",
+      "destination": "https://buyawarranty.co.uk/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/home",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/home/",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/contact",
+      "destination": "/contact-us/",
+      "permanent": true
+    },
+    {
+      "source": "/contact/",
+      "destination": "/contact-us/",
+      "permanent": true
+    },
+    {
+      "source": "/portfolio/car-front-side",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/portfolio/car-front-side/",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/best-warranty-on-ev-cars-uk-warranties",
+      "destination": "/ev-warranty/",
+      "permanent": true
+    },
+    {
+      "source": "/best-warranty-on-ev-cars-uk-warranties/",
+      "destination": "/ev-warranty/",
+      "permanent": true
+    },
+    {
+      "source": "/van-warranty-companies-uk-warranties",
+      "destination": "/van-warranty/",
+      "permanent": true
+    },
+    {
+      "source": "/van-warranty-companies-uk-warranties/",
+      "destination": "/van-warranty/",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

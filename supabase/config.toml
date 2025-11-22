@@ -1,0 +1,152 @@
+project_id = "mzlpuxzwyrcyrgrongeb"
+
+[functions.create-billing-portal]
+verify_jwt = true
+
+[functions.generate-sitemap]
+verify_jwt = false
+
+[functions.customer-login]
+verify_jwt = false
+
+[functions.send-abandoned-cart-email]
+verify_jwt = false
+
+[functions.schedule-abandoned-cart-emails] 
+verify_jwt = false
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+port = 54324
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://localhost:3000"]
+jwt_expiry = 3600
+refresh_token_rotation_enabled = true
+security_refresh_token_reuse_interval = 10
+enable_signup = true
+
+[edge_functions]
+enabled = true
+
+[functions.create-checkout]
+verify_jwt = true
+
+[functions.check-subscription]
+verify_jwt = true
+
+[functions.customer-portal]
+verify_jwt = true
+
+[functions.send-welcome-email]
+verify_jwt = false
+
+[functions.handle-successful-payment]
+verify_jwt = false
+
+[functions.dvla-vehicle-lookup]
+verify_jwt = true
+
+[functions.create-bumper-checkout]
+verify_jwt = false
+
+[functions.create-test-customer]
+verify_jwt = true
+
+[functions.process-stripe-success]
+verify_jwt = false
+
+[functions.send-email]
+verify_jwt = false
+
+[functions.send-policy-documents]
+verify_jwt = false
+
+[functions.send-welcome-email-manual]
+verify_jwt = false
+
+[functions.send-to-warranties-2000]
+verify_jwt = false
+
+[functions.warranties-2000-registration]
+verify_jwt = false
+
+[functions.track-abandoned-cart]
+verify_jwt = false
+
+[functions.sync-to-brevo]
+verify_jwt = false
+
+[functions.test-api-connectivity]
+verify_jwt = false
+
+[functions.process-scheduled-emails]
+verify_jwt = false
+
+[functions.resend-welcome-email]
+verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.process-bumper-success]
+verify_jwt = false
+
+[functions.fetch-mot-history]
+verify_jwt = true
+
+[functions.calculate-reliability-score]
+verify_jwt = true
+
+[db]
+port = 54322
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[functions.send-discount-email]
+verify_jwt = false
+
+[functions.send-quote-email]
+verify_jwt = false
+
+[functions.send-password-reset-email]
+verify_jwt = false
+
+[functions.reset-customer-password]
+verify_jwt = true
+
+[functions.send-marketing-email]
+verify_jwt = true
+
+[functions.generate-email-suggestions]
+verify_jwt = true
+
+[functions.track-email-open]
+verify_jwt = false
+
+[functions.track-email-click]
+verify_jwt = false
+
+[functions.create-customer-account]
+verify_jwt = true
+
+[functions.update-admin-credentials]
+verify_jwt = false
+
+[functions.send-bulk-reminder-emails]
+verify_jwt = true
+
+[functions.send-trustpilot-review-emails]
+verify_jwt = false

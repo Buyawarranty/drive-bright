@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Lookup Widget</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .widget-container {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-transparent m-0 p-0">
+    <div class="widget-container w-full max-w-md mx-auto space-y-3 p-2">
+        <form id="vehicleForm" class="space-y-4">
+            <!-- Registration Number Input -->
+            <div class="relative">
+                <div class="flex items-center bg-yellow-400 border-2 border-black rounded-lg p-3">
+                    <img 
+                        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" 
+                        alt="UK Flag" 
+                        class="w-8 h-6 mr-3 rounded-sm bg-blue-600"
+                        style="background: linear-gradient(to bottom, #012169 33%, white 33%, white 66%, #C8102E 66%);"
+                    />
+                    <input
+                        type="text"
+                        id="registrationInput"
+                        placeholder="YOUR REG"
+                        class="bg-transparent border-none text-lg font-bold text-gray-600 placeholder-gray-500 focus:ring-0 focus:outline-none p-0 w-full"
+                        maxlength="8"
+                    />
+                </div>
+            </div>
+
+            <!-- Quick Quote Button -->
+            <button 
+                type="submit"
+                id="submitButton"
+                class="w-full bg-pink-400 hover:bg-pink-500 text-white font-semibold py-4 text-lg rounded-lg border-2 border-black disabled:opacity-50 transition-colors animate-pulse"
+            >
+                Quick Quote
+            </button>
+        </form>
+    </div>
+
+    <script>
+        (function() {
+            const form = document.getElementById('vehicleForm');
+            const input = document.getElementById('registrationInput');
+            const button = document.getElementById('submitButton');
+            
+            // Format registration number
+            function formatRegNumber(value) {
+                const cleaned = value.replace(/\s/g, '').toUpperCase();
+                if (cleaned.length <= 4) return cleaned;
+                return cleaned.slice(0, -3) + ' ' + cleaned.slice(-3);
+            }
+            
+            // Handle input changes
+            input.addEventListener('input', function(e) {
+                const formatted = formatRegNumber(e.target.value);
+                if (formatted.length <= 8) {
+                    e.target.value = formatted;
+                }
+                
+                // Update button state
+                button.disabled = !e.target.value.trim();
+            });
+            
+            // Handle form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const regNumber = input.value.trim();
+                if (!regNumber) return;
+                
+                button.textContent = 'Finding...';
+                button.disabled = true;
+                
+                // Store the registration number
+                try {
+                    sessionStorage.setItem('widgetRegistration', regNumber.replace(/\s/g, ''));
+                } catch (e) {
+                    // Fallback for browsers that don't support sessionStorage
+                }
+                
+                // Get the target URL from data attribute or use default
+                const targetUrl = form.dataset.targetUrl || 'https://your-main-site.com';
+                
+                // Redirect to main application
+                window.open(targetUrl + '?from=widget&reg=' + encodeURIComponent(regNumber.replace(/\s/g, '')), '_blank');
+                
+                // Reset form
+                setTimeout(() => {
+                    button.textContent = 'Find my vehicle';
+                    button.disabled = false;
+                    input.value = '';
+                }, 2000);
+            });
+            
+            // Initialize button state
+            button.disabled = true;
+        })();
+    </script>
+</body>
+</html>

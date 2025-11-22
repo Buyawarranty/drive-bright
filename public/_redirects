@@ -1,0 +1,40 @@
+# Netlify redirects
+# Redirect www to non-www
+https://www.buyawarranty.co.uk/* https://buyawarranty.co.uk/:splat 301!
+
+# Redirect broken /home page to homepage
+/home / 301!
+/home/ / 301!
+
+# Redirect old EV warranty URL to new URL
+/best-warranty-on-ev-cars-uk-warranties /ev-warranty/ 301!
+/best-warranty-on-ev-cars-uk-warranties/ /ev-warranty/ 301!
+
+# Redirect broken /contact page to correct URL
+/contact /contact-us/ 301!
+/contact/ /contact-us/ 301!
+
+# Redirect broken portfolio page to homepage
+/portfolio/car-front-side / 301!
+/portfolio/car-front-side/ / 301!
+
+# Redirect old van warranty URL to van warranty page
+/van-warranty-companies-uk-warranties /van-warranty/ 301!
+/van-warranty-companies-uk-warranties/ /van-warranty/ 301!
+
+# Ensure trailing slashes (fallback for any missed routes)
+/what-is-covered /what-is-covered/ 301
+/make-a-claim /make-a-claim/ 301
+/faq /faq/ 301
+/contact-us /contact-us/ 301
+/customer-dashboard /customer-dashboard/ 301
+/thewarrantyhub /thewarrantyhub/ 301
+/terms /terms/ 301
+/privacy /privacy/ 301
+/cookies /cookies/ 301
+/complaints /complaints/ 301
+/business-warranties /business-warranties/ 301
+/buy-a-used-car-warranty-reliable-warranties /buy-a-used-car-warranty-reliable-warranties/ 301
+/van-warranty-companies-uk-warranties /van-warranty-companies-uk-warranties/ 301
+/best-warranty-on-ev-cars-uk-warranties /best-warranty-on-ev-cars-uk-warranties/ 301
+/motorbike-repair-warranty-uk-warranties /motorbike-repair-warranty-uk-warranties/ 301
