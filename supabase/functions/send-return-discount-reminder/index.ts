@@ -138,7 +138,7 @@ const handler = async (req: Request): Promise<Response> => {
       template_id: null,
       subject,
       delivery_status: 'sent',
-      resend_id: emailResponse.id,
+      resend_id: emailResponse.data?.id,
       metadata: {
         reminderType,
         discountCode,
@@ -147,7 +147,7 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     return new Response(
-      JSON.stringify({ success: true, emailId: emailResponse.id }),
+      JSON.stringify({ success: true, emailId: emailResponse.data?.id }),
       {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },

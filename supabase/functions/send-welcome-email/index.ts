@@ -45,13 +45,13 @@ serve(async (req) => {
 
     // Fetch policy/customer data to get seasonal bonus information
     logStep("Fetching policy data for seasonal bonus");
-    const { data: policyData, error: policyFetchError } = await supabaseClient
+    const { data: existingPolicyData, error: policyFetchError } = await supabaseClient
       .from('customer_policies')
       .select('seasonal_bonus_months')
       .eq('policy_number', policyNumber)
       .maybeSingle();
 
-    const seasonalBonusMonths = policyData?.seasonal_bonus_months || 0;
+    const seasonalBonusMonths = existingPolicyData?.seasonal_bonus_months || 0;
     logStep("Seasonal bonus retrieved", { seasonalBonusMonths });
 
     // Check if welcome email already sent for this email address
@@ -192,6 +192,11 @@ serve(async (req) => {
       logStep("Policy creation failed", policyError);
       throw new Error(`Failed to create policy: ${policyError.message}`);
     }
+    
+    if (!policyData) {
+      throw new Error("Policy creation returned no data");
+    }
+    
     logStep("Created policy record", { policyId: policyData.id });
 
     // Get environment variables for email
@@ -556,7 +561,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({ 
       success: true, 
       message: "Welcome email process completed",
-      policyId: policyData.id,
+      policyId: policyData?.id,
       userId: userId
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
