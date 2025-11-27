@@ -63,19 +63,10 @@ serve(async (req) => {
       throw new Error(`Failed to fetch pending transactions: ${errorMsg}`);
     }
 
-    if (!pendingTransactions) {
-      logStep("No pending transactions data returned");
-      return new Response(JSON.stringify({
-        success: true,
-        message: "No pending transactions to process",
-        processed: 0
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      });
-    }
+    // TypeScript type narrowing: ensure pendingTransactions is not null
+    const transactions = pendingTransactions || [];
     
-    if (pendingTransactions.length === 0) {
+    if (transactions.length === 0) {
       logStep("No pending transactions found to process");
       return new Response(JSON.stringify({
         success: true,
@@ -87,12 +78,12 @@ serve(async (req) => {
       });
     }
 
-    // At this point TypeScript knows pendingTransactions is not null and has items
-    logStep(`Found ${pendingTransactions.length} pending transactions to process`);
+    // At this point we have transactions with items
+    logStep(`Found ${transactions.length} pending transactions to process`);
 
     const results = [];
     
-    for (const transaction of pendingTransactions) {
+    for (const transaction of transactions) {
       const transactionId = transaction.transaction_id;
       
       try {
@@ -139,18 +130,9 @@ serve(async (req) => {
           .eq('status', 'pending')
           .select();
 
-        if (updateError || !updatedTransaction) {
-          logStep(`Transaction ${transactionId} update failed`);
-          results.push({
-            transactionId,
-            status: 'skipped',
-            reason: 'update_failed',
-            email: transaction.customer_data?.email
-          });
-          continue;
-        }
+        const updatedTxns = updatedTransaction || [];
         
-        if (updatedTransaction.length === 0) {
+        if (updateError || updatedTxns.length === 0) {
           logStep(`Transaction ${transactionId} already being processed or update failed`);
           results.push({
             transactionId,
@@ -262,7 +244,7 @@ serve(async (req) => {
         });
 
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage = error instanceof Error ? (error as Error).message : String(error);
         logStep(`Exception processing transaction ${transactionId}`, { error: errorMessage });
         
         results.push({
@@ -278,16 +260,16 @@ serve(async (req) => {
     const errorCount = results.filter(r => r.status === 'error').length;
 
     logStep("Auto-completion finished", {
-      total: pendingTransactions.length,
+      total: transactions.length,
       success: successCount,
       errors: errorCount
     });
 
     return new Response(JSON.stringify({
       success: true,
-      message: `Processed ${pendingTransactions.length} pending transactions`,
+      message: `Processed ${transactions.length} pending transactions`,
       summary: {
-        total: pendingTransactions.length,
+        total: transactions.length,
         successful: successCount,
         errors: errorCount
       },
