@@ -247,7 +247,7 @@ const MercedesWarranty = () => {
                     Get My Mercedes Quote →
                   </Button>
                   <a 
-                    href="https://wa.me/447831592487" 
+                    href="https://wa.me/message/SPQPJ6O3UBF5B1" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-[#25D366] hover:bg-[#20BD5A] text-white rounded-lg transition-colors"
