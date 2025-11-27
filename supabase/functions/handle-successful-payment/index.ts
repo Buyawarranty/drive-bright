@@ -607,7 +607,7 @@ serve(async (req) => {
       try {
         logStep("Sending sales notification to sales manager");
         
-        const Resend = (await import('npm:resend@2.0.0')).Resend;
+        const Resend = (await import('https://esm.sh/resend@2.0.0')).Resend;
         const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
         
         const paymentTypeDisplay = getPaymentTypeDisplay(paymentType);
