@@ -551,7 +551,11 @@ serve(async (req) => {
     // Create basic auth header (same as working warranties-2000-registration function)
     const credentials = btoa(`${warrantiesUsername}:${warrantiesPassword}`);
 
-    const apiUrl = Deno.env.get('W2K_API_URL') || 'https://warranties-epf.co.uk/api.php';
+    // Get API URL, but handle placeholder values
+    const rawApiUrl = Deno.env.get('W2K_API_URL');
+    const apiUrl = (rawApiUrl && !rawApiUrl.includes('PLACEHOLDER')) 
+      ? rawApiUrl 
+      : 'https://warranties-epf.co.uk/api.php';
 
     console.log(`[WARRANTIES-2000] COMPLETE API PAYLOAD DEBUG:`, {
       apiUrl,
