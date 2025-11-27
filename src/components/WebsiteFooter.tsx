@@ -30,7 +30,7 @@ const WebsiteFooter = () => {
                 Email us: support@buyawarranty.co.uk
               </a>
               <a 
-                href="https://wa.me/443302295040" 
+                href="https://wa.me/message/SPQPJ6O3UBF5B1" 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center text-lg font-semibold text-[#eb4b00] hover:text-[#d63f00] transition-colors"

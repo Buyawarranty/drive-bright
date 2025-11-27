@@ -80,17 +80,18 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       localStorage.setItem('secondWarrantyDiscountCode', code);
     }
 
+    // Email popup DISABLED - not converting
     // Show email popup after 60 seconds OR when user scrolls 70% down the page
     let hasTriggered = false;
     
     const showPopup = () => {
       if (!hasTriggered) {
         hasTriggered = true;
-        setShowEmailPopup(true);
+        // setShowEmailPopup(true); // DISABLED
       }
     };
 
-    // Timer trigger (60 seconds)
+    // Timer trigger (60 seconds) - DISABLED
     const timer = setTimeout(showPopup, 60000);
 
     // Scroll trigger (70% down the page)

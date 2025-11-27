@@ -644,8 +644,9 @@ const Index = () => {
     
     // Quote restoration is now handled by the earlier effect to avoid duplication
 
+    // Discount popup DISABLED - not converting
     // Show discount popup after 20 seconds of scrolling (not on homepage)
-    if (currentStep !== 1) {
+    if (false && currentStep !== 1) {
       // Check if already seen popup in this session
       const hasSeenPopup = sessionStorage.getItem('hasSeenDiscountPopup');
       if (hasSeenPopup) return;

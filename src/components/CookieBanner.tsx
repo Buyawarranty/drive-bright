@@ -65,33 +65,32 @@ export function CookieBanner() {
     <>
       {showBanner && (
         <div
-          className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-md z-50 animate-fade-in"
+          className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm z-50 animate-fade-in"
           role="region"
           aria-label="Cookie consent banner"
         >
-          <div className="bg-card border border-border rounded-lg shadow-lg p-4">
-            <div className="flex items-start gap-3">
-              <Cookie className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" aria-hidden="true" />
-              <div className="flex-1 space-y-3">
-                <p className="text-sm text-foreground">
-                  We use cookies to improve your experience. You can manage your
-                  preferences anytime.
+          <div className="bg-card border border-border rounded-lg shadow-md p-3">
+            <div className="flex items-start gap-2">
+              <Cookie className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" aria-hidden="true" />
+              <div className="flex-1 space-y-2">
+                <p className="text-xs text-foreground">
+                  We use cookies to improve your experience.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Button
                     onClick={handleAcceptAll}
                     size="sm"
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto bg-black text-white hover:bg-gray-800 h-8 text-xs"
                   >
-                    Accept All
+                    Accept
                   </Button>
                   <Button
                     onClick={() => setShowPreferences(true)}
                     variant="outline"
                     size="sm"
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto h-8 text-xs"
                   >
-                    Manage Preferences
+                    Manage
                   </Button>
                 </div>
               </div>

@@ -80,10 +80,10 @@ export const SeasonalOfferBanner = () => {
                   />
                 </div>
                 
-                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-white mb-2 text-center md:text-left">
+                <h1 className="text-xl md:text-2xl lg:text-3xl text-white mb-2 text-center md:text-left">
                   ❄️ Don't Risk a Breakdown This Winter
                 </h1>
-                <h2 className="text-lg md:text-xl font-semibold text-yellow-300 mb-2 text-center md:text-left">
+                <h2 className="text-lg md:text-xl font-bold text-yellow-300 mb-2 text-center md:text-left">
                   Claim 3 Months FREE Extra Cover
                 </h2>
                 <p className="text-sm md:text-base text-white/90 text-center md:text-left">
