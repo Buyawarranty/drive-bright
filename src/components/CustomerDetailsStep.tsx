@@ -341,9 +341,10 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
       console.error('❌ Error checking discount codes (iOS/Safari):', error);
     }
 
+    // Email popup DISABLED - not converting
     // Show email capture popup after 35 seconds
     const timer = setTimeout(() => {
-      setShowEmailPopup(true);
+      // setShowEmailPopup(true); // DISABLED
     }, 35000);
 
     return () => clearTimeout(timer);

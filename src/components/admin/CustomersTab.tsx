@@ -1940,22 +1940,22 @@ export const CustomersTab = () => {
         <TabsList className="grid w-full grid-cols-3 bg-transparent gap-2">
           <TabsTrigger 
             value="complete" 
-            className="bg-blue-50 text-blue-700 border border-blue-200 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-900 data-[state=active]:border-blue-400 data-[state=active]:border-2 data-[state=active]:shadow-sm"
+            className="bg-blue-50 text-blue-700 border border-blue-200 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-900 data-[state=active]:border-blue-400 data-[state=active]:border-2 data-[state=active]:shadow-sm cursor-pointer"
           >
             Active Orders
           </TabsTrigger>
           <TabsTrigger 
+            value="incomplete" 
+            className="bg-red-50 text-red-700 border border-red-200 data-[state=active]:bg-red-100 data-[state=active]:text-red-900 data-[state=active]:border-red-400 data-[state=active]:border-2 data-[state=active]:shadow-sm cursor-pointer"
+          >
+            Incomplete Customers
+          </TabsTrigger>
+          <TabsTrigger 
             value="deleted"
-            className="bg-amber-50 text-amber-700 border border-amber-200 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-900 data-[state=active]:border-amber-400 data-[state=active]:border-2 data-[state=active]:shadow-sm"
+            className="bg-amber-50 text-amber-700 border border-amber-200 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-900 data-[state=active]:border-amber-400 data-[state=active]:border-2 data-[state=active]:shadow-sm cursor-pointer"
           >
             <Archive className="h-4 w-4 mr-2" />
             Order Archive
-          </TabsTrigger>
-          <TabsTrigger 
-            value="incomplete" 
-            className="bg-red-50 text-red-700 border border-red-200 data-[state=active]:bg-red-100 data-[state=active]:text-red-900 data-[state=active]:border-red-400 data-[state=active]:border-2 data-[state=active]:shadow-sm"
-          >
-            Incomplete Customers
           </TabsTrigger>
         </TabsList>
 
@@ -3777,6 +3777,16 @@ Please log in and change your password after first login.`;
                       <TableCell>
                         <div>
                           <div className="font-medium">{customer.full_name || 'Unknown'}</div>
+                          {showDetails && metadata.excess && (
+                            <div className="mt-1 text-xs text-gray-600">
+                              <div>Excess: £{metadata.excess}</div>
+                            </div>
+                          )}
+                          {showDetails && metadata.claimLimit && (
+                            <div className="text-xs text-gray-600">
+                              <div>Claim Limit: £{metadata.claimLimit}</div>
+                            </div>
+                          )}
                           {showDetails && metadata.selectedAddons && (
                             <div className="mt-1 text-xs text-gray-600">
                               {metadata.selectedAddons.length > 0 ? (
