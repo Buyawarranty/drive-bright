@@ -94,7 +94,7 @@ const LandRoverWarranty: React.FC = () => {
               <Link to="/make-a-claim/" className="text-gray-700 hover:text-primary transition-colors">Make a Claim</Link>
               <Link to="/faq/" className="text-gray-700 hover:text-primary transition-colors">FAQs</Link>
               <Link to="/contact-us/" className="text-gray-700 hover:text-primary transition-colors">Contact Us</Link>
-              <a href="https://wa.me/443302295040" target="_blank" rel="noopener noreferrer" className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+              <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer" className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
                 WhatsApp Us
               </a>
               <Button onClick={() => window.location.href = '/?step=1'} className="bg-primary hover:bg-primary/90">
@@ -114,7 +114,7 @@ const LandRoverWarranty: React.FC = () => {
                   <Link to="/make-a-claim/" className="text-gray-700 hover:text-primary text-lg">Make a Claim</Link>
                   <Link to="/faq/" className="text-gray-700 hover:text-primary text-lg">FAQs</Link>
                   <Link to="/contact-us/" className="text-gray-700 hover:text-primary text-lg">Contact Us</Link>
-                  <a href="https://wa.me/443302295040" target="_blank" rel="noopener noreferrer" className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg text-center">
+                  <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer" className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg text-center">
                     WhatsApp Us
                   </a>
                   <Button onClick={() => window.location.href = '/?step=1'} className="w-full">

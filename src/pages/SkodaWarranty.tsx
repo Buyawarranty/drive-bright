@@ -418,7 +418,7 @@ const SkodaWarranty = () => {
       {isMobile && (
         <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-3">
           <a
-            href="https://wa.me/447441428810"
+            href="https://wa.me/message/SPQPJ6O3UBF5B1"
             target="_blank"
             rel="noopener noreferrer"
             className="w-14 h-14 rounded-full shadow-lg flex items-center justify-center bg-[#25D366] hover:bg-[#20BA59] transition-colors"

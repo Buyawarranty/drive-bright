@@ -71,7 +71,7 @@ const StickyNavigation: React.FC = () => {
 
             {/* WhatsApp Us Button */}
             <a 
-              href="https://wa.me/+4403302295040" 
+              href="https://wa.me/message/SPQPJ6O3UBF5B1" 
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-flex items-center px-3 xl:px-4 py-2 bg-[#25D366] text-white text-sm xl:text-base font-semibold rounded-lg hover:bg-[#20BA5A] transition-colors whitespace-nowrap"
@@ -92,7 +92,7 @@ const StickyNavigation: React.FC = () => {
           <div className="lg:hidden flex items-center gap-2">
             {/* Mobile WhatsApp Button */}
             <a 
-              href="https://wa.me/+4403302295040" 
+              href="https://wa.me/message/SPQPJ6O3UBF5B1" 
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-flex items-center px-2 sm:px-3 py-1.5 sm:py-2 bg-[#25D366] text-white text-xs sm:text-sm font-semibold rounded-lg hover:bg-[#20BA5A] transition-colors whitespace-nowrap"
