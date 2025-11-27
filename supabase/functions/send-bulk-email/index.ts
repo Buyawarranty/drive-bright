@@ -110,7 +110,7 @@ serve(async (req) => {
             subject: personalizedSubject,
             template_id: templateId,
             delivery_status: 'sent',
-            metadata: { resend_id: emailResponse.id }
+            metadata: { resend_id: emailResponse.data?.id }
           });
         }
 

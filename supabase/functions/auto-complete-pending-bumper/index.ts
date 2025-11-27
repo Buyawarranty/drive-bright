@@ -58,11 +58,24 @@ serve(async (req) => {
       .limit(20); // Process max 20 at a time to avoid timeout
 
     if (fetchError) {
-      logStep("Error fetching pending transactions", { error: fetchError.message });
-      throw new Error(`Failed to fetch pending transactions: ${fetchError.message}`);
+      const errorMsg = fetchError?.message || 'Unknown error';
+      logStep("Error fetching pending transactions", { error: errorMsg });
+      throw new Error(`Failed to fetch pending transactions: ${errorMsg}`);
     }
 
-    if (!pendingTransactions || pendingTransactions.length === 0) {
+    if (!pendingTransactions) {
+      logStep("No pending transactions data returned");
+      return new Response(JSON.stringify({
+        success: true,
+        message: "No pending transactions to process",
+        processed: 0
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
+    }
+    
+    if (pendingTransactions.length === 0) {
       logStep("No pending transactions found to process");
       return new Response(JSON.stringify({
         success: true,
@@ -74,6 +87,7 @@ serve(async (req) => {
       });
     }
 
+    // At this point TypeScript knows pendingTransactions is not null and has items
     logStep(`Found ${pendingTransactions.length} pending transactions to process`);
 
     const results = [];
@@ -109,7 +123,7 @@ serve(async (req) => {
           results.push({
             transactionId,
             status: 'already_processed',
-            email: existingCustomer.email
+            email: existingCustomer?.email || 'unknown'
           });
           continue;
         }
@@ -125,7 +139,18 @@ serve(async (req) => {
           .eq('status', 'pending')
           .select();
 
-        if (updateError || !updatedTransaction || updatedTransaction.length === 0) {
+        if (updateError || !updatedTransaction) {
+          logStep(`Transaction ${transactionId} update failed`);
+          results.push({
+            transactionId,
+            status: 'skipped',
+            reason: 'update_failed',
+            email: transaction.customer_data?.email
+          });
+          continue;
+        }
+        
+        if (updatedTransaction.length === 0) {
           logStep(`Transaction ${transactionId} already being processed or update failed`);
           results.push({
             transactionId,
@@ -236,7 +261,7 @@ serve(async (req) => {
           policyNumber: paymentResult?.policyNumber
         });
 
-      } catch (error) {
+      } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         logStep(`Exception processing transaction ${transactionId}`, { error: errorMessage });
         

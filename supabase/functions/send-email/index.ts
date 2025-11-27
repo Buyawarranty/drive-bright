@@ -266,7 +266,8 @@ serve(async (req) => {
       error = result.error;
     } catch (resendError) {
       logStep("Resend API exception", { error: resendError });
-      throw new Error(`Resend API exception: ${resendError.message || String(resendError)}`);
+      const errorMsg = resendError instanceof Error ? resendError.message : String(resendError);
+      throw new Error(`Resend API exception: ${errorMsg}`);
     }
 
     if (error) {

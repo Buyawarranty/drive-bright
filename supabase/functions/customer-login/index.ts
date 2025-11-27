@@ -84,7 +84,7 @@ serve(async (req) => {
       );
     }
 
-    if (!authData.user || !authData.session) {
+    if (!authData?.user || !authData?.session) {
       return new Response(
         JSON.stringify({ 
           error: 'Login failed - no user data returned',

@@ -146,7 +146,7 @@ serve(async (req) => {
         if (!downloadError && fileData) {
           const fileBuffer = await fileData.arrayBuffer();
           const bytes = new Uint8Array(fileBuffer);
-          const base64Content = base64Encode(bytes);
+          const base64Content = base64Encode(bytes.buffer);
           
           attachments.push({
             filename: `${planType}-Warranty-Policy.pdf`,
@@ -214,7 +214,7 @@ serve(async (req) => {
           if (response.ok) {
             const fileBuffer = await response.arrayBuffer();
             const bytes = new Uint8Array(fileBuffer);
-            const base64Content = base64Encode(bytes);
+            const base64Content = base64Encode(bytes.buffer);
             
             attachments.push({
               filename: planDoc.document_name.endsWith('.pdf') ? planDoc.document_name : `${planDoc.document_name}.pdf`,
@@ -252,7 +252,7 @@ serve(async (req) => {
         if (response.ok) {
           const fileBuffer = await response.arrayBuffer();
           const bytes = new Uint8Array(fileBuffer);
-          const base64Content = base64Encode(bytes);
+          const base64Content = base64Encode(bytes.buffer);
           
           attachments.push({
             filename: termsDoc.document_name.endsWith('.pdf') ? termsDoc.document_name : `${termsDoc.document_name}.pdf`,

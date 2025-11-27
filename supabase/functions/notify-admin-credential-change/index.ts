@@ -201,8 +201,9 @@ serve(async (req) => {
   } catch (error) {
     logStep('Unexpected error', error);
     console.error('Error in notify-admin-credential-change function:', error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error', details: error.message }),
+      JSON.stringify({ error: 'Internal server error', details: errorMsg }),
       { 
         status: 500, 
         headers: { 'Content-Type': 'application/json', ...corsHeaders } 
