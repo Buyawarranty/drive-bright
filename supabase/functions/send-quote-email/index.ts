@@ -131,13 +131,19 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
           </table>
         </div>
         
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${baseUrl}/?quoteId=${quoteId}" style="background-color: #ea580c; color: #ffffff; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 18px; display: inline-block;">
+            Resume Purchase
+          </a>
+        </div>
+        
         <p style="font-size: 16px; margin-bottom: 20px;">
           For complete coverage details, please visit:<br>
           <a href="https://buyawarranty.co.uk/what-is-covered/" style="color: #ea580c; text-decoration: underline;">https://buyawarranty.co.uk/what-is-covered/</a>
         </p>
         
         <p style="font-size: 16px; margin-bottom: 20px;">
-          If you have any questions about this quote or would like to proceed, please contact Mike Swan on 📞 0330 229 5040 or follow the link sent separately from our payment partner, Bumper.
+          If you have any questions about this quote or would like to proceed, please contact Mike Swan on 📞 0330 229 5040.
         </p>
         
         <p style="font-size: 16px; margin-top: 30px;">
