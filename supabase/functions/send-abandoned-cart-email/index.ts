@@ -1,8 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.2';
-import React from 'https://esm.sh/react@18.3.1';
-import { renderAsync } from 'https://esm.sh/@react-email/components@0.0.22';
-import { AbandonedCartEmail } from './_templates/abandoned-cart.tsx';
 
 // Utility functions for retrying fetch requests
 const timedFetch = (url: string, options: RequestInit, timeout = 30000): Promise<Response> => {
@@ -25,7 +22,6 @@ const retryFetch = async (
     try {
       const response = await timedFetch(url, options);
       
-      // Don't retry on client errors (4xx), only server errors (5xx) and timeouts
       if (response.status >= 200 && response.status < 500) {
         return response;
       }
@@ -34,7 +30,6 @@ const retryFetch = async (
       
       if (attempt < maxRetries - 1) {
         const backoffTime = Math.pow(2, attempt) * 1000;
-        console.log(`Attempt ${attempt + 1} failed, retrying in ${backoffTime}ms...`);
         await new Promise(resolve => setTimeout(resolve, backoffTime));
       }
     } catch (error) {
@@ -42,7 +37,6 @@ const retryFetch = async (
       
       if (attempt < maxRetries - 1) {
         const backoffTime = Math.pow(2, attempt) * 1000;
-        console.log(`Attempt ${attempt + 1} failed with error: ${error}, retrying in ${backoffTime}ms...`);
         await new Promise(resolve => setTimeout(resolve, backoffTime));
       }
     }
@@ -57,7 +51,7 @@ const corsHeaders = {
 };
 
 interface SendEmailRequest {
-  cartId: string; // Track individual cart
+  cartId: string;
   email: string;
   firstName?: string;
   lastName?: string;
@@ -66,7 +60,7 @@ interface SendEmailRequest {
   vehicleMake?: string;
   vehicleModel?: string;
   vehicleYear?: string;
-  vehicleType?: string; // Added for special vehicles (EV, PHEV, MOTORBIKE)
+  vehicleType?: string;
   mileage?: string;
   fuelType?: string;
   transmission?: string;
@@ -75,8 +69,112 @@ interface SendEmailRequest {
   paymentType?: string;
 }
 
+const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { html: string, subject: string } => {
+  const firstName = request.firstName || 'there';
+  const vehicleInfo = `${request.vehicleMake || ''} ${request.vehicleModel || ''}`.trim() || 'your vehicle';
+  const vehicleReg = request.vehicleReg || '';
+  
+  let subject = `${vehicleReg} - Your warranty quote from Buy A Warranty`;
+  let heading = `Your Warranty Quote for ${vehicleInfo}`;
+  let intro = `Hi ${firstName}, you requested a warranty quote for your ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''}.`;
+  let body = "We've saved your quote details. You can review and complete your application whenever you're ready.";
+  let showPromo = false;
+  let promoCode = '';
+  let promoText = '';
+  
+  if (request.triggerType === 'pricing_page_view_24h') {
+    showPromo = true;
+    promoCode = 'SAVE10NOW';
+    promoText = 'Special offer: Use code SAVE10NOW for 10% off (valid for 24 hours).';
+  } else if (request.triggerType === 'pricing_page_view_72h') {
+    showPromo = true;
+    promoCode = 'SAVE10NOW';
+    promoText = 'Limited time: Use code SAVE10NOW for 10% off your purchase.';
+    intro = `Hi ${firstName}, this is a reminder about your warranty quote for ${vehicleReg}.`;
+    body = "Your quote information is still available to review.";
+  }
+  
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Ubuntu, sans-serif; background-color: #f6f9fc;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; margin-bottom: 64px;">
+    <!-- Header -->
+    <div style="padding: 24px; text-align: center;">
+      <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" width="200" alt="Buy A Warranty" style="margin: 0 auto;" />
+    </div>
+    
+    <!-- Content -->
+    <div style="padding: 0 48px;">
+      <h1 style="color: #1a1a1a; font-size: 24px; font-weight: 700; line-height: 1.3; margin: 16px 0;">${heading}</h1>
+      
+      <p style="color: #484848; font-size: 16px; line-height: 24px; margin: 16px 0;">Hi ${firstName},</p>
+      
+      <p style="color: #484848; font-size: 16px; line-height: 24px; margin: 16px 0;">${intro}</p>
+      
+      <p style="color: #484848; font-size: 16px; line-height: 24px; margin: 16px 0;">${body}</p>
+
+      ${showPromo ? `
+      <!-- Promo Section -->
+      <div style="background-color: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center;">
+        <p style="color: #856404; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">${promoText}</p>
+        <div style="background-color: #ffc107; color: #000; font-size: 24px; font-weight: bold; padding: 12px 24px; border-radius: 4px; display: inline-block; letter-spacing: 2px;">${promoCode}</div>
+      </div>
+      ` : ''}
+
+      <!-- Benefits -->
+      <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 24px 0;">
+        <p style="color: #1a1a1a; font-size: 18px; font-weight: 600; margin: 0 0 12px 0;">Your Quote Includes:</p>
+        <p style="color: #484848; font-size: 15px; line-height: 24px; margin: 4px 0;">• Comprehensive vehicle warranty coverage</p>
+        <p style="color: #484848; font-size: 15px; line-height: 24px; margin: 4px 0;">• UK-based customer support</p>
+        <p style="color: #484848; font-size: 15px; line-height: 24px; margin: 4px 0;">• Straightforward claims process</p>
+        <p style="color: #484848; font-size: 15px; line-height: 24px; margin: 4px 0;">• 14-day cooling-off period</p>
+      </div>
+
+      <!-- CTA Button -->
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="${continueUrl}" style="background-color: #0066cc; border-radius: 6px; color: #fff; font-size: 18px; font-weight: bold; text-decoration: none; padding: 16px 32px; display: inline-block;">
+          View My Quote
+        </a>
+      </div>
+
+      <hr style="border: none; border-top: 1px solid #e6ebf1; margin: 32px 0;" />
+
+      <!-- Footer -->
+      <p style="color: #8898aa; font-size: 14px; line-height: 20px; margin: 16px 0;">
+        If you have any questions about your quote, please don't hesitate to contact us.
+      </p>
+
+      <p style="color: #8898aa; font-size: 14px; line-height: 20px; margin: 16px 0;">
+        Best regards,
+      </p>
+      <p style="color: #8898aa; font-size: 14px; line-height: 20px; margin: 8px 0;">
+        The Buy A Warranty Team
+      </p>
+      <p style="color: #8898aa; font-size: 14px; line-height: 20px; margin: 8px 0;">
+        <a href="https://buyawarranty.co.uk" style="color: #0066cc; text-decoration: underline;">buyawarranty.co.uk</a>
+      </p>
+
+      <p style="color: #8898aa; font-size: 13px; line-height: 20px; margin: 8px 0;">
+        📧 support@buyawarranty.co.uk
+      </p>
+      <p style="color: #8898aa; font-size: 13px; line-height: 20px; margin: 8px 0 48px 0;">
+        📞 0330 229 5040
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+  
+  return { html, subject };
+};
+
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -104,7 +202,6 @@ const handler = async (req: Request): Promise<Response> => {
       console.error('Error checking recent emails:', checkError);
     }
 
-    // If we already sent this type of email for this cart, skip
     if (recentEmails && recentEmails.length > 0) {
       console.log(`Skipping email - already sent ${emailRequest.triggerType} email for cart ${emailRequest.cartId}`);
       return new Response(JSON.stringify({ 
@@ -129,21 +226,14 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Email template not found');
     }
 
-    // Generate URLs based on vehicle registration and type
+    // Generate URLs
     const baseUrl = 'https://buyawarranty.co.uk';
-    const encodedReg = encodeURIComponent(emailRequest.vehicleReg || '');
-    
-    let continueUrl = `${baseUrl}`;
-    let checkoutUrl = `${baseUrl}`;
+    let continueUrl = baseUrl;
 
-    // If we have vehicle registration, create a state parameter to restore the flow
     if (emailRequest.vehicleReg) {
-      // Map trigger types to correct steps:
-      // - pricing_page_view, pricing_page_view_24h, pricing_page_view_72h → step 2 (quote page)
-      // - plan_selected → step 3 (plan selection)
-      let targetStep = 2; // Default to quote page
+      let targetStep = 2;
       if (emailRequest.triggerType === 'plan_selected') {
-        targetStep = 3; // Plan was selected, return to plan selection
+        targetStep = 3;
       }
       
       const stateParam = btoa(JSON.stringify({
@@ -165,38 +255,12 @@ const handler = async (req: Request): Promise<Response> => {
         address: ''
       }));
       continueUrl = `${baseUrl}?restore=${encodeURIComponent(stateParam)}`;
-      checkoutUrl = continueUrl;
     }
 
-    // Render React Email template
-    const htmlContent = await renderAsync(
-      React.createElement(AbandonedCartEmail, {
-        firstName: emailRequest.firstName || 'there',
-        vehicleReg: emailRequest.vehicleReg || '',
-        vehicleMake: emailRequest.vehicleMake || '',
-        vehicleModel: emailRequest.vehicleModel || '',
-        planName: emailRequest.planName || '',
-        continueUrl,
-        triggerType: emailRequest.triggerType
-      })
-    );
+    // Generate email HTML
+    const { html: htmlContent, subject } = generateEmailHTML(emailRequest, continueUrl);
 
-    // Get subject from template or use dynamic based on trigger
-    let subject = template.subject;
-    const variables = {
-      firstName: emailRequest.firstName || 'there',
-      vehicleReg: emailRequest.vehicleReg || '',
-      vehicleMake: emailRequest.vehicleMake || '',
-      vehicleModel: emailRequest.vehicleModel || ''
-    };
-    
-    // Replace variables in subject
-    Object.entries(variables).forEach(([key, value]) => {
-      const placeholder = `{{${key}}}`;
-      subject = subject.replace(new RegExp(placeholder, 'g'), value);
-    });
-
-    // Send email using Resend with retry logic
+    // Send email using Resend
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     if (!resendApiKey) {
       throw new Error("RESEND_API_KEY is not set");
@@ -207,18 +271,9 @@ const handler = async (req: Request): Promise<Response> => {
       to: [emailRequest.email],
       subject: subject,
       html: htmlContent,
-      headers: {
-        'X-Entity-Ref-ID': `cart-${emailRequest.cartId}`,
-        'List-Unsubscribe': `<mailto:unsubscribe@buyawarranty.co.uk?subject=unsubscribe>`,
-      },
-      tags: [
-        { name: 'category', value: 'transactional' },
-        { name: 'type', value: 'abandoned-cart' },
-        { name: 'vehicle-reg', value: (emailRequest.vehicleReg || 'unknown').replace(/\s+/g, '-') }
-      ]
     };
 
-    console.log("Sending email via Resend with retry logic...");
+    console.log("Sending email via Resend...");
     
     const emailResponse = await retryFetch(
       "https://api.resend.com/emails",
