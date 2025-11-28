@@ -591,9 +591,13 @@ const Index = () => {
   };
 
   // Restore vehicleData if missing on step 2+ (backup restoration)
+  const hasAttemptedBackupRestoration = useRef(false);
+  
   useEffect(() => {
-    if (currentStep >= 2 && !vehicleData && !isRestoringFromUrl) {
+    // Only attempt restoration if we haven't already tried in this session
+    if (currentStep >= 2 && !vehicleData && !isRestoringFromUrl && !hasAttemptedBackupRestoration.current) {
       console.log('🔄 Backup restoration: Step 2+ without vehicleData');
+      hasAttemptedBackupRestoration.current = true;
       
       const savedVehicleDataString = getWithTimestamp('buyawarranty_vehicleData');
       
@@ -611,7 +615,12 @@ const Index = () => {
         handleStepChange(1);
       }
     }
-  }, [currentStep, isRestoringFromUrl]); // Removed vehicleData from deps to prevent loops
+    
+    // Reset the flag when we leave step 2+ or when vehicleData is successfully restored
+    if (currentStep < 2 || vehicleData) {
+      hasAttemptedBackupRestoration.current = false;
+    }
+  }, [currentStep, isRestoringFromUrl, vehicleData]); // Added vehicleData back to deps
   
 
   // Handle mobile back button navigation to keep users on the site
