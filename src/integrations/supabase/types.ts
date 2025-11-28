@@ -250,6 +250,102 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_sent_quotes: {
+        Row: {
+          claim_limit: number
+          created_at: string | null
+          customer_email: string
+          customer_name: string
+          customer_purchased: boolean | null
+          customer_responded: boolean | null
+          email_content: string
+          email_subject: string
+          excess_amount: number
+          id: string
+          last_resent_at: string | null
+          monthly_price: number | null
+          notes: string | null
+          payment_type: string
+          plan_name: string
+          quote_reference: string
+          resent_count: number | null
+          sent_at: string
+          sent_by: string | null
+          total_price: number
+          updated_at: string | null
+          vehicle_fuel_type: string | null
+          vehicle_make: string | null
+          vehicle_mileage: string | null
+          vehicle_model: string | null
+          vehicle_reg: string
+          vehicle_transmission: string | null
+          vehicle_type: string | null
+          vehicle_year: string | null
+        }
+        Insert: {
+          claim_limit: number
+          created_at?: string | null
+          customer_email: string
+          customer_name: string
+          customer_purchased?: boolean | null
+          customer_responded?: boolean | null
+          email_content: string
+          email_subject: string
+          excess_amount: number
+          id?: string
+          last_resent_at?: string | null
+          monthly_price?: number | null
+          notes?: string | null
+          payment_type: string
+          plan_name?: string
+          quote_reference?: string
+          resent_count?: number | null
+          sent_at?: string
+          sent_by?: string | null
+          total_price: number
+          updated_at?: string | null
+          vehicle_fuel_type?: string | null
+          vehicle_make?: string | null
+          vehicle_mileage?: string | null
+          vehicle_model?: string | null
+          vehicle_reg: string
+          vehicle_transmission?: string | null
+          vehicle_type?: string | null
+          vehicle_year?: string | null
+        }
+        Update: {
+          claim_limit?: number
+          created_at?: string | null
+          customer_email?: string
+          customer_name?: string
+          customer_purchased?: boolean | null
+          customer_responded?: boolean | null
+          email_content?: string
+          email_subject?: string
+          excess_amount?: number
+          id?: string
+          last_resent_at?: string | null
+          monthly_price?: number | null
+          notes?: string | null
+          payment_type?: string
+          plan_name?: string
+          quote_reference?: string
+          resent_count?: number | null
+          sent_at?: string
+          sent_by?: string | null
+          total_price?: number
+          updated_at?: string | null
+          vehicle_fuel_type?: string | null
+          vehicle_make?: string | null
+          vehicle_mileage?: string | null
+          vehicle_model?: string | null
+          vehicle_reg?: string
+          vehicle_transmission?: string | null
+          vehicle_type?: string | null
+          vehicle_year?: string | null
+        }
+        Relationships: []
+      }
       admin_users: {
         Row: {
           created_at: string
