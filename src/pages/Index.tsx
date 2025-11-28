@@ -590,7 +590,25 @@ const Index = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Redirect to step 2+ without vehicle data
+  // Try to restore vehicleData from localStorage if missing on step 2+
+  useEffect(() => {
+    if (currentStep >= 2 && !vehicleData && !isNavigatingRef.current && !isRestoringFromUrl) {
+      console.log('🔄 Attempting to restore vehicleData from localStorage');
+      const savedVehicleData = localStorage.getItem('buyawarranty_vehicleData');
+      if (savedVehicleData) {
+        try {
+          const parsed = JSON.parse(savedVehicleData);
+          console.log('✅ Restored vehicleData from localStorage:', parsed);
+          setVehicleData(parsed);
+          return; // Exit early, don't redirect
+        } catch (e) {
+          console.error('❌ Error parsing saved vehicleData:', e);
+        }
+      }
+    }
+  }, [currentStep, vehicleData, isRestoringFromUrl]);
+  
+  // Redirect to step 1 if on step 2+ without vehicle data
   // BUT: Don't redirect if we're still restoring from URL or navigating
   useEffect(() => {
     console.log('🔍 Redirect check useEffect running:', { 
