@@ -1006,17 +1006,23 @@ const Index = () => {
         <Homepage onRegistrationSubmit={handleHomepageRegistration} />
       )}
 
-      {currentStep === 2 && vehicleData && (
+      {currentStep === 2 && (
         <div className="bg-[#e8f4fb] w-full px-4 py-2 sm:py-4">
           <div className="max-w-4xl mx-auto">
-        <PerformanceOptimizedSuspense height="40vh">
-          <QuoteDeliveryStep 
-            vehicleData={vehicleData}
-            onNext={handleQuoteDeliveryComplete}
-            onBack={() => handleBackToStep(1)}
-            onSkip={() => handleStepChange(3)}
-          />
-        </PerformanceOptimizedSuspense>
+            {vehicleData ? (
+              <PerformanceOptimizedSuspense height="40vh">
+                <QuoteDeliveryStep 
+                  vehicleData={vehicleData}
+                  onNext={handleQuoteDeliveryComplete}
+                  onBack={() => handleBackToStep(1)}
+                  onSkip={() => handleStepChange(3)}
+                />
+              </PerformanceOptimizedSuspense>
+            ) : (
+              <div className="bg-white rounded-lg p-8 text-center">
+                <p className="text-gray-600 mb-4">Loading vehicle data...</p>
+              </div>
+            )}
           </div>
         </div>
       )}
