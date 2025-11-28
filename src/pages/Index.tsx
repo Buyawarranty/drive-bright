@@ -17,12 +17,12 @@ import { useQuoteRestoration } from '@/hooks/useQuoteRestoration';
 import { batchLocalStorageWrite, safeLocalStorageRemove, parseLocalStorageJSON, saveWithTimestamp, getWithTimestamp } from '@/utils/localStorage';
 import PerformanceOptimizedSuspense from '@/components/PerformanceOptimizedSuspense';
 import { BackNavigationConfirmDialog } from '@/components/BackNavigationConfirmDialog';
+import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';
 
 // Lazy load heavy components that are not immediately visible
 const RegistrationForm = lazy(() => import('@/components/RegistrationForm'));
 const PricingTable = lazy(() => import('@/components/PricingTable'));
 const CarJourneyProgress = lazy(() => import('@/components/CarJourneyProgress'));
-const QuoteDeliveryStep = lazy(() => import('@/components/QuoteDeliveryStep'));
 const CustomerDetailsStep = lazy(() => import('@/components/CustomerDetailsStep'));
 const MaintenanceBanner = lazy(() => import('@/components/MaintenanceBanner'));
 
@@ -1004,14 +1004,12 @@ const Index = () => {
         <div className="bg-[#e8f4fb] w-full px-4 py-2 sm:py-4">
           <div className="max-w-4xl mx-auto">
             {vehicleData ? (
-              <PerformanceOptimizedSuspense height="40vh">
-                <QuoteDeliveryStep 
-                  vehicleData={vehicleData}
-                  onNext={handleQuoteDeliveryComplete}
-                  onBack={() => handleBackToStep(1)}
-                  onSkip={() => handleStepChange(3)}
-                />
-              </PerformanceOptimizedSuspense>
+              <QuoteDeliveryStep 
+                vehicleData={vehicleData}
+                onNext={handleQuoteDeliveryComplete}
+                onBack={() => handleBackToStep(1)}
+                onSkip={() => handleStepChange(3)}
+              />
             ) : (
               <div className="min-h-[60vh] flex items-center justify-center bg-white rounded-lg shadow-md">
                 <div className="text-center p-8">
