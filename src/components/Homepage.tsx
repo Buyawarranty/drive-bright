@@ -186,6 +186,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   };
 
   const handleGetQuote = async () => {
+    console.log('🔘 GET QUOTE BUTTON CLICKED');
+    console.log('📋 Form values:', { regNumber, mileage });
+    
     // Track main CTA button click
     trackButtonClick('get_quote_main', {
       has_reg_number: !!regNumber.trim(),
@@ -315,6 +318,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       // Track quote request with enhanced data for Google Ads
       trackQuoteRequest(undefined, undefined, undefined);
 
+      console.log('✅ Vehicle lookup complete, calling onRegistrationSubmit with:', vehicleData);
+      
       // Submit to parent component
       onRegistrationSubmit(vehicleData);
       
