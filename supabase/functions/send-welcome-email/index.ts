@@ -95,7 +95,7 @@ serve(async (req) => {
     // Check if user already exists first by email
     logStep("Checking if user exists");
     const { data: existingUsers } = await supabaseClient.auth.admin.listUsers();
-    const userExists = existingUsers?.users?.find(u => u.email === email);
+    const userExists = existingUsers?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase());
     
     let userId = null;
     

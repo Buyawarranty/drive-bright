@@ -331,7 +331,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Check if user already exists and handle authentication
     console.log(JSON.stringify({ evt: "checking.user.existence", rid, customerEmail: customer.email }));
     const { data: existingUsers } = await supabase.auth.admin.listUsers();
-    const userExists = existingUsers?.users?.find(u => u.email === customer.email);
+    const userExists = existingUsers?.users?.find(u => u.email?.toLowerCase() === customer.email.toLowerCase());
     
     let userId = null;
     
