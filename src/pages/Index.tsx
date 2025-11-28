@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback, useMemo, lazy } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, lazy, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Homepage from '@/components/Homepage';
@@ -360,6 +360,7 @@ const Index = () => {
   
   const [currentStep, setCurrentStep] = useState(getStepFromUrl());
   const [showDiscountPopup, setShowDiscountPopup] = useState(false);
+  const isNavigatingRef = useRef(false);
   
   const { restoreQuoteData } = useQuoteRestoration();
 
@@ -587,18 +588,25 @@ const Index = () => {
   };
 
   // Redirect to step 1 if accessing step 2+ without vehicle data
-  // BUT: Don't redirect if we're still restoring from URL
+  // BUT: Don't redirect if we're still restoring from URL or navigating
   useEffect(() => {
     console.log('🔍 Checking vehicle data:', { 
       currentStep, 
       hasVehicleData: !!vehicleData, 
       isRestoringFromUrl,
+      isNavigating: isNavigatingRef.current,
       vehicleDataKeys: vehicleData ? Object.keys(vehicleData) : 'null'
     });
     
     // Skip redirect check if we're still restoring from URL
     if (isRestoringFromUrl) {
       console.log('⏳ Skipping redirect check - restoring from URL');
+      return;
+    }
+    
+    // Skip redirect check if we're in the middle of navigation
+    if (isNavigatingRef.current) {
+      console.log('⏳ Skipping redirect check - navigation in progress');
       return;
     }
     
@@ -774,13 +782,28 @@ const Index = () => {
   };
 
   const handleHomepageRegistration = (vehicleData: VehicleData) => {
-    console.log('Homepage registration submitted:', vehicleData);
+    console.log('🚀 handleHomepageRegistration called with:', vehicleData);
+    console.log('📍 Current step before:', currentStep);
+    
+    // Set navigation flag to prevent redirect
+    isNavigatingRef.current = true;
+    
     setVehicleData(vehicleData);
     setFormData({ ...formData, ...vehicleData });
     setCurrentStep(2);
+    
+    console.log('✅ State updates queued, updating URL...');
     updateStepInUrl(2);
     saveStateToLocalStorage(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Clear navigation flag after a short delay
+    setTimeout(() => {
+      isNavigatingRef.current = false;
+      console.log('✅ Navigation flag cleared');
+    }, 100);
+    
+    console.log('✅ handleHomepageRegistration completed');
   };
 
   const handleBackToStep = (step: number) => {
