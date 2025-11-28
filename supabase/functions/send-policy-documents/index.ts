@@ -489,7 +489,7 @@ async function getCustomerCredentials(supabaseClient: any, email: string, policy
     
     // Check if user exists in auth
     const { data: existingUsers } = await supabaseClient.auth.admin.listUsers();
-    const userExists = existingUsers?.users?.find((u: any) => u.email === email);
+    const userExists = existingUsers?.users?.find((u: any) => u.email?.toLowerCase() === email.toLowerCase());
     
     let userId = null;
     
