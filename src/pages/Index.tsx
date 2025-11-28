@@ -595,14 +595,12 @@ const Index = () => {
     if (currentStep >= 2 && !vehicleData && !isRestoringFromUrl) {
       console.log('🔄 Attempting to restore vehicleData from localStorage');
       
-      const savedVehicleData = localStorage.getItem('buyawarranty_vehicleData');
-      if (savedVehicleData) {
+      const savedVehicleDataString = getWithTimestamp('buyawarranty_vehicleData');
+      if (savedVehicleDataString) {
         try {
-          const parsed = JSON.parse(savedVehicleData);
-          // Check if it's wrapped in {value, timestamp} structure
-          const actualData = parsed.value ? JSON.parse(parsed.value) : parsed;
-          console.log('✅ Restored vehicleData from localStorage:', actualData);
-          setVehicleData(actualData);
+          const parsed = JSON.parse(savedVehicleDataString);
+          console.log('✅ Restored vehicleData from localStorage:', parsed);
+          setVehicleData(parsed);
           return;
         } catch (e) {
           console.error('❌ Error parsing saved vehicleData:', e);
