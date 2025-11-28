@@ -1,6 +1,5 @@
 
-import React, { useState, useEffect, useCallback, useMemo, lazy, useRef } from 'react';
-import { flushSync } from 'react-dom';
+import React, { useState, useEffect, useCallback, useMemo, lazy } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Homepage from '@/components/Homepage';
@@ -361,7 +360,6 @@ const Index = () => {
   
   const [currentStep, setCurrentStep] = useState(getStepFromUrl());
   const [showDiscountPopup, setShowDiscountPopup] = useState(false);
-  const isNavigatingRef = useRef(false); // Flag to prevent redirect during navigation
   
   const { restoreQuoteData } = useQuoteRestoration();
 
@@ -595,19 +593,12 @@ const Index = () => {
       currentStep, 
       hasVehicleData: !!vehicleData, 
       isRestoringFromUrl,
-      isNavigating: isNavigatingRef.current,
       vehicleDataKeys: vehicleData ? Object.keys(vehicleData) : 'null'
     });
     
     // Skip redirect check if we're still restoring from URL
     if (isRestoringFromUrl) {
       console.log('⏳ Skipping redirect check - restoring from URL');
-      return;
-    }
-    
-    // Skip redirect check if we're in the middle of a legitimate navigation
-    if (isNavigatingRef.current) {
-      console.log('⏳ Skipping redirect check - navigation in progress');
       return;
     }
     
@@ -784,26 +775,12 @@ const Index = () => {
 
   const handleHomepageRegistration = (vehicleData: VehicleData) => {
     console.log('Homepage registration submitted:', vehicleData);
-    
-    // Set navigation flag to prevent redirect during this transition
-    isNavigatingRef.current = true;
-    
-    // Use flushSync to ensure ALL state updates complete synchronously
-    flushSync(() => {
-      setVehicleData(vehicleData);
-      setFormData({ ...formData, ...vehicleData });
-      setCurrentStep(2);
-    });
-    
-    // Update URL and storage after state is guaranteed to be set
+    setVehicleData(vehicleData);
+    setFormData({ ...formData, ...vehicleData });
+    setCurrentStep(2);
     updateStepInUrl(2);
     saveStateToLocalStorage(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // Clear navigation flag after a short delay to allow React to commit
-    setTimeout(() => {
-      isNavigatingRef.current = false;
-    }, 100);
   };
 
   const handleBackToStep = (step: number) => {
@@ -1006,23 +983,17 @@ const Index = () => {
         <Homepage onRegistrationSubmit={handleHomepageRegistration} />
       )}
 
-      {currentStep === 2 && (
+      {currentStep === 2 && vehicleData && (
         <div className="bg-[#e8f4fb] w-full px-4 py-2 sm:py-4">
           <div className="max-w-4xl mx-auto">
-            {vehicleData ? (
-              <PerformanceOptimizedSuspense height="40vh">
-                <QuoteDeliveryStep 
-                  vehicleData={vehicleData}
-                  onNext={handleQuoteDeliveryComplete}
-                  onBack={() => handleBackToStep(1)}
-                  onSkip={() => handleStepChange(3)}
-                />
-              </PerformanceOptimizedSuspense>
-            ) : (
-              <div className="bg-white rounded-lg p-8 text-center">
-                <p className="text-gray-600 mb-4">Loading vehicle data...</p>
-              </div>
-            )}
+            <PerformanceOptimizedSuspense height="40vh">
+              <QuoteDeliveryStep 
+                vehicleData={vehicleData}
+                onNext={handleQuoteDeliveryComplete}
+                onBack={() => handleBackToStep(1)}
+                onSkip={() => handleStepChange(3)}
+              />
+            </PerformanceOptimizedSuspense>
           </div>
         </div>
       )}
