@@ -591,38 +591,29 @@ const Index = () => {
   };
 
   // Try to restore vehicleData from localStorage if missing on step 2+
-  // Use a ref to prevent multiple restoration attempts
-  const hasAttemptedRestoration = useRef(false);
-  
   useEffect(() => {
-    if (currentStep >= 2 && !vehicleData && !isRestoringFromUrl && !hasAttemptedRestoration.current) {
-      console.log('🔄 Attempting to restore vehicleData from localStorage');
-      hasAttemptedRestoration.current = true;
+    if (currentStep >= 2 && !vehicleData && !isRestoringFromUrl) {
+      console.log('🔄 Step 2 detected without vehicleData, attempting restoration');
       
       const savedVehicleDataString = getWithTimestamp('buyawarranty_vehicleData');
-      console.log('📦 Raw localStorage data:', savedVehicleDataString);
+      console.log('📦 Retrieved from localStorage:', savedVehicleDataString ? 'Found' : 'Not found');
       
       if (savedVehicleDataString) {
         try {
           const parsed = JSON.parse(savedVehicleDataString);
-          console.log('✅ Parsed vehicleData:', parsed);
+          console.log('✅ Successfully parsed vehicleData:', parsed);
           setVehicleData(parsed);
-          return;
         } catch (e) {
           console.error('❌ Error parsing saved vehicleData:', e);
+          console.log('⚠️ Redirecting to step 1 due to parse error');
+          handleStepChange(1);
         }
+      } else {
+        console.log('⚠️ No saved data found, redirecting to step 1');
+        handleStepChange(1);
       }
-      
-      // Only redirect if restoration failed
-      console.log('⚠️ No vehicleData found, redirecting to step 1');
-      handleStepChange(1);
     }
-    
-    // Reset flag when we successfully have vehicle data or go back to step 1
-    if (vehicleData || currentStep === 1) {
-      hasAttemptedRestoration.current = false;
-    }
-  }, [currentStep, vehicleData, isRestoringFromUrl]);
+  }, [currentStep, isRestoringFromUrl]); // Removed vehicleData from dependencies to prevent loops
   
 
   // Handle mobile back button navigation to keep users on the site
@@ -1009,26 +1000,26 @@ const Index = () => {
         <Homepage onRegistrationSubmit={handleHomepageRegistration} />
       )}
 
-      {currentStep === 2 && vehicleData && (
+      {currentStep === 2 && (
         <div className="bg-[#e8f4fb] w-full px-4 py-2 sm:py-4">
           <div className="max-w-4xl mx-auto">
-            <PerformanceOptimizedSuspense height="40vh">
-              <QuoteDeliveryStep 
-                vehicleData={vehicleData}
-                onNext={handleQuoteDeliveryComplete}
-                onBack={() => handleBackToStep(1)}
-                onSkip={() => handleStepChange(3)}
-              />
-            </PerformanceOptimizedSuspense>
-          </div>
-        </div>
-      )}
-      
-      {currentStep === 2 && !vehicleData && (
-        <div className="min-h-screen flex items-center justify-center bg-[#e8f4fb]">
-          <div className="text-center p-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading your quote...</p>
+            {vehicleData ? (
+              <PerformanceOptimizedSuspense height="40vh">
+                <QuoteDeliveryStep 
+                  vehicleData={vehicleData}
+                  onNext={handleQuoteDeliveryComplete}
+                  onBack={() => handleBackToStep(1)}
+                  onSkip={() => handleStepChange(3)}
+                />
+              </PerformanceOptimizedSuspense>
+            ) : (
+              <div className="min-h-[60vh] flex items-center justify-center bg-white rounded-lg shadow-md">
+                <div className="text-center p-8">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading your quote...</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
