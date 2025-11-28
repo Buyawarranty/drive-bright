@@ -313,17 +313,51 @@ export const CustomersTab = () => {
   const applyFiltersAndSort = async () => {
     let filtered = [...customers];
 
-    // Apply search filter
+    // Apply comprehensive search filter across all customer fields
     if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(customer =>
-        customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.registration_plate?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.warranty_reference_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        // Also search in policy numbers from related policies
+        // Basic info
+        customer.name?.toLowerCase().includes(searchLower) ||
+        customer.email?.toLowerCase().includes(searchLower) ||
+        customer.first_name?.toLowerCase().includes(searchLower) ||
+        customer.last_name?.toLowerCase().includes(searchLower) ||
+        customer.phone?.toLowerCase().includes(searchLower) ||
+        
+        // Vehicle info
+        customer.registration_plate?.toLowerCase().includes(searchLower) ||
+        customer.vehicle_make?.toLowerCase().includes(searchLower) ||
+        customer.vehicle_model?.toLowerCase().includes(searchLower) ||
+        customer.vehicle_year?.toLowerCase().includes(searchLower) ||
+        customer.vehicle_fuel_type?.toLowerCase().includes(searchLower) ||
+        customer.vehicle_transmission?.toLowerCase().includes(searchLower) ||
+        customer.mileage?.toLowerCase().includes(searchLower) ||
+        
+        // Address fields
+        customer.flat_number?.toLowerCase().includes(searchLower) ||
+        customer.building_name?.toLowerCase().includes(searchLower) ||
+        customer.building_number?.toLowerCase().includes(searchLower) ||
+        customer.street?.toLowerCase().includes(searchLower) ||
+        customer.town?.toLowerCase().includes(searchLower) ||
+        customer.county?.toLowerCase().includes(searchLower) ||
+        customer.postcode?.toLowerCase().includes(searchLower) ||
+        customer.country?.toLowerCase().includes(searchLower) ||
+        
+        // Warranty & payment info
+        customer.warranty_reference_number?.toLowerCase().includes(searchLower) ||
+        customer.warranty_number?.toLowerCase().includes(searchLower) ||
+        customer.plan_type?.toLowerCase().includes(searchLower) ||
+        customer.payment_type?.toLowerCase().includes(searchLower) ||
+        customer.discount_code?.toLowerCase().includes(searchLower) ||
+        customer.stripe_session_id?.toLowerCase().includes(searchLower) ||
+        customer.bumper_order_id?.toLowerCase().includes(searchLower) ||
+        customer.stripe_customer_id?.toLowerCase().includes(searchLower) ||
+        customer.status?.toLowerCase().includes(searchLower) ||
+        
+        // Policy numbers from related policies
         customer.customer_policies?.some(policy => 
-          policy.policy_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          policy.warranty_number?.toLowerCase().includes(searchTerm.toLowerCase())
+          policy.policy_number?.toLowerCase().includes(searchLower) ||
+          policy.warranty_number?.toLowerCase().includes(searchLower)
         )
       );
     }
@@ -1970,7 +2004,7 @@ export const CustomersTab = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     id="search"
-                    placeholder="Search by name, email, or registration..."
+                    placeholder="Search by name, email, phone, reg plate, vehicle, address..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -3502,14 +3536,35 @@ Please log in and change your password after first login.`;
             <div className="relative max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Search deleted orders..."
+                placeholder="Search deleted orders by any details..."
                 value={deletedSearchTerm}
                 onChange={(e) => {
                   setDeletedSearchTerm(e.target.value);
+                  const searchLower = e.target.value.toLowerCase();
                   const filtered = deletedCustomers.filter(customer =>
-                    customer.name.toLowerCase().includes(e.target.value.toLowerCase()) ||
-                    customer.email.toLowerCase().includes(e.target.value.toLowerCase()) ||
-                    customer.registration_plate?.toLowerCase().includes(e.target.value.toLowerCase())
+                    // Basic info
+                    customer.name?.toLowerCase().includes(searchLower) ||
+                    customer.email?.toLowerCase().includes(searchLower) ||
+                    customer.first_name?.toLowerCase().includes(searchLower) ||
+                    customer.last_name?.toLowerCase().includes(searchLower) ||
+                    customer.phone?.toLowerCase().includes(searchLower) ||
+                    
+                    // Vehicle info
+                    customer.registration_plate?.toLowerCase().includes(searchLower) ||
+                    customer.vehicle_make?.toLowerCase().includes(searchLower) ||
+                    customer.vehicle_model?.toLowerCase().includes(searchLower) ||
+                    customer.vehicle_year?.toLowerCase().includes(searchLower) ||
+                    
+                    // Warranty info
+                    customer.warranty_reference_number?.toLowerCase().includes(searchLower) ||
+                    customer.warranty_number?.toLowerCase().includes(searchLower) ||
+                    customer.plan_type?.toLowerCase().includes(searchLower) ||
+                    
+                    // Policy numbers
+                    customer.customer_policies?.some(policy => 
+                      policy.policy_number?.toLowerCase().includes(searchLower) ||
+                      policy.warranty_number?.toLowerCase().includes(searchLower)
+                    )
                   );
                   setFilteredDeletedCustomers(filtered);
                 }}
@@ -3616,15 +3671,29 @@ Please log in and change your password after first login.`;
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
-                  placeholder="Search incomplete customers..."
+                  placeholder="Search incomplete customers by any details..."
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
                     if (e.target.value) {
+                      const searchLower = e.target.value.toLowerCase();
                       const filtered = incompleteCustomers.filter(customer =>
-                        customer.email.toLowerCase().includes(e.target.value.toLowerCase()) ||
-                        customer.full_name?.toLowerCase().includes(e.target.value.toLowerCase()) ||
-                        customer.vehicle_reg?.toLowerCase().includes(e.target.value.toLowerCase())
+                        // Basic info
+                        customer.email?.toLowerCase().includes(searchLower) ||
+                        customer.full_name?.toLowerCase().includes(searchLower) ||
+                        customer.phone?.toLowerCase().includes(searchLower) ||
+                        
+                        // Vehicle info
+                        customer.vehicle_reg?.toLowerCase().includes(searchLower) ||
+                        customer.vehicle_make?.toLowerCase().includes(searchLower) ||
+                        customer.vehicle_model?.toLowerCase().includes(searchLower) ||
+                        customer.vehicle_year?.toLowerCase().includes(searchLower) ||
+                        customer.mileage?.toLowerCase().includes(searchLower) ||
+                        
+                        // Plan info
+                        customer.plan_name?.toLowerCase().includes(searchLower) ||
+                        customer.payment_type?.toLowerCase().includes(searchLower) ||
+                        customer.vehicle_type?.toLowerCase().includes(searchLower)
                       );
                       setFilteredIncompleteCustomers(filtered);
                     } else {
