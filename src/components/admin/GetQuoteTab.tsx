@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -7,9 +7,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2 } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye } from 'lucide-react';
 import MileageSlider from '@/components/MileageSlider';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 
 interface VehicleData {
   regNumber: string;
@@ -51,6 +54,11 @@ export const GetQuoteTab = () => {
   const [emailContent, setEmailContent] = useState('');
   const [emailSubject, setEmailSubject] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [sentQuotes, setSentQuotes] = useState<any[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [showHistoryDialog, setShowHistoryDialog] = useState(false);
+  const [selectedHistoryQuote, setSelectedHistoryQuote] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState('new');
 
   const formatRegNumber = (value: string) => {
     return value.replace(/\s/g, '').toUpperCase();
@@ -154,7 +162,30 @@ export const GetQuoteTab = () => {
     }
   };
 
-  // Use the same pricing logic as the customer journey
+  // Load sent quotes history on mount
+  useEffect(() => {
+    loadSentQuotesHistory();
+  }, []);
+
+  const loadSentQuotesHistory = async () => {
+    setIsLoadingHistory(true);
+    try {
+      const { data, error } = await supabase
+        .from('admin_sent_quotes')
+        .select('*')
+        .order('sent_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setSentQuotes(data || []);
+    } catch (error) {
+      console.error('Error loading sent quotes:', error);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  // EXACT pricing from homepage PricingTable.tsx - DO NOT MODIFY
   const getPricingData = (excess: number, claimLimit: number, paymentPeriod: string) => {
     const pricingTable = {
       '12months': {
@@ -283,7 +314,10 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
   const handleSendEmail = async () => {
     setIsSendingEmail(true);
     try {
-      // First send the email
+      const { data: { user } } = await supabase.auth.getUser();
+      const monthlyPrice = Math.round(finalPrice / 12);
+
+      // Send the email
       const { error: emailError } = await supabase.functions.invoke('send-admin-quote', {
         body: {
           to: customerEmail,
@@ -302,7 +336,36 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
 
       if (emailError) throw emailError;
 
-      // Then add to abandoned_carts for tracking as incomplete customer
+      // Save to admin_sent_quotes for permanent tracking
+      const { error: quoteError } = await supabase
+        .from('admin_sent_quotes')
+        .insert({
+          customer_name: customerName,
+          customer_email: customerEmail,
+          vehicle_reg: vehicleData?.regNumber || '',
+          vehicle_make: vehicleData?.make,
+          vehicle_model: vehicleData?.model,
+          vehicle_year: vehicleData?.year,
+          vehicle_mileage: vehicleData?.mileage,
+          vehicle_fuel_type: vehicleData?.fuelType,
+          vehicle_transmission: vehicleData?.transmission,
+          vehicle_type: vehicleData?.vehicleType,
+          plan_name: 'Platinum',
+          payment_type: paymentType,
+          excess_amount: excessAmount,
+          claim_limit: claimLimit,
+          total_price: finalPrice,
+          monthly_price: monthlyPrice,
+          email_subject: emailSubject,
+          email_content: emailContent,
+          sent_by: user?.id
+        });
+
+      if (quoteError) {
+        console.error('Error saving quote record:', quoteError);
+      }
+
+      // Add to abandoned_carts for incomplete customer tracking
       const { error: abandonedCartError } = await supabase
         .from('abandoned_carts')
         .insert({
@@ -333,8 +396,12 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
 
       toast({
         title: "Quote Sent Successfully",
-        description: `Quote email sent to ${customerEmail} and added to incomplete customers`,
+        description: `Quote sent to ${customerEmail} and saved to history`,
       });
+      
+      // Refresh history
+      await loadSentQuotesHistory();
+      
       setShowEmailDialog(false);
       // Reset form
       setStep(1);
@@ -363,6 +430,64 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
     }
   };
 
+  const handleResendQuote = async (quote: any) => {
+    try {
+      setIsSendingEmail(true);
+      
+      const { error: emailError } = await supabase.functions.invoke('send-admin-quote', {
+        body: {
+          to: quote.customer_email,
+          subject: `[RESENT] ${quote.email_subject}`,
+          content: quote.email_content,
+          vehicleData: {
+            regNumber: quote.vehicle_reg,
+            mileage: quote.vehicle_mileage,
+            make: quote.vehicle_make,
+            model: quote.vehicle_model,
+            year: quote.vehicle_year,
+            fuelType: quote.vehicle_fuel_type,
+            transmission: quote.vehicle_transmission,
+            vehicleType: quote.vehicle_type
+          },
+          quoteDetails: {
+            plan: quote.plan_name,
+            paymentType: quote.payment_type,
+            price: quote.total_price,
+            excessAmount: quote.excess_amount,
+            claimLimit: quote.claim_limit
+          }
+        }
+      });
+
+      if (emailError) throw emailError;
+
+      // Update resend count
+      await supabase
+        .from('admin_sent_quotes')
+        .update({
+          resent_count: (quote.resent_count || 0) + 1,
+          last_resent_at: new Date().toISOString()
+        })
+        .eq('id', quote.id);
+
+      toast({
+        title: "Quote Resent",
+        description: `Quote resent to ${quote.customer_email}`,
+      });
+
+      await loadSentQuotesHistory();
+    } catch (error) {
+      console.error('Error resending quote:', error);
+      toast({
+        title: "Error",
+        description: "Failed to resend quote",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
   const generateWhatsAppMessage = () => {
     const { content } = generateEmailContent();
     const encodedMessage = encodeURIComponent(content);
@@ -371,11 +496,22 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Send a Quote</h1>
-        <p className="text-gray-600 mt-2">Generate and send quotes while on the phone with customers</p>
+        <p className="text-gray-600 mt-2">Generate and send quotes with tracking history</p>
       </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="new">New Quote</TabsTrigger>
+          <TabsTrigger value="history">
+            <History className="w-4 h-4 mr-2" />
+            Quote History ({sentQuotes.length})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="new" className="space-y-6 mt-6">
 
       {/* Step 1: Vehicle Details */}
       {step === 1 && (
@@ -719,6 +855,178 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* History Quote View Dialog */}
+      <Dialog open={showHistoryDialog} onOpenChange={setShowHistoryDialog}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Quote Details</DialogTitle>
+            <DialogDescription>
+              {selectedHistoryQuote && `Sent to ${selectedHistoryQuote.customer_email} on ${new Date(selectedHistoryQuote.sent_at).toLocaleString()}`}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedHistoryQuote && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
+                <div>
+                  <p className="text-sm font-semibold">Customer</p>
+                  <p className="text-sm">{selectedHistoryQuote.customer_name}</p>
+                  <p className="text-xs text-muted-foreground">{selectedHistoryQuote.customer_email}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Vehicle</p>
+                  <p className="text-sm">{selectedHistoryQuote.vehicle_reg}</p>
+                  <p className="text-xs text-muted-foreground">{selectedHistoryQuote.vehicle_make} {selectedHistoryQuote.vehicle_model}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Price</p>
+                  <p className="text-sm">£{selectedHistoryQuote.total_price}</p>
+                  <p className="text-xs text-muted-foreground">£{selectedHistoryQuote.monthly_price}/month</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Coverage</p>
+                  <p className="text-sm">£{selectedHistoryQuote.excess_amount} excess</p>
+                  <p className="text-xs text-muted-foreground">£{selectedHistoryQuote.claim_limit} limit</p>
+                </div>
+              </div>
+
+              <div>
+                <Label>Subject</Label>
+                <Input value={selectedHistoryQuote.email_subject} readOnly className="mt-2" />
+              </div>
+              
+              <div>
+                <Label>Email Content</Label>
+                <Textarea
+                  value={selectedHistoryQuote.email_content}
+                  readOnly
+                  rows={20}
+                  className="mt-2 font-mono text-sm"
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowHistoryDialog(false)}>
+              Close
+            </Button>
+            {selectedHistoryQuote && (
+              <Button onClick={() => handleResendQuote(selectedHistoryQuote)} disabled={isSendingEmail}>
+                {isSendingEmail ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Resending...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Resend Quote
+                  </>
+                )}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+        </TabsContent>
+
+        <TabsContent value="history" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Sent Quotes History</CardTitle>
+              <CardDescription>View and resend previously sent quotes</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoadingHistory ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                </div>
+              ) : sentQuotes.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No quotes sent yet</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Vehicle</TableHead>
+                      <TableHead>Price</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sentQuotes.map((quote) => (
+                      <TableRow key={quote.id}>
+                        <TableCell>
+                          <div className="text-sm">
+                            {new Date(quote.sent_at).toLocaleDateString()}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(quote.sent_at).toLocaleTimeString()}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm font-medium">{quote.customer_name}</div>
+                          <div className="text-xs text-muted-foreground">{quote.customer_email}</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm font-medium">{quote.vehicle_reg}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {quote.vehicle_make} {quote.vehicle_model}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm font-medium">£{quote.total_price}</div>
+                          <div className="text-xs text-muted-foreground">
+                            £{quote.monthly_price}/mo
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            {quote.resent_count > 0 && (
+                              <Badge variant="outline" className="text-xs">
+                                Resent {quote.resent_count}x
+                              </Badge>
+                            )}
+                            {quote.customer_purchased && (
+                              <Badge variant="default" className="text-xs">Purchased</Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedHistoryQuote(quote);
+                                setShowHistoryDialog(true);
+                              }}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleResendQuote(quote)}
+                              disabled={isSendingEmail}
+                            >
+                              <RefreshCw className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
