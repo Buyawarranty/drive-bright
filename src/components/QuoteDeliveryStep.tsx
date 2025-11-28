@@ -224,8 +224,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               <h3 className="text-xl sm:text-2xl font-semibold text-gray-900">Your vehicle details</h3>
             </div>
             <button
-              onClick={() => window.location.href = '/'}
-              className="flex items-center gap-2 sm:gap-3 text-sm sm:text-base font-medium text-orange-600 hover:text-orange-700 transition-colors duration-200 py-1 px-2 rounded"
+              onClick={onBack}
+              className="flex items-center gap-2 text-sm sm:text-base font-medium text-orange-600 hover:text-orange-700 transition-colors duration-200 py-1 px-2 rounded"
             >
               <Edit3 className="w-4 h-4 sm:w-5 sm:h-5" />
               <span className="hidden xs:inline">Change Vehicle</span>
