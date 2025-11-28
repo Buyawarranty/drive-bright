@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo, lazy } from 'react';
+import { flushSync } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Homepage from '@/components/Homepage';
@@ -776,9 +777,14 @@ const Index = () => {
   const handleHomepageRegistration = (vehicleData: VehicleData) => {
     console.log('Homepage registration submitted:', vehicleData);
     
-    setVehicleData(vehicleData);
-    setFormData({ ...formData, ...vehicleData });
-    setCurrentStep(2); // Go to quote delivery step
+    // Use flushSync to ensure state updates complete synchronously before step change
+    flushSync(() => {
+      setVehicleData(vehicleData);
+      setFormData({ ...formData, ...vehicleData });
+    });
+    
+    // Now change step after state is guaranteed to be updated
+    setCurrentStep(2);
     updateStepInUrl(2);
     saveStateToLocalStorage(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
