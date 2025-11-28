@@ -777,14 +777,14 @@ const Index = () => {
   const handleHomepageRegistration = (vehicleData: VehicleData) => {
     console.log('Homepage registration submitted:', vehicleData);
     
-    // Use flushSync to ensure state updates complete synchronously before step change
+    // Use flushSync to ensure ALL state updates complete synchronously
     flushSync(() => {
       setVehicleData(vehicleData);
       setFormData({ ...formData, ...vehicleData });
+      setCurrentStep(2);
     });
     
-    // Now change step after state is guaranteed to be updated
-    setCurrentStep(2);
+    // Update URL and storage after state is guaranteed to be set
     updateStepInUrl(2);
     saveStateToLocalStorage(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
