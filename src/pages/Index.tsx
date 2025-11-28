@@ -485,22 +485,25 @@ const Index = () => {
   }, [searchParams, vehicleData]);
   
   // Optimized localStorage operations with batching and 30-day expiry
-  const saveStateToLocalStorage = useCallback((step?: number) => {
+  const saveStateToLocalStorage = useCallback((step?: number, overrideVehicleData?: VehicleData | null, overrideFormData?: any) => {
     const currentStepValue = step || currentStep;
+    const dataToSave = overrideVehicleData !== undefined ? overrideVehicleData : vehicleData;
+    const formDataToSave = overrideFormData || formData;
+    
     const state = {
       step: currentStepValue,
-      vehicleData,
+      vehicleData: dataToSave,
       selectedPlan,
-      formData
+      formData: formDataToSave
     };
     
     // Save with timestamps for 30-day expiry
     saveWithTimestamp('warrantyJourneyState', JSON.stringify(state));
-    saveWithTimestamp('buyawarranty_formData', JSON.stringify(formData));
+    saveWithTimestamp('buyawarranty_formData', JSON.stringify(formDataToSave));
     saveWithTimestamp('buyawarranty_currentStep', String(currentStepValue));
     
-    if (vehicleData) {
-      saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
+    if (dataToSave) {
+      saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(dataToSave));
     }
     if (selectedPlan) {
       saveWithTimestamp('buyawarranty_selectedPlan', JSON.stringify(selectedPlan));
@@ -784,31 +787,29 @@ const Index = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleHomepageRegistration = (vehicleData: VehicleData) => {
-    console.log('🚀 handleHomepageRegistration called with:', vehicleData);
-    console.log('📍 Current step before:', currentStep);
-    console.log('📍 Current vehicleData before:', vehicleData);
+  const handleHomepageRegistration = (newVehicleData: VehicleData) => {
+    console.log('🚀 handleHomepageRegistration called with:', newVehicleData);
     
     // Set navigation flag to prevent redirect
     isNavigatingRef.current = true;
-    console.log('🚦 Navigation flag set to TRUE');
     
-    setVehicleData(vehicleData);
-    setFormData({ ...formData, ...vehicleData });
+    // Merge new vehicle data with existing form data
+    const updatedFormData = { ...formData, ...newVehicleData };
+    
+    // Update all state
+    setVehicleData(newVehicleData);
+    setFormData(updatedFormData);
     setCurrentStep(2);
     
-    console.log('✅ State setters called (async), updating URL...');
+    // Save to localStorage with the NEW data (not closure values)
     updateStepInUrl(2);
-    saveStateToLocalStorage(2);
+    saveStateToLocalStorage(2, newVehicleData, updatedFormData);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
-    // Clear navigation flag after state updates should have completed
+    // Clear navigation flag after a delay
     setTimeout(() => {
       isNavigatingRef.current = false;
-      console.log('🚦 Navigation flag cleared to FALSE after timeout');
-      console.log('📍 Final currentStep:', currentStep);
-      console.log('📍 Final vehicleData:', vehicleData);
-    }, 200);
+    }, 300);
     
     console.log('✅ handleHomepageRegistration completed');
   };
