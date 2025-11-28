@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo, lazy, useRef } from 'react';
+import { flushSync } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Homepage from '@/components/Homepage';
@@ -814,12 +815,21 @@ const Index = () => {
     // Merge new vehicle data with existing form data
     const updatedFormData = { ...formData, ...newVehicleData };
     
-    // Update all state
-    setVehicleData(newVehicleData);
-    setFormData(updatedFormData);
-    setCurrentStep(2);
+    // Use flushSync to force synchronous state updates
+    // This ensures vehicleData is set BEFORE moving to step 2
+    flushSync(() => {
+      setVehicleData(newVehicleData);
+      setFormData(updatedFormData);
+    });
     
-    // Save to localStorage with the NEW data (not closure values)
+    // Now set step 2 - vehicleData is guaranteed to be set
+    flushSync(() => {
+      setCurrentStep(2);
+    });
+    
+    console.log('✅ State updates completed synchronously, vehicleData:', newVehicleData);
+    
+    // Save to localStorage with the NEW data
     updateStepInUrl(2);
     saveStateToLocalStorage(2, newVehicleData, updatedFormData);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -827,9 +837,8 @@ const Index = () => {
     // Clear navigation flag after a delay
     setTimeout(() => {
       isNavigatingRef.current = false;
-    }, 300);
-    
-    console.log('✅ handleHomepageRegistration completed');
+      console.log('🚦 Navigation complete');
+    }, 100);
   };
 
   const handleBackToStep = (step: number) => {
