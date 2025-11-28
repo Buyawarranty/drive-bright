@@ -39,6 +39,7 @@ const Widget = lazy(() => import("./pages/Widget"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Protected = lazy(() => import("./pages/Protected"));
 const Claims = lazy(() => import("./pages/Claims"));
+const CancelWarranty = lazy(() => import("./pages/CancelWarranty"));
 const ContactUs = lazy(() => import("./pages/ContactUs"));
 const Complaints = lazy(() => import("./pages/Complaints"));
 const Blog = lazy(() => import("./pages/Blog"));
@@ -145,6 +146,7 @@ const App = () => {
                     <Route path="/what-is-covered/" element={<Protected />} />
                     <Route path="/claims/" element={<Claims />} />
                     <Route path="/make-a-claim/" element={<Claims />} />
+                    <Route path="/cancel-warranty" element={<CancelWarranty />} />
                     <Route path="/contact-us/" element={<ContactUs />} />
                     <Route path="/complaints/" element={<Complaints />} />
                     <Route path="/thewarrantyhub/" element={<Blog />} />
