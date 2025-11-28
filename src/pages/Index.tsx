@@ -599,8 +599,10 @@ const Index = () => {
       if (savedVehicleData) {
         try {
           const parsed = JSON.parse(savedVehicleData);
-          console.log('✅ Restored vehicleData from localStorage:', parsed);
-          setVehicleData(parsed);
+          // Check if it's wrapped in {value, timestamp} structure
+          const actualData = parsed.value ? JSON.parse(parsed.value) : parsed;
+          console.log('✅ Restored vehicleData from localStorage:', actualData);
+          setVehicleData(actualData);
           return;
         } catch (e) {
           console.error('❌ Error parsing saved vehicleData:', e);
