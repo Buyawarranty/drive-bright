@@ -590,37 +590,7 @@ const Index = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Restore vehicleData if missing on step 2+ (backup restoration)
-  const hasAttemptedBackupRestoration = useRef(false);
-  
-  useEffect(() => {
-    // Only attempt restoration if we haven't already tried in this session
-    if (currentStep >= 2 && !vehicleData && !isRestoringFromUrl && !hasAttemptedBackupRestoration.current) {
-      console.log('🔄 Backup restoration: Step 2+ without vehicleData');
-      hasAttemptedBackupRestoration.current = true;
-      
-      const savedVehicleDataString = getWithTimestamp('buyawarranty_vehicleData');
-      
-      if (savedVehicleDataString) {
-        try {
-          const parsed = JSON.parse(savedVehicleDataString);
-          console.log('✅ Backup restoration successful:', parsed);
-          setVehicleData(parsed);
-        } catch (e) {
-          console.error('❌ Backup restoration failed:', e);
-          handleStepChange(1);
-        }
-      } else {
-        console.log('⚠️ No saved data, redirecting to step 1');
-        handleStepChange(1);
-      }
-    }
-    
-    // Reset the flag when we leave step 2+ or when vehicleData is successfully restored
-    if (currentStep < 2 || vehicleData) {
-      hasAttemptedBackupRestoration.current = false;
-    }
-  }, [currentStep, isRestoringFromUrl, vehicleData]); // Added vehicleData back to deps
+  // Removed backup restoration - navigation should preserve state without restoration logic
   
 
   // Handle mobile back button navigation to keep users on the site
@@ -708,12 +678,13 @@ const Index = () => {
       return;
     }
     
-    // Load saved state on initial load
+    // Load saved state on initial load ONLY if we don't already have data in state
     const savedState = loadStateFromLocalStorage();
     const stepFromUrl = getStepFromUrl();
     
-    if (savedState && stepFromUrl > 1) {
-      // Restore from localStorage if we're not on step 1
+    // Only restore from localStorage if vehicleData/selectedPlan are not already set
+    if (savedState && stepFromUrl > 1 && !vehicleData && !selectedPlan) {
+      console.log('📦 Restoring from localStorage on initial load');
       setVehicleData(savedState.vehicleData);
       setSelectedPlan(savedState.selectedPlan);
       setFormData(prev => savedState.formData || prev);
@@ -794,14 +765,16 @@ const Index = () => {
     // Merge new vehicle data with existing form data
     const updatedFormData = { ...formData, ...newVehicleData };
     
-    // Update all state together
+    // Save to localStorage FIRST before updating state
+    saveStateToLocalStorage(2, newVehicleData, updatedFormData);
+    
+    // Update all state together in a batch
     setVehicleData(newVehicleData);
     setFormData(updatedFormData);
     setCurrentStep(2);
     
-    // Save to localStorage
+    // Update URL after state is set
     updateStepInUrl(2);
-    saveStateToLocalStorage(2, newVehicleData, updatedFormData);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
     console.log('✅ Navigation to step 2 complete, vehicleData:', newVehicleData);
