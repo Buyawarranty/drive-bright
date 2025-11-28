@@ -590,30 +590,28 @@ const Index = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Try to restore vehicleData from localStorage if missing on step 2+
+  // Restore vehicleData if missing on step 2+ (backup restoration)
   useEffect(() => {
     if (currentStep >= 2 && !vehicleData && !isRestoringFromUrl) {
-      console.log('🔄 Step 2 detected without vehicleData, attempting restoration');
+      console.log('🔄 Backup restoration: Step 2+ without vehicleData');
       
       const savedVehicleDataString = getWithTimestamp('buyawarranty_vehicleData');
-      console.log('📦 Retrieved from localStorage:', savedVehicleDataString ? 'Found' : 'Not found');
       
       if (savedVehicleDataString) {
         try {
           const parsed = JSON.parse(savedVehicleDataString);
-          console.log('✅ Successfully parsed vehicleData:', parsed);
+          console.log('✅ Backup restoration successful:', parsed);
           setVehicleData(parsed);
         } catch (e) {
-          console.error('❌ Error parsing saved vehicleData:', e);
-          console.log('⚠️ Redirecting to step 1 due to parse error');
+          console.error('❌ Backup restoration failed:', e);
           handleStepChange(1);
         }
       } else {
-        console.log('⚠️ No saved data found, redirecting to step 1');
+        console.log('⚠️ No saved data, redirecting to step 1');
         handleStepChange(1);
       }
     }
-  }, [currentStep, isRestoringFromUrl]); // Removed vehicleData from dependencies to prevent loops
+  }, [currentStep, isRestoringFromUrl]); // Removed vehicleData from deps to prevent loops
   
 
   // Handle mobile back button navigation to keep users on the site
@@ -1001,25 +999,29 @@ const Index = () => {
       )}
 
       {currentStep === 2 && (
-        <div className="bg-[#e8f4fb] w-full px-4 py-2 sm:py-4">
-          <div className="max-w-4xl mx-auto">
-            {vehicleData ? (
-              <QuoteDeliveryStep 
-                vehicleData={vehicleData}
-                onNext={handleQuoteDeliveryComplete}
-                onBack={() => handleBackToStep(1)}
-                onSkip={() => handleStepChange(3)}
-              />
-            ) : (
-              <div className="min-h-[60vh] flex items-center justify-center bg-white rounded-lg shadow-md">
-                <div className="text-center p-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading your quote...</p>
+        <>
+          {console.log('🎨 Rendering Step 2, vehicleData:', vehicleData)}
+          <div className="bg-[#e8f4fb] w-full px-4 py-2 sm:py-4">
+            <div className="max-w-4xl mx-auto">
+              {vehicleData ? (
+                <QuoteDeliveryStep 
+                  vehicleData={vehicleData}
+                  onNext={handleQuoteDeliveryComplete}
+                  onBack={() => handleBackToStep(1)}
+                  onSkip={() => handleStepChange(3)}
+                />
+              ) : (
+                <div className="min-h-[60vh] flex items-center justify-center bg-white rounded-lg shadow-md">
+                  <div className="text-center p-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading your quote...</p>
+                    <p className="text-xs text-gray-400 mt-2">Restoring vehicle data...</p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       {currentStep === 3 && (
