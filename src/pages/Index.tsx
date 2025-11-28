@@ -591,32 +591,41 @@ const Index = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Track if we're restoring data to prevent premature redirects
+  const [isRestoringData, setIsRestoringData] = useState(false);
+  
   // Try to restore vehicleData from localStorage if missing on step 2+
   useEffect(() => {
     if (currentStep >= 2 && !vehicleData && !isNavigatingRef.current && !isRestoringFromUrl) {
       console.log('🔄 Attempting to restore vehicleData from localStorage');
+      setIsRestoringData(true);
+      
       const savedVehicleData = localStorage.getItem('buyawarranty_vehicleData');
       if (savedVehicleData) {
         try {
           const parsed = JSON.parse(savedVehicleData);
           console.log('✅ Restored vehicleData from localStorage:', parsed);
           setVehicleData(parsed);
-          return; // Exit early, don't redirect
+          // Wait for state to update before allowing redirects
+          setTimeout(() => setIsRestoringData(false), 100);
+          return;
         } catch (e) {
           console.error('❌ Error parsing saved vehicleData:', e);
         }
       }
+      setIsRestoringData(false);
     }
   }, [currentStep, vehicleData, isRestoringFromUrl]);
   
   // Redirect to step 1 if on step 2+ without vehicle data
-  // BUT: Don't redirect if we're still restoring from URL or navigating
+  // BUT: Don't redirect if we're still restoring from URL, navigating, or restoring data
   useEffect(() => {
     console.log('🔍 Redirect check useEffect running:', { 
       currentStep, 
       hasVehicleData: !!vehicleData, 
       isRestoringFromUrl,
       isNavigating: isNavigatingRef.current,
+      isRestoringData,
       vehicleDataKeys: vehicleData ? Object.keys(vehicleData) : 'null',
       timestamp: new Date().toISOString()
     });
@@ -633,13 +642,19 @@ const Index = () => {
       return;
     }
     
+    // Skip redirect check if we're restoring data from localStorage
+    if (isRestoringData) {
+      console.log('⏳ Skipping redirect check - restoring data from localStorage');
+      return;
+    }
+    
     if (currentStep >= 2 && !vehicleData) {
       console.log('⚠️ REDIRECTING: Accessing step', currentStep, 'without vehicle data, redirecting to step 1');
       handleStepChange(1);
     } else {
       console.log('✅ No redirect needed');
     }
-  }, [currentStep, vehicleData, isRestoringFromUrl]);
+  }, [currentStep, vehicleData, isRestoringFromUrl, isRestoringData]);
 
   // Handle mobile back button navigation to keep users on the site
   const { allowLeave, stay } = useMobileBackNavigation({
