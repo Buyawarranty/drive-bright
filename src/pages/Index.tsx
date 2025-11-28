@@ -591,15 +591,21 @@ const Index = () => {
   };
 
   // Try to restore vehicleData from localStorage if missing on step 2+
+  // Use a ref to prevent multiple restoration attempts
+  const hasAttemptedRestoration = useRef(false);
+  
   useEffect(() => {
-    if (currentStep >= 2 && !vehicleData && !isRestoringFromUrl) {
+    if (currentStep >= 2 && !vehicleData && !isRestoringFromUrl && !hasAttemptedRestoration.current) {
       console.log('🔄 Attempting to restore vehicleData from localStorage');
+      hasAttemptedRestoration.current = true;
       
       const savedVehicleDataString = getWithTimestamp('buyawarranty_vehicleData');
+      console.log('📦 Raw localStorage data:', savedVehicleDataString);
+      
       if (savedVehicleDataString) {
         try {
           const parsed = JSON.parse(savedVehicleDataString);
-          console.log('✅ Restored vehicleData from localStorage:', parsed);
+          console.log('✅ Parsed vehicleData:', parsed);
           setVehicleData(parsed);
           return;
         } catch (e) {
@@ -610,6 +616,11 @@ const Index = () => {
       // Only redirect if restoration failed
       console.log('⚠️ No vehicleData found, redirecting to step 1');
       handleStepChange(1);
+    }
+    
+    // Reset flag when we successfully have vehicle data or go back to step 1
+    if (vehicleData || currentStep === 1) {
+      hasAttemptedRestoration.current = false;
     }
   }, [currentStep, vehicleData, isRestoringFromUrl]);
   
@@ -1009,6 +1020,15 @@ const Index = () => {
                 onSkip={() => handleStepChange(3)}
               />
             </PerformanceOptimizedSuspense>
+          </div>
+        </div>
+      )}
+      
+      {currentStep === 2 && !vehicleData && (
+        <div className="min-h-screen flex items-center justify-center bg-[#e8f4fb]">
+          <div className="text-center p-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your quote...</p>
           </div>
         </div>
       )}
