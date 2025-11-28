@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback, useMemo, lazy } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, lazy, useRef } from 'react';
 import { flushSync } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -361,6 +361,7 @@ const Index = () => {
   
   const [currentStep, setCurrentStep] = useState(getStepFromUrl());
   const [showDiscountPopup, setShowDiscountPopup] = useState(false);
+  const isNavigatingRef = useRef(false); // Flag to prevent redirect during navigation
   
   const { restoreQuoteData } = useQuoteRestoration();
 
@@ -594,12 +595,19 @@ const Index = () => {
       currentStep, 
       hasVehicleData: !!vehicleData, 
       isRestoringFromUrl,
+      isNavigating: isNavigatingRef.current,
       vehicleDataKeys: vehicleData ? Object.keys(vehicleData) : 'null'
     });
     
     // Skip redirect check if we're still restoring from URL
     if (isRestoringFromUrl) {
       console.log('⏳ Skipping redirect check - restoring from URL');
+      return;
+    }
+    
+    // Skip redirect check if we're in the middle of a legitimate navigation
+    if (isNavigatingRef.current) {
+      console.log('⏳ Skipping redirect check - navigation in progress');
       return;
     }
     
@@ -777,6 +785,9 @@ const Index = () => {
   const handleHomepageRegistration = (vehicleData: VehicleData) => {
     console.log('Homepage registration submitted:', vehicleData);
     
+    // Set navigation flag to prevent redirect during this transition
+    isNavigatingRef.current = true;
+    
     // Use flushSync to ensure ALL state updates complete synchronously
     flushSync(() => {
       setVehicleData(vehicleData);
@@ -788,6 +799,11 @@ const Index = () => {
     updateStepInUrl(2);
     saveStateToLocalStorage(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Clear navigation flag after a short delay to allow React to commit
+    setTimeout(() => {
+      isNavigatingRef.current = false;
+    }, 100);
   };
 
   const handleBackToStep = (step: number) => {
