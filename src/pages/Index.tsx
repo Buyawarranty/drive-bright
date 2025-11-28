@@ -587,15 +587,16 @@ const Index = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Redirect to step 1 if accessing step 2+ without vehicle data
+  // Redirect to step 2+ without vehicle data
   // BUT: Don't redirect if we're still restoring from URL or navigating
   useEffect(() => {
-    console.log('🔍 Checking vehicle data:', { 
+    console.log('🔍 Redirect check useEffect running:', { 
       currentStep, 
       hasVehicleData: !!vehicleData, 
       isRestoringFromUrl,
       isNavigating: isNavigatingRef.current,
-      vehicleDataKeys: vehicleData ? Object.keys(vehicleData) : 'null'
+      vehicleDataKeys: vehicleData ? Object.keys(vehicleData) : 'null',
+      timestamp: new Date().toISOString()
     });
     
     // Skip redirect check if we're still restoring from URL
@@ -606,13 +607,15 @@ const Index = () => {
     
     // Skip redirect check if we're in the middle of navigation
     if (isNavigatingRef.current) {
-      console.log('⏳ Skipping redirect check - navigation in progress');
+      console.log('⏳ Skipping redirect check - navigation flag is TRUE');
       return;
     }
     
     if (currentStep >= 2 && !vehicleData) {
-      console.log('⚠️ Accessing step', currentStep, 'without vehicle data, redirecting to step 1');
+      console.log('⚠️ REDIRECTING: Accessing step', currentStep, 'without vehicle data, redirecting to step 1');
       handleStepChange(1);
+    } else {
+      console.log('✅ No redirect needed');
     }
   }, [currentStep, vehicleData, isRestoringFromUrl]);
 
@@ -784,24 +787,28 @@ const Index = () => {
   const handleHomepageRegistration = (vehicleData: VehicleData) => {
     console.log('🚀 handleHomepageRegistration called with:', vehicleData);
     console.log('📍 Current step before:', currentStep);
+    console.log('📍 Current vehicleData before:', vehicleData);
     
     // Set navigation flag to prevent redirect
     isNavigatingRef.current = true;
+    console.log('🚦 Navigation flag set to TRUE');
     
     setVehicleData(vehicleData);
     setFormData({ ...formData, ...vehicleData });
     setCurrentStep(2);
     
-    console.log('✅ State updates queued, updating URL...');
+    console.log('✅ State setters called (async), updating URL...');
     updateStepInUrl(2);
     saveStateToLocalStorage(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
-    // Clear navigation flag after a short delay
+    // Clear navigation flag after state updates should have completed
     setTimeout(() => {
       isNavigatingRef.current = false;
-      console.log('✅ Navigation flag cleared');
-    }, 100);
+      console.log('🚦 Navigation flag cleared to FALSE after timeout');
+      console.log('📍 Final currentStep:', currentStep);
+      console.log('📍 Final vehicleData:', vehicleData);
+    }, 200);
     
     console.log('✅ handleHomepageRegistration completed');
   };
