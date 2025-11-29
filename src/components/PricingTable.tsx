@@ -1106,26 +1106,24 @@ const PricingTable: React.FC<PricingTableProps> = ({
           
           <Collapsible>
             <CollapsibleTrigger className="w-full">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 cursor-pointer group">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-xl sm:text-2xl font-bold text-black">
-                      What's Covered?
-                    </h2>
-                    <button className="inline-flex items-center gap-1.5 sm:gap-2 bg-white border border-gray-200 rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2 shadow-sm hover:shadow transition-shadow">
-                      <span className="text-xs sm:text-sm font-medium text-blue-600">Learn more</span>
-                      <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 transition-transform duration-300 group-data-[state=open]:rotate-180" />
-                    </button>
-                  </div>
+              <div className="flex items-center justify-between gap-2 mb-4 cursor-pointer group">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-black flex-shrink-0" />
+                  <h2 className="text-lg sm:text-2xl font-bold text-black">
+                    What's Covered?
+                  </h2>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+                  <button className="inline-flex items-center gap-1 sm:gap-2 bg-white border border-gray-200 rounded-lg px-2 sm:px-4 py-1.5 sm:py-2 shadow-sm hover:shadow transition-shadow">
+                    <span className="text-xs sm:text-sm font-medium text-blue-600 whitespace-nowrap">Learn more</span>
+                    <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 transition-transform duration-300 group-data-[state=open]:rotate-180" />
+                  </button>
                   <TooltipProvider delayDuration={0}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-green-50 border border-green-300 rounded-md px-2.5 sm:px-3.5 py-1.5 sm:py-2 cursor-pointer">
-                          <span className="text-xs sm:text-sm font-semibold text-green-700">
-                            <span className="sm:hidden">⚡ Instant Cover</span>
+                        <div className="inline-flex items-center gap-1 sm:gap-2 bg-green-50 border border-green-300 rounded-md px-2 sm:px-3.5 py-1.5 sm:py-2 cursor-pointer">
+                          <span className="text-xs sm:text-sm font-semibold text-green-700 whitespace-nowrap">
+                            <span className="sm:hidden">⚡ Instant</span>
                             <span className="hidden sm:inline">⚡ Instant cover protection</span>
                           </span>
                         </div>
