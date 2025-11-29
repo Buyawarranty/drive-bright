@@ -12,10 +12,10 @@ const WarrantyBenefitsSection: React.FC = () => {
         {/* Section Header */}
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-2xl md:text-4xl font-bold text-brand-dark-text mb-4">
-            The UK's Complete Car Warranty
+            The UK's Complete <span className="text-brand-orange">Car Warranty</span>
           </h2>
           <p className="text-base md:text-lg text-gray-700 max-w-3xl mx-auto">
-            Drive Worry-Free: Superior Protection. Affordable Prices. Instant Cover
+            <span className="text-brand-deep-blue font-semibold">Drive Worry-Free:</span> Superior Protection. Affordable Prices. Instant Cover
           </p>
         </div>
 
