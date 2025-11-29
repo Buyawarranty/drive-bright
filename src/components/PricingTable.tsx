@@ -1762,8 +1762,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
           
           {/* Boost Add-On */}
-          {(selectedClaimLimit === 1250 || selectedClaimLimit === 2000) && (
-            <div className="mt-6 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border-2 border-green-200">
+          <div className="mt-6 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border-2 border-green-200">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
                   <div className={`w-6 h-6 rounded border-2 flex items-center justify-center cursor-pointer transition-all duration-200 ${
@@ -1798,7 +1797,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 </div>
               </div>
             </div>
-          )}
         </div>
 
 
