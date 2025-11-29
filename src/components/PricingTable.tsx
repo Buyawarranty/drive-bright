@@ -1609,6 +1609,72 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <ShieldCheck className="w-5 h-5" />
               Pick Your Plan
             </h2>
+            
+            <Dialog>
+              <DialogTrigger asChild>
+                <button className="ml-2 p-2 rounded-full hover:bg-blue-100 transition-colors">
+                  <Info className="w-5 h-5 text-blue-600" />
+                </button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2 text-xl">
+                    <ShieldCheck className="w-6 h-6 text-blue-600" />
+                    Understanding Your Claim Limit
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <p className="text-gray-700 leading-relaxed">
+                    <span className="font-semibold text-gray-900">What is a Claim Limit?</span> Your claim limit is the maximum amount we'll pay per claim for covered repairs. If your repair costs exceed your chosen limit, you'll need to pay the difference.
+                  </p>
+                  
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                      <Info className="w-5 h-5 text-blue-600" />
+                      How It Works - Examples:
+                    </h4>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <p className="font-medium text-gray-900 mb-1">Essential Protection (£750 limit):</p>
+                        <div className="ml-4 space-y-1 text-sm">
+                          <p className="text-gray-700">• Repair costs £600 → We cover £600 (100%)</p>
+                          <p className="text-gray-700">• Repair costs £950 → We cover £750, you pay £200</p>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <p className="font-medium text-gray-900 mb-1">Advanced Coverage (£1,250 limit):</p>
+                        <div className="ml-4 space-y-1 text-sm">
+                          <p className="text-gray-700">• Repair costs £1,100 → We cover £1,100 (100%)</p>
+                          <p className="text-gray-700">• Repair costs £1,400 → We cover £1,250, you pay £150</p>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <p className="font-medium text-gray-900 mb-1">Elite Protection (£2,000 limit):</p>
+                        <div className="ml-4 space-y-1 text-sm">
+                          <p className="text-gray-700">• Repair costs £1,850 → We cover £1,850 (100%)</p>
+                          <p className="text-gray-700">• Repair costs £2,200 → We cover £2,000, you pay £200</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <p className="text-gray-700 text-sm">
+                      <span className="font-semibold text-gray-900">💡 Pro Tip:</span> Choose a higher limit for greater peace of mind. Most major repairs fall within the £1,250-£2,000 range, making our Advanced and Elite plans the most popular choices for comprehensive protection.
+                    </p>
+                  </div>
+                  
+                  <div className="pt-2">
+                    <p className="text-gray-700 text-sm">
+                      Your excess amount and claim limits depend on the cover options you choose – there are no hidden fees. Just clear, reliable protection to help you manage unexpected repair bills with nationwide support and fast claims processing.
+                    </p>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
           
           {validationErrors.claimLimit && (
@@ -1623,13 +1689,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
           <p className="text-sm text-muted-foreground mb-6">
             Choose the coverage level that best suits your needs and budget
           </p>
-          
-          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-3">
-            <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-gray-700">
-              <span className="font-semibold">Claim Limit Info:</span> If your repair costs exceed your chosen limit, you'll need to pay the difference. Choose a higher limit for greater peace of mind.
-            </p>
-          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Essential */}
