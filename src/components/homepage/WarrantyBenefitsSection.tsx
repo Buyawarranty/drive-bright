@@ -16,79 +16,51 @@ const WarrantyBenefitsSection: React.FC = () => {
           </p>
         </div>
 
-        {/* Core Service & Repair Benefits */}
+        {/* What's Included in Your Cover */}
         <div className="mb-12 md:mb-16">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-brand-orange rounded-full flex items-center justify-center flex-shrink-0">
-              <Shield className="w-6 h-6 text-white" />
-            </div>
-            <h3 className="text-xl md:text-2xl font-bold text-brand-dark-text">
-              Core Service & Repair Benefits
-            </h3>
-          </div>
+          <h3 className="text-xl md:text-2xl font-bold text-brand-dark-text mb-6 text-center">
+            What's Included in Your Cover
+          </h3>
           
-          <div className="grid md:grid-cols-2 gap-4 md:gap-6">
-            <div className="flex items-start gap-3">
-              <Check className="w-6 h-6 text-green-500 mt-1 flex-shrink-0" />
-              <div>
-                <p className="text-sm md:text-base text-brand-dark-text">
-                  <strong className="text-brand-deep-blue">Full Mechanical & Electrical Cover</strong> – Protects major components and systems
-                </p>
-              </div>
+          <div className="grid md:grid-cols-2 gap-3 md:gap-4 max-w-4xl mx-auto">
+            <div className="flex items-center gap-3">
+              <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+              <p className="text-sm md:text-base text-brand-dark-text">Full Mechanical & Electrical Cover</p>
             </div>
             
-            <div className="flex items-start gap-3">
-              <Check className="w-6 h-6 text-green-500 mt-1 flex-shrink-0" />
-              <div>
-                <p className="text-sm md:text-base text-brand-dark-text">
-                  <strong className="text-brand-deep-blue">Labour & Diagnostics Included</strong> – No hidden costs
-                </p>
-              </div>
+            <div className="flex items-center gap-3">
+              <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+              <p className="text-sm md:text-base text-brand-dark-text">Labour & Diagnostics Included</p>
             </div>
             
-            <div className="flex items-start gap-3">
-              <Check className="w-6 h-6 text-green-500 mt-1 flex-shrink-0" />
-              <div>
-                <p className="text-sm md:text-base text-brand-dark-text">
-                  <strong className="text-brand-deep-blue">Generous Repair Limits</strong> – High coverage for expensive repairs
-                </p>
-              </div>
+            <div className="flex items-center gap-3">
+              <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+              <p className="text-sm md:text-base text-brand-dark-text">Generous Repair Limits</p>
             </div>
             
-            <div className="flex items-start gap-3">
-              <Check className="w-6 h-6 text-green-500 mt-1 flex-shrink-0" />
-              <div>
-                <p className="text-sm md:text-base text-brand-dark-text">
-                  <strong className="text-brand-deep-blue">Wear & Tear Protection</strong> – Covers age-related issues
-                </p>
-              </div>
+            <div className="flex items-center gap-3">
+              <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+              <p className="text-sm md:text-base text-brand-dark-text">Wear & Tear Protection</p>
             </div>
             
-            <div className="flex items-start gap-3">
-              <Check className="w-6 h-6 text-green-500 mt-1 flex-shrink-0" />
-              <div>
-                <p className="text-sm md:text-base text-brand-dark-text">
-                  <strong className="text-brand-deep-blue">Consequential Damage Cover</strong> – Extra security for related failures
-                </p>
-              </div>
+            <div className="flex items-center gap-3">
+              <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+              <p className="text-sm md:text-base text-brand-dark-text">Consequential Damage Cover</p>
             </div>
             
-            <div className="flex items-start gap-3">
-              <Check className="w-6 h-6 text-green-500 mt-1 flex-shrink-0" />
-              <div>
-                <p className="text-sm md:text-base text-brand-dark-text">
-                  <strong className="text-brand-deep-blue">MOT Fee Cover</strong> – Save on annual checks
-                </p>
-              </div>
+            <div className="flex items-center gap-3">
+              <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+              <p className="text-sm md:text-base text-brand-dark-text">MOT Fee Cover</p>
             </div>
             
-            <div className="flex items-start gap-3">
-              <Check className="w-6 h-6 text-green-500 mt-1 flex-shrink-0" />
-              <div>
-                <p className="text-sm md:text-base text-brand-dark-text">
-                  <strong className="text-brand-deep-blue">Breakdown Recovery</strong> – Assistance when you need it most
-                </p>
-              </div>
+            <div className="flex items-center gap-3">
+              <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+              <p className="text-sm md:text-base text-brand-dark-text">Breakdown Recovery</p>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+              <p className="text-sm md:text-base text-brand-dark-text">Vehicle Rental</p>
             </div>
           </div>
         </div>
