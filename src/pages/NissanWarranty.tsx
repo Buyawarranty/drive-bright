@@ -468,10 +468,10 @@ const NissanWarranty = () => {
           href="https://wa.me/message/SPQPJ6O3UBF5B1"
           target="_blank"
           rel="noopener noreferrer"
-          className="fixed bottom-20 right-4 z-40 bg-[#25D366] rounded-full p-3 shadow-lg hover:shadow-xl transition-all hover:scale-110"
+          className="fixed bottom-20 right-4 z-40 bg-[#25D366] rounded-full p-1 shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center"
           aria-label="Contact us on WhatsApp"
         >
-          <img src={whatsappIconNew} alt="WhatsApp" className="w-10 h-10" />
+          <img src={whatsappIconNew} alt="WhatsApp" className="w-12 h-12" />
         </a>
       )}
 
