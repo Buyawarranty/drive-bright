@@ -2228,32 +2228,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <CollapsibleContent className="pt-4 pl-7">
                 <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
                   <p className="text-gray-700 text-base leading-relaxed mb-4">
-                    Clear, straightforward terms designed to protect you and give you peace of mind.
-                  </p>
-                  {termsDocUrl ? (
-                    <a 
-                      href={termsDocUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 font-medium text-base underline"
-                    >
-                      View Full Terms and Conditions
-                    </a>
-                  ) : (
-                    <span className="text-gray-400 font-medium text-base">Loading PDF...</span>
-                  )}
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-
-            <Collapsible>
-              <CollapsibleTrigger className="flex items-center gap-3 w-full text-left text-orange-500 hover:text-orange-600 font-semibold py-3 transition-colors text-lg group">
-                <ChevronDown className="w-5 h-5 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                <span>Terms & Conditions</span>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pt-4 pl-7">
-                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                  <p className="text-gray-700 text-base leading-relaxed mb-4">
                     The Platinum Plan provides comprehensive coverage for your vehicle and complete peace of mind. Key features include:
                   </p>
                   <ul className="text-gray-700 text-base space-y-2 mb-4">
@@ -2271,6 +2245,32 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       className="text-blue-600 hover:text-blue-800 font-medium text-base underline"
                     >
                       View Full Platinum Plan Details
+                    </a>
+                  ) : (
+                    <span className="text-gray-400 font-medium text-base">Loading PDF...</span>
+                  )}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+
+            <Collapsible>
+              <CollapsibleTrigger className="flex items-center gap-3 w-full text-left text-orange-500 hover:text-orange-600 font-semibold py-3 transition-colors text-lg group">
+                <ChevronDown className="w-5 h-5 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                <span>Terms & Conditions</span>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-4 pl-7">
+                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                  <p className="text-gray-700 text-base leading-relaxed mb-4">
+                    Clear, straightforward terms designed to protect you and give you peace of mind.
+                  </p>
+                  {termsDocUrl ? (
+                    <a 
+                      href={termsDocUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 font-medium text-base underline"
+                    >
+                      View Full Terms and Conditions
                     </a>
                   ) : (
                     <span className="text-gray-400 font-medium text-base">Loading PDF...</span>
