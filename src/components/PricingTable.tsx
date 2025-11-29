@@ -1147,7 +1147,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <span>Cars (Petrol, Diesel, Hybrid, EV)</span>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="mt-4 p-6 bg-gray-50 rounded-lg">
+                <div className="mt-4 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
                   <div className="grid md:grid-cols-2 gap-6">
                     <ul className="space-y-1.5">
                       <li className="flex items-start gap-2">
@@ -1243,7 +1243,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <span>Hybrid Vehicles</span>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="mt-4 p-6 bg-gray-50 rounded-lg">
+                <div className="mt-4 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
                   <div className="flex items-center gap-2 mb-4">
                     <ShieldCheck className="w-5 h-5 text-black flex-shrink-0" />
                     <p className="text-black font-medium">
@@ -1309,7 +1309,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <span>Electric Vehicles (EVs)</span>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="mt-4 p-6 bg-gray-50 rounded-lg">
+                <div className="mt-4 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
                   <div className="flex items-center gap-2 mb-4">
                     <ShieldCheck className="w-5 h-5 text-black flex-shrink-0" />
                     <p className="text-black font-medium">
@@ -1383,7 +1383,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <span>Motorcycles (Petrol, Hybrid, EV)</span>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="mt-4 p-6 bg-gray-50 rounded-lg">
+                <div className="mt-4 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
                   <div className="grid md:grid-cols-2 gap-6">
                     <ul className="space-y-1.5">
                       <li className="flex items-start gap-2">
@@ -1621,9 +1621,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Essential */}
             <div 
-              className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer ${
+              className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
                 selectedClaimLimit === 750
-                  ? 'bg-gray-50 border-2 border-gray-400 shadow-lg shadow-gray-400/30'
+                  ? 'border-2 border-gray-400 shadow-lg shadow-gray-400/30'
                   : 'border-2 border-gray-200 hover:border-gray-300 hover:shadow-md'
               }`}
               onClick={() => {
@@ -1682,9 +1682,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
             
             {/* Advanced */}
             <div 
-              className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer ${
+              className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
                 selectedClaimLimit === 1250
-                  ? 'bg-orange-500/10 border-2 border-orange-500 shadow-lg shadow-orange-500/30'
+                  ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30'
                   : 'border-2 border-orange-200 hover:border-orange-300 hover:shadow-md'
               }`}
               onClick={() => {
@@ -1746,9 +1746,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
             
             {/* Elite */}
             <div 
-              className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer ${
+              className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
                 selectedClaimLimit === 2000
-                  ? 'bg-blue-50 border-2 border-blue-600 shadow-lg shadow-blue-600/30'
+                  ? 'border-2 border-blue-600 shadow-lg shadow-blue-600/30'
                   : 'border-2 border-blue-200 hover:border-blue-300 hover:shadow-md'
               }`}
               onClick={() => {
@@ -1933,12 +1933,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
               return (
                 <div
                   key={option.id}
-                  className={`relative p-6 rounded-lg transition-all duration-200 text-left w-full border-2 flex flex-col cursor-pointer ${
+                  className={`relative p-6 rounded-lg transition-all duration-200 text-left w-full border-2 flex flex-col cursor-pointer bg-white ${
                     option.id === '12months' ? 'h-auto' : 'h-full'
                   } ${
                     paymentType === option.id 
-                      ? 'border-orange-500 bg-orange-50 shadow-lg' 
-                      : 'border-gray-200 bg-white hover:border-orange-300'
+                      ? 'border-orange-500 shadow-lg shadow-orange-500/30' 
+                      : 'border-gray-200 hover:border-orange-300'
                   }`}
                   onClick={() => setPaymentType(option.id as '12months' | '24months' | '36months')}
                  >
@@ -2226,7 +2226,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <span>What's Included</span>
               </CollapsibleTrigger>
               <CollapsibleContent className="pt-4 pl-7">
-                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
                   <p className="text-gray-700 text-base leading-relaxed mb-4">
                     The Platinum Plan provides comprehensive coverage for your vehicle and complete peace of mind. Key features include:
                   </p>
@@ -2259,7 +2259,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <span>Terms & Conditions</span>
               </CollapsibleTrigger>
               <CollapsibleContent className="pt-4 pl-7">
-                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
                   <p className="text-gray-700 text-base leading-relaxed mb-4">
                     Clear, straightforward terms designed to protect you and give you peace of mind.
                   </p>
@@ -2399,7 +2399,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </p>
             
             {selectedPlanForEmail && (
-              <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+              <div className="bg-white rounded-lg p-4 space-y-2 border border-gray-200 shadow-sm">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Plan:</span>
                   <span className="font-medium">Platinum Complete</span>
