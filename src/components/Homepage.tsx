@@ -776,7 +776,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
               </div>
               
               <p className="text-base md:text-lg text-brand-dark-text leading-relaxed">
-                Once you're covered, drive with complete peace of mind. If something 
+                Once you have your used car warranty or extended car warranty, drive with complete peace of mind. If something 
                 goes wrong, simply call our claims team and we'll take care of everything.
                 <br />
                 We want to get you back on the road as soon as possible.
