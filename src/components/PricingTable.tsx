@@ -1710,8 +1710,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 setValidationErrors(prev => ({ ...prev, claimLimit: false }));
               }}
             >
-              <h4 className="text-xl font-bold text-gray-900 mb-1">AutoCare Essential</h4>
-              <div className="text-3xl font-bold text-gray-900 mb-2">£750 per claim</div>
+              <h4 className="text-xl font-bold text-black mb-1">AutoCare Essential</h4>
+              <div className="text-3xl font-bold text-black mb-2">£750 per claim</div>
               <p className="text-sm text-gray-600">Confidence for the everyday drive.</p>
             </div>
             
@@ -1730,8 +1730,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <div className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
                 MOST POPULAR
               </div>
-              <h4 className="text-xl font-bold text-orange-900 mb-1">AutoCare Advantage</h4>
-              <div className="text-3xl font-bold text-orange-600 mb-2">
+              <h4 className="text-xl font-bold text-black mb-1">AutoCare Advantage</h4>
+              <div className="text-3xl font-bold text-black mb-2">
                 £{selectedClaimLimit === 1250 && boostAddon ? '2,250' : '1,250'} per claim
               </div>
               <p className="text-sm text-gray-600">Balanced protection for life's bigger bumps.</p>
@@ -1753,8 +1753,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <Crown className="w-3 h-3" />
                 BEST PROTECTION
               </div>
-              <h4 className="text-xl font-bold text-blue-900 mb-1">AutoCare Elite</h4>
-              <div className="text-3xl font-bold text-blue-600 mb-2">
+              <h4 className="text-xl font-bold text-black mb-1">AutoCare Elite</h4>
+              <div className="text-3xl font-bold text-black mb-2">
                 £{selectedClaimLimit === 2000 && boostAddon ? '3,000' : '2,000'} per claim
               </div>
               <p className="text-sm text-gray-600">Top-tier cover for total peace of mind.</p>
