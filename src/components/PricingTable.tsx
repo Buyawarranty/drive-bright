@@ -1484,7 +1484,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         </div>
 
         {/* Labour Rate Selection - NEW */}
-        <div className="section-header rounded-lg p-6">
+        <div className="bg-gray-50 rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold">
               2
@@ -1502,9 +1502,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ml-11">
             <button
               onClick={() => setSelectedLabourRate(40)}
-              className={`p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+              className={`bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
                 selectedLabourRate === 40
-                  ? 'border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/30'
+                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
                   : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
               }`}
             >
@@ -1512,15 +1512,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <span className="text-2xl font-bold text-foreground">£40/hr</span>
                 <Badge variant="secondary" className="bg-gray-200 text-gray-700">Cheapest</Badge>
               </div>
-              <p className="text-sm text-muted-foreground font-medium">Independent Garages</p>
+              <p className="text-sm text-gray-900 font-medium">Independent Garages</p>
               <p className="text-xs text-muted-foreground mt-1">Ideal for independent garages and basic repairs.</p>
             </button>
             
             <button
               onClick={() => setSelectedLabourRate(70)}
-              className={`p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+              className={`bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
                 selectedLabourRate === 70
-                  ? 'border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/30'
+                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
                   : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
               }`}
             >
@@ -1528,15 +1528,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <span className="text-2xl font-bold text-foreground">£70/hr</span>
                 <Badge className="bg-orange-500 text-white">Recommended</Badge>
               </div>
-              <p className="text-sm text-muted-foreground font-medium">Most Garages</p>
+              <p className="text-sm text-gray-900 font-medium">Most Garages</p>
               <p className="text-xs text-muted-foreground mt-1">Covers most reputable garages.</p>
             </button>
             
             <button
               onClick={() => setSelectedLabourRate(100)}
-              className={`p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+              className={`bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
                 selectedLabourRate === 100
-                  ? 'border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/30'
+                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
                   : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
               }`}
             >
@@ -1544,7 +1544,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <span className="text-2xl font-bold text-foreground">£100/hr</span>
                 <Badge className="bg-blue-600 text-white">Premium Cover</Badge>
               </div>
-              <p className="text-sm text-muted-foreground font-medium">Dealer Ready</p>
+              <p className="text-sm text-gray-900 font-medium">Dealer Ready</p>
               <p className="text-xs text-muted-foreground mt-1">Perfect for main dealers and specialists.</p>
             </button>
           </div>
