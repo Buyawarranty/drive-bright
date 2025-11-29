@@ -99,14 +99,14 @@ const WarrantyBenefitsSection: React.FC = () => {
         </div>
 
         {/* CTA Buttons */}
-        <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <div className="mt-10 flex flex-col sm:flex-row gap-6 justify-center items-center">
           <a
             href="https://buyawarranty.co.uk/what-is-covered/"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-brand-deep-blue hover:bg-blue-800 text-white font-bold px-8 py-4 text-base md:text-lg rounded-lg shadow-lg transition-all animate-[breathing_3s_ease-in-out_infinite]"
           >
-            See Whats Covered
+            What's covered
             <ExternalLink className="w-5 h-5" />
           </a>
           
