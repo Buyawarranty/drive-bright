@@ -1947,14 +1947,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
                      {/* Top-right savings tags */}
                      <div className="absolute top-4 right-4 flex gap-2">
                        {option.id === '24months' && (
-                         <span className="bg-gradient-to-r from-red-600 to-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg shadow-red-500/50">
-                           Save £100 Today
-                         </span>
+                          <span className="bg-gray-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                            Save £100
+                          </span>
                        )}
                        {option.id === '36months' && (
-                         <span className="bg-gradient-to-r from-red-600 to-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg shadow-red-500/50">
-                           Save £200 Today
-                         </span>
+                          <span className="bg-gray-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                            Save £200
+                          </span>
                        )}
                      </div>
 
@@ -2006,9 +2006,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                    
                       {/* Pricing */}
                      <div className="mb-4 text-center mt-auto">
-                        <div className="text-4xl font-bold text-gray-800 mb-3">
-                          £{displayedMonthlyPrice}/month
-                        </div>
+                         <div className="text-4xl font-bold text-green-600 mb-3">
+                           £{displayedMonthlyPrice}/month
+                         </div>
                        <div className="text-base text-gray-700 mb-4 space-y-1">
                           {option.id === '12months' && (
                             <div className="flex items-center justify-center gap-2">
@@ -2043,20 +2043,20 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         </div>
                        <div className="text-center">
                          {option.id === '12months' ? (
-                           <div className="text-center">
-                             <div className="text-5xl font-extrabold text-green-600 mb-2">£{discountedPrice}</div>
-                             <div className="text-base text-gray-600">Total annual cost</div>
-                           </div>
+                            <div className="text-center">
+                              <div className="text-4xl font-bold text-black mb-2">£{discountedPrice}</div>
+                              <div className="text-base text-gray-600">Total annual cost</div>
+                            </div>
                          ) : (
-                           <div className="text-center">
-                             <div className="text-base text-gray-600 mb-1">
-                               Was <span className="line-through text-gray-500 font-semibold">£{planAdjustedBasePrice}</span> →
-                             </div>
-                             <div className="text-5xl font-extrabold text-green-600 mb-2">£{discountedPrice}</div>
-                             <div className="inline-block bg-red-600 text-white px-4 py-1.5 rounded-full text-sm font-bold">
-                               Save £{planAdjustedBasePrice - discountedPrice}
-                             </div>
-                           </div>
+                            <div className="text-center">
+                              <div className="text-base text-gray-600 mb-1">
+                                Was <span className="line-through text-gray-500 font-semibold">£{planAdjustedBasePrice}</span> →
+                              </div>
+                              <div className="text-4xl font-bold text-black mb-2">£{discountedPrice}</div>
+                              <div className="inline-block bg-gray-600 text-white px-4 py-1.5 rounded-full text-sm font-bold">
+                                Save £{planAdjustedBasePrice - discountedPrice}
+                              </div>
+                            </div>
                          )}
                        </div>
                    </div>
