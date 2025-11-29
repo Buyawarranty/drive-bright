@@ -18,6 +18,7 @@ import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 const HomepageFAQ = lazy(() => import('./HomepageFAQ'));
 const VideoSection = lazy(() => import('./homepage/VideoSection'));
 const AdditionalCoverSection = lazy(() => import('./homepage/AdditionalCoverSection'));
+const WarrantyBenefitsSection = lazy(() => import('./homepage/WarrantyBenefitsSection'));
 
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -604,6 +605,13 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
           
         </div>
       </section>
+
+      {/* Why Choose Our Warranty Plans Section - Lazy Loaded */}
+      <LazySection>
+        <Suspense fallback={<div className="py-12 md:py-20 bg-white min-h-[400px]" />}>
+          <WarrantyBenefitsSection />
+        </Suspense>
+      </LazySection>
 
       {/* Extended Warranty Video Section - Lazy Loaded */}
       <LazySection>
