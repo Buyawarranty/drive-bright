@@ -1607,13 +1607,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
             <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
               <ShieldCheck className="w-5 h-5" />
-              Pick Your Plan
+              Pick Your Claim Limit
             </h2>
             
             <Dialog>
               <DialogTrigger asChild>
-                <button className="ml-2 p-2 rounded-full hover:bg-blue-100 transition-colors">
-                  <Info className="w-5 h-5 text-blue-600" />
+                <button className="ml-2 flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors border border-blue-200">
+                  <Info className="w-6 h-6 text-blue-600 flex-shrink-0" />
+                  <span className="text-sm font-medium text-blue-600">What is a Claim Limit?</span>
                 </button>
               </DialogTrigger>
               <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" hideCloseButton>
@@ -1642,26 +1643,65 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     
                     <div className="space-y-4">
                       <div>
-                        <p className="font-medium text-gray-900 mb-1">Essential Protection (£750 limit):</p>
-                        <div className="ml-4 space-y-1 text-sm">
-                          <p className="text-gray-700">• Repair costs £600 → We cover £600 (100%)</p>
-                          <p className="text-gray-700">• Repair costs £950 → We cover £750, you pay £200</p>
+                        <p className="font-medium text-gray-900 mb-2">Essential Protection (£750 limit):</p>
+                        <div className="ml-4 space-y-2 text-sm">
+                          <div className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="font-medium text-foreground">If your repair costs £750 or less:</p>
+                              <p className="text-muted-foreground">We'll cover the full cost of parts and labour, within the limits of your warranty plan.</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="font-medium text-foreground">If your repair costs more than £750:</p>
+                              <p className="text-muted-foreground">You'll simply pay the difference. For example, if the total is £950, we'll cover £750 and you'll only pay £200.</p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                       
                       <div>
-                        <p className="font-medium text-gray-900 mb-1">Advanced Coverage (£1,250 limit):</p>
-                        <div className="ml-4 space-y-1 text-sm">
-                          <p className="text-gray-700">• Repair costs £1,100 → We cover £1,100 (100%)</p>
-                          <p className="text-gray-700">• Repair costs £1,400 → We cover £1,250, you pay £150</p>
+                        <p className="font-medium text-gray-900 mb-2">Advanced Coverage (£1,250 limit):</p>
+                        <div className="ml-4 space-y-2 text-sm">
+                          <div className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="font-medium text-foreground">If your repair costs £1,250 or less:</p>
+                              <p className="text-muted-foreground">We'll cover the full cost of parts and labour, within the limits of your warranty plan.</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="font-medium text-foreground">If your repair costs more than £1,250:</p>
+                              <p className="text-muted-foreground">You'll simply pay the difference. For example, if the total is £1,400, we'll cover £1,250 and you'll only pay £150.</p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                       
                       <div>
-                        <p className="font-medium text-gray-900 mb-1">Elite Protection (£2,000 limit):</p>
-                        <div className="ml-4 space-y-1 text-sm">
-                          <p className="text-gray-700">• Repair costs £1,850 → We cover £1,850 (100%)</p>
-                          <p className="text-gray-700">• Repair costs £2,200 → We cover £2,000, you pay £200</p>
+                        <p className="font-medium text-gray-900 mb-2">Elite Protection (£2,000 limit):</p>
+                        <div className="ml-4 space-y-2 text-sm">
+                          <div className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="font-medium text-foreground">If your repair costs £2,000 or less:</p>
+                              <p className="text-muted-foreground">We'll cover the full cost of parts and labour, within the limits of your warranty plan.</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="font-medium text-foreground">If your repair costs more than £2,000:</p>
+                              <p className="text-muted-foreground">You'll simply pay the difference. For example, if the total is £2,200, we'll cover £2,000 and you'll only pay £200.</p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1673,9 +1713,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </p>
                   </div>
                   
-                  <div className="pt-2">
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                     <p className="text-gray-700 text-sm">
-                      Your excess amount and claim limits depend on the cover options you choose – there are no hidden fees. Just clear, reliable protection to help you manage unexpected repair bills with nationwide support and fast claims processing.
+                      Your excess amount and claim limits depend on the cover options you choose – there are no hidden fees. Just clear, reliable protection to help you manage unexpected repair bills.
+                    </p>
+                  </div>
+                  
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-gray-700 text-sm">
+                      Plus, with nationwide support and fast claims processing, we'll get you back on the road quickly and with confidence.
                     </p>
                   </div>
                 </div>
@@ -1713,51 +1759,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <h4 className="text-xl font-bold text-gray-900 mb-1">Essential Protection</h4>
               <div className="text-3xl font-bold text-gray-900 mb-2">£750</div>
               <p className="text-sm font-semibold text-gray-700 mb-1">Smart Start Coverage</p>
-              <p className="text-xs text-gray-600 mb-4">Budget-friendly cover for essential mechanical and electrical components</p>
-              
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="essential-details" className="border-none">
-                  <AccordionTrigger 
-                    className="text-sm text-primary hover:text-primary/80 py-2 px-0 hover:no-underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Read more
-                  </AccordionTrigger>
-                  <AccordionContent className="pt-4 pb-2">
-                    <div className="space-y-3 text-sm">
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-medium text-foreground">If your repair costs £750 or less:</p>
-                          <p className="text-muted-foreground">We'll cover the full cost of parts and labour, within the limits of your warranty plan.</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-medium text-foreground">If your repair costs more than £750:</p>
-                          <p className="text-muted-foreground">You'll simply pay the difference. For example, if the total is £950, we'll cover £750 and you'll only pay £200.</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="text-muted-foreground">Your excess and limits depends on the cover options you choose – and there are no hidden fees. Just clear, reliable protection to help you manage unexpected repair bills.</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="text-muted-foreground">Plus, with nationwide support and fast claims processing, we'll get you back on the road quickly and with confidence.</p>
-                        </div>
-                      </div>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+              <p className="text-xs text-gray-600">Budget-friendly cover for essential mechanical and electrical components</p>
             </div>
             
             {/* Advanced */}
@@ -1780,51 +1782,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 £{selectedClaimLimit === 1250 && boostAddon ? '2,250' : '1,250'}
               </div>
               <p className="text-sm font-semibold text-orange-700 mb-1">Enhanced Peace of Mind</p>
-              <p className="text-xs text-gray-600 mb-4">Comprehensive protection for major repairs and unexpected breakdowns</p>
-              
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="advantage-details" className="border-none">
-                  <AccordionTrigger 
-                    className="text-sm text-primary hover:text-primary/80 py-2 px-0 hover:no-underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Read more
-                  </AccordionTrigger>
-                  <AccordionContent className="pt-4 pb-2">
-                    <div className="space-y-3 text-sm">
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-medium text-foreground">If your repair costs £1,250 or less:</p>
-                          <p className="text-muted-foreground">We'll cover the full cost of parts and labour, within the limits of your warranty plan.</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-medium text-foreground">If your repair costs more than £1,250:</p>
-                          <p className="text-muted-foreground">You'll simply pay the difference. For example, if the total is £1,400, we'll cover £1,250 and you'll only pay £150.</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="text-muted-foreground">Your excess and limits depends on the cover options you choose – and there are no hidden fees. Just clear, reliable protection to help you manage unexpected repair bills.</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="text-muted-foreground">Plus, with nationwide support and fast claims processing, we'll get you back on the road quickly and with confidence.</p>
-                        </div>
-                      </div>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+              <p className="text-xs text-gray-600">Comprehensive protection for major repairs and unexpected breakdowns</p>
             </div>
             
             {/* Elite */}
@@ -1848,51 +1806,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 £{selectedClaimLimit === 2000 && boostAddon ? '3,000' : '2,000'}
               </div>
               <p className="text-sm font-semibold text-blue-700 mb-1">Premium Complete Care</p>
-              <p className="text-xs text-gray-600 mb-4">Maximum coverage for high-value repairs and ultimate worry-free motoring</p>
-              
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="elite-details" className="border-none">
-                  <AccordionTrigger 
-                    className="text-sm text-primary hover:text-primary/80 py-2 px-0 hover:no-underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Read more
-                  </AccordionTrigger>
-                  <AccordionContent className="pt-4 pb-2">
-                    <div className="space-y-3 text-sm">
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-medium text-foreground">If your repair costs £2,000 or less:</p>
-                          <p className="text-muted-foreground">We'll cover the full cost of parts and labour, within the limits of your warranty plan.</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="font-medium text-foreground">If your repair costs more than £2,000:</p>
-                          <p className="text-muted-foreground">You'll simply pay the difference. For example, if the total is £2,200, we'll cover £2,000 and you'll only pay £200.</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="text-muted-foreground">Your excess and limits depends on the cover options you choose – and there are no hidden fees. Just clear, reliable protection to help you manage unexpected repair bills.</p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="text-muted-foreground">Plus, with nationwide support and fast claims processing, we'll get you back on the road quickly and with confidence.</p>
-                        </div>
-                      </div>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+              <p className="text-xs text-gray-600">Maximum coverage for high-value repairs and ultimate worry-free motoring</p>
             </div>
           </div>
           
