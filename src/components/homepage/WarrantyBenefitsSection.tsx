@@ -16,7 +16,7 @@ const WarrantyBenefitsSection: React.FC = () => {
         </div>
 
         {/* What's Included in Your Cover */}
-        <div className="mb-12 md:mb-16">
+        <div className="mb-8">
           <h3 className="text-xl md:text-2xl font-bold text-brand-dark-text mb-6 text-center">
             What's Included in Your Cover
           </h3>
@@ -64,51 +64,57 @@ const WarrantyBenefitsSection: React.FC = () => {
           </div>
         </div>
 
-        {/* Comprehensive Component Coverage */}
-        <div className="bg-gradient-to-r from-blue-50 to-orange-50 rounded-2xl p-8 md:p-12">
-          <p className="text-base md:text-lg text-gray-700 mb-6 font-medium">
+        {/* Your warranty covers everything that matters */}
+        <div className="mb-8">
+          <p className="text-base md:text-lg text-gray-700 mb-6 font-medium text-center">
             Your warranty covers everything that matters:
           </p>
-
-          <div className="space-y-3">
-            <p className="text-sm md:text-base text-brand-dark-text">
-              <strong>Engine, Gearbox, Clutch, Drivetrain & Turbo</strong>
-            </p>
+          
+          <div className="grid md:grid-cols-2 gap-3 md:gap-4 max-w-4xl mx-auto">
+            <div className="flex items-center gap-3">
+              <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+              <p className="text-sm md:text-base text-brand-dark-text">Engine, Gearbox, Clutch, Drivetrain & Turbo</p>
+            </div>
             
-            <p className="text-sm md:text-base text-brand-dark-text">
-              <strong>Brakes, Steering, Suspension, Fuel, Cooling & Emissions</strong>
-            </p>
+            <div className="flex items-center gap-3">
+              <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+              <p className="text-sm md:text-base text-brand-dark-text">Brakes, Steering, Suspension, Fuel, Cooling & Emissions</p>
+            </div>
             
-            <p className="text-sm md:text-base text-brand-dark-text">
-              <strong>Modern Tech & Safety – Sensors, Airbags, Multimedia, Cameras</strong>
-            </p>
+            <div className="flex items-center gap-3">
+              <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+              <p className="text-sm md:text-base text-brand-dark-text">Modern Tech & Safety – Sensors, Airbags, Multimedia, Cameras</p>
+            </div>
             
-            <p className="text-sm md:text-base text-brand-dark-text">
-              <strong>Electrical Systems – ECUs, Wiring, Lighting, Charging</strong>
-            </p>
+            <div className="flex items-center gap-3">
+              <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+              <p className="text-sm md:text-base text-brand-dark-text">Electrical Systems – ECUs, Wiring, Lighting, Charging</p>
+            </div>
             
-            <p className="text-sm md:text-base text-brand-dark-text">
-              <strong>Hybrid & EV Components – Motors, Batteries, Inverters, Charging Units</strong>
-            </p>
+            <div className="flex items-center gap-3">
+              <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+              <p className="text-sm md:text-base text-brand-dark-text">Hybrid & EV Components – Motors, Batteries, Inverters, Charging Units</p>
+            </div>
             
-            <p className="text-sm md:text-base text-brand-dark-text font-semibold mt-4">
-              And so much more….
-            </p>
+            <div className="flex items-center gap-3 md:col-span-2">
+              <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+              <p className="text-sm md:text-base text-brand-dark-text font-semibold">And so much more….</p>
+            </div>
           </div>
+        </div>
 
-          {/* CTA Button */}
-          <div className="mt-10 text-center">
-            <a
-              href="https://buyawarranty.co.uk/what-is-covered/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-brand-deep-blue hover:bg-blue-800 text-white font-bold px-8 py-4 text-base md:text-lg rounded-lg shadow-lg transition-colors"
-            >
-              <Check className="w-5 h-5" />
-              View Complete Coverage
-              <ExternalLink className="w-5 h-5" />
-            </a>
-          </div>
+        {/* CTA Button */}
+        <div className="mt-10 text-center">
+          <a
+            href="https://buyawarranty.co.uk/what-is-covered/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-brand-deep-blue hover:bg-blue-800 text-white font-bold px-8 py-4 text-base md:text-lg rounded-lg shadow-lg transition-colors"
+          >
+            <Check className="w-5 h-5" />
+            View Complete Coverage
+            <ExternalLink className="w-5 h-5" />
+          </a>
         </div>
       </div>
     </section>
