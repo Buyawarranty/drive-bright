@@ -104,16 +104,15 @@ const WarrantyBenefitsSection: React.FC = () => {
             href="https://buyawarranty.co.uk/what-is-covered/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-brand-deep-blue hover:bg-blue-800 text-white font-bold px-8 py-4 text-base md:text-lg rounded-lg shadow-lg transition-colors"
+            className="inline-flex items-center gap-2 bg-brand-deep-blue hover:bg-blue-800 text-white font-bold px-8 py-4 text-base md:text-lg rounded-lg shadow-lg transition-colors animate-pulse"
           >
-            <Check className="w-5 h-5" />
             See Whats Covered
             <ExternalLink className="w-5 h-5" />
           </a>
           
           <button
             onClick={scrollToTop}
-            className="inline-flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-bold px-8 py-4 text-base md:text-lg rounded-lg shadow-lg transition-colors"
+            className="inline-flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-bold px-8 py-4 text-base md:text-lg rounded-lg shadow-lg transition-colors animate-pulse"
           >
             <ArrowUp className="w-5 h-5" />
             Get my quote
