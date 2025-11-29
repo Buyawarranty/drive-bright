@@ -1513,7 +1513,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <Badge variant="secondary" className="bg-gray-200 text-gray-700">Cheapest</Badge>
               </div>
               <p className="text-sm text-gray-900 font-medium">Independent Garages</p>
-              <p className="text-xs text-muted-foreground mt-1">Ideal for independent garages and basic repairs.</p>
+              <p className="text-xs text-muted-foreground mt-1">Ideal for independent garages</p>
             </button>
             
             <button
