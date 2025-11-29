@@ -1645,9 +1645,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 setValidationErrors(prev => ({ ...prev, claimLimit: false }));
               }}
             >
-              <h4 className="text-xl font-bold text-gray-900 mb-2">Essential</h4>
+              <h4 className="text-xl font-bold text-gray-900 mb-1">Essential Protection</h4>
               <div className="text-3xl font-bold text-gray-900 mb-2">£750</div>
-              <p className="text-sm text-gray-600 mb-4">Affordable, key components</p>
+              <p className="text-sm font-semibold text-gray-700 mb-1">Smart Start Coverage</p>
+              <p className="text-xs text-gray-600 mb-4">Budget-friendly cover for essential mechanical and electrical components</p>
               
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="essential-details" className="border-none">
@@ -1709,11 +1710,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <div className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
                 MOST POPULAR
               </div>
-              <h4 className="text-xl font-bold text-orange-900 mb-2">Advanced</h4>
+              <h4 className="text-xl font-bold text-orange-900 mb-1">Advanced Coverage</h4>
               <div className="text-3xl font-bold text-orange-600 mb-2">
                 £{selectedClaimLimit === 1250 && boostAddon ? '2,250' : '1,250'}
               </div>
-              <p className="text-sm text-gray-600 mb-4">More coverage, fewer worries</p>
+              <p className="text-sm font-semibold text-orange-700 mb-1">Enhanced Peace of Mind</p>
+              <p className="text-xs text-gray-600 mb-4">Comprehensive protection for major repairs and unexpected breakdowns</p>
               
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="advantage-details" className="border-none">
@@ -1776,11 +1778,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <Crown className="w-3 h-3" />
                 BEST PROTECTION
               </div>
-              <h4 className="text-xl font-bold text-blue-900 mb-2">Elite</h4>
+              <h4 className="text-xl font-bold text-blue-900 mb-1">Elite Protection</h4>
               <div className="text-3xl font-bold text-blue-600 mb-2">
                 £{selectedClaimLimit === 2000 && boostAddon ? '3,000' : '2,000'}
               </div>
-              <p className="text-sm text-gray-600 mb-4">Maximum protection, top-tier benefits</p>
+              <p className="text-sm font-semibold text-blue-700 mb-1">Premium Complete Care</p>
+              <p className="text-xs text-gray-600 mb-4">Maximum coverage for high-value repairs and ultimate worry-free motoring</p>
               
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="elite-details" className="border-none">
