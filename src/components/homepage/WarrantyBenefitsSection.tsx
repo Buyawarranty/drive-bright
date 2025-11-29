@@ -15,7 +15,7 @@ const WarrantyBenefitsSection: React.FC = () => {
             The UK's Complete <span className="text-brand-orange">Car Warranty</span>
           </h2>
           <p className="text-base md:text-lg text-gray-700 max-w-3xl mx-auto">
-            <span className="text-brand-deep-blue font-semibold">Drive Worry-Free:</span> Superior Protection. Affordable Prices. Instant Cover
+            <span className="text-brand-deep-blue font-semibold">Drive Worry-Free:</span> <span className="text-green-600 font-bold">Superior Protection. Affordable Prices. Instant Cover</span>
           </p>
         </div>
 
@@ -93,7 +93,7 @@ const WarrantyBenefitsSection: React.FC = () => {
             
             <div className="flex items-center gap-3">
               <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <p className="text-sm md:text-base text-brand-dark-text font-semibold">And so much more….</p>
+              <p className="text-sm md:text-base text-brand-dark-text">And so much more….</p>
             </div>
           </div>
         </div>
