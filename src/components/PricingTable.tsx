@@ -1085,21 +1085,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
                    <span className="text-muted-foreground block">Mileage</span>
                    <span className="font-semibold text-foreground">{parseInt(vehicleData.mileage).toLocaleString()} miles</span>
                  </div>
-                 </div>
-                </div>
-                
-                {/* Warranty Eligibility - under a line */}
-                <div className="border-t pt-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
-                      <Check className="h-3 w-3 text-green-600" />
-                    </div>
-                    <span className="text-green-700 font-medium">Warranty cover available for your vehicle</span>
                   </div>
-                </div>
-              </>
-             )}
-         </div>
+                 </div>
+               </>
+              )}
+          </div>
 
         {/* What's Covered Section */}
         <div className="section-header rounded-lg p-8 mb-8">
