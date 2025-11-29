@@ -1038,7 +1038,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
               className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
             >
               <Edit className="h-4 w-4" />
-              Change vehicle
+              <span className="md:hidden">Edit</span>
+              <span className="hidden md:inline">Change vehicle</span>
             </Button>
           </div>
            
