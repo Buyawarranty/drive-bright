@@ -916,7 +916,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
           {/* Call Button */}
           <a 
             href="tel:03302295040"
-            className="flex items-center justify-center w-14 h-14 bg-black rounded-full hover:bg-gray-800 transition-all duration-300 hover:scale-105"
+            className="flex items-center justify-center w-14 h-14 bg-orange-500 rounded-full hover:bg-orange-600 transition-all duration-300 hover:scale-105"
           >
             <Phone className="w-7 h-7 text-white" />
           </a>
