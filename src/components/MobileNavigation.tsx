@@ -36,7 +36,7 @@ const MobileNavigation: React.FC = () => {
                   <OptimizedImage 
                     src={buyawarrantyLogo} 
                     alt="Buy a Warranty Logo"
-                    className="h-8 w-auto"
+                    className="h-8 w-auto object-contain"
                     priority={false}
                     width={240}
                     height={40}
