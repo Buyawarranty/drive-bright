@@ -1634,31 +1634,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                       <Info className="w-5 h-5 text-blue-600" />
-                      How It Works - Examples:
+                      How It Works - Example:
                     </h4>
                     
                     <div className="space-y-4">
-                      <div>
-                        <p className="font-medium text-gray-900 mb-2">Essential Protection (£750 limit):</p>
-                        <div className="ml-4 space-y-2 text-sm">
-                          <div className="flex items-start gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <div>
-                              <p className="font-medium text-foreground">If your repair costs £750 or less:</p>
-                              <p className="text-muted-foreground">We'll cover the full cost of parts and labour, within the limits of your warranty plan.</p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-start gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <div>
-                              <p className="font-medium text-foreground">If your repair costs more than £750:</p>
-                              <p className="text-muted-foreground">You'll simply pay the difference. For example, if the total is £950, we'll cover £750 and you'll only pay £200.</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
                       <div>
                         <p className="font-medium text-gray-900 mb-2">Advanced Coverage (£1,250 limit):</p>
                         <div className="ml-4 space-y-2 text-sm">
@@ -1675,27 +1654,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                             <div>
                               <p className="font-medium text-foreground">If your repair costs more than £1,250:</p>
                               <p className="text-muted-foreground">You'll simply pay the difference. For example, if the total is £1,400, we'll cover £1,250 and you'll only pay £150.</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <p className="font-medium text-gray-900 mb-2">Elite Protection (£2,000 limit):</p>
-                        <div className="ml-4 space-y-2 text-sm">
-                          <div className="flex items-start gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <div>
-                              <p className="font-medium text-foreground">If your repair costs £2,000 or less:</p>
-                              <p className="text-muted-foreground">We'll cover the full cost of parts and labour, within the limits of your warranty plan.</p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-start gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <div>
-                              <p className="font-medium text-foreground">If your repair costs more than £2,000:</p>
-                              <p className="text-muted-foreground">You'll simply pay the difference. For example, if the total is £2,200, we'll cover £2,000 and you'll only pay £200.</p>
                             </div>
                           </div>
                         </div>
