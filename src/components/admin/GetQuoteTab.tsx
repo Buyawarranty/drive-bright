@@ -314,11 +314,13 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
   const handleSendEmail = async () => {
     setIsSendingEmail(true);
     try {
+      console.log('🚀 Starting quote send process...');
       const { data: { user } } = await supabase.auth.getUser();
       const monthlyPrice = Math.round(finalPrice / 12);
 
+      console.log('📧 Sending email to:', customerEmail);
       // Send the email
-      const { error: emailError } = await supabase.functions.invoke('send-admin-quote', {
+      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-admin-quote', {
         body: {
           to: customerEmail,
           subject: emailSubject,
@@ -334,8 +336,14 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
         }
       });
 
-      if (emailError) throw emailError;
+      if (emailError) {
+        console.error('❌ Email sending failed:', emailError);
+        throw new Error(`Email failed: ${emailError.message}`);
+      }
+      
+      console.log('✅ Email sent successfully:', emailData);
 
+      console.log('💾 Saving to admin_sent_quotes...');
       // Save to admin_sent_quotes for permanent tracking
       const { error: quoteError } = await supabase
         .from('admin_sent_quotes')
@@ -362,9 +370,18 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
         });
 
       if (quoteError) {
-        console.error('Error saving quote record:', quoteError);
+        console.error('❌ Failed to save quote to history:', quoteError);
+        toast({
+          title: "Email Sent (History Not Saved)",
+          description: `Quote was emailed to ${customerEmail} but couldn't be saved to history. Check console for details.`,
+          variant: "destructive",
+        });
+        return;
       }
+      
+      console.log('✅ Quote saved to admin_sent_quotes');
 
+      console.log('📋 Adding to abandoned_carts...');
       // Add to abandoned_carts for incomplete customer tracking
       const { error: abandonedCartError } = await supabase
         .from('abandoned_carts')
@@ -391,14 +408,19 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
         });
 
       if (abandonedCartError) {
-        console.error('Error adding to abandoned carts:', abandonedCartError);
+        console.error('⚠️ Failed to add to abandoned carts:', abandonedCartError);
+        // Don't show error for this as it's not critical
+      } else {
+        console.log('✅ Added to abandoned_carts');
       }
 
       toast({
-        title: "Quote Sent Successfully",
-        description: `Quote sent to ${customerEmail} and saved to history`,
+        title: "✅ Quote Sent Successfully!",
+        description: `Email sent to ${customerEmail} and saved to quote history. Check their inbox (or spam folder).`,
+        duration: 5000,
       });
       
+      console.log('🔄 Refreshing history...');
       // Refresh history
       await loadSentQuotesHistory();
       
@@ -418,12 +440,15 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
       setCustomMonthlyPrice('');
       setCustomFullPrice('');
       setPaymentType('12months');
-    } catch (error) {
-      console.error('Error sending quote:', error);
+      
+      console.log('✨ Quote send process completed successfully');
+    } catch (error: any) {
+      console.error('💥 Error in quote send process:', error);
       toast({
-        title: "Error",
-        description: "Failed to send quote. Please try again.",
+        title: "❌ Error Sending Quote",
+        description: error.message || "Failed to send quote. Check console for details.",
         variant: "destructive",
+        duration: 7000,
       });
     } finally {
       setIsSendingEmail(false);
@@ -433,8 +458,9 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
   const handleResendQuote = async (quote: any) => {
     try {
       setIsSendingEmail(true);
+      console.log('🔄 Resending quote to:', quote.customer_email);
       
-      const { error: emailError } = await supabase.functions.invoke('send-admin-quote', {
+      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-admin-quote', {
         body: {
           to: quote.customer_email,
           subject: `[RESENT] ${quote.email_subject}`,
@@ -459,10 +485,15 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
         }
       });
 
-      if (emailError) throw emailError;
+      if (emailError) {
+        console.error('❌ Resend email failed:', emailError);
+        throw new Error(`Email resend failed: ${emailError.message}`);
+      }
+
+      console.log('✅ Email resent successfully:', emailData);
 
       // Update resend count
-      await supabase
+      const { error: updateError } = await supabase
         .from('admin_sent_quotes')
         .update({
           resent_count: (quote.resent_count || 0) + 1,
@@ -470,18 +501,24 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
         })
         .eq('id', quote.id);
 
+      if (updateError) {
+        console.error('⚠️ Failed to update resend count:', updateError);
+      }
+
       toast({
-        title: "Quote Resent",
-        description: `Quote resent to ${quote.customer_email}`,
+        title: "✅ Quote Resent Successfully!",
+        description: `Email resent to ${quote.customer_email}. Check their inbox (or spam folder).`,
+        duration: 5000,
       });
 
       await loadSentQuotesHistory();
-    } catch (error) {
-      console.error('Error resending quote:', error);
+    } catch (error: any) {
+      console.error('💥 Error resending quote:', error);
       toast({
-        title: "Error",
-        description: "Failed to resend quote",
+        title: "❌ Error Resending Quote",
+        description: error.message || "Failed to resend quote. Check console for details.",
         variant: "destructive",
+        duration: 7000,
       });
     } finally {
       setIsSendingEmail(false);
