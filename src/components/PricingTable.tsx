@@ -7,7 +7,7 @@ import { Check, ArrowLeft, Info, FileText, ExternalLink, ChevronDown, ChevronUp,
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -1616,19 +1616,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <Info className="w-5 h-5 text-blue-600" />
                 </button>
               </DialogTrigger>
-              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                <button 
-                  className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-50"
-                  onClick={() => {
-                    const closeButton = document.querySelector('[data-dialog-close]') as HTMLElement;
-                    closeButton?.click();
-                  }}
-                >
-                  <X className="h-6 w-6" />
+              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" hideCloseButton>
+                <DialogClose className="absolute right-4 top-4 rounded-full p-3 bg-gray-200 hover:bg-gray-300 transition-colors z-50 shadow-md">
+                  <X className="h-7 w-7 text-gray-700" />
                   <span className="sr-only">Close</span>
-                </button>
+                </DialogClose>
                 
-                <DialogHeader className="pr-10">
+                <DialogHeader className="pr-12">
                   <DialogTitle className="flex items-center gap-2 text-xl">
                     <ShieldCheck className="w-6 h-6 text-blue-600" />
                     Understanding Your Claim Limit
