@@ -72,6 +72,7 @@ interface PricingTableProps {
     selectedAddOns: {[addon: string]: boolean}, 
     protectionAddOns?: {[key: string]: boolean},
     claimLimit?: number,
+    labourRate?: number, // Add labour rate to interface
     installmentBreakdown?: {
       firstInstallment: number,
       standardInstallment: number,
@@ -205,6 +206,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
       transfer: false
     }
   );
+  
+  // New state for labour rate selection
+  const [selectedLabourRate, setSelectedLabourRate] = useState<number>(70);
   
   // Update add-ons when payment type changes to handle auto-included add-ons
   useEffect(() => {
@@ -914,7 +918,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
           voluntaryExcess,
           selectedAddOns: selectedAddOns[selectedPlan.id] || {},
           protectionAddOns: selectedProtectionAddOns,
-          claimLimit: selectedClaimLimit
+          claimLimit: selectedClaimLimit,
+          labourRate: selectedLabourRate // Add labour rate to pricing data
         }
       );
       
@@ -990,7 +995,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         </div>
       </div>
 
-      {/* Customise your warranty heading and Trustpilot on same line */}
+      {/* Build Your Cover heading and Trustpilot on same line */}
       <div className="max-w-6xl mx-auto px-4 pt-5 pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -998,7 +1003,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <Shield className="w-6 h-6 text-orange-500" />
             </div>
             <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
-              Customise your warranty
+              Build Your Cover
             </h1>
           </div>
           <TrustpilotHeader className="h-8 sm:h-10" />
@@ -1012,7 +1017,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         <div className="section-header rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gray-600 text-white rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold">
                 1
               </div>
               <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
@@ -1476,13 +1481,80 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </Collapsible>
         </div>
 
+        {/* Labour Rate Selection - NEW */}
+        <div className="section-header rounded-lg p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold">
+              2
+            </div>
+            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+              <Settings className="w-5 h-5" />
+              Choose Your Labour Rate
+            </h2>
+          </div>
+          
+          <p className="text-sm text-muted-foreground mb-4 ml-11">
+            Select the hourly labour rate that matches your preferred garage type
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ml-11">
+            <button
+              onClick={() => setSelectedLabourRate(40)}
+              className={`p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                selectedLabourRate === 40
+                  ? 'border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/30'
+                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-2xl font-bold text-foreground">£40/hr</span>
+                <Badge variant="secondary" className="bg-gray-200 text-gray-700">Cheapest</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground font-medium">Independent Garages</p>
+              <p className="text-xs text-muted-foreground mt-1">Ideal for independent garages and basic repairs.</p>
+            </button>
+            
+            <button
+              onClick={() => setSelectedLabourRate(70)}
+              className={`p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                selectedLabourRate === 70
+                  ? 'border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/30'
+                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-2xl font-bold text-foreground">£70/hr</span>
+                <Badge className="bg-orange-500 text-white">Recommended</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground font-medium">Most Garages</p>
+              <p className="text-xs text-muted-foreground mt-1">Covers most reputable garages.</p>
+            </button>
+            
+            <button
+              onClick={() => setSelectedLabourRate(100)}
+              className={`p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                selectedLabourRate === 100
+                  ? 'border-orange-500 bg-orange-500/10 shadow-lg shadow-orange-500/30'
+                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-2xl font-bold text-foreground">£100/hr</span>
+                <Badge className="bg-blue-600 text-white">Premium Cover</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground font-medium">Dealer Ready</p>
+              <p className="text-xs text-muted-foreground mt-1">Perfect for main dealers and specialists.</p>
+            </button>
+          </div>
+        </div>
+
         {/* Choose Your Excess Amount */}
         <div id="excess-amount-section" className={`section-header rounded-lg p-6 transition-all duration-200 ${
           validationErrors.voluntaryExcess ? 'border-2 border-red-500' : ''
         }`}>
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-gray-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-              2
+            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold">
+              3
             </div>
             <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
               <MousePointerClick className="w-5 h-5 scale-x-[-1]" />
@@ -1524,12 +1596,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
           validationErrors.claimLimit ? 'border-2 border-red-500' : ''
         }`}>
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-gray-600 text-white rounded-full flex items-center justify-center">
-              3
+            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold">
+              4
             </div>
             <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
               <ShieldCheck className="w-5 h-5" />
-              Choose Your Claim Limit
+              Pick Your Plan
             </h2>
           </div>
           
@@ -1542,23 +1614,26 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </Alert>
           )}
           
+          <p className="text-sm text-muted-foreground mb-6">
+            Choose the coverage level that best suits your needs and budget
+          </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* AutoCare Essential */}
+            {/* Essential */}
             <div 
               className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer ${
                 selectedClaimLimit === 750
-                  ? 'bg-orange-500/10 border-2 border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'neutral-container shadow-lg shadow-black/15 hover:shadow-xl hover:shadow-orange-500/20'
+                  ? 'bg-gray-50 border-2 border-gray-400 shadow-lg shadow-gray-400/30'
+                  : 'border-2 border-gray-200 hover:border-gray-300 hover:shadow-md'
               }`}
               onClick={() => {
                 setSelectedClaimLimit(750);
                 setValidationErrors(prev => ({ ...prev, claimLimit: false }));
               }}
             >
-              <h4 className="text-xl font-bold text-foreground mb-2">AutoCare Essential</h4>
-              <div className="text-2xl font-bold text-black mb-2">£750 per claim</div>
-              <p className="text-sm font-medium text-foreground mb-4">Confidence for the everyday drive.</p>
+              <h4 className="text-xl font-bold text-gray-900 mb-2">Essential</h4>
+              <div className="text-3xl font-bold text-gray-900 mb-2">£750</div>
+              <p className="text-sm text-gray-600 mb-4">Affordable, key components</p>
               
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="essential-details" className="border-none">
@@ -1605,24 +1680,24 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </Accordion>
             </div>
             
-            {/* AutoCare Advantage */}
+            {/* Advanced */}
             <div 
               className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer ${
                 selectedClaimLimit === 1250
                   ? 'bg-orange-500/10 border-2 border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'neutral-container shadow-lg shadow-black/15 hover:shadow-xl hover:shadow-orange-500/20'
+                  : 'border-2 border-orange-200 hover:border-orange-300 hover:shadow-md'
               }`}
               onClick={() => {
                 setSelectedClaimLimit(1250);
                 setValidationErrors(prev => ({ ...prev, claimLimit: false }));
               }}
             >
-              <div className="absolute -top-3 right-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold">
+              <div className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
                 MOST POPULAR
               </div>
-              <h4 className="text-xl font-bold text-foreground mb-2">AutoCare Advantage</h4>
-              <div className="text-2xl font-bold text-black mb-2">£1,250 per claim</div>
-              <p className="text-sm font-medium text-foreground mb-4">Balanced protection for life's bigger bumps.</p>
+              <h4 className="text-xl font-bold text-orange-900 mb-2">Advanced</h4>
+              <div className="text-3xl font-bold text-orange-600 mb-2">£1,250</div>
+              <p className="text-sm text-gray-600 mb-4">More coverage, fewer worries</p>
               
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="advantage-details" className="border-none">
@@ -1669,21 +1744,25 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </Accordion>
             </div>
             
-            {/* AutoCare Elite */}
+            {/* Elite */}
             <div 
               className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer ${
                 selectedClaimLimit === 2000
-                  ? 'bg-orange-500/10 border-2 border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'neutral-container shadow-lg shadow-black/15 hover:shadow-xl hover:shadow-orange-500/20'
+                  ? 'bg-blue-50 border-2 border-blue-600 shadow-lg shadow-blue-600/30'
+                  : 'border-2 border-blue-200 hover:border-blue-300 hover:shadow-md'
               }`}
               onClick={() => {
                 setSelectedClaimLimit(2000);
                 setValidationErrors(prev => ({ ...prev, claimLimit: false }));
               }}
             >
-              <h4 className="text-xl font-bold text-foreground mb-2">AutoCare Elite</h4>
-              <div className="text-2xl font-bold text-black mb-2">£2,000 per claim</div>
-              <p className="text-sm font-medium text-foreground mb-4">Top-tier cover for total peace of mind.</p>
+              <div className="absolute -top-3 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+                <Crown className="w-3 h-3" />
+                BEST PROTECTION
+              </div>
+              <h4 className="text-xl font-bold text-blue-900 mb-2">Elite</h4>
+              <div className="text-3xl font-bold text-blue-600 mb-2">£2,000</div>
+              <p className="text-sm text-gray-600 mb-4">Maximum protection, top-tier benefits</p>
               
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="elite-details" className="border-none">
@@ -1734,14 +1813,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
 
         {/* Choose Warranty Duration */}
-        <div id="duration-price-section" className="section-header rounded-lg p-6">
+        <div id="duration-price-section" className={`section-header rounded-lg p-6 transition-all duration-200 ${
+          validationErrors.paymentType ? 'border-2 border-red-500' : ''
+        }`}>
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-gray-600 text-white rounded-full flex items-center justify-center">
-              4
+            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold">
+              5
             </div>
             <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
               <Calendar className="w-5 h-5" />
-              Choose Your Warranty Duration and Price
+              Choose Your Duration
             </h2>
           </div>
 
@@ -2036,12 +2117,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
         {/* Add-On Protection Packages */}
         <div className="section-header rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-gray-600 text-white rounded-full flex items-center justify-center">
-              5
+            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold">
+              6
             </div>
             <h3 className="text-xl font-semibold text-foreground flex items-center gap-2">
               <Shield className="w-5 h-5" />
-              Add-On Protection Packages
+              Add Extras
             </h3>
           </div>
           <div className="text-center mb-8">
@@ -2056,51 +2137,47 @@ const PricingTable: React.FC<PricingTableProps> = ({
           />
         </div>
 
-        {/* Trust Section */}
+        {/* Trust Section - Redesigned */}
         <div className="mt-16 mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8 border border-blue-100">
           <div className="flex items-center max-w-6xl mx-auto gap-8">
             <div className="flex-1">
-              <h3 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
-                🔍 Do We Actually Pay Out Claims?
+              <h3 className="text-3xl font-bold text-foreground mb-6">
+                We Pay Out – 94% of Claims Approved Fast
               </h3>
-              <p className="text-lg text-muted-foreground mb-6 leading-relaxed font-medium">
-                Absolutely. Here's what you can expect with us:
-              </p>
               
               <div className="space-y-4 mb-6">
                 <div className="flex items-center gap-3">
-                  <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-base text-muted-foreground">
-                    <strong>94% of eligible claims approved</strong> quickly and smoothly
+                  <Check className="w-6 h-6 text-green-500 flex-shrink-0" />
+                  <span className="text-lg text-foreground font-medium">
+                    94% of claims approved quickly
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-base text-muted-foreground">
-                    <strong>Clear, easy-to-understand terms</strong> – no hidden catches
+                  <Check className="w-6 h-6 text-green-500 flex-shrink-0" />
+                  <span className="text-lg text-foreground font-medium">
+                    Clear terms – no hidden catches
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-base text-muted-foreground">
-                    <strong>We look for reasons to say yes</strong>, not excuses to say no
+                  <Check className="w-6 h-6 text-green-500 flex-shrink-0" />
+                  <span className="text-lg text-foreground font-medium">
+                    We look for reasons to say YES
                   </span>
                 </div>
               </div>
               
-              <p className="text-base text-black font-bold">
-                With us, you get genuine protection and real peace of mind.
+              <p className="text-xl text-black font-bold mb-8">
+                Real protection. Real peace of mind. Guaranteed.
               </p>
               
               {/* Trustpilot Section */}
               <div className="mt-6 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="text-center sm:text-left">
-                    <p className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-                      <Users className="w-4 h-4 text-gray-600" />
-                      Don{"'"}t just take our word for it
+                    <p className="text-base font-bold text-gray-900 mb-1 flex items-center gap-2">
+                      ⭐ Rated Excellent on Trustpilot
                     </p>
-                    <p className="text-xs text-gray-600">See what our customers say about our warranty service</p>
+                    <p className="text-sm text-gray-600">Don't just take our word for it – see what customers say.</p>
                   </div>
                   <div className="flex-shrink-0">
                     <a 
@@ -2128,22 +2205,25 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
         </div>
 
-        {/* Additional Information Section */}
+        {/* Additional Information Section - Redesigned */}
         <div id="your-cover-details" className="bg-white rounded-lg p-8 border border-gray-200 shadow-sm">
           <div className="mb-6">
-            <h3 className="text-xl font-semibold text-foreground flex items-center gap-2 mb-4">
-              Your Cover Details, Made Clear
+            <h3 className="text-2xl font-bold text-foreground mb-4">
+              Your Cover Details – Clear & Simple
             </h3>
-            <p className="text-muted-foreground">
-              Discover everything the Platinum Plan offers and any limitations - click below for complete details and feel confident in your cover.
+            <p className="text-muted-foreground text-base">
+              Want to know exactly what's included? Click below to see everything in plain English before you buy.
+            </p>
+            <p className="text-sm text-gray-500 mt-2 italic">
+              No jargon. No hidden catches. Just the facts.
             </p>
           </div>
           
           <div className="space-y-4">
             <Collapsible>
-              <CollapsibleTrigger className="flex items-center gap-3 w-full text-left text-orange-500 hover:text-orange-600 font-medium py-2 transition-colors text-base group">
-                <ChevronDown className="w-4 h-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                <span>Terms and Conditions</span>
+              <CollapsibleTrigger className="flex items-center gap-3 w-full text-left text-orange-500 hover:text-orange-600 font-semibold py-3 transition-colors text-lg group">
+                <ChevronDown className="w-5 h-5 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                <span>What's Included</span>
               </CollapsibleTrigger>
               <CollapsibleContent className="pt-4 pl-7">
                 <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
@@ -2167,9 +2247,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </Collapsible>
 
             <Collapsible>
-              <CollapsibleTrigger className="flex items-center gap-3 w-full text-left text-orange-500 hover:text-orange-600 font-medium py-2 transition-colors text-base group">
-                <ChevronDown className="w-4 h-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                <span>Platinum Plan Details</span>
+              <CollapsibleTrigger className="flex items-center gap-3 w-full text-left text-orange-500 hover:text-orange-600 font-semibold py-3 transition-colors text-lg group">
+                <ChevronDown className="w-5 h-5 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                <span>Terms & Conditions</span>
               </CollapsibleTrigger>
               <CollapsibleContent className="pt-4 pl-7">
                 <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
