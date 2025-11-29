@@ -1612,9 +1612,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
             
             <Dialog>
               <DialogTrigger asChild>
-                <button className="ml-2 flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors border border-blue-200">
+                <button className="ml-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-white hover:bg-blue-50 transition-colors border border-blue-200 shadow-sm">
                   <Info className="w-6 h-6 text-blue-600 flex-shrink-0" />
-                  <span className="text-sm font-medium text-blue-600">What is a Claim Limit?</span>
+                  <span className="text-sm font-medium text-blue-600">Claim limit explained</span>
                 </button>
               </DialogTrigger>
               <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" hideCloseButton>
