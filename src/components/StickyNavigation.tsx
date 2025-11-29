@@ -74,7 +74,7 @@ const StickyNavigation: React.FC = () => {
               href="https://wa.me/message/SPQPJ6O3UBF5B1" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center px-3 xl:px-4 py-2 bg-[#25D366] text-white text-sm xl:text-base font-semibold rounded-lg hover:bg-[#20BA5A] transition-colors whitespace-nowrap"
+              className="inline-flex items-center px-3 xl:px-4 py-2 bg-[#128C7E] text-white text-sm xl:text-base font-semibold rounded-lg hover:bg-[#0D6D5E] transition-colors whitespace-nowrap"
             >
               WhatsApp Us
             </a>
@@ -95,7 +95,7 @@ const StickyNavigation: React.FC = () => {
               href="https://wa.me/message/SPQPJ6O3UBF5B1" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center px-2 sm:px-3 py-1.5 sm:py-2 bg-[#25D366] text-white text-xs sm:text-sm font-semibold rounded-lg hover:bg-[#20BA5A] transition-colors whitespace-nowrap"
+              className="inline-flex items-center px-2 sm:px-3 py-1.5 sm:py-2 bg-[#128C7E] text-white text-xs sm:text-sm font-semibold rounded-lg hover:bg-[#0D6D5E] transition-colors whitespace-nowrap"
             >
               WhatsApp
             </a>
