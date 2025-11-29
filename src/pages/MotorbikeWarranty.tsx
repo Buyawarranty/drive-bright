@@ -606,10 +606,10 @@ const MotorbikeWarranty = () => {
               href="https://wa.me/message/SPQPJ6O3UBF5B1"
               target="_blank"
               rel="noopener noreferrer"
-              className="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#20BA5A] text-white p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
+              className="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#20BA5A] text-white p-1 rounded-full shadow-lg transition-all duration-300 hover:scale-110 flex items-center justify-center"
               onClick={() => trackButtonClick('motorbike_whatsapp_float')}
             >
-              <img src={whatsappIconNew} alt="WhatsApp" className="w-8 h-8" />
+              <img src={whatsappIconNew} alt="WhatsApp" className="w-12 h-12" />
             </a>
             <a
               href="tel:02033228888"

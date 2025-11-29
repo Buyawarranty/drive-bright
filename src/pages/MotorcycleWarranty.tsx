@@ -600,9 +600,9 @@ const MotorcycleWarranty = () => {
               href="https://wa.me/message/SPQPJ6O3UBF5B1"
               target="_blank"
               rel="noopener noreferrer"
-              className="fixed bottom-24 right-4 z-40 bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 transition-all duration-300 flex items-center justify-center"
+              className="fixed bottom-24 right-4 z-40 bg-green-500 text-white p-1 rounded-full shadow-lg hover:bg-green-600 transition-all duration-300 flex items-center justify-center"
             >
-              <img src={whatsappIconNew} alt="WhatsApp" className="w-6 h-6" />
+              <img src={whatsappIconNew} alt="WhatsApp" className="w-12 h-12" />
             </a>
             <a
               href="tel:03302295040"

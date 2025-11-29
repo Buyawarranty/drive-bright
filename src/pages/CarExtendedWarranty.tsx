@@ -1313,9 +1313,9 @@ const CarExtendedWarranty: React.FC = () => {
             href="https://wa.me/message/SPQPJ6O3UBF5B1" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="bg-green-500 text-white p-4 rounded-full shadow-lg hover:bg-green-600 transition-all hover:scale-110"
+            className="bg-green-500 text-white p-2 rounded-full shadow-lg hover:bg-green-600 transition-all hover:scale-110"
           >
-            <MessageCircle className="h-6 w-6" />
+            <MessageCircle className="h-10 w-10" />
           </a>
           <a 
             href="tel:03302295040"

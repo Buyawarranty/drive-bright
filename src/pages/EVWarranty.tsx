@@ -723,9 +723,9 @@ const EVWarranty = () => {
             href="https://wa.me/message/SPQPJ6O3UBF5B1" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="bg-green-500 hover:bg-green-600 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110"
+            className="bg-green-500 hover:bg-green-600 text-white rounded-full p-1 shadow-lg transition-all hover:scale-110 flex items-center justify-center"
           >
-            <OptimizedImage src={whatsappIconNew} alt="WhatsApp" className="w-8 h-8" />
+            <OptimizedImage src={whatsappIconNew} alt="WhatsApp" className="w-12 h-12" />
           </a>
           <a 
             href="tel:+442045380742"
