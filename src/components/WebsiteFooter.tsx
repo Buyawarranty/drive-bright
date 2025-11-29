@@ -81,6 +81,11 @@ const WebsiteFooter = () => {
                   </a>
                 </div>
                 <div>
+                  <a href="/cancel-warranty" className="text-[#eb4b00] hover:text-[#d63f00] transition-colors font-semibold">
+                    Cancel Your Warranty
+                  </a>
+                </div>
+                <div>
                   <p className="font-semibold text-gray-900">Sales Enquiries:</p>
                   <p className="text-lg font-bold text-[#eb4b00]">0330 229 5040</p>
                 </div>
