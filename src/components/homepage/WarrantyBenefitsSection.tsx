@@ -1,25 +1,29 @@
 import React from 'react';
-import { Check, ExternalLink } from 'lucide-react';
+import { Check, ExternalLink, ArrowUp } from 'lucide-react';
 
 const WarrantyBenefitsSection: React.FC = () => {
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <section className="py-12 md:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-2xl md:text-4xl font-bold text-brand-dark-text mb-4">
-            Why Choose <span className="text-brand-orange">Our Warranty Plans?</span>
+            The UK's Complete Car Warranty
           </h2>
           <p className="text-base md:text-lg text-gray-700 max-w-3xl mx-auto">
-            Get complete peace of mind with industry-leading protection for your vehicle. Every plan includes:
+            Drive Worry-Free: Superior Protection. Affordable Prices. Instant Cover
           </p>
         </div>
 
-        {/* What's Included in Your Cover */}
+        {/* Combined Coverage List */}
         <div className="mb-8">
-          <h3 className="text-xl md:text-2xl font-bold text-brand-dark-text mb-6 text-center">
-            What's Included in Your Cover
-          </h3>
+          <p className="text-base md:text-lg text-gray-700 mb-6 font-medium text-center">
+            Your warranty covers everything that matters:
+          </p>
           
           <div className="grid md:grid-cols-2 gap-3 md:gap-4 max-w-4xl mx-auto">
             <div className="flex items-center gap-3">
@@ -61,16 +65,7 @@ const WarrantyBenefitsSection: React.FC = () => {
               <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
               <p className="text-sm md:text-base text-brand-dark-text">Vehicle Rental</p>
             </div>
-          </div>
-        </div>
-
-        {/* Your warranty covers everything that matters */}
-        <div className="mb-8">
-          <p className="text-base md:text-lg text-gray-700 mb-6 font-medium text-center">
-            Your warranty covers everything that matters:
-          </p>
-          
-          <div className="grid md:grid-cols-2 gap-3 md:gap-4 max-w-4xl mx-auto">
+            
             <div className="flex items-center gap-3">
               <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
               <p className="text-sm md:text-base text-brand-dark-text">Engine, Gearbox, Clutch, Drivetrain & Turbo</p>
@@ -103,8 +98,8 @@ const WarrantyBenefitsSection: React.FC = () => {
           </div>
         </div>
 
-        {/* CTA Button */}
-        <div className="mt-10 text-center">
+        {/* CTA Buttons */}
+        <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
           <a
             href="https://buyawarranty.co.uk/what-is-covered/"
             target="_blank"
@@ -112,9 +107,17 @@ const WarrantyBenefitsSection: React.FC = () => {
             className="inline-flex items-center gap-2 bg-brand-deep-blue hover:bg-blue-800 text-white font-bold px-8 py-4 text-base md:text-lg rounded-lg shadow-lg transition-colors"
           >
             <Check className="w-5 h-5" />
-            View Complete Coverage
+            See Whats Covered
             <ExternalLink className="w-5 h-5" />
           </a>
+          
+          <button
+            onClick={scrollToTop}
+            className="inline-flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-bold px-8 py-4 text-base md:text-lg rounded-lg shadow-lg transition-colors"
+          >
+            <ArrowUp className="w-5 h-5" />
+            Get my quote
+          </button>
         </div>
       </div>
     </section>
