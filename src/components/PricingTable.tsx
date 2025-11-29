@@ -119,6 +119,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const [selectedAddOns, setSelectedAddOns] = useState<{[planId: string]: {[addon: string]: boolean}}>(
     previousSelectedAddOns ? { 'platinum': previousSelectedAddOns } : {}
   );
+  const [boostAddon, setBoostAddon] = useState(false);
   const [loading, setLoading] = useState<{[key: string]: boolean}>({});
   const [plansLoading, setPlansLoading] = useState(true);
   const [plansError, setPlansError] = useState<string | null>(null);
@@ -649,11 +650,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           paymentType === '24months' ? 24 : 36;
     return calculateAddOnPrice(selectedProtectionAddOns, paymentType, durationMonths);
   }, [paymentType, selectedProtectionAddOns]);
+  
+  // Calculate boost addon cost (£7/month for 12 months = £84)
+  const boostAddonCost = useMemo(() => {
+    return boostAddon ? 84 : 0;
+  }, [boostAddon]);
 
-  // Memoized total price calculation - should be base price + add-ons for consistency
+  // Memoized total price calculation - should be base price + add-ons + boost for consistency
   const totalPrice = useMemo(() => {
-    return basePlanPrice + addOnPrice;
-  }, [basePlanPrice, addOnPrice]);
+    return basePlanPrice + addOnPrice + boostAddonCost;
+  }, [basePlanPrice, addOnPrice, boostAddonCost]);
 
   // Memoized discounted base price for display
   const discountedBasePlanPrice = useMemo(() => {
@@ -666,10 +672,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return discountedPrice;
   }, [basePlanPrice, paymentType]);
 
-  // Memoized total discounted price (with add-ons)
+  // Memoized total discounted price (with add-ons and boost)
   const totalDiscountedPrice = useMemo(() => {
-    return discountedBasePlanPrice + addOnPrice;
-  }, [discountedBasePlanPrice, addOnPrice]);
+    return discountedBasePlanPrice + addOnPrice + boostAddonCost;
+  }, [discountedBasePlanPrice, addOnPrice, boostAddonCost]);
 
   // Memoized monthly price calculation - always divide total by 12 for monthly payments
   const monthlyPrice = useMemo(() => {
@@ -1618,6 +1624,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
             Choose the coverage level that best suits your needs and budget
           </p>
           
+          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-3">
+            <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-gray-700">
+              <span className="font-semibold">Claim Limit Info:</span> If your repair costs exceed your chosen limit, you'll need to pay the difference. Choose a higher limit for greater peace of mind.
+            </p>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Essential */}
             <div 
@@ -1628,6 +1641,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               }`}
               onClick={() => {
                 setSelectedClaimLimit(750);
+                setBoostAddon(false); // Reset boost when selecting Essential
                 setValidationErrors(prev => ({ ...prev, claimLimit: false }));
               }}
             >
@@ -1696,7 +1710,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 MOST POPULAR
               </div>
               <h4 className="text-xl font-bold text-orange-900 mb-2">Advanced</h4>
-              <div className="text-3xl font-bold text-orange-600 mb-2">£1,250</div>
+              <div className="text-3xl font-bold text-orange-600 mb-2">
+                £{selectedClaimLimit === 1250 && boostAddon ? '2,250' : '1,250'}
+              </div>
               <p className="text-sm text-gray-600 mb-4">More coverage, fewer worries</p>
               
               <Accordion type="single" collapsible className="w-full">
@@ -1761,7 +1777,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 BEST PROTECTION
               </div>
               <h4 className="text-xl font-bold text-blue-900 mb-2">Elite</h4>
-              <div className="text-3xl font-bold text-blue-600 mb-2">£2,000</div>
+              <div className="text-3xl font-bold text-blue-600 mb-2">
+                £{selectedClaimLimit === 2000 && boostAddon ? '3,000' : '2,000'}
+              </div>
               <p className="text-sm text-gray-600 mb-4">Maximum protection, top-tier benefits</p>
               
               <Accordion type="single" collapsible className="w-full">
@@ -1809,6 +1827,45 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </Accordion>
             </div>
           </div>
+          
+          {/* Boost Add-On */}
+          {(selectedClaimLimit === 1250 || selectedClaimLimit === 2000) && (
+            <div className="mt-6 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border-2 border-green-200">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0">
+                  <div className={`w-6 h-6 rounded border-2 flex items-center justify-center cursor-pointer transition-all duration-200 ${
+                    boostAddon 
+                      ? 'bg-green-600 border-green-600' 
+                      : 'bg-white border-gray-300 hover:border-green-500'
+                  }`}
+                  onClick={() => setBoostAddon(!boostAddon)}
+                  >
+                    {boostAddon && <Check className="w-4 h-4 text-white" />}
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ShieldCheck className="w-5 h-5 text-green-600" />
+                    <h4 className="text-lg font-bold text-gray-900">Boost Your Claim Limit</h4>
+                    <Badge className="bg-green-600 text-white">Popular Upgrade</Badge>
+                  </div>
+                  <p className="text-gray-700 mb-3">
+                    Add <span className="font-bold text-green-700">+£1,000</span> to your claim limit for just{' '}
+                    <span className="font-bold text-green-700">£7/month</span>
+                  </p>
+                  <div className="flex items-center gap-3 text-sm">
+                    <div className="flex items-center gap-2 px-3 py-1 bg-white rounded-full border border-green-300">
+                      <ArrowRight className="w-4 h-4 text-green-600" />
+                      <span className="font-medium">
+                        £{selectedClaimLimit.toLocaleString()} → £{(selectedClaimLimit + 1000).toLocaleString()}
+                      </span>
+                    </div>
+                    <span className="text-gray-600">Maximum protection at minimal cost</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
 
@@ -1916,6 +1973,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 protectionAddOnPrice = calculateAddOnPrice(selectedProtectionAddOns, option.id, durationMonths);
               }
               
+              // Add boost addon cost if selected (£84 for all durations since it's charged as £7/month for 12 months only)
+              const boostCost = boostAddon ? 84 : 0;
+              
               // Apply automatic discounts for multi-year plans
               let discountedPrice = planAdjustedBasePrice;
               if (option.id === '24months') {
@@ -1927,8 +1987,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // Plan price display: show discounted price ÷ 12
               const displayedMonthlyPrice = Math.round(discountedPrice / 12);
               
-              // Total cost calculation: discounted base + add-ons (only for the selected plan)
-              const totalPriceWithAddOns = discountedPrice + protectionAddOnPrice;
+              // Total cost calculation: discounted base + add-ons + boost (only for the selected plan)
+              const totalPriceWithAddOns = discountedPrice + protectionAddOnPrice + boostCost;
               
               return (
                 <div
@@ -2049,16 +2109,20 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           )}
                         </div>
                        <div className="text-center">
-                         <div className="text-xl font-bold text-gray-900 mb-2">Total cost:</div>
-                         <div className="flex items-center justify-center gap-3 mb-2">
-                           {option.id !== '12months' && (
-                             <span className="line-through text-gray-500 text-2xl font-bold">£{planAdjustedBasePrice}</span>
-                           )}
-                           <span className="text-green-600 text-3xl font-bold">£{discountedPrice}</span>
-                         </div>
-                         {option.id !== '12months' && (
-                           <div className="text-green-600 text-lg font-bold">
-                             You save £{planAdjustedBasePrice - discountedPrice}!
+                         {option.id === '12months' ? (
+                           <div className="text-center">
+                             <div className="text-5xl font-extrabold text-green-600 mb-2">£{discountedPrice}</div>
+                             <div className="text-base text-gray-600">Total annual cost</div>
+                           </div>
+                         ) : (
+                           <div className="text-center">
+                             <div className="text-base text-gray-600 mb-1">
+                               Was <span className="line-through text-gray-500 font-semibold">£{planAdjustedBasePrice}</span> →
+                             </div>
+                             <div className="text-5xl font-extrabold text-green-600 mb-2">£{discountedPrice}</div>
+                             <div className="inline-block bg-red-600 text-white px-4 py-1.5 rounded-full text-sm font-bold">
+                               Save £{planAdjustedBasePrice - discountedPrice}
+                             </div>
                            </div>
                          )}
                        </div>
