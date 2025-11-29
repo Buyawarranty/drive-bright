@@ -10,7 +10,7 @@ const WarrantyBenefitsSection: React.FC = () => {
     <section className="py-12 md:py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-12 md:mb-16">
+        <div className="text-center mb-8">
           <h2 className="text-2xl md:text-4xl font-bold text-brand-dark-text mb-4">
             The UK's Complete <span className="text-brand-orange">Car Warranty</span>
           </h2>
@@ -22,7 +22,7 @@ const WarrantyBenefitsSection: React.FC = () => {
         {/* Combined Coverage List */}
         <div className="mb-8">
           <p className="text-base md:text-lg text-gray-700 mb-6 font-medium text-center">
-            Your warranty covers everything that matters:
+            ✅ Your warranty covers everything that matters:
           </p>
           
           <div className="grid md:grid-cols-2 gap-3 md:gap-4 max-w-4xl mx-auto">
