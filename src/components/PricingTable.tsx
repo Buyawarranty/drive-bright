@@ -1993,40 +1993,18 @@ const PricingTable: React.FC<PricingTableProps> = ({
               return (
                 <div
                   key={option.id}
-                  className={`relative p-6 rounded-lg transition-all duration-200 text-left w-full border-2 flex flex-col cursor-pointer bg-white ${
+                  className={`relative rounded-lg transition-all duration-200 w-full border flex flex-col cursor-pointer bg-white shadow-sm ${
                     option.id === '12months' ? 'h-auto' : 'h-full'
                   } ${
                     paymentType === option.id 
-                      ? 'border-orange-500 shadow-lg shadow-orange-500/30' 
-                      : 'border-gray-200 hover:border-orange-300'
+                      ? 'border-[#1A1A1A] shadow-[0_2px_12px_rgba(0,0,0,0.12)]' 
+                      : 'border-[#EDEFF2] hover:border-[#A8B0BA]'
                   }`}
                   onClick={() => setPaymentType(option.id as '12months' | '24months' | '36months')}
+                  style={{ padding: '24px' }}
                  >
-                   {/* Selection Indicator */}
-                   {paymentType === option.id && (
-                     <div className="absolute top-4 right-4 w-6 h-6 bg-black rounded-full flex items-center justify-center">
-                       <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                       </svg>
-                     </div>
-                   )}
-
-                     {/* Top-right savings tags */}
-                     <div className="absolute top-4 right-4 flex gap-2">
-                       {option.id === '24months' && (
-                         <span className="bg-gradient-to-r from-red-600 to-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg shadow-red-500/50">
-                           Save £100 Today
-                         </span>
-                       )}
-                       {option.id === '36months' && (
-                         <span className="bg-gradient-to-r from-red-600 to-red-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg shadow-red-500/50">
-                           Save £200 Today
-                         </span>
-                       )}
-                     </div>
-
-                   {/* Badge Pills */}
-                   <div className="flex flex-wrap gap-2 mb-4 mt-8">
+                   {/* Badge Pills - Top */}
+                   <div className="flex flex-wrap gap-2 mb-4">
                      {option.isPopular && (
                        <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold">
                          MOST POPULAR
@@ -2039,139 +2017,152 @@ const PricingTable: React.FC<PricingTableProps> = ({
                      )}
                    </div>
                   
-                  {/* Title */}
-                  <div className="mb-3">
-                    <h4 className="text-lg font-bold text-gray-900 mb-1">
-                      {option.title.replace('⭐️ ', '').replace('🏆 ', '')}
-                    </h4>
-                    <p className="text-sm text-gray-600 mb-2">{option.description}</p>
-                    <h5 className="font-semibold text-gray-900">{option.planName}</h5>
+                  {/* Header: Monthly Price */}
+                  <div className="mb-4">
+                    <div className="text-[40px] leading-none font-semibold mb-1" style={{ color: '#1A1A1A' }}>
+                      £{displayedMonthlyPrice}
+                    </div>
+                    <div className="text-[18px] font-medium" style={{ color: '#4A4A4A' }}>
+                      per month
+                    </div>
                   </div>
                   
-                   {/* What's included */}
-                   <div className="mb-6 flex-grow">
-                     <h6 className="font-semibold text-gray-900 mb-3">What's included:</h6>
-                     <div className="space-y-1">
-                       {option.features.map((feature, index) => {
-                         const isCheck = feature.startsWith('✅');
-                         const text = feature.replace(/^[✅❌]\s*/, '');
-                         return (
-                           <div key={index} className="flex items-start text-sm">
-                             {isCheck ? (
-                               <Check className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                             ) : (
-                               <X className="w-4 h-4 text-red-500 mr-2 mt-0.5 flex-shrink-0" />
-                             )}
-                             <span className={isCheck ? 'text-gray-700' : 'text-black'}>
-                               {text}
-                             </span>
-                           </div>
-                         );
-                       })}
-                     </div>
-                   </div>
-                   
-                      {/* Pricing */}
-                     <div className="mb-4 text-center mt-auto">
-                        <div className="text-4xl font-bold text-gray-800 mb-3">
-                          £{displayedMonthlyPrice}/month
+                  {/* Benefits */}
+                  <div className="space-y-3 mb-6">
+                    {option.id === '12months' && (
+                      <div className="flex items-start gap-2">
+                        <Check className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#2BB24C' }} />
+                        <span className="text-[16px]" style={{ color: '#1A1A1A' }}>12 monthly payments</span>
+                      </div>
+                    )}
+                    {option.id === '24months' && (
+                      <>
+                        <div className="flex items-start gap-2">
+                          <Check className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#2BB24C' }} />
+                          <span className="text-[16px]" style={{ color: '#1A1A1A' }}>12 monthly payments</span>
                         </div>
-                       <div className="text-base text-gray-700 mb-4 space-y-1">
-                          {option.id === '12months' && (
-                            <div className="flex items-center justify-center gap-2">
-                              <span className="text-green-500 text-lg">✓</span>
-                              <span className="font-medium">12 monthly payments</span>
-                            </div>
-                          )}
-                          {option.id === '24months' && (
-                            <>
-                              <div className="flex items-center justify-center gap-2">
-                                <span className="text-green-500 text-lg">✓</span>
-                                <span className="font-medium">12 monthly payments</span>
-                              </div>
-                              <div className="flex items-center justify-center gap-2">
-                                <span className="text-green-500 text-lg">✓</span>
-                                <span className="font-medium">Coverage continues in Year 2 at no extra cost</span>
-                              </div>
-                            </>
-                          )}
-                          {option.id === '36months' && (
-                            <>
-                              <div className="flex items-center justify-center gap-2">
-                                <span className="text-green-500 text-lg">✓</span>
-                                <span className="font-medium">12 monthly payments</span>
-                              </div>
-                              <div className="flex items-center justify-center gap-2">
-                                <span className="text-green-500 text-lg">✓</span>
-                                <span className="font-medium">Coverage continues in Year 2 and Year 3 at no extra cost</span>
-                              </div>
-                            </>
-                          )}
+                        <div className="flex items-start gap-2">
+                          <Check className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#2BB24C' }} />
+                          <span className="text-[16px]" style={{ color: '#1A1A1A' }}>Coverage continues in Year 2 at no extra cost</span>
                         </div>
-                       <div className="text-center">
-                         {option.id === '12months' ? (
-                           <div className="text-center">
-                             <div className="text-5xl font-extrabold text-green-600 mb-2">£{discountedPrice}</div>
-                             <div className="text-base text-gray-600">Total annual cost</div>
-                           </div>
-                         ) : (
-                           <div className="text-center">
-                             <div className="text-base text-gray-600 mb-1">
-                               Was <span className="line-through text-gray-500 font-semibold">£{planAdjustedBasePrice}</span> →
-                             </div>
-                             <div className="text-5xl font-extrabold text-green-600 mb-2">£{discountedPrice}</div>
-                             <div className="inline-block bg-red-600 text-white px-4 py-1.5 rounded-full text-sm font-bold">
-                               Save £{planAdjustedBasePrice - discountedPrice}
-                             </div>
-                           </div>
-                         )}
-                       </div>
-                   </div>
+                      </>
+                    )}
+                    {option.id === '36months' && (
+                      <>
+                        <div className="flex items-start gap-2">
+                          <Check className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#2BB24C' }} />
+                          <span className="text-[16px]" style={{ color: '#1A1A1A' }}>12 monthly payments</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <Check className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#2BB24C' }} />
+                          <span className="text-[16px]" style={{ color: '#1A1A1A' }}>Coverage continues in Year 2 and Year 3 at no extra cost</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
                   
-                    {/* Select Button */}
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPaymentType(option.id as '12months' | '24months' | '36months');
-                      }}
-                      className={`w-full py-3 text-lg font-semibold transition-all mb-3 ${
-                        paymentType === option.id
-                          ? 'bg-black hover:bg-gray-800 text-white'
-                          : 'bg-orange-500 hover:bg-orange-600 text-white'
-                      }`}
-                    >
-                      {paymentType === option.id ? 'Selected' : 'Select'}
-                    </Button>
-                   
-                   {/* Email Quote Button */}
-                   <Button
-                     type="button"
-                     onClick={(e) => {
-                       e.stopPropagation();
-                       handleEmailQuote({
-                         title: option.title,
-                         monthlyPrice: displayedMonthlyPrice,
-                         totalPrice: discountedPrice,
-                         paymentType: option.id
-                       });
-                     }}
-                     className="w-full py-3 text-base font-semibold bg-white border-2 border-gray-500 text-gray-800 hover:bg-gray-50 hover:border-gray-600"
-                   >
-                     📧 Email Quote
-                   </Button>
-                   
-                   {/* Footer note */}
-                   <div className="mt-3 text-center">
-                     <p className="text-xs text-gray-500">
-                       *Please see <button className="text-orange-600 hover:text-orange-700 underline" onClick={() => {
-                         const section = document.getElementById('your-cover-details');
-                         if (section) {
-                           section.scrollIntoView({ behavior: 'smooth' });
-                         }
-                       }}>Your Cover Details</button> below
-                     </p>
-                   </div>
-                </div>
+                  {/* Divider */}
+                  <div className="border-t mb-6" style={{ borderColor: '#EDEFF2' }}></div>
+                  
+                  {/* Price Anchor and Savings */}
+                  <div className="mb-6 flex-grow">
+                    {option.id === '12months' ? (
+                      <div>
+                        <div className="text-[32px] font-semibold mb-1" style={{ color: '#2BB24C' }}>
+                          £{discountedPrice}
+                        </div>
+                        <div className="text-[14px]" style={{ color: '#6E7A86' }}>
+                          Total annual cost
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="text-[15px] font-medium mb-2" style={{ color: '#6E7A86' }}>
+                          Was <span className="line-through">£{planAdjustedBasePrice}</span>
+                        </div>
+                        <div className="flex items-baseline gap-3 mb-1">
+                          <div className="text-[32px] font-semibold" style={{ color: '#2BB24C' }}>
+                            £{discountedPrice}
+                          </div>
+                          <span 
+                            className="text-[13px] font-medium px-2 py-1 rounded"
+                            style={{ 
+                              backgroundColor: '#E53935',
+                              color: '#FFFFFF'
+                            }}
+                          >
+                            Save £{planAdjustedBasePrice - discountedPrice}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Primary Action */}
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPaymentType(option.id as '12months' | '24months' | '36months');
+                    }}
+                    className={`w-full py-3 text-[16px] font-semibold transition-all mb-3 rounded ${
+                      paymentType === option.id
+                        ? 'bg-[#000000] hover:bg-[#121212] text-white'
+                        : 'bg-[#000000] hover:bg-[#121212] text-white'
+                    }`}
+                    disabled={paymentType === option.id}
+                  >
+                    {paymentType === option.id ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Check className="w-4 h-4" />
+                        Selected
+                      </span>
+                    ) : (
+                      'Select plan'
+                    )}
+                  </Button>
+                  
+                  {/* Secondary Action */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEmailQuote({
+                        title: option.title,
+                        monthlyPrice: displayedMonthlyPrice,
+                        totalPrice: discountedPrice,
+                        paymentType: option.id
+                      });
+                    }}
+                    className="w-full py-3 text-[16px] font-semibold transition-all rounded"
+                    style={{
+                      borderColor: '#A8B0BA',
+                      color: '#1A1A1A',
+                      backgroundColor: '#FFFFFF'
+                    }}
+                  >
+                    Email quote
+                  </Button>
+                  
+                  {/* Footnote */}
+                  <div className="mt-4 text-center">
+                    <p className="text-[12px]" style={{ color: '#6E7A86' }}>
+                      Please see <button 
+                        className="underline hover:no-underline" 
+                        style={{ color: '#6E7A86' }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const section = document.getElementById('your-cover-details');
+                          if (section) {
+                            section.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }}
+                      >
+                        Your Cover Details
+                      </button> below
+                    </p>
+                  </div>
+               </div>
               );
             })}
           </div>
