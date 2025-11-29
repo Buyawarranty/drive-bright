@@ -18,7 +18,7 @@ const StickyNavigation: React.FC = () => {
               <OptimizedImage 
                 src={buyawarrantyLogo} 
                 alt="Buy a Warranty Logo - Affordable Car Warranty UK" 
-                className="h-6 sm:h-8 w-auto"
+                className="h-6 sm:h-8 w-auto object-contain"
                 priority={true}
                 width={240}
                 height={40}
