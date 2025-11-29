@@ -1,6 +1,5 @@
 import React from 'react';
-import { Check, Shield, Wrench, Car, Zap } from 'lucide-react';
-import { ExternalLink } from 'lucide-react';
+import { Check, ExternalLink } from 'lucide-react';
 
 const WarrantyBenefitsSection: React.FC = () => {
   return (
@@ -67,94 +66,34 @@ const WarrantyBenefitsSection: React.FC = () => {
 
         {/* Comprehensive Component Coverage */}
         <div className="bg-gradient-to-r from-blue-50 to-orange-50 rounded-2xl p-8 md:p-12">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-brand-deep-blue rounded-full flex items-center justify-center flex-shrink-0">
-              <Wrench className="w-6 h-6 text-white" />
-            </div>
-            <h3 className="text-xl md:text-2xl font-bold text-brand-dark-text">
-              Comprehensive Component Coverage
-            </h3>
-          </div>
-          
-          <p className="text-base md:text-lg text-gray-700 mb-8">
+          <p className="text-base md:text-lg text-gray-700 mb-6 font-medium">
             Your warranty covers everything that matters:
           </p>
 
-          <div className="space-y-6">
-            {/* Engine & Drivetrain */}
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <div className="flex items-start gap-3">
-                <Car className="w-6 h-6 text-brand-orange mt-1 flex-shrink-0" />
-                <div>
-                  <h4 className="text-base md:text-lg font-bold text-brand-dark-text mb-2">
-                    Engine, Gearbox, Clutch, Drivetrain & Turbo
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    Complete protection for your vehicle's core mechanical systems
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Safety & Control Systems */}
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <div className="flex items-start gap-3">
-                <Shield className="w-6 h-6 text-brand-orange mt-1 flex-shrink-0" />
-                <div>
-                  <h4 className="text-base md:text-lg font-bold text-brand-dark-text mb-2">
-                    Brakes, Steering, Suspension, Fuel, Cooling & Emissions
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    Essential systems for safe and efficient driving
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Modern Tech */}
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <div className="flex items-start gap-3">
-                <Zap className="w-6 h-6 text-brand-orange mt-1 flex-shrink-0" />
-                <div>
-                  <h4 className="text-base md:text-lg font-bold text-brand-dark-text mb-2">
-                    Modern Tech & Safety – Sensors, Airbags, Multimedia, Cameras
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    Advanced safety features and entertainment systems
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Electrical Systems */}
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <div className="flex items-start gap-3">
-                <Zap className="w-6 h-6 text-brand-orange mt-1 flex-shrink-0" />
-                <div>
-                  <h4 className="text-base md:text-lg font-bold text-brand-dark-text mb-2">
-                    Electrical Systems – ECUs, Wiring, Lighting, Charging
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    Comprehensive electrical component protection
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Hybrid & EV */}
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <div className="flex items-start gap-3">
-                <Zap className="w-6 h-6 text-brand-orange mt-1 flex-shrink-0" />
-                <div>
-                  <h4 className="text-base md:text-lg font-bold text-brand-dark-text mb-2">
-                    Hybrid & EV Components – Motors, Batteries, Inverters, Charging Units
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    Specialized coverage for electric and hybrid vehicles
-                  </p>
-                </div>
-              </div>
-            </div>
+          <div className="space-y-3">
+            <p className="text-sm md:text-base text-brand-dark-text">
+              <strong>Engine, Gearbox, Clutch, Drivetrain & Turbo</strong>
+            </p>
+            
+            <p className="text-sm md:text-base text-brand-dark-text">
+              <strong>Brakes, Steering, Suspension, Fuel, Cooling & Emissions</strong>
+            </p>
+            
+            <p className="text-sm md:text-base text-brand-dark-text">
+              <strong>Modern Tech & Safety – Sensors, Airbags, Multimedia, Cameras</strong>
+            </p>
+            
+            <p className="text-sm md:text-base text-brand-dark-text">
+              <strong>Electrical Systems – ECUs, Wiring, Lighting, Charging</strong>
+            </p>
+            
+            <p className="text-sm md:text-base text-brand-dark-text">
+              <strong>Hybrid & EV Components – Motors, Batteries, Inverters, Charging Units</strong>
+            </p>
+            
+            <p className="text-sm md:text-base text-brand-dark-text font-semibold mt-4">
+              And so much more….
+            </p>
           </div>
 
           {/* CTA Button */}
