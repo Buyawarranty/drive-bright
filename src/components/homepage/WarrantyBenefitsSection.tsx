@@ -91,7 +91,7 @@ const WarrantyBenefitsSection: React.FC = () => {
               <p className="text-sm md:text-base text-brand-dark-text">Hybrid & EV Components – Motors, Batteries, Inverters, Charging Units</p>
             </div>
             
-            <div className="flex items-center gap-3 md:col-span-2">
+            <div className="flex items-center gap-3">
               <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
               <p className="text-sm md:text-base text-brand-dark-text font-semibold">And so much more….</p>
             </div>
