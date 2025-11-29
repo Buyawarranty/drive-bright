@@ -104,7 +104,7 @@ const WarrantyBenefitsSection: React.FC = () => {
             href="https://buyawarranty.co.uk/what-is-covered/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-brand-deep-blue hover:bg-blue-800 text-white font-bold px-8 py-4 text-base md:text-lg rounded-lg shadow-lg transition-all animate-[breathing_3s_ease-in-out_infinite]"
+            className="inline-flex items-center gap-2 bg-transparent border-2 border-brand-orange text-brand-orange hover:bg-brand-orange hover:text-white font-bold px-8 py-4 text-base md:text-lg rounded-lg shadow-lg transition-all animate-[breathing_3s_ease-in-out_infinite]"
           >
             What's covered
             <ExternalLink className="w-5 h-5" />
