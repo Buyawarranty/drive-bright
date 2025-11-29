@@ -1616,13 +1616,25 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <Info className="w-5 h-5 text-blue-600" />
                 </button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
+              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                <button 
+                  className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-50"
+                  onClick={() => {
+                    const closeButton = document.querySelector('[data-dialog-close]') as HTMLElement;
+                    closeButton?.click();
+                  }}
+                >
+                  <X className="h-6 w-6" />
+                  <span className="sr-only">Close</span>
+                </button>
+                
+                <DialogHeader className="pr-10">
                   <DialogTitle className="flex items-center gap-2 text-xl">
                     <ShieldCheck className="w-6 h-6 text-blue-600" />
                     Understanding Your Claim Limit
                   </DialogTitle>
                 </DialogHeader>
+                
                 <div className="space-y-4 py-4">
                   <p className="text-gray-700 leading-relaxed">
                     <span className="font-semibold text-gray-900">What is a Claim Limit?</span> Your claim limit is the maximum amount we'll pay per claim for covered repairs. If your repair costs exceed your chosen limit, you'll need to pay the difference.
