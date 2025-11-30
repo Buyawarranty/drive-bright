@@ -1490,7 +1490,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         </div>
 
         {/* Labour Rate Selection - NEW */}
-        <div>
+        <div className="bg-gray-50 rounded-lg p-8 border border-gray-200 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold">
               2
