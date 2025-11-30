@@ -1771,7 +1771,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <div className={`w-6 h-6 rounded border-2 flex items-center justify-center cursor-pointer transition-all duration-200 ${
                     boostAddon 
                       ? 'bg-green-600 border-green-600' 
-                      : 'bg-white border-gray-300 hover:border-green-500'
+                      : 'bg-white border-black hover:border-green-500'
                   }`}
                   onClick={() => setBoostAddon(!boostAddon)}
                   >
