@@ -2159,12 +2159,18 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </h3>
               
               <div className="space-y-3 mb-6">
-                <p className="text-lg text-foreground font-medium">
-                  ✅ Clear cover – no hidden catches
-                </p>
-                <p className="text-lg text-foreground font-medium">
-                  ✅ We look for reasons to say YES
-                </p>
+                <div className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-green-500 mt-1 flex-shrink-0" strokeWidth={3} />
+                  <p className="text-lg text-foreground font-medium">
+                    Clear cover – no hidden catches
+                  </p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-green-500 mt-1 flex-shrink-0" strokeWidth={3} />
+                  <p className="text-lg text-foreground font-medium">
+                    We look for reasons to say YES
+                  </p>
+                </div>
               </div>
               
               <p className="text-xl text-black font-bold mb-8">
