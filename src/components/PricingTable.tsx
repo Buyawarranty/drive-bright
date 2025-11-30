@@ -1916,7 +1916,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
               }
               
               // Plan price display: show discounted price ÷ 12
-              const displayedMonthlyPrice = Math.round(discountedPrice / 12);
+              const baseDisplayedMonthlyPrice = Math.round(discountedPrice / 12);
+              
+              // Labour rate adjustment for display only (doesn't affect actual pricing/APIs)
+              const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 3 : 0;
+              const displayedMonthlyPrice = baseDisplayedMonthlyPrice + labourRateAdjustment;
+              
+              // Adjust total annual display price by labour rate (£3/month * 12 months)
+              const displayedAnnualPrice = discountedPrice + (labourRateAdjustment * 12);
               
               // Total cost calculation: discounted base + add-ons + boost (only for the selected plan)
               const totalPriceWithAddOns = discountedPrice + protectionAddOnPrice + boostCost;
@@ -2039,24 +2046,24 @@ const PricingTable: React.FC<PricingTableProps> = ({
                             </>
                           )}
                         </div>
-                       <div className="text-center">
-                         {option.id === '12months' ? (
-                            <div className="text-center">
-                              <div className="text-4xl font-bold text-black mb-2">£{discountedPrice}</div>
-                              <div className="text-base text-gray-600">Total annual cost</div>
-                            </div>
-                         ) : (
-                            <div className="text-center">
-                              <div className="text-base text-gray-600 mb-1">
-                                Was <span className="line-through text-gray-500 font-semibold">£{planAdjustedBasePrice}</span> →
-                              </div>
-                              <div className="text-4xl font-bold text-black mb-2">£{discountedPrice}</div>
-                              <div className="inline-block bg-gray-600 text-white px-4 py-1.5 rounded-full text-sm font-bold">
-                                Save £{planAdjustedBasePrice - discountedPrice}
-                              </div>
-                            </div>
-                         )}
-                       </div>
+                        <div className="text-center">
+                          {option.id === '12months' ? (
+                             <div className="text-center">
+                               <div className="text-4xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
+                               <div className="text-base text-gray-600">Total annual cost</div>
+                             </div>
+                          ) : (
+                             <div className="text-center">
+                               <div className="text-base text-gray-600 mb-1">
+                                 Was <span className="line-through text-gray-500 font-semibold">£{planAdjustedBasePrice}</span> →
+                               </div>
+                               <div className="text-4xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
+                               <div className="inline-block bg-gray-600 text-white px-4 py-1.5 rounded-full text-sm font-bold">
+                                 Save £{planAdjustedBasePrice - displayedAnnualPrice}
+                               </div>
+                             </div>
+                          )}
+                        </div>
                    </div>
                   
                     {/* Select Button */}
@@ -2082,7 +2089,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                        handleEmailQuote({
                          title: option.title,
                          monthlyPrice: displayedMonthlyPrice,
-                         totalPrice: discountedPrice,
+                         totalPrice: displayedAnnualPrice,
                          paymentType: option.id
                        });
                      }}
