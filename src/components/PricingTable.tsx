@@ -1113,16 +1113,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
         {/* What's Covered Section */}
         <div className="section-header rounded-lg p-8 mb-8">
-          {/* Always visible summary text */}
-          <div className="mb-6">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-              <p className="text-muted-foreground font-bold">
-                All-in-one cover – Labour, electrical and mechanical parts included.
-              </p>
-            </div>
-          </div>
-          
           <Collapsible>
             <CollapsibleTrigger className="w-full">
               <div className="flex items-center justify-between gap-2 mb-4 cursor-pointer group">
@@ -1133,11 +1123,21 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   </h2>
                 </div>
                 <button className="inline-flex items-center gap-1 sm:gap-2 bg-white border border-gray-200 rounded-lg px-2 sm:px-4 py-1.5 sm:py-2 shadow-sm hover:shadow transition-shadow">
-                  <span className="text-xs sm:text-sm font-medium text-blue-600 whitespace-nowrap">Learn more</span>
+                  <span className="text-xs sm:text-sm font-medium text-blue-600 whitespace-nowrap">What You Get</span>
                   <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 transition-transform duration-300 group-data-[state=open]:rotate-180" />
                 </button>
               </div>
             </CollapsibleTrigger>
+            
+            {/* Summary text below heading */}
+            <div className="mb-6">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                <p className="text-muted-foreground font-bold">
+                  All-in-one cover – Labour, electrical and mechanical parts included.
+                </p>
+              </div>
+            </div>
             
             <CollapsibleContent>
               
