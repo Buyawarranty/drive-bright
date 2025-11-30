@@ -2149,7 +2149,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         </div>
 
         {/* Trust Section - Redesigned */}
-        <div className="mt-16 mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8 border border-blue-100">
+        <div className="mt-16 mb-8 bg-gray-50 rounded-2xl p-8 border border-gray-200">
           <div className="flex items-center max-w-6xl mx-auto gap-8">
             <div className="flex-1">
               <h3 className="text-3xl font-bold text-foreground mb-6">
