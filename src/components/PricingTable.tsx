@@ -1443,7 +1443,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </Collapsible>
             
                 {/* What's Not Covered Section - Now nested inside What's Covered */}
-                <div className="mt-8 pt-6 border-t border-gray-200">
+                <div className="mt-8 pt-6 border-t-2 border-gray-400">
                   <Collapsible>
                     <CollapsibleTrigger className="flex items-center gap-3 w-full text-left text-orange-600 hover:text-orange-700 font-medium py-3 transition-colors group">
                       <div className="flex items-center gap-2">
