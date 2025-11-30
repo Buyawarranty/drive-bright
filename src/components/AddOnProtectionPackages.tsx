@@ -146,11 +146,6 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-foreground mb-2">Add-On Protection Packages</h2>
-        <p className="text-sm text-muted-foreground">Add-on packages must be selected before your warranty is activated, as they can't be added later.</p>
-      </div>
-      
       <div className="grid md:grid-cols-3 gap-3">
       {addOnPackages.map((addon) => {
         const isIncluded = isAutoIncluded(addon.key);
