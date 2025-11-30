@@ -1458,7 +1458,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           We keep things straightforward and transparent.
                         </p>
                         <h4 className="font-semibold text-orange-700 mb-3">What's Not Included:</h4>
-                        <ul className="space-y-2">
+                        <ul className="space-y-2 mb-6">
                           <li className="flex items-start gap-2">
                             <X className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
                             <span className="text-gray-700">Pre-existing faults</span>
@@ -1472,6 +1472,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
                             <span className="text-gray-700">Vehicles used for hire or reward (including taxis, rentals, or couriers)</span>
                           </li>
                         </ul>
+                        
+                        {/* Close button */}
+                        <CollapsibleTrigger asChild>
+                          <button className="w-full flex items-center justify-center gap-2 pt-4 border-t border-orange-300 text-orange-600 hover:text-orange-700 font-medium transition-colors">
+                            <ChevronDown className="w-4 h-4 rotate-180" />
+                            <span>Close</span>
+                          </button>
+                        </CollapsibleTrigger>
                       </div>
                     </CollapsibleContent>
                   </Collapsible>
