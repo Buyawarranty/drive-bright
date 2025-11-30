@@ -158,13 +158,13 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
         if (addon.priceType === 'monthly') {
           // For 2-year and 3-year plans, show the cost spread over 12 monthly payments
           const totalCost = addon.price * months;
-          const monthlyPayment = Math.round(totalCost / 12); // Always spread over 12 payments
+          const monthlyPayment = totalCost / 12; // Always spread over 12 payments
           priceDisplay = addon.price > 0 
-            ? `Only £${monthlyPayment} per month`
+            ? `Only £${monthlyPayment.toFixed(2)} per month`
             : 'Included';
           showSpreadText = addon.price > 0;
         } else {
-          priceDisplay = isIncluded ? 'Included' : `Just £${Math.round(addon.price)} one-time fee`;
+          priceDisplay = isIncluded ? 'Included' : `Just £${addon.price} one-time fee`;
         }
               
               return (

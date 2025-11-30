@@ -1098,19 +1098,20 @@ const PricingTable: React.FC<PricingTableProps> = ({
         {/* What's Covered Section */}
         <div id="whats-covered" className="section-header rounded-lg p-8 mb-8">
           <Collapsible open={whatsCoveredOpen} onOpenChange={setWhatsCoveredOpen}>
-            <CollapsibleTrigger className="w-full group" data-state={whatsCoveredOpen ? "open" : "closed"}>
-              <div className="flex items-center justify-between gap-2 mb-4 cursor-pointer hover:opacity-80 transition-opacity">
+            <CollapsibleTrigger className="w-full">
+              <div className="flex items-center justify-between gap-2 mb-4 cursor-pointer group">
                 <div className="flex items-center gap-3">
                   <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-black flex-shrink-0" />
                   <h2 className="text-xl font-semibold text-black">
                     What's covered?
                   </h2>
+                  <ChevronDown className="w-6 h-6 sm:w-8 sm:h-8 text-black transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
                 </div>
-                <div className="inline-flex items-center gap-1 sm:gap-2 bg-green-50 border border-green-300 rounded-lg px-2 sm:px-4 py-1.5 sm:py-2 shadow-sm">
+                <button className="inline-flex items-center gap-1 sm:gap-2 bg-green-50 border border-green-300 rounded-lg px-2 sm:px-4 py-1.5 sm:py-2 shadow-sm hover:shadow transition-shadow">
                   <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-700" />
-                  <span className="text-xs sm:text-sm font-medium text-green-700 whitespace-nowrap">Details</span>
-                  <ChevronDown className={`w-5 h-5 text-green-700 transition-transform duration-300 ease-in-out ${whatsCoveredOpen ? 'rotate-180' : ''}`} />
-                </div>
+                  <span className="text-xs sm:text-sm font-medium text-green-700 whitespace-nowrap">What You Get</span>
+                  <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-700 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                </button>
               </div>
             </CollapsibleTrigger>
             
@@ -1960,11 +1961,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // Boost addon display adjustment (display shows £4.99/month instead of £7/month, doesn't affect APIs)
               const boostDisplayAdjustment = boostAddon && paymentType === option.id ? -2.01 : 0;
               
-              const displayedMonthlyPrice = Math.round(baseDisplayedMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment);
+              const displayedMonthlyPrice = baseDisplayedMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
               
               // Adjust total annual display price by labour rate (£3/month for £40/hr, £5/month for £100/hr * 12 months)
               // and boost display adjustment (£2.01/month * 12 months = £24.12 annual reduction for display)
-              const displayedAnnualPrice = Math.round(discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12));
+              const displayedAnnualPrice = discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12);
               
               // Total cost calculation: discounted base + add-ons + boost (only for the selected plan)
               const totalPriceWithAddOns = discountedPrice + protectionAddOnPrice + boostCost;
@@ -2098,13 +2099,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
                               </div>
                            ) : (
                               <div className="text-center">
-                               <div className="text-base text-gray-600 mb-1">
-                                 Was <span className="line-through text-gray-500 font-semibold">£{Math.round(planAdjustedBasePrice)}</span> →
-                               </div>
-                               <div className="text-2xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
-                               <div className="text-sm text-green-600 font-bold">
-                                 Save £{Math.round(planAdjustedBasePrice - displayedAnnualPrice)}
-                               </div>
+                                <div className="text-base text-gray-600 mb-1">
+                                  Was <span className="line-through text-gray-500 font-semibold">£{planAdjustedBasePrice}</span> →
+                                </div>
+                                <div className="text-2xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
+                                <div className="text-sm text-green-600 font-bold">
+                                  Save £{planAdjustedBasePrice - displayedAnnualPrice}
+                                </div>
                               </div>
                            )}
                          </div>
