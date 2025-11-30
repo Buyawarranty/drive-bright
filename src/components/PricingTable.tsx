@@ -1971,19 +1971,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
                      </div>
                    )}
 
-                     {/* Top-right savings tags */}
-                     <div className="absolute top-4 right-4 flex gap-2">
-                       {option.id === '24months' && (
-                          <span className="bg-gray-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                            Save £100
-                          </span>
-                       )}
-                       {option.id === '36months' && (
-                          <span className="bg-gray-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                            Save £200
-                          </span>
-                       )}
-                     </div>
+                      {/* Top-right savings tags */}
+                      <div className="absolute top-4 right-4 flex gap-2">
+                        {option.id === '24months' && (
+                           <span className="bg-white border-2 border-green-600 text-green-600 px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                             Save £100
+                           </span>
+                        )}
+                        {option.id === '36months' && (
+                           <span className="bg-white border-2 border-green-600 text-green-600 px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                             Save £200
+                           </span>
+                        )}
+                      </div>
 
                    {/* Badge Pills */}
                    <div className="flex flex-wrap gap-2 mb-4 mt-3">
