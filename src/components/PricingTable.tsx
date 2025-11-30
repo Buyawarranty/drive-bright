@@ -1011,8 +1011,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <div className="p-2 bg-orange-100 rounded-full">
               <Shield className="w-6 h-6 text-orange-500" />
             </div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
-              Pick Your Perfect Cover
+            <h1 className="text-xl font-semibold text-gray-900">
+              Pick your perfect cover
             </h1>
           </div>
           <TrustpilotHeader className="h-8 sm:h-10" />
@@ -1102,8 +1102,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <div className="flex items-center justify-between gap-2 mb-4 cursor-pointer group">
                 <div className="flex items-center gap-3">
                   <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-black flex-shrink-0" />
-                  <h2 className="text-lg sm:text-2xl font-bold text-black">
-                    What's Covered?
+                  <h2 className="text-xl font-semibold text-black">
+                    What's covered?
                   </h2>
                   <ChevronDown className="w-6 h-6 sm:w-8 sm:h-8 text-black transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
                 </div>
@@ -1503,7 +1503,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
             <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
               <Settings className="w-5 h-5" />
-              Choose Your Labour Rate
+              Choose your labour rate
             </h2>
           </div>
           
@@ -1575,7 +1575,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
             <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
               <MousePointerClick className="w-5 h-5 scale-x-[-1]" />
-              Choose Your Excess Amount
+              Choose your excess amount
             </h2>
           </div>
           
@@ -1618,7 +1618,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
             <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
               <ShieldCheck className="w-5 h-5" />
-              Pick Your Claim Limit
+              Pick your claim limit
             </h2>
             
             <Dialog>
@@ -1797,7 +1797,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-3">
-                    <h4 className="text-lg font-bold text-gray-900">🚀 Boost Your Claim Limit</h4>
+                    <h4 className="text-xl font-semibold text-gray-900">🚀 Boost your claim limit</h4>
                     <span className="bg-orange-600 text-white px-3 py-1 rounded-full text-xs font-semibold uppercase">Popular Upgrade</span>
                     {boostAddon && (
                       <span className="text-green-600 font-semibold text-sm flex items-center gap-1">
@@ -1820,7 +1820,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </div>
                     <div className="flex items-center gap-1 text-gray-700">
                       <span>for £4.99/month</span>
-                      <span className="text-sm text-gray-500">• Only 12 Payments (0% APR)</span>
+                      <span className="text-sm text-gray-500">• Only 12 payments (0% APR)</span>
                     </div>
                   </div>
                 </div>
@@ -1837,7 +1837,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
             <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
               <Calendar className="w-5 h-5" />
-              Choose Your Duration
+              Choose your duration
             </h2>
           </div>
 
@@ -1854,7 +1854,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             {[
               {
                 id: '12months',
-                title: '1-Year Cover',
+                title: '1-year cover',
                 subtitle: '',
                 description: 'Flexible protection for 12 month cover',
                 planName: 'Platinum Complete Plan',
@@ -1876,7 +1876,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               },
               {
                 id: '24months',
-                title: '2-Year Cover',
+                title: '2-year cover',
                 subtitle: 'MOST POPULAR',
                 description: 'Balanced Protection and Value',
                 planName: 'Platinum Complete Plan',
@@ -1898,7 +1898,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               },
               {
                 id: '36months',
-                title: '3-Year Cover',
+                title: '3-year cover',
                 subtitle: 'BEST VALUE',
                 description: 'Extended cover for longer peace of mind',
                 planName: 'Platinum Complete Plan',
@@ -2095,7 +2095,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                            {option.id === '12months' ? (
                               <div className="text-center">
                                 <div className="text-2xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
-                                <div className="text-base text-gray-600">1 Year Cover</div>
+                                <div className="text-base text-gray-600">1 year cover</div>
                               </div>
                            ) : (
                               <div className="text-center">
@@ -2157,7 +2157,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
             <h3 className="text-xl font-semibold text-foreground flex items-center gap-2">
               <Shield className="w-5 h-5" />
-              Add Extras
+              Add extras
             </h3>
             <p className="text-muted-foreground ml-2">Enhance your warranty ✨</p>
           </div>
@@ -2174,8 +2174,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
         <div className="mt-16 mb-8 bg-green-50 rounded-2xl p-8 border border-green-200">
           <div className="flex items-center max-w-6xl mx-auto gap-8">
             <div className="flex-1">
-              <h3 className="text-3xl font-bold text-foreground mb-6">
-                94% of Claims Approved Fast
+              <h3 className="text-xl font-semibold text-foreground mb-6">
+                94% of claims approved fast
               </h3>
               
               <div className="space-y-3 mb-6">
@@ -2236,8 +2236,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
         <div id="your-cover-details" className="bg-gray-50 rounded-lg p-8 border border-gray-200 shadow-sm">
           <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-2xl font-bold text-foreground">
-                Your Cover, Made Crystal Clear 🛡️
+              <h3 className="text-xl font-semibold text-foreground">
+                Your cover, made crystal clear 🛡️
               </h3>
               <Button
                 onClick={() => {
@@ -2365,10 +2365,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <Check className="w-4 h-4 text-green-600" />
                   <span>
                     {paymentType === '12months' 
-                      ? 'Only 12 Payments (0% APR)'
+                      ? 'Only 12 payments (0% APR)'
                       : paymentType === '24months' 
-                        ? 'Only 12 Payments (0% APR)'
-                        : 'Only 12 Payments (0% APR)'
+                        ? 'Only 12 payments (0% APR)'
+                        : 'Only 12 payments (0% APR)'
                     }
                   </span>
                 </div>
@@ -2421,10 +2421,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <Check className="w-4 h-4 text-green-600" />
                 <span>
                   {paymentType === '12months' 
-                    ? 'Only 12 Payments (0% APR)'
+                    ? 'Only 12 payments (0% APR)'
                     : paymentType === '24months' 
-                      ? 'Only 12 Payments (0% APR)'
-                      : 'Only 12 Payments (0% APR)'
+                      ? 'Only 12 payments (0% APR)'
+                      : 'Only 12 payments (0% APR)'
                   }
                 </span>
               </div>
@@ -2433,7 +2433,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <div className="flex items-center justify-center gap-2 text-xs md:text-sm font-bold">
                 <span className="text-gray-500">
                   {paymentType === '12months' 
-                    ? '1 Year Cover'
+                    ? '1 year cover'
                     : paymentType === '24months' 
                       ? 'No payments in Year 2'
                       : 'No payments in Years 2 & 3.'
@@ -2461,7 +2461,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 size="lg"
                 className="text-base md:text-lg font-semibold px-8 md:pl-12 md:pr-10 py-3 md:py-3.5 bg-primary hover:bg-primary/90 w-full md:w-auto"
               >
-                    Continue to Pay
+                    Continue to pay
                     <ArrowRight className="w-5 h-5 ml-1" strokeWidth={4.5} />
               </Button>
               <span className="text-base md:text-lg font-medium text-gray-600 text-center md:text-right">
