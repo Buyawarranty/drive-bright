@@ -2374,20 +2374,22 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 ) : (
                   <span className="text-gray-500">3 Year Cover</span>
                 )}
-                <span className="font-semibold text-gray-900">
-                  Total: £{Math.round(totalDiscountedPrice)}
-                </span>
               </div>
             </div>
             
-            <Button
-              onClick={handleSelectPlan}
-              size="lg"
-              className="text-lg font-semibold pl-12 pr-10 py-3.5 bg-primary hover:bg-primary/90"
-            >
-                  Continue to Pay
-                  <ArrowRight className="w-5 h-5 ml-1" strokeWidth={4.5} />
-            </Button>
+            <div className="flex flex-col items-end gap-2">
+              <Button
+                onClick={handleSelectPlan}
+                size="lg"
+                className="text-lg font-semibold pl-12 pr-10 py-3.5 bg-primary hover:bg-primary/90"
+              >
+                    Continue to Pay
+                    <ArrowRight className="w-5 h-5 ml-1" strokeWidth={4.5} />
+              </Button>
+              <span className="text-sm font-semibold text-gray-900">
+                Total: £{Math.round(totalDiscountedPrice)}
+              </span>
+            </div>
           </div>
         </div>
       )}
