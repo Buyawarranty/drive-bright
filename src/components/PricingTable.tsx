@@ -2343,12 +2343,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
             
             {/* Price Section - Stacked on mobile, center on desktop */}
-            <div className="flex flex-col flex-1 text-left md:text-center">
+            <div className="flex flex-col flex-1 text-center">
               {/* Monthly Price - Main Hook - Show discounted price with add-ons */}
               <div className="text-xl md:text-2xl font-bold text-gray-900">
                 £{Math.round(totalDiscountedPrice / 12)}/month
               </div>
-              <div className="text-xs md:text-sm text-gray-600 mb-1">
+              <div className="text-xs md:text-sm text-gray-600 mb-1 font-bold">
                 {paymentType === '12months' 
                   ? 'Only 12 payments'
                   : paymentType === '24months' 
@@ -2358,7 +2358,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
               
               {/* Payment Terms and Total for footer */}
-              <div className="flex items-center justify-start md:justify-center gap-2 text-xs md:text-sm">
+              <div className="flex items-center justify-center gap-2 text-xs md:text-sm font-bold">
                 <span className="text-gray-500">
                   {paymentType === '12months' 
                     ? '1 Year Cover'
