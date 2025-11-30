@@ -1093,7 +1093,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
 
         {/* What's Covered Section */}
-        <div className="section-header rounded-lg p-8 mb-8">
+        <div id="whats-covered" className="section-header rounded-lg p-8 mb-8">
           <Collapsible>
             <CollapsibleTrigger className="w-full">
               <div className="flex items-center justify-between gap-2 mb-4 cursor-pointer group">
@@ -2280,6 +2280,22 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   ) : (
                     <span className="text-gray-400 font-medium text-base">Loading PDF...</span>
                   )}
+                  
+                  {/* Back to What's Covered link */}
+                  <div className="mt-6 pt-4 border-t border-gray-200">
+                    <button 
+                      onClick={() => {
+                        const section = document.getElementById('whats-covered');
+                        if (section) {
+                          section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                      }}
+                      className="text-orange-500 hover:text-orange-600 font-medium text-sm flex items-center gap-1 transition-colors"
+                    >
+                      <ChevronDown className="w-4 h-4 rotate-180" />
+                      Back to What's Covered
+                    </button>
+                  </div>
                 </div>
               </CollapsibleContent>
             </Collapsible>
