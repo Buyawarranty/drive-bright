@@ -208,7 +208,9 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                      className={`h-4 w-4 border-2 flex-shrink-0 ${
                        isIncluded 
                          ? 'border-orange-500 bg-orange-500 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500'
-                         : 'border-black data-[state=checked]:bg-black data-[state=checked]:border-black'
+                         : isSelected
+                           ? 'border-orange-500 bg-orange-500 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500'
+                           : 'border-gray-300 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500'
                      }`}
                    />
                   </div>
