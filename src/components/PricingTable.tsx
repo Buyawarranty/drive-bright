@@ -2232,7 +2232,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 }}
                 variant="outline"
                 size="sm"
-                className="flex items-center gap-2 text-sm font-medium hover:bg-primary/5"
+                className="flex items-center gap-2 text-sm font-medium bg-green-50 hover:bg-green-100"
               >
                 <ArrowUp className="w-4 h-4" />
                 Back to Plans
