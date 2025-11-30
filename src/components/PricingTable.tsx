@@ -2140,7 +2140,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                      }}
                       className="w-full py-3 text-base font-semibold bg-white border border-gray-300 text-black hover:bg-gray-50"
                     >
-                   📧 Email Quote
+                   ✉️ Email Quote
                    </Button>
                 </div>
               );
