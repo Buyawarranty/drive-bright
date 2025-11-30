@@ -268,6 +268,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
   // Claim limit guide expansion state
   const [claimLimitGuideExpanded, setClaimLimitGuideExpanded] = useState(false);
   
+  // What's Covered section expansion state
+  const [whatsCoveredOpen, setWhatsCoveredOpen] = useState(false);
+  
   // Reliability score state
   const [reliabilityScore, setReliabilityScore] = useState<{
     score: number;
@@ -1094,7 +1097,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
         {/* What's Covered Section */}
         <div id="whats-covered" className="section-header rounded-lg p-8 mb-8">
-          <Collapsible>
+          <Collapsible open={whatsCoveredOpen} onOpenChange={setWhatsCoveredOpen}>
             <CollapsibleTrigger className="w-full">
               <div className="flex items-center justify-between gap-2 mb-4 cursor-pointer group">
                 <div className="flex items-center gap-3">
@@ -1455,33 +1458,34 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <ChevronDown className="w-6 h-6 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
                     </CollapsibleTrigger>
                     <CollapsibleContent>
-                      <div className="mt-4 p-6 bg-orange-50 rounded-lg border border-orange-200">
+                      <div className="mt-4 p-6 bg-red-50 rounded-lg border border-red-200">
                         <p className="text-gray-700 font-medium mb-4">
                           We keep things straightforward and transparent.
                         </p>
-                        <h4 className="font-semibold text-orange-700 mb-3">What's Not Included:</h4>
+                        <h4 className="font-semibold text-red-700 mb-3">What's Not Included:</h4>
                         <ul className="space-y-2 mb-6">
                           <li className="flex items-start gap-2">
-                            <X className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                            <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
                             <span className="text-gray-700">Pre-existing faults</span>
                           </li>
                           <li className="flex items-start gap-2">
-                            <X className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                            <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
                             <span className="text-gray-700">Routine servicing and maintenance (such as fluids or brake pads)</span>
                           </li>
                           <li className="flex items-start gap-2">
-                            <X className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                            <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
                             <span className="text-gray-700">Vehicles used for hire or reward (including taxis, rentals, or couriers)</span>
                           </li>
                         </ul>
                         
-                        {/* Close button */}
-                        <CollapsibleTrigger asChild>
-                          <button className="w-full flex items-center justify-center gap-2 pt-4 border-t border-orange-300 text-orange-600 hover:text-orange-700 font-medium transition-colors">
-                            <ChevronDown className="w-4 h-4 rotate-180" />
-                            <span>Close</span>
-                          </button>
-                        </CollapsibleTrigger>
+                        {/* Close button - closes entire What's Covered section */}
+                        <button 
+                          onClick={() => setWhatsCoveredOpen(false)}
+                          className="w-full flex items-center justify-center gap-2 pt-4 border-t border-red-300 text-red-600 hover:text-red-700 font-medium transition-colors"
+                        >
+                          <ChevronDown className="w-4 h-4 rotate-180" />
+                          <span>Close</span>
+                        </button>
                       </div>
                     </CollapsibleContent>
                   </Collapsible>
