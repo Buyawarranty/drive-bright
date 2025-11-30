@@ -2211,14 +2211,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
         </div>
 
         {/* Additional Information Section - Redesigned */}
-        <div id="your-cover-details" className="bg-white rounded-lg p-8 border border-gray-200 shadow-sm">
+        <div id="your-cover-details" className="bg-gray-50 rounded-lg p-8 border border-gray-200 shadow-sm">
           <div className="mb-6">
             <h3 className="text-2xl font-bold text-foreground mb-4">
               Your Cover, Made Crystal Clear 🛡️
             </h3>
-            <p className="text-muted-foreground text-base">
-              ✅ See what's included - clear terms, no jargon, no surprises.
-            </p>
+            <div className="flex items-start gap-2">
+              <Check className="h-5 w-5 text-green-500 mt-1 flex-shrink-0" strokeWidth={3} />
+              <p className="text-black text-lg font-medium">
+                See what's included - clear terms, no jargon, no surprises.
+              </p>
+            </div>
           </div>
           
           <div className="space-y-4">
