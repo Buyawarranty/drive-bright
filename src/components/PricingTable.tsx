@@ -1524,7 +1524,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <div className="mb-2">
                 <span className="text-2xl font-bold text-foreground">£40/hour</span>
               </div>
-              <p className="text-sm text-gray-900 font-medium">Independent Garages</p>
+              <p className="text-xl font-bold text-black">Independent Garages</p>
               <p className="text-xs text-muted-foreground mt-1">Ideal for independent garages</p>
             </button>
             
@@ -1540,7 +1540,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <div className="mb-2">
                 <span className="text-2xl font-bold text-foreground">£70/hour</span>
               </div>
-              <p className="text-sm text-gray-900 font-medium">Most Garages</p>
+              <p className="text-xl font-bold text-black">Most Garages</p>
               <p className="text-xs text-muted-foreground mt-1">Covers most reputable garages.</p>
             </button>
             
@@ -1556,7 +1556,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <div className="mb-2">
                 <span className="text-2xl font-bold text-foreground">£100/hour</span>
               </div>
-              <p className="text-sm text-gray-900 font-medium">Dealer Approved</p>
+              <p className="text-xl font-bold text-black">Dealer Approved</p>
               <p className="text-xs text-muted-foreground mt-1">Perfect for main dealers and specialists.</p>
             </button>
           </div>
