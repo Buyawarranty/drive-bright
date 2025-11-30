@@ -1612,8 +1612,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 </button>
               </DialogTrigger>
               <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" hideCloseButton>
-                <DialogClose className="absolute right-4 top-4 rounded-full p-3 bg-gray-200 hover:bg-gray-300 transition-colors z-50 shadow-md">
-                  <X className="h-7 w-7 text-gray-700" />
+                <DialogClose className="absolute right-4 top-4 rounded-full p-4 bg-black hover:bg-gray-800 transition-colors z-50 shadow-lg">
+                  <X className="h-8 w-8 text-white" strokeWidth={3} />
                   <span className="sr-only">Close</span>
                 </DialogClose>
                 
