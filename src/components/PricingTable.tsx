@@ -1120,19 +1120,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     All-in-one cover – Labour, electrical and mechanical parts included.
                   </p>
                 </div>
-                {/* Instant Cover Badge - below What You Get on desktop */}
-                <TooltipProvider delayDuration={0}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="inline-flex items-center gap-2 bg-green-50 border border-green-300 rounded-md px-3 py-1.5 sm:py-2 cursor-pointer w-fit">
-                        <span className="text-xs sm:text-sm font-semibold text-green-700 whitespace-nowrap">⚡ Instant cover</span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>🛡️ Cover starts immediately after purchase – excludes pre-existing conditions.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                {/* Instant Cover Badge - Responsive text */}
+                <div className="inline-flex items-center gap-2 bg-green-50 border border-green-300 rounded-md px-3 py-1.5 sm:py-2 w-fit">
+                  {/* Mobile version */}
+                  <span className="sm:hidden text-xs font-semibold text-green-700">🛡️ Cover starts immediately</span>
+                  {/* Desktop version */}
+                  <span className="hidden sm:block text-sm font-semibold text-green-700 whitespace-nowrap">⚡ Instant cover</span>
+                  <span className="hidden sm:block text-sm font-semibold text-green-700">🛡️ Cover starts immediately after purchase</span>
+                </div>
               </div>
             </div>
             
