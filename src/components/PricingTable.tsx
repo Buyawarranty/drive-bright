@@ -2145,28 +2145,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
           <div className="flex items-center max-w-6xl mx-auto gap-8">
             <div className="flex-1">
               <h3 className="text-3xl font-bold text-foreground mb-6">
-                We Pay Out – 94% of Claims Approved Fast
+                94% of Claims Approved Fast
               </h3>
               
-              <div className="space-y-4 mb-6">
-                <div className="flex items-center gap-3">
-                  <Check className="w-6 h-6 text-green-500 flex-shrink-0" />
-                  <span className="text-lg text-foreground font-medium">
-                    94% of claims approved quickly
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Check className="w-6 h-6 text-green-500 flex-shrink-0" />
-                  <span className="text-lg text-foreground font-medium">
-                    Clear terms – no hidden catches
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Check className="w-6 h-6 text-green-500 flex-shrink-0" />
-                  <span className="text-lg text-foreground font-medium">
-                    We look for reasons to say YES
-                  </span>
-                </div>
+              <div className="space-y-3 mb-6">
+                <p className="text-lg text-foreground font-medium">
+                  ✅ Clear cover – no hidden catches
+                </p>
+                <p className="text-lg text-foreground font-medium">
+                  ✅ We look for reasons to say YES
+                </p>
               </div>
               
               <p className="text-xl text-black font-bold mb-8">
