@@ -1723,7 +1723,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             >
               <h4 className="text-xl font-bold text-black mb-1">AutoCare Essential</h4>
               <div className="text-3xl font-bold text-black mb-2">
-                £{selectedClaimLimit === 750 && boostAddon ? '1,750' : '750'} per claim
+                £{selectedClaimLimit === 750 && boostAddon ? '1,750' : '750'} <span className="text-base">per claim</span>
               </div>
               <p className="text-sm text-gray-600">Confidence for the everyday drive.</p>
             </div>
@@ -1745,7 +1745,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
               <h4 className="text-xl font-bold text-black mb-1">AutoCare Advantage</h4>
               <div className="text-3xl font-bold text-black mb-2">
-                £{selectedClaimLimit === 1250 && boostAddon ? '2,250' : '1,250'} per claim
+                £{selectedClaimLimit === 1250 && boostAddon ? '2,250' : '1,250'} <span className="text-base">per claim</span>
               </div>
               <p className="text-sm text-gray-600">Balanced protection for life's bigger bumps.</p>
             </div>
@@ -1768,7 +1768,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
               <h4 className="text-xl font-bold text-black mb-1">AutoCare Elite</h4>
               <div className="text-3xl font-bold text-black mb-2">
-                £{selectedClaimLimit === 2000 && boostAddon ? '3,000' : '2,000'} per claim
+                £{selectedClaimLimit === 2000 && boostAddon ? '3,000' : '2,000'} <span className="text-base">per claim</span>
               </div>
               <p className="text-sm text-gray-600">Top-tier cover for total peace of mind.</p>
             </div>
