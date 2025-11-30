@@ -191,7 +191,7 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                       <div className="flex-1">
                         <h4 className="font-semibold text-base text-foreground mb-1">{addon.title}</h4>
                         <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{addon.shortDescription}</p>
-                         <div className={`text-base font-bold ${isIncluded ? 'text-orange-600' : 'text-black'}`}>
+                         <div className="text-base font-bold text-black">
                            {priceDisplay}
                             {showSpreadText && (
                               <div className="text-sm font-normal text-muted-foreground">
