@@ -2363,8 +2363,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   {paymentType === '12months' 
                     ? '1 Year Cover'
                     : paymentType === '24months' 
-                      ? 'Nothing to pay in Year 2'
-                      : 'Nothing to pay in Year 2 and Year 3'
+                      ? 'No payments in Year 2'
+                      : 'No payments in Years 2 & 3.'
                   }
                 </span>
                 {paymentType === '12months' ? (
