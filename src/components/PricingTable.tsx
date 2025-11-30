@@ -1080,40 +1080,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
                    </div>
                  </div>
                )}
-               <div className="flex items-center gap-2">
-                 <Gauge className="h-5 w-5 text-primary" />
-                 <div>
-                   <span className="text-muted-foreground block">Mileage</span>
-                   <span className="font-semibold text-foreground">{parseInt(vehicleData.mileage).toLocaleString()} miles</span>
-                 </div>
-               </div>
-               
-               {/* Empty spacer cells to position instant badge below year */}
-               <div className="hidden md:block"></div>
-               <div className="hidden md:block"></div>
-               <div className="hidden md:block"></div>
-               
-               {/* Instant Cover Badge - positioned below year, inline with mileage row */}
-               <div className="col-span-2 md:col-span-1 flex items-center">
-                 <TooltipProvider delayDuration={0}>
-                   <Tooltip>
-                     <TooltipTrigger asChild>
-                       <div className="inline-flex items-center gap-1 sm:gap-2 bg-green-50 border border-green-300 rounded-md px-2 sm:px-3.5 py-1.5 sm:py-2 cursor-pointer">
-                         <span className="text-xs sm:text-sm font-semibold text-green-700 whitespace-nowrap">
-                           <span className="sm:hidden">⚡ Instant</span>
-                           <span className="hidden sm:inline">⚡ Instant cover protection</span>
-                         </span>
-                       </div>
-                     </TooltipTrigger>
-                     <TooltipContent>
-                       <p>🛡️ Cover starts immediately after purchase – excludes pre-existing conditions.</p>
-                     </TooltipContent>
-                   </Tooltip>
-                 </TooltipProvider>
-               </div>
+                <div className="flex items-center gap-2">
+                  <Gauge className="h-5 w-5 text-primary" />
+                  <div>
+                    <span className="text-muted-foreground block">Mileage</span>
+                    <span className="font-semibold text-foreground">{parseInt(vehicleData.mileage).toLocaleString()} miles</span>
+                  </div>
                 </div>
-                </>
-               )}
+                 </div>
+                 </>
+                )}
           </div>
 
         {/* What's Covered Section */}
@@ -1136,11 +1112,26 @@ const PricingTable: React.FC<PricingTableProps> = ({
             
             {/* Summary text below heading */}
             <div className="mb-6">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-                <p className="text-muted-foreground font-bold">
-                  All-in-one cover – Labour, electrical and mechanical parts included.
-                </p>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                  <p className="text-muted-foreground font-bold">
+                    All-in-one cover – Labour, electrical and mechanical parts included.
+                  </p>
+                </div>
+                {/* Instant Cover Badge - below What You Get on desktop */}
+                <TooltipProvider delayDuration={0}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="inline-flex items-center gap-2 bg-green-50 border border-green-300 rounded-md px-3 py-1.5 sm:py-2 cursor-pointer w-fit">
+                        <span className="text-xs sm:text-sm font-semibold text-green-700 whitespace-nowrap">⚡ Instant cover</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>🛡️ Cover starts immediately after purchase – excludes pre-existing conditions.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
             
