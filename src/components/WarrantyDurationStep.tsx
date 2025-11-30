@@ -543,8 +543,8 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
                           <span className="text-base line-through text-gray-500">£{option.originalPrice}</span>
                           <span className="text-4xl font-bold text-green-600">£{option.totalPrice}</span>
                         </div>
-                        <div className="text-lg font-semibold text-green-600">
-                          You save £{option.originalPrice - option.totalPrice}!
+                        <div className="text-sm text-green-600 font-bold">
+                          Save £{option.originalPrice - option.totalPrice}
                         </div>
                       </div>
                     ) : (
