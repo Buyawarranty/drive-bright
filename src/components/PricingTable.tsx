@@ -2265,11 +2265,22 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     The Platinum Plan provides comprehensive coverage for your vehicle and complete peace of mind. Key features include:
                   </p>
                   <ul className="text-gray-700 text-base space-y-2 mb-4">
-                    <li>• Fast and easy claims</li>
-                    <li>• All labour costs</li>
-                    <li>• Fast fault diagnostics</li>
-                    <li>• Consequential damage protection</li>
-                    <li>• 14-day money-back guarantee</li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span>Fast and easy claims</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span>Fault diagnostics</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span>Consequential damage protection</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span>14-day money-back guarantee</span>
+                    </li>
                   </ul>
                   {platinumDocUrl ? (
                     <a 
