@@ -2014,7 +2014,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   {/* What's included */}
                   <div className="mb-8">
                     <h6 className="font-semibold text-gray-900 mb-4 text-lg">Your Platinum Plan:</h6>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-2">
                       {selectedOption.features.map((feature, index) => {
                         const isCheck = feature.startsWith('✅');
                         const text = feature.replace(/^[✅❌]\s*/, '');
