@@ -496,6 +496,22 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
                   ))}
                 </div>
                 
+                {/* Cover details link */}
+                <div className="text-center mb-3">
+                  <button 
+                    className="text-sm text-orange-600 hover:text-orange-700 font-medium inline-flex items-center gap-1"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const section = document.getElementById('full-platinum-plan');
+                      if (section) {
+                        section.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
+                  >
+                    🔍 See Full Cover Details
+                  </button>
+                </div>
+                
                 {/* Pricing Section */}
                 <div className="space-y-2 mt-6 mb-4">
                   <div className="text-3xl font-bold text-gray-900">
@@ -568,9 +584,6 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
                   </Button>
                 </div>
                 
-                <div className="text-xs text-gray-500 text-center mt-3">
-                  *For more info please 'Your Cover, Made Clear' below
-                </div>
               </div>
             ))}
           </div>
