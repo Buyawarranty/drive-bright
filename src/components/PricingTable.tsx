@@ -1762,7 +1762,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
           
           {/* Boost Add-On */}
-          <div className="mt-6 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border-2 border-green-200">
+          <div className="mt-6 p-6 bg-white rounded-lg border-2 border-orange-200 hover:border-orange-300 transition-all duration-200">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
                   <div className={`w-6 h-6 rounded border-2 flex items-center justify-center cursor-pointer transition-all duration-200 ${
@@ -1776,23 +1776,22 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   </div>
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <ShieldCheck className="w-5 h-5 text-green-600" />
+                  <div className="flex items-center gap-2 mb-3">
+                    <ShieldCheck className="w-5 h-5 text-orange-600" />
                     <h4 className="text-lg font-bold text-gray-900">Boost Your Claim Limit</h4>
-                    <Badge className="bg-green-600 text-white">Popular Upgrade</Badge>
+                    <Badge className="bg-orange-600 text-white">Popular Upgrade</Badge>
                   </div>
-                  <p className="text-gray-700 mb-3">
-                    Add <span className="font-bold text-green-700">+£1,000</span> to your claim limit for just{' '}
-                    <span className="font-bold text-green-700">£7/month</span>
-                  </p>
-                  <div className="flex items-center gap-3 text-sm">
-                    <div className="flex items-center gap-2 px-3 py-1 bg-white rounded-full border border-green-300">
-                      <ArrowRight className="w-4 h-4 text-green-600" />
-                      <span className="font-medium">
-                        £{selectedClaimLimit.toLocaleString()} → £{(selectedClaimLimit + 1000).toLocaleString()}
-                      </span>
+                  <div className="flex items-center gap-4 flex-wrap">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <span className="font-medium">£{selectedClaimLimit.toLocaleString()}</span>
+                      <ArrowRight className="w-4 h-4 text-gray-400" />
+                      <span className="font-medium">£{(selectedClaimLimit + 1000).toLocaleString()}</span>
                     </div>
-                    <span className="text-gray-600">Maximum protection at minimal cost</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-gray-700">for</span>
+                      <span className="px-2 py-0.5 bg-green-100 text-green-700 font-bold rounded">Only £7/month</span>
+                      <span className="text-sm text-gray-500">12 easy payments</span>
+                    </div>
                   </div>
                 </div>
               </div>
