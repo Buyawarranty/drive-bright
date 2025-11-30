@@ -2131,7 +2131,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </h3>
           </div>
           <div className="text-left mb-3">
-            <p className="text-muted-foreground">Enhance your warranty with optional protection covers</p>
+            <p className="text-muted-foreground">✨ Enhance your warranty with optional extras.</p>
           </div>
           <AddOnProtectionPackages 
             selectedAddOns={selectedProtectionAddOns}
