@@ -2383,7 +2383,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               className="text-lg font-semibold pl-12 pr-10 py-3.5 bg-primary hover:bg-primary/90"
             >
                   Continue to Pay
-                  <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
+                  <ArrowRight className="w-5 h-5 ml-1" strokeWidth={4.5} />
             </Button>
           </div>
         </div>
