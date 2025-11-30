@@ -1508,7 +1508,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-2xl font-bold text-foreground">£40/hr</span>
-                <Badge variant="secondary" className="bg-gray-200 text-gray-700">Best Value</Badge>
+                <span className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">BEST VALUE</span>
               </div>
               <p className="text-sm text-gray-900 font-medium">Independent Garages</p>
               <p className="text-xs text-muted-foreground mt-1">Ideal for independent garages</p>
@@ -1524,7 +1524,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-2xl font-bold text-foreground">£70/hr</span>
-                <Badge className="bg-orange-500 text-white">Most Popular</Badge>
+                <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">MOST POPULAR</span>
               </div>
               <p className="text-sm text-gray-900 font-medium">Most Garages</p>
               <p className="text-xs text-muted-foreground mt-1">Covers most reputable garages.</p>
@@ -1540,7 +1540,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-2xl font-bold text-foreground">£100/hr</span>
-                <Badge className="bg-blue-600 text-white">Premium Cover</Badge>
+                <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold">PREMIUM COVER</span>
               </div>
               <p className="text-sm text-gray-900 font-medium">Dealer Approved</p>
               <p className="text-xs text-muted-foreground mt-1">Perfect for main dealers and specialists.</p>
@@ -1781,7 +1781,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-3">
                     <h4 className="text-lg font-bold text-gray-900">🚀 Boost Your Claim Limit</h4>
-                    <Badge className="bg-orange-600 text-white uppercase">Popular Upgrade</Badge>
+                    <span className="bg-orange-600 text-white px-3 py-1 rounded-full text-xs font-semibold uppercase">Popular Upgrade</span>
                     {boostAddon && (
                       <span className="text-green-600 font-semibold text-sm flex items-center gap-1">
                         <Check className="w-4 h-4" />
@@ -1964,15 +1964,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
                    <div className="flex flex-wrap gap-2 mb-4 items-center justify-between">
                      <div className="flex flex-wrap gap-2">
                        {option.isPopular && (
-                         <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-                           MOST POPULAR
-                         </span>
-                       )}
-                       {option.isBestValue && (
-                         <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-                           BEST VALUE
-                         </span>
-                       )}
+                          <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                            MOST POPULAR
+                          </span>
+                        )}
+                        {option.isBestValue && (
+                          <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                            BEST VALUE
+                          </span>
+                        )}
                      </div>
                    </div>
                   
