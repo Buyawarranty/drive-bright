@@ -181,7 +181,7 @@ const Protected = () => {
       <AccordionItem value={vehicleType.id} className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
         <AccordionTrigger 
           className={`w-full px-4 sm:px-6 py-4 text-left flex items-center justify-between transition-all duration-300 hover:no-underline ${config.bgColor} ${config.bgColorHover} ${
-            vehicleType.id === 'not-covered' ? 'text-red-800' : 'text-white'
+            vehicleType.id === 'not-covered' ? 'text-red-600' : 'text-black'
           }`}
         >
           <div className="flex items-center">
