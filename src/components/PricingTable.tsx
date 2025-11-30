@@ -2208,10 +2208,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
             
             <div className="flex-shrink-0 hidden md:block">
               <div className="w-60 h-60 flex flex-col items-center justify-center bg-green-50 rounded-full border-4 border-green-200">
-                <ShieldCheck className="w-24 h-24 text-green-600 mb-2" />
+                <ShieldCheck className="w-24 h-24 text-orange-500 mb-2" />
                 <div className="text-center px-4">
-                  <p className="text-sm font-bold text-green-700">14 day money</p>
-                  <p className="text-sm font-bold text-green-700">back guarantee</p>
+                  <p className="text-sm font-bold text-orange-600">14 day money</p>
+                  <p className="text-sm font-bold text-orange-600">back guarantee</p>
                 </div>
               </div>
             </div>
