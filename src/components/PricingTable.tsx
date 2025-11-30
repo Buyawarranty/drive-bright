@@ -2292,17 +2292,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <div className="flex flex-col items-end space-y-2">
               <div className="text-right">
                 {/* Monthly Price - Main Hook - Show discounted price with add-ons */}
-                <div className="text-3xl font-bold text-gray-900 mb-1">
+                <div className="text-3xl font-bold text-gray-900">
                   £{Math.round(totalDiscountedPrice / 12)}/month
                 </div>
-                
-                {/* Payment Terms - Conditional Display */}
-                <div className="text-sm text-gray-500 mb-2">
+                <div className="text-base text-gray-600 mb-2">
                   {paymentType === '12months' 
-                    ? 'Only 12 easy payments'
+                    ? 'Only 12 payments'
                     : paymentType === '24months' 
-                      ? 'Nothing to pay in Year 2'
-                      : 'Nothing to pay in Year 2 and Year 3'
+                      ? 'Only 12 payments'
+                      : 'Only 12 payments'
                   }
                 </div>
                 
@@ -2347,8 +2345,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
             {/* Price Section - Moved to center */}
             <div className="flex flex-col flex-1 text-center">
               {/* Monthly Price - Main Hook - Show discounted price with add-ons */}
-              <div className="text-2xl font-bold text-gray-900 mb-1">
-                £{Math.round(totalDiscountedPrice / 12)}/month - {paymentType === '12months' 
+              <div className="text-2xl font-bold text-gray-900">
+                £{Math.round(totalDiscountedPrice / 12)}/month
+              </div>
+              <div className="text-sm text-gray-600 mb-1">
+                {paymentType === '12months' 
                   ? 'Only 12 payments'
                   : paymentType === '24months' 
                     ? 'Only 12 payments'
