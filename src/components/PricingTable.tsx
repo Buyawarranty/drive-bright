@@ -1977,11 +1977,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
                      )}
                    </div>
                   
-                  {/* Title */}
-                  <div className="mb-3">
-                    <h4 className="text-lg font-bold text-gray-900 mb-1">
-                      {option.title.replace('⭐️ ', '').replace('🏆 ', '')}
-                    </h4>
+                   {/* Title */}
+                   <div className="mb-3">
+                     <h4 className="text-2xl font-bold text-gray-900 mb-1">
+                       {option.title.replace('⭐️ ', '').replace('🏆 ', '')}
+                     </h4>
                     <p className="text-sm text-gray-600 mb-2">{option.description}</p>
                     <h5 className="font-semibold text-gray-900">{option.planName}</h5>
                   </div>
