@@ -2124,7 +2124,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                          paymentType: option.id
                        });
                      }}
-                      className="w-full py-3 text-base font-semibold bg-white border-2 border-primary text-primary hover:bg-primary/5"
+                      className="w-full py-3 text-base font-semibold bg-white border border-gray-300 text-black hover:bg-gray-50"
                     >
                    📧 Email Quote
                    </Button>
