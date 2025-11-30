@@ -2203,9 +2203,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
               Your Cover Details – Clear & Simple
             </h3>
             <p className="text-muted-foreground text-base">
-              Want to know exactly what's included? Click below to see everything in plain English before you buy.
+              📋 Want to know exactly what's included? Click below to see everything in plain English before you buy.
             </p>
-            <p className="text-sm text-gray-500 mt-2 italic">
+            <p className="text-lg text-gray-900 mt-2 font-semibold">
               No jargon. No hidden catches. Just the facts.
             </p>
           </div>
