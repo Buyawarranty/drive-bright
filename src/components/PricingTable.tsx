@@ -1102,12 +1102,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <h2 className="text-lg sm:text-2xl font-bold text-black">
                     What's Covered?
                   </h2>
-                  <ChevronDown className="w-6 h-6 sm:w-8 sm:h-8 text-black transition-transform duration-300 group-data-[state=open]:rotate-180" />
+                  <ChevronDown className="w-6 h-6 sm:w-8 sm:h-8 text-black transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
                 </div>
                 <button className="inline-flex items-center gap-1 sm:gap-2 bg-green-50 border border-green-300 rounded-lg px-2 sm:px-4 py-1.5 sm:py-2 shadow-sm hover:shadow transition-shadow">
                   <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-700" />
                   <span className="text-xs sm:text-sm font-medium text-green-700 whitespace-nowrap">What You Get</span>
-                  <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-700 transition-transform duration-300 group-data-[state=open]:rotate-180" />
+                  <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-700 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
                 </button>
               </div>
             </CollapsibleTrigger>
@@ -1146,7 +1146,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <Car className="w-6 h-6" />
                   <span className="text-lg">Petrol & Diesel (Combustion Engine) Vehicles</span>
                 </div>
-                <ChevronDown className="w-6 h-6 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                <ChevronDown className="w-6 h-6 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="mt-4 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -1242,7 +1242,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <Battery className="w-6 h-6" />
                   <span className="text-lg">Hybrid & PHEV Vehicles</span>
                 </div>
-                <ChevronDown className="w-6 h-6 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                <ChevronDown className="w-6 h-6 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="mt-4 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -1308,7 +1308,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <Zap className="w-6 h-6" />
                   <span className="text-lg">Electric vehicles (EVs)</span>
                 </div>
-                <ChevronDown className="w-6 h-6 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                <ChevronDown className="w-6 h-6 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="mt-4 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -1382,7 +1382,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <Bike className="w-6 h-6" />
                   <span className="text-lg">Motorcycles (Petrol, Hybrid, EV)</span>
                 </div>
-                <ChevronDown className="w-6 h-6 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                <ChevronDown className="w-6 h-6 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="mt-4 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -1452,7 +1452,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         <X className="w-6 h-6" />
                         <span className="text-lg">What's not covered</span>
                       </div>
-                      <ChevronDown className="w-6 h-6 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                      <ChevronDown className="w-6 h-6 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <div className="mt-4 p-6 bg-orange-50 rounded-lg border border-orange-200">
