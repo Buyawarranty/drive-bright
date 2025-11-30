@@ -1785,7 +1785,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <h4 className="text-lg font-bold text-gray-900">🚀 Boost Your Claim Limit</h4>
                     <Badge className="bg-orange-600 text-white">Popular Upgrade</Badge>
                     {boostAddon && (
-                      <span className="text-green-600 font-semibold text-sm">✓ Selected</span>
+                      <span className="text-green-600 font-semibold text-sm flex items-center gap-1">
+                        <Check className="w-4 h-4" />
+                        Selected
+                      </span>
                     )}
                   </div>
                   <div className="flex items-center gap-4 flex-wrap">
@@ -1801,7 +1804,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
                     </div>
                     <div className="flex items-center gap-1 text-gray-700">
-                      <span>for Only £7/month</span>
+                      <span>for Only £4.99/month</span>
                       <span className="text-sm text-gray-500">• Only 12 payments</span>
                     </div>
                   </div>
