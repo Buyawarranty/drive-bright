@@ -2009,7 +2009,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   
                    {/* What's included */}
                    <div className="mb-6 flex-grow">
-                     <h6 className="font-semibold text-gray-900 mb-3">What's included:</h6>
+                     <h6 className="font-semibold text-gray-900 mb-3">Your Platinum Plan:</h6>
                      <div className="space-y-1">
                        {option.features.map((feature, index) => {
                          const isCheck = feature.startsWith('✅');
@@ -2232,7 +2232,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <Collapsible>
               <CollapsibleTrigger className="flex items-center gap-3 w-full text-left text-orange-500 hover:text-orange-600 font-semibold py-3 transition-colors text-lg group">
                 <ChevronDown className="w-5 h-5 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                <span>What's Included</span>
+                <span>Your Platinum Plan</span>
               </CollapsibleTrigger>
               <CollapsibleContent className="pt-4 pl-7">
                 <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
