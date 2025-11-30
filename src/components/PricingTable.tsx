@@ -1851,7 +1851,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           )}
 
           {/* Duration Selector Chips */}
-          <div className="flex flex-wrap gap-3 mb-8 justify-center">
+          <div className="grid grid-cols-3 gap-3 mb-8">
             {[
               { id: '12months', label: '1 Year', badge: null },
               { id: '24months', label: '2 Years', badge: 'MOST POPULAR' },
@@ -1860,7 +1860,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <button
                 key={duration.id}
                 onClick={() => setPaymentType(duration.id as '12months' | '24months' | '36months')}
-                className={`relative px-8 py-4 rounded-lg border-2 font-semibold transition-all ${
+                className={`relative px-6 py-4 rounded-lg border-2 font-semibold transition-all ${
                   paymentType === duration.id
                     ? 'border-orange-500 bg-orange-50 text-orange-700 shadow-lg shadow-orange-500/30'
                     : 'border-gray-300 bg-white text-gray-700 hover:border-orange-300'
