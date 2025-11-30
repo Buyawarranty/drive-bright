@@ -1001,7 +1001,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         </div>
       </div>
 
-      {/* Build Your Cover heading and Trustpilot on same line */}
+      {/* Pick Your Perfect Cover heading and Trustpilot on same line */}
       <div className="max-w-6xl mx-auto px-4 pt-5 pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -1009,7 +1009,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <Shield className="w-6 h-6 text-orange-500" />
             </div>
             <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
-              Build Your Cover
+              Pick Your Perfect Cover
             </h1>
           </div>
           <TrustpilotHeader className="h-8 sm:h-10" />
