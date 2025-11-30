@@ -497,8 +497,8 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
                 </div>
                 
                 {/* Cover details link */}
-                <div className="text-center mb-3">
-                  <button 
+                <div className="mb-3">
+                  <button
                     className="text-sm text-orange-600 hover:text-orange-700 font-medium inline-flex items-center gap-1"
                     onClick={(e) => {
                       e.stopPropagation();

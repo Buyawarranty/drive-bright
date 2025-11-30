@@ -2012,8 +2012,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                      </div>
                      
                      {/* Cover details link */}
-                     <div className="mt-3 text-center">
-                       <button 
+                     <div className="mt-3">
+                       <button
                          className="text-sm text-orange-600 hover:text-orange-700 font-medium inline-flex items-center gap-1"
                          onClick={(e) => {
                            e.stopPropagation();
