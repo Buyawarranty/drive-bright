@@ -2191,7 +2191,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
               
               <p className="text-xl text-black font-bold mb-8">
-                Real protection. Real peace of mind. Guaranteed.
+                🛡️ Real protection. Real peace of mind. Guaranteed.
               </p>
               
               {/* Trustpilot Section */}
