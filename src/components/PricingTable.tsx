@@ -1879,7 +1879,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
 
           {/* Single Duration Column */}
-          <div className="max-w-2xl mx-auto">
+          <div className="w-full">
             {(() => {
               // Define features for each duration
               const durationData = {
