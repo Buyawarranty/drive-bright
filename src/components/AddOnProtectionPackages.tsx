@@ -176,7 +176,7 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                        ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30 cursor-default' 
                        : isSelected
                          ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30 cursor-pointer' 
-                         : 'border-2 border-black shadow-sm hover:shadow-md hover:border-orange-500 hover:bg-gray-50 cursor-pointer'
+                         : 'border-2 border-gray-300 shadow-sm hover:shadow-md hover:border-orange-500 hover:bg-gray-50 cursor-pointer'
                    }`}
                  >
                    {/* FREE badge in bottom left for auto-included add-ons */}
@@ -210,7 +210,7 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                          ? 'border-orange-500 bg-orange-500 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500 data-[state=checked]:opacity-100'
                          : isSelected
                            ? 'border-orange-500 bg-orange-500 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500 data-[state=checked]:opacity-100'
-                           : 'border-gray-300 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500 data-[state=checked]:opacity-100'
+                           : 'border-black data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500 data-[state=checked]:opacity-100'
                      }`}
                    />
                   </div>
