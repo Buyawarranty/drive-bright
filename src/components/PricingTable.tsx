@@ -1967,7 +1967,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                      </div>
 
                    {/* Badge Pills */}
-                   <div className="flex flex-wrap gap-2 mb-4 mt-8">
+                   <div className="flex flex-wrap gap-2 mb-4 mt-3">
                      {option.isPopular && (
                        <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold">
                          MOST POPULAR
