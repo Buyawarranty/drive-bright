@@ -1086,27 +1086,32 @@ const PricingTable: React.FC<PricingTableProps> = ({
                    <span className="text-muted-foreground block">Mileage</span>
                    <span className="font-semibold text-foreground">{parseInt(vehicleData.mileage).toLocaleString()} miles</span>
                  </div>
-                   </div>
-                  </div>
-                  
-                  {/* Instant Cover Badge */}
-                  <div className="mt-4 flex justify-start">
-                    <TooltipProvider delayDuration={0}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="inline-flex items-center gap-1 sm:gap-2 bg-green-50 border border-green-300 rounded-md px-2 sm:px-3.5 py-1.5 sm:py-2 cursor-pointer">
-                            <span className="text-xs sm:text-sm font-semibold text-green-700 whitespace-nowrap">
-                              <span className="sm:hidden">⚡ Instant</span>
-                              <span className="hidden sm:inline">⚡ Instant cover protection</span>
-                            </span>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>🛡️ Cover starts immediately after purchase – excludes pre-existing conditions.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
+               </div>
+               
+               {/* Empty spacer cells to position instant badge below year */}
+               <div className="hidden md:block"></div>
+               <div className="hidden md:block"></div>
+               <div className="hidden md:block"></div>
+               
+               {/* Instant Cover Badge - positioned below year, inline with mileage row */}
+               <div className="col-span-2 md:col-span-1 flex items-center">
+                 <TooltipProvider delayDuration={0}>
+                   <Tooltip>
+                     <TooltipTrigger asChild>
+                       <div className="inline-flex items-center gap-1 sm:gap-2 bg-green-50 border border-green-300 rounded-md px-2 sm:px-3.5 py-1.5 sm:py-2 cursor-pointer">
+                         <span className="text-xs sm:text-sm font-semibold text-green-700 whitespace-nowrap">
+                           <span className="sm:hidden">⚡ Instant</span>
+                           <span className="hidden sm:inline">⚡ Instant cover protection</span>
+                         </span>
+                       </div>
+                     </TooltipTrigger>
+                     <TooltipContent>
+                       <p>🛡️ Cover starts immediately after purchase – excludes pre-existing conditions.</p>
+                     </TooltipContent>
+                   </Tooltip>
+                 </TooltipProvider>
+               </div>
+                </div>
                 </>
                )}
           </div>
