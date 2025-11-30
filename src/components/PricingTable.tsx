@@ -1781,7 +1781,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-3">
                     <h4 className="text-lg font-bold text-gray-900">🚀 Boost Your Claim Limit</h4>
-                    <Badge className="bg-orange-600 text-white">Popular Upgrade</Badge>
+                    <Badge className="bg-orange-600 text-white uppercase">Popular Upgrade</Badge>
                     {boostAddon && (
                       <span className="text-green-600 font-semibold text-sm flex items-center gap-1">
                         <Check className="w-4 h-4" />
