@@ -1962,31 +1962,30 @@ const PricingTable: React.FC<PricingTableProps> = ({
                      </div>
                    )}
 
-                      {/* Top-right savings tags */}
-                      <div className="absolute top-4 right-4 flex gap-2">
-                        {option.id === '24months' && (
-                           <span className="text-green-600 text-sm font-bold">
-                             Save £100
-                           </span>
-                        )}
-                        {option.id === '36months' && (
-                           <span className="text-green-600 text-sm font-bold">
-                             Save £200
-                           </span>
-                        )}
-                      </div>
-
                    {/* Badge Pills */}
-                   <div className="flex flex-wrap gap-2 mb-4 mt-3">
-                     {option.isPopular && (
-                       <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-                         MOST POPULAR
-                       </span>
+                   <div className="flex flex-wrap gap-2 mb-4 mt-3 items-center justify-between">
+                     <div className="flex flex-wrap gap-2">
+                       {option.isPopular && (
+                         <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                           MOST POPULAR
+                         </span>
+                       )}
+                       {option.isBestValue && (
+                         <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                           BEST VALUE
+                         </span>
+                       )}
+                     </div>
+                     {/* Savings tags inline with badges */}
+                     {option.id === '24months' && (
+                        <span className="text-green-600 text-sm font-bold">
+                          Save £100
+                        </span>
                      )}
-                     {option.isBestValue && (
-                       <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-                         BEST VALUE
-                       </span>
+                     {option.id === '36months' && (
+                        <span className="text-green-600 text-sm font-bold">
+                          Save £200
+                        </span>
                      )}
                    </div>
                   
