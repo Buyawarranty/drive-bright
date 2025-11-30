@@ -1608,8 +1608,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
             
             <Dialog>
               <DialogTrigger asChild>
-                <button className="ml-2 flex items-center gap-2 px-4 py-2 rounded-lg bg-white hover:bg-blue-50 transition-colors border border-blue-200 shadow-sm">
-                  <Info className="w-6 h-6 text-blue-600 flex-shrink-0" />
+                <button className="ml-2 flex items-center gap-2 px-5 py-2.5 rounded-lg bg-white hover:bg-blue-50 transition-colors border border-blue-200 shadow-sm">
+                  <Info className="w-5 h-5 text-blue-600 flex-shrink-0" />
                   <span className="text-sm font-medium text-blue-600">Details</span>
                 </button>
               </DialogTrigger>
@@ -2314,7 +2314,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <Button
                 onClick={handleSelectPlan}
                 size="lg"
-                className="text-lg font-semibold px-12 py-3"
+                className="text-lg font-semibold px-12 py-3.5"
               >
                   Continue to Checkout
                   <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
@@ -2380,7 +2380,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <Button
               onClick={handleSelectPlan}
               size="lg"
-              className="text-lg font-semibold px-8 py-3 bg-primary hover:bg-primary/90"
+              className="text-lg font-semibold px-10 py-3.5 bg-primary hover:bg-primary/90"
             >
                   Continue to Pay
                   <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
