@@ -173,10 +173,10 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                    onClick={() => !isIncluded && onAddOnChange(addon.key, !selectedAddOns[addon.key])}
                    className={`relative p-4 rounded-lg transition-all duration-200 bg-white ${
                      isIncluded 
-                       ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30 cursor-default' 
+                       ? 'border-2 border-green-600 shadow-lg shadow-green-600/30 cursor-default' 
                        : isSelected
-                         ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30 cursor-pointer' 
-                         : 'border-2 border-gray-300 shadow-sm hover:shadow-md hover:border-orange-500 hover:bg-gray-50 cursor-pointer'
+                         ? 'border-2 border-green-600 shadow-lg shadow-green-600/30 cursor-pointer' 
+                         : 'border-2 border-gray-300 shadow-sm hover:shadow-md hover:border-green-600 hover:bg-gray-50 cursor-pointer'
                    }`}
                  >
                    {/* FREE badge in bottom left for auto-included add-ons */}
