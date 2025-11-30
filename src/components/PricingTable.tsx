@@ -1850,105 +1850,124 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </Alert>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 md:items-stretch">
+          {/* Duration Selector Chips */}
+          <div className="flex flex-wrap gap-3 mb-8 justify-center">
             {[
-              {
-                id: '12months',
-                title: '1-year cover',
-                subtitle: '',
-                description: 'Flexible protection for 12 month cover',
-                planName: 'Platinum Complete Plan',
-                features: [
-                  '✅ All mechanical & electrical parts',
-                  '✅ Up to 10 claims per year',
-                  '✅ Up to the value of your vehicle',
-                  '✅ Labour costs included',
-                  '✅ Fault diagnostics',
-                  '✅ Consequential damage cover',
-                  '✅ Fast claims process',
-                  '✅ Choose your own garage',
-                  '✅ 14-day money-back guarantee',
-                  '✅ Optional extras available',
-                  '❌ Pre-existing faults are not covered'
-                ],
-                isPopular: false,
-                isStarter: false
-              },
-              {
-                id: '24months',
-                title: '2-year cover',
-                subtitle: 'MOST POPULAR',
-                description: 'Balanced Protection and Value',
-                planName: 'Platinum Complete Plan',
-                features: [
-                  '✅ All mechanical & electrical parts',
-                  '✅ Unlimited Claims',
-                  '✅ Up to the value of your vehicle',
-                  '✅ Labour costs included',
-                  '✅ Fault diagnostics',
-                  '✅ Vehicle recovery claim-back',
-                  '✅ Consequential damage cover',
-                  '✅ Fast claims process',
-                  '✅ Choose your own garage',
-                  '✅ 14-day money-back guarantee',
-                  '✅ Optional extras available',
-                  '❌ Pre-existing faults are not covered'
-                ],
-                isPopular: true
-              },
-              {
-                id: '36months',
-                title: '3-year cover',
-                subtitle: 'BEST VALUE',
-                description: 'Extended cover for longer peace of mind',
-                planName: 'Platinum Complete Plan',
-                features: [
-                  '✅ All mechanical & electrical parts',
-                  '✅ Unlimited Claims',
-                  '✅ Up to the value of your vehicle',
-                  '✅ Labour costs included',
-                  '✅ Fault diagnostics',
-                  '✅ Vehicle recovery claim-back',
-                  '✅ Europe repair cover',
-                  '✅ Vehicle rental cover',
-                  '✅ Consequential damage cover',
-                  '✅ Fast claims process',
-                  '✅ Choose your own garage',
-                  '✅ 14-day money-back guarantee',
-                  '✅ Optional extras available',
-                  '❌ Pre-existing faults are not covered'
-                ],
-                isBestValue: true
-              }
-            ].map((option) => {
-              // CRITICAL FIX: Each plan must calculate its OWN vehicle adjustment independently
-              // Calculate warranty years for THIS specific plan option
-              const optionWarrantyYears = option.id === '12months' ? 1 : 
-                                        option.id === '24months' ? 2 : 3;
+              { id: '12months', label: '1 Year', badge: null },
+              { id: '24months', label: '2 Years', badge: 'MOST POPULAR' },
+              { id: '36months', label: '3 Years', badge: 'BEST VALUE' }
+            ].map((duration) => (
+              <button
+                key={duration.id}
+                onClick={() => setPaymentType(duration.id as '12months' | '24months' | '36months')}
+                className={`relative px-8 py-4 rounded-lg border-2 font-semibold transition-all ${
+                  paymentType === duration.id
+                    ? 'border-orange-500 bg-orange-50 text-orange-700 shadow-lg shadow-orange-500/30'
+                    : 'border-gray-300 bg-white text-gray-700 hover:border-orange-300'
+                }`}
+              >
+                {duration.badge && (
+                  <span className={`absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${
+                    duration.id === '24months' ? 'bg-orange-500 text-white' : 'bg-green-600 text-white'
+                  }`}>
+                    {duration.badge}
+                  </span>
+                )}
+                {duration.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Single Duration Column */}
+          <div className="max-w-2xl mx-auto">
+            {(() => {
+              // Define features for each duration
+              const durationData = {
+                '12months': {
+                  title: '1-year cover',
+                  description: 'Flexible protection for 12 month cover',
+                  planName: 'Platinum Complete Plan',
+                  features: [
+                    '✅ All mechanical & electrical parts',
+                    '✅ Up to 10 claims per year',
+                    '✅ Up to the value of your vehicle',
+                    '✅ Labour costs included',
+                    '✅ Fault diagnostics',
+                    '✅ Consequential damage cover',
+                    '✅ Fast claims process',
+                    '✅ Choose your own garage',
+                    '✅ 14-day money-back guarantee',
+                    '✅ Optional extras available',
+                    '❌ Pre-existing faults are not covered'
+                  ]
+                },
+                '24months': {
+                  title: '2-year cover',
+                  description: 'Balanced Protection and Value',
+                  planName: 'Platinum Complete Plan',
+                  features: [
+                    '✅ All mechanical & electrical parts',
+                    '✅ Unlimited Claims',
+                    '✅ Up to the value of your vehicle',
+                    '✅ Labour costs included',
+                    '✅ Fault diagnostics',
+                    '✅ Vehicle recovery claim-back',
+                    '✅ Consequential damage cover',
+                    '✅ Fast claims process',
+                    '✅ Choose your own garage',
+                    '✅ 14-day money-back guarantee',
+                    '✅ Optional extras available',
+                    '❌ Pre-existing faults are not covered'
+                  ]
+                },
+                '36months': {
+                  title: '3-year cover',
+                  description: 'Extended cover for longer peace of mind',
+                  planName: 'Platinum Complete Plan',
+                  features: [
+                    '✅ All mechanical & electrical parts',
+                    '✅ Unlimited Claims',
+                    '✅ Up to the value of your vehicle',
+                    '✅ Labour costs included',
+                    '✅ Fault diagnostics',
+                    '✅ Vehicle recovery claim-back',
+                    '✅ Europe repair cover',
+                    '✅ Vehicle rental cover',
+                    '✅ Consequential damage cover',
+                    '✅ Fast claims process',
+                    '✅ Choose your own garage',
+                    '✅ 14-day money-back guarantee',
+                    '✅ Optional extras available',
+                    '❌ Pre-existing faults are not covered'
+                  ]
+                }
+              };
+
+              const selectedOption = durationData[paymentType];
               
-              // Calculate vehicle adjustment specifically for THIS plan duration
+              // Calculate warranty years for selected plan
+              const optionWarrantyYears = paymentType === '12months' ? 1 : 
+                                        paymentType === '24months' ? 2 : 3;
+              
+              // Calculate vehicle adjustment specifically for selected plan duration
               const optionVehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, optionWarrantyYears);
               
-              // Get the pure base price for THIS specific plan (independent of current selection)
-              const planBasePrice = getPricingData(voluntaryExcess, selectedClaimLimit, option.id);
+              // Get the pure base price for selected plan
+              const planBasePrice = getPricingData(voluntaryExcess, selectedClaimLimit, paymentType);
               const planAdjustedBasePrice = applyPriceAdjustment(planBasePrice, optionVehicleAdjustment);
-              const durationMonths = option.id === '12months' ? 12 : option.id === '24months' ? 24 : 36;
+              const durationMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
               
-              // Calculate add-on costs ONLY for the currently selected payment type for display purposes
-              let protectionAddOnPrice = 0;
-              if (paymentType === option.id) {
-                // Only calculate add-ons for the selected option for total cost calculation
-                protectionAddOnPrice = calculateAddOnPrice(selectedProtectionAddOns, option.id, durationMonths);
-              }
+              // Calculate add-on costs for selected payment type
+              const protectionAddOnPrice = calculateAddOnPrice(selectedProtectionAddOns, paymentType, durationMonths);
               
               // Add boost addon cost if selected (£84 for all durations since it's charged as £7/month for 12 months only)
               const boostCost = boostAddon ? 84 : 0;
               
               // Apply automatic discounts for multi-year plans
               let discountedPrice = planAdjustedBasePrice;
-              if (option.id === '24months') {
+              if (paymentType === '24months') {
                 discountedPrice = planAdjustedBasePrice - 100; // £100 discount for 2-year plans
-              } else if (option.id === '36months') {
+              } else if (paymentType === '36months') {
                 discountedPrice = planAdjustedBasePrice - 200; // £200 discount for 3-year plans
               }
               
@@ -1959,192 +1978,154 @@ const PricingTable: React.FC<PricingTableProps> = ({
               const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 5 : 0;
               
               // Boost addon display adjustment (display shows £4.99/month instead of £7/month, doesn't affect APIs)
-              const boostDisplayAdjustment = boostAddon && paymentType === option.id ? -2.01 : 0;
+              const boostDisplayAdjustment = boostAddon ? -2.01 : 0;
               
               const displayedMonthlyPrice = baseDisplayedMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
               
-              // Adjust total annual display price by labour rate (£3/month for £40/hr, £5/month for £100/hr * 12 months)
-              // and boost display adjustment (£2.01/month * 12 months = £24.12 annual reduction for display)
+              // Adjust total annual display price by labour rate and boost display adjustment
               const displayedAnnualPrice = discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12);
               
-              // Total cost calculation: discounted base + add-ons + boost (only for the selected plan)
+              // Total cost calculation: discounted base + add-ons + boost
               const totalPriceWithAddOns = discountedPrice + protectionAddOnPrice + boostCost;
               
               return (
-                <div
-                  key={option.id}
-                  className={`relative p-6 rounded-lg transition-all duration-200 text-left w-full border-2 flex flex-col cursor-pointer bg-white ${
-                    option.id === '12months' ? 'h-auto' : 'h-full'
-                  } ${
-                    paymentType === option.id 
-                      ? 'border-orange-500 shadow-lg shadow-orange-500/30' 
-                      : 'border-gray-200 hover:border-orange-300'
-                  }`}
-                   onClick={() => setPaymentType(option.id as '12months' | '24months' | '36months')}
-                 >
-                   {/* Badge Pills - positioned absolutely outside border */}
-                   {option.isPopular && (
-                      <span className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                        MOST POPULAR
-                      </span>
-                    )}
-                    {option.isBestValue && (
-                      <span className="absolute -top-3 right-4 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                        BEST VALUE
-                      </span>
-                    )}
-                  
-                   {/* Title */}
-                   <div className="mb-3">
-                     <div className="flex items-center justify-between mb-1">
-                       <h4 className="text-2xl font-bold text-gray-900">
-                         {option.title.replace('⭐️ ', '').replace('🏆 ', '')}
-                       </h4>
-                       {option.id === '24months' && (
-                          <span className="text-green-600 text-sm font-bold">
-                            Save £100
-                          </span>
-                       )}
-                       {option.id === '36months' && (
-                          <span className="text-green-600 text-sm font-bold">
-                            Save £200
-                          </span>
-                       )}
-                     </div>
-                    <p className="text-sm text-gray-600 mb-2">{option.description}</p>
-                    <h5 className="font-semibold text-gray-900">{option.planName}</h5>
+                <div className="relative p-8 rounded-lg border-2 border-orange-500 shadow-lg shadow-orange-500/30 bg-white">
+                  {/* Title */}
+                  <div className="mb-6 text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <h4 className="text-3xl font-bold text-gray-900">
+                        {selectedOption.title}
+                      </h4>
+                      {paymentType === '24months' && (
+                        <span className="text-green-600 text-lg font-bold">
+                          Save £100
+                        </span>
+                      )}
+                      {paymentType === '36months' && (
+                        <span className="text-green-600 text-lg font-bold">
+                          Save £200
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-base text-gray-600 mb-2">{selectedOption.description}</p>
+                    <h5 className="font-semibold text-gray-900">{selectedOption.planName}</h5>
                   </div>
                   
-                   {/* What's included */}
-                   <div className="mb-6 flex-grow">
-                     <h6 className="font-semibold text-gray-900 mb-3">Your Platinum Plan:</h6>
-                     <div className="space-y-1">
-                       {option.features.map((feature, index) => {
-                         const isCheck = feature.startsWith('✅');
-                         const text = feature.replace(/^[✅❌]\s*/, '');
-                         return (
-                           <div key={index} className="flex items-start text-sm">
-                             {isCheck ? (
-                               <Check className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                             ) : (
-                               <X className="w-4 h-4 text-red-500 mr-2 mt-0.5 flex-shrink-0" />
-                             )}
-                             <span className={isCheck ? 'text-gray-700' : 'text-black'}>
-                               {text}
-                             </span>
-                           </div>
-                         );
-                       })}
-                     </div>
-                     
-                     {/* Cover details link */}
-                     <div className="mt-3">
-                       <button
-                         className="text-sm text-orange-600 hover:text-orange-700 font-medium inline-flex items-center gap-1"
-                         onClick={(e) => {
-                           e.stopPropagation();
-                           const section = document.getElementById('your-cover-details');
-                           if (section) {
-                             section.scrollIntoView({ behavior: 'smooth' });
-                           }
-                         }}
-                       >
-                         🔍 See Full Cover Details
-                       </button>
-                     </div>
-                   </div>
-                   
-                      {/* Pricing */}
-                     <div className="mb-4 text-center mt-auto">
-                         <div className="text-4xl font-bold text-green-600 mb-3">
-                           £{displayedMonthlyPrice}/month
-                         </div>
-                       <div className="text-base text-gray-700 mb-4 space-y-1">
-                          {option.id === '12months' && (
-                            <div className="flex items-center justify-center gap-2">
-                              <span className="text-green-500 text-lg">✓</span>
-                              <span className="font-medium">12 monthly payments</span>
-                            </div>
-                          )}
-                          {option.id === '24months' && (
-                            <>
-                              <div className="flex items-center justify-center gap-2">
-                                <span className="text-green-500 text-lg">✓</span>
-                                <span className="font-medium">12 monthly payments</span>
-                              </div>
-                              <div className="flex items-center justify-center gap-2">
-                                <span className="text-green-500 text-lg">✓</span>
-                                <span className="font-medium">No payments in Year 2</span>
-                              </div>
-                            </>
-                          )}
-                          {option.id === '36months' && (
-                            <>
-                              <div className="flex items-center justify-center gap-2">
-                                <span className="text-green-500 text-lg">✓</span>
-                                <span className="font-medium">12 monthly payments</span>
-                              </div>
-                              <div className="flex items-center justify-center gap-2">
-                                <span className="text-green-500 text-lg">✓</span>
-                                <span className="font-medium">No payments in Years 2 & 3</span>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                         <div className="text-center">
-                           {option.id === '12months' ? (
-                              <div className="text-center">
-                                <div className="text-2xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
-                                <div className="text-base text-gray-600">1 year cover</div>
-                              </div>
-                           ) : (
-                              <div className="text-center">
-                                <div className="text-base text-gray-600 mb-1">
-                                  Was <span className="line-through text-gray-500 font-semibold">£{planAdjustedBasePrice}</span> →
-                                </div>
-                                <div className="text-2xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
-                                <div className="text-sm text-green-600 font-bold">
-                                  Save £{planAdjustedBasePrice - displayedAnnualPrice}
-                                </div>
-                              </div>
-                           )}
-                         </div>
-                   </div>
+                  {/* What's included */}
+                  <div className="mb-8">
+                    <h6 className="font-semibold text-gray-900 mb-4 text-lg">Your Platinum Plan:</h6>
+                    <div className="space-y-2">
+                      {selectedOption.features.map((feature, index) => {
+                        const isCheck = feature.startsWith('✅');
+                        const text = feature.replace(/^[✅❌]\s*/, '');
+                        return (
+                          <div key={index} className="flex items-start text-base">
+                            {isCheck ? (
+                              <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                            ) : (
+                              <X className="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" />
+                            )}
+                            <span className={isCheck ? 'text-gray-700' : 'text-black'}>
+                              {text}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Cover details link */}
+                    <div className="mt-4">
+                      <button
+                        className="text-base text-orange-600 hover:text-orange-700 font-medium inline-flex items-center gap-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const section = document.getElementById('your-cover-details');
+                          if (section) {
+                            section.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }}
+                      >
+                        🔍 See Full Cover Details
+                      </button>
+                    </div>
+                  </div>
                   
-                    {/* Select Button */}
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPaymentType(option.id as '12months' | '24months' | '36months');
-                      }}
-                      className={`w-full py-3 text-lg font-semibold transition-all mb-3 ${
-                        paymentType === option.id
-                          ? 'bg-black hover:bg-gray-800 text-white'
-                          : 'bg-orange-500 hover:bg-orange-600 text-white'
-                      }`}
-                    >
-                      {paymentType === option.id ? 'Selected' : 'Select'}
-                    </Button>
-                   
-                   {/* Email Quote Button */}
-                   <Button
-                     type="button"
-                     onClick={(e) => {
-                       e.stopPropagation();
-                       handleEmailQuote({
-                         title: option.title,
-                         monthlyPrice: displayedMonthlyPrice,
-                         totalPrice: displayedAnnualPrice,
-                         paymentType: option.id
-                       });
-                     }}
-                      className="w-full py-3 text-base font-semibold bg-white border border-gray-300 text-black hover:bg-gray-50"
-                    >
-                   ✉️ Email Quote
-                   </Button>
+                  {/* Pricing */}
+                  <div className="mb-6 text-center border-t pt-6">
+                    <div className="text-5xl font-bold text-green-600 mb-4">
+                      £{displayedMonthlyPrice}/month
+                    </div>
+                    <div className="text-lg text-gray-700 mb-6 space-y-2">
+                      {paymentType === '12months' && (
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="text-green-500 text-xl">✓</span>
+                          <span className="font-medium">12 monthly payments</span>
+                        </div>
+                      )}
+                      {paymentType === '24months' && (
+                        <>
+                          <div className="flex items-center justify-center gap-2">
+                            <span className="text-green-500 text-xl">✓</span>
+                            <span className="font-medium">12 monthly payments</span>
+                          </div>
+                          <div className="flex items-center justify-center gap-2">
+                            <span className="text-green-500 text-xl">✓</span>
+                            <span className="font-medium">No payments in Year 2</span>
+                          </div>
+                        </>
+                      )}
+                      {paymentType === '36months' && (
+                        <>
+                          <div className="flex items-center justify-center gap-2">
+                            <span className="text-green-500 text-xl">✓</span>
+                            <span className="font-medium">12 monthly payments</span>
+                          </div>
+                          <div className="flex items-center justify-center gap-2">
+                            <span className="text-green-500 text-xl">✓</span>
+                            <span className="font-medium">No payments in Years 2 & 3</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    <div className="text-center">
+                      {paymentType === '12months' ? (
+                        <div className="text-center">
+                          <div className="text-3xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
+                          <div className="text-lg text-gray-600">1 year cover</div>
+                        </div>
+                      ) : (
+                        <div className="text-center">
+                          <div className="text-lg text-gray-600 mb-2">
+                            Was <span className="line-through text-gray-500 font-semibold">£{planAdjustedBasePrice}</span> →
+                          </div>
+                          <div className="text-3xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
+                          <div className="text-lg text-green-600 font-bold">
+                            Save £{planAdjustedBasePrice - displayedAnnualPrice}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Email Quote Button */}
+                  <Button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEmailQuote({
+                        title: selectedOption.title,
+                        monthlyPrice: displayedMonthlyPrice,
+                        totalPrice: displayedAnnualPrice,
+                        paymentType: paymentType
+                      });
+                    }}
+                    className="w-full py-4 text-lg font-semibold bg-white border-2 border-gray-300 text-black hover:bg-gray-50"
+                  >
+                    ✉️ Email Quote
+                  </Button>
                 </div>
               );
-            })}
+            })()}
           </div>
         </div>
 
