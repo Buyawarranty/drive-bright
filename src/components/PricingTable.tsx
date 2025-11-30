@@ -2060,24 +2060,24 @@ const PricingTable: React.FC<PricingTableProps> = ({
                             </>
                           )}
                         </div>
-                        <div className="text-center">
-                          {option.id === '12months' ? (
-                             <div className="text-center">
-                               <div className="text-4xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
-                               <div className="text-base text-gray-600">1 Year Cover</div>
-                             </div>
-                          ) : (
-                             <div className="text-center">
-                               <div className="text-base text-gray-600 mb-1">
-                                 Was <span className="line-through text-gray-500 font-semibold">£{planAdjustedBasePrice}</span> →
-                               </div>
-                               <div className="text-4xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
-                               <div className="inline-block bg-gray-600 text-white px-4 py-1.5 rounded-full text-sm font-bold">
-                                 Save £{planAdjustedBasePrice - displayedAnnualPrice}
-                               </div>
-                             </div>
-                          )}
-                        </div>
+                         <div className="text-center">
+                           {option.id === '12months' ? (
+                              <div className="text-center">
+                                <div className="text-2xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
+                                <div className="text-base text-gray-600">1 Year Cover</div>
+                              </div>
+                           ) : (
+                              <div className="text-center">
+                                <div className="text-base text-gray-600 mb-1">
+                                  Was <span className="line-through text-gray-500 font-semibold">£{planAdjustedBasePrice}</span> →
+                                </div>
+                                <div className="text-2xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
+                                <div className="inline-block bg-gray-600 text-white px-4 py-1.5 rounded-full text-sm font-bold">
+                                  Save £{planAdjustedBasePrice - displayedAnnualPrice}
+                                </div>
+                              </div>
+                           )}
+                         </div>
                    </div>
                   
                     {/* Select Button */}
