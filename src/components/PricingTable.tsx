@@ -2325,7 +2325,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       {/* Sticky Total Bar */}
       {!plansLoading && !plansError && !vehicleAgeError && displayPlans.length > 0 && paymentType && (
         <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-orange-50 to-blue-50 border-t-2 border-orange-200 shadow-lg z-50">
-          <div className="flex items-center justify-between p-4 max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between p-4 max-w-6xl mx-auto gap-4">
             {/* Trustpilot Logo - Moved to left */}
             <div className="hidden md:block flex-shrink-0 mr-4">
               <a 
@@ -2342,13 +2342,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </a>
             </div>
             
-            {/* Price Section - Moved to center */}
-            <div className="flex flex-col flex-1 text-center">
+            {/* Price Section - Stacked on mobile, center on desktop */}
+            <div className="flex flex-col flex-1 text-left md:text-center">
               {/* Monthly Price - Main Hook - Show discounted price with add-ons */}
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-xl md:text-2xl font-bold text-gray-900">
                 £{Math.round(totalDiscountedPrice / 12)}/month
               </div>
-              <div className="text-sm text-gray-600 mb-1">
+              <div className="text-xs md:text-sm text-gray-600 mb-1">
                 {paymentType === '12months' 
                   ? 'Only 12 payments'
                   : paymentType === '24months' 
@@ -2358,7 +2358,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
               
               {/* Payment Terms and Total for footer */}
-              <div className="flex items-center justify-center gap-2 text-sm">
+              <div className="flex items-center justify-start md:justify-center gap-2 text-xs md:text-sm">
                 <span className="text-gray-500">
                   {paymentType === '12months' 
                     ? '1 Year Cover'
@@ -2377,16 +2377,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
             </div>
             
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-col items-stretch md:items-end gap-2">
               <Button
                 onClick={handleSelectPlan}
                 size="lg"
-                className="text-lg font-semibold pl-12 pr-10 py-3.5 bg-primary hover:bg-primary/90"
+                className="text-base md:text-lg font-semibold px-8 md:pl-12 md:pr-10 py-3 md:py-3.5 bg-primary hover:bg-primary/90 w-full md:w-auto"
               >
                     Continue to Pay
                     <ArrowRight className="w-5 h-5 ml-1" strokeWidth={4.5} />
               </Button>
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-xs md:text-sm font-semibold text-gray-900 text-center md:text-right">
                 Total: £{Math.round(totalDiscountedPrice)}
               </span>
             </div>
