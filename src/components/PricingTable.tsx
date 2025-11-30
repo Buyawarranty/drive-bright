@@ -1598,9 +1598,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
           validationErrors.claimLimit ? 'border-2 border-red-500' : ''
         }`}>
           <div className="flex items-center gap-3 mb-6">
-            <button className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold cursor-pointer hover:bg-gray-800 transition-colors">
+            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold">
               4
-            </button>
+            </div>
             <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
               <ShieldCheck className="w-5 h-5" />
               Pick Your Claim Limit
