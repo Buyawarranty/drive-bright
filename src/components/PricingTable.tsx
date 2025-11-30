@@ -1482,7 +1482,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         </div>
 
         {/* Labour Rate Selection - NEW */}
-        <div className="bg-gray-50 rounded-lg p-6">
+        <div>
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold">
               2
@@ -1493,11 +1493,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </h2>
           </div>
           
-          <p className="text-sm text-muted-foreground mb-4 ml-11">
+          <p className="text-sm text-muted-foreground mb-4">
             Select the hourly labour rate that matches your preferred garage type
           </p>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 ml-11">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <button
               onClick={() => setSelectedLabourRate(40)}
               className={`bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
