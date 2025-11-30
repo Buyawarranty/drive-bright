@@ -207,10 +207,10 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                      onCheckedChange={(checked) => !isIncluded && onAddOnChange(addon.key, !!checked)}
                      className={`h-4 w-4 border-2 flex-shrink-0 opacity-100 ${
                        isIncluded 
-                         ? 'border-orange-500 bg-orange-500 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500 data-[state=checked]:opacity-100'
+                         ? 'border-green-600 bg-green-600 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600 data-[state=checked]:opacity-100 data-[state=checked]:text-white'
                          : isSelected
-                           ? 'border-orange-500 bg-orange-500 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500 data-[state=checked]:opacity-100'
-                           : 'border-black data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500 data-[state=checked]:opacity-100'
+                           ? 'border-green-600 bg-green-600 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600 data-[state=checked]:opacity-100 data-[state=checked]:text-white'
+                           : 'border-black data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600 data-[state=checked]:opacity-100 data-[state=checked]:text-white'
                      }`}
                    />
                   </div>
