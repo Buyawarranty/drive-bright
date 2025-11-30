@@ -1950,10 +1950,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
               
               // Labour rate adjustment for display only (doesn't affect actual pricing/APIs)
               const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 5 : 0;
-              const displayedMonthlyPrice = baseDisplayedMonthlyPrice + labourRateAdjustment;
+              
+              // Boost addon display adjustment (display shows £4.99/month instead of £7/month, doesn't affect APIs)
+              const boostDisplayAdjustment = boostAddon && paymentType === option.id ? -2.01 : 0;
+              
+              const displayedMonthlyPrice = baseDisplayedMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
               
               // Adjust total annual display price by labour rate (£3/month for £40/hr, £5/month for £100/hr * 12 months)
-              const displayedAnnualPrice = discountedPrice + (labourRateAdjustment * 12);
+              // and boost display adjustment (£2.01/month * 12 months = £24.12 annual reduction for display)
+              const displayedAnnualPrice = discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12);
               
               // Total cost calculation: discounted base + add-ons + boost (only for the selected plan)
               const totalPriceWithAddOns = discountedPrice + protectionAddOnPrice + boostCost;
