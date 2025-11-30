@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ProtectedButton } from '@/components/ui/protected-button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Check, ArrowLeft, Info, FileText, ExternalLink, ChevronDown, ChevronUp, Plus, Infinity, Zap, Car, Cog, Settings, Droplets, Cpu, Snowflake, Search, Users, RotateCcw, MapPin, X, Shield, Hash, Calendar, Gauge, Fuel, Edit, HelpCircle, Gift, ArrowRight, DollarSign, MousePointerClick, ShieldCheck, PartyPopper, CheckCircle, Crown, Battery, Bike, AlertTriangle, AlertCircle } from 'lucide-react';
+import { Check, ArrowLeft, Info, FileText, ExternalLink, ChevronDown, ChevronUp, Plus, Infinity, Zap, Car, Cog, Settings, Droplets, Cpu, Snowflake, Search, Users, RotateCcw, MapPin, X, Shield, Hash, Calendar, Gauge, Fuel, Edit, HelpCircle, Gift, ArrowRight, ArrowUp, DollarSign, MousePointerClick, ShieldCheck, PartyPopper, CheckCircle, Crown, Battery, Bike, AlertTriangle, AlertCircle } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -2221,9 +2221,23 @@ const PricingTable: React.FC<PricingTableProps> = ({
         {/* Additional Information Section - Redesigned */}
         <div id="your-cover-details" className="bg-gray-50 rounded-lg p-8 border border-gray-200 shadow-sm">
           <div className="mb-6">
-            <h3 className="text-2xl font-bold text-foreground mb-4">
-              Your Cover, Made Crystal Clear 🛡️
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-2xl font-bold text-foreground">
+                Your Cover, Made Crystal Clear 🛡️
+              </h3>
+              <Button
+                onClick={() => {
+                  const durationSection = document.getElementById('duration-price-section');
+                  durationSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 text-sm font-medium hover:bg-primary/5"
+              >
+                <ArrowUp className="w-4 h-4" />
+                Back to Plans
+              </Button>
+            </div>
             <div className="flex items-start gap-2">
               <Check className="h-5 w-5 text-green-500 mt-1 flex-shrink-0" strokeWidth={3} />
               <p className="text-black text-lg font-medium">
