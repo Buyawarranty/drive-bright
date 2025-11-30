@@ -1762,7 +1762,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
           
           {/* Boost Add-On */}
-          <div className="mt-6 p-6 bg-white rounded-lg border-2 border-orange-200 hover:border-orange-300 transition-all duration-200">
+          <div className={`mt-6 p-6 bg-white rounded-lg border-2 transition-all duration-200 ${
+            boostAddon 
+              ? 'border-orange-400 shadow-[0_0_30px_rgba(251,146,60,0.5)]' 
+              : 'border-orange-200 hover:border-orange-300'
+          }`}>
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
                   <div className={`w-6 h-6 rounded border-2 flex items-center justify-center cursor-pointer transition-all duration-200 ${
