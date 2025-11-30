@@ -1522,7 +1522,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
             >
               <span className="absolute -top-3 right-4 bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">BEST VALUE</span>
               <div className="mb-2">
-                <span className="text-2xl font-bold text-foreground">£40/hour</span>
+                <span className="text-2xl font-bold text-foreground">£40 </span>
+                <span className="text-sm font-medium text-foreground">per hour</span>
               </div>
               <p className="text-xl font-bold text-black">Independent Garages</p>
               <p className="text-xs text-muted-foreground mt-1">Ideal for independent garages</p>
@@ -1538,7 +1539,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
             >
               <span className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">MOST POPULAR</span>
               <div className="mb-2">
-                <span className="text-2xl font-bold text-foreground">£70/hour</span>
+                <span className="text-2xl font-bold text-foreground">£70 </span>
+                <span className="text-sm font-medium text-foreground">per hour</span>
               </div>
               <p className="text-xl font-bold text-black">Most Garages</p>
               <p className="text-xs text-muted-foreground mt-1">Covers most reputable garages.</p>
@@ -1554,7 +1556,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
             >
               <span className="absolute -top-3 right-4 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-semibold">PREMIUM COVER</span>
               <div className="mb-2">
-                <span className="text-2xl font-bold text-foreground">£100/hour</span>
+                <span className="text-2xl font-bold text-foreground">£100 </span>
+                <span className="text-sm font-medium text-foreground">per hour</span>
               </div>
               <p className="text-xl font-bold text-black">Dealer Approved</p>
               <p className="text-xs text-muted-foreground mt-1">Perfect for main dealers and specialists.</p>
