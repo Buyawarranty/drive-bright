@@ -2299,17 +2299,20 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <div className="text-3xl font-bold text-gray-900">
                   £{Math.round(totalDiscountedPrice / 12)}/month
                 </div>
-                <div className="text-base text-gray-600 mb-2">
-                  {paymentType === '12months' 
-                    ? 'Only 12 payments'
-                    : paymentType === '24months' 
+                <div className="flex items-center justify-end gap-1.5 text-base text-gray-600 mb-2">
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span>
+                    {paymentType === '12months' 
                       ? 'Only 12 payments'
-                      : 'Only 12 payments'
-                  }
+                      : paymentType === '24months' 
+                        ? 'Only 12 payments'
+                        : 'Only 12 payments'
+                    }
+                  </span>
                 </div>
                 
                  {/* Total Cost - Show final total only */}
-                <div className="text-sm font-semibold text-gray-400">
+                <div className="text-lg font-medium text-gray-600">
                   Total: £{Math.round(totalDiscountedPrice)}
                 </div>
               </div>
@@ -2396,7 +2399,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     Continue to Pay
                     <ArrowRight className="w-5 h-5 ml-1" strokeWidth={4.5} />
               </Button>
-              <span className="text-xs md:text-sm font-semibold text-gray-900 text-center md:text-right">
+              <span className="text-base md:text-lg font-medium text-gray-600 text-center md:text-right">
                 Total: £{Math.round(totalDiscountedPrice)}
               </span>
             </div>
