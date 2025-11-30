@@ -2019,6 +2019,22 @@ const PricingTable: React.FC<PricingTableProps> = ({
                          );
                        })}
                      </div>
+                     
+                     {/* Cover details link */}
+                     <div className="mt-3 text-center">
+                       <button 
+                         className="text-sm text-orange-600 hover:text-orange-700 font-medium inline-flex items-center gap-1"
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           const section = document.getElementById('your-cover-details');
+                           if (section) {
+                             section.scrollIntoView({ behavior: 'smooth' });
+                           }
+                         }}
+                       >
+                         🔍 See Full Cover Details
+                       </button>
+                     </div>
                    </div>
                    
                       {/* Pricing */}
@@ -2107,20 +2123,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                      }}
                       className="w-full py-3 text-base font-semibold bg-white border-2 border-primary text-primary hover:bg-primary/5"
                     >
-                      📧 Email Quote
-                    </Button>
-                   
-                   {/* Footer note */}
-                   <div className="mt-3 text-center">
-                     <p className="text-xs text-gray-500">
-                       *Please see <button className="text-orange-600 hover:text-orange-700 underline" onClick={() => {
-                         const section = document.getElementById('your-cover-details');
-                         if (section) {
-                           section.scrollIntoView({ behavior: 'smooth' });
-                         }
-                       }}>Your Cover Details</button> below
-                     </p>
-                   </div>
+                   📧 Email Quote
+                   </Button>
                 </div>
               );
             })}
