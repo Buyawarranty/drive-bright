@@ -1813,9 +1813,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
 
         {/* Choose Warranty Duration */}
-        <div id="duration-price-section" className={`section-header rounded-lg p-6 transition-all duration-200 ${
-          validationErrors.paymentType ? 'border-2 border-red-500' : ''
-        }`}>
+        <div id="duration-price-section">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold">
               5
@@ -1825,6 +1823,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
               Choose Your Duration
             </h2>
           </div>
+
+          {validationErrors.paymentType && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-red-600 font-medium">
+                Please choose a warranty duration to continue.
+              </AlertDescription>
+            </Alert>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 md:items-stretch">
             {[
@@ -1967,24 +1974,25 @@ const PricingTable: React.FC<PricingTableProps> = ({
                          </span>
                        )}
                      </div>
-                     {/* Savings tags inline with badges */}
-                     {option.id === '24months' && (
-                        <span className="text-green-600 text-sm font-bold">
-                          Save £100
-                        </span>
-                     )}
-                     {option.id === '36months' && (
-                        <span className="text-green-600 text-sm font-bold">
-                          Save £200
-                        </span>
-                     )}
                    </div>
                   
                    {/* Title */}
                    <div className="mb-3">
-                     <h4 className="text-2xl font-bold text-gray-900 mb-1">
-                       {option.title.replace('⭐️ ', '').replace('🏆 ', '')}
-                     </h4>
+                     <div className="flex items-center justify-between mb-1">
+                       <h4 className="text-2xl font-bold text-gray-900">
+                         {option.title.replace('⭐️ ', '').replace('🏆 ', '')}
+                       </h4>
+                       {option.id === '24months' && (
+                          <span className="text-green-600 text-sm font-bold">
+                            Save £100
+                          </span>
+                       )}
+                       {option.id === '36months' && (
+                          <span className="text-green-600 text-sm font-bold">
+                            Save £200
+                          </span>
+                       )}
+                     </div>
                     <p className="text-sm text-gray-600 mb-2">{option.description}</p>
                     <h5 className="font-semibold text-gray-900">{option.planName}</h5>
                   </div>
