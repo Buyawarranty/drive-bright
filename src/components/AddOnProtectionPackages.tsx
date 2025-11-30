@@ -176,7 +176,7 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                        ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30 cursor-default' 
                        : isSelected
                          ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30 cursor-pointer' 
-                         : 'border border-gray-300 shadow-sm hover:shadow-md hover:border-orange-300 hover:bg-gray-50 cursor-pointer'
+                         : 'border-2 border-black shadow-sm hover:shadow-md hover:border-orange-500 hover:bg-gray-50 cursor-pointer'
                    }`}
                  >
                    {/* FREE badge in bottom left for auto-included add-ons */}
