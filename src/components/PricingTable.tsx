@@ -1538,7 +1538,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
               }`}
             >
-              <span className="absolute -top-3 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold">PREMIUM COVER</span>
+              <span className="absolute -top-3 right-4 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-semibold">PREMIUM COVER</span>
               <div className="mb-2">
                 <span className="text-2xl font-bold text-foreground">£100/hr</span>
               </div>
@@ -1606,9 +1606,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
             
             <Dialog>
               <DialogTrigger asChild>
-                <button className="ml-2 flex items-center gap-2 px-5 py-2.5 rounded-lg bg-white hover:bg-blue-50 transition-colors border border-blue-200 shadow-sm">
-                  <Info className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                  <span className="text-sm font-medium text-blue-600">Details</span>
+                <button className="ml-2 flex items-center gap-2 px-5 py-2.5 rounded-lg bg-white hover:bg-green-50 transition-colors border border-green-200 shadow-sm">
+                  <Info className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <span className="text-sm font-medium text-green-600">Details</span>
                 </button>
               </DialogTrigger>
               <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" hideCloseButton>
@@ -1619,7 +1619,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 
                 <DialogHeader className="pr-12">
                   <DialogTitle className="flex items-center gap-2 text-xl">
-                    <ShieldCheck className="w-6 h-6 text-blue-600" />
+                    <ShieldCheck className="w-6 h-6 text-green-600" />
                     Understanding Your Claim Limit
                   </DialogTitle>
                 </DialogHeader>
@@ -1629,9 +1629,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <span className="font-semibold text-gray-900">What is a Claim Limit?</span> Your claim limit is the maximum amount we'll pay per claim for covered repairs. If your repair costs exceed your chosen limit, you'll need to pay the difference.
                   </p>
                   
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                     <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                      <Info className="w-5 h-5 text-blue-600" />
+                      <Info className="w-5 h-5 text-green-600" />
                       How It Works - Example:
                     </h4>
                     
@@ -1740,15 +1740,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <div 
               className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
                 selectedClaimLimit === 2000
-                  ? 'border-2 border-blue-600 shadow-lg shadow-blue-600/30'
-                  : 'border-2 border-blue-200 hover:border-blue-300 hover:shadow-md'
+                  ? 'border-2 border-green-600 shadow-lg shadow-green-600/30'
+                  : 'border-2 border-green-200 hover:border-green-300 hover:shadow-md'
               }`}
               onClick={() => {
                 setSelectedClaimLimit(2000);
                 setValidationErrors(prev => ({ ...prev, claimLimit: false }));
               }}
             >
-              <div className="absolute -top-3 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+              <div className="absolute -top-3 right-4 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
                 <Crown className="w-3 h-3" />
                 BEST PROTECTION
               </div>
@@ -1967,7 +1967,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </span>
                     )}
                     {option.isBestValue && (
-                      <span className="absolute -top-3 right-4 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                      <span className="absolute -top-3 right-4 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
                         BEST VALUE
                       </span>
                     )}
