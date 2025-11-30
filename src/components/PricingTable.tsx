@@ -1690,8 +1690,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </Alert>
           )}
           
-          <p className="text-sm text-muted-foreground mb-6">
-            Choose the coverage level that best suits your needs and budget
+          <p className="text-lg font-medium text-foreground mb-4">
+            Choose how much we'll pay for each repair
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
