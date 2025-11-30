@@ -26,7 +26,7 @@ const WebsiteFooter = () => {
                 href="mailto:support@buyawarranty.co.uk" 
                 className="flex items-center text-lg font-semibold text-[#eb4b00] hover:text-[#d63f00] transition-colors"
               >
-                <Mail className="w-5 h-5 mr-2" />
+                <Mail className="w-5 h-5 mr-1" />
                 Email us: support@buyawarranty.co.uk
               </a>
               <a 
