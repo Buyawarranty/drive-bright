@@ -1699,7 +1699,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <div 
               className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
                 selectedClaimLimit === 750
-                  ? 'border-2 border-gray-400 shadow-lg shadow-gray-400/30'
+                  ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30'
                   : 'border-2 border-gray-200 hover:border-gray-300 hover:shadow-md'
               }`}
               onClick={() => {
@@ -1719,7 +1719,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
                 selectedClaimLimit === 1250
                   ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'border-2 border-orange-200 hover:border-orange-300 hover:shadow-md'
+                  : 'border-2 border-gray-200 hover:border-gray-300 hover:shadow-md'
               }`}
               onClick={() => {
                 setSelectedClaimLimit(1250);
@@ -1740,8 +1740,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <div 
               className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
                 selectedClaimLimit === 2000
-                  ? 'border-2 border-green-600 shadow-lg shadow-green-600/30'
-                  : 'border-2 border-green-200 hover:border-green-300 hover:shadow-md'
+                  ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30'
+                  : 'border-2 border-gray-200 hover:border-gray-300 hover:shadow-md'
               }`}
               onClick={() => {
                 setSelectedClaimLimit(2000);
