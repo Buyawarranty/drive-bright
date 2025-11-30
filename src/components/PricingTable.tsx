@@ -1850,283 +1850,243 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </Alert>
           )}
 
-          {/* Duration Selector Chips */}
-          <div className="grid grid-cols-3 gap-3 mb-8">
+          {/* Comparison Cards - All Three Durations */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {[
-              { id: '12months', label: '1 Year', badge: null },
-              { id: '24months', label: '2 Years', badge: 'MOST POPULAR' },
-              { id: '36months', label: '3 Years', badge: 'BEST VALUE' }
-            ].map((duration) => (
-              <button
-                key={duration.id}
-                onClick={() => setPaymentType(duration.id as '12months' | '24months' | '36months')}
-                className={`relative px-6 py-4 rounded-lg border-2 font-semibold transition-all ${
-                  paymentType === duration.id
-                    ? 'border-orange-500 bg-orange-50 text-orange-700 shadow-lg shadow-orange-500/30'
-                    : 'border-gray-300 bg-white text-gray-700 hover:border-orange-300'
-                }`}
-              >
-                {duration.badge && (
-                  <span className={`absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${
-                    duration.id === '24months' ? 'bg-orange-500 text-white' : 'bg-green-600 text-white'
-                  }`}>
-                    {duration.badge}
-                  </span>
-                )}
-                {duration.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Single Duration Column */}
-          <div className="w-full">
-            {(() => {
-              // Define features for each duration
-              const durationData = {
-                '12months': {
-                  title: '1-year cover',
-                  description: 'Flexible protection for 12 month cover',
-                  planName: 'Platinum Complete Plan',
-                  features: [
-                    '✅ All mechanical & electrical parts',
-                    '✅ Up to 10 claims per year',
-                    '✅ Up to the value of your vehicle',
-                    '✅ Labour costs included',
-                    '✅ Fault diagnostics',
-                    '✅ Consequential damage cover',
-                    '✅ Fast claims process',
-                    '✅ Choose your own garage',
-                    '✅ 14-day money-back guarantee',
-                    '✅ Optional extras available',
-                    '❌ Pre-existing faults are not covered'
-                  ]
-                },
-                '24months': {
-                  title: '2-year cover',
-                  description: 'Balanced Protection and Value',
-                  planName: 'Platinum Complete Plan',
-                  features: [
-                    '✅ All mechanical & electrical parts',
-                    '✅ Unlimited Claims',
-                    '✅ Up to the value of your vehicle',
-                    '✅ Labour costs included',
-                    '✅ Fault diagnostics',
-                    '✅ Vehicle recovery claim-back',
-                    '✅ Consequential damage cover',
-                    '✅ Fast claims process',
-                    '✅ Choose your own garage',
-                    '✅ 14-day money-back guarantee',
-                    '✅ Optional extras available',
-                    '❌ Pre-existing faults are not covered'
-                  ]
-                },
-                '36months': {
-                  title: '3-year cover',
-                  description: 'Extended cover for longer peace of mind',
-                  planName: 'Platinum Complete Plan',
-                  features: [
-                    '✅ All mechanical & electrical parts',
-                    '✅ Unlimited Claims',
-                    '✅ Up to the value of your vehicle',
-                    '✅ Labour costs included',
-                    '✅ Fault diagnostics',
-                    '✅ Vehicle recovery claim-back',
-                    '✅ Europe repair cover',
-                    '✅ Vehicle rental cover',
-                    '✅ Consequential damage cover',
-                    '✅ Fast claims process',
-                    '✅ Choose your own garage',
-                    '✅ 14-day money-back guarantee',
-                    '✅ Optional extras available',
-                    '❌ Pre-existing faults are not covered'
-                  ]
-                }
-              };
-
-              const selectedOption = durationData[paymentType];
+              { id: '12months', label: '1-year cover', badge: null, planName: 'Platinum Complete Plan' },
+              { id: '24months', label: '2-year cover', badge: 'MOST POPULAR', planName: 'Platinum Complete Plan' },
+              { id: '36months', label: '3-year cover', badge: 'BEST VALUE', planName: 'Platinum Complete Plan' }
+            ].map((duration) => {
+              const durationId = duration.id as '12months' | '24months' | '36months';
+              const isSelected = paymentType === durationId;
               
-              // Calculate warranty years for selected plan
-              const optionWarrantyYears = paymentType === '12months' ? 1 : 
-                                        paymentType === '24months' ? 2 : 3;
+              // Calculate pricing for this duration
+              const warrantyYears = durationId === '12months' ? 1 : durationId === '24months' ? 2 : 3;
+              const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
+              const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, durationId);
+              const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
               
-              // Calculate vehicle adjustment specifically for selected plan duration
-              const optionVehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, optionWarrantyYears);
-              
-              // Get the pure base price for selected plan
-              const planBasePrice = getPricingData(voluntaryExcess, selectedClaimLimit, paymentType);
-              const planAdjustedBasePrice = applyPriceAdjustment(planBasePrice, optionVehicleAdjustment);
-              const durationMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
-              
-              // Calculate add-on costs for selected payment type
-              const protectionAddOnPrice = calculateAddOnPrice(selectedProtectionAddOns, paymentType, durationMonths);
-              
-              // Add boost addon cost if selected (£84 for all durations since it's charged as £7/month for 12 months only)
-              const boostCost = boostAddon ? 84 : 0;
-              
-              // Apply automatic discounts for multi-year plans
-              let discountedPrice = planAdjustedBasePrice;
-              if (paymentType === '24months') {
-                discountedPrice = planAdjustedBasePrice - 100; // £100 discount for 2-year plans
-              } else if (paymentType === '36months') {
-                discountedPrice = planAdjustedBasePrice - 200; // £200 discount for 3-year plans
+              // Apply automatic discounts
+              let discountedPrice = adjustedBasePrice;
+              if (durationId === '24months') {
+                discountedPrice = adjustedBasePrice - 100;
+              } else if (durationId === '36months') {
+                discountedPrice = adjustedBasePrice - 200;
               }
               
-              // Plan price display: show discounted price ÷ 12
-              const baseDisplayedMonthlyPrice = Math.round(discountedPrice / 12);
-              
-              // Labour rate adjustment for display only (doesn't affect actual pricing/APIs)
+              // Calculate display monthly price
+              const baseMonthlyPrice = Math.round(discountedPrice / 12);
               const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 5 : 0;
-              
-              // Boost addon display adjustment (display shows £4.99/month instead of £7/month, doesn't affect APIs)
               const boostDisplayAdjustment = boostAddon ? -2.01 : 0;
-              
-              const displayedMonthlyPrice = baseDisplayedMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
-              
-              // Adjust total annual display price by labour rate and boost display adjustment
-              const displayedAnnualPrice = discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12);
-              
-              // Total cost calculation: discounted base + add-ons + boost
-              const totalPriceWithAddOns = discountedPrice + protectionAddOnPrice + boostCost;
+              const displayedMonthlyPrice = baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
               
               return (
-                <div className="relative p-8 rounded-lg border-2 border-orange-500 shadow-lg shadow-orange-500/30 bg-white">
-                  {/* Title */}
-                  <div className="mb-6 text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <h4 className="text-3xl font-bold text-gray-900">
-                        {selectedOption.title}
-                      </h4>
-                      {paymentType === '24months' && (
-                        <span className="text-green-600 text-lg font-bold">
-                          Save £100
-                        </span>
-                      )}
-                      {paymentType === '36months' && (
-                        <span className="text-green-600 text-lg font-bold">
-                          Save £200
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-base text-gray-600 mb-2">{selectedOption.description}</p>
-                    <h5 className="font-semibold text-gray-900">{selectedOption.planName}</h5>
+                <button
+                  key={durationId}
+                  onClick={() => setPaymentType(durationId)}
+                  className={`relative p-6 rounded-lg border-2 transition-all text-left ${
+                    isSelected
+                      ? 'border-orange-500 bg-orange-50 shadow-lg shadow-orange-500/30'
+                      : 'border-gray-300 bg-white hover:border-orange-300'
+                  }`}
+                >
+                  {/* Badge */}
+                  {duration.badge && (
+                    <span className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
+                      durationId === '24months' ? 'bg-orange-500 text-white' : 'bg-green-600 text-white'
+                    }`}>
+                      {duration.badge}
+                    </span>
+                  )}
+                  
+                  {/* Duration Title */}
+                  <h4 className="text-xl font-bold text-gray-900 mb-2 mt-2">
+                    {duration.label}
+                  </h4>
+                  
+                  {/* Plan Name */}
+                  <p className="text-sm text-gray-600 mb-4">{duration.planName}</p>
+                  
+                  {/* Price */}
+                  <div className="text-4xl font-bold text-green-600 mb-4">
+                    £{displayedMonthlyPrice}<span className="text-lg">/mo</span>
                   </div>
                   
-                  {/* What's included */}
-                  <div className="mb-8">
-                    <h6 className="font-semibold text-gray-900 mb-4 text-lg">Your Platinum Plan:</h6>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-2">
-                      {selectedOption.features.map((feature, index) => {
-                        const isCheck = feature.startsWith('✅');
-                        const text = feature.replace(/^[✅❌]\s*/, '');
-                        return (
-                          <div key={index} className="flex items-start text-base">
-                            {isCheck ? (
-                              <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                            ) : (
-                              <X className="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" />
-                            )}
-                            <span className={isCheck ? 'text-gray-700' : 'text-black'}>
-                              {text}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    
-                    {/* Cover details link */}
-                    <div className="mt-4">
-                      <button
-                        className="text-base text-orange-600 hover:text-orange-700 font-medium inline-flex items-center gap-1"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const section = document.getElementById('your-cover-details');
-                          if (section) {
-                            section.scrollIntoView({ behavior: 'smooth' });
-                          }
-                        }}
-                      >
-                        🔍 See Full Cover Details
-                      </button>
-                    </div>
+                  {/* Button */}
+                  <div className={`w-full py-3 px-4 rounded-lg text-center font-semibold transition-colors ${
+                    isSelected
+                      ? 'bg-white border-2 border-orange-500 text-orange-600'
+                      : 'bg-orange-500 text-white hover:bg-orange-600'
+                  }`}>
+                    {isSelected ? 'Selected' : 'Select'}
                   </div>
-                  
-                  {/* Pricing */}
-                  <div className="mb-6 text-center border-t pt-6">
-                    <div className="text-5xl font-bold text-green-600 mb-4">
-                      £{displayedMonthlyPrice}/month
-                    </div>
-                    <div className="text-lg text-gray-700 mb-6 space-y-2">
-                      {paymentType === '12months' && (
-                        <div className="flex items-center justify-center gap-2">
-                          <span className="text-green-500 text-xl">✓</span>
-                          <span className="font-medium">12 monthly payments</span>
-                        </div>
-                      )}
-                      {paymentType === '24months' && (
-                        <>
-                          <div className="flex items-center justify-center gap-2">
-                            <span className="text-green-500 text-xl">✓</span>
-                            <span className="font-medium">12 monthly payments</span>
-                          </div>
-                          <div className="flex items-center justify-center gap-2">
-                            <span className="text-green-500 text-xl">✓</span>
-                            <span className="font-medium">No payments in Year 2</span>
-                          </div>
-                        </>
-                      )}
-                      {paymentType === '36months' && (
-                        <>
-                          <div className="flex items-center justify-center gap-2">
-                            <span className="text-green-500 text-xl">✓</span>
-                            <span className="font-medium">12 monthly payments</span>
-                          </div>
-                          <div className="flex items-center justify-center gap-2">
-                            <span className="text-green-500 text-xl">✓</span>
-                            <span className="font-medium">No payments in Years 2 & 3</span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                    <div className="text-center">
-                      {paymentType === '12months' ? (
-                        <div className="text-center">
-                          <div className="text-3xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
-                          <div className="text-lg text-gray-600">1 year cover</div>
-                        </div>
-                      ) : (
-                        <div className="text-center">
-                          <div className="text-lg text-gray-600 mb-2">
-                            Was <span className="line-through text-gray-500 font-semibold">£{planAdjustedBasePrice}</span> →
-                          </div>
-                          <div className="text-3xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
-                          <div className="text-lg text-green-600 font-bold">
-                            Save £{planAdjustedBasePrice - displayedAnnualPrice}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Email Quote Button */}
-                  <Button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEmailQuote({
-                        title: selectedOption.title,
-                        monthlyPrice: displayedMonthlyPrice,
-                        totalPrice: displayedAnnualPrice,
-                        paymentType: paymentType
-                      });
-                    }}
-                    className="w-full py-4 text-lg font-semibold bg-white border-2 border-gray-300 text-black hover:bg-gray-50"
-                  >
-                    ✉️ Email Quote
-                  </Button>
-                </div>
+                </button>
               );
-            })()}
+            })}
           </div>
+
+          {/* Shared Features Block */}
+          <div className="p-6 bg-gray-50 rounded-lg border border-gray-200 mb-8">
+            <h5 className="text-lg font-semibold text-gray-900 mb-4">All plans include:</h5>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-3">
+              <div className="flex items-start">
+                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                <span className="text-gray-700">Mechanical and electrical parts</span>
+              </div>
+              <div className="flex items-start">
+                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                <span className="text-gray-700">Labour costs</span>
+              </div>
+              <div className="flex items-start">
+                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                <span className="text-gray-700">Fast claims process</span>
+              </div>
+              <div className="flex items-start">
+                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                <span className="text-gray-700">Courtesy car cover</span>
+              </div>
+              <div className="flex items-start">
+                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                <span className="text-gray-700">Diagnostics included</span>
+              </div>
+              <div className="flex items-start">
+                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                <span className="text-gray-700">12-month guarantee on repairs</span>
+              </div>
+              <div className="flex items-start">
+                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                <span className="text-gray-700">Nationwide repair network</span>
+              </div>
+              <div className="flex items-start">
+                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                <span className="text-gray-700">Unlimited claims (except 1-year plan)</span>
+              </div>
+              <div className="flex items-start">
+                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                <span className="text-gray-700">Optional extras available</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Selected Plan Summary */}
+          {(() => {
+            // Calculate pricing for selected plan
+            const warrantyYears = paymentType === '12months' ? 1 : paymentType === '24months' ? 2 : 3;
+            const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
+            const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, paymentType);
+            const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
+            const durationMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
+            
+            // Calculate add-on costs
+            const protectionAddOnPrice = calculateAddOnPrice(selectedProtectionAddOns, paymentType, durationMonths);
+            const boostCost = boostAddon ? 84 : 0;
+            
+            // Apply automatic discounts
+            let discountedPrice = adjustedBasePrice;
+            if (paymentType === '24months') {
+              discountedPrice = adjustedBasePrice - 100;
+            } else if (paymentType === '36months') {
+              discountedPrice = adjustedBasePrice - 200;
+            }
+            
+            // Calculate display prices
+            const baseMonthlyPrice = Math.round(discountedPrice / 12);
+            const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 5 : 0;
+            const boostDisplayAdjustment = boostAddon ? -2.01 : 0;
+            const displayedMonthlyPrice = baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
+            const displayedAnnualPrice = discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12);
+            const totalPriceWithAddOns = discountedPrice + protectionAddOnPrice + boostCost;
+            
+            const durationLabel = paymentType === '12months' ? '1-year' : paymentType === '24months' ? '2-year' : '3-year';
+            const savingsAmount = paymentType === '24months' ? 100 : paymentType === '36months' ? 200 : 0;
+            
+            return (
+              <div className="p-8 bg-white rounded-lg border-2 border-orange-500 shadow-lg shadow-orange-500/30">
+                <div className="text-center mb-6">
+                  <h5 className="text-2xl font-bold text-gray-900 mb-2">
+                    Your {durationLabel} cover summary
+                  </h5>
+                  {savingsAmount > 0 && (
+                    <p className="text-green-600 text-lg font-semibold">
+                      Save £{savingsAmount} with this plan
+                    </p>
+                  )}
+                </div>
+                
+                <div className="space-y-4 mb-6">
+                  {paymentType === '12months' && (
+                    <div className="flex items-center justify-center gap-2 text-lg">
+                      <Check className="w-5 h-5 text-green-500" />
+                      <span className="font-medium">12 monthly payments</span>
+                    </div>
+                  )}
+                  {paymentType === '24months' && (
+                    <>
+                      <div className="flex items-center justify-center gap-2 text-lg">
+                        <Check className="w-5 h-5 text-green-500" />
+                        <span className="font-medium">12 monthly payments</span>
+                      </div>
+                      <div className="flex items-center justify-center gap-2 text-lg">
+                        <Check className="w-5 h-5 text-green-500" />
+                        <span className="font-medium">No payments in Year 2</span>
+                      </div>
+                    </>
+                  )}
+                  {paymentType === '36months' && (
+                    <>
+                      <div className="flex items-center justify-center gap-2 text-lg">
+                        <Check className="w-5 h-5 text-green-500" />
+                        <span className="font-medium">12 monthly payments</span>
+                      </div>
+                      <div className="flex items-center justify-center gap-2 text-lg">
+                        <Check className="w-5 h-5 text-green-500" />
+                        <span className="font-medium">No payments in Years 2 & 3</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+                
+                <div className="text-center border-t pt-6">
+                  {paymentType === '12months' ? (
+                    <div>
+                      <div className="text-4xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
+                      <div className="text-lg text-gray-600">Total for 1 year cover</div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="text-lg text-gray-600 mb-2">
+                        Was <span className="line-through text-gray-500 font-semibold">£{adjustedBasePrice}</span>
+                      </div>
+                      <div className="text-4xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
+                      <div className="text-lg text-green-600 font-bold mb-4">
+                        You save £{adjustedBasePrice - displayedAnnualPrice}
+                      </div>
+                      <div className="text-lg text-gray-600">
+                        Total for {warrantyYears} year{warrantyYears > 1 ? 's' : ''} cover
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Email Quote Button */}
+                <Button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEmailQuote({
+                      title: `${durationLabel} cover`,
+                      monthlyPrice: displayedMonthlyPrice,
+                      totalPrice: displayedAnnualPrice,
+                      paymentType: paymentType
+                    });
+                  }}
+                  className="w-full mt-6 py-4 text-lg font-semibold bg-white border-2 border-gray-300 text-black hover:bg-gray-50"
+                >
+                  ✉️ Email Quote
+                </Button>
+              </div>
+            );
+          })()}
         </div>
 
 
