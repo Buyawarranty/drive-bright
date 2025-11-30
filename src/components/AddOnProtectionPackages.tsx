@@ -181,7 +181,7 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                  >
                    {/* FREE badge in bottom left for auto-included add-ons */}
                    {isIncluded && (
-                     <div className="absolute bottom-2 left-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded">
+                     <div className="absolute bottom-2 left-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded">
                        FREE
                      </div>
                    )}
