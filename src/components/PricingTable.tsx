@@ -1778,19 +1778,24 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-3">
                     <ShieldCheck className="w-5 h-5 text-orange-600" />
-                    <h4 className="text-lg font-bold text-gray-900">Boost Your Claim Limit</h4>
+                    <h4 className="text-lg font-bold text-gray-900">🚀 Boost Your Claim Limit</h4>
                     <Badge className="bg-orange-600 text-white">Popular Upgrade</Badge>
                   </div>
                   <div className="flex items-center gap-4 flex-wrap">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <span className="font-medium">£{selectedClaimLimit.toLocaleString()}</span>
-                      <ArrowRight className="w-4 h-4 text-gray-400" />
-                      <span className="font-medium">£{(selectedClaimLimit + 1000).toLocaleString()}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-gray-900">£{selectedClaimLimit.toLocaleString()}</div>
+                        <div className="text-xs text-gray-500">per claim</div>
+                      </div>
+                      <ArrowRight className="w-5 h-5 text-orange-600" />
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600">£{(selectedClaimLimit + 1000).toLocaleString()}</div>
+                        <div className="text-xs text-gray-500">per claim</div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-gray-700">for</span>
-                      <span className="px-2 py-0.5 bg-green-100 text-green-700 font-bold rounded">Only £7/month</span>
-                      <span className="text-sm text-gray-500">12 easy payments</span>
+                    <div className="flex items-center gap-1 text-gray-700">
+                      <span>for Only £7/month</span>
+                      <span className="text-sm text-gray-500">• 12 easy payments</span>
                     </div>
                   </div>
                 </div>
