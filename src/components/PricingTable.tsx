@@ -1965,12 +1965,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       {/* Top-right savings tags */}
                       <div className="absolute top-4 right-4 flex gap-2">
                         {option.id === '24months' && (
-                           <span className="bg-white border-2 border-green-600 text-green-600 px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                           <span className="text-green-600 text-sm font-bold">
                              Save £100
                            </span>
                         )}
                         {option.id === '36months' && (
-                           <span className="bg-white border-2 border-green-600 text-green-600 px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                           <span className="text-green-600 text-sm font-bold">
                              Save £200
                            </span>
                         )}
@@ -2106,10 +2106,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                          paymentType: option.id
                        });
                      }}
-                     className="w-full py-3 text-base font-semibold bg-white border-2 border-gray-500 text-gray-800 hover:bg-gray-50 hover:border-gray-600"
-                   >
-                     📧 Email Quote
-                   </Button>
+                      className="w-full py-3 text-base font-semibold bg-white border-2 border-primary text-primary hover:bg-primary/5"
+                    >
+                      📧 Email Quote
+                    </Button>
                    
                    {/* Footer note */}
                    <div className="mt-3 text-center">
