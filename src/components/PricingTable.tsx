@@ -1960,11 +1960,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // Boost addon display adjustment (display shows £4.99/month instead of £7/month, doesn't affect APIs)
               const boostDisplayAdjustment = boostAddon && paymentType === option.id ? -2.01 : 0;
               
-              const displayedMonthlyPrice = baseDisplayedMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
+              const displayedMonthlyPrice = Math.round(baseDisplayedMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment);
               
               // Adjust total annual display price by labour rate (£3/month for £40/hr, £5/month for £100/hr * 12 months)
               // and boost display adjustment (£2.01/month * 12 months = £24.12 annual reduction for display)
-              const displayedAnnualPrice = discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12);
+              const displayedAnnualPrice = Math.round(discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12));
               
               // Total cost calculation: discounted base + add-ons + boost (only for the selected plan)
               const totalPriceWithAddOns = discountedPrice + protectionAddOnPrice + boostCost;
@@ -2098,13 +2098,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
                               </div>
                            ) : (
                               <div className="text-center">
-                                <div className="text-base text-gray-600 mb-1">
-                                  Was <span className="line-through text-gray-500 font-semibold">£{planAdjustedBasePrice}</span> →
-                                </div>
-                                <div className="text-2xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
-                                <div className="text-sm text-green-600 font-bold">
-                                  Save £{planAdjustedBasePrice - displayedAnnualPrice}
-                                </div>
+                               <div className="text-base text-gray-600 mb-1">
+                                 Was <span className="line-through text-gray-500 font-semibold">£{Math.round(planAdjustedBasePrice)}</span> →
+                               </div>
+                               <div className="text-2xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
+                               <div className="text-sm text-green-600 font-bold">
+                                 Save £{Math.round(planAdjustedBasePrice - displayedAnnualPrice)}
+                               </div>
                               </div>
                            )}
                          </div>
