@@ -1097,11 +1097,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
           <Collapsible>
             <CollapsibleTrigger className="w-full">
               <div className="flex items-center justify-between gap-2 mb-4 cursor-pointer group">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-black flex-shrink-0" />
                   <h2 className="text-lg sm:text-2xl font-bold text-black">
                     What's Covered?
                   </h2>
+                  <ChevronDown className="w-6 h-6 sm:w-8 sm:h-8 text-black transition-transform duration-300 group-data-[state=open]:rotate-180" />
                 </div>
                 <button className="inline-flex items-center gap-1 sm:gap-2 bg-green-50 border border-green-300 rounded-lg px-2 sm:px-4 py-1.5 sm:py-2 shadow-sm hover:shadow transition-shadow">
                   <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-700" />
@@ -1120,14 +1121,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     All-in-one cover – Labour, electrical and mechanical parts included.
                   </p>
                 </div>
-                {/* Instant Cover Badge - Responsive text */}
-                <div className="inline-flex items-center gap-2 bg-green-50 border border-green-300 rounded-md px-3 py-1.5 sm:py-2 w-fit">
-                  {/* Mobile version */}
-                  <span className="sm:hidden text-xs font-semibold text-green-700">🛡️ Cover starts immediately</span>
-                  {/* Desktop version */}
-                  <span className="hidden sm:block text-sm font-semibold text-green-700 whitespace-nowrap">⚡ Instant cover</span>
-                  <span className="hidden sm:block text-sm font-semibold text-green-700">🛡️ Cover starts immediately after purchase</span>
-                </div>
+                {/* Instant Cover Badge with Tooltip */}
+                <TooltipProvider delayDuration={0}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="inline-flex items-center gap-2 bg-green-50 border border-green-300 rounded-md px-3 py-1.5 sm:py-2 w-fit cursor-help">
+                        <span className="text-xs sm:text-sm font-semibold text-green-700 whitespace-nowrap">⚡ Instant cover</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>🛡️ Cover starts immediately after purchase</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
             
@@ -1135,12 +1141,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
               
               <div className="space-y-6">
             <Collapsible>
-              <CollapsibleTrigger className="flex items-center gap-3 w-full text-left text-orange-500 hover:text-orange-600 font-medium py-2 transition-colors group">
-                <div className="flex items-center gap-2">
-                  <ChevronDown className="w-5 h-5 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                  <Car className="w-5 h-5" />
+              <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-black text-white hover:bg-gray-800 font-semibold py-4 px-6 rounded-lg transition-colors group">
+                <div className="flex items-center gap-3">
+                  <Car className="w-6 h-6" />
+                  <span className="text-lg">Petrol & Diesel (Combustion Engine) Vehicles</span>
                 </div>
-                <span>Cars (Petrol, Diesel, Hybrid, EV)</span>
+                <ChevronDown className="w-6 h-6 transition-transform duration-200 group-data-[state=open]:rotate-180" />
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="mt-4 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -1231,12 +1237,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </Collapsible>
             
             <Collapsible>
-              <CollapsibleTrigger className="flex items-center gap-3 w-full text-left text-orange-500 hover:text-orange-600 font-medium py-2 transition-colors group">
-                <div className="flex items-center gap-2">
-                  <ChevronDown className="w-5 h-5 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                  <Battery className="w-5 h-5" />
+              <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-gray-600 text-white hover:bg-gray-700 font-semibold py-4 px-6 rounded-lg transition-colors group">
+                <div className="flex items-center gap-3">
+                  <Battery className="w-6 h-6" />
+                  <span className="text-lg">Hybrid & PHEV Vehicles</span>
                 </div>
-                <span>Hybrid Vehicles</span>
+                <ChevronDown className="w-6 h-6 transition-transform duration-200 group-data-[state=open]:rotate-180" />
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="mt-4 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -1297,12 +1303,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </Collapsible>
             
             <Collapsible>
-              <CollapsibleTrigger className="flex items-center gap-3 w-full text-left text-orange-500 hover:text-orange-600 font-medium py-2 transition-colors group">
-                <div className="flex items-center gap-2">
-                  <ChevronDown className="w-5 h-5 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                  <Zap className="w-5 h-5" />
+              <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-orange-500 text-white hover:bg-orange-600 font-semibold py-4 px-6 rounded-lg transition-colors group">
+                <div className="flex items-center gap-3">
+                  <Zap className="w-6 h-6" />
+                  <span className="text-lg">Electric vehicles (EVs)</span>
                 </div>
-                <span>Electric Vehicles (EVs)</span>
+                <ChevronDown className="w-6 h-6 transition-transform duration-200 group-data-[state=open]:rotate-180" />
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="mt-4 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -1371,12 +1377,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </Collapsible>
             
             <Collapsible>
-              <CollapsibleTrigger className="flex items-center gap-3 w-full text-left text-orange-500 hover:text-orange-600 font-medium py-2 transition-colors group">
-                <div className="flex items-center gap-2">
-                  <ChevronDown className="w-5 h-5 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                  <Bike className="w-5 h-5" />
+              <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-green-500 text-white hover:bg-green-600 font-semibold py-4 px-6 rounded-lg transition-colors group">
+                <div className="flex items-center gap-3">
+                  <Bike className="w-6 h-6" />
+                  <span className="text-lg">Motorcycles (Petrol, Hybrid, EV)</span>
                 </div>
-                <span>Motorcycles (Petrol, Hybrid, EV)</span>
+                <ChevronDown className="w-6 h-6 transition-transform duration-200 group-data-[state=open]:rotate-180" />
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="mt-4 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
@@ -1439,14 +1445,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </Collapsible>
             
                 {/* What's Not Covered Section - Now nested inside What's Covered */}
-                <div className="mt-8 pt-6 border-t-2 border-gray-300">
+                <div className="mt-6">
                   <Collapsible>
-                    <CollapsibleTrigger className="flex items-center gap-3 w-full text-left text-orange-600 hover:text-orange-700 font-medium py-3 transition-colors group">
-                      <div className="flex items-center gap-2">
-                        <ChevronDown className="w-5 h-5 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                        <AlertTriangle className="w-5 h-5" />
+                    <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-red-100 text-red-700 hover:bg-red-200 font-semibold py-4 px-6 rounded-lg transition-colors group">
+                      <div className="flex items-center gap-3">
+                        <X className="w-6 h-6" />
+                        <span className="text-lg">What's not covered</span>
                       </div>
-                      <span>What's not covered</span>
+                      <ChevronDown className="w-6 h-6 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <div className="mt-4 p-6 bg-orange-50 rounded-lg border border-orange-200">
