@@ -168,12 +168,12 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
         }
               
               return (
-                 <div 
+                   <div 
                    key={addon.key}
                    onClick={() => !isIncluded && onAddOnChange(addon.key, !selectedAddOns[addon.key])}
                    className={`relative p-4 rounded-lg transition-all duration-200 bg-white ${
                      isIncluded 
-                       ? 'border-2 border-green-500 shadow-lg shadow-green-500/30 cursor-default' 
+                       ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30 cursor-default' 
                        : isSelected
                          ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30 cursor-pointer' 
                          : 'border border-gray-300 shadow-sm hover:shadow-md hover:border-orange-300 hover:bg-gray-50 cursor-pointer'
@@ -181,7 +181,7 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                  >
                    {/* FREE badge in bottom left for auto-included add-ons */}
                    {isIncluded && (
-                     <div className="absolute bottom-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                     <div className="absolute bottom-2 left-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded">
                        FREE
                      </div>
                    )}
@@ -191,7 +191,7 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                       <div className="flex-1">
                         <h4 className="font-semibold text-base text-foreground mb-1">{addon.title}</h4>
                         <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{addon.shortDescription}</p>
-                         <div className={`text-base font-bold ${isIncluded ? 'text-green-600' : 'text-black'}`}>
+                         <div className={`text-base font-bold ${isIncluded ? 'text-orange-600' : 'text-black'}`}>
                            {priceDisplay}
                             {showSpreadText && (
                               <div className="text-sm font-normal text-muted-foreground">
@@ -201,16 +201,16 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                          </div>
                       </div>
                     </div>
-                    <Checkbox 
-                      checked={isSelected}
-                      disabled={isIncluded}
-                      onCheckedChange={(checked) => !isIncluded && onAddOnChange(addon.key, !!checked)}
-                      className={`h-4 w-4 border-2 flex-shrink-0 ${
-                        isIncluded 
-                          ? 'border-green-500 bg-green-500 data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500'
-                          : 'border-black data-[state=checked]:bg-black data-[state=checked]:border-black'
-                      }`}
-                    />
+                   <Checkbox 
+                     checked={isSelected}
+                     disabled={isIncluded}
+                     onCheckedChange={(checked) => !isIncluded && onAddOnChange(addon.key, !!checked)}
+                     className={`h-4 w-4 border-2 flex-shrink-0 ${
+                       isIncluded 
+                         ? 'border-orange-500 bg-orange-500 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500'
+                         : 'border-black data-[state=checked]:bg-black data-[state=checked]:border-black'
+                     }`}
+                   />
                   </div>
 
                   <Collapsible open={expandedItems[addon.key]} onOpenChange={() => toggleExpanded(addon.key)}>
@@ -231,7 +231,7 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                        <div className="space-y-1">
                          {addon.bulletPoints.map((point, index) => (
                            <div key={index} className="flex items-start gap-2">
-                             <Check className="h-3 w-3 text-green-500 mt-1 flex-shrink-0" strokeWidth={3} />
+                             <Check className="h-3 w-3 text-orange-500 mt-1 flex-shrink-0" strokeWidth={3} />
                              <span className="text-sm text-muted-foreground">{point}</span>
                            </div>
                          ))}
