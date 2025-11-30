@@ -1086,10 +1086,29 @@ const PricingTable: React.FC<PricingTableProps> = ({
                    <span className="text-muted-foreground block">Mileage</span>
                    <span className="font-semibold text-foreground">{parseInt(vehicleData.mileage).toLocaleString()} miles</span>
                  </div>
+                   </div>
                   </div>
-                 </div>
-               </>
-              )}
+                  
+                  {/* Instant Cover Badge */}
+                  <div className="mt-4 flex justify-start">
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="inline-flex items-center gap-1 sm:gap-2 bg-green-50 border border-green-300 rounded-md px-2 sm:px-3.5 py-1.5 sm:py-2 cursor-pointer">
+                            <span className="text-xs sm:text-sm font-semibold text-green-700 whitespace-nowrap">
+                              <span className="sm:hidden">⚡ Instant</span>
+                              <span className="hidden sm:inline">⚡ Instant cover protection</span>
+                            </span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>🛡️ Cover starts immediately after purchase – excludes pre-existing conditions.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </>
+               )}
           </div>
 
         {/* What's Covered Section */}
@@ -1113,27 +1132,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     What's Covered?
                   </h2>
                 </div>
-                <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
-                  <button className="inline-flex items-center gap-1 sm:gap-2 bg-white border border-gray-200 rounded-lg px-2 sm:px-4 py-1.5 sm:py-2 shadow-sm hover:shadow transition-shadow">
-                    <span className="text-xs sm:text-sm font-medium text-blue-600 whitespace-nowrap">Learn more</span>
-                    <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 transition-transform duration-300 group-data-[state=open]:rotate-180" />
-                  </button>
-                  <TooltipProvider delayDuration={0}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="inline-flex items-center gap-1 sm:gap-2 bg-green-50 border border-green-300 rounded-md px-2 sm:px-3.5 py-1.5 sm:py-2 cursor-pointer">
-                          <span className="text-xs sm:text-sm font-semibold text-green-700 whitespace-nowrap">
-                            <span className="sm:hidden">⚡ Instant</span>
-                            <span className="hidden sm:inline">⚡ Instant cover protection</span>
-                          </span>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>🛡️ Cover starts immediately after purchase – excludes pre-existing conditions.</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
+                <button className="inline-flex items-center gap-1 sm:gap-2 bg-white border border-gray-200 rounded-lg px-2 sm:px-4 py-1.5 sm:py-2 shadow-sm hover:shadow transition-shadow">
+                  <span className="text-xs sm:text-sm font-medium text-blue-600 whitespace-nowrap">Learn more</span>
+                  <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 transition-transform duration-300 group-data-[state=open]:rotate-180" />
+                </button>
               </div>
             </CollapsibleTrigger>
             
