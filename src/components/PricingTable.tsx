@@ -1953,17 +1953,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   }`}
                   onClick={() => setPaymentType(option.id as '12months' | '24months' | '36months')}
                  >
-                   {/* Selection Indicator */}
-                   {paymentType === option.id && (
-                     <div className="absolute top-4 right-4 w-6 h-6 bg-black rounded-full flex items-center justify-center">
-                       <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                       </svg>
-                     </div>
-                   )}
-
                    {/* Badge Pills */}
-                   <div className="flex flex-wrap gap-2 mb-4 mt-3 items-center justify-between">
+                   <div className="flex flex-wrap gap-2 mb-4 items-center justify-between">
                      <div className="flex flex-wrap gap-2">
                        {option.isPopular && (
                          <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold">
