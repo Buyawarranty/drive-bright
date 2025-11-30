@@ -1500,15 +1500,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <button
               onClick={() => setSelectedLabourRate(40)}
-              className={`bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
                 selectedLabourRate === 40
                   ? 'border-orange-500 shadow-lg shadow-orange-500/30'
                   : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
               }`}
             >
-              <div className="flex items-center justify-between mb-2">
+              <span className="absolute -top-3 right-4 bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">BEST VALUE</span>
+              <div className="mb-2">
                 <span className="text-2xl font-bold text-foreground">£40/hr</span>
-                <span className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">BEST VALUE</span>
               </div>
               <p className="text-sm text-gray-900 font-medium">Independent Garages</p>
               <p className="text-xs text-muted-foreground mt-1">Ideal for independent garages</p>
@@ -1516,15 +1516,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
             
             <button
               onClick={() => setSelectedLabourRate(70)}
-              className={`bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
                 selectedLabourRate === 70
                   ? 'border-orange-500 shadow-lg shadow-orange-500/30'
                   : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
               }`}
             >
-              <div className="flex items-center justify-between mb-2">
+              <span className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">MOST POPULAR</span>
+              <div className="mb-2">
                 <span className="text-2xl font-bold text-foreground">£70/hr</span>
-                <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">MOST POPULAR</span>
               </div>
               <p className="text-sm text-gray-900 font-medium">Most Garages</p>
               <p className="text-xs text-muted-foreground mt-1">Covers most reputable garages.</p>
@@ -1532,15 +1532,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
             
             <button
               onClick={() => setSelectedLabourRate(100)}
-              className={`bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
                 selectedLabourRate === 100
                   ? 'border-orange-500 shadow-lg shadow-orange-500/30'
                   : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
               }`}
             >
-              <div className="flex items-center justify-between mb-2">
+              <span className="absolute -top-3 right-4 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold">PREMIUM COVER</span>
+              <div className="mb-2">
                 <span className="text-2xl font-bold text-foreground">£100/hr</span>
-                <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold">PREMIUM COVER</span>
               </div>
               <p className="text-sm text-gray-900 font-medium">Dealer Approved</p>
               <p className="text-xs text-muted-foreground mt-1">Perfect for main dealers and specialists.</p>
@@ -1958,23 +1958,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       ? 'border-orange-500 shadow-lg shadow-orange-500/30' 
                       : 'border-gray-200 hover:border-orange-300'
                   }`}
-                  onClick={() => setPaymentType(option.id as '12months' | '24months' | '36months')}
+                   onClick={() => setPaymentType(option.id as '12months' | '24months' | '36months')}
                  >
-                   {/* Badge Pills */}
-                   <div className="flex flex-wrap gap-2 mb-4 items-center justify-between">
-                     <div className="flex flex-wrap gap-2">
-                       {option.isPopular && (
-                          <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                            MOST POPULAR
-                          </span>
-                        )}
-                        {option.isBestValue && (
-                          <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                            BEST VALUE
-                          </span>
-                        )}
-                     </div>
-                   </div>
+                   {/* Badge Pills - positioned absolutely outside border */}
+                   {option.isPopular && (
+                      <span className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                        MOST POPULAR
+                      </span>
+                    )}
+                    {option.isBestValue && (
+                      <span className="absolute -top-3 right-4 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                        BEST VALUE
+                      </span>
+                    )}
                   
                    {/* Title */}
                    <div className="mb-3">
