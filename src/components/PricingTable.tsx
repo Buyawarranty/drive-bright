@@ -2291,8 +2291,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
       {/* Continue Button */}
       {!plansLoading && !plansError && !vehicleAgeError && displayPlans.length > 0 && (
-        <div className="max-w-6xl mx-auto px-4 pb-3">
-          <div className="flex justify-end mt-8">
+        <div className="max-w-6xl mx-auto px-4 pb-0">
+          <div className="flex justify-end mt-4">
             <div className="flex flex-col items-end space-y-2">
               <div className="text-right">
                 {/* Monthly Price - Main Hook - Show discounted price with add-ons */}
