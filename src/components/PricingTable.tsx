@@ -1777,7 +1777,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-3">
-                    <ShieldCheck className="w-5 h-5 text-orange-600" />
                     <h4 className="text-lg font-bold text-gray-900">🚀 Boost Your Claim Limit</h4>
                     <Badge className="bg-orange-600 text-white">Popular Upgrade</Badge>
                   </div>
