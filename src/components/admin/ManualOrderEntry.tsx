@@ -9,6 +9,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PostcodeAutocomplete } from '@/components/ui/uk-postcode-autocomplete';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Plus, User, Car, CreditCard, FileText, MapPin, Search, Sparkles, Edit } from 'lucide-react';
@@ -1087,11 +1088,26 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
               </div>
               <div>
                 <Label htmlFor="postcode">Postcode</Label>
-                <Input
-                  id="postcode"
+                <PostcodeAutocomplete
                   value={orderData.postcode}
-                  onChange={(e) => updateOrderData('postcode', e.target.value)}
-                  placeholder="SW1A 1AA"
+                  onChange={(value) => updateOrderData('postcode', value)}
+                  onAddressSelect={(address) => {
+                    // Auto-populate address fields when postcode is selected
+                    if (address.town && !orderData.town) {
+                      updateOrderData('town', address.town);
+                    }
+                    if (address.county && !orderData.county) {
+                      updateOrderData('county', address.county);
+                    }
+                    if (address.street && !orderData.street) {
+                      updateOrderData('street', address.street);
+                    }
+                    if (address.building_name && !orderData.buildingName) {
+                      updateOrderData('buildingName', address.building_name);
+                    }
+                  }}
+                  placeholder="Enter UK postcode"
+                  required
                 />
               </div>
               <div>
