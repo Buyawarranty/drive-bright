@@ -2032,7 +2032,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                               </div>
                               <div className="flex items-center justify-center gap-2">
                                 <span className="text-green-500 text-lg">✓</span>
-                                <span className="font-medium">Coverage continues in Year 2 at no extra cost</span>
+                                <span className="font-medium">No payments in Year 2</span>
                               </div>
                             </>
                           )}
@@ -2044,7 +2044,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                               </div>
                               <div className="flex items-center justify-center gap-2">
                                 <span className="text-green-500 text-lg">✓</span>
-                                <span className="font-medium">Coverage continues in Year 2 and Year 3 at no extra cost</span>
+                                <span className="font-medium">No payments in Years 2 & 3</span>
                               </div>
                             </>
                           )}
@@ -2053,7 +2053,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           {option.id === '12months' ? (
                              <div className="text-center">
                                <div className="text-4xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
-                               <div className="text-base text-gray-600">Total annual cost</div>
+                               <div className="text-base text-gray-600">1 Year Cover</div>
                              </div>
                           ) : (
                              <div className="text-center">

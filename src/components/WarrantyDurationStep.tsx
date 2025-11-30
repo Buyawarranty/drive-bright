@@ -510,9 +510,9 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
                   </div>
                   <div className="text-sm text-gray-600 mb-1">
                     {option.id === '24months' 
-                      ? 'Coverage continues in Year 2 at no extra cost' 
+                      ? 'No payments in Year 2' 
                       : option.id === '36months'
-                        ? 'Coverage continues in Year 2 & 3 at no extra cost'
+                        ? 'No payments in Years 2 & 3'
                         : ''
                     }
                   </div>
