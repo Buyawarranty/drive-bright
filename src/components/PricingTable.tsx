@@ -1510,7 +1510,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-2xl font-bold text-foreground">£40/hr</span>
-                <Badge variant="secondary" className="bg-gray-200 text-gray-700">Cheapest</Badge>
+                <Badge variant="secondary" className="bg-gray-200 text-gray-700">Best Value</Badge>
               </div>
               <p className="text-sm text-gray-900 font-medium">Independent Garages</p>
               <p className="text-xs text-muted-foreground mt-1">Ideal for independent garages</p>
@@ -1526,7 +1526,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-2xl font-bold text-foreground">£70/hr</span>
-                <Badge className="bg-orange-500 text-white">Recommended</Badge>
+                <Badge className="bg-orange-500 text-white">Most Popular</Badge>
               </div>
               <p className="text-sm text-gray-900 font-medium">Most Garages</p>
               <p className="text-xs text-muted-foreground mt-1">Covers most reputable garages.</p>
@@ -1544,7 +1544,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <span className="text-2xl font-bold text-foreground">£100/hr</span>
                 <Badge className="bg-blue-600 text-white">Premium Cover</Badge>
               </div>
-              <p className="text-sm text-gray-900 font-medium">Dealer Ready</p>
+              <p className="text-sm text-gray-900 font-medium">Dealer Approved</p>
               <p className="text-xs text-muted-foreground mt-1">Perfect for main dealers and specialists.</p>
             </button>
           </div>
