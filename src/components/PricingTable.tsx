@@ -2130,7 +2130,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               Add Extras
             </h3>
           </div>
-          <div className="text-center mb-8">
+          <div className="text-left mb-3">
             <p className="text-muted-foreground">Enhance your warranty with optional protection covers</p>
           </div>
           <AddOnProtectionPackages 
