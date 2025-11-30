@@ -2350,10 +2350,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
               <div className="text-xs md:text-sm text-gray-600 mb-1 font-bold">
                 {paymentType === '12months' 
-                  ? 'Only 12 payments'
+                  ? 'Only 12 Easy Payments'
                   : paymentType === '24months' 
-                    ? 'Only 12 payments'
-                    : 'Only 12 payments'
+                    ? 'Only 12 Easy Payments'
+                    : 'Only 12 Easy Payments'
                 }
               </div>
               
@@ -2370,9 +2370,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 {paymentType === '12months' ? (
                   <span className="text-gray-400">•</span>
                 ) : paymentType === '24months' ? (
-                  <span className="text-gray-500">2 Year Cover</span>
+                  <>
+                    <span className="text-gray-500">- 🎉</span>
+                    <span className="text-gray-500">2 Year Cover</span>
+                  </>
                 ) : (
-                  <span className="text-gray-500">3 Year Cover</span>
+                  <>
+                    <span className="text-gray-500">- 🎉</span>
+                    <span className="text-gray-500">3 Year Cover</span>
+                  </>
                 )}
               </div>
             </div>
