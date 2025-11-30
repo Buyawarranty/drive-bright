@@ -263,7 +263,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
       features: [
         'All mechanical & electrical parts',
         'Up to 10 claims per year',
-        'Up to the full value of your car',
+        'Up to the value of your vehicle',
         'Labour costs covered',
         'Fault diagnostics',
         'Consequential damage cover',
@@ -290,7 +290,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
       features: [
         'All mechanical & electrical parts',
         'Unlimited Claims',
-        'Up to the full value of your car',
+        'Up to the value of your vehicle',
         'Labour costs covered',
         'Fault diagnostics',
         'Vehicle recovery claim-back',
@@ -318,7 +318,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
       features: [
         'All mechanical & electrical parts',
         'Unlimited Claims',
-        'Up to the full value of your car',
+        'Up to the value of your vehicle',
         'Labour costs covered',
         'Fault diagnostics',
         'Vehicle recovery claim-back',
