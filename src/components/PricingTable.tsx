@@ -1812,7 +1812,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </div>
                     <div className="flex items-center gap-1 text-gray-700">
                       <span>for £4.99/month</span>
-                      <span className="text-sm text-gray-500">• Only 12 payments</span>
+                      <span className="text-sm text-gray-500">• Only 12 Payments (0% APR)</span>
                     </div>
                   </div>
                 </div>
@@ -2303,10 +2303,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <Check className="w-4 h-4 text-green-600" />
                   <span>
                     {paymentType === '12months' 
-                      ? 'Only 12 payments'
+                      ? 'Only 12 Payments (0% APR)'
                       : paymentType === '24months' 
-                        ? 'Only 12 payments'
-                        : 'Only 12 payments'
+                        ? 'Only 12 Payments (0% APR)'
+                        : 'Only 12 Payments (0% APR)'
                     }
                   </span>
                 </div>
@@ -2359,10 +2359,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <Check className="w-4 h-4 text-green-600" />
                 <span>
                   {paymentType === '12months' 
-                    ? 'Only 12 easy payments'
+                    ? 'Only 12 Payments (0% APR)'
                     : paymentType === '24months' 
-                      ? 'Only 12 easy payments'
-                      : 'Only 12 easy payments'
+                      ? 'Only 12 Payments (0% APR)'
+                      : 'Only 12 Payments (0% APR)'
                   }
                 </span>
               </div>
