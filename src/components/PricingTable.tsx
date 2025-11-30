@@ -1098,20 +1098,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
         {/* What's Covered Section */}
         <div id="whats-covered" className="section-header rounded-lg p-8 mb-8">
           <Collapsible open={whatsCoveredOpen} onOpenChange={setWhatsCoveredOpen}>
-            <CollapsibleTrigger className="w-full">
-              <div className="flex items-center justify-between gap-2 mb-4 cursor-pointer group">
+            <CollapsibleTrigger className="w-full group" data-state={whatsCoveredOpen ? "open" : "closed"}>
+              <div className="flex items-center justify-between gap-2 mb-4 cursor-pointer hover:opacity-80 transition-opacity">
                 <div className="flex items-center gap-3">
                   <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-black flex-shrink-0" />
                   <h2 className="text-xl font-semibold text-black">
                     What's covered?
                   </h2>
-                  <ChevronDown className="w-6 h-6 sm:w-8 sm:h-8 text-black transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
                 </div>
-                <button className="inline-flex items-center gap-1 sm:gap-2 bg-green-50 border border-green-300 rounded-lg px-2 sm:px-4 py-1.5 sm:py-2 shadow-sm hover:shadow transition-shadow">
+                <div className="inline-flex items-center gap-1 sm:gap-2 bg-green-50 border border-green-300 rounded-lg px-2 sm:px-4 py-1.5 sm:py-2 shadow-sm">
                   <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-700" />
                   <span className="text-xs sm:text-sm font-medium text-green-700 whitespace-nowrap">Details</span>
-                  <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-700 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
-                </button>
+                  <ChevronDown className={`w-5 h-5 text-green-700 transition-transform duration-300 ease-in-out ${whatsCoveredOpen ? 'rotate-180' : ''}`} />
+                </div>
               </div>
             </CollapsibleTrigger>
             
