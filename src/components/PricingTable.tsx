@@ -1142,11 +1142,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     See full policy details
                   </button>
                 </div>
-                {/* Details text - mobile only, no chevron */}
-                <div className="inline-flex md:hidden items-center gap-1 sm:gap-2 bg-white border border-green-300 rounded-lg px-2 sm:px-4 py-1.5 sm:py-2 shadow-sm">
-                  <Info className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-700" />
-                  <span className="text-xs sm:text-sm font-medium text-green-700 whitespace-nowrap">Details</span>
-                </div>
               </div>
             </div>
             
