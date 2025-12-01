@@ -1921,7 +1921,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           £{displayedMonthlyPrice}/month
                         </span>
                         <span className="mx-2 text-xl" style={{ color: '#333' }}>·</span>
-                        <span className="text-2xl font-bold" style={{ color: '#333' }}>
+                        <span className="text-base font-bold" style={{ color: '#888' }}>
                           Total £{Math.round(displayedAnnualPrice)}
                         </span>
                       </div>
