@@ -98,17 +98,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
   previousSelectedAddOns,
   previousProtectionAddOns
 }) => {
-  // Email quote dialog states
-  const [showEmailDialog, setShowEmailDialog] = useState(false);
-  const [emailForQuote, setEmailForQuote] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [sendingEmail, setSendingEmail] = useState(false);
-  const [selectedPlanForEmail, setSelectedPlanForEmail] = useState<{
-    title: string;
-    monthlyPrice: number;
-    totalPrice: number;
-    paymentType: string;
-  } | null>(null);
 
   const [plans, setPlans] = useState<Plan[]>([]);
   const [paymentType, setPaymentType] = useState<'12months' | '24months' | '36months' | null>(previousPaymentType || '24months');
@@ -745,73 +734,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
     }));
   };
 
-  const handleEmailQuote = (planData: { title: string; monthlyPrice: number; totalPrice: number; paymentType: string }) => {
-    setSelectedPlanForEmail(planData);
-    setShowEmailDialog(true);
-    setEmailForQuote('');
-    setEmailError('');
-  };
-
-  const validateEmail = (email: string) => {
-    if (!email.trim()) {
-      setEmailError('Email address is required');
-      return false;
-    }
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      setEmailError('Please enter a valid email address');
-      return false;
-    }
-    setEmailError('');
-    return true;
-  };
-
-  const handleSendQuoteEmail = async () => {
-    if (!validateEmail(emailForQuote) || !selectedPlanForEmail) {
-      return;
-    }
-
-    setSendingEmail(true);
-
-    try {
-      const { data: emailResponse, error: emailError } = await supabase.functions.invoke('send-quote-email', {
-        body: {
-          email: emailForQuote.trim(),
-          firstName: '',
-          lastName: '',
-          vehicleData: {
-            regNumber: vehicleData.regNumber,
-            make: vehicleData.make,
-            model: vehicleData.model,
-            year: vehicleData.year,
-            mileage: vehicleData.mileage,
-            fuelType: vehicleData.fuelType,
-            transmission: vehicleData.transmission,
-            vehicleType: vehicleData.vehicleType
-          },
-          selectedPlan: {
-            name: 'Platinum Complete Plan',
-            price: selectedPlanForEmail.totalPrice,
-            paymentType: selectedPlanForEmail.paymentType
-          }
-        }
-      });
-
-      if (emailError) {
-        console.error('Error sending quote email:', emailError);
-        toast.error('Failed to send email. Please try again.');
-      } else {
-        console.log('Quote email sent successfully:', emailResponse);
-        toast.success('Quote sent to your email!');
-        setShowEmailDialog(false);
-        setEmailForQuote('');
-      }
-    } catch (error) {
-      console.error('Error sending quote email:', error);
-      toast.error('Failed to send email. Please try again.');
-    } finally {
-      setSendingEmail(false);
-    }
-  };
 
   const handleSelectPlan = async () => {
     // Validation: Check if all required selections are made
@@ -2245,23 +2167,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   Total: £{Math.round(totalDiscountedPrice)}
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleEmailQuote({
-                      title: paymentType === '12months' ? '1-year cover' : paymentType === '24months' ? '2-year cover' : '3-year cover',
-                      monthlyPrice: Math.round(totalDiscountedPrice / 12),
-                      totalPrice: Math.round(totalDiscountedPrice),
-                      paymentType: paymentType
-                    });
-                  }}
-                  size="lg"
-                  variant="outline"
-                  className="text-lg font-semibold px-8 py-3.5 border-2 border-orange-500 text-orange-600 hover:bg-orange-50"
-                >
-                  ✉️ Email Quote
-                </Button>
+              <div className="flex justify-center">
                 <Button
                   onClick={handleSelectPlan}
                   size="lg"
@@ -2341,23 +2247,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
             
             <div className="flex flex-col items-stretch md:items-end gap-2">
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleEmailQuote({
-                      title: paymentType === '12months' ? '1-year cover' : paymentType === '24months' ? '2-year cover' : '3-year cover',
-                      monthlyPrice: Math.round(totalDiscountedPrice / 12),
-                      totalPrice: Math.round(totalDiscountedPrice),
-                      paymentType: paymentType
-                    });
-                  }}
-                  size="lg"
-                  variant="outline"
-                  className="text-base md:text-lg font-semibold px-6 py-3 md:py-3.5 border-2 border-orange-500 text-orange-600 hover:bg-orange-50 w-full md:w-auto"
-                >
-                  ✉️ Email Quote
-                </Button>
+              <div className="flex justify-center md:justify-end">
                 <Button
                   onClick={handleSelectPlan}
                   size="lg"
@@ -2375,86 +2265,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
         </div>
       )}
 
-      {/* Email Quote Dialog */}
-      <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Email Your Quote</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <p className="text-sm text-gray-600">
-              Enter your email address and we'll send you this warranty quote instantly.
-            </p>
-            
-            {selectedPlanForEmail && (
-              <div className="bg-white rounded-lg p-4 space-y-2 border border-gray-200 shadow-sm">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Plan:</span>
-                  <span className="font-medium">Platinum Complete</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Duration:</span>
-                  <span className="font-medium">{selectedPlanForEmail.title}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Monthly Payment:</span>
-                  <span className="font-medium">£{selectedPlanForEmail.monthlyPrice}/month</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Total Cost:</span>
-                  <span className="font-medium text-green-600">£{selectedPlanForEmail.totalPrice}</span>
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <label htmlFor="email-quote" className="text-sm font-medium">
-                Email Address
-              </label>
-              <input
-                id="email-quote"
-                type="email"
-                value={emailForQuote}
-                onChange={(e) => {
-                  setEmailForQuote(e.target.value);
-                  if (emailError) setEmailError('');
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSendQuoteEmail();
-                  }
-                }}
-                placeholder="your.email@example.com"
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 ${
-                  emailError ? 'border-red-500' : 'border-gray-300'
-                }`}
-                disabled={sendingEmail}
-              />
-              {emailError && (
-                <p className="text-sm text-red-500">{emailError}</p>
-              )}
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowEmailDialog(false)}
-                disabled={sendingEmail}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSendQuoteEmail}
-                disabled={sendingEmail || !emailForQuote.trim()}
-                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
-              >
-                {sendingEmail ? 'Sending...' : 'Send Quote'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
     </div>
   );
