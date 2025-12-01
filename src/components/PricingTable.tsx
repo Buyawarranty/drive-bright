@@ -1820,7 +1820,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </div>
                     <div className="flex items-center gap-1 text-gray-700">
                       <span>for £4.99/month</span>
-                      <span className="text-sm text-gray-500">• Only 12 payments (0% APR)</span>
+                      <span className="text-sm text-gray-500">Only 12 payments (0% APR)</span>
                     </div>
                   </div>
                 </div>
