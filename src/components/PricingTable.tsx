@@ -204,7 +204,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   );
   
   // New state for labour rate selection
-  const [selectedLabourRate, setSelectedLabourRate] = useState<number>(67);
+  const [selectedLabourRate, setSelectedLabourRate] = useState<number>(70);
   
   // Update add-ons when payment type changes to handle auto-included add-ons
   useEffect(() => {
@@ -1540,16 +1540,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </button>
             
             <button
-              onClick={() => setSelectedLabourRate(67)}
+              onClick={() => setSelectedLabourRate(70)}
               className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                selectedLabourRate === 67
+                selectedLabourRate === 70
                   ? 'border-orange-500 shadow-lg shadow-orange-500/30'
                   : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
               }`}
             >
               <span className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">MOST POPULAR</span>
               <div className="mb-2">
-                <span className="text-2xl font-bold text-foreground">£67 </span>
+                <span className="text-2xl font-bold text-foreground">£70 </span>
                 <span className="text-sm font-medium text-foreground">per hour</span>
               </div>
               <p className="text-xl font-bold text-black">Approved Garages</p>
