@@ -1887,10 +1887,22 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         </button>
                       </CollapsibleTrigger>
                       
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-2 border-green-200 bg-green-50 text-green-700 text-sm font-semibold">
-                        <Zap className="w-4 h-4" />
-                        Instant cover
-                      </span>
+                      <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-2 border-green-200 bg-green-50 text-green-700 text-sm font-semibold cursor-help">
+                              <Zap className="w-4 h-4" />
+                              Instant cover
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-xs">
+                            <p className="flex items-center gap-2">
+                              <Shield className="w-4 h-4" />
+                              Cover starts immediately after purchase – excludes pre-existing conditions.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                     
                     {/* Duration Title */}
