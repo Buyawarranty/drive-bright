@@ -20,6 +20,7 @@ import AddOnProtectionPackages from '@/components/AddOnProtectionPackages';
 import { validateVehicleEligibility, calculateVehiclePriceAdjustment, applyPriceAdjustment } from '@/lib/vehicleValidation';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import pandaCarWarranty from "@/assets/panda-car-warranty-transparent.png";
+import pandaHonestCover from "@/assets/panda-honest-cover.png";
 import trustpilotLogo from "@/assets/trustpilot-excellent-box.webp";
 import { trackStepCompletion, trackBeginCheckout } from '@/utils/analytics';
 
@@ -1998,88 +1999,102 @@ const PricingTable: React.FC<PricingTableProps> = ({
             
             return (
               <div className="p-8 bg-white rounded-lg border-2 border-orange-500 shadow-lg shadow-orange-500/30">
-                <div className="text-center mb-6">
-                  <h5 className="text-2xl font-bold text-gray-900 mb-2">
-                    Your {durationLabel} cover summary
-                  </h5>
-                  {savingsAmount > 0 && (
-                    <p className="text-green-600 text-lg font-semibold">
-                      Save £{savingsAmount} with this plan
-                    </p>
-                  )}
-                </div>
-                
-                <div className="space-y-4 mb-6">
-                  {paymentType === '12months' && (
-                    <div className="flex items-center justify-center gap-2 text-lg">
-                      <Check className="w-5 h-5 text-green-500" />
-                      <span className="font-medium">12 monthly payments</span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                  {/* Left side - Panda image (hidden on mobile) */}
+                  <div className="hidden md:flex justify-center items-center">
+                    <img 
+                      src={pandaHonestCover}
+                      alt="Just honest cover"
+                      className="w-full max-w-sm object-contain"
+                    />
+                  </div>
+                  
+                  {/* Right side - Summary content */}
+                  <div className="flex flex-col">
+                    <div className="text-center md:text-left mb-6">
+                      <h5 className="text-2xl font-bold text-gray-900 mb-2">
+                        Your {durationLabel} cover summary
+                      </h5>
+                      {savingsAmount > 0 && (
+                        <p className="text-green-600 text-lg font-semibold">
+                          Save £{savingsAmount} with this plan
+                        </p>
+                      )}
                     </div>
-                  )}
-                  {paymentType === '24months' && (
-                    <>
-                      <div className="flex items-center justify-center gap-2 text-lg">
-                        <Check className="w-5 h-5 text-green-500" />
-                        <span className="font-medium">12 monthly payments</span>
-                      </div>
-                      <div className="flex items-center justify-center gap-2 text-lg">
-                        <Check className="w-5 h-5 text-green-500" />
-                        <span className="font-medium">No payments in Year 2</span>
-                      </div>
-                    </>
-                  )}
-                  {paymentType === '36months' && (
-                    <>
-                      <div className="flex items-center justify-center gap-2 text-lg">
-                        <Check className="w-5 h-5 text-green-500" />
-                        <span className="font-medium">12 monthly payments</span>
-                      </div>
-                      <div className="flex items-center justify-center gap-2 text-lg">
-                        <Check className="w-5 h-5 text-green-500" />
-                        <span className="font-medium">No payments in Years 2 & 3</span>
-                      </div>
-                    </>
-                  )}
-                </div>
-                
-                <div className="text-center border-t pt-6">
-                  {paymentType === '12months' ? (
-                    <div>
-                      <div className="text-4xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
-                      <div className="text-lg text-gray-600">Total for 1 year cover</div>
+                    
+                    <div className="space-y-4 mb-6">
+                      {paymentType === '12months' && (
+                        <div className="flex items-center justify-center md:justify-start gap-2 text-lg">
+                          <Check className="w-5 h-5 text-green-500" />
+                          <span className="font-medium">12 monthly payments</span>
+                        </div>
+                      )}
+                      {paymentType === '24months' && (
+                        <>
+                          <div className="flex items-center justify-center md:justify-start gap-2 text-lg">
+                            <Check className="w-5 h-5 text-green-500" />
+                            <span className="font-medium">12 monthly payments</span>
+                          </div>
+                          <div className="flex items-center justify-center md:justify-start gap-2 text-lg">
+                            <Check className="w-5 h-5 text-green-500" />
+                            <span className="font-medium">No payments in Year 2</span>
+                          </div>
+                        </>
+                      )}
+                      {paymentType === '36months' && (
+                        <>
+                          <div className="flex items-center justify-center md:justify-start gap-2 text-lg">
+                            <Check className="w-5 h-5 text-green-500" />
+                            <span className="font-medium">12 monthly payments</span>
+                          </div>
+                          <div className="flex items-center justify-center md:justify-start gap-2 text-lg">
+                            <Check className="w-5 h-5 text-green-500" />
+                            <span className="font-medium">No payments in Years 2 & 3</span>
+                          </div>
+                        </>
+                      )}
                     </div>
-                  ) : (
-                    <div>
-                      <div className="text-lg text-gray-600 mb-2">
-                        Was <span className="line-through text-gray-500 font-semibold">£{adjustedBasePrice}</span>
-                      </div>
-                      <div className="text-4xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
-                      <div className="text-lg text-green-600 font-bold mb-4">
-                        You save £{adjustedBasePrice - displayedAnnualPrice}
-                      </div>
-                      <div className="text-lg text-gray-600">
-                        Total for {warrantyYears} year{warrantyYears > 1 ? 's' : ''} cover
-                      </div>
+                    
+                    <div className="text-center md:text-left border-t pt-6">
+                      {paymentType === '12months' ? (
+                        <div>
+                          <div className="text-4xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
+                          <div className="text-lg text-gray-600">Total for 1 year cover</div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="text-lg text-gray-600 mb-2">
+                            Was <span className="line-through text-gray-500 font-semibold">£{adjustedBasePrice}</span>
+                          </div>
+                          <div className="text-4xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
+                          <div className="text-lg text-green-600 font-bold mb-4">
+                            You save £{adjustedBasePrice - displayedAnnualPrice}
+                          </div>
+                          <div className="text-lg text-gray-600">
+                            Total for {warrantyYears} year{warrantyYears > 1 ? 's' : ''} cover
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
+                    
+                    {/* Email Quote Button */}
+                    <Button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEmailQuote({
+                          title: `${durationLabel} cover`,
+                          monthlyPrice: displayedMonthlyPrice,
+                          totalPrice: displayedAnnualPrice,
+                          paymentType: paymentType
+                        });
+                      }}
+                      className="w-full mt-6 py-4 text-lg font-semibold bg-white border-2 border-gray-300 text-black hover:bg-gray-50"
+                    >
+                      ✉️ Email Quote
+                    </Button>
+                  </div>
                 </div>
-                
-                {/* Email Quote Button */}
-                <Button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEmailQuote({
-                      title: `${durationLabel} cover`,
-                      monthlyPrice: displayedMonthlyPrice,
-                      totalPrice: displayedAnnualPrice,
-                      paymentType: paymentType
-                    });
-                  }}
-                  className="w-full mt-6 py-4 text-lg font-semibold bg-white border-2 border-gray-300 text-black hover:bg-gray-50"
-                >
-                  ✉️ Email Quote
-                </Button>
               </div>
             );
           })()}
