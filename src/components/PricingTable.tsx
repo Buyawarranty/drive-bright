@@ -1874,55 +1874,72 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </span>
                   )}
                   
-                  {/* Duration Title */}
-                  <h4 className="text-xl font-bold text-gray-900 mb-2 mt-2">
-                    {duration.label}
-                  </h4>
-                  
-                  {/* Plan Name */}
-                  <p className="text-sm text-gray-600 mb-4">{duration.planName}</p>
-                  
-                  {/* Unified Price Section */}
-                  <div className="mb-6">
-                    {/* Combined Monthly & Total Price */}
-                    <div className="mb-2">
-                      <span className="text-2xl font-bold" style={{ color: '#000' }}>
-                        £{displayedMonthlyPrice}/month
-                      </span>
-                      <span className="mx-2 text-xl" style={{ color: '#333' }}>·</span>
-                      <span className="text-2xl font-bold" style={{ color: '#333' }}>
-                        Total £{Math.round(displayedAnnualPrice)}
-                      </span>
-                    </div>
-                    
-                    {/* Payment Terms */}
-                    <div className="text-sm" style={{ color: '#666' }}>
-                      (12 payments, 0% APR)
-                    </div>
-                    
-                    {/* Slashed Price & Savings */}
-                    {savingsAmount > 0 && (
-                      <div className="mt-3">
-                        <div className="text-sm mb-1">
-                          <span className="line-through font-semibold" style={{ color: '#888' }}>
-                            Was £{adjustedBasePrice}
-                          </span>
-                        </div>
-                        <div className="text-base font-bold" style={{ color: '#28A745' }}>
-                          Save £{savingsAmount} with this plan
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* What's Covered Box Toggle */}
+                  {/* Collapsible Section for What's Covered */}
                   <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+                    {/* Instant Cover Badge with Left Chevron */}
+                    <div className="flex items-center justify-between mb-4">
+                      <CollapsibleTrigger asChild>
+                        <button 
+                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <ChevronDown className={`w-6 h-6 text-gray-700 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                        </button>
+                      </CollapsibleTrigger>
+                      
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-2 border-green-200 bg-green-50 text-green-700 text-sm font-semibold">
+                        <Zap className="w-4 h-4" />
+                        Instant cover
+                      </span>
+                    </div>
+                    
+                    {/* Duration Title */}
+                    <h4 className="text-xl font-bold text-gray-900 mb-2">
+                      {duration.label}
+                    </h4>
+                    
+                    {/* Plan Name */}
+                    <p className="text-sm text-gray-600 mb-4">{duration.planName}</p>
+                    
+                    {/* Unified Price Section */}
+                    <div className="mb-6">
+                      {/* Combined Monthly & Total Price */}
+                      <div className="mb-2">
+                        <span className="text-2xl font-bold" style={{ color: '#000' }}>
+                          £{displayedMonthlyPrice}/month
+                        </span>
+                        <span className="mx-2 text-xl" style={{ color: '#333' }}>·</span>
+                        <span className="text-2xl font-bold" style={{ color: '#333' }}>
+                          Total £{Math.round(displayedAnnualPrice)}
+                        </span>
+                      </div>
+                      
+                      {/* Payment Terms */}
+                      <div className="text-sm" style={{ color: '#666' }}>
+                        (12 payments, 0% APR)
+                      </div>
+                      
+                      {/* Slashed Price & Savings */}
+                      {savingsAmount > 0 && (
+                        <div className="mt-3">
+                          <div className="text-sm mb-1">
+                            <span className="line-through font-semibold" style={{ color: '#888' }}>
+                              Was £{adjustedBasePrice}
+                            </span>
+                          </div>
+                          <div className="text-base font-bold" style={{ color: '#28A745' }}>
+                            Save £{savingsAmount} with this plan
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* What's Covered Box Toggle */}
                     <CollapsibleTrigger asChild>
                       <button 
                         className="w-full flex items-center justify-between p-4 mb-4 rounded-lg border-2 border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <ChevronDown className={`w-6 h-6 text-gray-700 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                         <div className="flex items-center gap-3">
                           <Shield className="w-6 h-6 text-gray-700" />
                           <span className="text-lg font-bold text-gray-900">What's covered?</span>
