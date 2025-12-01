@@ -2003,9 +2003,24 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         </span>
                       </div>
                       
-                      {/* Payment Terms */}
-                      <div className="text-sm text-gray-600 mb-3">
-                        (12 payments, 0% APR)
+                      {/* Payment Details with Checkmarks */}
+                      <div className="space-y-1.5 mb-3">
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                          <span className="text-sm text-gray-700">12 payments, 0% APR</span>
+                        </div>
+                        {durationId === '24months' && (
+                          <div className="flex items-center gap-2">
+                            <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                            <span className="text-sm text-gray-700">Year 2 Cover is Free</span>
+                          </div>
+                        )}
+                        {durationId === '36months' && (
+                          <div className="flex items-center gap-2">
+                            <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                            <span className="text-sm text-gray-700">Year 2 and 3 Cover is Free</span>
+                          </div>
+                        )}
                       </div>
                       
                       {/* Slashed Price & Savings */}
