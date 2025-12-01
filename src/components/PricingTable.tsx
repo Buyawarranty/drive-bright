@@ -1964,12 +1964,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200">
                         <h6 className="text-sm font-semibold text-gray-900 mb-3">What's included:</h6>
                         <div className="space-y-2">
-                          {duration.features.map((feature, idx) => (
-                            <div key={idx} className="flex items-start gap-2">
-                              <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                              <span className="text-sm text-gray-700">{feature}</span>
-                            </div>
-                          ))}
+                          {duration.features.map((feature, idx) => {
+                            const isExclusion = feature.toLowerCase().includes('pre-existing faults');
+                            return (
+                              <div key={idx} className="flex items-start gap-2">
+                                {isExclusion ? (
+                                  <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                                ) : (
+                                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                                )}
+                                <span className="text-sm text-gray-700">{feature}</span>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                       
