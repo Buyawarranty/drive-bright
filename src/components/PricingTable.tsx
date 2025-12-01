@@ -1936,7 +1936,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
                     <CollapsibleTrigger asChild>
                       <button 
-                        className="flex items-center gap-2 text-lg font-medium text-gray-700 hover:text-gray-900 mb-4 transition-colors"
+                        className="flex items-center gap-2 text-base font-medium text-gray-700 hover:text-gray-900 mb-4 transition-colors"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Info className="w-5 h-5" />
