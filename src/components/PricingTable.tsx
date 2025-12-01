@@ -2336,7 +2336,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   size="lg"
                   className="text-lg font-semibold px-12 py-3.5 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white"
                 >
-                  Buy now
+                  Continue to checkout
                   <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
                 </Button>
               </div>
@@ -2432,7 +2432,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   size="lg"
                   className="text-base md:text-lg font-semibold px-8 md:px-12 py-3 md:py-3.5 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white w-full md:w-auto"
                 >
-                  Buy now
+                  Continue to checkout
                   <ArrowRight className="w-5 h-5 ml-1" strokeWidth={4.5} />
                 </Button>
               </div>
