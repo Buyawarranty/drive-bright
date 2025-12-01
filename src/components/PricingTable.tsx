@@ -1874,104 +1874,116 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </span>
                   )}
                   
-                  {/* Collapsible Section for What's Covered */}
+                  {/* What's Covered Section - Redesigned */}
                   <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-                    {/* Instant Cover Badge with Left Chevron */}
-                    <div className="flex items-center justify-between mb-4">
-                      <CollapsibleTrigger asChild>
-                        <button 
-                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <ChevronDown className={`w-9 h-9 text-gray-700 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                        </button>
-                      </CollapsibleTrigger>
-                      
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-2 border-green-200 bg-green-50 text-green-700 text-sm font-semibold">
-                        <Zap className="w-4 h-4" />
-                        Instant cover
-                      </span>
+                    <div className="bg-gray-50 rounded-2xl p-6 mb-4">
+                      {/* Shield Icon and Heading */}
+                      <div className="flex items-start gap-3 mb-4">
+                        <Shield className="w-10 h-10 text-gray-800 flex-shrink-0" />
+                        <h3 className="text-3xl font-bold text-gray-900">What's covered?</h3>
+                      </div>
+
+                      {/* Description with Icon */}
+                      <div className="flex items-start gap-2 mb-6">
+                        <ShieldCheck className="w-5 h-5 text-gray-600 flex-shrink-0 mt-1" />
+                        <p className="text-base text-gray-700">
+                          All-in-one cover – Labour, electrical and mechanical parts included.
+                        </p>
+                      </div>
+
+                      {/* Bottom Section with Badges and Chevron */}
+                      <div className="flex items-center justify-between gap-3">
+                        {/* Instant Cover Badge */}
+                        <div className="inline-flex items-center gap-2 bg-green-50 border-2 border-green-500 text-green-700 px-4 py-2 rounded-full font-bold text-sm">
+                          <Zap className="w-4 h-4 fill-green-500" />
+                          <span>Instant cover</span>
+                        </div>
+
+                        {/* Chevron Trigger */}
+                        <CollapsibleTrigger asChild>
+                          <button
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <ChevronDown className={`w-8 h-8 text-gray-700 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                          </button>
+                        </CollapsibleTrigger>
+
+                        {/* What You Get Badge */}
+                        <div className="inline-flex items-center gap-2 bg-green-50 border-2 border-green-500 text-green-700 px-4 py-2 rounded-full font-bold text-sm">
+                          <span>· What You Get ·</span>
+                        </div>
+                      </div>
                     </div>
-                    
-                    {/* Duration Title */}
-                    <h4 className="text-xl font-bold text-gray-900 mb-2">
-                      {duration.label}
-                    </h4>
-                    
-                    {/* Plan Name */}
-                    <p className="text-sm text-gray-600 mb-4">{duration.planName}</p>
-                    
-                    {/* Unified Price Section */}
-                    <div className="mb-6">
-                      {/* Combined Monthly & Total Price */}
-                      <div className="mb-2">
-                        <span className="text-2xl font-bold" style={{ color: '#000' }}>
-                          £{displayedMonthlyPrice}/month
-                        </span>
-                        <span className="mx-2 text-xl" style={{ color: '#333' }}>·</span>
-                        <span className="text-2xl font-bold" style={{ color: '#333' }}>
-                          Total £{Math.round(displayedAnnualPrice)}
-                        </span>
-                      </div>
-                      
-                      {/* Payment Terms */}
-                      <div className="text-sm" style={{ color: '#666' }}>
-                        (12 payments, 0% APR)
-                      </div>
-                      
-                      {/* Slashed Price & Savings */}
-                      {savingsAmount > 0 && (
-                        <div className="mt-3">
-                          <div className="text-sm mb-1">
-                            <span className="line-through font-semibold" style={{ color: '#888' }}>
-                              Was £{adjustedBasePrice}
+
+                    {/* Collapsible Content */}
+                    <CollapsibleContent className="animate-accordion-down">
+                      <div className="mb-4">
+                        {/* Duration Title */}
+                        <h4 className="text-xl font-bold text-gray-900 mb-2">
+                          {duration.label}
+                        </h4>
+                        
+                        {/* Plan Name */}
+                        <p className="text-sm text-gray-600 mb-4">{duration.planName}</p>
+                        
+                        {/* Unified Price Section */}
+                        <div className="mb-6">
+                          {/* Combined Monthly & Total Price */}
+                          <div className="mb-2">
+                            <span className="text-2xl font-bold" style={{ color: '#000' }}>
+                              £{displayedMonthlyPrice}/month
+                            </span>
+                            <span className="mx-2 text-xl" style={{ color: '#333' }}>·</span>
+                            <span className="text-2xl font-bold" style={{ color: '#333' }}>
+                              Total £{Math.round(displayedAnnualPrice)}
                             </span>
                           </div>
-                          <div className="text-base font-bold" style={{ color: '#28A745' }}>
-                            Save £{savingsAmount} with this plan
+                          
+                          {/* Payment Terms */}
+                          <div className="text-sm" style={{ color: '#666' }}>
+                            (12 payments, 0% APR)
+                          </div>
+                          
+                          {/* Slashed Price & Savings */}
+                          {savingsAmount > 0 && (
+                            <div className="mt-3">
+                              <div className="text-sm mb-1">
+                                <span className="line-through font-semibold" style={{ color: '#888' }}>
+                                  Was £{adjustedBasePrice}
+                                </span>
+                              </div>
+                              <div className="text-base font-bold" style={{ color: '#28A745' }}>
+                                Save £{savingsAmount} with this plan
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200">
+                          <h6 className="text-sm font-semibold text-gray-900 mb-3">What's included:</h6>
+                          <div className="space-y-2">
+                            {duration.features.map((feature, idx) => (
+                              <div key={idx} className="flex items-start gap-2">
+                                <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                                <span className="text-sm text-gray-700">{feature}</span>
+                              </div>
+                            ))}
                           </div>
                         </div>
-                      )}
-                    </div>
-                    
-                    {/* What's Covered Box Toggle */}
-                    <CollapsibleTrigger asChild>
-                      <button 
-                        className="w-full flex items-center justify-between p-4 mb-4 rounded-lg border-2 border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className="flex items-center gap-3">
-                          <Shield className="w-6 h-6 text-gray-700" />
-                          <span className="text-lg font-bold text-gray-900">What's covered?</span>
-                        </div>
-                        <ChevronDown className={`w-9 h-9 text-gray-700 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                      </button>
-                    </CollapsibleTrigger>
-                    
-                    <CollapsibleContent className="animate-accordion-down">
-                      <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200">
-                        <h6 className="text-sm font-semibold text-gray-900 mb-3">What's included:</h6>
-                        <div className="space-y-2">
-                          {duration.features.map((feature, idx) => (
-                            <div key={idx} className="flex items-start gap-2">
-                              <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                              <span className="text-sm text-gray-700">{feature}</span>
-                            </div>
-                          ))}
-                        </div>
+                        
+                        {/* View Less Button */}
+                        <CollapsibleTrigger asChild>
+                          <button 
+                            className="w-full flex items-center justify-center gap-2 text-base font-medium transition-colors group"
+                            style={{ color: '#666' }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <span className="group-hover:text-gray-900">View less</span>
+                            <ChevronDown className={`w-8 h-8 text-gray-700 transition-transform group-hover:text-gray-900 ${isExpanded ? 'rotate-180' : ''}`} />
+                          </button>
+                        </CollapsibleTrigger>
                       </div>
-                      
-                      {/* Bottom Toggle - Opposite Side */}
-                      <CollapsibleTrigger asChild>
-                        <button 
-                          className="w-full flex items-center justify-end gap-2 mb-4 text-base font-medium transition-colors group"
-                          style={{ color: '#666' }}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <span className="group-hover:text-gray-900">View less</span>
-                          <ChevronDown className={`w-10 h-10 text-gray-700 transition-transform group-hover:text-gray-900 ${isExpanded ? 'rotate-180' : ''}`} />
-                        </button>
-                      </CollapsibleTrigger>
                     </CollapsibleContent>
                   </Collapsible>
                   
