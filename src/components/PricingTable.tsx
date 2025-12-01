@@ -2077,22 +2077,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       )}
                     </div>
                     
-                    {/* Email Quote Button */}
-                    <Button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEmailQuote({
-                          title: `${durationLabel} cover`,
-                          monthlyPrice: displayedMonthlyPrice,
-                          totalPrice: displayedAnnualPrice,
-                          paymentType: paymentType
-                        });
-                      }}
-                      className="w-full mt-6 py-4 text-lg font-semibold bg-white border-2 border-gray-300 text-black hover:bg-gray-50"
-                    >
-                      ✉️ Email Quote
-                    </Button>
                   </div>
                 </div>
               </div>
