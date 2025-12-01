@@ -1542,7 +1542,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <span className="text-2xl font-bold text-foreground">£70 </span>
                 <span className="text-sm font-medium text-foreground">per hour</span>
               </div>
-              <p className="text-xl font-bold text-black">Most Garages</p>
+              <p className="text-xl font-bold text-black">Approved Garages</p>
               <p className="text-xs text-muted-foreground mt-1">Covers most reputable garages.</p>
             </button>
             
@@ -1559,7 +1559,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <span className="text-2xl font-bold text-foreground">£100 </span>
                 <span className="text-sm font-medium text-foreground">per hour</span>
               </div>
-              <p className="text-xl font-bold text-black">Dealer Approved</p>
+              <p className="text-xl font-bold text-black">Expert Garages</p>
               <p className="text-xs text-muted-foreground mt-1">Perfect for main dealers and specialists.</p>
             </button>
           </div>
