@@ -1107,7 +1107,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <ChevronDown className="w-6 h-6 sm:w-8 sm:h-8 text-black transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
                 </div>
                 <button className="inline-flex items-center gap-1 sm:gap-2 bg-green-50 border border-green-300 rounded-lg px-2 sm:px-4 py-1.5 sm:py-2 shadow-sm hover:shadow transition-shadow">
-                  <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-700" />
+                  <Info className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-700" />
                   <span className="text-xs sm:text-sm font-medium text-green-700 whitespace-nowrap">What You Get</span>
                   <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-700 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
                 </button>
