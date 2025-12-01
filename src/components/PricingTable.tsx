@@ -1922,6 +1922,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         className="w-full flex items-center justify-between p-4 mb-4 rounded-lg border-2 border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors"
                         onClick={(e) => e.stopPropagation()}
                       >
+                        <ChevronDown className={`w-6 h-6 text-gray-700 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                         <div className="flex items-center gap-3">
                           <Shield className="w-6 h-6 text-gray-700" />
                           <span className="text-lg font-bold text-gray-900">What's covered?</span>
