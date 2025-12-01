@@ -1989,7 +1989,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           <TooltipContent side="top" className="max-w-xs">
                             <p className="flex items-center gap-2">
                               <Shield className="w-4 h-4" />
-                              Cover starts immediately after purchase – excludes pre-existing conditions.
+                              ⚡ Cover starts immediately after purchase
                             </p>
                           </TooltipContent>
                         </Tooltip>

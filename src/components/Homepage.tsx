@@ -594,7 +594,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>🛡️ Cover starts immediately after purchase – excludes pre-existing conditions.</p>
+                        <p>⚡ Cover starts immediately after purchase</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>

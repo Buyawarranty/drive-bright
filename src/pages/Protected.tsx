@@ -261,7 +261,7 @@ const Protected = () => {
                 <h3 className="text-lg font-bold text-gray-900 transition-colors duration-300 group-hover:text-green-700">Instant Activation</h3>
               </div>
               <p className="text-sm text-gray-700 text-center transition-colors duration-300 group-hover:text-gray-900">
-                Cover starts immediately after purchase - excludes pre-existing conditions.
+                ⚡ Cover starts immediately after purchase
               </p>
             </div>
           </div>
