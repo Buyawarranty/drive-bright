@@ -113,6 +113,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const [plansLoading, setPlansLoading] = useState(true);
   const [plansError, setPlansError] = useState<string | null>(null);
   
+  // Email quote dialog state
+  const [emailQuoteDialogOpen, setEmailQuoteDialogOpen] = useState(false);
+  const [emailQuoteDuration, setEmailQuoteDuration] = useState<'12months' | '24months' | '36months'>('12months');
+  const [emailQuoteEmail, setEmailQuoteEmail] = useState('');
+  const [emailQuoteSending, setEmailQuoteSending] = useState(false);
+  
   // Track if we're restoring from previous selections to avoid overriding them
   const isRestoringFromPrevious = React.useRef(!!previousProtectionAddOns);
   const hasInitializedAddOns = React.useRef(false);
@@ -859,6 +865,77 @@ const PricingTable: React.FC<PricingTableProps> = ({
       toast.error('Failed to select plan. Please try again.');
     } finally {
       setLoading(prev => ({ ...prev, [selectedPlan.id]: false }));
+    }
+  };
+
+  const handleOpenEmailQuoteDialog = (durationId: '12months' | '24months' | '36months') => {
+    setEmailQuoteDuration(durationId);
+    setEmailQuoteEmail('');
+    setEmailQuoteDialogOpen(true);
+  };
+
+  const handleSendQuoteEmail = async () => {
+    if (!emailQuoteEmail || !emailQuoteEmail.includes('@')) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    setEmailQuoteSending(true);
+    try {
+      const warrantyYears = emailQuoteDuration === '12months' ? 1 : emailQuoteDuration === '24months' ? 2 : 3;
+      const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
+      const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, emailQuoteDuration);
+      const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
+      
+      // Apply automatic discounts
+      let discountedPrice = adjustedBasePrice;
+      if (emailQuoteDuration === '24months') {
+        discountedPrice = adjustedBasePrice - 100;
+      } else if (emailQuoteDuration === '36months') {
+        discountedPrice = adjustedBasePrice - 200;
+      }
+      
+      const baseMonthlyPrice = Math.round(discountedPrice / 12);
+      const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 5 : 0;
+      const boostDisplayAdjustment = boostAddon ? -2.01 : 0;
+      const displayedMonthlyPrice = baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
+
+      const planName = emailQuoteDuration === '12months' ? '1-Year Cover' : 
+                       emailQuoteDuration === '24months' ? '2-Year Cover' : '3-Year Cover';
+
+      const { error } = await supabase.functions.invoke('send-quote-email', {
+        body: {
+          email: emailQuoteEmail,
+          firstName: vehicleData.firstName,
+          lastName: vehicleData.lastName,
+          vehicleData: {
+            regNumber: vehicleData.regNumber,
+            make: vehicleData.make,
+            model: vehicleData.model,
+            year: vehicleData.year,
+            mileage: vehicleData.mileage,
+            fuelType: vehicleData.fuelType,
+            transmission: vehicleData.transmission,
+            vehicleType: vehicleData.vehicleType
+          },
+          selectedPlan: {
+            name: 'Platinum Complete Plan',
+            price: displayedMonthlyPrice,
+            paymentType: emailQuoteDuration
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      toast.success('Quote email sent successfully!');
+      setEmailQuoteDialogOpen(false);
+      setEmailQuoteEmail('');
+    } catch (error: any) {
+      console.error('Error sending quote email:', error);
+      toast.error('Failed to send quote email. Please try again.');
+    } finally {
+      setEmailQuoteSending(false);
     }
   };
 
@@ -2005,6 +2082,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   >
                     {isSelected ? 'Selected' : 'Secure Your Cover'}
                   </button>
+                  
+                  {/* Email Quote Link */}
+                  <button
+                    onClick={() => handleOpenEmailQuoteDialog(durationId)}
+                    className="w-full mt-3 text-center text-sm text-gray-600 hover:text-orange-600 underline transition-colors"
+                  >
+                    Email me this quote
+                  </button>
                 </div>
               );
             })}
@@ -2338,6 +2423,116 @@ const PricingTable: React.FC<PricingTableProps> = ({
         </div>
       )}
 
+      {/* Email Quote Dialog */}
+      <Dialog open={emailQuoteDialogOpen} onOpenChange={setEmailQuoteDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Email Your Quote</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 mt-4">
+            <p className="text-gray-600">
+              Enter your email address and we'll send you this warranty quote instantly.
+            </p>
+            
+            {/* Quote Summary */}
+            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Plan:</span>
+                <span className="font-bold">Platinum Complete</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Duration:</span>
+                <span className="font-bold">
+                  {emailQuoteDuration === '12months' ? '1-Year Cover' : 
+                   emailQuoteDuration === '24months' ? '2-Year Cover' : '3-Year Cover'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Monthly Payment:</span>
+                <span className="font-bold">
+                  £{(() => {
+                    const warrantyYears = emailQuoteDuration === '12months' ? 1 : emailQuoteDuration === '24months' ? 2 : 3;
+                    const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
+                    const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, emailQuoteDuration);
+                    const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
+                    
+                    let discountedPrice = adjustedBasePrice;
+                    if (emailQuoteDuration === '24months') {
+                      discountedPrice = adjustedBasePrice - 100;
+                    } else if (emailQuoteDuration === '36months') {
+                      discountedPrice = adjustedBasePrice - 200;
+                    }
+                    
+                    const baseMonthlyPrice = Math.round(discountedPrice / 12);
+                    const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 5 : 0;
+                    const boostDisplayAdjustment = boostAddon ? -2.01 : 0;
+                    return Math.round(baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment);
+                  })()}/month
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Total Cost:</span>
+                <span className="font-bold text-green-600">
+                  £{(() => {
+                    const warrantyYears = emailQuoteDuration === '12months' ? 1 : emailQuoteDuration === '24months' ? 2 : 3;
+                    const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
+                    const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, emailQuoteDuration);
+                    const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
+                    
+                    let discountedPrice = adjustedBasePrice;
+                    if (emailQuoteDuration === '24months') {
+                      discountedPrice = adjustedBasePrice - 100;
+                    } else if (emailQuoteDuration === '36months') {
+                      discountedPrice = adjustedBasePrice - 200;
+                    }
+                    
+                    const baseMonthlyPrice = Math.round(discountedPrice / 12);
+                    const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 5 : 0;
+                    const boostDisplayAdjustment = boostAddon ? -2.01 : 0;
+                    const displayedMonthlyPrice = baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
+                    return Math.round(displayedMonthlyPrice * 12);
+                  })()}
+                </span>
+              </div>
+            </div>
+            
+            {/* Email Input */}
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-semibold text-gray-900">
+                Email Address
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={emailQuoteEmail}
+                onChange={(e) => setEmailQuoteEmail(e.target.value)}
+                placeholder="your.email@example.com"
+                className="w-full px-4 py-3 border-2 border-orange-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => setEmailQuoteDialogOpen(false)}
+                className="flex-1"
+                disabled={emailQuoteSending}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSendQuoteEmail}
+                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
+                disabled={emailQuoteSending}
+              >
+                {emailQuoteSending ? 'Sending...' : 'Send Quote'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );
