@@ -1586,7 +1586,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     <ProtectedButton
                       actionType="complete_purchase"
                       onClick={handleSubmit}
-                      className="w-full mt-6 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 text-lg rounded-lg"
+                      className="w-full mt-6 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 text-lg rounded-lg animate-[breathing_3s_ease-in-out_infinite]"
                       size="lg"
                       disabled={isLoadingPayment}
                       loading={isLoadingPayment}
