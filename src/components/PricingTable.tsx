@@ -1129,7 +1129,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       const detailsSection = document.getElementById('your-cover-details');
                       detailsSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }}
-                    className="text-sm text-primary hover:text-primary/80 underline text-left w-fit transition-colors"
+                    className="text-base text-primary hover:text-primary/80 underline text-left w-fit transition-colors ml-7"
                   >
                     See full policy details
                   </button>
