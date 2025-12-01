@@ -1748,7 +1748,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
 
         {/* Choose Warranty Duration */}
-        <div id="duration-price-section">
+        <div id="duration-price-section" className="section-header rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold">
               5
