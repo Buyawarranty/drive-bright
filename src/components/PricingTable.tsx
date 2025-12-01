@@ -20,7 +20,6 @@ import AddOnProtectionPackages from '@/components/AddOnProtectionPackages';
 import { validateVehicleEligibility, calculateVehiclePriceAdjustment, applyPriceAdjustment } from '@/lib/vehicleValidation';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import pandaCarWarranty from "@/assets/panda-car-warranty-transparent.png";
-import pandaSmartChoice from "@/assets/panda-smart-choice.png";
 import trustpilotLogo from "@/assets/trustpilot-excellent-box.webp";
 import { trackStepCompletion, trackBeginCheckout } from '@/utils/analytics';
 
@@ -1876,6 +1875,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
               const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 5 : 0;
               const boostDisplayAdjustment = boostAddon ? -2.01 : 0;
               const displayedMonthlyPrice = baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
+              const displayedAnnualPrice = discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12);
+              const savingsAmount = durationId === '24months' ? 100 : durationId === '36months' ? 200 : 0;
               
               return (
                 <button
@@ -1907,6 +1908,51 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   {/* Price */}
                   <div className="text-4xl font-bold text-black mb-4">
                     £{displayedMonthlyPrice}<span className="text-lg">/month</span>
+                  </div>
+                  
+                  {/* Payment Structure */}
+                  <div className="space-y-2 mb-4 pb-4 border-b border-gray-200">
+                    <div className="flex items-start gap-2 text-sm">
+                      <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-gray-700">12 monthly payments</span>
+                    </div>
+                    {durationId === '24months' && (
+                      <div className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">No payments in Year 2</span>
+                      </div>
+                    )}
+                    {durationId === '36months' && (
+                      <div className="flex items-start gap-2 text-sm">
+                        <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-gray-700">No payments in Years 2 & 3</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Pricing Details */}
+                  <div className="mb-4">
+                    {savingsAmount > 0 ? (
+                      <>
+                        <div className="text-sm text-gray-600 mb-1">
+                          Was <span className="line-through text-gray-500 font-semibold">£{adjustedBasePrice}</span>
+                        </div>
+                        <div className="text-2xl font-bold text-black mb-1">£{Math.round(displayedAnnualPrice)}</div>
+                        <div className="text-sm text-green-600 font-bold mb-2">
+                          Save £{savingsAmount} with this plan
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Total for {warrantyYears} years cover
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-2xl font-bold text-black mb-2">£{Math.round(displayedAnnualPrice)}</div>
+                        <div className="text-sm text-gray-600">
+                          Total for {warrantyYears} year cover
+                        </div>
+                      </>
+                    )}
                   </div>
                   
                   {/* Button */}
@@ -1968,126 +2014,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
             </div>
           </div>
-
-          {/* Selected Plan Summary */}
-          {(() => {
-            // Calculate pricing for selected plan
-            const warrantyYears = paymentType === '12months' ? 1 : paymentType === '24months' ? 2 : 3;
-            const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
-            const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, paymentType);
-            const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
-            const durationMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
-            
-            // Calculate add-on costs
-            const protectionAddOnPrice = calculateAddOnPrice(selectedProtectionAddOns, paymentType, durationMonths);
-            const boostCost = boostAddon ? 84 : 0;
-            
-            // Apply automatic discounts
-            let discountedPrice = adjustedBasePrice;
-            if (paymentType === '24months') {
-              discountedPrice = adjustedBasePrice - 100;
-            } else if (paymentType === '36months') {
-              discountedPrice = adjustedBasePrice - 200;
-            }
-            
-            // Calculate display prices
-            const baseMonthlyPrice = Math.round(discountedPrice / 12);
-            const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 5 : 0;
-            const boostDisplayAdjustment = boostAddon ? -2.01 : 0;
-            const displayedMonthlyPrice = baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
-            const displayedAnnualPrice = discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12);
-            const totalPriceWithAddOns = discountedPrice + protectionAddOnPrice + boostCost;
-            
-            const durationLabel = paymentType === '12months' ? '1-year' : paymentType === '24months' ? '2-year' : '3-year';
-            const savingsAmount = paymentType === '24months' ? 100 : paymentType === '36months' ? 200 : 0;
-            
-            return (
-              <div className="p-8 bg-white rounded-lg border-2 border-orange-500 shadow-lg shadow-orange-500/30">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                  {/* Left side - Panda image (hidden on mobile) */}
-                  <div className="hidden md:flex justify-center items-center">
-                    <img 
-                      src={pandaSmartChoice}
-                      alt="Smart choice - big savings"
-                      className="w-full max-w-sm object-contain"
-                    />
-                  </div>
-                  
-                  {/* Right side - Summary content */}
-                  <div className="flex flex-col">
-                    <div className="text-center md:text-left mb-6">
-                      <h5 className="text-2xl font-bold text-gray-900 mb-2">
-                        Your {durationLabel} cover summary
-                      </h5>
-                      {savingsAmount > 0 && (
-                        <p className="text-green-600 text-lg font-semibold">
-                          Save £{savingsAmount} with this plan
-                        </p>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-4 mb-6">
-                      {paymentType === '12months' && (
-                        <div className="flex items-center justify-center md:justify-start gap-2 text-lg">
-                          <Check className="w-5 h-5 text-green-500" />
-                          <span className="font-medium">12 monthly payments</span>
-                        </div>
-                      )}
-                      {paymentType === '24months' && (
-                        <>
-                          <div className="flex items-center justify-center md:justify-start gap-2 text-lg">
-                            <Check className="w-5 h-5 text-green-500" />
-                            <span className="font-medium">12 monthly payments</span>
-                          </div>
-                          <div className="flex items-center justify-center md:justify-start gap-2 text-lg">
-                            <Check className="w-5 h-5 text-green-500" />
-                            <span className="font-medium">No payments in Year 2</span>
-                          </div>
-                        </>
-                      )}
-                      {paymentType === '36months' && (
-                        <>
-                          <div className="flex items-center justify-center md:justify-start gap-2 text-lg">
-                            <Check className="w-5 h-5 text-green-500" />
-                            <span className="font-medium">12 monthly payments</span>
-                          </div>
-                          <div className="flex items-center justify-center md:justify-start gap-2 text-lg">
-                            <Check className="w-5 h-5 text-green-500" />
-                            <span className="font-medium">No payments in Years 2 & 3</span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                    
-                    <div className="text-center md:text-left border-t pt-6">
-                      {paymentType === '12months' ? (
-                        <div>
-                          <div className="text-4xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
-                          <div className="text-lg text-gray-600">Total for 1 year cover</div>
-                        </div>
-                      ) : (
-                        <div>
-                          <div className="text-lg text-gray-600 mb-2">
-                            Was <span className="line-through text-gray-500 font-semibold">£{adjustedBasePrice}</span>
-                          </div>
-                          <div className="text-4xl font-bold text-black mb-2">£{displayedAnnualPrice}</div>
-                          <div className="text-lg text-green-600 font-bold mb-4">
-                            You save £{adjustedBasePrice - displayedAnnualPrice}
-                          </div>
-                          <div className="text-lg text-gray-600">
-                            Total for {warrantyYears} year{warrantyYears > 1 ? 's' : ''} cover
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
         </div>
-
 
         {/* Add-On Protection Packages */}
         <div className="section-header rounded-lg p-6">
