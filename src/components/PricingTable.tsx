@@ -1915,32 +1915,29 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     
                     {/* Unified Price Section */}
                     <div className="mb-6">
-                      {/* Combined Monthly & Total Price */}
-                      <div className="mb-2">
-                        <span className="text-2xl font-bold" style={{ color: '#000' }}>
-                          £{displayedMonthlyPrice}/month
-                        </span>
-                        <span className="mx-2 text-xl" style={{ color: '#333' }}>·</span>
-                        <span className="text-2xl font-bold" style={{ color: '#333' }}>
-                          Total £{Math.round(displayedAnnualPrice)}
-                        </span>
+                      {/* Monthly Price */}
+                      <div className="text-[28px] font-bold text-black leading-tight">
+                        £{displayedMonthlyPrice}/month
                       </div>
                       
                       {/* Payment Terms */}
-                      <div className="text-sm" style={{ color: '#666' }}>
-                        (12 payments, 0% APR)
+                      <div className="text-base text-gray-500 mt-1">
+                        12 easy payments - 0% APR
+                      </div>
+                      
+                      {/* Total Price */}
+                      <div className="text-xl font-semibold text-gray-700 mt-3">
+                        Total £{Math.round(displayedAnnualPrice)}
                       </div>
                       
                       {/* Slashed Price & Savings */}
                       {savingsAmount > 0 && (
-                        <div className="mt-3">
-                          <div className="text-sm mb-1">
-                            <span className="line-through font-semibold" style={{ color: '#888' }}>
-                              Was £{adjustedBasePrice}
-                            </span>
+                        <div className="mt-2 space-y-1">
+                          <div className="text-base text-gray-500 line-through">
+                            Was £{adjustedBasePrice}
                           </div>
-                          <div className="text-base font-bold" style={{ color: '#28A745' }}>
-                            Save £{savingsAmount} with this plan
+                          <div className="text-base font-medium text-green-600">
+                            Save £{savingsAmount}
                           </div>
                         </div>
                       )}
