@@ -20,7 +20,7 @@ import AddOnProtectionPackages from '@/components/AddOnProtectionPackages';
 import { validateVehicleEligibility, calculateVehiclePriceAdjustment, applyPriceAdjustment } from '@/lib/vehicleValidation';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import pandaCarWarranty from "@/assets/panda-car-warranty-transparent.png";
-import pandaHonestCover from "@/assets/panda-honest-cover.png";
+import pandaSmartChoice from "@/assets/panda-smart-choice.png";
 import trustpilotLogo from "@/assets/trustpilot-excellent-box.webp";
 import { trackStepCompletion, trackBeginCheckout } from '@/utils/analytics';
 
@@ -2003,8 +2003,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   {/* Left side - Panda image (hidden on mobile) */}
                   <div className="hidden md:flex justify-center items-center">
                     <img 
-                      src={pandaHonestCover}
-                      alt="Just honest cover"
+                      src={pandaSmartChoice}
+                      alt="Smart choice - big savings"
                       className="w-full max-w-sm object-contain"
                     />
                   </div>
