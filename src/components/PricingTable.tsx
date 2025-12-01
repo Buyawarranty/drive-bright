@@ -2315,14 +2315,32 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   Total: £{Math.round(totalDiscountedPrice)}
                 </div>
               </div>
-              <Button
-                onClick={handleSelectPlan}
-                size="lg"
-                className="text-lg font-semibold px-12 py-3.5"
-              >
-                  Continue to Checkout
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleEmailQuote({
+                      title: paymentType === '12months' ? '1-year cover' : paymentType === '24months' ? '2-year cover' : '3-year cover',
+                      monthlyPrice: Math.round(totalDiscountedPrice / 12),
+                      totalPrice: Math.round(totalDiscountedPrice),
+                      paymentType: paymentType
+                    });
+                  }}
+                  size="lg"
+                  variant="outline"
+                  className="text-lg font-semibold px-8 py-3.5 border-2 border-orange-500 text-orange-600 hover:bg-orange-50"
+                >
+                  ✉️ Email Quote
+                </Button>
+                <Button
+                  onClick={handleSelectPlan}
+                  size="lg"
+                  className="text-lg font-semibold px-12 py-3.5 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white"
+                >
+                  Buy now
                   <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
-              </Button>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -2393,14 +2411,32 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
             
             <div className="flex flex-col items-stretch md:items-end gap-2">
-              <Button
-                onClick={handleSelectPlan}
-                size="lg"
-                className="text-base md:text-lg font-semibold px-8 md:pl-12 md:pr-10 py-3 md:py-3.5 bg-primary hover:bg-primary/90 w-full md:w-auto"
-              >
-                    Continue to pay
-                    <ArrowRight className="w-5 h-5 ml-1" strokeWidth={4.5} />
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleEmailQuote({
+                      title: paymentType === '12months' ? '1-year cover' : paymentType === '24months' ? '2-year cover' : '3-year cover',
+                      monthlyPrice: Math.round(totalDiscountedPrice / 12),
+                      totalPrice: Math.round(totalDiscountedPrice),
+                      paymentType: paymentType
+                    });
+                  }}
+                  size="lg"
+                  variant="outline"
+                  className="text-base md:text-lg font-semibold px-6 py-3 md:py-3.5 border-2 border-orange-500 text-orange-600 hover:bg-orange-50 w-full md:w-auto"
+                >
+                  ✉️ Email Quote
+                </Button>
+                <Button
+                  onClick={handleSelectPlan}
+                  size="lg"
+                  className="text-base md:text-lg font-semibold px-8 md:px-12 py-3 md:py-3.5 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white w-full md:w-auto"
+                >
+                  Buy now
+                  <ArrowRight className="w-5 h-5 ml-1" strokeWidth={4.5} />
+                </Button>
+              </div>
               <span className="text-base md:text-lg font-medium text-gray-600 text-center md:text-right">
                 Total: £{Math.round(totalDiscountedPrice)}
               </span>
