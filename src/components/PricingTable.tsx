@@ -1932,14 +1932,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     )}
                   </div>
                   
-                  {/* View Details Collapsible */}
+                  {/* What's Included Collapsible */}
                   <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
                     <CollapsibleTrigger asChild>
                       <button 
-                        className="flex items-center gap-2 text-sm font-medium text-orange-600 hover:text-orange-700 mb-4 transition-colors"
+                        className="flex items-center gap-2 text-lg font-medium text-gray-700 hover:text-gray-900 mb-4 transition-colors"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        View Details 
+                        <Info className="w-5 h-5" />
+                        What's Included? 
                         <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                       </button>
                     </CollapsibleTrigger>
