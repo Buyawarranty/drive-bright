@@ -1526,7 +1526,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <span className="text-sm font-medium text-foreground">per hour</span>
               </div>
               <p className="text-xl font-bold text-black">Independent Garages</p>
-              <p className="text-xs text-muted-foreground mt-1">Ideal for independent garages</p>
+              <p className="text-xs text-muted-foreground mt-1">Ideal for your local garage</p>
             </button>
             
             <button
