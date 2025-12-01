@@ -1915,17 +1915,18 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     )}
                   </div>
                   
-                  {/* View Full Cover Details Toggle */}
+                  {/* What's Covered Box Toggle */}
                   <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
                     <CollapsibleTrigger asChild>
                       <button 
-                        className="w-full flex items-center justify-center gap-2 text-sm font-medium mb-4 transition-colors"
-                        style={{ color: '#666' }}
+                        className="w-full flex items-center justify-between p-4 mb-4 rounded-lg border-2 border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Info className="w-4 h-4" />
-                        View Full Cover Details
-                        <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                        <div className="flex items-center gap-3">
+                          <Shield className="w-6 h-6 text-gray-700" />
+                          <span className="text-lg font-bold text-gray-900">What's covered?</span>
+                        </div>
+                        <ChevronDown className={`w-6 h-6 text-gray-700 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                       </button>
                     </CollapsibleTrigger>
                     
@@ -1941,6 +1942,18 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           ))}
                         </div>
                       </div>
+                      
+                      {/* Bottom Toggle - Opposite Side */}
+                      <CollapsibleTrigger asChild>
+                        <button 
+                          className="w-full flex items-center justify-end gap-2 mb-4 text-base font-medium transition-colors group"
+                          style={{ color: '#666' }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <span className="group-hover:text-gray-900">View less</span>
+                          <ChevronDown className={`w-7 h-7 transition-transform rotate-180 group-hover:text-gray-900`} />
+                        </button>
+                      </CollapsibleTrigger>
                     </CollapsibleContent>
                   </Collapsible>
                   
