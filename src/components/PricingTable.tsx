@@ -1859,10 +1859,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
               return (
                 <div
                   key={durationId}
-                  className={`relative p-6 rounded-lg border-2 transition-all bg-white ${
+                  className={`relative p-6 rounded-lg border-2 transition-all ${
                     isSelected
-                      ? 'border-orange-500 shadow-lg shadow-orange-500/30'
-                      : 'border-gray-300'
+                      ? 'bg-black border-black shadow-lg'
+                      : 'bg-white border-gray-300'
                   }`}
                 >
                   {/* Badge */}
@@ -1880,10 +1880,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <div className="flex items-center justify-between mb-4">
                       <CollapsibleTrigger asChild>
                         <button 
-                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          className={`p-2 rounded-lg transition-colors ${
+                            isSelected ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
+                          }`}
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <ChevronDown className={`w-9 h-9 text-gray-700 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-9 h-9 transition-transform ${isExpanded ? 'rotate-180' : ''} ${
+                            isSelected ? 'text-white' : 'text-gray-700'
+                          }`} />
                         </button>
                       </CollapsibleTrigger>
                       
@@ -1906,37 +1910,49 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </div>
                     
                     {/* Duration Title */}
-                    <h4 className="text-xl font-bold text-gray-900 mb-2">
+                    <h4 className={`text-xl font-bold mb-2 ${
+                      isSelected ? 'text-white' : 'text-gray-900'
+                    }`}>
                       {duration.label}
                     </h4>
                     
                     {/* Plan Name */}
-                    <p className="text-sm text-gray-600 mb-4">{duration.planName}</p>
+                    <p className={`text-sm mb-4 ${
+                      isSelected ? 'text-gray-300' : 'text-gray-600'
+                    }`}>{duration.planName}</p>
                     
                     {/* Unified Price Section */}
                     <div className="mb-6">
                       {/* Monthly Price */}
-                      <div className="text-[28px] font-bold text-black leading-tight">
+                      <div className={`text-[28px] font-bold leading-tight ${
+                        isSelected ? 'text-white' : 'text-black'
+                      }`}>
                         £{displayedMonthlyPrice}/month
                       </div>
                       
                       {/* Payment Terms */}
-                      <div className="text-base text-gray-500 mt-1">
+                      <div className={`text-base mt-1 ${
+                        isSelected ? 'text-gray-300' : 'text-gray-500'
+                      }`}>
                         12 easy payments - 0% APR
                       </div>
                       
                       {/* Total Price */}
-                      <div className="text-xl font-semibold text-gray-700 mt-3">
+                      <div className={`text-xl font-semibold mt-3 ${
+                        isSelected ? 'text-gray-200' : 'text-gray-700'
+                      }`}>
                         Total £{Math.round(displayedAnnualPrice)}
                       </div>
                       
                       {/* Slashed Price & Savings */}
                       {savingsAmount > 0 && (
                         <div className="mt-2 space-y-1">
-                          <div className="text-base text-gray-500 line-through">
+                          <div className={`text-base line-through ${
+                            isSelected ? 'text-gray-400' : 'text-gray-500'
+                          }`}>
                             Was £{adjustedBasePrice}
                           </div>
-                          <div className="text-base font-medium text-green-600">
+                          <div className="text-base font-medium text-green-500">
                             Save £{savingsAmount}
                           </div>
                         </div>
@@ -1946,25 +1962,39 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     {/* What's Covered Box Toggle */}
                     <CollapsibleTrigger asChild>
                       <button 
-                        className="w-full flex items-center justify-between p-4 mb-4 rounded-lg border-2 border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors"
+                        className={`w-full flex items-center justify-between p-4 mb-4 rounded-lg border-2 transition-colors ${
+                          isSelected 
+                            ? 'border-gray-700 bg-gray-900 hover:bg-gray-800' 
+                            : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
+                        }`}
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="flex items-center gap-3">
-                          <Shield className="w-6 h-6 text-gray-700" />
-                          <span className="text-lg font-bold text-gray-900">What's covered?</span>
+                          <Shield className={`w-6 h-6 ${isSelected ? 'text-white' : 'text-gray-700'}`} />
+                          <span className={`text-lg font-bold ${isSelected ? 'text-white' : 'text-gray-900'}`}>What's covered?</span>
                         </div>
-                        <ChevronDown className={`w-9 h-9 text-gray-700 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                        <ChevronDown className={`w-9 h-9 transition-transform ${isExpanded ? 'rotate-180' : ''} ${
+                          isSelected ? 'text-white' : 'text-gray-700'
+                        }`} />
                       </button>
                     </CollapsibleTrigger>
                     
                     <CollapsibleContent className="animate-accordion-down">
-                      <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200">
-                        <h6 className="text-sm font-semibold text-gray-900 mb-3">What's included:</h6>
+                      <div className={`rounded-lg p-4 mb-4 border ${
+                        isSelected 
+                          ? 'bg-gray-900 border-gray-700' 
+                          : 'bg-gray-50 border-gray-200'
+                      }`}>
+                        <h6 className={`text-sm font-semibold mb-3 ${
+                          isSelected ? 'text-white' : 'text-gray-900'
+                        }`}>What's included:</h6>
                         <div className="space-y-2">
                           {duration.features.map((feature, idx) => (
                             <div key={idx} className="flex items-start gap-2">
                               <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                              <span className="text-sm text-gray-700">{feature}</span>
+                              <span className={`text-sm ${
+                                isSelected ? 'text-gray-200' : 'text-gray-700'
+                              }`}>{feature}</span>
                             </div>
                           ))}
                         </div>
@@ -1973,12 +2003,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       {/* Bottom Toggle - Opposite Side */}
                       <CollapsibleTrigger asChild>
                         <button 
-                          className="w-full flex items-center justify-end gap-2 mb-4 text-base font-medium transition-colors group"
-                          style={{ color: '#666' }}
+                          className={`w-full flex items-center justify-end gap-2 mb-4 text-base font-medium transition-colors group ${
+                            isSelected ? 'text-gray-300' : 'text-gray-600'
+                          }`}
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <span className="group-hover:text-gray-900">View less</span>
-                          <ChevronDown className={`w-10 h-10 text-gray-700 transition-transform group-hover:text-gray-900 ${isExpanded ? 'rotate-180' : ''}`} />
+                          <span className={isSelected ? 'group-hover:text-white' : 'group-hover:text-gray-900'}>View less</span>
+                          <ChevronDown className={`w-10 h-10 transition-transform ${
+                            isSelected 
+                              ? 'text-gray-300 group-hover:text-white' 
+                              : 'text-gray-700 group-hover:text-gray-900'
+                          } ${isExpanded ? 'rotate-180' : ''}`} />
                         </button>
                       </CollapsibleTrigger>
                     </CollapsibleContent>
@@ -1989,7 +2024,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     onClick={() => setPaymentType(durationId)}
                     className={`w-full py-4 px-4 rounded-lg text-center font-bold text-lg transition-colors ${
                       isSelected
-                        ? 'bg-white border-2 border-orange-500 text-orange-600'
+                        ? 'bg-white text-black hover:bg-gray-100'
                         : 'bg-orange-500 text-white hover:bg-orange-600'
                     }`}
                   >
