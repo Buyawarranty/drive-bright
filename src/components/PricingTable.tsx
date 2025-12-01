@@ -1882,65 +1882,49 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   {/* Plan Name */}
                   <p className="text-sm text-gray-600 mb-4">{duration.planName}</p>
                   
-                  {/* Price */}
-                  <div className="text-4xl font-bold text-black mb-4">
-                    £{displayedMonthlyPrice}<span className="text-lg">/month</span>
-                  </div>
-                  
-                  {/* Payment Structure */}
-                  <div className="space-y-2 mb-4 pb-4 border-b border-gray-200">
-                    <div className="flex items-start gap-2 text-sm">
-                      <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-700">12 monthly payments (0% APR)</span>
+                  {/* Unified Price Section */}
+                  <div className="mb-6">
+                    {/* Combined Monthly & Total Price */}
+                    <div className="mb-2">
+                      <span className="text-2xl font-bold" style={{ color: '#000' }}>
+                        £{displayedMonthlyPrice}/month
+                      </span>
+                      <span className="mx-2 text-xl" style={{ color: '#333' }}>·</span>
+                      <span className="text-2xl font-bold" style={{ color: '#333' }}>
+                        Total £{Math.round(displayedAnnualPrice)}
+                      </span>
                     </div>
-                    {durationId === '24months' && (
-                      <div className="flex items-start gap-2 text-sm">
-                        <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">No payments in Year 2</span>
-                      </div>
-                    )}
-                    {durationId === '36months' && (
-                      <div className="flex items-start gap-2 text-sm">
-                        <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">No payments in Years 2 & 3</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Pricing Details */}
-                  <div className="mb-4">
-                    {savingsAmount > 0 ? (
-                      <>
-                        <div className="text-sm text-gray-600 mb-1">
-                          Was <span className="line-through text-gray-500 font-semibold">£{adjustedBasePrice}</span>
+                    
+                    {/* Payment Terms */}
+                    <div className="text-sm" style={{ color: '#666' }}>
+                      (12 payments, 0% APR)
+                    </div>
+                    
+                    {/* Slashed Price & Savings */}
+                    {savingsAmount > 0 && (
+                      <div className="mt-3">
+                        <div className="text-sm mb-1">
+                          <span className="line-through font-semibold" style={{ color: '#888' }}>
+                            Was £{adjustedBasePrice}
+                          </span>
                         </div>
-                        <div className="text-2xl font-bold text-black mb-1">£{Math.round(displayedAnnualPrice)}</div>
-                        <div className="text-sm text-green-600 font-bold mb-2">
+                        <div className="text-base font-bold" style={{ color: '#28A745' }}>
                           Save £{savingsAmount} with this plan
                         </div>
-                        <div className="text-sm text-gray-600">
-                          Total for {warrantyYears} years cover
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="text-2xl font-bold text-black mb-2">£{Math.round(displayedAnnualPrice)}</div>
-                        <div className="text-sm text-gray-600">
-                          Total for {warrantyYears} year cover
-                        </div>
-                      </>
+                      </div>
                     )}
                   </div>
                   
-                  {/* What's Included Collapsible */}
+                  {/* View Full Cover Details Toggle */}
                   <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
                     <CollapsibleTrigger asChild>
                       <button 
-                        className="flex items-center gap-2 text-base font-medium text-gray-700 hover:text-gray-900 mb-4 transition-colors"
+                        className="w-full flex items-center justify-center gap-2 text-sm font-medium mb-4 transition-colors"
+                        style={{ color: '#666' }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Info className="w-5 h-5" />
-                        What's Included? 
+                        <Info className="w-4 h-4" />
+                        View Full Cover Details
                         <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                       </button>
                     </CollapsibleTrigger>
@@ -1960,16 +1944,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </CollapsibleContent>
                   </Collapsible>
                   
-                  {/* Select Button */}
+                  {/* CTA Button */}
                   <button
                     onClick={() => setPaymentType(durationId)}
-                    className={`w-full py-3 px-4 rounded-lg text-center font-semibold transition-colors ${
+                    className={`w-full py-4 px-4 rounded-lg text-center font-bold text-lg transition-colors ${
                       isSelected
                         ? 'bg-white border-2 border-orange-500 text-orange-600'
                         : 'bg-orange-500 text-white hover:bg-orange-600'
                     }`}
                   >
-                    {isSelected ? 'Selected' : 'Select'}
+                    {isSelected ? 'Selected' : 'Secure Your Cover'}
                   </button>
                 </div>
               );
