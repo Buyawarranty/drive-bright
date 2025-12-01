@@ -1992,7 +1992,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     onClick={() => setPaymentType(durationId)}
                     className={`w-full py-4 px-4 rounded-lg text-center font-bold text-lg transition-colors ${
                       isSelected
-                        ? 'bg-white border-2 border-orange-500 text-orange-600'
+                        ? 'bg-black border-2 border-black text-white'
                         : 'bg-orange-500 text-white hover:bg-orange-600'
                     }`}
                   >
