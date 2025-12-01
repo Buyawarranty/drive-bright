@@ -51,7 +51,7 @@ const WarrantyPlan = () => {
   const vehicleTypes = [
     {
       id: "petrol-diesel",
-      title: "1. Petrol & Diesel (Combustion) Vehicles",
+      title: "1. Petrol & Diesel Vehicles",
       subtitle: "Car, Van and SUV cover",
       description: "Traditional combustion engines"
     },

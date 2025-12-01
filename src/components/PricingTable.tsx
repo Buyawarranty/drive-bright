@@ -1069,7 +1069,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-black text-white hover:bg-gray-800 font-semibold py-4 px-6 rounded-lg transition-colors group">
                 <div className="flex items-center gap-3">
                   <Car className="w-6 h-6" />
-                  <span className="text-lg">Petrol & Diesel (Combustion Engine) Vehicles</span>
+                  <span className="text-lg">Petrol & Diesel Vehicles</span>
                 </div>
                 <ChevronDown className="w-6 h-6 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
               </CollapsibleTrigger>

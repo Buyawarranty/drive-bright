@@ -49,7 +49,7 @@ const Protected = () => {
   const vehicleTypes = [
     {
       id: 'petrol-diesel',
-      title: 'Petrol & Diesel (Combustion Engine) Vehicles',
+      title: 'Petrol & Diesel Vehicles',
       components: [
         'Engine & Internal Components (pistons, valves, camshafts, timing chains, seals, gaskets)',
         'Gearbox / Transmission Systems (manual, automatic, DSG, CVT, dual-clutch, transfer boxes)',
