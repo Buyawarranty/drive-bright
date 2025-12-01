@@ -1867,6 +1867,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 features: [
                   'All mechanical & electrical parts',
                   'Up to 10 claims per year',
+                  'Total cover up to vehicle value',
                   'Labour costs included',
                   'Fault diagnostics',
                   'Consequential damage cover',
@@ -1885,6 +1886,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 features: [
                   'All mechanical & electrical parts',
                   'Unlimited Claims',
+                  'Total cover up to vehicle value',
                   'Labour costs included',
                   'Fault diagnostics',
                   'Vehicle recovery claim-back',
@@ -1904,6 +1906,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 features: [
                   'All mechanical & electrical parts',
                   'Unlimited Claims',
+                  'Total cover up to vehicle value',
                   'Labour costs included',
                   'Fault diagnostics',
                   'Vehicle recovery claim-back',
