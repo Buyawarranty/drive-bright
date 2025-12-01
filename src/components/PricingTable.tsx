@@ -896,7 +896,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       }
       
       const baseMonthlyPrice = Math.round(discountedPrice / 12);
-      const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 5 : 0;
+      const labourRateAdjustment = selectedLabourRate === 50 ? -3 : selectedLabourRate === 100 ? 5 : 0;
       const boostDisplayAdjustment = boostAddon ? -2.01 : 0;
       const displayedMonthlyPrice = baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
 
@@ -1523,16 +1523,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <button
-              onClick={() => setSelectedLabourRate(40)}
+              onClick={() => setSelectedLabourRate(50)}
               className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                selectedLabourRate === 40
+                selectedLabourRate === 50
                   ? 'border-orange-500 shadow-lg shadow-orange-500/30'
                   : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
               }`}
             >
               <span className="absolute -top-3 right-4 bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">BEST VALUE</span>
               <div className="mb-2">
-                <span className="text-2xl font-bold text-foreground">£40 </span>
+                <span className="text-2xl font-bold text-foreground">£50 </span>
                 <span className="text-sm font-medium text-foreground">per hour</span>
               </div>
               <p className="text-xl font-bold text-black">Independent Garages</p>
@@ -1941,7 +1941,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               
               // Calculate display monthly price
               const baseMonthlyPrice = Math.round(discountedPrice / 12);
-              const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 5 : 0;
+              const labourRateAdjustment = selectedLabourRate === 50 ? -3 : selectedLabourRate === 100 ? 5 : 0;
               const boostDisplayAdjustment = boostAddon ? -2.01 : 0;
               const displayedMonthlyPrice = baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
               const displayedAnnualPrice = discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12);
@@ -2494,7 +2494,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     }
                     
                     const baseMonthlyPrice = Math.round(discountedPrice / 12);
-                    const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 5 : 0;
+                    const labourRateAdjustment = selectedLabourRate === 50 ? -3 : selectedLabourRate === 100 ? 5 : 0;
                     const boostDisplayAdjustment = boostAddon ? -2.01 : 0;
                     return Math.round(baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment);
                   })()}/month
@@ -2517,7 +2517,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     }
                     
                     const baseMonthlyPrice = Math.round(discountedPrice / 12);
-                    const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 5 : 0;
+                    const labourRateAdjustment = selectedLabourRate === 50 ? -3 : selectedLabourRate === 100 ? 5 : 0;
                     const boostDisplayAdjustment = boostAddon ? -2.01 : 0;
                     const displayedMonthlyPrice = baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
                     return Math.round(displayedMonthlyPrice * 12);
