@@ -1924,7 +1924,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
           {/* Shared Features Block */}
           <div className="p-6 bg-gray-50 rounded-lg border border-gray-200 mb-8">
-            <h5 className="text-lg font-semibold text-gray-900 mb-4">All plans include:</h5>
+            <h5 className="text-lg font-semibold text-gray-900 mb-4">
+              Your {paymentType === '12months' ? '1-year' : paymentType === '24months' ? '2-year' : '3-year'} plan includes:
+            </h5>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-3">
               <div className="flex items-start">
                 <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
@@ -1956,7 +1958,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
               <div className="flex items-start">
                 <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-700">Unlimited claims (except 1-year plan)</span>
+                <span className="text-gray-700">
+                  {paymentType === '12months' ? 'Up to 10 claims per year' : 'Unlimited claims'}
+                </span>
               </div>
               <div className="flex items-start">
                 <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
