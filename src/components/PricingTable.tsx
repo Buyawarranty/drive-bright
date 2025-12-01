@@ -1117,11 +1117,22 @@ const PricingTable: React.FC<PricingTableProps> = ({
             {/* Summary text below heading */}
             <div className="mb-6">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-                  <p className="text-muted-foreground font-bold">
-                    All-in-one cover – Labour, electrical and mechanical parts included.
-                  </p>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                    <p className="text-muted-foreground font-bold">
+                      All-in-one cover – Labour, electrical and mechanical parts included.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const detailsSection = document.getElementById('your-cover-details');
+                      detailsSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }}
+                    className="text-sm text-primary hover:text-primary/80 underline text-left w-fit transition-colors"
+                  >
+                    See full policy details
+                  </button>
                 </div>
                 {/* Instant Cover Badge with Tooltip */}
                 <TooltipProvider delayDuration={0}>
