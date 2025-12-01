@@ -1554,7 +1554,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
               }`}
             >
-              <span className="absolute -top-3 right-4 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-semibold">PREMIUM COVER</span>
+              <span className="absolute -top-3 right-4 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-semibold">BEST PROTECTION</span>
               <div className="mb-2">
                 <span className="text-2xl font-bold text-foreground">£100 </span>
                 <span className="text-sm font-medium text-foreground">per hour</span>
