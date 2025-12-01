@@ -1466,127 +1466,226 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                      </p>
                    </div>
 
-                  {/* Payment Methods */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Choose Payment Method</h3>
+                   {/* Payment Methods - Redesigned UX */}
+                  <div className="space-y-6">
+                    {/* Section Header with Trust Badge */}
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-2xl font-bold text-gray-900">Choose Your Payment Option</h3>
+                      <div className="hidden sm:flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-lg border border-green-200">
+                        <Check className="w-4 h-4 text-green-600" />
+                        <span className="text-xs font-semibold text-green-700">Secure Checkout</span>
+                      </div>
+                    </div>
+
+                    {/* Social Proof */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+                      <p className="text-sm font-medium text-blue-900">
+                        ⭐ <span className="font-bold">Most customers choose Pay in Full</span> for extra savings
+                      </p>
+                    </div>
                     
                     <RadioGroup value={paymentMethod} onValueChange={(value: 'bumper' | 'stripe') => setPaymentMethod(value)}>
-                      {/* Pay Monthly - 0% Interest */}
-                      <div 
-                        onClick={() => setPaymentMethod('bumper')}
-                        className={`rounded-lg p-6 cursor-pointer transition-all duration-200 ${
-                          paymentMethod === 'bumper' 
-                            ? 'bg-green-100 border-2 border-green-500 shadow-lg shadow-green-500/30' 
-                            : 'neutral-container shadow-lg shadow-black/15 hover:shadow-xl hover:shadow-green-500/20'
-                        }`}
-                      >
-                         <div className="flex items-start space-x-3">
-                           <div className="flex-shrink-0 mt-1">
-                             <RadioGroupItem 
-                               value="bumper" 
-                               id="bumper" 
-                               className="border-2 border-gray-400 text-blue-600 w-5 h-5"
-                             />
-                           </div>
-                           <div className="flex-1 min-w-0">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-                              <Label htmlFor="bumper" className="font-semibold text-gray-900 text-base cursor-pointer">
-                                Pay Monthly - 0% Interest
-                              </Label>
-                              <div className="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded whitespace-nowrap">
-                                0% APR
+                      {/* Side-by-side Payment Cards */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        
+                        {/* OPTION A: Pay in Full (Stripe) */}
+                        <div 
+                          onClick={() => setPaymentMethod('stripe')}
+                          className={`relative rounded-xl p-6 cursor-pointer transition-all duration-300 border-2 ${
+                            paymentMethod === 'stripe' 
+                              ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-500 shadow-xl shadow-green-500/30 scale-[1.02]' 
+                              : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-lg'
+                          }`}
+                        >
+                          {/* Best Value Badge */}
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg">
+                            🏆 BEST VALUE
+                          </div>
+
+                          {/* Radio Button */}
+                          <div className="flex items-start justify-between mb-4">
+                            <RadioGroupItem 
+                              value="stripe" 
+                              id="stripe-option" 
+                              className="border-2 border-gray-400 text-green-600 w-5 h-5 mt-1"
+                            />
+                            {/* Limited Time Badge */}
+                            <div className="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded animate-pulse">
+                              LIMITED TIME
+                            </div>
+                          </div>
+
+                          {/* Wallet Icon */}
+                          <div className="flex justify-center mb-4">
+                            <div className="bg-green-100 p-4 rounded-full">
+                              <CreditCard className="w-8 h-8 text-green-600" />
+                            </div>
+                          </div>
+
+                          {/* Heading */}
+                          <Label htmlFor="stripe-option" className="block text-center cursor-pointer mb-3">
+                            <h4 className="text-xl font-bold text-gray-900 mb-1">Pay in Full & Save 10%</h4>
+                            <p className="text-sm text-gray-600">One-time payment today</p>
+                          </Label>
+
+                          {/* Price Display */}
+                          <div className="bg-white rounded-lg p-4 mb-4 border-2 border-green-200">
+                            <div className="text-center">
+                              <div className="flex items-center justify-center gap-3 mb-2">
+                                <span className="text-gray-400 line-through text-lg">£{Math.round(discountedPrice)}</span>
+                                <span className="text-4xl font-black text-green-600">£{discountedStripePrice}</span>
+                              </div>
+                              <div className="bg-green-100 text-green-800 text-sm font-bold px-3 py-1 rounded-full inline-block">
+                                💰 You Save £{Math.round(discountedPrice * 0.10)}
                               </div>
                             </div>
-                             <div className="flex flex-col items-center mb-3 gap-1">
-                               <span className="text-xs text-gray-500">Powered by</span>
-                               <img src={bumperLogo} alt="Bumper" className="h-5 sm:h-7 object-contain" />
-                             </div>
-                             <div className="text-sm text-gray-600 mb-3 space-y-1">
-                               <div className="flex items-center">
-                                 <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2 flex-shrink-0" />
-                                 <span>Only a soft credit search</span>
-                               </div>
-                               <div className="flex items-center">
-                                 <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2 flex-shrink-0" />
-                                 <span>No impact on your credit score</span>
-                               </div>
-                             </div>
-                             <p className="text-sm text-gray-600">
-                               <span className="font-bold">Pay <span className="text-base font-bold">£{Math.round(discountedBumperPrice / 12)}</span> x 12 monthly payments = <span className="text-base font-bold">£{Math.round(discountedBumperPrice)}</span> total</span>
-                              {hasSecondWarrantyDiscount && (
-                                <span className="text-orange-600"> (second warranty discount applied)</span>
-                              )}
-                              {hasValidDiscountCodes && !hasSecondWarrantyDiscount && (
-                                <span className="text-green-600"> (discount codes applied)</span>
-                              )}
-                              {hasValidDiscountCodes && (
-                                <span className="text-gray-500 line-through ml-2">was £{Math.round(bumperTotalPrice)}</span>
-                              )}
-                              {hasValidDiscountCodes && (
-                                <div className="mt-2 p-2 bg-orange-50 border border-orange-200 rounded text-xs">
-                                  <span className="font-semibold text-orange-800">
-                                    Discount Codes Applied: {appliedDiscountCodes.map(code => code.code).join(', ')}
-                                  </span>
-                                </div>
-                              )}
-                            </p>
                           </div>
-                        </div>
-                      </div>
 
-                      {/* Pay in full today */}
-                      <div 
-                        onClick={() => setPaymentMethod('stripe')}
-                        className={`rounded-lg p-6 cursor-pointer transition-all duration-200 ${
-                          paymentMethod === 'stripe' 
-                            ? 'bg-blue-100 border-2 border-blue-500 shadow-lg shadow-blue-500/30' 
-                            : 'neutral-container shadow-lg shadow-black/15 hover:shadow-xl hover:shadow-blue-500/20'
-                        }`}
-                      >
-                         <div className="flex items-start space-x-3">
-                           <div className="flex-shrink-0 mt-1">
-                             <RadioGroupItem 
-                               value="stripe" 
-                               id="stripe" 
-                               className="border-2 border-gray-400 text-blue-600 w-5 h-5"
-                             />
-                           </div>
-                           <div className="flex-1 min-w-0">
-                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
-                               <Label htmlFor="stripe" className="font-semibold text-gray-900 text-base cursor-pointer">
-                                 Pay in full today
-                               </Label>
-                                <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-bold px-4 py-2 rounded-lg shadow-lg whitespace-nowrap">
-                                  💰 Save 10% (£{Math.round(discountedPrice * 0.10)}) Today
-                                </div>
-                             </div>
-                             <div className="flex flex-col items-center mb-3 gap-1">
-                               <span className="text-xs text-gray-500">Powered by</span>
-                               <img src={stripeLogo} alt="Stripe" className="h-5 sm:h-7 object-contain" />
-                             </div>
-                             <p className="text-sm text-gray-600">
-                               <span className="font-bold">Pay <span className="text-base font-bold">£{discountedStripePrice}</span> upfront <span className="text-green-600">- get a 10% discount today</span></span>
-                              {hasValidDiscountCodes && (
-                                <span className="text-gray-500 line-through ml-2">was £{Math.round(bumperTotalPrice)}</span>
-                              )}
-                              {hasValidDiscountCodes && (
-                                <div className="mt-2 p-2 bg-orange-50 border border-orange-200 rounded text-xs">
-                                  <span className="font-semibold text-orange-800">
-                                    Discount Codes Applied: {appliedDiscountCodes.map(code => code.code).join(', ')}
-                                  </span>
-                                </div>
-                              )}
-                            </p>
+                          {/* Features */}
+                          <div className="space-y-2 mb-4">
+                            <div className="flex items-center gap-2 text-sm">
+                              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                              <span className="text-gray-700 font-medium">Instant 10% discount applied</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                              <span className="text-gray-700 font-medium">Cover starts immediately</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                              <span className="text-gray-700 font-medium">No monthly payments needed</span>
+                            </div>
                           </div>
+
+                          {/* Powered By */}
+                          <div className="text-center pt-3 border-t">
+                            <span className="text-xs text-gray-500 block mb-1">Powered by</span>
+                            <img src={stripeLogo} alt="Stripe" className="h-6 mx-auto" />
+                          </div>
+
+                          {/* CTA Preview */}
+                          {paymentMethod === 'stripe' && (
+                            <div className="mt-4 text-center text-sm font-medium text-green-700">
+                              ✓ Selected - Click "Complete Purchase" below
+                            </div>
+                          )}
+                        </div>
+
+                        {/* OPTION B: Pay Monthly (Bumper) */}
+                        <div 
+                          onClick={() => setPaymentMethod('bumper')}
+                          className={`relative rounded-xl p-6 cursor-pointer transition-all duration-300 border-2 ${
+                            paymentMethod === 'bumper' 
+                              ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-500 shadow-xl shadow-blue-500/30 scale-[1.02]' 
+                              : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-lg'
+                          }`}
+                        >
+                          {/* 0% Interest Badge */}
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg">
+                            0% APR
+                          </div>
+
+                          {/* Radio Button */}
+                          <div className="flex items-start justify-between mb-4">
+                            <RadioGroupItem 
+                              value="bumper" 
+                              id="bumper-option" 
+                              className="border-2 border-gray-400 text-blue-600 w-5 h-5 mt-1"
+                            />
+                            {/* No Hidden Fees Badge */}
+                            <div className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded">
+                              NO FEES
+                            </div>
+                          </div>
+
+                          {/* Calendar Icon */}
+                          <div className="flex justify-center mb-4">
+                            <div className="bg-blue-100 p-4 rounded-full">
+                              <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                            </div>
+                          </div>
+
+                          {/* Heading */}
+                          <Label htmlFor="bumper-option" className="block text-center cursor-pointer mb-3">
+                            <h4 className="text-xl font-bold text-gray-900 mb-1">Spread the Cost with Bumper</h4>
+                            <p className="text-sm text-gray-600">Interest-free monthly instalments</p>
+                          </Label>
+
+                          {/* Price Display */}
+                          <div className="bg-white rounded-lg p-4 mb-4 border-2 border-blue-200">
+                            <div className="text-center">
+                              <div className="text-4xl font-black text-blue-600 mb-2">
+                                £{Math.round(discountedBumperPrice / 12)}<span className="text-xl">/month</span>
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                12 monthly payments = <span className="font-bold text-gray-900">£{Math.round(discountedBumperPrice)}</span> total
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Features */}
+                          <div className="space-y-2 mb-4">
+                            <div className="flex items-center gap-2 text-sm">
+                              <Check className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                              <span className="text-gray-700 font-medium">Only a soft credit search</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <Check className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                              <span className="text-gray-700 font-medium">No impact on credit score</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <Check className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                              <span className="text-gray-700 font-medium">0% interest, no hidden fees</span>
+                            </div>
+                          </div>
+
+                          {/* Powered By */}
+                          <div className="text-center pt-3 border-t">
+                            <span className="text-xs text-gray-500 block mb-1">Powered by</span>
+                            <img src={bumperLogo} alt="Bumper" className="h-6 mx-auto" />
+                          </div>
+
+                          {/* FAQ Link */}
+                          <div className="mt-3 text-center">
+                            <a 
+                              href="https://www.bumper.co.uk/how-it-works" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-600 hover:text-blue-700 underline font-medium"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              How does Bumper work?
+                            </a>
+                          </div>
+
+                          {/* CTA Preview */}
+                          {paymentMethod === 'bumper' && (
+                            <div className="mt-4 text-center text-sm font-medium text-blue-700">
+                              ✓ Selected - Click "Complete Purchase" below
+                            </div>
+                          )}
                         </div>
                       </div>
                     </RadioGroup>
+
+                    {/* Discount Codes Applied Notice */}
+                    {hasValidDiscountCodes && (
+                      <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
+                        <div className="flex items-center justify-center gap-2 text-sm">
+                          <span className="text-orange-800 font-bold">
+                            🎉 Discount Applied: {appliedDiscountCodes.map(code => code.code).join(', ')}
+                          </span>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Complete Purchase Button */}
                     <ProtectedButton
                       actionType="complete_purchase"
                       onClick={handleSubmit}
-                      className="w-full mt-6 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 text-lg rounded-lg animate-[breathing_3s_ease-in-out_infinite]"
+                      className="w-full mt-6 bg-orange-500 hover:bg-orange-600 text-white font-bold py-6 text-xl rounded-xl shadow-2xl animate-[breathing_3s_ease-in-out_infinite] transition-all hover:scale-[1.02]"
                       size="lg"
                       disabled={isLoadingPayment}
                       loading={isLoadingPayment}
@@ -1594,16 +1693,45 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       {isLoadingPayment ? (
                         'Loading Payment Gateway...'
                       ) : (
-                        <>
-            Complete Purchase
-            <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
-                        </>
+                        <span className="flex items-center justify-center gap-3">
+                          <CreditCard className="w-6 h-6" />
+                          Complete Purchase
+                          <ArrowRight className="w-6 h-6" strokeWidth={3} />
+                        </span>
                       )}
                     </ProtectedButton>
 
-                    <div className="text-center mt-4 text-sm text-gray-500 flex items-center justify-center gap-2">
-                      <CreditCard size={16} className="text-blue-600" />
-                      Secure checkout powered by Stripe
+                    {/* Trust & Security Elements */}
+                    <div className="space-y-3">
+                      {/* Security Icons */}
+                      <div className="flex items-center justify-center gap-4 flex-wrap">
+                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                          <div className="bg-green-100 p-1.5 rounded">
+                            <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span className="font-medium">SSL Encrypted</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                          <CreditCard className="w-5 h-5 text-blue-600" />
+                          <span className="font-medium">Visa • Mastercard</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                          <Check className="w-5 h-5 text-green-600" />
+                          <span className="font-medium">Secure Payments</span>
+                        </div>
+                      </div>
+
+                      {/* Customer Support */}
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">
+                          Need help? Contact our support team at{' '}
+                          <a href="tel:03330168290" className="text-blue-600 hover:underline font-medium">
+                            0333 016 8290
+                          </a>
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
