@@ -1771,12 +1771,68 @@ const PricingTable: React.FC<PricingTableProps> = ({
           {/* Comparison Cards - All Three Durations */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {[
-              { id: '12months', label: '1-year cover', badge: null, planName: 'Platinum Complete Plan' },
-              { id: '24months', label: '2-year cover', badge: 'MOST POPULAR', planName: 'Platinum Complete Plan' },
-              { id: '36months', label: '3-year cover', badge: 'BEST VALUE', planName: 'Platinum Complete Plan' }
+              { 
+                id: '12months', 
+                label: '1-year cover', 
+                badge: null, 
+                planName: 'Platinum Complete Plan',
+                features: [
+                  'All mechanical & electrical parts',
+                  'Up to 10 claims per year',
+                  'Labour costs included',
+                  'Fault diagnostics',
+                  'Consequential damage cover',
+                  'Fast claims process',
+                  'Choose your own garage',
+                  '14-day money-back guarantee',
+                  'Optional extras available',
+                  'Pre-existing faults are not covered'
+                ]
+              },
+              { 
+                id: '24months', 
+                label: '2-year cover', 
+                badge: 'MOST POPULAR', 
+                planName: 'Platinum Complete Plan',
+                features: [
+                  'All mechanical & electrical parts',
+                  'Unlimited Claims',
+                  'Labour costs included',
+                  'Fault diagnostics',
+                  'Vehicle recovery claim-back',
+                  'Consequential damage cover',
+                  'Fast claims process',
+                  'Choose your own garage',
+                  '14-day money-back guarantee',
+                  'Optional extras available',
+                  'Pre-existing faults are not covered'
+                ]
+              },
+              { 
+                id: '36months', 
+                label: '3-year cover', 
+                badge: 'BEST VALUE', 
+                planName: 'Platinum Complete Plan',
+                features: [
+                  'All mechanical & electrical parts',
+                  'Unlimited Claims',
+                  'Labour costs included',
+                  'Fault diagnostics',
+                  'Vehicle recovery claim-back',
+                  'Europe repair cover',
+                  'Vehicle rental cover',
+                  'Consequential damage cover',
+                  'Fast claims process',
+                  'Choose your own garage',
+                  '14-day money-back guarantee',
+                  'Optional extras available',
+                  'Pre-existing faults are not covered'
+                ]
+              }
             ].map((duration) => {
               const durationId = duration.id as '12months' | '24months' | '36months';
               const isSelected = paymentType === durationId;
+              const [isExpanded, setIsExpanded] = React.useState(false);
               
               // Calculate pricing for this duration
               const warrantyYears = durationId === '12months' ? 1 : durationId === '24months' ? 2 : 3;
@@ -1801,13 +1857,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
               const savingsAmount = durationId === '24months' ? 100 : durationId === '36months' ? 200 : 0;
               
               return (
-                <button
+                <div
                   key={durationId}
-                  onClick={() => setPaymentType(durationId)}
-                  className={`relative p-6 rounded-lg border-2 transition-all text-left ${
+                  className={`relative p-6 rounded-lg border-2 transition-all bg-white ${
                     isSelected
-                      ? 'border-orange-500 bg-orange-50 shadow-lg shadow-orange-500/30'
-                      : 'border-gray-300 bg-white hover:border-orange-300'
+                      ? 'border-orange-500 shadow-lg shadow-orange-500/30'
+                      : 'border-gray-300'
                   }`}
                 >
                   {/* Badge */}
@@ -1877,64 +1932,47 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     )}
                   </div>
                   
-                  {/* Button */}
-                  <div className={`w-full py-3 px-4 rounded-lg text-center font-semibold transition-colors ${
-                    isSelected
-                      ? 'bg-white border-2 border-orange-500 text-orange-600'
-                      : 'bg-orange-500 text-white hover:bg-orange-600'
-                  }`}>
+                  {/* View Details Collapsible */}
+                  <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+                    <CollapsibleTrigger asChild>
+                      <button 
+                        className="flex items-center gap-2 text-sm font-medium text-orange-600 hover:text-orange-700 mb-4 transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        View Details 
+                        <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                      </button>
+                    </CollapsibleTrigger>
+                    
+                    <CollapsibleContent className="animate-accordion-down">
+                      <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200">
+                        <h6 className="text-sm font-semibold text-gray-900 mb-3">What's included:</h6>
+                        <div className="space-y-2">
+                          {duration.features.map((feature, idx) => (
+                            <div key={idx} className="flex items-start gap-2">
+                              <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                              <span className="text-sm text-gray-700">{feature}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                  
+                  {/* Select Button */}
+                  <button
+                    onClick={() => setPaymentType(durationId)}
+                    className={`w-full py-3 px-4 rounded-lg text-center font-semibold transition-colors ${
+                      isSelected
+                        ? 'bg-white border-2 border-orange-500 text-orange-600'
+                        : 'bg-orange-500 text-white hover:bg-orange-600'
+                    }`}
+                  >
                     {isSelected ? 'Selected' : 'Select'}
-                  </div>
-                </button>
+                  </button>
+                </div>
               );
             })}
-          </div>
-
-          {/* Shared Features Block */}
-          <div className="p-6 bg-gray-50 rounded-lg border border-gray-200 mb-8">
-            <h5 className="text-lg font-semibold text-gray-900 mb-4">
-              Your {paymentType === '12months' ? '1-year' : paymentType === '24months' ? '2-year' : '3-year'} plan includes:
-            </h5>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-3">
-              <div className="flex items-start">
-                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-700">Mechanical and electrical parts</span>
-              </div>
-              <div className="flex items-start">
-                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-700">Labour costs</span>
-              </div>
-              <div className="flex items-start">
-                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-700">Fast claims process</span>
-              </div>
-              <div className="flex items-start">
-                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-700">Courtesy car cover</span>
-              </div>
-              <div className="flex items-start">
-                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-700">Diagnostics included</span>
-              </div>
-              <div className="flex items-start">
-                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-700">12-month guarantee on repairs</span>
-              </div>
-              <div className="flex items-start">
-                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-700">Nationwide repair network</span>
-              </div>
-              <div className="flex items-start">
-                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-700">
-                  {paymentType === '12months' ? 'Up to 10 claims per year' : 'Unlimited claims'}
-                </span>
-              </div>
-              <div className="flex items-start">
-                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-700">Optional extras available</span>
-              </div>
-            </div>
           </div>
         </div>
 
