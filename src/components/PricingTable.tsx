@@ -2086,9 +2086,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   {/* Email Quote Link */}
                   <button
                     onClick={() => handleOpenEmailQuoteDialog(durationId)}
-                    className="w-full mt-3 text-center text-sm text-gray-600 hover:text-orange-600 underline transition-colors"
+                    className="w-full mt-3 text-center text-base text-gray-600 hover:text-orange-600 underline transition-colors"
                   >
-                    Email me this quote
+                    ✉️ Email me this quote
                   </button>
                 </div>
               );
