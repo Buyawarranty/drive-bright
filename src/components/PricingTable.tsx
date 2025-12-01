@@ -1151,6 +1151,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
             
             <CollapsibleContent>
+              {/* Large Chevron Toggle - appears above vehicle types */}
+              <CollapsibleTrigger asChild>
+                <button className="w-full flex justify-center py-4 group cursor-pointer hover:opacity-80 transition-opacity">
+                  <ChevronDown className="w-12 h-12 text-green-600 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                </button>
+              </CollapsibleTrigger>
               
               <div className="space-y-6">
             <Collapsible>
