@@ -1994,29 +1994,29 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <div className="mb-6">
                       {/* Combined Monthly & Total Price */}
                       <div className="mb-2">
-                        <span className="text-2xl font-bold" style={{ color: '#000' }}>
+                        <span className="text-2xl font-bold text-black">
                           £{displayedMonthlyPrice}/month
                         </span>
-                        <span className="mx-2 text-xl" style={{ color: '#333' }}>·</span>
-                        <span className="text-base font-bold" style={{ color: '#888' }}>
+                        <span className="mx-2 text-xl text-gray-500">·</span>
+                        <span className="text-base text-gray-500">
                           Total £{Math.round(displayedAnnualPrice)}
                         </span>
                       </div>
                       
                       {/* Payment Terms */}
-                      <div className="text-sm" style={{ color: '#666' }}>
+                      <div className="text-sm text-gray-600 mb-3">
                         (12 payments, 0% APR)
                       </div>
                       
                       {/* Slashed Price & Savings */}
                       {savingsAmount > 0 && (
-                        <div className="mt-3">
+                        <div>
                           <div className="text-sm mb-1">
-                            <span className="line-through font-semibold" style={{ color: '#888' }}>
+                            <span className="line-through text-gray-500">
                               Was £{adjustedBasePrice}
                             </span>
                           </div>
-                          <div className="text-base font-bold" style={{ color: '#28A745' }}>
+                          <div className="text-base font-semibold text-green-600">
                             Save £{savingsAmount} with this plan
                           </div>
                         </div>
