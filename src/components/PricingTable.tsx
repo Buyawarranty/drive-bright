@@ -1883,7 +1883,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <ChevronDown className={`w-6 h-6 text-gray-700 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-9 h-9 text-gray-700 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                         </button>
                       </CollapsibleTrigger>
                       
@@ -1944,7 +1944,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           <Shield className="w-6 h-6 text-gray-700" />
                           <span className="text-lg font-bold text-gray-900">What's covered?</span>
                         </div>
-                        <ChevronDown className={`w-6 h-6 text-gray-700 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                        <ChevronDown className={`w-9 h-9 text-gray-700 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                       </button>
                     </CollapsibleTrigger>
                     
@@ -1969,7 +1969,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           onClick={(e) => e.stopPropagation()}
                         >
                           <span className="group-hover:text-gray-900">View less</span>
-                          <ChevronDown className={`w-7 h-7 transition-transform rotate-180 group-hover:text-gray-900`} />
+                          <ChevronDown className={`w-10 h-10 text-gray-700 transition-transform group-hover:text-gray-900 ${isExpanded ? 'rotate-180' : ''}`} />
                         </button>
                       </CollapsibleTrigger>
                     </CollapsibleContent>
