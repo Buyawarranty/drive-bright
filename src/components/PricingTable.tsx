@@ -1914,7 +1914,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <div className="space-y-2 mb-4 pb-4 border-b border-gray-200">
                     <div className="flex items-start gap-2 text-sm">
                       <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-700">12 monthly payments</span>
+                      <span className="text-gray-700">12 monthly payments (0% APR)</span>
                     </div>
                     {durationId === '24months' && (
                       <div className="flex items-start gap-2 text-sm">
