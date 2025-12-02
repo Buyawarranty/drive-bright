@@ -1310,9 +1310,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                         
                                         // Determine duration text
                                         const durationText = paymentType === '12months' ? '1 year' : 
-                                                           paymentType === '24months' ? '2 year' : 
-                                                           '3 year';
-                                        priceSubtext = `Spread over 12 interest-free payments for full ${durationText} coverage.`;
+                                                           paymentType === '24months' ? '2 years' : 
+                                                           '3 years';
+                                        priceSubtext = `12 interest-free payments for ${durationText}' cover`;
                                       }
                                       
                                       return (
