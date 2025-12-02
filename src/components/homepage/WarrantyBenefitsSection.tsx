@@ -66,7 +66,7 @@ const WarrantyBenefitsSection: React.FC = () => {
                 {leftColumnCategories.map((category, idx) => (
                   <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                     {category.headerText && (
-                      <p className="text-center font-bold text-brand-dark-text mb-3">{category.headerText}</p>
+                      <p className="text-center lg:text-left font-bold text-brand-dark-text mb-3">{category.headerText}</p>
                     )}
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-9 h-9 rounded-lg bg-brand-orange/10 flex items-center justify-center">
