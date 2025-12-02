@@ -551,54 +551,54 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   <OptimizedImage 
                     src={trustpilotLogo} 
                     alt="Trustpilot Excellent Rating" 
-                    className="h-auto w-32 sm:w-40 object-contain"
+                    className="h-auto w-24 sm:w-40 object-contain"
                     priority={false}
                     width={320}
                     height={100}
                   />
                 </a>
               </div>
-              
-              {/* Vehicle Types positioned underneath the panda's feet */}
-              <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-12 sm:translate-y-16 w-full px-4">
-                <div className="flex flex-col items-center gap-4 sm:gap-6">
-                  <div className="flex items-center justify-center gap-3 sm:gap-4 lg:gap-6 flex-wrap max-w-full">
-                    <div className="flex items-center space-x-1.5 min-w-0">
-                      <Car className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base whitespace-nowrap">Cars</span>
-                    </div>
-                    <div className="flex items-center space-x-1.5 min-w-0">
-                      <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base whitespace-nowrap">Vans</span>
-                    </div>
-                    <div className="flex items-center space-x-1.5 min-w-0">
-                      <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base whitespace-nowrap">Hybrid</span>
-                    </div>
-                    <div className="flex items-center space-x-1.5 min-w-0">
-                      <Battery className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base whitespace-nowrap">EV</span>
-                    </div>
-                    <div className="flex items-center space-x-1.5 min-w-0">
-                      <Bike className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base whitespace-nowrap">Motorbikes</span>
-                    </div>
+            </div>
+            
+            {/* Vehicle Types positioned below the image */}
+            <div className="w-full px-4 mt-4 sm:mt-6 lg:col-span-2">
+              <div className="flex flex-col items-center gap-4 sm:gap-6">
+                <div className="flex items-center justify-center gap-3 sm:gap-4 lg:gap-6 flex-wrap max-w-full">
+                  <div className="flex items-center space-x-1.5 min-w-0">
+                    <Car className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                    <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base whitespace-nowrap">Cars</span>
                   </div>
-                  
-                  {/* Instant Activation Badge */}
-                  <TooltipProvider delayDuration={0}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="inline-flex items-center gap-2 bg-green-50 border border-green-300 rounded-md px-3 py-1.5 sm:px-3.5 sm:py-2 cursor-pointer">
-                          <span className="text-xs sm:text-sm font-semibold text-green-700">⚡ Instant cover</span>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>⚡ Cover starts immediately after purchase</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <div className="flex items-center space-x-1.5 min-w-0">
+                    <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                    <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base whitespace-nowrap">Vans</span>
+                  </div>
+                  <div className="flex items-center space-x-1.5 min-w-0">
+                    <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                    <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base whitespace-nowrap">Hybrid</span>
+                  </div>
+                  <div className="flex items-center space-x-1.5 min-w-0">
+                    <Battery className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                    <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base whitespace-nowrap">EV</span>
+                  </div>
+                  <div className="flex items-center space-x-1.5 min-w-0">
+                    <Bike className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                    <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base whitespace-nowrap">Motorbikes</span>
+                  </div>
                 </div>
+                
+                {/* Instant Activation Badge */}
+                <TooltipProvider delayDuration={0}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="inline-flex items-center gap-2 bg-green-50 border border-green-300 rounded-md px-3 py-1.5 sm:px-3.5 sm:py-2 cursor-pointer">
+                        <span className="text-xs sm:text-sm font-semibold text-green-700">⚡ Instant cover</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>⚡ Cover starts immediately after purchase</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
           </div>
