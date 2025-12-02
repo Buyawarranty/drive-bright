@@ -35,8 +35,8 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { email, planType, paymentType, policyNumber, registrationPlate, customerName } = await req.json();
-    logStep("Request data", { email, planType, paymentType, policyNumber, registrationPlate, customerName });
+    const { email, planType, paymentType, policyNumber, registrationPlate, customerName, labourRate } = await req.json();
+    logStep("Request data", { email, planType, paymentType, policyNumber, registrationPlate, customerName, labourRate });
 
     if (!email || !planType || !paymentType || !policyNumber) {
       logStep("Missing required parameters", { email: !!email, planType: !!planType, paymentType: !!paymentType, policyNumber: !!policyNumber });
@@ -386,6 +386,10 @@ serve(async (req) => {
               <tr>
                 <td style="padding: 8px 0; color: #555555; font-size: 15px;"><strong>End Date:</strong></td>
                 <td style="padding: 8px 0; color: #333333; font-size: 15px;">${formatDate(endDate)}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #555555; font-size: 15px;"><strong>Labour Rate:</strong></td>
+                <td style="padding: 8px 0; color: #333333; font-size: 15px;">£${labourRate || 70}/hour</td>
               </tr>
               <tr>
                 <td style="padding: 8px 0; color: #555555; font-size: 15px;"><strong>Payment Method:</strong></td>
