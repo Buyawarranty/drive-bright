@@ -52,7 +52,7 @@ const WarrantyBenefitsSection: React.FC = () => {
                 Complete Car Warranty.
               </h2>
               <h2 className="text-2xl md:text-4xl font-bold text-brand-dark-text mb-3 flex items-center justify-center lg:justify-start gap-2">
-                Zero Worries.
+                Peace of Mind.
               </h2>
               <p className="text-base md:text-lg text-gray-500">
                 Superior Protection. Affordable Prices. Instant Cover.
