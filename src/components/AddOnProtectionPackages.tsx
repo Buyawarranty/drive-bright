@@ -16,7 +16,7 @@ const addOnPackages = [
     key: 'wearAndTear',
     icon: '🔧',
     title: 'Wear & Tear Cover',
-    shortDescription: 'Protects against premature failure of key mechanical and electrical components due to natural wear.',
+    shortDescription: 'Protects key mechanical and electrical parts from natural wear.',
     price: 9.99,
     priceType: 'monthly',
     bulletPoints: [
