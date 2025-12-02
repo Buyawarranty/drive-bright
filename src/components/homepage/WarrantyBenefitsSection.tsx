@@ -572,18 +572,11 @@ const WarrantyBenefitsSection: React.FC = () => {
 
               {/* Right: Panda with tagline */}
               <div className="flex flex-col items-center lg:items-end">
-                <div className="relative">
-                  <img 
-                    src={warrantyPandaMascot} 
-                    alt="Miles the Panda mascot with car" 
-                    className="w-48 md:w-56 lg:w-64 h-auto object-contain"
-                  />
-                  <div className="absolute top-0 right-0 lg:-right-4 bg-white rounded-lg px-3 py-2 shadow-md border border-gray-100">
-                    <p className="text-brand-dark-text font-bold text-sm md:text-base">
-                      Just<br />honest<br />cover.
-                    </p>
-                  </div>
-                </div>
+                <img 
+                  src={warrantyPandaMascot} 
+                  alt="Miles the Panda mascot with car" 
+                  className="w-48 md:w-56 lg:w-64 h-auto object-contain"
+                />
               </div>
             </div>
           </div>
