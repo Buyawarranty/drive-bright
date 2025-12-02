@@ -1153,9 +1153,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
               {/* Right Column - Order Summary */}
               <div className="space-y-6">
                 {/* Order Summary Card */}
-                <div className="bg-white rounded-lg shadow-sm p-6 border">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl font-bold text-black">
+                <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border overflow-hidden">
+                  <div className="flex items-start justify-between mb-4 gap-2">
+                    <h2 className="text-lg sm:text-2xl font-bold text-black flex-1 min-w-0">
                       {(() => {
                         // Format plan name: "Your platinum vehicle plan is ready"
                         const formattedPlanName = planName
@@ -1171,9 +1171,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       variant="outline" 
                       size="sm"
                       onClick={onBack}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-1 sm:gap-2 flex-shrink-0 text-xs sm:text-sm"
                     >
-                      <Edit className="w-4 h-4" />
+                      <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
                       Change
                     </Button>
                   </div>
@@ -1188,9 +1188,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
 
                    {/* Plan Details - Clean Bullet Style */}
                   <div className="space-y-3 mb-6">
-                    <div className="flex justify-between items-center">
-                      <span className="text-black text-sm">Plan:</span>
-                      <span className="font-semibold text-black text-sm">{
+                    <div className="flex justify-between items-center gap-2">
+                      <span className="text-black text-xs sm:text-sm flex-shrink-0">Plan:</span>
+                      <span className="font-semibold text-black text-xs sm:text-sm text-right truncate">{
                         (() => {
                           // Extract just the plan tier name (e.g., "Platinum", "Gold", "Silver")
                           const cleanPlanName = planName
@@ -1204,38 +1204,38 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         })()
                       }</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-black text-sm">Duration:</span>
-                      <span className="font-semibold text-black text-sm">{paymentType === '12months' 
+                    <div className="flex justify-between items-center gap-2">
+                      <span className="text-black text-xs sm:text-sm flex-shrink-0">Duration:</span>
+                      <span className="font-semibold text-black text-xs sm:text-sm text-right">{paymentType === '12months' 
                         ? '1 Year'
                         : paymentType === '24months' 
                           ? '2 Years'
                           : '3 Years'
                       }</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-black text-sm">Vehicle:</span>
-                      <span className="font-semibold text-black text-sm uppercase">{vehicleData.make} {vehicleData.model}</span>
+                    <div className="flex justify-between items-center gap-2">
+                      <span className="text-black text-xs sm:text-sm flex-shrink-0">Vehicle:</span>
+                      <span className="font-semibold text-black text-xs sm:text-sm uppercase text-right truncate">{vehicleData.make} {vehicleData.model}</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-black text-sm">Registration:</span>
-                      <span className="font-semibold text-black text-sm">{vehicleData.regNumber}</span>
+                    <div className="flex justify-between items-center gap-2">
+                      <span className="text-black text-xs sm:text-sm flex-shrink-0">Registration:</span>
+                      <span className="font-semibold text-black text-xs sm:text-sm text-right">{vehicleData.regNumber}</span>
                     </div>
-                     <div className="flex justify-between items-center">
-                       <span className="text-black text-sm">Mileage:</span>
-                       <span className="font-semibold text-black text-sm">{parseInt(vehicleData.mileage || '0').toLocaleString()} miles</span>
+                     <div className="flex justify-between items-center gap-2">
+                       <span className="text-black text-xs sm:text-sm flex-shrink-0">Mileage:</span>
+                       <span className="font-semibold text-black text-xs sm:text-sm text-right">{parseInt(vehicleData.mileage || '0').toLocaleString()} miles</span>
                      </div>
-                     <div className="flex justify-between items-center">
-                       <span className="text-black text-sm">Claim Limit:</span>
-                       <span className="font-semibold text-black text-sm">£{(pricingData.claimLimit || 2000).toLocaleString()}</span>
+                     <div className="flex justify-between items-center gap-2">
+                       <span className="text-black text-xs sm:text-sm flex-shrink-0">Claim Limit:</span>
+                       <span className="font-semibold text-black text-xs sm:text-sm text-right">£{(pricingData.claimLimit || 2000).toLocaleString()}</span>
                      </div>
-                     <div className="flex justify-between items-center">
-                       <span className="text-black text-sm">Excess:</span>
-                       <span className="font-semibold text-black text-sm">£{updatedPricingData.voluntaryExcess ?? 0}</span>
+                     <div className="flex justify-between items-center gap-2">
+                       <span className="text-black text-xs sm:text-sm flex-shrink-0">Excess:</span>
+                       <span className="font-semibold text-black text-xs sm:text-sm text-right">£{updatedPricingData.voluntaryExcess ?? 0}</span>
                      </div>
-                       <div className="flex justify-between items-center">
-                        <span className="text-black text-sm">Labour Rate:</span>
-                        <span className="font-semibold text-black text-sm">
+                       <div className="flex justify-between items-center gap-2">
+                        <span className="text-black text-xs sm:text-sm flex-shrink-0">Labour Rate:</span>
+                        <span className="font-semibold text-black text-xs sm:text-sm text-right">
                           £{pricingData.labourRate || 70}/hour
                         </span>
                       </div>
