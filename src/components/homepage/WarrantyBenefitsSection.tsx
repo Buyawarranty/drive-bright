@@ -104,7 +104,7 @@ const WarrantyBenefitsSection: React.FC = () => {
                         </div>
                       ))}
                       {category.showMore && (
-                        <p className="text-gray-700 font-bold mt-2">And so much more….</p>
+                        <p className="text-gray-700 font-bold mt-4 text-center">See full list of what's covered:</p>
                       )}
                     </div>
                   </div>
