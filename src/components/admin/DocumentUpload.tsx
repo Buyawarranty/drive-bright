@@ -6,8 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, FileText, Trash2 } from 'lucide-react';
+import { Upload, FileText, Trash2, ExternalLink } from 'lucide-react';
 
 interface Document {
   id: string;
@@ -26,6 +27,7 @@ const DocumentUpload = () => {
   const [selectedPlan, setSelectedPlan] = useState<string>('');
   const [documentName, setDocumentName] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     fetchDocuments();
@@ -294,10 +296,12 @@ const DocumentUpload = () => {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
-                        View
-                      </a>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setPreviewUrl(doc.file_url)}
+                    >
+                      View
                     </Button>
                     <Button 
                       variant="outline" 
@@ -314,6 +318,34 @@ const DocumentUpload = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* PDF Preview Dialog */}
+      <Dialog open={!!previewUrl} onOpenChange={(open) => !open && setPreviewUrl(null)}>
+        <DialogContent className="max-w-6xl h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span>Document Preview</span>
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+              >
+                <a href={previewUrl || ''} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                  <ExternalLink className="h-4 w-4" />
+                  Open in New Tab
+                </a>
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          {previewUrl && (
+            <iframe
+              src={previewUrl}
+              className="w-full h-full rounded-lg border"
+              title="PDF Preview"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
