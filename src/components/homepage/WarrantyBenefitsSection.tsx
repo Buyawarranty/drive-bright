@@ -16,7 +16,7 @@ const WarrantyBenefitsSection: React.FC = () => {
       icon: Settings,
       title: "Mechanical & Electrical",
       headerText: "Everything You Need, Covered:",
-      items: ["Full Mechanical & Electrical Cover", "Engine, Gearbox, Clutch, Drivetrain & Turbo", "Brakes, Steering, Suspension, Fuel, Cooling & Emissions"],
+      items: ["Full Mechanical & Electrical Cover", "Engine, Gearbox, Clutch, Drivetrain & Turbo", "Brakes, Steering, Suspension, Fuel, Cooling, Emissions & Air-conditioning"],
       showMore: false
     },
     {
