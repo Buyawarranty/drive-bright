@@ -300,8 +300,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
     if (vehicleData?.year) {
       const currentYear = new Date().getFullYear();
       const vehicleYear = parseInt(vehicleData.year);
-      return currentYear - vehicleYear;
+      const age = currentYear - vehicleYear;
+      console.log('🚗 Vehicle Age Calculation:', { currentYear, vehicleYear, age, rawYear: vehicleData.year });
+      return age;
     }
+    console.log('🚗 No vehicle year provided, defaulting to age 0');
     return 0;
   }, [vehicleData?.year]);
 
@@ -310,22 +313,29 @@ const PricingTable: React.FC<PricingTableProps> = ({
     type DurationType = '12months' | '24months' | '36months';
     const allDurations: DurationType[] = ['12months', '24months', '36months'];
     
+    console.log('🔍 Available Durations Check:', { vehicleAge });
+    
     if (vehicleAge === 15) {
       // 15-year-old vehicles: only 1-year option
+      console.log('⚠️ 15-year vehicle detected - limiting to 1-year only');
       return ['12months'] as DurationType[];
     } else if (vehicleAge === 14) {
       // 14-year-old vehicles: 1-year and 2-year options
+      console.log('⚠️ 14-year vehicle detected - limiting to 1-2 years');
       return ['12months', '24months'] as DurationType[];
     }
     
     // All other vehicles (13 years or younger): all options
+    console.log('✅ All duration options available for this vehicle');
     return allDurations;
   }, [vehicleAge]);
 
   // Ensure selected payment type is valid for vehicle age
   useEffect(() => {
+    console.log('🔄 Payment Type Validation:', { paymentType, availableDurations });
     if (paymentType && !availableDurations.includes(paymentType)) {
       // If current selection is not available, default to 12months
+      console.log('⚠️ Resetting payment type to 12months - current selection not available');
       setPaymentType('12months');
     }
   }, [paymentType, availableDurations]);
@@ -2167,7 +2177,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   
                   {/* CTA Button */}
                   <button
-                    onClick={() => setPaymentType(durationId)}
+                    onClick={() => {
+                      console.log('🎯 Duration button clicked:', { durationId, currentPaymentType: paymentType });
+                      setPaymentType(durationId);
+                    }}
                     className={`w-full py-4 px-4 rounded-lg text-center font-bold text-lg transition-colors ${
                       isSelected
                         ? 'bg-green-600 border-2 border-green-600 text-white'
