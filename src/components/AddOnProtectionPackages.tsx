@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { ChevronDown, ChevronUp, Check, Info } from 'lucide-react';
 import { getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { Button } from '@/components/ui/button';
 
@@ -257,25 +257,26 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                        {addon.shortDescription.split('.')[0]}.
                      </p>
                      
-                     {/* View Details Button */}
-                     <Collapsible open={expandedItems[addon.key]} onOpenChange={() => toggleExpanded(addon.key)}>
-                       <CollapsibleTrigger asChild>
-                         <Button
-                           variant="outline"
-                           size="sm"
-                           onClick={(e) => e.stopPropagation()}
-                           className="w-full justify-between hover:bg-green-50 hover:border-green-600 hover:text-green-700 transition-all"
-                         >
-                           <span className="font-medium">
-                             {expandedItems[addon.key] ? 'Hide Details' : 'View Details'}
-                           </span>
-                           {expandedItems[addon.key] ? (
-                             <ChevronUp className="h-4 w-4" />
-                           ) : (
-                             <ChevronDown className="h-4 w-4" />
-                           )}
-                         </Button>
-                       </CollapsibleTrigger>
+                      {/* View Details Button */}
+                      <Collapsible open={expandedItems[addon.key]} onOpenChange={() => toggleExpanded(addon.key)}>
+                        <CollapsibleTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-full justify-between hover:bg-green-50 hover:border-green-600 hover:text-green-700 transition-all px-4 py-3"
+                          >
+                            <span className="font-medium flex items-center gap-2">
+                              <Info className="w-4 h-4 flex-shrink-0" />
+                              {expandedItems[addon.key] ? 'Hide Details' : 'Details'}
+                            </span>
+                            {expandedItems[addon.key] ? (
+                              <ChevronUp className="h-4 w-4 flex-shrink-0" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                            )}
+                          </Button>
+                        </CollapsibleTrigger>
                        
                        <CollapsibleContent className="mt-4 pt-4 border-t border-gray-200">
                          <div className="space-y-2.5">

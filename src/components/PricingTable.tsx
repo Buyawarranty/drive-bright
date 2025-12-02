@@ -2196,13 +2196,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   
                   {/* CTA Button - Now just shows selection state */}
                   <div
-                    className={`w-full py-4 px-4 rounded-lg text-center font-bold text-lg transition-colors pointer-events-none ${
+                    className={`w-full py-4 px-6 rounded-lg text-center font-bold text-lg transition-colors pointer-events-none flex items-center justify-center gap-2 ${
                       isSelected
                         ? 'bg-green-600 border-2 border-green-600 text-white'
                         : 'bg-orange-500 text-white'
                     }`}
                   >
-                    {isSelected ? 'Selected' : 'Secure Your Cover'}
+                    {isSelected && <Check className="w-5 h-5 flex-shrink-0" />}
+                    <span>{isSelected ? 'Selected' : 'Secure Your Cover'}</span>
                   </div>
                   
                   {/* Email Quote Link */}
