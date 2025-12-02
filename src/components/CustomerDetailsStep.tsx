@@ -792,7 +792,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#e8f4fb] w-full overflow-x-hidden">
+    <div className="min-h-screen bg-orange-50 w-full overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-4 py-8">
         
         {/* Back Button */}
@@ -854,7 +854,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           className={`mt-1 transition-all duration-300 ${
                             showValidation && !customerData.first_name.trim() 
                               ? 'border-red-500 focus:border-red-500' 
-                              : 'focus:ring-2 focus:ring-blue-200'
+                              : 'focus:ring-2 focus:ring-orange-200'
                           }`}
                         />
                         {validatedFields.first_name && (
@@ -877,7 +877,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           className={`mt-1 transition-all duration-300 ${
                             showValidation && !customerData.last_name.trim() 
                               ? 'border-red-500 focus:border-red-500' 
-                              : 'focus:ring-2 focus:ring-blue-200'
+                              : 'focus:ring-2 focus:ring-orange-200'
                           }`}
                         />
                         {validatedFields.last_name && (
@@ -904,7 +904,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         className={`mt-1 transition-all duration-300 ${
                           showValidation && fieldErrors.email 
                             ? 'border-red-500 focus:border-red-500' 
-                            : 'focus:ring-2 focus:ring-blue-200'
+                            : 'focus:ring-2 focus:ring-orange-200'
                         }`}
                       />
                       {validatedFields.email && (
@@ -930,7 +930,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         className={`mt-1 transition-all duration-300 ${
                           showValidation && fieldErrors.phone 
                             ? 'border-red-500 focus:border-red-500' 
-                            : 'focus:ring-2 focus:ring-blue-200'
+                            : 'focus:ring-2 focus:ring-orange-200'
                         }`}
                       />
                       {validatedFields.phone && (
@@ -957,7 +957,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           className={`mt-1 transition-all duration-300 ${
                             showValidation && !customerData.address_line_1.trim() 
                               ? 'border-red-500 focus:border-red-500' 
-                              : 'focus:ring-2 focus:ring-blue-200'
+                              : 'focus:ring-2 focus:ring-orange-200'
                           }`}
                         />
                         {validatedFields.address_line_1 && (
@@ -976,7 +976,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         placeholder="Apartment, suite, etc. (optional)"
                         value={customerData.address_line_2}
                         onChange={(e) => handleInputChange('address_line_2', e.target.value)}
-                        className="mt-1 focus:ring-2 focus:ring-blue-200"
+                        className="mt-1 focus:ring-2 focus:ring-orange-200"
                       />
                     </div>
 
@@ -1022,7 +1022,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             className={`mt-1 transition-all duration-300 ${
                               showValidation && fieldErrors.city 
                                 ? 'border-red-500 focus:border-red-500' 
-                                : 'focus:ring-2 focus:ring-blue-200'
+                                : 'focus:ring-2 focus:ring-orange-200'
                             }`}
                           />
                           {validatedFields.city && (
@@ -1201,7 +1201,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                         <div key={addOn.key} className="group hover:bg-gray-50 -mx-2 px-2 py-2 rounded">
                                           <div className="flex items-start justify-between">
                                             <div className="flex items-start flex-1">
-                                              <span className="text-blue-600 mr-2 mt-0.5">+</span>
+                                              <span className="text-orange-600 mr-2 mt-0.5">+</span>
                                               <div className="flex-1">
                                                 <span className="text-sm text-gray-700 block">{addOn.name}</span>
                                                 <div className="mt-1">
@@ -1329,12 +1329,12 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             </div>
                           )}
                           {seasonalOfferClaimed && (
-                            <div className="flex justify-between items-center text-sm bg-blue-50 p-2 rounded">
-                              <span className="font-medium text-blue-700 flex items-center gap-1">
+                            <div className="flex justify-between items-center text-sm bg-orange-50 p-2 rounded">
+                              <span className="font-medium text-orange-700 flex items-center gap-1">
                                 <span>❄️</span>
                                 <span>3 Months FREE Bonus Cover</span>
                               </span>
-                              <span className="font-bold text-blue-600">Added!</span>
+                              <span className="font-bold text-orange-600">Added!</span>
                             </div>
                           )}
                         </div>
@@ -1358,7 +1358,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                  <span className="font-medium text-gray-700">Only 12 easy payments</span>
                                </div>
                                {seasonalOfferClaimed && (
-                                 <div className="flex items-center justify-center mb-2 text-blue-600">
+                                 <div className="flex items-center justify-center mb-2 text-orange-600">
                                    <span className="mr-2">❄️</span>
                                    <span className="font-semibold">+ 3 Months FREE Bonus</span>
                                  </div>
@@ -1367,7 +1367,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                  <div className="text-lg font-bold text-gray-900 mb-1">Total cost:</div>
                                  <div className="text-3xl font-bold text-green-600">£{discountedBumperPrice}</div>
                                  {seasonalOfferClaimed && (
-                                   <div className="text-sm text-blue-600 mt-1 font-medium">
+                                   <div className="text-sm text-orange-600 mt-1 font-medium">
                                      15 months total cover for the price of 12!
                                    </div>
                                  )}
@@ -1391,7 +1391,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                    <span className="font-medium text-gray-700">Nothing to pay in Year 2</span>
                                  </div>
                                  {seasonalOfferClaimed && (
-                                   <div className="flex items-center justify-center text-blue-600">
+                                   <div className="flex items-center justify-center text-orange-600">
                                      <span className="mr-2">❄️</span>
                                      <span className="font-semibold">+ 3 Months FREE Bonus</span>
                                    </div>
@@ -1407,7 +1407,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                    You save £{savings}!
                                  </div>
                                  {seasonalOfferClaimed && (
-                                   <div className="text-sm text-blue-600 mt-1 font-medium">
+                                   <div className="text-sm text-orange-600 mt-1 font-medium">
                                      27 months total cover!
                                    </div>
                                  )}
@@ -1431,7 +1431,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                    <span className="font-medium text-gray-700">Nothing to pay in Year 2 and Year 3</span>
                                  </div>
                                  {seasonalOfferClaimed && (
-                                   <div className="flex items-center justify-center text-blue-600">
+                                   <div className="flex items-center justify-center text-orange-600">
                                      <span className="mr-2">❄️</span>
                                      <span className="font-semibold">+ 3 Months FREE Bonus</span>
                                    </div>
@@ -1447,7 +1447,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                    You save £{savings}!
                                  </div>
                                  {seasonalOfferClaimed && (
-                                   <div className="text-sm text-blue-600 mt-1 font-medium">
+                                   <div className="text-sm text-orange-600 mt-1 font-medium">
                                      39 months total cover!
                                    </div>
                                  )}
@@ -1478,8 +1478,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     </div>
 
                     {/* Social Proof */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
-                      <p className="text-sm font-medium text-blue-900">
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
+                      <p className="text-sm font-medium text-orange-900">
                         ⭐ <span className="font-bold">Most customers choose Pay in Full</span> for extra savings
                       </p>
                     </div>
@@ -1576,12 +1576,12 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           onClick={() => setPaymentMethod('bumper')}
                           className={`relative rounded-xl p-6 cursor-pointer transition-all duration-300 border-2 ${
                             paymentMethod === 'bumper' 
-                              ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-500 shadow-xl shadow-blue-500/30 scale-[1.02]' 
-                              : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-lg'
+                              ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-500 shadow-xl shadow-orange-500/30 scale-[1.02]' 
+                              : 'bg-white border-gray-200 hover:border-orange-300 hover:shadow-lg'
                           }`}
                         >
                           {/* 0% Interest Badge */}
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg">
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg">
                             0% APR
                           </div>
 
@@ -1590,18 +1590,18 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             <RadioGroupItem 
                               value="bumper" 
                               id="bumper-option" 
-                              className="border-2 border-gray-400 text-blue-600 w-5 h-5 mt-1"
+                              className="border-2 border-gray-400 text-orange-600 w-5 h-5 mt-1"
                             />
                             {/* No Hidden Fees Badge */}
-                            <div className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded">
+                            <div className="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded">
                               NO FEES
                             </div>
                           </div>
 
                           {/* Calendar Icon */}
                           <div className="flex justify-center mb-4">
-                            <div className="bg-blue-100 p-4 rounded-full">
-                              <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="bg-orange-100 p-4 rounded-full">
+                              <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                               </svg>
                             </div>
@@ -1614,9 +1614,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           </Label>
 
                           {/* Price Display */}
-                          <div className="bg-white rounded-lg p-4 mb-4 border-2 border-blue-200">
+                          <div className="bg-white rounded-lg p-4 mb-4 border-2 border-orange-200">
                             <div className="text-center">
-                              <div className="text-4xl font-black text-blue-600 mb-2">
+                              <div className="text-4xl font-black text-orange-600 mb-2">
                                 £{Math.round(discountedBumperPrice / 12)}<span className="text-xl">/month</span>
                               </div>
                               <div className="text-sm text-gray-600">
@@ -1628,15 +1628,15 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           {/* Features */}
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center gap-2 text-sm">
-                              <Check className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                              <Check className="w-5 h-5 text-orange-600 flex-shrink-0" />
                               <span className="text-gray-700 font-medium">Only a soft credit search</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
-                              <Check className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                              <Check className="w-5 h-5 text-orange-600 flex-shrink-0" />
                               <span className="text-gray-700 font-medium">No impact on credit score</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
-                              <Check className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                              <Check className="w-5 h-5 text-orange-600 flex-shrink-0" />
                               <span className="text-gray-700 font-medium">0% interest, no hidden fees</span>
                             </div>
                           </div>
@@ -1653,7 +1653,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               href="https://www.bumper.co.uk/how-it-works" 
                               target="_blank" 
                               rel="noopener noreferrer"
-                              className="text-xs text-blue-600 hover:text-blue-700 underline font-medium"
+                              className="text-xs text-orange-600 hover:text-orange-700 underline font-medium"
                               onClick={(e) => e.stopPropagation()}
                             >
                               How does Bumper work?
@@ -1662,7 +1662,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
 
                           {/* CTA Preview */}
                           {paymentMethod === 'bumper' && (
-                            <div className="mt-4 text-center text-sm font-medium text-blue-700">
+                            <div className="mt-4 text-center text-sm font-medium text-orange-700">
                               ✓ Selected - Click "Complete Purchase" below
                             </div>
                           )}
@@ -1714,7 +1714,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           <span className="font-medium">SSL Encrypted</span>
                         </div>
                         <div className="flex items-center gap-2 text-xs text-gray-600">
-                          <CreditCard className="w-5 h-5 text-blue-600" />
+                          <CreditCard className="w-5 h-5 text-orange-600" />
                           <span className="font-medium">Visa • Mastercard</span>
                         </div>
                         <div className="flex items-center gap-2 text-xs text-gray-600">
@@ -1727,7 +1727,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       <div className="text-center">
                         <p className="text-xs text-gray-500">
                           Need help? Contact our support team at{' '}
-                          <a href="tel:03330168290" className="text-blue-600 hover:underline font-medium">
+                          <a href="tel:03330168290" className="text-orange-600 hover:underline font-medium">
                             0333 016 8290
                           </a>
                         </p>
