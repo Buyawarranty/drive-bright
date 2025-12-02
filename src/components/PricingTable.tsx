@@ -295,6 +295,41 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return null;
   }, [vehicleData?.year]);
 
+  // Calculate vehicle age for duration filtering
+  const vehicleAge = useMemo(() => {
+    if (vehicleData?.year) {
+      const currentYear = new Date().getFullYear();
+      const vehicleYear = parseInt(vehicleData.year);
+      return currentYear - vehicleYear;
+    }
+    return 0;
+  }, [vehicleData?.year]);
+
+  // Filter available duration options based on vehicle age
+  const availableDurations = useMemo(() => {
+    type DurationType = '12months' | '24months' | '36months';
+    const allDurations: DurationType[] = ['12months', '24months', '36months'];
+    
+    if (vehicleAge === 15) {
+      // 15-year-old vehicles: only 1-year option
+      return ['12months'] as DurationType[];
+    } else if (vehicleAge === 14) {
+      // 14-year-old vehicles: 1-year and 2-year options
+      return ['12months', '24months'] as DurationType[];
+    }
+    
+    // All other vehicles (13 years or younger): all options
+    return allDurations;
+  }, [vehicleAge]);
+
+  // Ensure selected payment type is valid for vehicle age
+  useEffect(() => {
+    if (paymentType && !availableDurations.includes(paymentType)) {
+      // If current selection is not available, default to 12months
+      setPaymentType('12months');
+    }
+  }, [paymentType, availableDurations]);
+
   useEffect(() => {
     let alive = true;
     setPlans([]); // clear immediately so no leakage
@@ -1861,8 +1896,33 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </Alert>
           )}
 
+          {/* Vehicle age restrictions message */}
+          {vehicleAge === 15 && (
+            <Alert className="mb-6 border-orange-200 bg-orange-50">
+              <Info className="h-4 w-4 text-orange-600" />
+              <AlertDescription className="text-orange-800">
+                Due to your vehicle being 15 years old, only 1-year warranty coverage is available.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {vehicleAge === 14 && (
+            <Alert className="mb-6 border-orange-200 bg-orange-50">
+              <Info className="h-4 w-4 text-orange-600" />
+              <AlertDescription className="text-orange-800">
+                Due to your vehicle being 14 years old, warranty coverage is available for up to 2 years.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Comparison Cards - All Three Durations */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className={`grid gap-6 mb-8 ${
+            availableDurations.length === 1 
+              ? 'grid-cols-1 md:max-w-md md:mx-auto' 
+              : availableDurations.length === 2 
+                ? 'grid-cols-1 md:grid-cols-2 md:max-w-3xl md:mx-auto' 
+                : 'grid-cols-1 md:grid-cols-3'
+          }`}>
             {[
               { 
                 id: '12months', 
@@ -1925,7 +1985,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   'Pre-existing faults are not covered'
                 ]
               }
-            ].map((duration) => {
+            ].filter(duration => availableDurations.includes(duration.id as any)).map((duration) => {
               const durationId = duration.id as '12months' | '24months' | '36months';
               const isSelected = paymentType === durationId;
               const [isExpanded, setIsExpanded] = React.useState(false);
