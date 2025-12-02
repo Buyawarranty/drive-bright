@@ -1428,7 +1428,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                               <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                              <span className="text-black font-medium">Coverage starts immediately</span>
+                              <span className="text-black font-medium">Immediate cover</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                               <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
