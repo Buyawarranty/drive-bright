@@ -86,8 +86,8 @@ const AdminDashboard = () => {
 
       console.log('📊 Role query result:', { data, error });
 
-      // Allow all admin role types: admin, member, viewer, guest, blog_writer
-      if (error || !data || !['admin', 'member', 'viewer', 'guest', 'blog_writer'].includes(data.role)) {
+      // Allow all admin role types: admin, member, viewer, guest, blog_writer, sales
+      if (error || !data || !['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales'].includes(data.role)) {
         console.error('❌ Access denied - not an admin user', error, data);
         console.log('🏠 User has no admin role, redirecting to homepage');
         navigate('/', { replace: true });
