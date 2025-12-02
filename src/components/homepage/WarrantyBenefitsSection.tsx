@@ -39,10 +39,9 @@ const WarrantyBenefitsSection: React.FC = () => {
   return (
     <section className="py-12 md:py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-4 gap-8 items-start">
-          {/* Left Content - 3/4 width */}
-          <div className="lg:col-span-3">
+        {/* Main Content */}
+        <div className="max-w-5xl mx-auto">
+          <div>
             {/* Section Header */}
             <div className="text-center lg:text-left mb-6">
               <h2 className="text-2xl md:text-4xl font-bold text-brand-dark-text mb-3 flex items-center justify-center lg:justify-start gap-2">
@@ -113,18 +112,25 @@ const WarrantyBenefitsSection: React.FC = () => {
               </div>
             </div>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            {/* CTA Buttons with Panda in between */}
+            <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
               <a
                 href="https://buyawarranty.co.uk/what-is-covered/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 py-3 text-base rounded-lg shadow-lg transition-all animate-[breathing_3s_ease-in-out_infinite]"
+                className="inline-flex items-center justify-center gap-2 bg-brand-deep-blue hover:bg-blue-800 text-white font-bold px-6 py-3 text-base rounded-lg shadow-lg transition-all animate-[breathing_3s_ease-in-out_infinite]"
               >
                 <Shield className="w-5 h-5" />
                 See what's covered
                 <ExternalLink className="w-4 h-4" />
               </a>
+              
+              {/* Panda Image between buttons */}
+              <img 
+                src={warrantyPandaMascot} 
+                alt="Miles the Panda mascot with car" 
+                className="w-24 h-24 sm:w-28 sm:h-28 object-contain"
+              />
               
               <button
                 onClick={scrollToTop}
@@ -135,15 +141,6 @@ const WarrantyBenefitsSection: React.FC = () => {
                 <ArrowUp className="w-4 h-4" />
               </button>
             </div>
-          </div>
-
-          {/* Right Image - 1/4 width */}
-          <div className="lg:col-span-1 flex justify-center lg:justify-end">
-            <img 
-              src={warrantyPandaMascot} 
-              alt="Miles the Panda mascot with car" 
-              className="w-full max-w-[280px] lg:max-w-none lg:w-full h-auto object-contain"
-            />
           </div>
         </div>
       </div>
