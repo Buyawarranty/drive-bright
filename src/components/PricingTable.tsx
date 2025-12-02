@@ -2166,15 +2166,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           
                           {/* Policy Details Link */}
                           <div className="pt-3 border-t border-gray-200 mt-3">
-                            <a 
-                              href="https://buyawarranty.co.uk/what-is-covered/" 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-sm text-orange-600 hover:text-orange-700 font-medium underline inline-flex items-center gap-1"
+                            <button
+                              onClick={() => {
+                                const detailsSection = document.getElementById('your-cover-details');
+                                detailsSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              }}
+                              className="flex items-start gap-2 text-sm text-green-600 hover:text-green-700 font-medium underline transition-colors"
                             >
-                              See full policy details
-                              <ArrowRight className="w-3 h-3" />
-                            </a>
+                              <span className="text-base mt-0.5">🔍</span>
+                              <span>See full policy details</span>
+                            </button>
                           </div>
                         </div>
                       </div>
