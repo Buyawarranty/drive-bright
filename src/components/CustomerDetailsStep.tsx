@@ -1575,9 +1575,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               e.stopPropagation();
                               setPaymentMethod('stripe');
                             }}
-                            className="w-full font-bold py-3 rounded-lg transition-colors shadow-lg bg-green-600 hover:bg-green-700 text-white"
+                            className="w-full font-bold py-3 rounded-lg transition-colors shadow-lg bg-green-600 hover:bg-green-700 text-white animate-pulse"
                           >
-                            Pay £{discountedStripePrice} Now – Save £50
+                            Complete checkout
                           </Button>
 
                           {/* Powered By */}
@@ -1667,9 +1667,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               e.stopPropagation();
                               setPaymentMethod('bumper');
                             }}
-                            className="w-full font-bold py-3 rounded-lg transition-colors shadow-lg bg-orange-500 hover:bg-orange-600 text-white"
+                            className="w-full font-bold py-3 rounded-lg transition-colors shadow-lg bg-orange-500 hover:bg-orange-600 text-white animate-pulse"
                           >
-                            Start £{Math.round(discountedBumperPrice / 12)}/month Plan
+                            Complete checkout
                           </Button>
 
                           {/* Powered By */}
