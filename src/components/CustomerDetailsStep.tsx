@@ -885,7 +885,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
             <ArrowLeft className="w-4 h-4" />
             <span className="hidden sm:inline">Back to Plans</span>
           </Button>
-          <a href="/" className="hover:opacity-80 transition-opacity absolute left-1/2 -translate-x-1/2">
+          <a href="/" className="hover:opacity-80 transition-opacity absolute left-1/2 -translate-x-1/2 hidden sm:block">
             <img 
               src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" 
               alt="Buy a Warranty" 
