@@ -166,9 +166,13 @@ const ThankYou = () => {
         
         // Track purchase
         const finalAmountStr = searchParams.get('final_amount');
-        if (finalAmountStr && sessionId) {
+        const finalAmount = finalAmountStr ? parseFloat(finalAmountStr) : 0;
+        
+        // CRITICAL: Only track if we have valid amount and session
+        if (finalAmount > 0 && sessionId) {
+          console.log('✅ Tracking Bumper purchase with amount:', finalAmount, 'sessionId:', sessionId);
           trackPurchaseComplete(
-            parseFloat(finalAmountStr),
+            finalAmount,
             sessionId,
             {
               email: email || undefined,
@@ -178,6 +182,14 @@ const ThankYou = () => {
               address: street || undefined
             }
           );
+        } else {
+          console.error('❌ TRACKING FAILED (Bumper): Missing or invalid data', {
+            finalAmount,
+            finalAmountStr,
+            sessionId,
+            email,
+            mobile
+          });
         }
         
         // Send Trustpilot review invitation
@@ -273,17 +285,30 @@ const ThankYou = () => {
             ? parseFloat(searchParams.get('final_amount')!) 
             : data?.amount || 0;
           
-          trackPurchaseComplete(
-            finalAmount,
-            transactionId,
-            {
-              email: email,
-              phone: mobile,
-              firstName: firstName,
-              lastName: lastName,
-              address: street
-            }
-          );
+          // CRITICAL: Only track if we have a valid amount
+          if (finalAmount > 0) {
+            console.log('✅ Tracking purchase with amount:', finalAmount, 'transactionId:', transactionId);
+            trackPurchaseComplete(
+              finalAmount,
+              transactionId,
+              {
+                email: email,
+                phone: mobile,
+                firstName: firstName,
+                lastName: lastName,
+                address: street
+              }
+            );
+          } else {
+            console.error('❌ TRACKING FAILED: Missing or invalid amount', {
+              finalAmount,
+              searchParamAmount: searchParams.get('final_amount'),
+              dataAmount: data?.amount,
+              sessionId,
+              email,
+              mobile
+            });
+          }
           
           // Send Trustpilot review invitation
           if (email && (firstName || lastName) && transactionId) {
