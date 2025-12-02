@@ -450,6 +450,10 @@ const ThankYou = () => {
                   plan={plan || undefined}
                   paymentType={paymentType || undefined}
                   warrantyStartDate={undefined}
+                  duration={searchParams.get('duration') || undefined}
+                  monthlyPrice={searchParams.get('monthly_price') ? parseFloat(searchParams.get('monthly_price')!) : undefined}
+                  totalPrice={searchParams.get('total_price') ? parseFloat(searchParams.get('total_price')!) : undefined}
+                  originalPrice={searchParams.get('original_price') ? parseFloat(searchParams.get('original_price')!) : undefined}
                 />
 
                 {/* What Happens Next */}
