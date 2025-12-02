@@ -181,12 +181,20 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                      </div>
                    )}
                    
-                   {/* Simple Checkmark - Top Right */}
-                   {isSelected && (
-                     <div className="absolute top-4 right-4">
-                       <Check className="w-5 h-5 text-green-600" strokeWidth={3} />
+                   {/* Checkbox - Top Right */}
+                   <div className="absolute top-4 right-4">
+                     <div 
+                       className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
+                         isSelected 
+                           ? 'bg-green-600 border-green-600' 
+                           : 'bg-white border-gray-300'
+                       }`}
+                     >
+                       {isSelected && (
+                         <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                       )}
                      </div>
-                   )}
+                   </div>
                    
                    <div className="p-6 pt-10">
                      {/* Icon, Title, and Price in one line */}
