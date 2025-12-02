@@ -328,6 +328,26 @@ const WarrantyBenefitsSection: React.FC = () => {
                     </div>
                   </div>
                 ))}
+                
+                {/* Desktop Only: CTA Button + Trust below EV & Hybrid */}
+                <div className="hidden lg:flex flex-col items-start gap-4 mt-4">
+                  <button
+                    onClick={scrollToTop}
+                    className="inline-flex items-center justify-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 py-3 text-base rounded-lg shadow-lg transition-all animate-[breathing_3s_ease-in-out_infinite]"
+                  >
+                    Get my quote
+                    <ArrowUp className="w-6 h-6" />
+                  </button>
+                  
+                  {/* Trust & Reassurance */}
+                  <div className="flex flex-col sm:flex-row items-start gap-3">
+                    <TrustpilotHeader className="flex-shrink-0" />
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Lock className="w-4 h-4 text-green-600" />
+                      <span>Your details are encrypted and safe.</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -548,10 +568,10 @@ const WarrantyBenefitsSection: React.FC = () => {
               </Collapsible>
             </div>
 
-            {/* CTA Section with Panda - Desktop: row layout */}
-            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-              {/* Left: CTA Button + Trust */}
-              <div className="flex flex-col items-center lg:items-start gap-4">
+            {/* CTA Section with Panda - Mobile only */}
+            <div className="flex flex-col lg:hidden gap-6">
+              {/* CTA Button + Trust - Mobile Only */}
+              <div className="flex flex-col items-center gap-4">
                 <button
                   onClick={scrollToTop}
                   className="inline-flex items-center justify-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 py-3 text-base rounded-lg shadow-lg transition-all animate-[breathing_3s_ease-in-out_infinite]"
@@ -570,14 +590,23 @@ const WarrantyBenefitsSection: React.FC = () => {
                 </div>
               </div>
 
-              {/* Right: Panda with tagline */}
-              <div className="flex flex-col items-center lg:items-end">
+              {/* Panda with tagline */}
+              <div className="flex flex-col items-center">
                 <img 
                   src={warrantyPandaMascot} 
                   alt="Miles the Panda mascot with car" 
-                  className="w-48 md:w-56 lg:w-64 h-auto object-contain"
+                  className="w-48 md:w-56 h-auto object-contain"
                 />
               </div>
+            </div>
+            
+            {/* Desktop: Panda only (CTA is now in right column) */}
+            <div className="hidden lg:flex justify-end">
+              <img 
+                src={warrantyPandaMascot} 
+                alt="Miles the Panda mascot with car" 
+                className="w-56 lg:w-64 h-auto object-contain"
+              />
             </div>
           </div>
         </div>
