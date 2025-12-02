@@ -1678,7 +1678,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               e.stopPropagation();
                               setPaymentMethod('bumper');
                             }}
-                            className="w-full font-bold py-3 rounded-lg transition-colors shadow-lg bg-orange-500 hover:bg-orange-600 text-white"
+                            className="w-full font-bold py-3 rounded-lg transition-colors shadow-lg bg-orange-100 hover:bg-orange-200 text-orange-700"
                           >
                             Start £{Math.round(discountedBumperPrice / 12)}/month Plan
                           </Button>
