@@ -126,11 +126,16 @@ const WarrantyBenefitsSection: React.FC = () => {
               </a>
               
               {/* Panda Image between buttons */}
-              <img 
-                src={warrantyPandaMascot} 
-                alt="Miles the Panda mascot with car" 
-                className="w-24 h-24 sm:w-28 sm:h-28 object-contain"
-              />
+              <div className="flex flex-col items-center">
+                <img 
+                  src={warrantyPandaMascot} 
+                  alt="Miles the Panda mascot with car" 
+                  className="w-full max-w-[400px] md:max-w-[500px] lg:max-w-[600px] h-auto object-contain"
+                />
+                <p className="text-brand-orange font-bold text-lg md:text-xl mt-2">
+                  Warranty that works when your car doesn't!
+                </p>
+              </div>
               
               <button
                 onClick={scrollToTop}
