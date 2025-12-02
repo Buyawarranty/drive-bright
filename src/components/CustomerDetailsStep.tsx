@@ -1443,7 +1443,11 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               e.stopPropagation();
                               setPaymentMethod('stripe');
                             }}
-                            className="w-full bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-lg"
+                            className={`w-full font-bold py-3 rounded-lg transition-colors ${
+                              paymentMethod === 'stripe'
+                                ? 'bg-green-600 hover:bg-green-700 text-white'
+                                : 'bg-white hover:bg-green-600 text-black hover:text-white border-2 border-gray-300'
+                            }`}
                           >
                             Pay £{discountedStripePrice} Now – Save £50
                           </Button>
@@ -1532,7 +1536,11 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               e.stopPropagation();
                               setPaymentMethod('bumper');
                             }}
-                            className="w-full bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-lg"
+                            className={`w-full font-bold py-3 rounded-lg transition-colors ${
+                              paymentMethod === 'bumper'
+                                ? 'bg-green-600 hover:bg-green-700 text-white'
+                                : 'bg-white hover:bg-green-600 text-black hover:text-white border-2 border-gray-300'
+                            }`}
                           >
                             Start £{Math.round(discountedBumperPrice / 12)}/month Plan
                           </Button>
