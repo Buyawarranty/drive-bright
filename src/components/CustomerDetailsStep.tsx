@@ -880,8 +880,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
         <div className="mb-8">
           <Button
             onClick={onBack}
-            variant="outline"
-            className="flex items-center gap-2 bg-white hover:bg-gray-50"
+            className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 border-0"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Plans

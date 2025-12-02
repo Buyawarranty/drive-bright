@@ -995,7 +995,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md mx-auto">
             <h2 className="text-2xl font-bold text-red-800 mb-4">Vehicle Not Eligible</h2>
             <p className="text-red-600 mb-6">{vehicleValidation.errorMessage}</p>
-            <Button onClick={onBack} variant="outline" className="mr-4">
+            <Button onClick={onBack} className="mr-4 bg-gray-100 hover:bg-gray-200 text-gray-700 border-0">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Go Back
             </Button>
@@ -1012,7 +1012,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md mx-auto">
             <h2 className="text-2xl font-bold text-red-800 mb-4">Vehicle Age Restriction</h2>
             <p className="text-red-600 mb-6">{vehicleAgeError}</p>
-            <Button onClick={onBack} variant="outline" className="mr-4">
+            <Button onClick={onBack} className="mr-4 bg-gray-100 hover:bg-gray-200 text-gray-700 border-0">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Go Back
             </Button>
@@ -1034,7 +1034,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 console.log('🔙 PricingTable Back button clicked');
                 onBack();
               }}
-              className="flex items-center gap-2 text-base font-medium py-3 px-6 rounded-lg border transition-all duration-200 bg-white hover:bg-gray-50 border-gray-200 text-gray-700"
+              className="flex items-center gap-2 text-sm font-medium py-2.5 px-4 rounded-lg transition-all duration-200 bg-gray-100 hover:bg-gray-200 text-gray-700"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
