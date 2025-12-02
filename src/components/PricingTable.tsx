@@ -2138,7 +2138,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
                     <CollapsibleTrigger className="w-full mb-4">
                       <div className="flex items-center justify-between w-full border border-gray-300 rounded-lg px-4 py-3 hover:border-gray-400 transition-colors">
-                        <span className="text-lg font-medium text-gray-800">Plan benefits</span>
+                        <span className="text-lg font-medium text-gray-800">See What's Included</span>
                         <ChevronDown 
                           className={cn(
                             "w-5 h-5 text-gray-600 transition-transform duration-300",
