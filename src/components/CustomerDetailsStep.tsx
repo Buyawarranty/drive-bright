@@ -1413,7 +1413,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           </Label>
 
                           {/* Price Display */}
-                          <div className="bg-white rounded-lg p-4 mb-4 shadow-md">
+                          <div className="bg-white rounded-lg p-4 mb-4 shadow-2xl">
                             <div className="text-center">
                               <div className="text-5xl font-black text-black mb-2">£{discountedStripePrice}</div>
                               <div className="text-lg text-green-600 font-bold">Save £50 today</div>
@@ -1498,7 +1498,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           </Label>
 
                           {/* Price Display */}
-                          <div className="bg-white rounded-lg p-4 mb-4 shadow-md">
+                          <div className="bg-white rounded-lg p-4 mb-4 shadow-2xl">
                             <div className="text-center">
                               <div className="text-5xl font-black text-black mb-2">
                                 £{Math.round(discountedBumperPrice / 12)}<span className="text-xl">/month</span>
