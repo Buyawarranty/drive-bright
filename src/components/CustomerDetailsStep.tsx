@@ -1469,19 +1469,21 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
 
                    {/* Payment Methods - Conversion Focused */}
                    <div className="space-y-6">
-                     {/* Section Header */}
-                      <div className="text-center">
-                        <h3 className="text-2xl font-bold text-black mb-2">Choose How You'd Like to Pay</h3>
-                        <div className="flex items-center justify-center gap-2 text-sm text-black">
-                          <Check className="w-4 h-4 text-green-600" />
-                          <span>Secure Checkout</span>
-                        </div>
-                      </div>
+                      {/* Section Header */}
+                       <div className="text-center">
+                         <h3 className="text-2xl font-bold text-black mb-2">
+                           Choose How You'd<br />Like to Pay
+                         </h3>
+                         <div className="flex items-center justify-center gap-2 text-sm text-black">
+                           <Lock className="w-4 h-4 text-green-600" />
+                           <span>Secure Checkout</span>
+                         </div>
+                       </div>
 
                     {/* Social Proof */}
                     <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
                       <p className="text-sm font-medium text-black">
-                        <span className="font-bold">Most customers choose Pay in Full</span> for extra savings
+                        <span className="font-bold">Pay in Full</span> for extra savings
                       </p>
                     </div>
                     
