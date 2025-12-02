@@ -2086,19 +2086,29 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     
                     {/* Unified Price Section */}
                     <div className="mb-6">
-                      {/* Combined Monthly & Total Price */}
+                      {/* Combined Monthly & Total Price - Single Line */}
                       <div className="mb-2">
                         <span className="text-2xl font-bold text-black">
-                          £{displayedMonthlyPrice}/month
-                        </span>
-                        <span className="mx-2 text-xl text-gray-500">·</span>
-                        <span className="text-base text-gray-500">
-                          Total £{Math.round(displayedAnnualPrice)}
+                          £{displayedMonthlyPrice}/month · Total £{Math.round(displayedAnnualPrice)}
                         </span>
                       </div>
                       
-                      {/* Payment Details with Checkmarks */}
-                      <div className="space-y-1.5 mb-3">
+                      {/* Slashed Price & Savings - Directly Below Price */}
+                      {savingsAmount > 0 && (
+                        <div className="mb-3">
+                          <div className="text-sm mb-1">
+                            <span className="line-through text-gray-500">
+                              Was £{adjustedBasePrice}
+                            </span>
+                          </div>
+                          <div className="text-base font-semibold text-green-600">
+                            Save £{savingsAmount} with this plan
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Payment Details with Checkmarks - Below Pricing */}
+                      <div className="space-y-1.5">
                         <div className="flex items-center gap-2">
                           <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                           <span className="text-sm text-gray-700">12 payments, 0% APR</span>
@@ -2116,20 +2126,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           </div>
                         )}
                       </div>
-                      
-                      {/* Slashed Price & Savings */}
-                      {savingsAmount > 0 && (
-                        <div>
-                          <div className="text-sm mb-1">
-                            <span className="line-through text-gray-500">
-                              Was £{adjustedBasePrice}
-                            </span>
-                          </div>
-                          <div className="text-base font-semibold text-green-600">
-                            Save £{savingsAmount} with this plan
-                          </div>
-                        </div>
-                      )}
                     </div>
                     
                     {/* What's Covered Box Toggle */}
