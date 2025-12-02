@@ -125,8 +125,8 @@ const WarrantyBenefitsSection: React.FC = () => {
                   alt="Miles the Panda mascot with car" 
                   className="w-full max-w-[400px] md:max-w-[500px] lg:max-w-[600px] h-auto object-contain"
                 />
-                <p className="text-brand-dark-text font-bold text-lg md:text-xl mt-2 text-center">
-                  Warranty that works when your car doesn't!
+                <p className="text-brand-dark-text font-bold text-lg md:text-xl mt-2 text-center flex items-center justify-center gap-2">
+                  Warranty that works when your car doesn't! <Wrench className="w-5 h-5 text-brand-orange" />
                 </p>
               </div>
               
