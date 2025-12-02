@@ -8,6 +8,7 @@ import { SEOHead } from '@/components/SEOHead';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import { supabase } from '@/integrations/supabase/client';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
+import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
 
 const Protected = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -786,6 +787,8 @@ const Protected = () => {
           </div>
         </div>
       </section>
+      
+      <ScrollToTopButton />
     </div>
   );
 };
