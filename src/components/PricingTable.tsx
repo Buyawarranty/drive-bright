@@ -2163,6 +2163,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
                               </div>
                             );
                           })}
+                          
+                          {/* Policy Details Link */}
+                          <div className="pt-3 border-t border-gray-200 mt-3">
+                            <a 
+                              href="https://buyawarranty.co.uk/what-is-covered/" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-sm text-orange-600 hover:text-orange-700 font-medium underline inline-flex items-center gap-1"
+                            >
+                              See full policy details
+                              <ArrowRight className="w-3 h-3" />
+                            </a>
+                          </div>
                         </div>
                       </div>
                       
