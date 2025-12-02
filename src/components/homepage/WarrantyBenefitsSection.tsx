@@ -11,7 +11,7 @@ const WarrantyBenefitsSection: React.FC = () => {
   const leftColumnCategories = [
     {
       icon: Settings,
-      title: "Mechanical",
+      title: "Mechanical & Electrical",
       items: ["Full Mechanical & Electrical Cover", "Engine, Gearbox, Clutch, Drivetrain & Turbo", "Brakes, Steering, Suspension, Fuel, Cooling & Emissions"]
     },
     {
