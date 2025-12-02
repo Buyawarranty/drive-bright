@@ -47,7 +47,7 @@ const addOnPackages = [
     key: 'tyre',
     icon: '🛞',
     title: 'Tyre Cover',
-    shortDescription: 'Comprehensive protection for accidental, malicious, and puncture-related tyre damage.',
+    shortDescription: 'Comprehensive cover for accidental, malicious, and puncture-related tyre damage.',
     price: 7.99,
     priceType: 'monthly',
     bulletPoints: [
