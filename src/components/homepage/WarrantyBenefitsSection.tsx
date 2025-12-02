@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, ExternalLink, ArrowUp, Settings, Cpu, Zap, Car, Wrench, Shield, Lock } from 'lucide-react';
+import { Check, ArrowUp, Settings, Cpu, Zap, Wrench, Lock } from 'lucide-react';
 import warrantyPandaMascot from '@/assets/warranty-panda-mascot.png';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 
@@ -118,11 +118,10 @@ const WarrantyBenefitsSection: React.FC = () => {
                 href="https://buyawarranty.co.uk/what-is-covered/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 bg-brand-deep-blue hover:bg-blue-800 text-white font-bold px-6 py-3 text-base rounded-lg shadow-lg transition-all animate-[breathing_3s_ease-in-out_infinite]"
+                className="inline-flex items-center justify-center gap-3 bg-brand-deep-blue hover:bg-blue-800 text-white font-bold px-6 py-3 text-base rounded-lg shadow-lg transition-all animate-[breathing_3s_ease-in-out_infinite]"
               >
-                <Shield className="w-5 h-5" />
-                See what's covered
-                <ExternalLink className="w-4 h-4" />
+                What's covered
+                <ArrowUp className="w-6 h-6 rotate-45" />
               </a>
               
               {/* Panda Image between buttons */}
@@ -139,11 +138,10 @@ const WarrantyBenefitsSection: React.FC = () => {
               
               <button
                 onClick={scrollToTop}
-                className="inline-flex items-center justify-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 py-3 text-base rounded-lg shadow-lg transition-all animate-[breathing_3s_ease-in-out_infinite]"
+                className="inline-flex items-center justify-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 py-3 text-base rounded-lg shadow-lg transition-all animate-[breathing_3s_ease-in-out_infinite]"
               >
-                <Car className="w-5 h-5" />
-                Get my instant quote
-                <ArrowUp className="w-4 h-4" />
+                Get my quote
+                <ArrowUp className="w-6 h-6" />
               </button>
             </div>
 
