@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, CheckCircle, Edit, User, CreditCard, MapPin, X, ArrowUp, Check, ArrowRight } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Edit, User, CreditCard, MapPin, X, ArrowUp, Check, ArrowRight, Lock, Car } from 'lucide-react';
 import { PostcodeAutocomplete } from '@/components/ui/uk-postcode-autocomplete';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -837,9 +837,27 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
             <div className="grid lg:grid-cols-2 gap-8">
               {/* Left Column - Personal Details Form */}
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-6">Tell us about yourself</h3>
+                {/* Heading with Security Badge */}
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="text-xl font-bold text-gray-900">Your Details for Secure Coverage</h3>
+                    <div className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200">
+                      <Lock className="w-3 h-3" />
+                      <span className="font-medium">Secure & Encrypted</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    We need this to set up your warranty and keep your vehicle protected. Your details are safe and encrypted.
+                  </p>
+                </div>
                 
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Personal Information Section */}
+                  <div className="space-y-4">
+                    <div className="border-b border-gray-200 pb-2">
+                      <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Personal Information</h4>
+                    </div>
+                  
                   {/* Name Fields */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -847,7 +865,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       <div className="relative">
                         <Input
                           id="first_name"
-                          placeholder="Enter first name"
+                          placeholder="Enter your first name"
                           value={customerData.first_name}
                           onChange={(e) => handleInputChange('first_name', e.target.value)}
                           required
@@ -870,7 +888,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       <div className="relative">
                         <Input
                           id="last_name"
-                          placeholder="Enter last name"
+                          placeholder="Enter your surname"
                           value={customerData.last_name}
                           onChange={(e) => handleInputChange('last_name', e.target.value)}
                           required
@@ -890,9 +908,12 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     </div>
                   </div>
 
+                  </div>
+                  
                   {/* Email */}
                   <div>
                     <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email Address *</Label>
+                    <p className="text-xs text-gray-500 mt-0.5">For your policy documents</p>
                     <div className="relative">
                       <Input
                         id="email"
@@ -919,11 +940,12 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                   {/* Phone */}
                   <div>
                     <Label htmlFor="phone" className="text-sm font-medium text-gray-700">Phone Number *</Label>
+                    <p className="text-xs text-gray-500 mt-0.5">e.g., 07123 456789 (UK mobile or landline)</p>
                     <div className="relative">
                       <Input
                         id="phone"
                         type="tel"
-                        placeholder="e.g., 07123 456789 or 01234 567890"
+                        placeholder=""
                         value={customerData.phone}
                         onChange={(e) => handleInputChange('phone', e.target.value)}
                         required
@@ -940,17 +962,19 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     {fieldErrors.phone && (
                       <p className="text-red-500 text-sm mt-1">{fieldErrors.phone}</p>
                     )}
-                    <p className="text-xs text-gray-500 mt-1">UK mobile or landline numbers only</p>
                   </div>
 
-                  {/* Address Fields */}
+                  {/* Address Section */}
                   <div className="space-y-4">
+                    <div className="border-b border-gray-200 pb-2 pt-2">
+                      <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Address</h4>
+                    </div>
                     <div>
                       <Label htmlFor="address_line_1" className="text-sm font-medium text-gray-700">Address Line 1 *</Label>
                       <div className="relative">
                         <Input
                           id="address_line_1"
-                          placeholder="Enter your address"
+                          placeholder="Enter your street address"
                           value={customerData.address_line_1}
                           onChange={(e) => handleInputChange('address_line_1', e.target.value)}
                           required
@@ -996,7 +1020,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                 handleInputChange('address_line_1', address.street);
                               }
                             }}
-                            placeholder="e.g., SW1A 1AA"
+                            placeholder="e.g., SW1A 1AA (auto-fills your town)"
                             required
                             className={`${
                               showValidation && fieldErrors.postcode 
@@ -1012,10 +1036,11 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       </div>
                       <div>
                         <Label htmlFor="city" className="text-sm font-medium text-gray-700">City/Town *</Label>
+                        <p className="text-xs text-gray-500 mt-0.5">This may auto-fill from your postcode</p>
                         <div className="relative">
                           <Input
                             id="city"
-                            placeholder="Enter your city/town"
+                            placeholder="Enter your city or town"
                             value={customerData.city}
                             onChange={(e) => handleInputChange('city', e.target.value)}
                             required
@@ -1032,7 +1057,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         {fieldErrors.city && (
                           <p className="text-red-500 text-sm mt-1">{fieldErrors.city}</p>
                         )}
-                        <p className="text-xs text-gray-500 mt-1">This may auto-fill from your postcode</p>
                       </div>
                     </div>
                   </div>
