@@ -151,11 +151,6 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Reassurance Microcopy */}
-      <div className="text-center text-sm text-gray-600 bg-green-50 border border-green-200 rounded-lg py-3 px-4">
-        <span className="font-semibold text-green-700">✓</span> Only 12 interest-free payments
-      </div>
-
       <div className="grid md:grid-cols-3 gap-6">
       {addOnPackages.map((addon) => {
         const isIncluded = isAutoIncluded(addon.key);
