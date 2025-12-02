@@ -1472,15 +1472,11 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     </div>
                   </div>
 
-                   {/* Terms and Conditions Notice */}
-                   <div className="text-center mb-6">
-                     <p className="text-sm text-gray-500">
-                       By completing your purchase, you confirm you've read and accept the Warranty Terms & Conditions
-                     </p>
-                   </div>
+                </div>
+              </div>
 
-                   {/* Payment Methods - Conversion Focused (order-3 on mobile) */}
-                   <div className="space-y-6 order-3 lg:order-none">
+              {/* Payment Methods Section (order-3 on mobile) */}
+              <div className="order-3 lg:col-span-2 space-y-6">
                       {/* Section Header */}
                        <div className="text-center">
                          <h3 className="text-2xl font-bold text-black mb-2">
@@ -1749,8 +1745,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         </p>
                       </div>
                     </div>
-                  </div>
-                </div>
               </div>
             </div>
           </CardContent>
