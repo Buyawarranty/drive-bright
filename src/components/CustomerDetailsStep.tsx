@@ -1415,8 +1415,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           {/* Price Display */}
                           <div className="bg-white rounded-lg p-4 mb-4 shadow-md">
                             <div className="text-center">
-                              <div className="text-5xl font-black text-black mb-2">£{discountedStripePrice} <span className="text-lg text-green-600 font-bold">Save £50 today</span></div>
-                              <div className="text-sm text-black mb-2">Today</div>
+                              <div className="text-5xl font-black text-black mb-2">£{discountedStripePrice}</div>
+                              <div className="text-lg text-green-600 font-bold">Save £50 today</div>
                             </div>
                           </div>
 
