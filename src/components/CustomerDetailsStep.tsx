@@ -486,28 +486,46 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
     // UK postcode validation
     const postcodeRegex = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
     
-    if (!customerData.first_name.trim()) errors.first_name = 'First name is required';
-    if (!customerData.last_name.trim()) errors.last_name = 'Last name is required';
+    if (!customerData.first_name.trim()) {
+      errors.first_name = 'Please enter your first name';
+    } else if (customerData.first_name.trim().length < 2) {
+      errors.first_name = 'First name must be at least 2 characters';
+    }
+    
+    if (!customerData.last_name.trim()) {
+      errors.last_name = 'Please enter your last name';
+    } else if (customerData.last_name.trim().length < 2) {
+      errors.last_name = 'Last name must be at least 2 characters';
+    }
     
     if (!customerData.email.trim()) {
-      errors.email = 'Email is required';
+      errors.email = 'Email address is required for your policy documents';
     } else if (!emailRegex.test(customerData.email)) {
-      errors.email = 'Please enter a valid email address';
+      errors.email = 'Please enter a valid email (e.g., name@example.com)';
     }
     
     if (!customerData.phone.trim()) {
-      errors.phone = 'Phone number is required';
+      errors.phone = 'Phone number is required to contact you about your warranty';
     } else if (!phoneRegex.test(customerData.phone)) {
-      errors.phone = 'Please enter a valid UK phone number';
+      errors.phone = 'Please enter a valid UK phone number (e.g., 07123 456789)';
     }
     
-    if (!customerData.address_line_1.trim()) errors.address_line_1 = 'Address is required';
-    if (!customerData.city.trim()) errors.city = 'City is required';
+    if (!customerData.address_line_1.trim()) {
+      errors.address_line_1 = 'Street address is required for your policy';
+    } else if (customerData.address_line_1.trim().length < 3) {
+      errors.address_line_1 = 'Please enter a complete street address';
+    }
+    
+    if (!customerData.city.trim()) {
+      errors.city = 'City or town is required';
+    } else if (customerData.city.trim().length < 2) {
+      errors.city = 'Please enter a valid city or town name';
+    }
     
     if (!customerData.postcode.trim()) {
       errors.postcode = 'Postcode is required';
     } else if (!postcodeRegex.test(customerData.postcode)) {
-      errors.postcode = 'Please enter a valid UK postcode';
+      errors.postcode = 'Please enter a valid UK postcode (e.g., SW1A 1AA)';
     }
 
     setFieldErrors(errors);
@@ -1028,7 +1046,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       </div>
                       <div>
                         <Label htmlFor="city" className="text-sm font-medium text-gray-700">City/Town *</Label>
-                        <p className="text-xs text-gray-500 mt-0.5">This may auto-fill from your postcode</p>
                         <div className="relative">
                           <Input
                             id="city"
