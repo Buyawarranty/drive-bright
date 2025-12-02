@@ -1509,14 +1509,14 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
 
                           {/* Heading */}
                           <Label htmlFor="stripe-option" className="block text-center cursor-pointer mb-3">
-                            <h4 className="text-xl font-bold text-black mb-1">Pay in Full & Save £50</h4>
+                            <h4 className="text-xl font-bold text-black mb-1">Pay in Full</h4>
                             <p className="text-sm text-black">One-time payment today</p>
                           </Label>
 
                           {/* Price Display */}
                           <div className="bg-white rounded-lg p-4 mb-4 shadow-md">
                             <div className="text-center">
-                              <div className="text-5xl font-black text-black mb-2">£{discountedStripePrice}</div>
+                              <div className="text-5xl font-black text-black mb-2">£{discountedStripePrice} <span className="text-lg text-green-600 font-bold">Save £50</span></div>
                               <div className="text-sm text-black mb-2">Today</div>
                             </div>
                           </div>
