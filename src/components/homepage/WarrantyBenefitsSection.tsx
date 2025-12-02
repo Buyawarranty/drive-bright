@@ -57,15 +57,6 @@ const WarrantyBenefitsSection: React.FC = () => {
               </p>
             </div>
 
-            {/* Trust & Reassurance */}
-            <div className="flex flex-col sm:flex-row items-center gap-3 mb-6 justify-center lg:justify-start">
-              <TrustpilotHeader className="flex-shrink-0" />
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Lock className="w-4 h-4 text-green-600" />
-                <span>Your details are encrypted and safe.</span>
-              </div>
-            </div>
-
             {/* Two Column Coverage Layout */}
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               {/* Left Column - Mechanical, Tech & Safety, EV & Hybrid */}
@@ -132,8 +123,8 @@ const WarrantyBenefitsSection: React.FC = () => {
                   alt="Miles the Panda mascot with car" 
                   className="w-full max-w-[400px] md:max-w-[500px] lg:max-w-[600px] h-auto object-contain"
                 />
-                <p className="text-brand-orange font-bold text-lg md:text-xl mt-2">
-                  Warranty that works when your car doesn't!
+                <p className="text-brand-dark-text font-bold text-lg md:text-xl mt-2 text-center">
+                  Warranty that works when your car doesn't! 🐼
                 </p>
               </div>
               
@@ -145,6 +136,15 @@ const WarrantyBenefitsSection: React.FC = () => {
                 Get my instant quote
                 <ArrowUp className="w-4 h-4" />
               </button>
+            </div>
+
+            {/* Trust & Reassurance - moved below buttons */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 mt-6 justify-center">
+              <TrustpilotHeader className="flex-shrink-0" />
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Lock className="w-4 h-4 text-green-600" />
+                <span>Your details are encrypted and safe.</span>
+              </div>
             </div>
           </div>
         </div>
