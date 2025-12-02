@@ -311,7 +311,7 @@ const CustomerDashboard = () => {
     const premiumPlans = [
       'basic', 'Basic', 'Basic Car Plan',
       'gold', 'Gold', 'Gold Car Plan', 
-      'platinum', 'Platinum', 'Platinum Car Plan',
+      'platinum', 'Platinum', 'Platinum Vehicle Plan',
       'premium', 'Premium', 'Premium Car Plan'
     ];
     
