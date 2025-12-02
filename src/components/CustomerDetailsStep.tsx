@@ -1048,7 +1048,17 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                 {/* Order Summary Card */}
                 <div className="bg-white rounded-lg shadow-sm p-6 border">
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl font-bold text-black">Your {planName} Plan is Ready</h2>
+                    <h2 className="text-2xl font-bold text-black">
+                      {(() => {
+                        // Format plan name: "Your platinum vehicle plan is ready"
+                        const formattedPlanName = planName
+                          .toLowerCase()
+                          .replace(/car/gi, 'vehicle')
+                          .replace(/plan/gi, '')
+                          .trim();
+                        return `Your ${formattedPlanName} plan is ready`;
+                      })()}
+                    </h2>
                     <Button 
                       variant="outline" 
                       size="sm"
