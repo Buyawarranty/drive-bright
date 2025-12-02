@@ -42,18 +42,21 @@ const WarrantyBenefitsSection: React.FC = () => {
           <div>
             {/* Section Header */}
             <div className="text-center lg:text-left mb-6">
-              <h2 className="text-2xl md:text-4xl font-bold text-brand-dark-text mb-3 flex items-center justify-center lg:justify-start gap-2">
-                Complete Car Warranty. Zero Worries.
+              <h2 className="text-2xl md:text-4xl font-bold text-brand-dark-text mb-1 flex items-center justify-center lg:justify-start gap-2">
+                Complete Car Warranty.
               </h2>
-              <p className="text-lg md:text-xl font-bold mb-2">
-                <span className="text-green-600">Warranty that works when your car doesn't!</span>
-              </p>
-              <p className="text-base md:text-lg">
-                <span className="text-brand-orange font-bold">Superior Protection.</span>{' '}
-                <span className="text-brand-deep-blue font-bold">Affordable Prices.</span>{' '}
-                <span className="text-green-600 font-bold">Instant Cover.</span>
+              <h2 className="text-2xl md:text-4xl font-bold text-brand-dark-text mb-3 flex items-center justify-center lg:justify-start gap-2">
+                Zero Worries.
+              </h2>
+              <p className="text-base md:text-lg text-gray-500">
+                Superior Protection. Affordable Prices. Instant Cover.
               </p>
             </div>
+
+            {/* Coverage Section Header */}
+            <h3 className="text-xl md:text-2xl font-bold text-brand-dark-text mb-4">
+              Everything You Need, Covered:
+            </h3>
 
             {/* Two Column Coverage Layout */}
             <div className="grid md:grid-cols-2 gap-6 mb-6">
