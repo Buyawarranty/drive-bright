@@ -1630,7 +1630,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           </Label>
 
                           {/* Price Display - Clean & Integrated */}
-                          <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-100">
+                          <div className="bg-orange-50 rounded-lg p-4 mb-4 border border-orange-100">
                             <div className="text-center">
                               <div className="text-5xl font-black text-black mb-2">
                                 £{Math.round(discountedBumperPrice / 12)}<span className="text-xl">/month</span>
