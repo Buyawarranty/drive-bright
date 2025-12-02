@@ -1614,7 +1614,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
 
                           {/* Heading */}
                           <Label htmlFor="bumper-option" className="block text-center cursor-pointer mb-3">
-                            <h4 className="text-xl font-bold text-black mb-1">Spread the Cost – £{Math.round(discountedBumperPrice / 12)}/month</h4>
+                            <h4 className="text-xl font-bold text-black mb-1">Spread the Cost</h4>
                             <p className="text-sm text-black">Interest-free monthly instalments</p>
                           </Label>
 
