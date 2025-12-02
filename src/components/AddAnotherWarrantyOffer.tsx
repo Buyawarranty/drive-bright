@@ -66,7 +66,7 @@ const AddAnotherWarrantyOffer: React.FC<AddAnotherWarrantyOfferProps> = ({ onAdd
         
         {!isSelected && (
           <p className="text-xs text-gray-500 mt-2 text-center">
-            Takes less than 30 seconds
+            Takes less than 60 seconds
           </p>
         )}
         
