@@ -1,6 +1,7 @@
 import React from 'react';
-import { Check, ExternalLink, ArrowUp, Settings, Cpu, Zap, Car, Wrench, Shield, Star } from 'lucide-react';
+import { Check, ExternalLink, ArrowUp, Settings, Cpu, Zap, Car, Wrench, Shield, Lock } from 'lucide-react';
 import warrantyPhoneCar from '@/assets/warranty-phone-car.png';
+import TrustpilotHeader from '@/components/TrustpilotHeader';
 
 const WarrantyBenefitsSection: React.FC = () => {
   const scrollToTop = () => {
@@ -12,37 +13,31 @@ const WarrantyBenefitsSection: React.FC = () => {
       icon: Settings,
       title: "Mechanical",
       items: [
-        "Full Mechanical & Electrical Cover",
-        "Engine, Gearbox, Clutch, Drivetrain & Turbo",
-        "Brakes, Steering, Suspension, Fuel, Cooling & Emissions"
+        ["Full Mechanical & Electrical Cover", "Engine, Gearbox, Clutch, Drivetrain & Turbo"],
+        ["Brakes, Steering, Suspension, Fuel, Cooling & Emissions"]
       ]
     },
     {
       icon: Cpu,
       title: "Tech & Safety",
       items: [
-        "Modern Tech & Safety – Sensors, Airbags, Multimedia, Cameras",
-        "Electrical Systems – ECUs, Wiring, Lighting, Charging"
+        ["Modern Tech & Safety – Sensors, Airbags, Multimedia, Cameras"],
+        ["Electrical Systems – ECUs, Wiring, Lighting, Charging"]
       ]
     },
     {
       icon: Zap,
       title: "EV & Hybrid",
       items: [
-        "Hybrid & EV Components – Motors, Batteries, Inverters, Charging Units"
+        ["Hybrid & EV Components – Motors, Batteries, Inverters, Charging Units"]
       ]
     },
     {
       icon: Wrench,
       title: "Extras",
       items: [
-        "Labour & Diagnostics Included",
-        "Generous Repair Limits",
-        "Wear & Tear Protection",
-        "Consequential Damage Cover",
-        "MOT Fee Cover",
-        "Breakdown Recovery",
-        "Vehicle Rental"
+        ["Labour & Diagnostics Included", "Generous Repair Limits", "Wear & Tear Protection"],
+        ["Consequential Damage Cover", "MOT Fee Cover", "Breakdown Recovery", "Vehicle Rental"]
       ]
     }
   ];
@@ -55,44 +50,48 @@ const WarrantyBenefitsSection: React.FC = () => {
           {/* Left Content - 3/4 width */}
           <div className="lg:col-span-3">
             {/* Section Header */}
-            <div className="text-center lg:text-left mb-8">
-              <h2 className="text-2xl md:text-4xl font-bold text-brand-dark-text mb-3">
-                Complete Car Warranty. Zero Worries.
+            <div className="text-center lg:text-left mb-6">
+              <h2 className="text-2xl md:text-4xl font-bold text-brand-dark-text mb-3 flex items-center justify-center lg:justify-start gap-2">
+                Complete Car Warranty. Zero Worries. <span className="text-2xl md:text-3xl">🐼</span>
               </h2>
-              <p className="text-lg md:text-xl text-green-600 font-semibold mb-2">
-                Warranty that works when your car doesn't!
+              <p className="text-lg md:text-xl font-bold mb-2">
+                <span className="text-green-600">Warranty that works when your car doesn't!</span>
               </p>
-              <p className="text-base md:text-lg text-gray-700">
-                <span className="text-brand-orange font-semibold">Superior Protection.</span>{' '}
-                <span className="text-brand-deep-blue font-semibold">Affordable Prices.</span>{' '}
-                <span className="text-green-600 font-semibold">Instant Cover.</span>
+              <p className="text-base md:text-lg">
+                <span className="text-brand-orange font-bold">Superior Protection.</span>{' '}
+                <span className="text-brand-deep-blue font-bold">Affordable Prices.</span>{' '}
+                <span className="text-green-600 font-bold">Instant Cover.</span>
               </p>
             </div>
 
-            {/* Trust Signal */}
-            <div className="flex items-center gap-2 mb-6 justify-center lg:justify-start">
-              <div className="flex items-center gap-1 bg-white px-3 py-1.5 rounded-full shadow-sm border border-gray-200">
-                <Star className="w-4 h-4 text-green-500 fill-green-500" />
-                <span className="text-sm font-semibold text-gray-800">Rated Excellent</span>
-                <span className="text-xs text-gray-500">on Trustpilot</span>
+            {/* Trust & Reassurance */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 mb-6 justify-center lg:justify-start">
+              <TrustpilotHeader className="flex-shrink-0" />
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Lock className="w-4 h-4 text-green-600" />
+                <span>Your details are encrypted and safe. Instant cover starts today.</span>
               </div>
             </div>
 
             {/* Coverage Categories */}
-            <div className="grid md:grid-cols-2 gap-4 mb-8">
+            <div className="grid md:grid-cols-2 gap-4 mb-6">
               {coverageCategories.map((category, idx) => (
-                <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-brand-orange/10 flex items-center justify-center">
-                      <category.icon className="w-4 h-4 text-brand-orange" />
+                    <div className="w-9 h-9 rounded-lg bg-brand-orange/10 flex items-center justify-center">
+                      <category.icon className="w-5 h-5 text-brand-orange" />
                     </div>
-                    <h3 className="font-bold text-brand-dark-text">{category.title}</h3>
+                    <h3 className="font-bold text-brand-dark-text text-lg">{category.title}</h3>
                   </div>
                   <div className="space-y-2">
-                    {category.items.map((item, itemIdx) => (
-                      <div key={itemIdx} className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-gray-700">{item}</p>
+                    {category.items.map((row, rowIdx) => (
+                      <div key={rowIdx} className={`grid ${row.length > 1 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'} gap-x-3 gap-y-1`}>
+                        {row.map((item, itemIdx) => (
+                          <div key={itemIdx} className="flex items-start gap-2">
+                            <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                            <p className="text-sm text-gray-700">{item}</p>
+                          </div>
+                        ))}
                       </div>
                     ))}
                   </div>
@@ -101,8 +100,8 @@ const WarrantyBenefitsSection: React.FC = () => {
             </div>
 
             {/* And so much more */}
-            <p className="text-center lg:text-left text-gray-600 font-medium mb-6">
-              And so much more….
+            <p className="text-center lg:text-left text-gray-600 font-medium mb-6 flex items-center justify-center lg:justify-start gap-2">
+              And so much more…. <span className="text-lg">🐼</span>
             </p>
 
             {/* CTA Buttons */}
