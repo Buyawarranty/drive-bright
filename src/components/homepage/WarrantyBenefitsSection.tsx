@@ -25,12 +25,14 @@ const WarrantyBenefitsSection: React.FC = () => {
     {
       icon: Cpu,
       title: "Tech & Safety",
-      items: ["Modern Tech & Safety – Sensors, Airbags, Multimedia, Cameras", "Electrical Systems – ECUs, Wiring, Lighting, Charging"]
+      items: ["Modern Tech & Safety – Sensors, Airbags, Multimedia, Cameras", "Electrical Systems – ECUs, Wiring, Lighting, Charging"],
+      showMore: false
     },
     {
       icon: Zap,
       title: "EV & Hybrid",
-      items: ["Hybrid & EV Components – Motors, Batteries, Inverters, Charging Units"]
+      items: ["Hybrid & EV Components – Motors, Batteries, Inverters, Charging Units"],
+      showMore: true
     }
   ];
 
@@ -99,12 +101,12 @@ const WarrantyBenefitsSection: React.FC = () => {
                           <p className="text-sm text-gray-700">{item}</p>
                         </div>
                       ))}
+                      {category.showMore && (
+                        <p className="text-gray-700 font-bold mt-2">And so much more….</p>
+                      )}
                     </div>
                   </div>
                 ))}
-                <p className="text-gray-600 font-medium flex items-center gap-2">
-                  And so much more….
-                </p>
               </div>
             </div>
 
