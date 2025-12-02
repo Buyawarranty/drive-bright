@@ -2022,13 +2022,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
               const displayedAnnualPrice = discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12);
               const savingsAmount = durationId === '24months' ? 100 : durationId === '36months' ? 200 : 0;
               
-               return (
+              return (
                 <div
                   key={durationId}
-                  className={`relative p-6 rounded-lg border-2 transition-all bg-white pointer-events-auto ${
+                  onClick={() => {
+                    console.log('🎯 Duration card clicked:', { durationId, currentPaymentType: paymentType });
+                    setPaymentType(durationId);
+                  }}
+                  className={`relative p-6 rounded-lg border-2 transition-all bg-white pointer-events-auto cursor-pointer hover:shadow-lg ${
                     isSelected
                       ? 'border-orange-500 shadow-lg shadow-orange-500/30'
-                      : 'border-gray-300'
+                      : 'border-gray-300 hover:border-orange-300'
                   }`}
                   style={{ position: 'relative', zIndex: 1 }}
                 >
@@ -2176,28 +2180,24 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </CollapsibleContent>
                   </Collapsible>
                   
-                  {/* CTA Button */}
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      console.log('🎯 Duration button clicked:', { durationId, currentPaymentType: paymentType });
-                      setPaymentType(durationId);
-                    }}
-                    className={`w-full py-4 px-4 rounded-lg text-center font-bold text-lg transition-colors cursor-pointer pointer-events-auto ${
+                  {/* CTA Button - Now just shows selection state */}
+                  <div
+                    className={`w-full py-4 px-4 rounded-lg text-center font-bold text-lg transition-colors pointer-events-none ${
                       isSelected
                         ? 'bg-green-600 border-2 border-green-600 text-white'
-                        : 'bg-orange-500 text-white hover:bg-orange-600'
+                        : 'bg-orange-500 text-white'
                     }`}
-                    style={{ position: 'relative', zIndex: 10 }}
                   >
                     {isSelected ? 'Selected' : 'Secure Your Cover'}
-                  </button>
+                  </div>
                   
                   {/* Email Quote Link */}
                   <button
-                    onClick={() => handleOpenEmailQuoteDialog(durationId)}
-                    className="w-full mt-3 text-center text-base text-gray-600 hover:text-orange-600 underline transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenEmailQuoteDialog(durationId);
+                    }}
+                    className="w-full mt-3 text-center text-base text-gray-600 hover:text-orange-600 underline transition-colors pointer-events-auto"
                   >
                     ✉️ Email me this quote
                   </button>
