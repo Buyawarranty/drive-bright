@@ -880,12 +880,12 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
         <div className="flex justify-between items-center mb-8">
           <Button
             onClick={onBack}
-            className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 border-0"
+            className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 border-0 flex-shrink-0"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Plans
+            <span className="hidden sm:inline">Back to Plans</span>
           </Button>
-          <a href="/" className="hover:opacity-80 transition-opacity">
+          <a href="/" className="hover:opacity-80 transition-opacity absolute left-1/2 -translate-x-1/2">
             <img 
               src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" 
               alt="Buy a Warranty" 
