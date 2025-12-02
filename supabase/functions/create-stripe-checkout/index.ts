@@ -255,10 +255,24 @@ serve(async (req) => {
     console.log("STRIPE DEBUG: Customer data:", { stripeCustomerId, customerEmail });
     
     // Create checkout session
+    // Build success URL with all parameters needed for GA tracking
+    const successUrlParams = new URLSearchParams({
+      plan: planType,
+      payment: paymentType,
+      session_id: '{CHECKOUT_SESSION_ID}',
+      final_amount: totalAmount.toString(),
+      email: customerEmail,
+      mobile: customerData?.phone || customerData?.mobile || '',
+      first_name: customerData?.first_name || '',
+      last_name: customerData?.last_name || '',
+      street: customerData?.address_line_1 || '',
+      postcode: customerData?.postcode || ''
+    });
+    
     const sessionData: any = {
       line_items: lineItems,
       mode: "payment",
-      success_url: `${origin}/thank-you?plan=${planType}&payment=${paymentType}&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${origin}/thank-you?${successUrlParams.toString()}`,
       cancel_url: `${origin}/?step=4&restore=${encodeURIComponent(btoa(JSON.stringify({
         regNumber: vehicleData?.regNumber || customerData?.vehicle_reg || '',
         email: customerData?.email || '',
@@ -298,6 +312,8 @@ serve(async (req) => {
         voluntary_excess: voluntaryExcess.toString(),
         customer_email: customerEmail,
         original_amount: totalAmount.toString(),
+        final_amount: totalAmount.toString(),
+        discount_code: discountCode || '',
         claim_limit: claimLimit?.toString() || getMaxClaimAmount(planData.name, paymentType),
         seasonal_bonus_months: seasonalBonusMonths.toString(),
         // Add-ons data - using correct field names that match handle-successful-payment
