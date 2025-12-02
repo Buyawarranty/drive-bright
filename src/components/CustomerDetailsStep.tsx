@@ -1443,7 +1443,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               e.stopPropagation();
                               setPaymentMethod('stripe');
                             }}
-                            className={`w-full font-bold py-3 rounded-lg transition-colors ${
+                            className={`w-full font-bold py-3 rounded-lg transition-colors shadow-lg ${
                               paymentMethod === 'stripe'
                                 ? 'bg-green-600 hover:bg-green-700 text-white'
                                 : 'bg-white hover:bg-green-600 text-black hover:text-white border-2 border-gray-300'
@@ -1536,7 +1536,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               e.stopPropagation();
                               setPaymentMethod('bumper');
                             }}
-                            className={`w-full font-bold py-3 rounded-lg transition-colors ${
+                            className={`w-full font-bold py-3 rounded-lg transition-colors shadow-lg ${
                               paymentMethod === 'bumper'
                                 ? 'bg-green-600 hover:bg-green-700 text-white'
                                 : 'bg-white hover:bg-green-600 text-black hover:text-white border-2 border-gray-300'
