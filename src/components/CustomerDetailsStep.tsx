@@ -858,7 +858,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                   {/* Personal Information Section */}
                   <div className="space-y-4">
                     <div className="border-b border-gray-200 pb-2">
-                      <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Personal Information</h4>
+                      <h4 className="text-sm font-semibold text-gray-900 tracking-wide">Personal information</h4>
                     </div>
                   
                   {/* Name Fields */}
