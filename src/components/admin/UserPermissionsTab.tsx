@@ -40,7 +40,7 @@ export const UserPermissionsTab = () => {
     email: '',
     firstName: '',
     lastName: '',
-    role: 'guest' as 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer',
+    role: 'guest' as 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales',
     permissions: {} as Record<string, boolean>
   });
 
@@ -194,6 +194,7 @@ export const UserPermissionsTab = () => {
       case 'member': return <Users className="h-4 w-4" />;
       case 'viewer': return <Eye className="h-4 w-4" />;
       case 'blog_writer': return <UserPlus className="h-4 w-4" />;
+      case 'sales': return <Users className="h-4 w-4" />;
       default: return <UserPlus className="h-4 w-4" />;
     }
   };
@@ -204,6 +205,7 @@ export const UserPermissionsTab = () => {
       case 'member': return 'default';
       case 'viewer': return 'secondary';
       case 'blog_writer': return 'default';
+      case 'sales': return 'default';
       default: return 'outline';
     }
   };
@@ -281,11 +283,12 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="viewer">Viewer - Read-only access</SelectItem>
                     <SelectItem value="guest">Guest - Minimal access</SelectItem>
                     <SelectItem value="blog_writer">Blog Writer - Blog Writing access only</SelectItem>
+                    <SelectItem value="sales">Sales - Sales team access</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {inviteData.role !== 'admin' && inviteData.role !== 'blog_writer' && (
+              {inviteData.role !== 'admin' && inviteData.role !== 'blog_writer' && inviteData.role !== 'sales' && (
                 <div className="space-y-4">
                   <Label>Permissions</Label>
                   {Object.entries(groupedPermissions).map(([category, categoryPermissions]) => (
