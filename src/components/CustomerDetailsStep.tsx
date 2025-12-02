@@ -842,13 +842,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
               <div>
                 {/* Heading with Security Badge */}
                 <div className="mb-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-xl font-bold text-gray-900">Almost done! Just confirm your details</h3>
-                    <div className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200">
-                      <Lock className="w-3 h-3" />
-                      <span className="font-medium">Secure & Encrypted</span>
-                    </div>
-                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Almost done! Just confirm your details</h3>
                   <p className="text-sm text-gray-600">
                     We need this to set up your warranty and keep your vehicle protected. Your details are safe and encrypted.
                   </p>
@@ -1388,15 +1382,21 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                    </div>
 
                    {/* Payment Methods - Conversion Focused */}
-                  <div className="space-y-6">
-                    {/* Section Header */}
-                    <div className="text-center">
-                      <h3 className="text-2xl font-bold text-black mb-2">Choose How You'd Like to Pay</h3>
-                      <div className="flex items-center justify-center gap-2 text-sm text-black">
-                        <Check className="w-4 h-4 text-green-600" />
-                        <span>Secure Checkout</span>
-                      </div>
-                    </div>
+                   <div className="space-y-6">
+                     {/* Section Header */}
+                     <div className="text-center">
+                       <h3 className="text-2xl font-bold text-black mb-2">Choose How You'd Like to Pay</h3>
+                       <div className="flex items-center justify-center gap-2 mb-2">
+                         <div className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200">
+                           <Lock className="w-3 h-3" />
+                           <span className="font-medium">Secure & Encrypted</span>
+                         </div>
+                       </div>
+                       <div className="flex items-center justify-center gap-2 text-sm text-black">
+                         <Check className="w-4 h-4 text-green-600" />
+                         <span>Secure Checkout</span>
+                       </div>
+                     </div>
 
                     {/* Social Proof */}
                     <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
