@@ -28,14 +28,9 @@ const AddAnotherWarrantyOffer: React.FC<AddAnotherWarrantyOfferProps> = ({ onAdd
             <Car className="w-5 h-5 text-orange-600" />
           </div>
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Add Another Vehicle & Save 10% Today
-              </h3>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
-                Save 10%
-              </span>
-            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">
+              Add Another Vehicle & Save 10% Today
+            </h3>
             <p className="text-sm text-gray-600">
               Protect all your vehicles under one account and enjoy instant savings.
             </p>
