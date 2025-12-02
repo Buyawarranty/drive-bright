@@ -12,12 +12,16 @@ const WarrantyBenefitsSection: React.FC = () => {
     {
       icon: Settings,
       title: "Mechanical & Electrical",
-      items: ["Full Mechanical & Electrical Cover", "Engine, Gearbox, Clutch, Drivetrain & Turbo", "Brakes, Steering, Suspension, Fuel, Cooling & Emissions"]
+      headerText: "Everything You Need, Covered:",
+      items: ["Full Mechanical & Electrical Cover", "Engine, Gearbox, Clutch, Drivetrain & Turbo", "Brakes, Steering, Suspension, Fuel, Cooling & Emissions"],
+      showMore: false
     },
     {
       icon: Wrench,
       title: "Features",
-      items: ["Labour & Diagnostics Included", "Generous Repair Limits", "Wear & Tear Protection", "Consequential Damage Cover", "MOT Fee Cover", "Breakdown Recovery", "Vehicle Rental"]
+      headerText: null,
+      items: ["Labour & Diagnostics Included", "Generous Repair Limits", "Wear & Tear Protection", "Consequential Damage Cover", "Breakdown Recovery", "Vehicle Rental"],
+      showMore: false
     }
   ];
 
@@ -55,17 +59,15 @@ const WarrantyBenefitsSection: React.FC = () => {
               </p>
             </div>
 
-            {/* Coverage Section Header */}
-            <h3 className="text-xl md:text-2xl font-bold text-brand-dark-text mb-4">
-              Everything You Need, Covered:
-            </h3>
-
             {/* Two Column Coverage Layout */}
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               {/* Left Column - Mechanical & Electrical, Features */}
               <div className="space-y-4">
                 {leftColumnCategories.map((category, idx) => (
                   <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                    {category.headerText && (
+                      <p className="text-center font-bold text-brand-dark-text mb-3">{category.headerText}</p>
+                    )}
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-9 h-9 rounded-lg bg-brand-orange/10 flex items-center justify-center">
                         <category.icon className="w-5 h-5 text-brand-orange" />
@@ -147,7 +149,7 @@ const WarrantyBenefitsSection: React.FC = () => {
 
             {/* Trust & Reassurance - moved below buttons */}
             <div className="flex flex-col sm:flex-row items-center gap-3 mt-6 justify-center">
-              <TrustpilotHeader className="flex-shrink-0" />
+              <TrustpilotHeader className="flex-shrink-0 scale-90 sm:scale-100" />
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Lock className="w-4 h-4 text-green-600" />
                 <span>Your details are encrypted and safe.</span>
