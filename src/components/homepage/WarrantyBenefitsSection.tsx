@@ -21,7 +21,7 @@ const WarrantyBenefitsSection: React.FC = () => {
     },
     {
       icon: Wrench,
-      title: "Features",
+      title: "Plan Benefits",
       headerText: null,
       items: ["Labour & Diagnostics Included", "Generous Repair Limits", "Wear & Tear Protection", "Consequential Damage Cover", "Breakdown Recovery", "Vehicle Rental"],
       showMore: false
