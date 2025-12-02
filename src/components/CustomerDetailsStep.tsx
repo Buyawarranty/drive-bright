@@ -1514,7 +1514,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           </Label>
 
                           {/* Price Display */}
-                          <div className="bg-white rounded-lg p-4 mb-4 border-2 border-gray-200">
+                          <div className="bg-white rounded-lg p-4 mb-4 shadow-md">
                             <div className="text-center">
                               <div className="text-5xl font-black text-black mb-2">£{discountedStripePrice}</div>
                               <div className="text-sm text-black mb-2">Today</div>
@@ -1544,7 +1544,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               e.stopPropagation();
                               setPaymentMethod('stripe');
                             }}
-                            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg"
+                            className="w-full bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-lg"
                           >
                             Pay £{discountedStripePrice} Now – Save £50
                           </Button>
@@ -1599,7 +1599,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           </Label>
 
                           {/* Price Display */}
-                          <div className="bg-white rounded-lg p-4 mb-4 border-2 border-gray-200">
+                          <div className="bg-white rounded-lg p-4 mb-4 shadow-md">
                             <div className="text-center">
                               <div className="text-5xl font-black text-black mb-2">
                                 £{Math.round(discountedBumperPrice / 12)}<span className="text-xl">/month</span>
@@ -1633,7 +1633,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               e.stopPropagation();
                               setPaymentMethod('bumper');
                             }}
-                            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg"
+                            className="w-full bg-black hover:bg-gray-800 text-white font-bold py-3 rounded-lg"
                           >
                             Start £{Math.round(discountedBumperPrice / 12)}/month Plan
                           </Button>
@@ -1642,19 +1642,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           <div className="text-center pt-3 border-t mt-4">
                             <span className="text-xs text-black block mb-1">Powered by</span>
                             <img src={bumperLogo} alt="Bumper" className="h-6 mx-auto" />
-                          </div>
-
-                          {/* FAQ Link */}
-                          <div className="mt-3 text-center">
-                            <a 
-                              href="https://www.bumper.co.uk/how-it-works" 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-xs text-orange-600 hover:text-orange-700 underline font-medium"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              How does Bumper work?
-                            </a>
                           </div>
                         </div>
                       </div>
@@ -1720,7 +1707,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       {/* Customer Support */}
                       <div className="text-center">
                         <p className="text-sm text-black">
-                          Need help? <a href="tel:03330168290" className="text-orange-600 hover:text-orange-700 font-semibold underline">Call us on 0333 016 8290</a>
+                          Need help? <a href="tel:03302295040" className="text-orange-600 hover:text-orange-700 font-semibold underline">Call us on 0330 229 5040</a>
                         </p>
                       </div>
                     </div>
