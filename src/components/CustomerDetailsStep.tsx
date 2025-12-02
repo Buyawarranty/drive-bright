@@ -1047,8 +1047,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
               <div className="space-y-6">
                 {/* Order Summary Card */}
                 <div className="bg-white rounded-lg shadow-sm p-6 border">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">Order Summary</h2>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-2xl font-bold text-black">Your {planName} Plan is Ready</h2>
                     <Button 
                       variant="outline" 
                       size="sm"
@@ -1060,19 +1060,19 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     </Button>
                   </div>
                   
-                  {/* Confidence Message */}
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                    <div className="flex items-center justify-center text-green-800 font-medium">
-                      <CheckCircle className="w-5 h-5 mr-2 text-green-600" />
-                      Shop with confidence - cancel anytime within 14 days for a full refund 💸
+                  {/* Trust Badge */}
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-6">
+                    <div className="flex items-start gap-2 text-black text-sm">
+                      <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span>Cancel anytime within 14 days for a full refund</span>
                     </div>
                   </div>
 
-                   {/* Plan Details */}
-                  <div className="space-y-4 mb-6">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Plan</span>
-                      <span className="font-semibold">{
+                   {/* Plan Details - Clean Bullet Style */}
+                  <div className="space-y-3 mb-6">
+                    <div className="flex justify-between items-center">
+                      <span className="text-black text-sm">Plan:</span>
+                      <span className="font-semibold text-black text-sm">{
                         (() => {
                           // Check if it's a motorcycle based on make and model
                           const makeLC = vehicleData.make?.toLowerCase().trim() || '';
@@ -1094,35 +1094,35 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             : basePlanName.replace(/Bike/gi, 'Car');
                         })()
                       }</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Duration</span>
-                      <span className="font-semibold">{paymentType === '12months' 
+                     </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-black text-sm">Duration:</span>
+                      <span className="font-semibold text-black text-sm">{paymentType === '12months' 
                         ? '1 Year'
                         : paymentType === '24months' 
                           ? '2 Years'
                           : '3 Years'
                       }</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Vehicle</span>
-                      <span className="font-semibold">{vehicleData.make} {vehicleData.model}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-black text-sm">Vehicle:</span>
+                      <span className="font-semibold text-black text-sm uppercase">{vehicleData.make} {vehicleData.model}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Vehicle Registration</span>
-                      <span className="font-semibold">{vehicleData.regNumber}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-black text-sm">Registration:</span>
+                      <span className="font-semibold text-black text-sm">{vehicleData.regNumber}</span>
                     </div>
-                     <div className="flex justify-between">
-                       <span className="text-gray-600">Mileage</span>
-                       <span className="font-semibold">{parseInt(vehicleData.mileage || '0').toLocaleString()} miles</span>
+                     <div className="flex justify-between items-center">
+                       <span className="text-black text-sm">Mileage:</span>
+                       <span className="font-semibold text-black text-sm">{parseInt(vehicleData.mileage || '0').toLocaleString()} miles</span>
                      </div>
-                     <div className="flex justify-between">
-                       <span className="text-gray-600">Claim Limit</span>
-                       <span className="font-semibold">£{(pricingData.claimLimit || 2000).toLocaleString()}</span>
+                     <div className="flex justify-between items-center">
+                       <span className="text-black text-sm">Claim Limit:</span>
+                       <span className="font-semibold text-black text-sm">£{(pricingData.claimLimit || 2000).toLocaleString()}</span>
                      </div>
-                     <div className="flex justify-between">
-                       <span className="text-gray-600">Voluntary Excess</span>
-                       <span className="font-semibold">£{updatedPricingData.voluntaryExcess ?? 0}</span>
+                     <div className="flex justify-between items-center">
+                       <span className="text-black text-sm">Excess:</span>
+                       <span className="font-semibold text-black text-sm">£{updatedPricingData.voluntaryExcess ?? 0}</span>
                      </div>
                     
                     {/* Add-ons Section */}
@@ -1415,43 +1415,27 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             </div>
                           );
                          } else if (months === 36) {
-                          // Use actual pricing data instead of simulated calculations  
-                          const originalPrice = discountedBumperPrice + 200; // £200 discount for 3-year
+                          const originalPrice = discountedBumperPrice + 200;
                           const savings = 200;
                           return (
-                            <div className="text-center">
-                              <div className="text-3xl font-bold text-gray-900 mb-3">£{monthlyPayment}/month</div>
-                               <div className="space-y-2 mb-3">
-                                 <div className="flex items-center justify-center">
-                                   <span className="mr-2 text-green-600 text-lg">✓</span>
-                                   <span className="font-medium text-gray-700">Only 12 easy payments</span>
-                                 </div>
-                                 <div className="flex items-center justify-center">
-                                   <span className="mr-2 text-green-600 text-lg">✓</span>
-                                   <span className="font-medium text-gray-700">Nothing to pay in Year 2 and Year 3</span>
-                                 </div>
-                                 {seasonalOfferClaimed && (
-                                   <div className="flex items-center justify-center text-orange-600">
-                                     <span className="mr-2">❄️</span>
-                                     <span className="font-semibold">+ 3 Months FREE Bonus</span>
-                                   </div>
-                                 )}
-                               </div>
-                               <div className="text-center mt-4">
-                                 <div className="text-lg font-bold text-gray-900 mb-1">Total cost:</div>
-                                 <div className="flex items-center justify-center gap-3">
-                                   <span className="line-through text-gray-400 text-xl font-medium">£{originalPrice}</span>
-                                   <span className="text-green-600 text-3xl font-bold">£{discountedBumperPrice}</span>
-                                 </div>
-                                 <div className="text-green-600 font-bold text-lg mt-2">
-                                   You save £{savings}!
-                                 </div>
-                                 {seasonalOfferClaimed && (
-                                   <div className="text-sm text-orange-600 mt-1 font-medium">
-                                     39 months total cover!
-                                   </div>
-                                 )}
-                               </div>
+                            <div className="text-center bg-gray-50 rounded-xl p-6 border-2 border-gray-200">
+                              <div className="mb-4">
+                                <div className="text-4xl font-black text-black mb-2">
+                                  £{discountedBumperPrice} <span className="text-base font-normal text-black">Total</span>
+                                </div>
+                                <div className="text-2xl font-bold text-black">
+                                  or £{monthlyPayment}/month
+                                </div>
+                                <div className="text-sm text-black mt-2">for 12 months</div>
+                              </div>
+                              
+                              {/* Green Reassurance */}
+                              <div className="bg-white border-2 border-green-500 rounded-lg p-3 mt-4">
+                                <div className="flex items-start gap-2 justify-center text-sm text-black">
+                                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                                  <span className="font-semibold">No hidden fees. No interest. Secure checkout.</span>
+                                </div>
+                              </div>
                             </div>
                           );
                         }
@@ -1466,21 +1450,21 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                      </p>
                    </div>
 
-                   {/* Payment Methods - Redesigned UX */}
+                   {/* Payment Methods - Conversion Focused */}
                   <div className="space-y-6">
-                    {/* Section Header with Trust Badge */}
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-2xl font-bold text-gray-900">Choose Your Payment Option</h3>
-                      <div className="hidden sm:flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-lg border border-green-200">
+                    {/* Section Header */}
+                    <div className="text-center">
+                      <h3 className="text-2xl font-bold text-black mb-2">Choose How You'd Like to Pay</h3>
+                      <div className="flex items-center justify-center gap-2 text-sm text-black">
                         <Check className="w-4 h-4 text-green-600" />
-                        <span className="text-xs font-semibold text-green-700">Secure Checkout</span>
+                        <span>Secure Checkout</span>
                       </div>
                     </div>
 
                     {/* Social Proof */}
                     <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
-                      <p className="text-sm font-medium text-orange-900">
-                        ⭐ <span className="font-bold">Most customers choose Pay in Full</span> for extra savings
+                      <p className="text-sm font-medium text-black">
+                        <span className="font-bold">Most customers choose Pay in Full</span> for extra savings
                       </p>
                     </div>
                     
@@ -1493,24 +1477,24 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           onClick={() => setPaymentMethod('stripe')}
                           className={`relative rounded-xl p-6 cursor-pointer transition-all duration-300 border-2 ${
                             paymentMethod === 'stripe' 
-                              ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-500 shadow-xl shadow-green-500/30 scale-[1.02]' 
-                              : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-lg'
+                              ? 'bg-gray-100 border-gray-400 shadow-lg' 
+                              : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-md'
                           }`}
                         >
-                          {/* Best Value Badge */}
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg">
-                            🏆 BEST VALUE
+                          {/* Best Value Badge - ORANGE */}
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg uppercase">
+                            BEST VALUE
                           </div>
 
-                          {/* Radio Button */}
+                          {/* Radio Button and Limited Time Badge */}
                           <div className="flex items-start justify-between mb-4">
                             <RadioGroupItem 
                               value="stripe" 
                               id="stripe-option" 
-                              className="border-2 border-gray-400 text-green-600 w-5 h-5 mt-1"
+                              className="border-2 border-gray-400 w-5 h-5 mt-1"
                             />
-                            {/* Limited Time Badge */}
-                            <div className="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded animate-pulse">
+                            {/* Limited Time Badge - BLACK TEXT */}
+                            <div className="bg-gray-200 text-black text-xs font-bold px-3 py-1 rounded uppercase">
                               LIMITED TIME
                             </div>
                           </div>
@@ -1524,51 +1508,51 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
 
                           {/* Heading */}
                           <Label htmlFor="stripe-option" className="block text-center cursor-pointer mb-3">
-                            <h4 className="text-xl font-bold text-gray-900 mb-1">Pay in Full & Save 10%</h4>
-                            <p className="text-sm text-gray-600">One-time payment today</p>
+                            <h4 className="text-xl font-bold text-black mb-1">Pay in Full & Save £50</h4>
+                            <p className="text-sm text-black">One-time payment today</p>
                           </Label>
 
                           {/* Price Display */}
-                          <div className="bg-white rounded-lg p-4 mb-4 border-2 border-green-200">
+                          <div className="bg-white rounded-lg p-4 mb-4 border-2 border-gray-200">
                             <div className="text-center">
-                              <div className="flex items-center justify-center gap-3 mb-2">
-                                <span className="text-gray-400 line-through text-lg">£{Math.round(discountedPrice)}</span>
-                                <span className="text-4xl font-black text-green-600">£{discountedStripePrice}</span>
-                              </div>
-                              <div className="bg-green-100 text-green-800 text-sm font-bold px-3 py-1 rounded-full inline-block">
-                                💰 You Save £{Math.round(discountedPrice * 0.10)}
-                              </div>
+                              <div className="text-5xl font-black text-black mb-2">£{discountedStripePrice}</div>
+                              <div className="text-sm text-black mb-2">Today</div>
                             </div>
                           </div>
 
-                          {/* Features */}
+                          {/* Features - GREEN TICKS */}
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center gap-2 text-sm">
                               <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                              <span className="text-gray-700 font-medium">Instant 10% discount applied</span>
+                              <span className="text-black font-medium">Instant 10% discount</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                               <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                              <span className="text-gray-700 font-medium">Cover starts immediately</span>
+                              <span className="text-black font-medium">Coverage starts immediately</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                               <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                              <span className="text-gray-700 font-medium">No monthly payments needed</span>
+                              <span className="text-black font-medium">No monthly payments</span>
                             </div>
                           </div>
+
+                          {/* CTA inside box */}
+                          <Button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPaymentMethod('stripe');
+                            }}
+                            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg"
+                          >
+                            Pay £{discountedStripePrice} Now – Save £50
+                          </Button>
 
                           {/* Powered By */}
-                          <div className="text-center pt-3 border-t">
-                            <span className="text-xs text-gray-500 block mb-1">Powered by</span>
+                          <div className="text-center pt-3 border-t mt-4">
+                            <span className="text-xs text-black block mb-1">Powered by</span>
                             <img src={stripeLogo} alt="Stripe" className="h-6 mx-auto" />
                           </div>
-
-                          {/* CTA Preview */}
-                          {paymentMethod === 'stripe' && (
-                            <div className="mt-4 text-center text-sm font-medium text-green-700">
-                              ✓ Selected - Click "Complete Purchase" below
-                            </div>
-                          )}
                         </div>
 
                         {/* OPTION B: Pay Monthly (Bumper) */}
@@ -1576,24 +1560,24 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           onClick={() => setPaymentMethod('bumper')}
                           className={`relative rounded-xl p-6 cursor-pointer transition-all duration-300 border-2 ${
                             paymentMethod === 'bumper' 
-                              ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-500 shadow-xl shadow-orange-500/30 scale-[1.02]' 
-                              : 'bg-white border-gray-200 hover:border-orange-300 hover:shadow-lg'
+                              ? 'bg-gray-100 border-gray-400 shadow-lg' 
+                              : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-md'
                           }`}
                         >
-                          {/* 0% Interest Badge */}
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg">
+                          {/* 0% APR Badge - ORANGE */}
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg uppercase">
                             0% APR
                           </div>
 
-                          {/* Radio Button */}
+                          {/* Radio Button and No Fees Badge */}
                           <div className="flex items-start justify-between mb-4">
                             <RadioGroupItem 
                               value="bumper" 
                               id="bumper-option" 
-                              className="border-2 border-gray-400 text-orange-600 w-5 h-5 mt-1"
+                              className="border-2 border-gray-400 w-5 h-5 mt-1"
                             />
-                            {/* No Hidden Fees Badge */}
-                            <div className="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded">
+                            {/* No Fees Badge - BLACK TEXT */}
+                            <div className="bg-gray-200 text-black text-xs font-bold px-3 py-1 rounded uppercase">
                               NO FEES
                             </div>
                           </div>
@@ -1609,41 +1593,53 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
 
                           {/* Heading */}
                           <Label htmlFor="bumper-option" className="block text-center cursor-pointer mb-3">
-                            <h4 className="text-xl font-bold text-gray-900 mb-1">Spread the Cost with Bumper</h4>
-                            <p className="text-sm text-gray-600">Interest-free monthly instalments</p>
+                            <h4 className="text-xl font-bold text-black mb-1">Spread the Cost – £{Math.round(discountedBumperPrice / 12)}/month</h4>
+                            <p className="text-sm text-black">Interest-free monthly instalments</p>
                           </Label>
 
                           {/* Price Display */}
-                          <div className="bg-white rounded-lg p-4 mb-4 border-2 border-orange-200">
+                          <div className="bg-white rounded-lg p-4 mb-4 border-2 border-gray-200">
                             <div className="text-center">
-                              <div className="text-4xl font-black text-orange-600 mb-2">
+                              <div className="text-5xl font-black text-black mb-2">
                                 £{Math.round(discountedBumperPrice / 12)}<span className="text-xl">/month</span>
                               </div>
-                              <div className="text-sm text-gray-600">
-                                12 monthly payments = <span className="font-bold text-gray-900">£{Math.round(discountedBumperPrice)}</span> total
+                              <div className="text-sm text-black">
+                                12 monthly payments = <span className="font-bold">£{Math.round(discountedBumperPrice)}</span> total
                               </div>
                             </div>
                           </div>
 
-                          {/* Features */}
+                          {/* Features - GREEN TICKS */}
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center gap-2 text-sm">
-                              <Check className="w-5 h-5 text-orange-600 flex-shrink-0" />
-                              <span className="text-gray-700 font-medium">Only a soft credit search</span>
+                              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                              <span className="text-black font-medium">12 interest-free payments</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
-                              <Check className="w-5 h-5 text-orange-600 flex-shrink-0" />
-                              <span className="text-gray-700 font-medium">No impact on credit score</span>
+                              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                              <span className="text-black font-medium">No impact on credit score</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
-                              <Check className="w-5 h-5 text-orange-600 flex-shrink-0" />
-                              <span className="text-gray-700 font-medium">0% interest, no hidden fees</span>
+                              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                              <span className="text-black font-medium">0% interest, no hidden fees</span>
                             </div>
                           </div>
 
+                          {/* CTA inside box */}
+                          <Button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPaymentMethod('bumper');
+                            }}
+                            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg"
+                          >
+                            Start £{Math.round(discountedBumperPrice / 12)}/month Plan
+                          </Button>
+
                           {/* Powered By */}
-                          <div className="text-center pt-3 border-t">
-                            <span className="text-xs text-gray-500 block mb-1">Powered by</span>
+                          <div className="text-center pt-3 border-t mt-4">
+                            <span className="text-xs text-black block mb-1">Powered by</span>
                             <img src={bumperLogo} alt="Bumper" className="h-6 mx-auto" />
                           </div>
 
@@ -1659,77 +1655,71 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               How does Bumper work?
                             </a>
                           </div>
-
-                          {/* CTA Preview */}
-                          {paymentMethod === 'bumper' && (
-                            <div className="mt-4 text-center text-sm font-medium text-orange-700">
-                              ✓ Selected - Click "Complete Purchase" below
-                            </div>
-                          )}
                         </div>
                       </div>
                     </RadioGroup>
 
                     {/* Discount Codes Applied Notice */}
                     {hasValidDiscountCodes && (
-                      <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
+                      <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 text-center">
                         <div className="flex items-center justify-center gap-2 text-sm">
-                          <span className="text-orange-800 font-bold">
-                            🎉 Discount Applied: {appliedDiscountCodes.map(code => code.code).join(', ')}
+                          <Check className="w-5 h-5 text-green-600" />
+                          <span className="text-black font-bold">
+                            Discount Applied: {appliedDiscountCodes.map(code => code.code).join(', ')}
                           </span>
                         </div>
                       </div>
                     )}
 
                     {/* Complete Purchase Button */}
-                    <ProtectedButton
-                      actionType="complete_purchase"
-                      onClick={handleSubmit}
-                      className="w-full mt-6 bg-orange-500 hover:bg-orange-600 text-white font-bold py-6 text-xl rounded-xl shadow-2xl animate-[breathing_3s_ease-in-out_infinite] transition-all hover:scale-[1.02]"
-                      size="lg"
-                      disabled={isLoadingPayment}
-                      loading={isLoadingPayment}
-                    >
-                      {isLoadingPayment ? (
-                        'Loading Payment Gateway...'
-                      ) : (
-                        <span className="flex items-center justify-center gap-3">
-                          <CreditCard className="w-6 h-6" />
-                          Complete Purchase
-                          <ArrowRight className="w-6 h-6" strokeWidth={3} />
-                        </span>
-                      )}
-                    </ProtectedButton>
+                    <div className="text-center">
+                      <ProtectedButton
+                        actionType="complete_purchase"
+                        onClick={handleSubmit}
+                        className="w-full mt-6 bg-orange-500 hover:bg-orange-600 text-white font-bold py-6 text-xl rounded-xl shadow-2xl animate-[breathing_3s_ease-in-out_infinite] transition-all hover:scale-[1.02]"
+                        size="lg"
+                        disabled={isLoadingPayment}
+                        loading={isLoadingPayment}
+                      >
+                        {isLoadingPayment ? (
+                          'Loading Payment Gateway...'
+                        ) : (
+                          <span className="flex items-center justify-center gap-3">
+                            <CreditCard className="w-6 h-6" />
+                            Complete Purchase
+                            <ArrowRight className="w-6 h-6" strokeWidth={3} />
+                          </span>
+                        )}
+                      </ProtectedButton>
+                      <p className="text-sm text-black mt-3 font-medium">Takes less than 1 minute</p>
+                    </div>
 
-                    {/* Trust & Security Elements */}
-                    <div className="space-y-3">
+                    {/* Trust & Security - Sticky Reassurance Bar */}
+                    <div className="space-y-4 mt-6">
                       {/* Security Icons */}
-                      <div className="flex items-center justify-center gap-4 flex-wrap">
-                        <div className="flex items-center gap-2 text-xs text-gray-600">
-                          <div className="bg-green-100 p-1.5 rounded">
+                      <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center justify-center gap-6 flex-wrap text-xs text-black">
+                          <div className="flex items-center gap-2">
                             <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                             </svg>
+                            <span className="font-medium">SSL Encrypted</span>
                           </div>
-                          <span className="font-medium">SSL Encrypted</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-gray-600">
-                          <CreditCard className="w-5 h-5 text-orange-600" />
-                          <span className="font-medium">Visa • Mastercard</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-gray-600">
-                          <Check className="w-5 h-5 text-green-600" />
-                          <span className="font-medium">Secure Payments</span>
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="w-4 h-4 text-green-600" />
+                            <span className="font-medium">Visa & Mastercard</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Check className="w-4 h-4 text-green-600" />
+                            <span className="font-medium">Secure Payments</span>
+                          </div>
                         </div>
                       </div>
 
                       {/* Customer Support */}
                       <div className="text-center">
-                        <p className="text-xs text-gray-500">
-                          Need help? Contact our support team at{' '}
-                          <a href="tel:03330168290" className="text-orange-600 hover:underline font-medium">
-                            0333 016 8290
-                          </a>
+                        <p className="text-sm text-black">
+                          Need help? <a href="tel:03330168290" className="text-orange-600 hover:text-orange-700 font-semibold underline">Call us on 0333 016 8290</a>
                         </p>
                       </div>
                     </div>
