@@ -1430,8 +1430,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-md'
                           }`}
                         >
-                          {/* Best Value Badge - ORANGE */}
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg uppercase">
+                          {/* Best Value Badge - GREEN */}
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-md uppercase">
                             BEST VALUE
                           </div>
 
@@ -1442,8 +1442,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               id="stripe-option" 
                               className="border-2 border-gray-400 w-5 h-5 mt-1"
                             />
-                            {/* Limited Time Badge - BLACK TEXT */}
-                            <div className="bg-gray-200 text-black text-xs font-bold px-3 py-1 rounded uppercase">
+                            {/* Limited Time Badge - GREY */}
+                            <div className="bg-gray-200 text-gray-700 text-xs font-bold px-3 py-1 rounded uppercase">
                               LIMITED TIME
                             </div>
                           </div>
@@ -1461,11 +1461,16 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             <p className="text-sm text-black">One-time payment today</p>
                           </Label>
 
-                          {/* Price Display */}
-                          <div className="bg-white rounded-lg p-4 mb-4 shadow-2xl">
+                          {/* Price Display - Clean & Integrated */}
+                          <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-100">
                             <div className="text-center">
                               <div className="text-5xl font-black text-black mb-2">£{discountedStripePrice}</div>
-                              <div className="text-lg text-green-600 font-bold">Save £50 today</div>
+                              <div className="inline-block bg-green-600 text-white text-sm font-bold px-3 py-1 rounded-full">
+                                Save £50 today
+                              </div>
+                              <div className="text-sm text-gray-500 mt-2">
+                                (normally £{stripeTotalPrice})
+                              </div>
                             </div>
                           </div>
 
@@ -1518,7 +1523,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           }`}
                         >
                           {/* 0% APR Badge - ORANGE */}
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg uppercase">
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-md uppercase">
                             0% APR
                           </div>
 
@@ -1529,8 +1534,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               id="bumper-option" 
                               className="border-2 border-gray-400 w-5 h-5 mt-1"
                             />
-                            {/* No Fees Badge - BLACK TEXT */}
-                            <div className="bg-gray-200 text-black text-xs font-bold px-3 py-1 rounded uppercase">
+                            {/* No Fees Badge - GREY */}
+                            <div className="bg-gray-200 text-gray-700 text-xs font-bold px-3 py-1 rounded uppercase">
                               NO FEES
                             </div>
                           </div>
@@ -1550,13 +1555,13 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             <p className="text-sm text-black">Interest-free monthly instalments</p>
                           </Label>
 
-                          {/* Price Display */}
-                          <div className="bg-white rounded-lg p-4 mb-4 shadow-2xl">
+                          {/* Price Display - Clean & Integrated */}
+                          <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-100">
                             <div className="text-center">
                               <div className="text-5xl font-black text-black mb-2">
                                 £{Math.round(discountedBumperPrice / 12)}<span className="text-xl">/month</span>
                               </div>
-                              <div className="text-sm text-black">
+                              <div className="text-sm text-gray-500">
                                 £{Math.round(discountedBumperPrice)} total
                               </div>
                             </div>
