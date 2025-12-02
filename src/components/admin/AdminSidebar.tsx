@@ -198,6 +198,11 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
       // Blog writers only see the blog-writing tab
       return defaultTabs.filter(tab => tab.id === 'blog-writing');
     }
+    if (userRole === 'sales') {
+      // Sales team sees only customer-facing tabs
+      const salesTabIds = ['customers', 'abandoned-carts', 'contact', 'claims', 'get-quote'];
+      return defaultTabs.filter(tab => salesTabIds.includes(tab.id));
+    }
     // All other roles see all tabs
     return defaultTabs;
   };
@@ -209,12 +214,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     })
   );
 
-  // Load saved order from localStorage (only for non-blog writers)
+  // Load saved order from localStorage (only for non-blog writers and non-sales)
   useEffect(() => {
     const visibleTabs = getVisibleTabs();
     
-    // Blog writers don't need custom ordering
-    if (userRole === 'blog_writer') {
+    // Blog writers and sales users don't need custom ordering
+    if (userRole === 'blog_writer' || userRole === 'sales') {
       setTabs(visibleTabs);
       return;
     }
