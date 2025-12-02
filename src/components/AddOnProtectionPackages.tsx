@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { ChevronDown, ChevronUp, Check, CheckCircle2 } from 'lucide-react';
 import { getAutoIncludedAddOns } from '@/lib/addOnsUtils';
+import { Button } from '@/components/ui/button';
 
 interface AddOnProtectionPackagesProps {
   selectedAddOns: {[key: string]: boolean};
@@ -146,107 +147,117 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="grid md:grid-cols-3 gap-3">
+      <div className="grid md:grid-cols-3 gap-4">
       {addOnPackages.map((addon) => {
         const isIncluded = isAutoIncluded(addon.key);
         const isSelected = selectedAddOns[addon.key] || isIncluded;
         
         // Calculate price display - always show monthly cost spread over 12 payments
         let priceDisplay;
-        let showSpreadText = false;
+        let subPriceText = '';
         
         if (addon.priceType === 'monthly') {
-          // For 2-year and 3-year plans, show the cost spread over 12 monthly payments
           const totalCost = addon.price * months;
-          const monthlyPayment = totalCost / 12; // Always spread over 12 payments
+          const monthlyPayment = totalCost / 12;
           priceDisplay = addon.price > 0 
-            ? `Only £${monthlyPayment.toFixed(2)} per month`
+            ? `£${monthlyPayment.toFixed(2)}/month`
             : 'Included';
-          showSpreadText = addon.price > 0;
+          subPriceText = addon.price > 0 
+            ? `Over 12 interest-free payments for ${paymentType === '12months' ? '1' : paymentType === '24months' ? '2' : '3'} year coverage`
+            : '';
         } else {
-          priceDisplay = isIncluded ? 'Included' : `Just £${addon.price} one-time fee`;
+          priceDisplay = isIncluded ? 'Included' : `£${addon.price}`;
+          subPriceText = isIncluded ? '' : 'One-time fee';
         }
               
               return (
                    <div 
                    key={addon.key}
                    onClick={() => !isIncluded && onAddOnChange(addon.key, !selectedAddOns[addon.key])}
-                   className={`relative p-4 rounded-lg transition-all duration-200 bg-white ${
+                   className={`relative rounded-xl transition-all duration-200 overflow-hidden ${
                      isIncluded 
-                       ? 'border-2 border-green-600 shadow-lg shadow-green-600/30 cursor-default' 
+                       ? 'border-2 border-green-600 shadow-md bg-green-50/50 cursor-default' 
                        : isSelected
-                         ? 'border-2 border-green-600 shadow-lg shadow-green-600/30 cursor-pointer' 
-                         : 'border-2 border-gray-300 shadow-sm hover:shadow-md hover:border-green-600 hover:bg-gray-50 cursor-pointer'
+                         ? 'border-2 border-green-600 shadow-md bg-green-50/50 cursor-pointer hover:shadow-lg' 
+                         : 'border-2 border-gray-200 shadow-sm hover:shadow-md hover:border-green-500 bg-white cursor-pointer'
                    }`}
                  >
-                   {/* FREE badge in bottom left for auto-included add-ons */}
+                   {/* Selected Checkmark Badge - Top Right */}
+                   {isSelected && (
+                     <div className="absolute top-3 right-3 bg-green-600 rounded-full p-1 shadow-sm z-10">
+                       <CheckCircle2 className="w-5 h-5 text-white" />
+                     </div>
+                   )}
+                   
+                   {/* FREE Badge - Only for auto-included */}
                    {isIncluded && (
-                     <div className="absolute bottom-2 left-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded">
+                     <div className="absolute top-3 left-3 bg-green-600 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
                        FREE
                      </div>
                    )}
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className="text-xl mt-1">{addon.icon}</div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-base text-foreground mb-1">{addon.title}</h4>
-                        <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{addon.shortDescription}</p>
-                         <div className="text-base font-bold text-black">
-                           {priceDisplay}
-                            {showSpreadText && (
-                              <div className="text-sm font-normal text-muted-foreground">
-                                Spread over 12 interest-free payments for full {paymentType === '12months' ? '1 year' : paymentType === '24months' ? '2 year' : '3 year'} coverage.
-                              </div>
-                            )}
-                         </div>
-                      </div>
-                    </div>
-                   <Checkbox 
-                     checked={isSelected}
-                     disabled={isIncluded}
-                     onCheckedChange={(checked) => !isIncluded && onAddOnChange(addon.key, !!checked)}
-                     className={`h-4 w-4 border-2 flex-shrink-0 opacity-100 ${
-                       isIncluded 
-                         ? 'border-green-600 bg-green-600 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600 data-[state=checked]:opacity-100 data-[state=checked]:text-white'
-                         : isSelected
-                           ? 'border-green-600 bg-green-600 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600 data-[state=checked]:opacity-100 data-[state=checked]:text-white'
-                           : 'border-black data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600 data-[state=checked]:opacity-100 data-[state=checked]:text-white'
-                     }`}
-                   />
-                  </div>
-
-                  <Collapsible open={expandedItems[addon.key]} onOpenChange={() => toggleExpanded(addon.key)}>
-                    <div className="flex justify-end">
-                      <CollapsibleTrigger 
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors"
-                      >
-                        <span>Read more</span>
-                        {expandedItems[addon.key] ? (
-                          <ChevronUp className="h-3 w-3" strokeWidth={3} />
-                        ) : (
-                          <ChevronDown className="h-3 w-3" strokeWidth={3} />
-                        )}
-                      </CollapsibleTrigger>
-                    </div>
-                     <CollapsibleContent className="mt-2">
-                       <div className="space-y-1">
-                         {addon.bulletPoints.map((point, index) => (
-                           <div key={index} className="flex items-start gap-2">
-                             <Check className="h-3 w-3 text-orange-500 mt-1 flex-shrink-0" strokeWidth={3} />
-                             <span className="text-sm text-muted-foreground">{point}</span>
-                           </div>
-                         ))}
-                         <div className="mt-3 pt-2 border-t border-gray-200">
-                           <p className="text-xs text-muted-foreground italic">
-                             Full details available in our Platinum Warranty Plan – see below for more information.
-                           </p>
-                         </div>
+                   
+                   <div className="p-5">
+                     {/* Icon and Title */}
+                     <div className="flex items-start gap-3 mb-3">
+                       <div className="text-3xl flex-shrink-0">{addon.icon}</div>
+                       <div className="flex-1 min-w-0">
+                         <h4 className="font-bold text-lg text-gray-900 mb-1 leading-tight">{addon.title}</h4>
                        </div>
-                     </CollapsibleContent>
-                  </Collapsible>
-                </div>
-              );
+                     </div>
+                     
+                     {/* Short Benefit */}
+                     <p className="text-sm text-gray-600 mb-4 line-clamp-2 min-h-[40px]">
+                       {addon.shortDescription}
+                     </p>
+                     
+                     {/* Price - Bold and Prominent */}
+                     <div className="mb-4 pb-4 border-b border-gray-200">
+                       <div className="text-2xl font-bold text-gray-900">
+                         {priceDisplay}
+                       </div>
+                       {subPriceText && (
+                         <div className="text-xs text-gray-500 mt-1">
+                           {subPriceText}
+                         </div>
+                       )}
+                     </div>
+                     
+                     {/* View Details Button */}
+                     <Collapsible open={expandedItems[addon.key]} onOpenChange={() => toggleExpanded(addon.key)}>
+                       <CollapsibleTrigger 
+                         onClick={(e) => e.stopPropagation()}
+                         className="w-full"
+                       >
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           className="w-full justify-between group hover:bg-gray-50 border-gray-300"
+                         >
+                           <span className="text-sm font-medium">
+                             {expandedItems[addon.key] ? 'Hide Details' : 'View Details'}
+                           </span>
+                           {expandedItems[addon.key] ? (
+                             <ChevronUp className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
+                           ) : (
+                             <ChevronDown className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
+                           )}
+                         </Button>
+                       </CollapsibleTrigger>
+                       
+                       <CollapsibleContent className="mt-3">
+                         <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                           {addon.bulletPoints.map((point, index) => (
+                             <div key={index} className="flex items-start gap-2">
+                               <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                               <span className="text-sm text-gray-700">{point}</span>
+                             </div>
+                           ))}
+                         </div>
+                       </CollapsibleContent>
+                     </Collapsible>
+                   </div>
+                 </div>
+               );
             })}
       </div>
     </div>
