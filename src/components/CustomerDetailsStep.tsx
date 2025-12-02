@@ -873,7 +873,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-orange-50 w-full overflow-x-hidden">
+    <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-4 py-8">
         
         {/* Back Button */}
