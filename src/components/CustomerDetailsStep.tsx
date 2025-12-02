@@ -843,7 +843,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                 {/* Heading with Security Badge */}
                 <div className="mb-6">
                   <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-xl font-bold text-gray-900">Your Details for Secure Coverage</h3>
+                    <h3 className="text-xl font-bold text-gray-900">Where should we send your policy?</h3>
                     <div className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200">
                       <Lock className="w-3 h-3" />
                       <span className="font-medium">Secure & Encrypted</span>
