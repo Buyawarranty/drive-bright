@@ -27,6 +27,7 @@ interface PostcodeAutocompleteProps {
   required?: boolean;
   className?: string;
   error?: string;
+  onBlur?: () => void;
 }
 
 export const PostcodeAutocomplete: React.FC<PostcodeAutocompleteProps> = ({
@@ -36,7 +37,8 @@ export const PostcodeAutocomplete: React.FC<PostcodeAutocompleteProps> = ({
   placeholder = "Enter UK postcode",
   required = false,
   className = "",
-  error
+  error,
+  onBlur
 }) => {
   const [suggestions, setSuggestions] = useState<Address[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -166,6 +168,7 @@ export const PostcodeAutocomplete: React.FC<PostcodeAutocompleteProps> = ({
           ref={inputRef}
           value={value}
           onChange={(e) => handleInputChange(e.target.value.toUpperCase())}
+          onBlur={onBlur}
           placeholder={placeholder}
           required={required}
           className={`pr-10 ${error ? 'border-red-500 focus:border-red-500' : ''} ${className}`}
