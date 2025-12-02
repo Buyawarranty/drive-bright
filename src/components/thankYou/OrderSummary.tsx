@@ -96,11 +96,9 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
 
                 {hasSavings && (
                   <div className="pt-2 mt-2 border-t border-gray-200">
-                    <div className="bg-green-50 border border-green-200 rounded-md px-3 py-2">
-                      <p className="text-sm font-semibold text-green-700">
-                        You save £{savings}!
-                      </p>
-                    </div>
+                    <p className="text-sm font-semibold text-green-600">
+                      💰 You Save £{savings}
+                    </p>
                   </div>
                 )}
               </div>
