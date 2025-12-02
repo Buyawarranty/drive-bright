@@ -39,7 +39,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
     <Card className="border border-border shadow-sm bg-background">
       <CardContent className="p-6 md:p-8">
         <h2 className="text-xl md:text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-green-50 border-2 border-green-200 flex items-center justify-center">
             <Shield className="w-6 h-6 text-green-600" />
           </div>
           Order Summary
@@ -67,7 +67,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
               {/* Payment Details */}
               <div className="space-y-2 pt-3 border-t border-gray-200">
                 <div className="flex items-start gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-foreground">
                     {paymentType === 'Monthly' ? (
                       <span>£{monthlyPrice}/month</span>
@@ -80,13 +80,13 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
                 {durationYears > 1 && paymentType === 'Monthly' && (
                   <>
                     <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
                       <p className="text-sm text-foreground">
                         Only 12 easy payments
                       </p>
                     </div>
                     <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
                       <p className="text-sm text-foreground">
                         Nothing to pay in Year {durationYears === 2 ? '2' : '2 and 3'}
                       </p>
