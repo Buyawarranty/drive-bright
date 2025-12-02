@@ -19,6 +19,8 @@ const addOnPackages = [
     shortDescription: 'Protects key mechanical and electrical parts from natural wear.',
     price: 9.99,
     priceType: 'monthly',
+    badge: 'Best Value',
+    badgeColor: 'green',
     bulletPoints: [
       'Covers engine, gearbox, differential and drivetrain components',
       'Includes critical electrical parts like ECUs and alternators',
@@ -50,6 +52,8 @@ const addOnPackages = [
     shortDescription: 'Comprehensive cover for accidental, malicious, and puncture-related tyre damage.',
     price: 7.99,
     priceType: 'monthly',
+    badge: 'Popular Choice',
+    badgeColor: 'orange',
     bulletPoints: [
       'Up to £150 per tyre for repair or replacement',
       'Covers accidental damage',
@@ -183,12 +187,21 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                    <div 
                    key={addon.key}
                    onClick={() => !isIncluded && onAddOnChange(addon.key, !selectedAddOns[addon.key])}
-                   className={`relative rounded-xl border-2 transition-all cursor-pointer shadow-sm hover:shadow-md ${
+                   className={`relative rounded-xl border-2 transition-all cursor-pointer hover:shadow-lg ${
                      isSelected
-                       ? 'border-green-600 bg-green-50 shadow-green-100' 
-                       : 'border-gray-200 bg-white hover:border-green-300'
+                       ? 'border-green-600 bg-green-50 shadow-md shadow-green-100' 
+                       : 'border-gray-200 bg-white hover:border-green-300 hover:shadow-md'
                    }`}
                  >
+                   {/* Marketing Badge - Top Left */}
+                   {addon.badge && !isIncluded && (
+                     <div className={`absolute -top-3 left-4 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10 ${
+                       addon.badgeColor === 'green' ? 'bg-green-600' : 'bg-orange-500'
+                     }`}>
+                       {addon.badge}
+                     </div>
+                   )}
+                   
                    {/* FREE Badge - Top Left for auto-included */}
                    {isIncluded && (
                      <div className="absolute -top-3 left-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10">
@@ -198,34 +211,42 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                    
                    {/* Savings Badge - Top Right */}
                    {savingsText && !isIncluded && (
-                     <div className="absolute -top-3 right-4 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10">
+                     <div className="absolute -top-3 right-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10">
                        {savingsText}
                      </div>
                    )}
                    
-                   {/* Selected Tick - Top Right Corner */}
-                   {isSelected && (
-                     <div className="absolute top-4 right-4">
+                   {/* Checkbox/Tick - Top Right Corner */}
+                   <div className="absolute top-4 right-4">
+                     {isSelected ? (
                        <div className="w-7 h-7 rounded-full bg-green-600 flex items-center justify-center shadow-md">
                          <Check className="w-5 h-5 text-white" strokeWidth={3} />
                        </div>
-                     </div>
-                   )}
+                     ) : (
+                       <div className="w-7 h-7 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center hover:border-green-500 transition-colors">
+                       </div>
+                     )}
+                   </div>
                    
                    <div className="p-6 pt-8">
                      {/* Icon */}
                      <div className="text-4xl mb-4">{addon.icon}</div>
                      
                      {/* Title */}
-                     <h4 className="font-bold text-lg text-gray-900 mb-3 pr-8">{addon.title}</h4>
+                     <h4 className="font-bold text-lg text-gray-900 mb-4 pr-8">{addon.title}</h4>
                      
-                     {/* Price with "Only" phrasing */}
+                     {/* Price with improved hierarchy */}
                      <div className="mb-4">
-                       <div className="flex items-baseline gap-1">
-                         <span className="text-gray-600 text-sm font-medium">Only</span>
-                         <span className="text-2xl font-bold text-gray-900">{priceDisplay}</span>
-                         <span className="text-gray-600 text-sm font-medium">/month</span>
+                       <div className="flex items-baseline gap-1 mb-1">
+                         <span className="text-sm text-gray-600 font-medium">Only</span>
+                         <span className="text-3xl font-bold text-gray-900">{priceDisplay}</span>
+                         <span className="text-sm text-gray-600 font-medium">/month</span>
                        </div>
+                       {!isIncluded && (
+                         <p className="text-xs text-green-600 font-semibold">
+                           12 interest-free payments
+                         </p>
+                       )}
                        {isIncluded && (
                          <span className="text-xs text-green-700 font-semibold">Included in your plan!</span>
                        )}
