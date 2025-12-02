@@ -1535,7 +1535,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               <div className="inline-block bg-green-600 text-white text-sm font-bold px-3 py-1 rounded-full">
                                 Save £50 today
                               </div>
-                              <div className="text-sm text-gray-500 mt-2">
+                              <div className="text-base font-bold text-gray-600 mt-2">
                                 (normally £{stripeTotalPrice})
                               </div>
                             </div>
@@ -1624,7 +1624,10 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               <div className="text-5xl font-black text-black mb-2">
                                 £{Math.round(discountedBumperPrice / 12)}<span className="text-xl">/month</span>
                               </div>
-                              <div className="text-sm text-gray-500">
+                              <div className="inline-block bg-orange-100 text-orange-700 text-sm font-bold px-3 py-1 rounded-full mb-2">
+                                Only 12 payments
+                              </div>
+                              <div className="text-base font-bold text-gray-600">
                                 £{Math.round(discountedBumperPrice)} total
                               </div>
                             </div>
