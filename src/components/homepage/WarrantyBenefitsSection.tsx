@@ -15,6 +15,14 @@ const WarrantyBenefitsSection: React.FC = () => {
       items: ["Full Mechanical & Electrical Cover", "Engine, Gearbox, Clutch, Drivetrain & Turbo", "Brakes, Steering, Suspension, Fuel, Cooling & Emissions"]
     },
     {
+      icon: Wrench,
+      title: "Features",
+      items: ["Labour & Diagnostics Included", "Generous Repair Limits", "Wear & Tear Protection", "Consequential Damage Cover", "MOT Fee Cover", "Breakdown Recovery", "Vehicle Rental"]
+    }
+  ];
+
+  const rightColumnCategories = [
+    {
       icon: Cpu,
       title: "Tech & Safety",
       items: ["Modern Tech & Safety – Sensors, Airbags, Multimedia, Cameras", "Electrical Systems – ECUs, Wiring, Lighting, Charging"]
@@ -26,16 +34,6 @@ const WarrantyBenefitsSection: React.FC = () => {
     }
   ];
 
-  const extrasItems = [
-    "Labour & Diagnostics Included",
-    "Generous Repair Limits",
-    "Wear & Tear Protection",
-    "Consequential Damage Cover",
-    "MOT Fee Cover",
-    "Breakdown Recovery",
-    "Vehicle Rental"
-  ];
-
   return (
     <section className="py-12 md:py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -45,7 +43,7 @@ const WarrantyBenefitsSection: React.FC = () => {
             {/* Section Header */}
             <div className="text-center lg:text-left mb-6">
               <h2 className="text-2xl md:text-4xl font-bold text-brand-dark-text mb-3 flex items-center justify-center lg:justify-start gap-2">
-                Complete Car Warranty. Zero Worries. <span className="text-2xl md:text-3xl">🐼</span>
+                Complete Car Warranty. Zero Worries.
               </h2>
               <p className="text-lg md:text-xl font-bold mb-2">
                 <span className="text-green-600">Warranty that works when your car doesn't!</span>
@@ -59,7 +57,7 @@ const WarrantyBenefitsSection: React.FC = () => {
 
             {/* Two Column Coverage Layout */}
             <div className="grid md:grid-cols-2 gap-6 mb-6">
-              {/* Left Column - Mechanical, Tech & Safety, EV & Hybrid */}
+              {/* Left Column - Mechanical & Electrical, Features */}
               <div className="space-y-4">
                 {leftColumnCategories.map((category, idx) => (
                   <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
@@ -81,24 +79,28 @@ const WarrantyBenefitsSection: React.FC = () => {
                 ))}
               </div>
 
-              {/* Right Column - Extras */}
-              <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow h-fit">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-9 h-9 rounded-lg bg-brand-orange/10 flex items-center justify-center">
-                    <Wrench className="w-5 h-5 text-brand-orange" />
-                  </div>
-                  <h3 className="font-bold text-brand-dark-text text-lg">Extras</h3>
-                </div>
-                <div className="space-y-2">
-                  {extrasItems.map((item, idx) => (
-                    <div key={idx} className="flex items-start gap-2">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-gray-700">{item}</p>
+              {/* Right Column - Tech & Safety, EV & Hybrid */}
+              <div className="space-y-4">
+                {rightColumnCategories.map((category, idx) => (
+                  <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-9 h-9 rounded-lg bg-brand-orange/10 flex items-center justify-center">
+                        <category.icon className="w-5 h-5 text-brand-orange" />
+                      </div>
+                      <h3 className="font-bold text-brand-dark-text text-lg">{category.title}</h3>
                     </div>
-                  ))}
-                </div>
-                <p className="text-gray-600 font-medium mt-4 flex items-center gap-2">
-                  And so much more…. <span className="text-lg">🐼</span>
+                    <div className="space-y-2">
+                      {category.items.map((item, itemIdx) => (
+                        <div key={itemIdx} className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                          <p className="text-sm text-gray-700">{item}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                <p className="text-gray-600 font-medium flex items-center gap-2">
+                  And so much more….
                 </p>
               </div>
             </div>
@@ -124,7 +126,7 @@ const WarrantyBenefitsSection: React.FC = () => {
                   className="w-full max-w-[400px] md:max-w-[500px] lg:max-w-[600px] h-auto object-contain"
                 />
                 <p className="text-brand-dark-text font-bold text-lg md:text-xl mt-2 text-center">
-                  Warranty that works when your car doesn't! 🐼
+                  Warranty that works when your car doesn't!
                 </p>
               </div>
               
