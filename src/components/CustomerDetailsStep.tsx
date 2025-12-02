@@ -1079,6 +1079,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           .toLowerCase()
                           .replace(/car/gi, 'vehicle')
                           .replace(/plan/gi, '')
+                          .replace(/premium/gi, 'platinum')
                           .trim();
                         return `Your ${formattedPlanName} plan is ready`;
                       })()}
