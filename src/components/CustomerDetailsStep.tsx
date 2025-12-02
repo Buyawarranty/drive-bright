@@ -409,9 +409,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   };
 
   const handleFieldBlur = (field: string) => {
-    // Only show errors on blur if validation has been triggered (after first submit attempt)
-    if (!showValidation) return;
-    
     const value = customerData[field as keyof typeof customerData];
     if (typeof value !== 'string') return;
     
