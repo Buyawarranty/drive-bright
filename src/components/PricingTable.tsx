@@ -2176,8 +2176,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     className={cn(
                       "w-full mb-3 font-bold text-base py-6 transition-all duration-300 group",
                       isSelected
-                        ? "bg-green-600 hover:bg-green-700 text-white shadow-lg border-2 border-green-700"
-                        : "bg-green-600 hover:bg-green-500 text-white border-2 border-green-600 hover:border-green-500"
+                        ? "bg-brand-orange hover:bg-brand-orange/90 text-white shadow-lg border-2 border-brand-orange"
+                        : "bg-brand-orange hover:bg-brand-orange/90 text-white border-2 border-brand-orange"
                     )}
                     size="lg"
                   >
