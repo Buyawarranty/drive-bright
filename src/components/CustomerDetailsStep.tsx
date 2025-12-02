@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, CheckCircle, Edit, User, CreditCard, MapPin, X, ArrowUp, Check, ArrowRight, Lock, Car } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Edit, User, CreditCard, MapPin, X, ArrowUp, Check, ArrowRight, Lock, Car, Mail } from 'lucide-react';
 import { PostcodeAutocomplete } from '@/components/ui/uk-postcode-autocomplete';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -845,7 +845,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Personal Information Section */}
                   <div className="space-y-4">
-                    <div className="border-b border-gray-200 pb-2">
+                    <div className="border-b border-gray-200 pb-2 flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-gray-600" />
                       <h4 className="text-sm font-semibold text-gray-900 tracking-wide">Where should we send your policy?</h4>
                     </div>
                   
