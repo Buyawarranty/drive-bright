@@ -904,17 +904,17 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
 
         {/* Customer Details Form */}
         <Card className="border border-gray-200">
-          <CardContent className="pt-6">
+          <CardContent className="p-4 sm:pt-6 sm:p-6">
             <div className="grid lg:grid-cols-2 gap-8">
               {/* Left Column - Personal Details Form */}
               <div>
                 {/* Heading with Security Badge */}
                 <div className="mb-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle className="w-6 h-6 text-green-600" />
-                    <h3 className="text-xl font-bold text-gray-900">Almost done! Just confirm your details</h3>
+                  <div className="flex items-start gap-2 mb-2">
+                    <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 flex-shrink-0 mt-0.5" />
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight">Almost done! Just confirm your details</h3>
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-xs sm:text-sm text-gray-600 ml-7 sm:ml-8">
                     We need this to set up your warranty and keep your vehicle protected. Your details are safe and encrypted.
                   </p>
                 </div>
@@ -922,19 +922,21 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Personal Information Section */}
                   <div className="space-y-4">
-                    <div className="border-b border-gray-200 pb-2 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-gray-600" />
-                        <h4 className="text-sm font-semibold text-gray-900 tracking-wide">Where should we send your policy?</h4>
-                      </div>
-                      <div className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200">
-                        <Lock className="w-3 h-3" />
-                        <span className="font-medium">Secure & Encrypted</span>
+                    <div className="border-b border-gray-200 pb-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                          <h4 className="text-sm font-semibold text-gray-900 tracking-wide">Where should we send your policy?</h4>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200 self-start sm:self-auto">
+                          <Lock className="w-3 h-3" />
+                          <span className="font-medium">Secure & Encrypted</span>
+                        </div>
                       </div>
                     </div>
                   
                   {/* Name Fields */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="first_name" className="text-sm font-medium text-gray-700">First Name *</Label>
                       <div className="relative">

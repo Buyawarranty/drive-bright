@@ -1068,14 +1068,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
       <div className="max-w-6xl mx-auto px-4 py-3 space-y-6">
         
         {/* Vehicle Information */}
-        <div className="section-header rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
+        <div className="section-header rounded-lg p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold">
+              <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
                 1
               </div>
-              <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-                <Car className="h-5 w-5" />
+              <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
+                <Car className="h-5 w-5 flex-shrink-0" />
                 Vehicle Information
               </h2>
             </div>
@@ -1141,22 +1141,22 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
 
         {/* What's Covered Section */}
-        <div id="whats-covered" className="section-header rounded-lg p-8 mb-8">
+        <div id="whats-covered" className="section-header rounded-lg p-4 sm:p-8 mb-8">
           <Collapsible open={whatsCoveredOpen} onOpenChange={setWhatsCoveredOpen}>
             <CollapsibleTrigger className="w-full">
               <div className="flex items-center justify-between gap-2 mb-4 cursor-pointer group">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-black flex-shrink-0" />
-                  <h2 className="text-xl font-semibold text-black">
+                  <h2 className="text-lg sm:text-xl font-semibold text-black">
                     What's covered?
                   </h2>
-                  <ChevronDown className="w-6 h-6 sm:w-8 sm:h-8 text-black transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                  <ChevronDown className="w-5 h-5 sm:w-8 sm:h-8 text-black transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
                 </div>
                 {/* Instant Cover Badge with Tooltip */}
                 <TooltipProvider delayDuration={0}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="inline-flex items-center gap-2 bg-green-50 border border-green-300 rounded-md px-3 py-1.5 sm:py-2 w-fit cursor-help">
+                      <div className="inline-flex items-center gap-1 sm:gap-2 bg-green-50 border border-green-300 rounded-md px-2 sm:px-3 py-1 sm:py-1.5 w-fit cursor-help">
                         <span className="text-xs sm:text-sm font-semibold text-green-700 whitespace-nowrap">⚡ Instant cover</span>
                       </div>
                     </TooltipTrigger>
@@ -1557,13 +1557,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
         </div>
 
         {/* Labour Rate Selection - NEW */}
-        <div className="bg-gray-50 rounded-lg p-8 border border-gray-200 shadow-sm">
+        <div className="bg-gray-50 rounded-lg p-4 sm:p-8 border border-gray-200 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold">
+            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
               2
             </div>
-            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-              <Settings className="w-5 h-5" />
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
+              <Settings className="w-5 h-5 flex-shrink-0" />
               Choose your labour rate
             </h2>
           </div>
@@ -1626,15 +1626,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
         </div>
 
         {/* Choose Your Excess Amount */}
-        <div id="excess-amount-section" className={`section-header rounded-lg p-6 transition-all duration-200 ${
+        <div id="excess-amount-section" className={`section-header rounded-lg p-4 sm:p-6 transition-all duration-200 ${
           validationErrors.voluntaryExcess ? 'border-2 border-red-500' : ''
         }`}>
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold">
+            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
               3
             </div>
-            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-              <MousePointerClick className="w-5 h-5 scale-x-[-1]" />
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
+              <MousePointerClick className="w-5 h-5 scale-x-[-1] flex-shrink-0" />
               Choose your excess amount
             </h2>
           </div>
@@ -1669,15 +1669,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
         </div>
 
         {/* Claim Limit Selection */}
-        <div id="claim-limit-section" className={`section-header rounded-lg p-6 transition-all duration-200 ${
+        <div id="claim-limit-section" className={`section-header rounded-lg p-4 sm:p-6 transition-all duration-200 ${
           validationErrors.claimLimit ? 'border-2 border-red-500' : ''
         }`}>
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold">
+            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
               4
             </div>
-            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5" />
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 flex-shrink-0" />
               Pick your claim limit
             </h2>
             
@@ -1887,13 +1887,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
 
         {/* Choose Warranty Duration */}
-        <div id="duration-price-section" className="section-header rounded-lg p-6">
+        <div id="duration-price-section" className="section-header rounded-lg p-4 sm:p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold">
+            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
               5
             </div>
-            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
+              <Calendar className="w-5 h-5 flex-shrink-0" />
               Choose your duration
             </h2>
           </div>
@@ -2201,16 +2201,18 @@ const PricingTable: React.FC<PricingTableProps> = ({
         </div>
 
         {/* Add-On Protection Packages */}
-        <div className="section-header rounded-lg p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold">
-              6
+        <div className="section-header rounded-lg p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
+                6
+              </div>
+              <h3 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
+                <Shield className="w-5 h-5 flex-shrink-0" />
+                Add extras
+              </h3>
             </div>
-            <h3 className="text-xl font-semibold text-foreground flex items-center gap-2">
-              <Shield className="w-5 h-5" />
-              Add extras
-            </h3>
-            <p className="text-muted-foreground ml-2">Enhance your warranty ✨</p>
+            <p className="text-muted-foreground sm:ml-2 text-sm">Enhance your warranty ✨</p>
           </div>
           <AddOnProtectionPackages 
             selectedAddOns={selectedProtectionAddOns}

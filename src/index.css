@@ -320,7 +320,13 @@ body {
   background-color: hsl(var(--muted));
   border: 1px solid hsl(var(--border));
   border-radius: 8px;
-  padding: 24px;
+  padding: 16px;
+}
+
+@media (min-width: 640px) {
+  .section-header {
+    padding: 24px;
+  }
 }
 
 /* Form Section Card */
