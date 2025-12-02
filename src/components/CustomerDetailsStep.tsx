@@ -903,11 +903,11 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
         </div>
 
         {/* Customer Details Form */}
-        <Card className="border border-gray-200">
-          <CardContent className="p-4 sm:pt-6 sm:p-6">
-            <div className="grid lg:grid-cols-2 gap-8">
+        <Card className="border border-gray-200 overflow-hidden">
+          <CardContent className="p-4 sm:pt-6 sm:p-6 overflow-x-hidden">
+            <div className="grid lg:grid-cols-2 gap-8 max-w-full">
               {/* Left Column - Personal Details Form */}
-              <div>
+              <div className="w-full min-w-0">
                 {/* Heading with Security Badge */}
                 <div className="mb-6">
                   <div className="flex items-start gap-2 mb-2">
@@ -915,7 +915,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     <h3 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight">Almost done! Just confirm your details</h3>
                   </div>
                   <p className="text-xs sm:text-sm text-gray-600 ml-7 sm:ml-8">
-                    We need this to set up your warranty and keep your vehicle protected. Your details are safe and encrypted.
+                    Secure your warranty. Your details are safe.
                   </p>
                 </div>
                 
