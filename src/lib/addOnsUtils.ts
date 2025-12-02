@@ -48,7 +48,7 @@ export const getAutoIncludedAddOns = (paymentType: string): string[] => {
     case '24months':
       return ['breakdown']; // 2-Year: Vehicle recovery only
     case '36months':
-      return ['breakdown', 'rental']; // 3-Year: Vehicle recovery + Rental
+      return ['breakdown', 'rental', 'european']; // 3-Year: Vehicle recovery + Rental + Europe Cover
     default:
       return []; // 12-month plans have no auto-included add-ons
   }
