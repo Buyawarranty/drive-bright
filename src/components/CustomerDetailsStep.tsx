@@ -1233,15 +1233,12 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                        <span className="text-black text-sm">Excess:</span>
                        <span className="font-semibold text-black text-sm">£{updatedPricingData.voluntaryExcess ?? 0}</span>
                      </div>
-                     <div className="flex justify-between items-center">
-                       <span className="text-black text-sm">Labour Rate:</span>
-                       <span className="font-semibold text-black text-sm">
-                         £{pricingData.labourRate || 70}/hour
-                         {pricingData.labourRate === 50 && <span className="text-xs text-gray-600 ml-1">(Independent garages)</span>}
-                         {pricingData.labourRate === 70 && <span className="text-xs text-gray-600 ml-1">(Most popular)</span>}
-                         {pricingData.labourRate === 100 && <span className="text-xs text-gray-600 ml-1">(Dealer garages)</span>}
-                       </span>
-                     </div>
+                       <div className="flex justify-between items-center">
+                        <span className="text-black text-sm">Labour Rate:</span>
+                        <span className="font-semibold text-black text-sm">
+                          £{pricingData.labourRate || 70}/hour
+                        </span>
+                      </div>
                     
                     {/* Add-ons Section */}
                     {updatedPricingData.protectionAddOns && Object.values(updatedPricingData.protectionAddOns).some(Boolean) && (
