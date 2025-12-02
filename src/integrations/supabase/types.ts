@@ -1404,6 +1404,7 @@ export type Database = {
           flat_number: string | null
           id: string
           is_deleted: boolean | null
+          labour_rate: number | null
           last_login: string | null
           last_name: string | null
           lost_key: boolean | null
@@ -1462,6 +1463,7 @@ export type Database = {
           flat_number?: string | null
           id?: string
           is_deleted?: boolean | null
+          labour_rate?: number | null
           last_login?: string | null
           last_name?: string | null
           lost_key?: boolean | null
@@ -1520,6 +1522,7 @@ export type Database = {
           flat_number?: string | null
           id?: string
           is_deleted?: boolean | null
+          labour_rate?: number | null
           last_login?: string | null
           last_name?: string | null
           lost_key?: boolean | null

@@ -68,8 +68,8 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { planId, paymentType, userEmail, userId, stripeSessionId, vehicleData, customerData, skipEmail, metadata, protectionAddOns, claimLimit, voluntaryExcess, seasonalBonusMonths = 0 } = await req.json();
-    logStep("Request data", { planId, paymentType, userEmail, userId, stripeSessionId, skipEmail, hasMetadata: !!metadata, hasProtectionAddOns: !!protectionAddOns, claimLimit, voluntaryExcess, seasonalBonusMonths });
+    const { planId, paymentType, userEmail, userId, stripeSessionId, vehicleData, customerData, skipEmail, metadata, protectionAddOns, claimLimit, voluntaryExcess, seasonalBonusMonths = 0, labourRate } = await req.json();
+    logStep("Request data", { planId, paymentType, userEmail, userId, stripeSessionId, skipEmail, hasMetadata: !!metadata, hasProtectionAddOns: !!protectionAddOns, claimLimit, voluntaryExcess, seasonalBonusMonths, labourRate });
 
     if (!planId || !paymentType || !userEmail) {
       throw new Error("Missing required parameters");
@@ -299,6 +299,7 @@ serve(async (req) => {
       claim_limit: parseInt(metadata?.claim_limit || customerData?.claimLimit || claimLimit || protectionAddOns?.claimLimit || '1250'), // User-selected claim limit
       warranty_reference_number: warrantyReference,
       seasonal_bonus_months: seasonalBonusMonths, // Store seasonal bonus
+      labour_rate: labourRate || 70, // Store selected labour rate
       // Store final combined add-ons in customer record (user selections + auto-inclusions)
       ...finalAddOnsForCustomer
     };
