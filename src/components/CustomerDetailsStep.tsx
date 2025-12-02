@@ -825,15 +825,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
           </div>
         </div>
 
-        {/* Almost Done Heading */}
-        <div className="mb-8">
-          <div className="flex items-center justify-start gap-3 mb-2">
-            <CheckCircle className="w-6 h-6 text-black" />
-            <h1 className="text-3xl font-bold text-black">Almost done! Just confirm your details</h1>
-          </div>
-        </div>
-
-
         {/* Customer Details Form */}
         <Card className="border border-gray-200">
           <CardContent className="pt-6">
@@ -842,7 +833,10 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
               <div>
                 {/* Heading with Security Badge */}
                 <div className="mb-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Almost done! Just confirm your details</h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle className="w-6 h-6 text-green-600" />
+                    <h3 className="text-xl font-bold text-gray-900">Almost done! Just confirm your details</h3>
+                  </div>
                   <p className="text-sm text-gray-600">
                     We need this to set up your warranty and keep your vehicle protected. Your details are safe and encrypted.
                   </p>
