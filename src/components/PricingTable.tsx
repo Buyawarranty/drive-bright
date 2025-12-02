@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ProtectedButton } from '@/components/ui/protected-button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Check, ArrowLeft, Info, FileText, ExternalLink, ChevronDown, ChevronUp, Plus, Infinity, Zap, Car, Cog, Settings, Droplets, Cpu, Snowflake, Search, Users, RotateCcw, MapPin, X, Shield, Hash, Calendar, Gauge, Fuel, Edit, HelpCircle, Gift, ArrowRight, ArrowUp, DollarSign, MousePointerClick, ShieldCheck, PartyPopper, CheckCircle, Crown, Battery, Bike, AlertTriangle, AlertCircle } from 'lucide-react';
+import { Check, ArrowLeft, Info, FileText, ExternalLink, ChevronDown, ChevronUp, Plus, Infinity, Zap, Car, Cog, Settings, Droplets, Cpu, Snowflake, Search, Users, RotateCcw, MapPin, X, Shield, Hash, Calendar, Gauge, Fuel, Edit, HelpCircle, Gift, ArrowRight, ArrowUp, DollarSign, MousePointerClick, ShieldCheck, PartyPopper, CheckCircle, Crown, Battery, Bike, AlertTriangle, AlertCircle, Mail } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -2047,190 +2047,143 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   )}
                   
                   {/* Collapsible Section for What's Covered */}
-                  <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-                    {/* Badges - Horizontal alignment */}
-                    <div className="flex flex-wrap items-center gap-2 mb-4">
+                  {/* Selection Checkbox - Top Right */}
+                  <div 
+                    className="absolute top-4 right-4 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPaymentType(durationId);
+                    }}
+                  >
+                    <div className={cn(
+                      "w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all duration-200",
+                      isSelected 
+                        ? "bg-green-500 border-green-500" 
+                        : "bg-white border-gray-300 hover:border-green-400"
+                    )}>
+                      {isSelected && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
+                    </div>
+                  </div>
+
+                  {/* Badges */}
+                  <div className="flex flex-wrap items-center gap-2 mb-4">
+                    {durationId === '24months' && (
+                      <Badge className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-3 py-1">
+                        MOST POPULAR
+                      </Badge>
+                    )}
+                    {durationId === '36months' && (
+                      <Badge className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-3 py-1">
+                        BEST VALUE
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  {/* Duration Title */}
+                  <h4 className="text-xl font-bold text-gray-900 mb-1">
+                    {duration.label}
+                  </h4>
+                  
+                  {/* Plan Name */}
+                  <p className="text-sm text-gray-500 mb-4">Platinum Complete Plan</p>
+                  
+                  {/* Price Section */}
+                  <div className="mb-4">
+                    {/* Monthly Price */}
+                    <div className="text-3xl font-bold text-black mb-1">
+                      £{displayedMonthlyPrice}<span className="text-lg font-normal text-gray-600">/month</span>
+                    </div>
+                    
+                    {/* Total Price */}
+                    <div className="text-base text-gray-600 mb-2">
+                      Total £{Math.round(displayedAnnualPrice)}
+                    </div>
+                    
+                    {/* Savings */}
+                    {savingsAmount > 0 && (
+                      <div className="mb-3">
+                        <span className="line-through text-red-500 text-sm">
+                          Was £{adjustedBasePrice}
+                        </span>
+                        <div className="text-black font-medium mt-1">
+                          'Save £{savingsAmount} Today'
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Payment Details - GREEN TEXT */}
+                    <div className="space-y-2 mt-4">
+                      <div className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+                        <span className="text-sm text-green-600 font-medium">12 payments, 0% APR</span>
+                      </div>
                       {durationId === '24months' && (
-                        <Badge className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-3 py-1">
-                          MOST POPULAR
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+                          <span className="text-sm text-green-600 font-medium">Year 2 Cover is Free</span>
+                        </div>
                       )}
                       {durationId === '36months' && (
-                        <>
-                          <Badge className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-3 py-1">
-                            BEST VALUE
-                          </Badge>
-                          <Badge className="bg-red-500 hover:bg-red-600 text-white font-semibold px-3 py-1 animate-pulse">
-                            LIMITED TIME OFFER
-                          </Badge>
-                        </>
-                      )}
-                      
-                      <TooltipProvider delayDuration={0}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Badge 
-                              variant="outline" 
-                              className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100 cursor-help px-3 py-1 flex items-center gap-1.5"
-                            >
-                              <Shield className="w-3.5 h-3.5" />
-                              Instant cover
-                            </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="max-w-xs">
-                            <div className="flex items-start gap-2">
-                              <Shield className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                              <p className="text-sm">
-                                Cover starts immediately after purchase – excludes pre-existing conditions.
-                              </p>
-                            </div>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                    
-                    {/* Duration Title */}
-                    <h4 className="text-xl font-bold text-gray-900 mb-4">
-                      {duration.label}
-                    </h4>
-                    
-                    {/* Price Hierarchy - Hero Monthly Price */}
-                    <div className="mb-6">
-                      {/* Hero Monthly Price */}
-                      <div className="mb-2">
-                        <div className="text-4xl font-extrabold text-black leading-tight">
-                          Only £{displayedMonthlyPrice}<span className="text-2xl font-semibold text-gray-600">/month</span>
-                        </div>
-                      </div>
-                      
-                      {/* Total Price - Smaller Below */}
-                      <div className="mb-3">
-                        <span className="text-base text-gray-600">
-                          Total £{Math.round(displayedAnnualPrice)}
-                        </span>
-                      </div>
-                      
-                      {/* Savings Badge - Red Strikethrough + Green Savings */}
-                      {savingsAmount > 0 && (
-                        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="line-through text-red-600 font-medium">
-                              Was £{adjustedBasePrice}
-                            </span>
-                            <span className="text-gray-600">→</span>
-                            <Badge className="bg-green-600 hover:bg-green-700 text-white font-bold px-3 py-1">
-                              Save £{savingsAmount} Today
-                            </Badge>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Payment Details with Checkmarks */}
-                      <div className="space-y-1.5 mb-4">
                         <div className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                          <span className="text-sm text-gray-700">12 payments, 0% APR</span>
+                          <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+                          <span className="text-sm text-green-600 font-medium">Year 2 and 3 Cover is Free</span>
                         </div>
-                        {durationId === '24months' && (
-                          <div className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                            <span className="text-sm text-gray-700">Year 2 Cover is Free</span>
-                          </div>
-                        )}
-                        {durationId === '36months' && (
-                          <div className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                            <span className="text-sm text-gray-700">Year 2 and 3 Cover is Free</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Action Button */}
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        console.log('🎯 Button clicked - setting payment type:', durationId);
-                        setPaymentType(durationId);
-                      }}
-                      className={cn(
-                        "w-full mb-2 font-bold transition-all duration-200 text-base py-6",
-                        isSelected
-                          ? "bg-green-600 hover:bg-green-700 text-white shadow-lg"
-                          : "bg-green-600 hover:bg-green-700 text-white"
                       )}
-                      size="lg"
-                    >
-                      {isSelected ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <Check className="w-5 h-5" />
-                          Continue with This Plan
-                        </div>
-                      ) : (
-                        'Choose This Plan'
-                      )}
-                    </Button>
-                    
-                    {/* Microcopy Under CTA */}
-                    <div className="text-center mb-4">
-                      <p className="text-xs text-gray-600">
-                        Secure checkout – takes less than 1 minute
-                      </p>
                     </div>
-                    
-                    {/* Trust Icons */}
-                    <div className="flex items-center justify-center gap-3 mb-4 pb-4 border-b border-gray-200">
-                      <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
-                        <span className="font-medium">SSL Secure</span>
+                  </div>
+                  
+                  {/* What's Included Collapsible */}
+                  <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+                    <CollapsibleTrigger className="w-full mb-4">
+                      <div className="flex items-center justify-between w-full border border-gray-300 rounded-lg px-4 py-3 hover:border-gray-400 transition-colors">
+                        <span className="text-lg font-medium text-gray-800">What's Included</span>
+                        <ChevronDown 
+                          className={cn(
+                            "w-5 h-5 text-gray-600 transition-transform duration-300",
+                            isExpanded && "transform rotate-180"
+                          )}
+                        />
                       </div>
-                      <div className="text-gray-300">|</div>
-                      <div className="flex items-center gap-1">
-                        <img src="https://img.icons8.com/color/24/visa.png" alt="Visa" className="w-6 h-6" />
-                        <img src="https://img.icons8.com/color/24/mastercard.png" alt="Mastercard" className="w-6 h-6" />
-                      </div>
-                    </div>
+                    </CollapsibleTrigger>
                     
-                    {/* Coverage Details Link - Collapsed by Default */}
-                    <Collapsible 
-                      open={isExpanded} 
-                      onOpenChange={setIsExpanded}
-                    >
-                      <CollapsibleTrigger className="w-full">
-                        <div className="flex items-center justify-center gap-2 text-sm text-gray-600 hover:text-black transition-colors">
-                          <Info className="w-4 h-4" />
-                          <span className="underline">View Coverage Details</span>
-                          <ChevronDown 
-                            className={cn(
-                              "w-4 h-4 transition-transform duration-300",
-                              isExpanded && "transform rotate-180"
-                            )}
-                          />
-                        </div>
-                      </CollapsibleTrigger>
-                      
-                      <CollapsibleContent className="mt-4">
-                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
-                          {duration.features.map((feature, idx) => {
-                            const isExclusion = feature.toLowerCase().includes('pre-existing faults');
-                            return (
-                              <div key={idx} className="flex items-start gap-2">
-                                {isExclusion ? (
-                                  <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                                ) : (
-                                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                )}
-                                <span className="text-sm text-gray-700">{feature}</span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
+                    <CollapsibleContent className="mb-4">
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
+                        {duration.features.map((feature, idx) => {
+                          const isExclusion = feature.toLowerCase().includes('pre-existing faults');
+                          return (
+                            <div key={idx} className="flex items-start gap-2">
+                              {isExclusion ? (
+                                <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                              ) : (
+                                <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                              )}
+                              <span className="text-sm text-gray-700">{feature}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CollapsibleContent>
                   </Collapsible>
+                  
+                  {/* CTA Button with Hover Effect and Arrow */}
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPaymentType(durationId);
+                    }}
+                    className={cn(
+                      "w-full mb-3 font-bold text-base py-6 transition-all duration-300 group",
+                      isSelected
+                        ? "bg-green-600 hover:bg-green-700 text-white shadow-lg border-2 border-green-700"
+                        : "bg-green-600 hover:bg-green-500 text-white border-2 border-green-600 hover:border-green-500"
+                    )}
+                    size="lg"
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <span>Get Instant Cover</span>
+                      <ArrowRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" />
+                    </div>
+                  </Button>
                   
                   {/* Email Quote Link */}
                   <button
@@ -2238,9 +2191,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       e.stopPropagation();
                       handleOpenEmailQuoteDialog(durationId);
                     }}
-                    className="w-full mt-3 text-center text-base text-gray-600 hover:text-orange-600 underline transition-colors pointer-events-auto"
+                    className="w-full text-center text-sm text-gray-500 hover:text-orange-600 transition-colors pointer-events-auto flex items-center justify-center gap-1"
                   >
-                    ✉️ Email me this quote
+                    <Mail className="w-4 h-4" />
+                    <span className="underline">Email me this quote</span>
                   </button>
                 </div>
               );
