@@ -15,6 +15,7 @@ import TrustpilotHeader from '@/components/TrustpilotHeader';
 import BackgroundRemovalProcessor from '@/components/BackgroundRemovalProcessor';
 import MobileNavigation from '@/components/MobileNavigation';
 import { OptimizedImage } from '@/components/OptimizedImage';
+import { cn } from '@/lib/utils';
 
 import AddOnProtectionPackages from '@/components/AddOnProtectionPackages';
 import { validateVehicleEligibility, calculateVehiclePriceAdjustment, applyPriceAdjustment } from '@/lib/vehicleValidation';
@@ -2047,68 +2048,85 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   
                   {/* Collapsible Section for What's Covered */}
                   <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-                    {/* Instant Cover Badge with Left Chevron */}
-                    <div className="flex items-center justify-between mb-4">
-                      <CollapsibleTrigger asChild>
-                        <button 
-                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <ChevronDown className={`w-9 h-9 text-gray-700 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                        </button>
-                      </CollapsibleTrigger>
+                    {/* Badges - Horizontal alignment */}
+                    <div className="flex flex-wrap items-center gap-2 mb-4">
+                      {durationId === '24months' && (
+                        <Badge className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-3 py-1">
+                          MOST POPULAR
+                        </Badge>
+                      )}
+                      {durationId === '36months' && (
+                        <>
+                          <Badge className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-3 py-1">
+                            BEST VALUE
+                          </Badge>
+                          <Badge className="bg-red-500 hover:bg-red-600 text-white font-semibold px-3 py-1 animate-pulse">
+                            LIMITED TIME OFFER
+                          </Badge>
+                        </>
+                      )}
                       
                       <TooltipProvider delayDuration={0}>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-2 border-green-200 bg-green-50 text-green-700 text-sm font-semibold cursor-help">
-                              <Zap className="w-4 h-4" />
+                            <Badge 
+                              variant="outline" 
+                              className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100 cursor-help px-3 py-1 flex items-center gap-1.5"
+                            >
+                              <Shield className="w-3.5 h-3.5" />
                               Instant cover
-                            </span>
+                            </Badge>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="max-w-xs">
-                            <p className="flex items-center gap-2">
-                              <Shield className="w-4 h-4" />
-                              ⚡ Cover starts immediately after purchase
-                            </p>
+                            <div className="flex items-start gap-2">
+                              <Shield className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                              <p className="text-sm">
+                                Cover starts immediately after purchase – excludes pre-existing conditions.
+                              </p>
+                            </div>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </div>
                     
                     {/* Duration Title */}
-                    <h4 className="text-xl font-bold text-gray-900 mb-2">
+                    <h4 className="text-xl font-bold text-gray-900 mb-4">
                       {duration.label}
                     </h4>
                     
-                    {/* Plan Name */}
-                    <p className="text-sm text-gray-600 mb-4">{duration.planName}</p>
-                    
-                    {/* Unified Price Section */}
+                    {/* Price Hierarchy - Hero Monthly Price */}
                     <div className="mb-6">
-                      {/* Combined Monthly & Total Price - Single Line */}
+                      {/* Hero Monthly Price */}
                       <div className="mb-2">
-                        <span className="text-2xl font-bold text-black">
-                          £{displayedMonthlyPrice}/month · Total £{Math.round(displayedAnnualPrice)}
+                        <div className="text-4xl font-extrabold text-black leading-tight">
+                          Only £{displayedMonthlyPrice}<span className="text-2xl font-semibold text-gray-600">/month</span>
+                        </div>
+                      </div>
+                      
+                      {/* Total Price - Smaller Below */}
+                      <div className="mb-3">
+                        <span className="text-base text-gray-600">
+                          Total £{Math.round(displayedAnnualPrice)}
                         </span>
                       </div>
                       
-                      {/* Slashed Price & Savings - Directly Below Price */}
+                      {/* Savings Badge - Red Strikethrough + Green Savings */}
                       {savingsAmount > 0 && (
-                        <div className="mb-3">
-                          <div className="text-sm mb-1">
-                            <span className="line-through text-gray-500">
+                        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="line-through text-red-600 font-medium">
                               Was £{adjustedBasePrice}
                             </span>
-                          </div>
-                          <div className="text-base font-semibold text-green-600">
-                            Save £{savingsAmount} with this plan
+                            <span className="text-gray-600">→</span>
+                            <Badge className="bg-green-600 hover:bg-green-700 text-white font-bold px-3 py-1">
+                              Save £{savingsAmount} Today
+                            </Badge>
                           </div>
                         </div>
                       )}
                       
-                      {/* Payment Details with Checkmarks - Below Pricing */}
-                      <div className="space-y-1.5">
+                      {/* Payment Details with Checkmarks */}
+                      <div className="space-y-1.5 mb-4">
                         <div className="flex items-center gap-2">
                           <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                           <span className="text-sm text-gray-700">12 payments, 0% APR</span>
@@ -2128,24 +2146,74 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
                     </div>
                     
-                    {/* What's Covered Box Toggle */}
-                    <CollapsibleTrigger asChild>
-                      <button 
-                        className="w-full flex items-center justify-between p-4 mb-4 rounded-lg border-2 border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className="flex items-center gap-3">
-                          <Shield className="w-6 h-6 text-gray-700" />
-                          <span className="text-lg font-bold text-gray-900">What's covered?</span>
+                    {/* Action Button */}
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log('🎯 Button clicked - setting payment type:', durationId);
+                        setPaymentType(durationId);
+                      }}
+                      className={cn(
+                        "w-full mb-2 font-bold transition-all duration-200 text-base py-6",
+                        isSelected
+                          ? "bg-green-600 hover:bg-green-700 text-white shadow-lg"
+                          : "bg-green-600 hover:bg-green-700 text-white"
+                      )}
+                      size="lg"
+                    >
+                      {isSelected ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <Check className="w-5 h-5" />
+                          Continue with This Plan
                         </div>
-                        <ChevronDown className={`w-9 h-9 text-gray-700 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                      </button>
-                    </CollapsibleTrigger>
+                      ) : (
+                        'Choose This Plan'
+                      )}
+                    </Button>
                     
-                    <CollapsibleContent className="animate-accordion-down">
-                      <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200">
-                        <h6 className="text-sm font-semibold text-gray-900 mb-3">What's included:</h6>
-                        <div className="space-y-2">
+                    {/* Microcopy Under CTA */}
+                    <div className="text-center mb-4">
+                      <p className="text-xs text-gray-600">
+                        Secure checkout – takes less than 1 minute
+                      </p>
+                    </div>
+                    
+                    {/* Trust Icons */}
+                    <div className="flex items-center justify-center gap-3 mb-4 pb-4 border-b border-gray-200">
+                      <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        <span className="font-medium">SSL Secure</span>
+                      </div>
+                      <div className="text-gray-300">|</div>
+                      <div className="flex items-center gap-1">
+                        <img src="https://img.icons8.com/color/24/visa.png" alt="Visa" className="w-6 h-6" />
+                        <img src="https://img.icons8.com/color/24/mastercard.png" alt="Mastercard" className="w-6 h-6" />
+                      </div>
+                    </div>
+                    
+                    {/* Coverage Details Link - Collapsed by Default */}
+                    <Collapsible 
+                      open={isExpanded} 
+                      onOpenChange={setIsExpanded}
+                    >
+                      <CollapsibleTrigger className="w-full">
+                        <div className="flex items-center justify-center gap-2 text-sm text-gray-600 hover:text-black transition-colors">
+                          <Info className="w-4 h-4" />
+                          <span className="underline">View Coverage Details</span>
+                          <ChevronDown 
+                            className={cn(
+                              "w-4 h-4 transition-transform duration-300",
+                              isExpanded && "transform rotate-180"
+                            )}
+                          />
+                        </div>
+                      </CollapsibleTrigger>
+                      
+                      <CollapsibleContent className="mt-4">
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
                           {duration.features.map((feature, idx) => {
                             const isExclusion = feature.toLowerCase().includes('pre-existing faults');
                             return (
@@ -2159,48 +2227,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                               </div>
                             );
                           })}
-                          
-                          {/* Policy Details Link */}
-                          <div className="pt-3 border-t border-gray-200 mt-3">
-                            <button
-                              onClick={() => {
-                                const detailsSection = document.getElementById('your-cover-details');
-                                detailsSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                              }}
-                              className="flex items-start gap-2 text-sm text-green-600 hover:text-green-700 font-medium underline transition-colors"
-                            >
-                              <span className="text-base mt-0.5">🔍</span>
-                              <span>See full policy details</span>
-                            </button>
-                          </div>
                         </div>
-                      </div>
-                      
-                      {/* Bottom Toggle - Opposite Side */}
-                      <CollapsibleTrigger asChild>
-                        <button 
-                          className="w-full flex items-center justify-end gap-2 mb-4 text-base font-medium transition-colors group"
-                          style={{ color: '#666' }}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <span className="group-hover:text-gray-900">View less</span>
-                          <ChevronDown className={`w-10 h-10 text-gray-700 transition-transform group-hover:text-gray-900 ${isExpanded ? 'rotate-180' : ''}`} />
-                        </button>
-                      </CollapsibleTrigger>
-                    </CollapsibleContent>
+                      </CollapsibleContent>
+                    </Collapsible>
                   </Collapsible>
-                  
-                  {/* CTA Button - Now just shows selection state */}
-                  <div
-                    className={`w-full py-4 px-6 rounded-lg text-center font-bold text-lg transition-colors pointer-events-none flex items-center justify-center gap-2 ${
-                      isSelected
-                        ? 'bg-green-600 border-2 border-green-600 text-white'
-                        : 'bg-orange-500 text-white'
-                    }`}
-                  >
-                    {isSelected && <Check className="w-5 h-5 flex-shrink-0" />}
-                    <span>{isSelected ? 'Selected' : 'Secure Your Cover'}</span>
-                  </div>
                   
                   {/* Email Quote Link */}
                   <button
