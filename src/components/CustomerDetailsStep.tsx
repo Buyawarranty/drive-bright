@@ -1044,7 +1044,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                   {/* Address Section */}
                   <div className="space-y-4">
                     <div className="border-b border-gray-200 pb-2 pt-2">
-                      <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Address</h4>
+                      <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Address for your warranty</h4>
                     </div>
                     <div>
                       <Label htmlFor="address_line_1" className="text-sm font-medium text-gray-700">Address Line 1 *</Label>
