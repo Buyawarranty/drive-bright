@@ -2022,14 +2022,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
               const displayedAnnualPrice = discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12);
               const savingsAmount = durationId === '24months' ? 100 : durationId === '36months' ? 200 : 0;
               
-              return (
+               return (
                 <div
                   key={durationId}
-                  className={`relative p-6 rounded-lg border-2 transition-all bg-white ${
+                  className={`relative p-6 rounded-lg border-2 transition-all bg-white pointer-events-auto ${
                     isSelected
                       ? 'border-orange-500 shadow-lg shadow-orange-500/30'
                       : 'border-gray-300'
                   }`}
+                  style={{ position: 'relative', zIndex: 1 }}
                 >
                   {/* Badge */}
                   {duration.badge && (
@@ -2177,15 +2178,18 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   
                   {/* CTA Button */}
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       console.log('🎯 Duration button clicked:', { durationId, currentPaymentType: paymentType });
                       setPaymentType(durationId);
                     }}
-                    className={`w-full py-4 px-4 rounded-lg text-center font-bold text-lg transition-colors ${
+                    className={`w-full py-4 px-4 rounded-lg text-center font-bold text-lg transition-colors cursor-pointer pointer-events-auto ${
                       isSelected
                         ? 'bg-green-600 border-2 border-green-600 text-white'
                         : 'bg-orange-500 text-white hover:bg-orange-600'
                     }`}
+                    style={{ position: 'relative', zIndex: 10 }}
                   >
                     {isSelected ? 'Selected' : 'Secure Your Cover'}
                   </button>
