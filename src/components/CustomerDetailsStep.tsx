@@ -905,9 +905,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
         {/* Customer Details Form */}
         <Card className="border border-gray-200 overflow-hidden">
           <CardContent className="p-4 sm:pt-6 sm:p-6 overflow-x-hidden">
-            <div className="grid lg:grid-cols-2 gap-8 max-w-full">
-              {/* Left Column - Personal Details Form */}
-              <div className="w-full min-w-0">
+            <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 max-w-full">
+              {/* Left Column - Personal Details Form (order-2 on mobile, order-1 on desktop) */}
+              <div className="w-full min-w-0 order-2 lg:order-1">
                 {/* Heading with Security Badge */}
                 <div className="mb-6">
                   <div className="flex items-start gap-2 mb-2">
@@ -1150,8 +1150,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                 </form>
               </div>
 
-              {/* Right Column - Order Summary */}
-              <div className="space-y-6">
+              {/* Right Column - Order Summary (order-1 on mobile, order-2 on desktop) */}
+              <div className="space-y-6 order-1 lg:order-2">
                 {/* Order Summary Card */}
                 <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border overflow-hidden">
                   <div className="flex items-start justify-between mb-4 gap-2">
@@ -1238,6 +1238,28 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         <span className="font-semibold text-black text-xs sm:text-sm text-right">
                           £{pricingData.labourRate || 70}/hour
                         </span>
+                      </div>
+
+                      {/* Payment Summary - Mobile First */}
+                      <div className="border-t pt-4 mt-4 space-y-3">
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-black text-xs sm:text-sm font-medium">Pay Monthly:</span>
+                            <div className="text-right">
+                              <span className="font-bold text-black text-sm sm:text-base">£{Math.round(discountedBumperPrice / 12)}/month</span>
+                              <span className="block text-xs text-orange-600 font-medium">12 interest-free payments</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-black text-xs sm:text-sm font-medium">Pay in Full:</span>
+                            <div className="text-right">
+                              <span className="font-bold text-black text-sm sm:text-base">£{discountedStripePrice}</span>
+                              <span className="block text-xs text-green-600 font-medium">Save £{discountedBumperPrice - discountedStripePrice} today</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     
                     {/* Add-ons Section */}
@@ -1464,8 +1486,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                      </p>
                    </div>
 
-                   {/* Payment Methods - Conversion Focused */}
-                   <div className="space-y-6">
+                   {/* Payment Methods - Conversion Focused (order-3 on mobile) */}
+                   <div className="space-y-6 order-3 lg:order-none">
                       {/* Section Header */}
                        <div className="text-center">
                          <h3 className="text-2xl font-bold text-black mb-2">
