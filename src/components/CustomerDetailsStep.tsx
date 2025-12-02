@@ -1084,27 +1084,18 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       <span className="text-black text-sm">Plan:</span>
                       <span className="font-semibold text-black text-sm">{
                         (() => {
-                          // Check if it's a motorcycle based on make and model
-                          const makeLC = vehicleData.make?.toLowerCase().trim() || '';
-                          const modelLC = vehicleData.model?.toLowerCase().trim() || '';
-                          
-                          const isKnownMotorbikeManufacturer = ['yamaha', 'kawasaki', 'ducati', 'ktm', 'harley-davidson', 'harley davidson', 
-                            'triumph', 'aprilia', 'mv agusta', 'benelli', 'moto guzzi', 'indian', 
-                            'husqvarna', 'beta', 'sherco', 'gas gas', 'royal enfield', 'norton', 
-                            'zero', 'energica'].includes(makeLC);
-                          
-                          const isMotorbike = isKnownMotorbikeManufacturer || 
-                                            ['honda', 'bmw', 'suzuki'].includes(makeLC) && 
-                                            (modelLC.includes('gsx') || modelLC.includes('cbr') || modelLC.includes('ninja') || 
-                                             modelLC.includes('r1') || modelLC.includes('mt') || modelLC.includes('fazer'));
-                          
-                          const basePlanName = planName.replace(/premium/gi, 'Platinum');
-                          return isMotorbike 
-                            ? basePlanName.replace(/Car/gi, 'Bike')
-                            : basePlanName.replace(/Bike/gi, 'Car');
+                          // Extract just the plan tier name (e.g., "Platinum", "Gold", "Silver")
+                          const cleanPlanName = planName
+                            .replace(/vehicle/gi, '')
+                            .replace(/car/gi, '')
+                            .replace(/bike/gi, '')
+                            .replace(/plan/gi, '')
+                            .replace(/premium/gi, 'Platinum')
+                            .trim();
+                          return cleanPlanName || 'Platinum';
                         })()
                       }</span>
-                     </div>
+                    </div>
                     <div className="flex justify-between items-center">
                       <span className="text-black text-sm">Duration:</span>
                       <span className="font-semibold text-black text-sm">{paymentType === '12months' 
