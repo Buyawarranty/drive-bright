@@ -926,9 +926,15 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Personal Information Section */}
                   <div className="space-y-4">
-                    <div className="border-b border-gray-200 pb-2 flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-gray-600" />
-                      <h4 className="text-sm font-semibold text-gray-900 tracking-wide">Where should we send your policy?</h4>
+                    <div className="border-b border-gray-200 pb-2 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-4 h-4 text-gray-600" />
+                        <h4 className="text-sm font-semibold text-gray-900 tracking-wide">Where should we send your policy?</h4>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200">
+                        <Lock className="w-3 h-3" />
+                        <span className="font-medium">Secure & Encrypted</span>
+                      </div>
                     </div>
                   
                   {/* Name Fields */}
@@ -1466,19 +1472,13 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                    {/* Payment Methods - Conversion Focused */}
                    <div className="space-y-6">
                      {/* Section Header */}
-                     <div className="text-center">
-                       <h3 className="text-2xl font-bold text-black mb-2">Choose How You'd Like to Pay</h3>
-                       <div className="flex items-center justify-center gap-2 mb-2">
-                         <div className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200">
-                           <Lock className="w-3 h-3" />
-                           <span className="font-medium">Secure & Encrypted</span>
-                         </div>
-                       </div>
-                       <div className="flex items-center justify-center gap-2 text-sm text-black">
-                         <Check className="w-4 h-4 text-green-600" />
-                         <span>Secure Checkout</span>
-                       </div>
-                     </div>
+                      <div className="text-center">
+                        <h3 className="text-2xl font-bold text-black mb-2">Choose How You'd Like to Pay</h3>
+                        <div className="flex items-center justify-center gap-2 text-sm text-black">
+                          <Check className="w-4 h-4 text-green-600" />
+                          <span>Secure Checkout</span>
+                        </div>
+                      </div>
 
                     {/* Social Proof */}
                     <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
