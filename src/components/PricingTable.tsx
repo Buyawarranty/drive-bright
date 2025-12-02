@@ -2065,20 +2065,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </div>
                   </div>
 
-                  {/* Badges */}
-                  <div className="flex flex-wrap items-center gap-2 mb-4">
-                    {durationId === '24months' && (
-                      <Badge className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-3 py-1">
-                        MOST POPULAR
-                      </Badge>
-                    )}
-                    {durationId === '36months' && (
-                      <Badge className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-3 py-1">
-                        BEST VALUE
-                      </Badge>
-                    )}
-                  </div>
-                  
                   {/* Duration Title */}
                   <h4 className="text-xl font-bold text-gray-900 mb-1">
                     {duration.label}
@@ -2101,13 +2087,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     
                     {/* Savings */}
                     {savingsAmount > 0 && (
-                      <div className="mb-3">
+                      <div className="mb-3 flex flex-wrap items-center gap-2">
                         <span className="line-through text-red-500 text-sm">
                           Was £{adjustedBasePrice}
                         </span>
-                        <div className="text-black font-medium mt-1">
-                          'Save £{savingsAmount} Today'
-                        </div>
+                        <Badge className="bg-green-600 hover:bg-green-700 text-white font-semibold px-3 py-1">
+                          Save £{savingsAmount} Today
+                        </Badge>
                       </div>
                     )}
                     
