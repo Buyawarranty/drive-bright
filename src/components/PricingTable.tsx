@@ -205,7 +205,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   );
   
   // New state for labour rate selection
-  const [selectedLabourRate, setSelectedLabourRate] = useState<number>(70);
+  const [selectedLabourRate, setSelectedLabourRate] = useState<number>(50);
   
   // Update add-ons when payment type changes to handle auto-included add-ons
   useEffect(() => {
