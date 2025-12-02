@@ -119,7 +119,7 @@ const WarrantyBenefitsSection: React.FC = () => {
                 <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
                   <CollapsibleTrigger asChild>
                     <button className="w-full flex justify-center items-center gap-3 py-2 group cursor-pointer hover:opacity-80 transition-opacity">
-                      <div className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-lg px-4 py-2 shadow-sm">
+                      <div className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-lg px-4 py-2 shadow-sm animate-[breathing_3s_ease-in-out_infinite]">
                         <Info className="w-5 h-5 text-white" />
                         <span className="text-base font-medium text-white whitespace-nowrap">What's covered</span>
                       </div>
