@@ -174,6 +174,13 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                        : 'border-gray-200 bg-white hover:border-green-400'
                    }`}
                  >
+                   {/* FREE Badge - Top Left for auto-included */}
+                   {isIncluded && (
+                     <div className="absolute top-3 left-3 bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded z-10">
+                       FREE
+                     </div>
+                   )}
+                   
                    {/* Simple Checkmark - Top Right */}
                    {isSelected && (
                      <div className="absolute top-4 right-4">
@@ -181,7 +188,7 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                      </div>
                    )}
                    
-                   <div className="p-6">
+                   <div className="p-6 pt-10">
                      {/* Icon, Title, and Price in one line */}
                      <div className="flex items-center gap-3 mb-3">
                        <div className="text-2xl">{addon.icon}</div>
