@@ -876,8 +876,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
     <div className="min-h-screen bg-orange-50 w-full overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-4 py-8">
         
-        {/* Back Button */}
-        <div className="mb-8">
+        {/* Header with Back Button, Logo and Mobile Menu */}
+        <div className="flex justify-between items-center mb-8">
           <Button
             onClick={onBack}
             className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 border-0"
@@ -885,11 +885,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
             <ArrowLeft className="w-4 h-4" />
             Back to Plans
           </Button>
-        </div>
-
-        {/* Header with Clickable Logo and Mobile Menu */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex-1"></div>
           <a href="/" className="hover:opacity-80 transition-opacity">
             <img 
               src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" 
@@ -897,9 +892,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
               className="h-10 w-auto"
             />
           </a>
-          <div className="flex-1 flex justify-end">
-            <MobileNavigation />
-          </div>
+          <MobileNavigation />
         </div>
 
         {/* Customer Details Form */}
