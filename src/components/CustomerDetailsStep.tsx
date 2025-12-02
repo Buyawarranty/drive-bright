@@ -379,11 +379,12 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
       console.error('❌ Failed to save customer data (iOS/Safari):', error);
     }
     
+    // Clear field error when user starts typing
     if (fieldErrors[field]) {
       setFieldErrors(prev => ({ ...prev, [field]: '' }));
     }
     
-    // Real-time field validation
+    // Real-time field validation for checkmarks
     if (typeof value === 'string' && value.trim()) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       const phoneRegex = /^(\+44\s?7\d{3}|\(?07\d{3}\)?)\s?\d{3}\s?\d{3}$|^(\+44\s?1\d{3}|\(?01\d{3}\)?)\s?\d{3}\s?\d{3}$|^(\+44\s?2\d{2}|\(?02\d{2}\)?)\s?\d{3}\s?\d{4}$/;
@@ -404,6 +405,68 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
       setValidatedFields(prev => ({ ...prev, [field]: isValid }));
     } else {
       setValidatedFields(prev => ({ ...prev, [field]: false }));
+    }
+  };
+
+  const handleFieldBlur = (field: string) => {
+    // Only show errors on blur if validation has been triggered (after first submit attempt)
+    if (!showValidation) return;
+    
+    const value = customerData[field as keyof typeof customerData];
+    if (typeof value !== 'string') return;
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^(\+44\s?7\d{3}|\(?07\d{3}\)?)\s?\d{3}\s?\d{3}$|^(\+44\s?1\d{3}|\(?01\d{3}\)?)\s?\d{3}\s?\d{3}$|^(\+44\s?2\d{2}|\(?02\d{2}\)?)\s?\d{3}\s?\d{4}$/;
+    const postcodeRegex = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
+    
+    let errorMessage = '';
+    
+    if (field === 'email') {
+      if (!value.trim()) {
+        errorMessage = 'Email address is required for your policy documents';
+      } else if (!emailRegex.test(value)) {
+        errorMessage = 'Please enter a valid email (e.g., name@example.com)';
+      }
+    } else if (field === 'phone') {
+      if (!value.trim()) {
+        errorMessage = 'Phone number is required to contact you about your warranty';
+      } else if (!phoneRegex.test(value)) {
+        errorMessage = 'Please enter a valid UK phone number (e.g., 07123 456789)';
+      }
+    } else if (field === 'first_name') {
+      if (!value.trim()) {
+        errorMessage = 'Please enter your first name';
+      } else if (value.trim().length < 2) {
+        errorMessage = 'First name must be at least 2 characters';
+      }
+    } else if (field === 'last_name') {
+      if (!value.trim()) {
+        errorMessage = 'Please enter your last name';
+      } else if (value.trim().length < 2) {
+        errorMessage = 'Last name must be at least 2 characters';
+      }
+    } else if (field === 'address_line_1') {
+      if (!value.trim()) {
+        errorMessage = 'Street address is required for your policy';
+      } else if (value.trim().length < 3) {
+        errorMessage = 'Please enter a complete street address';
+      }
+    } else if (field === 'city') {
+      if (!value.trim()) {
+        errorMessage = 'City or town is required';
+      } else if (value.trim().length < 2) {
+        errorMessage = 'Please enter a valid city or town name';
+      }
+    } else if (field === 'postcode') {
+      if (!value.trim()) {
+        errorMessage = 'Postcode is required';
+      } else if (!postcodeRegex.test(value)) {
+        errorMessage = 'Please enter a valid UK postcode (e.g., SW1A 1AA)';
+      }
+    }
+    
+    if (errorMessage) {
+      setFieldErrors(prev => ({ ...prev, [field]: errorMessage }));
     }
   };
 
@@ -878,9 +941,10 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           placeholder="Enter your first name"
                           value={customerData.first_name}
                           onChange={(e) => handleInputChange('first_name', e.target.value)}
+                          onBlur={() => handleFieldBlur('first_name')}
                           required
                           className={`mt-1 transition-all duration-300 ${
-                            showValidation && !customerData.first_name.trim() 
+                            showValidation && fieldErrors.first_name 
                               ? 'border-red-500 focus:border-red-500' 
                               : 'focus:ring-2 focus:ring-orange-200'
                           }`}
@@ -901,9 +965,10 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           placeholder="Enter your surname"
                           value={customerData.last_name}
                           onChange={(e) => handleInputChange('last_name', e.target.value)}
+                          onBlur={() => handleFieldBlur('last_name')}
                           required
                           className={`mt-1 transition-all duration-300 ${
-                            showValidation && !customerData.last_name.trim() 
+                            showValidation && fieldErrors.last_name 
                               ? 'border-red-500 focus:border-red-500' 
                               : 'focus:ring-2 focus:ring-orange-200'
                           }`}
@@ -931,6 +996,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         placeholder="e.g., john.smith@email.com"
                         value={customerData.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
+                        onBlur={() => handleFieldBlur('email')}
                         required
                         className={`mt-1 transition-all duration-300 ${
                           showValidation && fieldErrors.email 
@@ -958,6 +1024,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         placeholder=""
                         value={customerData.phone}
                         onChange={(e) => handleInputChange('phone', e.target.value)}
+                        onBlur={() => handleFieldBlur('phone')}
                         required
                         className={`mt-1 transition-all duration-300 ${
                           showValidation && fieldErrors.phone 
@@ -987,9 +1054,10 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           placeholder="Enter your street address"
                           value={customerData.address_line_1}
                           onChange={(e) => handleInputChange('address_line_1', e.target.value)}
+                          onBlur={() => handleFieldBlur('address_line_1')}
                           required
                           className={`mt-1 transition-all duration-300 ${
-                            showValidation && !customerData.address_line_1.trim() 
+                            showValidation && fieldErrors.address_line_1 
                               ? 'border-red-500 focus:border-red-500' 
                               : 'focus:ring-2 focus:ring-orange-200'
                           }`}
@@ -1021,6 +1089,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           <PostcodeAutocomplete
                             value={customerData.postcode}
                             onChange={(value) => handleInputChange('postcode', value)}
+                            onBlur={() => handleFieldBlur('postcode')}
                             onAddressSelect={(address) => {
                               // Auto-populate address fields when postcode is selected
                               if (address.town) {
@@ -1052,6 +1121,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             placeholder="Enter your city or town"
                             value={customerData.city}
                             onChange={(e) => handleInputChange('city', e.target.value)}
+                            onBlur={() => handleFieldBlur('city')}
                             required
                             className={`mt-1 transition-all duration-300 ${
                               showValidation && fieldErrors.city 
