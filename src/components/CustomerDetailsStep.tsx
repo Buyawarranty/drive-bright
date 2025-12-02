@@ -877,7 +877,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
       <div className="max-w-7xl mx-auto px-4 py-8">
         
         {/* Header with Back Button, Logo and Mobile Menu */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-8 relative">
           <Button
             onClick={onBack}
             className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 border-0 flex-shrink-0"
