@@ -2662,6 +2662,42 @@ export type Database = {
         }
         Relationships: []
       }
+      video_play_tracking: {
+        Row: {
+          completed: boolean | null
+          id: string
+          page_url: string | null
+          play_duration_seconds: number | null
+          played_at: string
+          session_id: string | null
+          user_agent: string | null
+          video_id: string
+          video_title: string | null
+        }
+        Insert: {
+          completed?: boolean | null
+          id?: string
+          page_url?: string | null
+          play_duration_seconds?: number | null
+          played_at?: string
+          session_id?: string | null
+          user_agent?: string | null
+          video_id: string
+          video_title?: string | null
+        }
+        Update: {
+          completed?: boolean | null
+          id?: string
+          page_url?: string | null
+          play_duration_seconds?: number | null
+          played_at?: string
+          session_id?: string | null
+          user_agent?: string | null
+          video_id?: string
+          video_title?: string | null
+        }
+        Relationships: []
+      }
       warranties_2000_audit_log: {
         Row: {
           action_type: string
