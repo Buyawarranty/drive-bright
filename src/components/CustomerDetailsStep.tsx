@@ -1582,10 +1582,12 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             onClick={(e) => {
                               e.stopPropagation();
                               setPaymentMethod('stripe');
+                              setTimeout(() => handleSubmit(), 50);
                             }}
-                            className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-green-600 hover:bg-green-700 text-white text-sm"
+                            disabled={isLoadingPayment}
+                            className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-green-600 hover:bg-green-700 text-white text-sm disabled:opacity-50"
                           >
-                            Complete checkout
+                            {isLoadingPayment && paymentMethod === 'stripe' ? 'Processing...' : 'Complete checkout'}
                           </Button>
 
                           {/* Powered By */}
@@ -1674,10 +1676,12 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             onClick={(e) => {
                               e.stopPropagation();
                               setPaymentMethod('bumper');
+                              setTimeout(() => handleSubmit(), 50);
                             }}
-                            className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-orange-500 hover:bg-orange-600 text-white text-sm"
+                            disabled={isLoadingPayment}
+                            className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-orange-500 hover:bg-orange-600 text-white text-sm disabled:opacity-50"
                           >
-                            Complete checkout
+                            {isLoadingPayment && paymentMethod === 'bumper' ? 'Processing...' : 'Complete checkout'}
                           </Button>
 
                           {/* Powered By */}
