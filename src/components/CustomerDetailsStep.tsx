@@ -1497,10 +1497,16 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       {/* Side-by-side Payment Cards - Constrained width on desktop */}
                       <div className="lg:max-w-2xl lg:mx-auto space-y-4">
                         {/* Social Proof */}
-                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
-                          <p className="text-sm font-medium text-black">
-                            <span className="font-bold">Pay in Full</span> for extra savings
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center flex items-center justify-center gap-2">
+                          <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <p className="text-sm font-medium text-gray-700">
+                            <span className="font-bold text-green-700">Pay in Full</span> for extra savings
                           </p>
+                          <span className="bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full ml-1">
+                            Save £83 today
+                          </span>
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
