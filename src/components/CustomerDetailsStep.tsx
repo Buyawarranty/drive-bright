@@ -10,7 +10,6 @@ import { ArrowLeft, CheckCircle, Edit, User, CreditCard, MapPin, X, ArrowUp, Che
 import { PostcodeAutocomplete } from '@/components/ui/uk-postcode-autocomplete';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import AddAnotherWarrantyOffer from '@/components/AddAnotherWarrantyOffer';
 import { useAuth } from '@/hooks/useAuth';
 import { trackFormSubmission, trackEvent } from '@/utils/analytics';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
@@ -1139,9 +1138,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     </div>
                   </div>
 
-                  <AddAnotherWarrantyOffer
-                    onAddAnotherWarranty={() => setAddAnotherWarrantyRequested(true)}
-                  />
                 </form>
                 </div>
               </div>
