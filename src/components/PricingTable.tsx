@@ -2466,62 +2466,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
       </div>
 
-      {/* Continue Button */}
-      {!plansLoading && !plansError && !vehicleAgeError && displayPlans.length > 0 && (
-        <div className="max-w-6xl mx-auto px-4 pb-0">
-          <div className="flex justify-end mt-4">
-            <div className="flex flex-col items-end space-y-2">
-              {paymentType ? (
-                <>
-                  <div className="text-right">
-                    {/* Monthly Price × Payments */}
-                    <div className="text-3xl font-bold text-gray-900">
-                      £{displayMonthlyPrice}/month × 12 payments
-                    </div>
-                    {/* Interest-free */}
-                    <div className="text-sm text-gray-600 mt-1">
-                      Interest-free (0% APR)
-                    </div>
-                    {/* Total you pay */}
-                    <div className="text-lg font-medium text-gray-600">
-                      Total you pay: £{Math.round(displayTotalPrice)}
-                    </div>
-                    {/* Cover duration */}
-                    <div className="text-sm text-gray-700 mt-1">
-                      {paymentType === '12months' && 'Cover lasts 1 year'}
-                      {paymentType === '24months' && 'Cover lasts 2 years (Year 2 FREE)'}
-                      {paymentType === '36months' && 'Cover lasts 3 years (Years 2 & 3 FREE)'}
-                    </div>
-                    {/* Micro-copy */}
-                    <div className="flex items-center justify-end gap-1 text-xs text-gray-500 mt-1">
-                      <Check className="w-3 h-3 text-green-600" />
-                      <span>No extra fees</span>
-                      <span className="text-gray-400">·</span>
-                      <span>14 days to cancel</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-center">
-                    <Button
-                      onClick={handleSelectPlan}
-                      size="lg"
-                      className="text-lg font-semibold px-12 py-3.5 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white animate-[breathing_3s_ease-in-out_infinite]"
-                    >
-                      Continue to checkout
-                      <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <div className="text-right">
-                  <div className="text-xl font-medium text-gray-500 mb-2">
-                    Select a plan duration above to see pricing
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Bottom padding for sticky bar */}
+      <div className="pb-48 md:pb-32"></div>
 
       {/* Sticky Total Bar */}
       {!plansLoading && !plansError && !vehicleAgeError && displayPlans.length > 0 && paymentType && (
