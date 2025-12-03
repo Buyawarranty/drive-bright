@@ -416,22 +416,42 @@ const WarrantyBenefitsSection: React.FC = () => {
                 ))}
                 
                 {/* Desktop CTAs - below EV & Hybrid box */}
-                <div className="hidden lg:flex gap-3 mt-4">
-                  <button 
-                    onClick={() => setDetailsOpen(!detailsOpen)}
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-lg px-4 py-3 shadow-sm animate-[breathing_3s_ease-in-out_infinite] transition-colors"
-                  >
-                    <Info className="w-5 h-5 text-white" />
-                    <span className="text-base font-medium text-white whitespace-nowrap">See full coverage</span>
-                    <ChevronDown className={`w-5 h-5 text-white transition-transform duration-300 ${detailsOpen ? 'rotate-180' : ''}`} />
-                  </button>
-                  <button
-                    onClick={scrollToTop}
-                    className="flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-medium px-4 py-3 rounded-lg shadow-sm transition-colors animate-[breathing_3s_ease-in-out_infinite]"
-                  >
-                    Get my quote
-                    <ArrowUp className="w-5 h-5" />
-                  </button>
+                <div className="hidden lg:flex flex-col items-start gap-4 mt-4">
+                  <div className="flex gap-3">
+                    <button 
+                      onClick={() => setDetailsOpen(!detailsOpen)}
+                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-lg px-4 py-3 shadow-sm animate-[breathing_3s_ease-in-out_infinite] transition-colors"
+                    >
+                      <Info className="w-5 h-5 text-white" />
+                      <span className="text-base font-medium text-white whitespace-nowrap">See full coverage</span>
+                      <ChevronDown className={`w-5 h-5 text-white transition-transform duration-300 ${detailsOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    <button
+                      onClick={scrollToTop}
+                      className="flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-medium px-4 py-3 rounded-lg shadow-sm transition-colors animate-[breathing_3s_ease-in-out_infinite]"
+                    >
+                      Get my quote
+                      <ArrowUp className="w-5 h-5" />
+                    </button>
+                  </div>
+                  
+                  {/* Desktop: Panda below CTAs */}
+                  <div className="flex justify-start">
+                    <img 
+                      src={warrantyPandaMascot} 
+                      alt="Miles the Panda mascot with car" 
+                      className="w-48 md:w-56 lg:w-64 h-auto object-contain"
+                    />
+                  </div>
+                  
+                  {/* Desktop: Trustpilot */}
+                  <TrustpilotHeader className="flex-shrink-0" />
+                  
+                  {/* Desktop: Security text */}
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Lock className="w-4 h-4 text-green-600" />
+                    <span>Your details are encrypted and safe.</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -747,22 +767,22 @@ const WarrantyBenefitsSection: React.FC = () => {
               </Collapsible>
             </div>
 
-            {/* Panda and CTA Section */}
-            <div className="flex flex-col items-center gap-6">
+            {/* Panda and CTA Section - Mobile only */}
+            <div className="lg:hidden flex flex-col items-center gap-6">
               {/* Panda */}
               <div className="flex justify-center">
                 <img 
                   src={warrantyPandaMascot} 
                   alt="Miles the Panda mascot with car" 
-                  className="w-48 md:w-56 lg:w-64 h-auto object-contain"
+                  className="w-48 md:w-56 h-auto object-contain"
                 />
               </div>
               
-              {/* CTA Button + Trust - Below Panda (mobile only, desktop has CTA above) */}
+              {/* CTA Button + Trust - Below Panda */}
               <div className="flex flex-col items-center gap-4">
                 <button
                   onClick={scrollToTop}
-                  className="lg:hidden inline-flex items-center justify-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 py-3 text-base rounded-lg shadow-lg transition-all animate-[breathing_3s_ease-in-out_infinite]"
+                  className="inline-flex items-center justify-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 py-3 text-base rounded-lg shadow-lg transition-all animate-[breathing_3s_ease-in-out_infinite]"
                 >
                   Get my quote
                   <ArrowUp className="w-6 h-6" />
