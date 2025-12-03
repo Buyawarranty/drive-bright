@@ -2478,25 +2478,20 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <div className="flex flex-col md:hidden gap-2 w-full">
               {/* Monthly Price */}
               <div className="text-center">
-                <div className="text-xl font-bold text-gray-900">
-                  £{displayMonthlyPrice}/month × 12 payments
+                <div className="text-2xl font-bold text-gray-900">
+                  £{displayMonthlyPrice}/month
                 </div>
-                <div className="text-xs text-gray-600">
-                  Interest-free (0% APR)
+                <div className="flex items-center justify-center gap-1 text-sm text-gray-600">
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span>Only 12 payments (0% APR)</span>
                 </div>
-                <div className="text-sm font-medium text-gray-700">
-                  Total you pay: £{Math.round(displayTotalPrice)}
+                <div className="text-sm text-gray-600">
+                  {paymentType === '12months' && '1 Year Cover'}
+                  {paymentType === '24months' && 'No payments in Year 2 - 🎉 2 Year Cover'}
+                  {paymentType === '36months' && 'No payments in Years 2 & 3 - 🎉 3 Year Cover'}
                 </div>
-                <div className="text-xs text-gray-600">
-                  {paymentType === '12months' && 'Cover lasts 1 year'}
-                  {paymentType === '24months' && 'Cover lasts 2 years (Year 2 FREE)'}
-                  {paymentType === '36months' && 'Cover lasts 3 years (Years 2 & 3 FREE)'}
-                </div>
-                <div className="flex items-center justify-center gap-1 text-xs text-gray-500 mt-1">
-                  <Check className="w-3 h-3 text-green-600" />
-                  <span>No extra fees</span>
-                  <span className="text-gray-400">·</span>
-                  <span>14 days to cancel</span>
+                <div className="text-lg font-semibold text-gray-900 mt-1">
+                  Total: £{Math.round(displayTotalPrice)}
                 </div>
               </div>
               
@@ -2546,22 +2541,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
               
               {/* Price Section - Center */}
               <div className="flex flex-col items-center flex-1 px-8">
-                <div className="text-xl font-bold text-gray-900">
-                  £{displayMonthlyPrice}/month × 12 payments
+                <div className="text-2xl font-bold text-gray-900">
+                  £{displayMonthlyPrice}/month
+                </div>
+                <div className="flex items-center gap-1 text-sm text-gray-600">
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span>Only 12 payments (0% APR)</span>
                 </div>
                 <div className="text-sm text-gray-600">
-                  Interest-free (0% APR) · Total you pay: £{Math.round(displayTotalPrice)}
-                </div>
-                <div className="text-sm text-gray-700">
-                  {paymentType === '12months' && 'Cover lasts 1 year'}
-                  {paymentType === '24months' && 'Cover lasts 2 years (Year 2 FREE)'}
-                  {paymentType === '36months' && 'Cover lasts 3 years (Years 2 & 3 FREE)'}
-                </div>
-                <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
-                  <Check className="w-3 h-3 text-green-600" />
-                  <span>No extra fees</span>
-                  <span className="text-gray-400">·</span>
-                  <span>14 days to cancel</span>
+                  {paymentType === '12months' && '1 Year Cover'}
+                  {paymentType === '24months' && 'No payments in Year 2 - 🎉 2 Year Cover'}
+                  {paymentType === '36months' && 'No payments in Years 2 & 3 - 🎉 3 Year Cover'}
                 </div>
               </div>
               
@@ -2575,6 +2565,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   Continue to checkout
                   <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
                 </Button>
+                <div className="text-lg font-semibold text-gray-900">
+                  Total: £{Math.round(displayTotalPrice)}
+                </div>
               </div>
             </div>
             
