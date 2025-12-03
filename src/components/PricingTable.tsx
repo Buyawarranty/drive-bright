@@ -101,7 +101,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
 }) => {
 
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [paymentType, setPaymentType] = useState<'12months' | '24months' | '36months' | null>(previousPaymentType || '24months');
+  const [paymentType, setPaymentType] = useState<'12months' | '24months' | '36months' | null>(previousPaymentType || null);
   // If previousVoluntaryExcess is explicitly set (including 0), use it; otherwise default to £100
   const [voluntaryExcess, setVoluntaryExcess] = useState<number | null>(
     previousVoluntaryExcess !== undefined ? previousVoluntaryExcess : 100
