@@ -115,342 +115,341 @@ const WarrantyBenefitsSection: React.FC = () => {
                 ))}
                 
                 {/* Desktop CTAs - below EV & Hybrid box */}
-                <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen} className="hidden lg:block">
-                  <div className="flex flex-col items-start gap-4 mt-4">
-                    <div className="flex gap-3">
-                      <CollapsibleTrigger asChild>
-                        <button 
-                          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-lg px-4 py-3 shadow-sm animate-[breathing_3s_ease-in-out_infinite] transition-colors"
-                        >
-                          <Info className="w-5 h-5 text-white" />
-                          <span className="text-base font-medium text-white whitespace-nowrap">See full coverage</span>
-                          <ChevronDown className={`w-5 h-5 text-white transition-transform duration-300 ${detailsOpen ? 'rotate-180' : ''}`} />
-                        </button>
-                      </CollapsibleTrigger>
-                      <button
-                        onClick={scrollToTop}
-                        className="flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-medium px-4 py-3 rounded-lg shadow-sm transition-colors animate-[breathing_3s_ease-in-out_infinite]"
-                      >
-                        Get my quote
-                        <ArrowUp className="w-5 h-5" />
-                      </button>
-                    </div>
-                    
-                    {/* Desktop: Panda below CTAs */}
-                    <div className="flex justify-start">
-                      <img 
-                        src={warrantyPandaMascot} 
-                        alt="Miles the Panda mascot with car" 
-                        className="w-48 md:w-56 lg:w-64 h-auto object-contain"
-                      />
-                    </div>
-                    
-                    {/* Desktop: Trustpilot - right aligned */}
-                    <TrustpilotHeader className="flex-shrink-0 self-end" />
-                    
-                    {/* Desktop: Security text - right aligned */}
-                    <div className="flex items-center gap-2 text-sm text-gray-600 self-end">
-                      <Lock className="w-4 h-4 text-green-600" />
-                      <span>Your details are encrypted and safe.</span>
-                    </div>
-                    
-                    {/* Desktop: Collapsible Content - appears below Trustpilot */}
-                    <CollapsibleContent className="w-full">
-                      <div className="space-y-3 mt-4">
-                        {/* Petrol & Diesel Vehicles */}
-                        <Collapsible>
-                          <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-black text-white hover:bg-gray-800 font-semibold py-3 px-4 rounded-lg transition-colors group">
-                            <div className="flex items-center gap-3">
-                              <Car className="w-5 h-5" />
-                              <span className="text-base">Petrol & Diesel Vehicles</span>
-                            </div>
-                            <ChevronDown className="w-5 h-5 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <div className="mt-3 p-4 bg-white rounded-lg border border-gray-200 shadow-sm max-h-[400px] overflow-y-auto">
-                              <ul className="space-y-1.5 text-sm">
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Engine & Internal Components (pistons, valves, camshafts, timing chains, seals, gaskets)</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Gearbox / Transmission Systems (manual, automatic, DSG, CVT, dual-clutch, transfer boxes)</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Drivetrain & Clutch Assemblies (flywheel, driveshafts, differentials)</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Turbocharger & Supercharger Units</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Fuel Delivery Systems (tanks, pumps, injectors, fuel rails, fuel control electronics)</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Cooling & Heating Systems (radiators, thermostats, water pumps, cooling fans, heater matrix)</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Exhaust & Emissions Systems (catalytic converters, DPFs, OPFs, EGR valves, NOx sensors, AdBlue/Eolys systems)</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Braking Systems (ABS, calipers, cylinders, master cylinders)</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Suspension & Steering Systems (shocks, struts, steering racks, power/electric steering pumps, electronic suspension)</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Air Conditioning & Climate Control Systems</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Electrical Components & Charging Systems (alternators, starter motors, wiring looms, connectors, relays)</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Electronic Control Units (ECUs) & Sensors (engine management, ABS, traction control, emissions sensors)</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Lighting & Ignition Systems (headlights, indicators, ignition coils, switches, control modules)</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Factory-Fitted Multimedia & Infotainment Systems (screens, sat nav, audio, digital displays)</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Driver Assistance Systems (adaptive cruise control, lane assist, steering assist, parking sensors, reversing cameras)</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Safety Systems (airbags, seatbelts, pretensioners, safety restraint modules)</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Convertible power-hood, motors, hydraulic parts, buttons, switches, wiring, sensors and related parts</span>
-                                </li>
-                              </ul>
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
-
-                        {/* Hybrid & PHEV Vehicles */}
-                        <Collapsible>
-                          <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-gray-600 text-white hover:bg-gray-700 font-semibold py-3 px-4 rounded-lg transition-colors group">
-                            <div className="flex items-center gap-3">
-                              <Battery className="w-5 h-5" />
-                              <span className="text-base">Hybrid & PHEV Vehicles</span>
-                            </div>
-                            <ChevronDown className="w-5 h-5 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <div className="mt-3 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
-                              <div className="flex items-center gap-2 mb-3">
-                                <ShieldCheck className="w-4 h-4 text-black flex-shrink-0" />
-                                <p className="text-black font-medium text-sm">
-                                  Includes ALL petrol/diesel engine parts and labour PLUS:
-                                </p>
-                              </div>
-                              <ul className="space-y-1.5 text-sm">
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Hybrid Drive Motors & ECUs</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Hybrid Battery Failure</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Power Control Units, Inverters & DC-DC Converters</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Regenerative Braking Systems</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>High-Voltage Cables & Connectors</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Cooling Systems for Hybrid Components</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Charging Ports & On-Board Charging Modules</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Hybrid Transmission Components</span>
-                                </li>
-                              </ul>
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
-
-                        {/* Electric vehicles (EVs) */}
-                        <Collapsible>
-                          <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-orange-500 text-white hover:bg-orange-600 font-semibold py-3 px-4 rounded-lg transition-colors group">
-                            <div className="flex items-center gap-3">
-                              <Zap className="w-5 h-5" />
-                              <span className="text-base">Electric vehicles (EVs)</span>
-                            </div>
-                            <ChevronDown className="w-5 h-5 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <div className="mt-3 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
-                              <div className="flex items-center gap-2 mb-3">
-                                <ShieldCheck className="w-4 h-4 text-black flex-shrink-0" />
-                                <p className="text-black font-medium text-sm">
-                                  Includes ALL petrol/diesel engine parts and labour PLUS:
-                                </p>
-                              </div>
-                              <ul className="space-y-1.5 text-sm">
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>EV Drive Motors & Reduction Gear</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>EV Transmission & Reduction Gearbox Assemblies</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>High-Voltage Battery Failure</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Power Control Units & Inverters</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>On-Board Charger (OBC) & Charging Ports</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>DC-DC Converters</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Thermal Management Systems</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>High-Voltage Cables & Connectors</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>EV-Specific Control Electronics</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Regenerative Braking System Components</span>
-                                </li>
-                              </ul>
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
-
-                        {/* Motorcycles */}
-                        <Collapsible>
-                          <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-green-500 text-white hover:bg-green-600 font-semibold py-3 px-4 rounded-lg transition-colors group">
-                            <div className="flex items-center gap-3">
-                              <Bike className="w-5 h-5" />
-                              <span className="text-base">Motorcycles (Petrol, Hybrid, EV)</span>
-                            </div>
-                            <ChevronDown className="w-5 h-5 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <div className="mt-3 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
-                              <ul className="space-y-1.5 text-sm">
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Engine & Internal Components</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Gearbox & Transmission</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Clutch & Drive Systems</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Fuel & Cooling Systems</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Braking & Suspension</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>Electrical & Ignition Systems</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                  <span>EV/Hybrid Motor & Battery Components</span>
-                                </li>
-                              </ul>
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
-
-                        {/* What's not covered */}
-                        <Collapsible>
-                          <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-red-500 text-white hover:bg-red-600 font-semibold py-3 px-4 rounded-lg transition-colors group">
-                            <div className="flex items-center gap-3">
-                              <X className="w-5 h-5" />
-                              <span className="text-base">What's not covered</span>
-                            </div>
-                            <ChevronDown className="w-5 h-5 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <div className="mt-3 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
-                              <ul className="space-y-1.5 text-sm">
-                                <li className="flex items-start gap-2">
-                                  <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                                  <span className="text-gray-700">Pre-existing faults or damage</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                                  <span className="text-gray-700">Routine service items and consumables</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                                  <span className="text-gray-700">Cosmetic damage or bodywork</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                                  <span className="text-gray-700">Glass, tyres, and exterior trim</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                                  <span className="text-gray-700">Modifications or aftermarket parts</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                  <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                                  <span className="text-gray-700">Vehicles used for hire or reward</span>
-                                </li>
-                              </ul>
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
-                      </div>
-                    </CollapsibleContent>
+                <div className="hidden lg:flex flex-col items-start gap-4 mt-4">
+                  <div className="flex gap-3">
+                    <button 
+                      onClick={() => setDetailsOpen(!detailsOpen)}
+                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-lg px-4 py-3 shadow-sm animate-[breathing_3s_ease-in-out_infinite] transition-colors"
+                    >
+                      <Info className="w-5 h-5 text-white" />
+                      <span className="text-base font-medium text-white whitespace-nowrap">See full coverage</span>
+                      <ChevronDown className={`w-5 h-5 text-white transition-transform duration-300 ${detailsOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    <button
+                      onClick={scrollToTop}
+                      className="flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-medium px-4 py-3 rounded-lg shadow-sm transition-colors animate-[breathing_3s_ease-in-out_infinite]"
+                    >
+                      Get my quote
+                      <ArrowUp className="w-5 h-5" />
+                    </button>
                   </div>
-                </Collapsible>
+                  
+                  {/* Desktop: Panda below CTAs */}
+                  <div className="flex justify-start">
+                    <img 
+                      src={warrantyPandaMascot} 
+                      alt="Miles the Panda mascot with car" 
+                      className="w-48 md:w-56 lg:w-64 h-auto object-contain"
+                    />
+                  </div>
+                  
+                  {/* Desktop: Trustpilot - right aligned */}
+                  <TrustpilotHeader className="flex-shrink-0 self-end" />
+                  
+                  {/* Desktop: Security text - right aligned */}
+                  <div className="flex items-center gap-2 text-sm text-gray-600 self-end">
+                    <Lock className="w-4 h-4 text-green-600" />
+                    <span>Your details are encrypted and safe.</span>
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* Desktop: Full-width Collapsible Content - appears below grid */}
+            {detailsOpen && (
+              <div className="hidden lg:block mt-8">
+                <div className="space-y-3">
+                  {/* Petrol & Diesel Vehicles */}
+                  <Collapsible>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-gray-800 text-white hover:bg-gray-700 font-semibold py-4 px-6 rounded-lg transition-colors group">
+                      <div className="flex items-center gap-3">
+                        <Car className="w-6 h-6" />
+                        <span className="text-lg">Petrol & Diesel (Combustion Engine) Vehicles</span>
+                      </div>
+                      <ChevronDown className="w-6 h-6 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="mt-3 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+                        <ul className="grid md:grid-cols-2 gap-3 text-sm">
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Engine & Internal Components (pistons, valves, camshafts, timing chains, seals, gaskets)</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Gearbox / Transmission Systems (manual, automatic, DSG, CVT, dual-clutch, transfer boxes)</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Drivetrain & Clutch Assemblies (flywheel, driveshafts, differentials)</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Turbocharger & Supercharger Units</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Fuel Delivery Systems (tanks, pumps, injectors, fuel rails, fuel control electronics)</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Cooling & Heating Systems (radiators, thermostats, water pumps, cooling fans, heater matrix)</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Exhaust & Emissions Systems (catalytic converters, DPFs, OPFs, EGR valves, NOx sensors, AdBlue/Eolys systems)</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Braking Systems (ABS, calipers, cylinders, master cylinders)</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Suspension & Steering Systems (shocks, struts, steering racks, power/electric steering pumps, electronic suspension)</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Air Conditioning & Climate Control Systems</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Electrical Components & Charging Systems (alternators, starter motors, wiring looms, connectors, relays)</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Electronic Control Units (ECUs) & Sensors (engine management, ABS, traction control, emissions sensors)</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Lighting & Ignition Systems (headlights, indicators, ignition coils, switches, control modules)</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Factory-Fitted Multimedia & Infotainment Systems (screens, sat nav, audio, digital displays)</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Driver Assistance Systems (adaptive cruise control, lane assist, steering assist, parking sensors, reversing cameras)</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Safety Systems (airbags, seatbelts, pretensioners, safety restraint modules)</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Convertible power-hood, motors, hydraulic parts, buttons, switches, wiring, sensors and related parts</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {/* Hybrid & PHEV Vehicles */}
+                  <Collapsible>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-gray-700 text-white hover:bg-gray-600 font-semibold py-4 px-6 rounded-lg transition-colors group">
+                      <div className="flex items-center gap-3">
+                        <Battery className="w-6 h-6" />
+                        <span className="text-lg">Hybrid & PHEV Vehicles</span>
+                      </div>
+                      <ChevronDown className="w-6 h-6 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="mt-3 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+                        <div className="flex items-center gap-2 mb-4">
+                          <ShieldCheck className="w-5 h-5 text-black flex-shrink-0" />
+                          <p className="text-black font-medium">
+                            Includes ALL petrol/diesel engine parts and labour PLUS:
+                          </p>
+                        </div>
+                        <ul className="grid md:grid-cols-2 gap-3 text-sm">
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Hybrid Drive Motors & ECUs</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Hybrid Battery Failure</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Power Control Units, Inverters & DC-DC Converters</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Regenerative Braking Systems</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>High-Voltage Cables & Connectors</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Cooling Systems for Hybrid Components</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Charging Ports & On-Board Charging Modules</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Hybrid Transmission Components</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {/* Electric vehicles (EVs) */}
+                  <Collapsible>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-orange-500 text-white hover:bg-orange-600 font-semibold py-4 px-6 rounded-lg transition-colors group">
+                      <div className="flex items-center gap-3">
+                        <Zap className="w-6 h-6" />
+                        <span className="text-lg">Electric vehicles (EVs)</span>
+                      </div>
+                      <ChevronDown className="w-6 h-6 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="mt-3 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+                        <div className="flex items-center gap-2 mb-4">
+                          <ShieldCheck className="w-5 h-5 text-black flex-shrink-0" />
+                          <p className="text-black font-medium">
+                            Includes ALL petrol/diesel engine parts and labour PLUS:
+                          </p>
+                        </div>
+                        <ul className="grid md:grid-cols-2 gap-3 text-sm">
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>EV Drive Motors & Reduction Gear</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>EV Transmission & Reduction Gearbox Assemblies</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>High-Voltage Battery Failure</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Power Control Units & Inverters</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>On-Board Charger (OBC) & Charging Ports</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>DC-DC Converters</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Thermal Management Systems</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>High-Voltage Cables & Connectors</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>EV-Specific Control Electronics</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Regenerative Braking System Components</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {/* Motorcycles */}
+                  <Collapsible>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-green-600 text-white hover:bg-green-700 font-semibold py-4 px-6 rounded-lg transition-colors group">
+                      <div className="flex items-center gap-3">
+                        <Bike className="w-6 h-6" />
+                        <span className="text-lg">Motorcycles (Petrol, Hybrid, EV)</span>
+                      </div>
+                      <ChevronDown className="w-6 h-6 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="mt-3 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+                        <ul className="grid md:grid-cols-2 gap-3 text-sm">
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Engine & Internal Components</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Gearbox & Transmission</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Clutch & Drive Systems</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Fuel & Cooling Systems</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Braking & Suspension</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>Electrical & Ignition Systems</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span>EV/Hybrid Motor & Battery Components</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {/* What's not covered */}
+                  <Collapsible>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-red-500 text-white hover:bg-red-600 font-semibold py-4 px-6 rounded-lg transition-colors group">
+                      <div className="flex items-center gap-3">
+                        <X className="w-6 h-6" />
+                        <span className="text-lg">What's not covered</span>
+                      </div>
+                      <ChevronDown className="w-6 h-6 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="mt-3 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
+                        <ul className="grid md:grid-cols-2 gap-3 text-sm">
+                          <li className="flex items-start gap-2">
+                            <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700">Pre-existing faults or damage</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700">Routine service items and consumables</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700">Cosmetic damage or bodywork</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700">Glass, tyres, and exterior trim</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700">Modifications or aftermarket parts</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-700">Vehicles used for hire or reward</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
+              </div>
+            )}
 
             {/* Mobile Only: What's Covered Accordion */}
             <div className="lg:hidden mb-6">
