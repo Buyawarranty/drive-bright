@@ -55,7 +55,7 @@ const WarrantyBenefitsSection: React.FC = () => {
                 <h2 className="text-2xl md:text-4xl font-bold text-brand-dark-text mb-1">
                   Complete Car Warranty.
                 </h2>
-                <h2 className="text-2xl md:text-4xl font-bold text-brand-dark-text mb-3">
+                <h2 className="text-2xl md:text-4xl font-bold text-brand-orange mb-3">
                   Peace of Mind.
                 </h2>
                 <p className="text-base md:text-lg text-gray-500">
