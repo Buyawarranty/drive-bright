@@ -758,11 +758,11 @@ const WarrantyBenefitsSection: React.FC = () => {
                 />
               </div>
               
-              {/* CTA Button + Trust - Below Panda */}
+              {/* CTA Button + Trust - Below Panda (mobile only, desktop has CTA above) */}
               <div className="flex flex-col items-center gap-4">
                 <button
                   onClick={scrollToTop}
-                  className="inline-flex items-center justify-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 py-3 text-base rounded-lg shadow-lg transition-all animate-[breathing_3s_ease-in-out_infinite]"
+                  className="lg:hidden inline-flex items-center justify-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 py-3 text-base rounded-lg shadow-lg transition-all animate-[breathing_3s_ease-in-out_infinite]"
                 >
                   Get my quote
                   <ArrowUp className="w-6 h-6" />
