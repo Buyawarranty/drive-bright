@@ -723,8 +723,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
   // Memoized labour rate display adjustment (display only - doesn't affect API pricing)
   const labourRateDisplayAdjustment = useMemo(() => {
-    // £40/hr = -£3/month, £50/hr (default) = 0, £70/hr = 0, £100/hr = +£5/month
-    return selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 5 : 0;
+    // £40/hr = -£3/month, £50/hr (default) = 0, £70/hr = +£4/month, £100/hr = +£5/month
+    return selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 5 : 0;
   }, [selectedLabourRate]);
 
   // Memoized display monthly price with labour rate adjustment
@@ -962,7 +962,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       }
       
       const baseMonthlyPrice = Math.round(discountedPrice / 12);
-      const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 5 : 0;
+      const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 5 : 0;
       const boostDisplayAdjustment = boostAddon ? -2.01 : 0;
       const displayedMonthlyPrice = baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
 
@@ -2053,7 +2053,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               
               // Calculate display monthly price
               const baseMonthlyPrice = Math.round(discountedPrice / 12);
-              const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 5 : 0;
+              const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 5 : 0;
               const boostDisplayAdjustment = boostAddon ? -2.01 : 0;
               const displayedMonthlyPrice = baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
               const displayedAnnualPrice = discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12);
@@ -2612,7 +2612,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     }
                     
                     const baseMonthlyPrice = Math.round(discountedPrice / 12);
-                    const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 5 : 0;
+                    const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 5 : 0;
                     const boostDisplayAdjustment = boostAddon ? -2.01 : 0;
                     return Math.round(baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment);
                   })()}/month
@@ -2635,7 +2635,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     }
                     
                     const baseMonthlyPrice = Math.round(discountedPrice / 12);
-                    const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 5 : 0;
+                    const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 5 : 0;
                     const boostDisplayAdjustment = boostAddon ? -2.01 : 0;
                     const displayedMonthlyPrice = baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
                     return Math.round(displayedMonthlyPrice * 12);
