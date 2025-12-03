@@ -1308,13 +1308,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </li>
                     </ul>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-gray-200">
+                  <div className="mt-6 pt-4 border-t border-gray-200 flex items-center justify-between">
                     <button 
                       onClick={() => document.getElementById('your-cover-details')?.scrollIntoView({ behavior: 'smooth' })}
                       className="text-orange-500 hover:text-orange-600 font-medium text-sm flex items-center gap-1 transition-colors"
                     >
                       Need more details? <ChevronDown className="w-4 h-4 rotate-[-90deg]" />
                     </button>
+                    <CollapsibleTrigger asChild>
+                      <button className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                        <span className="text-sm font-medium">Close</span>
+                        <ChevronDown className="w-5 h-5 rotate-180" />
+                      </button>
+                    </CollapsibleTrigger>
                   </div>
                 </div>
               </CollapsibleContent>
@@ -1374,13 +1380,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </li>
                     </ul>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-gray-200">
+                  <div className="mt-6 pt-4 border-t border-gray-200 flex items-center justify-between">
                     <button 
                       onClick={() => document.getElementById('your-cover-details')?.scrollIntoView({ behavior: 'smooth' })}
                       className="text-orange-500 hover:text-orange-600 font-medium text-sm flex items-center gap-1 transition-colors"
                     >
                       Need more details? <ChevronDown className="w-4 h-4 rotate-[-90deg]" />
                     </button>
+                    <CollapsibleTrigger asChild>
+                      <button className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                        <span className="text-sm font-medium">Close</span>
+                        <ChevronDown className="w-5 h-5 rotate-180" />
+                      </button>
+                    </CollapsibleTrigger>
                   </div>
                 </div>
               </CollapsibleContent>
@@ -1448,13 +1460,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </li>
                     </ul>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-gray-200">
+                  <div className="mt-6 pt-4 border-t border-gray-200 flex items-center justify-between">
                     <button 
                       onClick={() => document.getElementById('your-cover-details')?.scrollIntoView({ behavior: 'smooth' })}
                       className="text-orange-500 hover:text-orange-600 font-medium text-sm flex items-center gap-1 transition-colors"
                     >
                       Need more details? <ChevronDown className="w-4 h-4 rotate-[-90deg]" />
                     </button>
+                    <CollapsibleTrigger asChild>
+                      <button className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                        <span className="text-sm font-medium">Close</span>
+                        <ChevronDown className="w-5 h-5 rotate-180" />
+                      </button>
+                    </CollapsibleTrigger>
                   </div>
                 </div>
               </CollapsibleContent>
@@ -1516,13 +1534,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </li>
                     </ul>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-gray-200">
+                  <div className="mt-6 pt-4 border-t border-gray-200 flex items-center justify-between">
                     <button 
                       onClick={() => document.getElementById('your-cover-details')?.scrollIntoView({ behavior: 'smooth' })}
                       className="text-orange-500 hover:text-orange-600 font-medium text-sm flex items-center gap-1 transition-colors"
                     >
                       Need more details? <ChevronDown className="w-4 h-4 rotate-[-90deg]" />
                     </button>
+                    <CollapsibleTrigger asChild>
+                      <button className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                        <span className="text-sm font-medium">Close</span>
+                        <ChevronDown className="w-5 h-5 rotate-180" />
+                      </button>
+                    </CollapsibleTrigger>
                   </div>
                 </div>
               </CollapsibleContent>
@@ -1559,14 +1583,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           </li>
                         </ul>
                         
-                        {/* Close button - closes entire What's Covered section */}
-                        <button 
-                          onClick={() => setWhatsCoveredOpen(false)}
-                          className="w-full flex items-center justify-center gap-2 pt-4 border-t border-red-300 text-red-600 hover:text-red-700 font-medium transition-colors"
-                        >
-                          <ChevronDown className="w-4 h-4 rotate-180" />
-                          <span>Close</span>
-                        </button>
+                        {/* Close button - closes this section */}
+                        <CollapsibleTrigger asChild>
+                          <button className="w-full flex items-center justify-center gap-2 pt-4 border-t border-red-300 text-red-600 hover:text-red-700 font-medium transition-colors cursor-pointer">
+                            <span>Close</span>
+                            <ChevronDown className="w-5 h-5 rotate-180" />
+                          </button>
+                        </CollapsibleTrigger>
                       </div>
                     </CollapsibleContent>
                   </Collapsible>
