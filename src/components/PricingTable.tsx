@@ -2450,38 +2450,41 @@ const PricingTable: React.FC<PricingTableProps> = ({
         <div className="max-w-6xl mx-auto px-4 pb-0">
           <div className="flex justify-end mt-4">
             <div className="flex flex-col items-end space-y-2">
-              <div className="text-right">
-                {/* Monthly Price - Main Hook - Show discounted price with add-ons */}
-                <div className="text-3xl font-bold text-gray-900">
-                  £{displayMonthlyPrice}/month
+              {paymentType ? (
+                <>
+                  <div className="text-right">
+                    {/* Monthly Price - Main Hook - Show discounted price with add-ons */}
+                    <div className="text-3xl font-bold text-gray-900">
+                      £{displayMonthlyPrice}/month
+                    </div>
+                    <div className="flex items-center justify-end gap-1.5 text-base text-gray-600 mb-2">
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span>Only 12 payments (0% APR)</span>
+                    </div>
+                    
+                     {/* Total Cost - Show final total only */}
+                    <div className="text-lg font-medium text-gray-600">
+                      Total: £{Math.round(displayTotalPrice)}
+                    </div>
+                  </div>
+                  <div className="flex justify-center">
+                    <Button
+                      onClick={handleSelectPlan}
+                      size="lg"
+                      className="text-lg font-semibold px-12 py-3.5 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white animate-[breathing_3s_ease-in-out_infinite]"
+                    >
+                      Continue to checkout
+                      <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="text-right">
+                  <div className="text-xl font-medium text-gray-500 mb-2">
+                    Select a plan duration above to see pricing
+                  </div>
                 </div>
-                <div className="flex items-center justify-end gap-1.5 text-base text-gray-600 mb-2">
-                  <Check className="w-4 h-4 text-green-600" />
-                  <span>
-                    {paymentType === '12months' 
-                      ? 'Only 12 payments (0% APR)'
-                      : paymentType === '24months' 
-                        ? 'Only 12 payments (0% APR)'
-                        : 'Only 12 payments (0% APR)'
-                    }
-                  </span>
-                </div>
-                
-                 {/* Total Cost - Show final total only */}
-                <div className="text-lg font-medium text-gray-600">
-                  Total: £{Math.round(displayTotalPrice)}
-                </div>
-              </div>
-              <div className="flex justify-center">
-                <Button
-                  onClick={handleSelectPlan}
-                  size="lg"
-                  className="text-lg font-semibold px-12 py-3.5 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white animate-[breathing_3s_ease-in-out_infinite]"
-                >
-                  Continue to checkout
-                  <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
-                </Button>
-              </div>
+              )}
             </div>
           </div>
         </div>
