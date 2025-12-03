@@ -1553,10 +1553,10 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             <div className="text-center">
                               <div className="text-4xl font-black text-black mb-1">£{discountedStripePrice}</div>
                               <div className="inline-block bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                                Save £50 today
+                                Save £{discountedBumperPrice - discountedStripePrice} today
                               </div>
                               <div className="text-sm font-bold text-gray-600 mt-1">
-                                (normally £{stripeTotalPrice})
+                                (normally £{discountedBumperPrice})
                               </div>
                             </div>
                           </div>
