@@ -37,6 +37,7 @@ interface Customer {
   vehicle_rental?: boolean;
   mot_fee?: boolean;
   claim_limit?: number;
+  labour_rate?: number;
   mot_repair?: boolean;
   lost_key?: boolean;
   consequential?: boolean;
@@ -214,7 +215,7 @@ export const W2000DataPreview: React.FC<W2000DataPreviewProps> = ({ customer }) 
     lost_key: (policy?.lost_key === true || customer?.lost_key === true),
     consequential: (policy?.consequential === true || customer?.consequential === true),
     
-    Notes: `Plan: ${policy?.claim_limit || customer.plan_type || 'N/A'} | Payment: ${paymentType || 'N/A'} | ClaimLimit: ${maxClaimAmount} | VolExcess: ${policy?.voluntary_excess || customer.voluntary_excess || 0}`
+    Notes: `Plan: ${policy?.claim_limit || customer.plan_type || 'N/A'} | Payment: ${paymentType || 'N/A'} | ClaimLimit: ${maxClaimAmount} | VolExcess: ${policy?.voluntary_excess || customer.voluntary_excess || 0} | LabourRate: £${customer.labour_rate || 70}/hr`
   };
 
   const addOns = [
