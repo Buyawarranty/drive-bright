@@ -30,6 +30,17 @@ const ConditionalSeasonalBanner = () => {
   return <SeasonalOfferBanner />;
 };
 
+// Component to conditionally hide footer during checkout steps
+const ConditionalFooter = () => {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const step = searchParams.get('step');
+  const isCheckoutStep = step === '2' || step === '3' || step === '4';
+  
+  if (isCheckoutStep) return null;
+  return <WebsiteFooter />;
+};
+
 // Lazy load pages
 const FAQ = lazy(() => import("./pages/FAQ"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
@@ -175,7 +186,7 @@ const App = () => {
                   </Routes>
                 </Suspense>
               </main>
-              <WebsiteFooter />
+              <ConditionalFooter />
             </div>
           </BrowserRouter>
         </CartProvider>
