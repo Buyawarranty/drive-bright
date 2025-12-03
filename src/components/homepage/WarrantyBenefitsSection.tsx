@@ -49,8 +49,8 @@ const WarrantyBenefitsSection: React.FC = () => {
         {/* Main Content */}
         <div className="max-w-5xl mx-auto">
           <div>
-            {/* Section Header - Desktop: flex row with button on right */}
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-6">
+            {/* Section Header */}
+            <div className="mb-6">
               <div className="text-center lg:text-left">
                 <h2 className="text-2xl md:text-4xl font-bold text-brand-dark-text mb-1">
                   Complete Car Warranty.
@@ -62,19 +62,12 @@ const WarrantyBenefitsSection: React.FC = () => {
                   Superior Protection. Affordable Prices. Instant Cover.
                 </p>
               </div>
-              
-              {/* What's Covered Button - Desktop only, positioned top right */}
-              <div className="hidden lg:block">
-                <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
-                  <CollapsibleTrigger asChild>
-                    <button className="flex items-center gap-3 group cursor-pointer hover:opacity-80 transition-opacity">
-                      <div className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-lg px-4 py-2 shadow-sm animate-[breathing_3s_ease-in-out_infinite]">
-                        <Info className="w-5 h-5 text-white" />
-                        <span className="text-base font-medium text-white whitespace-nowrap">See full coverage</span>
-                      </div>
-                      <ChevronDown className={`w-10 h-10 text-green-600 transition-transform duration-300 ease-in-out ${detailsOpen ? 'rotate-180' : ''}`} />
-                    </button>
-                  </CollapsibleTrigger>
+            </div>
+            
+            {/* Desktop Collapsible Content - moved outside header */}
+            <div className="hidden lg:block">
+              <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
+                <CollapsibleTrigger className="hidden"></CollapsibleTrigger>
                   
                   <CollapsibleContent>
                     <div className="space-y-3 mt-4">
@@ -373,7 +366,6 @@ const WarrantyBenefitsSection: React.FC = () => {
                   </CollapsibleContent>
                 </Collapsible>
               </div>
-            </div>
 
             {/* Two Column Coverage Layout */}
             <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -423,6 +415,25 @@ const WarrantyBenefitsSection: React.FC = () => {
                   </div>
                 ))}
                 
+                {/* Desktop CTAs - below EV & Hybrid box */}
+                <div className="hidden lg:flex gap-3 mt-4">
+                  <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
+                    <CollapsibleTrigger asChild>
+                      <button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-lg px-4 py-3 shadow-sm animate-[breathing_3s_ease-in-out_infinite] transition-colors">
+                        <Info className="w-5 h-5 text-white" />
+                        <span className="text-base font-medium text-white whitespace-nowrap">See full coverage</span>
+                        <ChevronDown className={`w-5 h-5 text-white transition-transform duration-300 ${detailsOpen ? 'rotate-180' : ''}`} />
+                      </button>
+                    </CollapsibleTrigger>
+                  </Collapsible>
+                  <button
+                    onClick={scrollToTop}
+                    className="flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-medium px-4 py-3 rounded-lg shadow-sm transition-colors animate-[breathing_3s_ease-in-out_infinite]"
+                  >
+                    Get my quote
+                    <ArrowUp className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
 
