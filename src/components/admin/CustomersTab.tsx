@@ -145,6 +145,7 @@ interface Customer {
   vehicle_rental?: boolean;
   mot_fee?: boolean;
   claim_limit?: number;
+  labour_rate?: number;
   mot_repair?: boolean;
   lost_key?: boolean;
   consequential?: boolean;
@@ -2214,6 +2215,7 @@ export const CustomersTab = () => {
               <TableHead>Payment Method</TableHead>
               <TableHead>Vol. Excess</TableHead>
               <TableHead>Claim Limit</TableHead>
+              <TableHead>Labour Rate</TableHead>
               <TableHead>Tags</TableHead>
               <TableHead>Ref</TableHead>
               <TableHead>Email Status</TableHead>
@@ -3324,6 +3326,11 @@ Please log in and change your password after first login.`;
                        <TableCell>
                          <Badge variant="outline" className="bg-green-50 text-green-700">
                            £{(customer.customer_policies?.[0] as any)?.claim_limit || customer.claim_limit || 1250}
+                         </Badge>
+                       </TableCell>
+                       <TableCell>
+                         <Badge variant="outline" className="bg-purple-50 text-purple-700">
+                           £{customer.labour_rate || 70}/hr
                          </Badge>
                        </TableCell>
                        <TableCell>

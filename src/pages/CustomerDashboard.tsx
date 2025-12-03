@@ -39,6 +39,7 @@ interface CustomerPolicy {
   document_url?: string; // Add this for fetched documents
   claim_limit?: number;
   voluntary_excess?: number;
+  labour_rate?: number;
   warranty_number?: string;
   registration_plate?: string;
   phone?: string;
@@ -470,7 +471,7 @@ const CustomerDashboard = () => {
         if (customerIds.length > 0) {
         const { data: customersData } = await supabase
             .from('customers')
-            .select('id, vehicle_make, vehicle_model, registration_plate, mileage, phone, first_name, last_name, flat_number, building_name, building_number, street, town, county, postcode, country')
+            .select('id, vehicle_make, vehicle_model, registration_plate, mileage, phone, first_name, last_name, flat_number, building_name, building_number, street, town, county, postcode, country, labour_rate')
             .in('id', customerIds);
           
           console.log("Customers data:", customersData);
@@ -1352,6 +1353,12 @@ const CustomerDashboard = () => {
                                 <Label className="text-xs sm:text-sm font-medium text-gray-700">Voluntary Excess</Label>
                                 <p className="font-bold text-lg text-blue-900">
                                   £{selectedPolicy?.voluntary_excess || customerData?.voluntary_excess || 0}
+                                </p>
+                              </div>
+                              <div>
+                                <Label className="text-xs sm:text-sm font-medium text-gray-700">Labour Rate</Label>
+                                <p className="font-bold text-lg text-blue-900">
+                                  £{selectedPolicy?.labour_rate || customerData?.labour_rate || 70}/hour
                                 </p>
                               </div>
                             </div>
