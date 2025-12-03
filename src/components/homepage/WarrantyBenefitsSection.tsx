@@ -240,6 +240,13 @@ const WarrantyBenefitsSection: React.FC = () => {
                             <span>Convertible power-hood, motors, hydraulic parts, buttons, switches, wiring, sensors and related parts</span>
                           </li>
                         </ul>
+                        {/* Close button at bottom */}
+                        <CollapsibleTrigger asChild>
+                          <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                            <span className="text-sm font-medium">Close</span>
+                            <ChevronDown className="w-5 h-5 rotate-180" />
+                          </button>
+                        </CollapsibleTrigger>
                       </div>
                     </CollapsibleContent>
                   </Collapsible>
@@ -295,6 +302,13 @@ const WarrantyBenefitsSection: React.FC = () => {
                             <span>Hybrid Transmission Components</span>
                           </li>
                         </ul>
+                        {/* Close button at bottom */}
+                        <CollapsibleTrigger asChild>
+                          <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                            <span className="text-sm font-medium">Close</span>
+                            <ChevronDown className="w-5 h-5 rotate-180" />
+                          </button>
+                        </CollapsibleTrigger>
                       </div>
                     </CollapsibleContent>
                   </Collapsible>
@@ -358,6 +372,13 @@ const WarrantyBenefitsSection: React.FC = () => {
                             <span>Regenerative Braking System Components</span>
                           </li>
                         </ul>
+                        {/* Close button at bottom */}
+                        <CollapsibleTrigger asChild>
+                          <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                            <span className="text-sm font-medium">Close</span>
+                            <ChevronDown className="w-5 h-5 rotate-180" />
+                          </button>
+                        </CollapsibleTrigger>
                       </div>
                     </CollapsibleContent>
                   </Collapsible>
@@ -403,6 +424,13 @@ const WarrantyBenefitsSection: React.FC = () => {
                             <span>EV/Hybrid Motor & Battery Components</span>
                           </li>
                         </ul>
+                        {/* Close button at bottom */}
+                        <CollapsibleTrigger asChild>
+                          <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                            <span className="text-sm font-medium">Close</span>
+                            <ChevronDown className="w-5 h-5 rotate-180" />
+                          </button>
+                        </CollapsibleTrigger>
                       </div>
                     </CollapsibleContent>
                   </Collapsible>
@@ -444,6 +472,13 @@ const WarrantyBenefitsSection: React.FC = () => {
                             <span className="text-gray-700">Vehicles used for hire or reward</span>
                           </li>
                         </ul>
+                        {/* Close button at bottom */}
+                        <CollapsibleTrigger asChild>
+                          <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                            <span className="text-sm font-medium">Close</span>
+                            <ChevronDown className="w-5 h-5 rotate-180" />
+                          </button>
+                        </CollapsibleTrigger>
                       </div>
                     </CollapsibleContent>
                   </Collapsible>
@@ -547,6 +582,13 @@ const WarrantyBenefitsSection: React.FC = () => {
                               <span>Convertible power-hood, motors, hydraulic parts, buttons, switches, wiring, sensors and related parts</span>
                             </li>
                           </ul>
+                          {/* Close button at bottom */}
+                          <CollapsibleTrigger asChild>
+                            <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                              <span className="text-sm font-medium">Close</span>
+                              <ChevronDown className="w-5 h-5 rotate-180" />
+                            </button>
+                          </CollapsibleTrigger>
                         </div>
                       </CollapsibleContent>
                     </Collapsible>
@@ -602,6 +644,13 @@ const WarrantyBenefitsSection: React.FC = () => {
                               <span>Hybrid Transmission Components</span>
                             </li>
                           </ul>
+                          {/* Close button at bottom */}
+                          <CollapsibleTrigger asChild>
+                            <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                              <span className="text-sm font-medium">Close</span>
+                              <ChevronDown className="w-5 h-5 rotate-180" />
+                            </button>
+                          </CollapsibleTrigger>
                         </div>
                       </CollapsibleContent>
                     </Collapsible>
@@ -665,6 +714,13 @@ const WarrantyBenefitsSection: React.FC = () => {
                               <span>Regenerative Braking System Components</span>
                             </li>
                           </ul>
+                          {/* Close button at bottom */}
+                          <CollapsibleTrigger asChild>
+                            <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                              <span className="text-sm font-medium">Close</span>
+                              <ChevronDown className="w-5 h-5 rotate-180" />
+                            </button>
+                          </CollapsibleTrigger>
                         </div>
                       </CollapsibleContent>
                     </Collapsible>
@@ -722,6 +778,13 @@ const WarrantyBenefitsSection: React.FC = () => {
                               <span>Instrumentation & Rider Controls</span>
                             </li>
                           </ul>
+                          {/* Close button at bottom */}
+                          <CollapsibleTrigger asChild>
+                            <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                              <span className="text-sm font-medium">Close</span>
+                              <ChevronDown className="w-5 h-5 rotate-180" />
+                            </button>
+                          </CollapsibleTrigger>
                         </div>
                       </CollapsibleContent>
                     </Collapsible>
@@ -754,6 +817,13 @@ const WarrantyBenefitsSection: React.FC = () => {
                               <span className="text-gray-700">Vehicles used for hire or reward</span>
                             </li>
                           </ul>
+                          {/* Close button at bottom */}
+                          <CollapsibleTrigger asChild>
+                            <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                              <span className="text-sm font-medium">Close</span>
+                              <ChevronDown className="w-5 h-5 rotate-180" />
+                            </button>
+                          </CollapsibleTrigger>
                         </div>
                       </CollapsibleContent>
                     </Collapsible>
