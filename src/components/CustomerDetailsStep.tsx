@@ -1505,7 +1505,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             <span className="font-bold text-green-700">Pay in Full</span> for extra savings
                           </p>
                           <span className="bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full ml-1">
-                            Save £83 today
+                            Save £{discountedBumperPrice - discountedStripePrice} today
                           </span>
                         </div>
                         
