@@ -2125,28 +2125,51 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   </div>
 
                   {/* Duration Title */}
-                  <h4 className="text-xl font-bold text-gray-900 mb-1">
+                  <h4 className="text-xl font-bold text-gray-900 mb-4 uppercase tracking-wide">
                     {duration.label}
                   </h4>
                   
-                  {/* Plan Name */}
-                  <p className="text-sm text-gray-500 mb-4">Platinum Complete Plan</p>
-                  
-                  {/* Price Section */}
-                  <div className="mb-4">
-                    {/* Monthly Price */}
-                    <div className="text-3xl font-bold text-black mb-1">
-                      £{displayedMonthlyPrice}<span className="text-lg font-normal text-gray-600">/month</span>
+                  {/* Price Section - New Format */}
+                  <div className="mb-4 space-y-1">
+                    {/* Monthly Price × Payments */}
+                    <div className="text-xl font-bold text-black">
+                      £{displayedMonthlyPrice}/month × 12 payments
                     </div>
                     
-                    {/* Total Price */}
-                    <div className="text-base text-gray-600 mb-2">
-                      Total £{Math.round(displayedAnnualPrice)}
+                    {/* Interest-free */}
+                    <div className="text-sm text-gray-600">
+                      Interest-free (0% APR)
+                    </div>
+                    
+                    {/* Total you pay */}
+                    <div className="text-base font-semibold text-black">
+                      Total you pay: £{Math.round(displayedAnnualPrice)}
+                    </div>
+                    
+                    {/* Cover duration */}
+                    <div className="text-sm text-gray-700">
+                      {durationId === '12months' && 'Cover lasts 1 year'}
+                      {durationId === '24months' && 'Cover lasts 2 years (Year 2 FREE)'}
+                      {durationId === '36months' && 'Cover lasts 3 years (Years 2 & 3 FREE)'}
+                    </div>
+                    
+                    {/* Benefits */}
+                    <div className="space-y-1 pt-2">
+                      <div className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                        <span className="text-sm text-green-600 font-medium">
+                          {durationId === '12months' ? 'No extra fees' : 'No extra fees after 12 months'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                        <span className="text-sm text-green-600 font-medium">Cancel anytime</span>
+                      </div>
                     </div>
                     
                     {/* Savings */}
                     {savingsAmount > 0 && (
-                      <div className="mb-3 flex flex-wrap items-center gap-2">
+                      <div className="pt-2 flex flex-wrap items-center gap-2">
                         <span className="line-through text-red-500 text-sm">
                           Was £{adjustedBasePrice}
                         </span>
@@ -2155,26 +2178,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         </Badge>
                       </div>
                     )}
-                    
-                    {/* Payment Details - GREEN TEXT */}
-                    <div className="space-y-2 mt-4">
-                      <div className="flex items-center gap-2">
-                        <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                        <span className="text-sm text-green-600 font-medium">12 payments, 0% APR</span>
-                      </div>
-                      {durationId === '24months' && (
-                        <div className="flex items-center gap-2">
-                          <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                          <span className="text-sm text-green-600 font-medium">Year 2 Cover is Free</span>
-                        </div>
-                      )}
-                      {durationId === '36months' && (
-                        <div className="flex items-center gap-2">
-                          <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                          <span className="text-sm text-green-600 font-medium">Year 2 and 3 Cover is Free</span>
-                        </div>
-                      )}
-                    </div>
                   </div>
                   
                   {/* What's Included Collapsible */}
