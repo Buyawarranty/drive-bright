@@ -1488,16 +1488,17 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                          </div>
                        </div>
 
-                    {/* Social Proof */}
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center lg:max-w-2xl lg:mx-auto">
-                      <p className="text-sm font-medium text-black">
-                        <span className="font-bold">Pay in Full</span> for extra savings
-                      </p>
-                    </div>
-                    
                     <RadioGroup value={paymentMethod} onValueChange={(value: 'bumper' | 'stripe') => setPaymentMethod(value)}>
                       {/* Side-by-side Payment Cards - Constrained width on desktop */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:max-w-2xl lg:mx-auto">
+                      <div className="lg:max-w-2xl lg:mx-auto space-y-4">
+                        {/* Social Proof */}
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
+                          <p className="text-sm font-medium text-black">
+                            <span className="font-bold">Pay in Full</span> for extra savings
+                          </p>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         
                         {/* OPTION A: Pay in Full (Stripe) */}
                         <div 
@@ -1678,6 +1679,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             <img src={bumperLogo} alt="Bumper" className="h-5 mx-auto" />
                           </div>
                         </div>
+                      </div>
                       </div>
                     </RadioGroup>
 
