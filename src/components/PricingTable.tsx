@@ -891,6 +891,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
       });
       
       // Call onPlanSelected with the correct pricing data and selected options
+      // Calculate boosted claim limit if boost addon is selected
+      const effectiveClaimLimit = boostAddon ? selectedClaimLimit + 1000 : selectedClaimLimit;
+      
       onPlanSelected?.(
         selectedPlan.id, 
         selectedPaymentType, 
@@ -901,7 +904,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           voluntaryExcess,
           selectedAddOns: selectedAddOns[selectedPlan.id] || {},
           protectionAddOns: selectedProtectionAddOns,
-          claimLimit: selectedClaimLimit,
+          claimLimit: effectiveClaimLimit,
           labourRate: selectedLabourRate // Add labour rate to pricing data
         }
       );
