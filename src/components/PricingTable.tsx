@@ -2313,19 +2313,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </h3>
             </div>
             
-            {/* Fixed floating Back to Plans button - bottom right */}
-            <Button
-              onClick={() => {
-                const durationSection = document.getElementById('duration-price-section');
-                durationSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              }}
-              variant="outline"
-              size="sm"
-              className="fixed bottom-6 right-6 z-50 flex items-center gap-2 text-sm font-medium bg-green-50 hover:bg-green-100 shadow-lg animate-bounce"
-            >
-              <ArrowUp className="w-4 h-4" />
-              Back to Plans
-            </Button>
             <div className="flex items-start gap-2">
               <Check className="h-5 w-5 text-green-500 mt-1 flex-shrink-0" strokeWidth={3} />
               <p className="text-black text-lg font-medium">
@@ -2420,6 +2407,22 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 </div>
               </CollapsibleContent>
             </Collapsible>
+          </div>
+          
+          {/* Back to Plans button - bottom right of section */}
+          <div className="flex justify-end mt-6">
+            <Button
+              onClick={() => {
+                const durationSection = document.getElementById('duration-price-section');
+                durationSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2 text-sm font-medium bg-green-50 hover:bg-green-100 shadow-md animate-bounce"
+            >
+              <ArrowUp className="w-4 h-4" />
+              Back to Plans
+            </Button>
           </div>
         </div>
 
