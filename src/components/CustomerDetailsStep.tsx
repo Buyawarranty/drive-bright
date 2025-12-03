@@ -1756,17 +1756,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
           onClose={() => setShowEmailPopup(false)}
           onDiscountCodeGenerated={handleEmailPopupDiscountCode}
         />
-        
-        {/* Scroll to Top Button - Mobile Only */}
-        {showScrollTop && (
-          <button
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="fixed bottom-6 right-6 md:hidden bg-primary text-primary-foreground p-3 rounded-full shadow-lg hover:bg-primary/90 transition-all duration-300 z-50"
-            aria-label="Scroll to top"
-          >
-            <ArrowUp className="w-6 h-6" />
-          </button>
-        )}
       </div>
     </div>
   );
