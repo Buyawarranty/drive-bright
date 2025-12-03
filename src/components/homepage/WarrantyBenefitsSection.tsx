@@ -417,15 +417,14 @@ const WarrantyBenefitsSection: React.FC = () => {
                 
                 {/* Desktop CTAs - below EV & Hybrid box */}
                 <div className="hidden lg:flex gap-3 mt-4">
-                  <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
-                    <CollapsibleTrigger asChild>
-                      <button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-lg px-4 py-3 shadow-sm animate-[breathing_3s_ease-in-out_infinite] transition-colors">
-                        <Info className="w-5 h-5 text-white" />
-                        <span className="text-base font-medium text-white whitespace-nowrap">See full coverage</span>
-                        <ChevronDown className={`w-5 h-5 text-white transition-transform duration-300 ${detailsOpen ? 'rotate-180' : ''}`} />
-                      </button>
-                    </CollapsibleTrigger>
-                  </Collapsible>
+                  <button 
+                    onClick={() => setDetailsOpen(!detailsOpen)}
+                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-lg px-4 py-3 shadow-sm animate-[breathing_3s_ease-in-out_infinite] transition-colors"
+                  >
+                    <Info className="w-5 h-5 text-white" />
+                    <span className="text-base font-medium text-white whitespace-nowrap">See full coverage</span>
+                    <ChevronDown className={`w-5 h-5 text-white transition-transform duration-300 ${detailsOpen ? 'rotate-180' : ''}`} />
+                  </button>
                   <button
                     onClick={scrollToTop}
                     className="flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-medium px-4 py-3 rounded-lg shadow-sm transition-colors animate-[breathing_3s_ease-in-out_infinite]"
