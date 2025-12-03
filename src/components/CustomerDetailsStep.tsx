@@ -1510,7 +1510,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           onClick={() => setPaymentMethod('stripe')}
                           className={`relative rounded-xl p-5 cursor-pointer transition-all duration-300 border-2 w-full ${
                             paymentMethod === 'stripe' 
-                              ? 'bg-gray-100 border-gray-400 shadow-lg' 
+                              ? 'bg-white border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.4)]' 
                               : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-md'
                           }`}
                         >
@@ -1600,7 +1600,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           onClick={() => setPaymentMethod('bumper')}
                           className={`relative rounded-xl p-5 cursor-pointer transition-all duration-300 border-2 w-full ${
                             paymentMethod === 'bumper' 
-                              ? 'bg-gray-100 border-gray-400 shadow-lg' 
+                              ? 'bg-white border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.4)]' 
                               : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-md'
                           }`}
                         >
