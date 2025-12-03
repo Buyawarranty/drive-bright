@@ -721,6 +721,23 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return discountedBasePlanPrice + addOnPrice + boostAddonCost;
   }, [discountedBasePlanPrice, addOnPrice, boostAddonCost]);
 
+  // Memoized labour rate display adjustment (display only - doesn't affect API pricing)
+  const labourRateDisplayAdjustment = useMemo(() => {
+    // £40/hr = -£3/month, £50/hr (default) = 0, £70/hr = 0, £100/hr = +£5/month
+    return selectedLabourRate === 40 ? -3 : selectedLabourRate === 100 ? 5 : 0;
+  }, [selectedLabourRate]);
+
+  // Memoized display monthly price with labour rate adjustment
+  const displayMonthlyPrice = useMemo(() => {
+    const baseMonthly = Math.round(totalDiscountedPrice / 12);
+    return baseMonthly + labourRateDisplayAdjustment;
+  }, [totalDiscountedPrice, labourRateDisplayAdjustment]);
+
+  // Memoized display total price with labour rate adjustment
+  const displayTotalPrice = useMemo(() => {
+    return totalDiscountedPrice + (labourRateDisplayAdjustment * 12);
+  }, [totalDiscountedPrice, labourRateDisplayAdjustment]);
+
   // Memoized monthly price calculation - always divide total by 12 for monthly payments
   const monthlyPrice = useMemo(() => {
     // Always show 12 monthly payments regardless of plan duration for display
@@ -2436,7 +2453,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <div className="text-right">
                 {/* Monthly Price - Main Hook - Show discounted price with add-ons */}
                 <div className="text-3xl font-bold text-gray-900">
-                  £{Math.round(totalDiscountedPrice / 12)}/month
+                  £{displayMonthlyPrice}/month
                 </div>
                 <div className="flex items-center justify-end gap-1.5 text-base text-gray-600 mb-2">
                   <Check className="w-4 h-4 text-green-600" />
@@ -2452,7 +2469,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 
                  {/* Total Cost - Show final total only */}
                 <div className="text-lg font-medium text-gray-600">
-                  Total: £{Math.round(totalDiscountedPrice)}
+                  Total: £{Math.round(displayTotalPrice)}
                 </div>
               </div>
               <div className="flex justify-center">
@@ -2494,7 +2511,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <div className="flex flex-col flex-1 text-center">
               {/* Monthly Price - Main Hook - Show discounted price with add-ons */}
               <div className="text-xl md:text-2xl font-bold text-gray-900">
-                £{Math.round(totalDiscountedPrice / 12)}/month
+                £{displayMonthlyPrice}/month
               </div>
               <div className="flex items-center justify-center gap-1.5 text-xs md:text-sm text-gray-600 mb-1 font-bold">
                 <Check className="w-4 h-4 text-green-600" />
@@ -2546,7 +2563,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 </Button>
               </div>
               <span className="text-base md:text-lg font-medium text-gray-600 text-center md:text-right">
-                Total: £{Math.round(totalDiscountedPrice)}
+                Total: £{Math.round(displayTotalPrice)}
               </span>
             </div>
           </div>
