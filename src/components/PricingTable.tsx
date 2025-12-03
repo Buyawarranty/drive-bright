@@ -2479,24 +2479,30 @@ const PricingTable: React.FC<PricingTableProps> = ({
               {paymentType ? (
                 <>
                   <div className="text-right">
-                    {/* Monthly Price - Main Hook */}
+                    {/* Monthly Price × Payments */}
                     <div className="text-3xl font-bold text-gray-900">
-                      £{displayMonthlyPrice}/month
+                      £{displayMonthlyPrice}/month × 12 payments
                     </div>
-                    {/* Total Cost */}
-                    <div className="text-lg font-medium text-gray-600 mt-1">
-                      Total for {paymentType === '12months' ? '12 months' : paymentType === '24months' ? '24 months' : '36 months'}: £{Math.round(displayTotalPrice)}
+                    {/* Interest-free */}
+                    <div className="text-sm text-gray-600 mt-1">
+                      Interest-free (0% APR)
                     </div>
-                    {/* Payment Details */}
-                    <div className="flex items-center justify-end gap-2 text-sm text-gray-600 mt-2">
-                      <Check className="w-4 h-4 text-green-600" />
-                      <span>Only 12 payments (0% APR)</span>
-                      <span className="text-gray-400">|</span>
-                      <span>{paymentType === '12months' ? '1 year cover' : paymentType === '24months' ? '2 year cover' : '3 year cover'}</span>
+                    {/* Total you pay */}
+                    <div className="text-lg font-medium text-gray-600">
+                      Total you pay: £{Math.round(displayTotalPrice)}
+                    </div>
+                    {/* Cover duration */}
+                    <div className="text-sm text-gray-700 mt-1">
+                      {paymentType === '12months' && 'Cover lasts 1 year'}
+                      {paymentType === '24months' && 'Cover lasts 2 years (Year 2 FREE)'}
+                      {paymentType === '36months' && 'Cover lasts 3 years (Years 2 & 3 FREE)'}
                     </div>
                     {/* Micro-copy */}
-                    <div className="text-xs text-gray-400 mt-1">
-                      No extra fees. Cancel anytime.
+                    <div className="flex items-center justify-end gap-1 text-xs text-gray-500 mt-1">
+                      <Check className="w-3 h-3 text-green-600" />
+                      <span>No extra fees</span>
+                      <span className="text-gray-400">·</span>
+                      <span>14 days to cancel</span>
                     </div>
                   </div>
                   <div className="flex justify-center">
@@ -2528,23 +2534,29 @@ const PricingTable: React.FC<PricingTableProps> = ({
           <div className="flex flex-col md:flex-row md:items-center md:justify-between p-4 max-w-6xl mx-auto gap-4">
             
             {/* Mobile Layout - Stacked */}
-            <div className="flex flex-col md:hidden gap-3 w-full">
+            <div className="flex flex-col md:hidden gap-2 w-full">
               {/* Monthly Price */}
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900">
-                  £{displayMonthlyPrice}/month
+                <div className="text-xl font-bold text-gray-900">
+                  £{displayMonthlyPrice}/month × 12 payments
                 </div>
-                <div className="text-sm text-gray-600 mt-1">
-                  Total for {paymentType === '12months' ? '12 months' : paymentType === '24months' ? '24 months' : '36 months'}: £{Math.round(displayTotalPrice)}
+                <div className="text-xs text-gray-600">
+                  Interest-free (0% APR)
                 </div>
-              </div>
-              
-              {/* Payment Details */}
-              <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-                <Check className="w-4 h-4 text-green-600" />
-                <span>Only 12 payments (0% APR)</span>
-                <span className="text-gray-400">|</span>
-                <span>{paymentType === '12months' ? '1 year cover' : paymentType === '24months' ? '2 year cover' : '3 year cover'}</span>
+                <div className="text-sm font-medium text-gray-700">
+                  Total you pay: £{Math.round(displayTotalPrice)}
+                </div>
+                <div className="text-xs text-gray-600">
+                  {paymentType === '12months' && 'Cover lasts 1 year'}
+                  {paymentType === '24months' && 'Cover lasts 2 years (Year 2 FREE)'}
+                  {paymentType === '36months' && 'Cover lasts 3 years (Years 2 & 3 FREE)'}
+                </div>
+                <div className="flex items-center justify-center gap-1 text-xs text-gray-500 mt-1">
+                  <Check className="w-3 h-3 text-green-600" />
+                  <span>No extra fees</span>
+                  <span className="text-gray-400">·</span>
+                  <span>14 days to cancel</span>
+                </div>
               </div>
               
               {/* CTA Button */}
@@ -2593,15 +2605,22 @@ const PricingTable: React.FC<PricingTableProps> = ({
               
               {/* Price Section - Center */}
               <div className="flex flex-col items-center flex-1 px-8">
-                <div className="text-2xl font-bold text-gray-900">
-                  £{displayMonthlyPrice}/month
+                <div className="text-xl font-bold text-gray-900">
+                  £{displayMonthlyPrice}/month × 12 payments
                 </div>
-                <div className="flex items-center gap-1.5 text-sm text-gray-600 mt-1">
-                  <Check className="w-4 h-4 text-green-600" />
-                  <span>Only 12 payments (0% APR)</span>
+                <div className="text-sm text-gray-600">
+                  Interest-free (0% APR) · Total you pay: £{Math.round(displayTotalPrice)}
                 </div>
-                <div className="text-sm text-gray-500 mt-0.5">
-                  {paymentType === '12months' ? '1 year cover' : paymentType === '24months' ? '2 year cover' : '3 year cover'}
+                <div className="text-sm text-gray-700">
+                  {paymentType === '12months' && 'Cover lasts 1 year'}
+                  {paymentType === '24months' && 'Cover lasts 2 years (Year 2 FREE)'}
+                  {paymentType === '36months' && 'Cover lasts 3 years (Years 2 & 3 FREE)'}
+                </div>
+                <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
+                  <Check className="w-3 h-3 text-green-600" />
+                  <span>No extra fees</span>
+                  <span className="text-gray-400">·</span>
+                  <span>14 days to cancel</span>
                 </div>
               </div>
               
@@ -2615,9 +2634,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   Continue to checkout
                   <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
                 </Button>
-                <span className="text-base font-medium text-gray-600">
-                  Total: £{Math.round(displayTotalPrice)}
-                </span>
               </div>
             </div>
             
