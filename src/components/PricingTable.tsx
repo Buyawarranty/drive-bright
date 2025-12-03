@@ -1191,14 +1191,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
             </div>
             
-            {/* Large Chevron Toggle with Details - always visible, can be clicked both ways */}
+            {/* See full coverage button - matches homepage style */}
             <CollapsibleTrigger asChild>
-              <button className="w-full flex justify-center items-center gap-3 py-1 group cursor-pointer hover:opacity-80 transition-opacity">
-                <div className="inline-flex items-center gap-2 bg-white border border-green-300 rounded-lg px-3 py-1.5 shadow-sm">
-                  <Info className="w-4 h-4 text-green-700" />
-                  <span className="text-sm font-medium text-green-700 whitespace-nowrap">Details</span>
+              <button className="w-full flex justify-center items-center py-1 group cursor-pointer">
+                <div className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-full px-5 py-2.5 shadow-md transition-colors">
+                  <Info className="w-4 h-4 text-white" />
+                  <span className="text-sm font-medium text-white whitespace-nowrap">See full coverage</span>
+                  <ChevronDown className="w-4 h-4 text-white transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
                 </div>
-                <ChevronDown className="w-12 h-12 text-green-600 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
               </button>
             </CollapsibleTrigger>
             
