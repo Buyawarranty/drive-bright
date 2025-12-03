@@ -1479,9 +1479,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
               <div className="order-3 lg:col-span-2 space-y-6">
                       {/* Section Header */}
                        <div className="text-center">
-                         <h3 className="text-2xl font-bold text-black mb-2">
-                           Choose how you'd like to pay 💳
-                         </h3>
+                          <h3 className="text-2xl font-bold text-black mb-2">
+                           Choose how you'd like to pay 🔒
+                          </h3>
                          <div className="flex items-center justify-center gap-2 text-sm text-black">
                            <Lock className="w-4 h-4 text-green-600" />
                            <span>Secure Checkout</span>
