@@ -1148,6 +1148,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
 
               {/* Right Column - Order Summary (order-1 on mobile, order-2 on desktop) */}
               <div className="space-y-6 order-1 lg:order-2">
+                <div className="bg-gray-100 rounded-lg p-4 sm:p-6">
                 {/* Order Summary Card */}
                 <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border overflow-hidden">
                   <div className="flex items-start justify-between mb-4 gap-2">
@@ -1475,6 +1476,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     </div>
                   </div>
 
+                </div>
                 </div>
               </div>
 
