@@ -1524,7 +1524,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             <RadioGroupItem 
                               value="stripe" 
                               id="stripe-option" 
-                              className="border-2 border-gray-400 w-4 h-4 mt-0.5"
+                              className="border-2 border-gray-400 w-6 h-6 mt-0.5 data-[state=checked]:border-green-600 data-[state=checked]:border-[3px]"
                             />
                             {/* Limited Time Badge - GREY */}
                             <div className="bg-gray-200 text-gray-700 text-xs font-bold px-2 py-0.5 rounded uppercase">
