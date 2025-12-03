@@ -1480,7 +1480,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       {/* Section Header */}
                        <div className="text-center">
                          <h3 className="text-2xl font-bold text-black mb-2">
-                           Choose How You'd<br />Like to Pay
+                           Choose how you'd like to pay 💳
                          </h3>
                          <div className="flex items-center justify-center gap-2 text-sm text-black">
                            <Lock className="w-4 h-4 text-green-600" />
@@ -1489,20 +1489,20 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                        </div>
 
                     {/* Social Proof */}
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center lg:max-w-2xl lg:mx-auto">
                       <p className="text-sm font-medium text-black">
                         <span className="font-bold">Pay in Full</span> for extra savings
                       </p>
                     </div>
                     
                     <RadioGroup value={paymentMethod} onValueChange={(value: 'bumper' | 'stripe') => setPaymentMethod(value)}>
-                      {/* Side-by-side Payment Cards */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Side-by-side Payment Cards - Constrained width on desktop */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:max-w-2xl lg:mx-auto">
                         
                         {/* OPTION A: Pay in Full (Stripe) */}
                         <div 
                           onClick={() => setPaymentMethod('stripe')}
-                          className={`relative rounded-xl p-6 cursor-pointer transition-all duration-300 border-2 ${
+                          className={`relative rounded-xl p-5 cursor-pointer transition-all duration-300 border-2 lg:max-w-[340px] lg:mx-auto w-full ${
                             paymentMethod === 'stripe' 
                               ? 'bg-gray-100 border-gray-400 shadow-lg' 
                               : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-md'
@@ -1514,56 +1514,56 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           </div>
 
                           {/* Radio Button and Limited Time Badge */}
-                          <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-start justify-between mb-3">
                             <RadioGroupItem 
                               value="stripe" 
                               id="stripe-option" 
-                              className="border-2 border-gray-400 w-5 h-5 mt-1"
+                              className="border-2 border-gray-400 w-4 h-4 mt-0.5"
                             />
                             {/* Limited Time Badge - GREY */}
-                            <div className="bg-gray-200 text-gray-700 text-xs font-bold px-3 py-1 rounded uppercase">
+                            <div className="bg-gray-200 text-gray-700 text-xs font-bold px-2 py-0.5 rounded uppercase">
                               LIMITED TIME
                             </div>
                           </div>
 
                           {/* Wallet Icon */}
-                          <div className="flex justify-center mb-4">
-                            <div className="bg-green-100 p-4 rounded-full">
-                              <CreditCard className="w-8 h-8 text-green-600" />
+                          <div className="flex justify-center mb-3">
+                            <div className="bg-green-100 p-3 rounded-full">
+                              <CreditCard className="w-6 h-6 text-green-600" />
                             </div>
                           </div>
 
                           {/* Heading */}
-                          <Label htmlFor="stripe-option" className="block text-center cursor-pointer mb-3">
-                            <h4 className="text-xl font-bold text-black mb-1">Pay in Full</h4>
-                            <p className="text-sm text-black">One-time payment today</p>
+                          <Label htmlFor="stripe-option" className="block text-center cursor-pointer mb-2">
+                            <h4 className="text-lg font-bold text-black mb-1">Pay in Full</h4>
+                            <p className="text-xs text-black">One-time payment today</p>
                           </Label>
 
                           {/* Price Display - Clean & Integrated */}
-                          <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-100">
+                          <div className="bg-gray-50 rounded-lg p-3 mb-3 border border-gray-100">
                             <div className="text-center">
-                              <div className="text-5xl font-black text-black mb-2">£{discountedStripePrice}</div>
-                              <div className="inline-block bg-green-600 text-white text-sm font-bold px-3 py-1 rounded-full">
+                              <div className="text-4xl font-black text-black mb-1">£{discountedStripePrice}</div>
+                              <div className="inline-block bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                                 Save £50 today
                               </div>
-                              <div className="text-base font-bold text-gray-600 mt-2">
+                              <div className="text-sm font-bold text-gray-600 mt-1">
                                 (normally £{stripeTotalPrice})
                               </div>
                             </div>
                           </div>
 
                           {/* Features - GREEN TICKS */}
-                          <div className="space-y-2 mb-4">
+                          <div className="space-y-1.5 mb-3">
                             <div className="flex items-center gap-2 text-sm">
-                              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                              <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
                               <span className="text-black font-medium">Instant 10% discount</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
-                              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                              <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
                               <span className="text-black font-medium">Immediate cover</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
-                              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                              <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
                               <span className="text-black font-medium">No monthly payments</span>
                             </div>
                           </div>
@@ -1575,22 +1575,22 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               e.stopPropagation();
                               setPaymentMethod('stripe');
                             }}
-                            className="w-full font-bold py-3 rounded-lg transition-colors shadow-lg bg-green-600 hover:bg-green-700 text-white"
+                            className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-green-600 hover:bg-green-700 text-white text-sm"
                           >
                             Complete checkout
                           </Button>
 
                           {/* Powered By */}
-                          <div className="text-center pt-3 border-t mt-4">
+                          <div className="text-center pt-2 border-t mt-3">
                             <span className="text-xs text-black block mb-1">Powered by</span>
-                            <img src={stripeLogo} alt="Stripe" className="h-6 mx-auto" />
+                            <img src={stripeLogo} alt="Stripe" className="h-5 mx-auto" />
                           </div>
                         </div>
 
                         {/* OPTION B: Pay Monthly (Bumper) */}
                         <div 
                           onClick={() => setPaymentMethod('bumper')}
-                          className={`relative rounded-xl p-6 cursor-pointer transition-all duration-300 border-2 ${
+                          className={`relative rounded-xl p-5 cursor-pointer transition-all duration-300 border-2 lg:max-w-[340px] lg:mx-auto w-full ${
                             paymentMethod === 'bumper' 
                               ? 'bg-gray-100 border-gray-400 shadow-lg' 
                               : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-md'
@@ -1602,60 +1602,60 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           </div>
 
                           {/* Radio Button and No Fees Badge */}
-                          <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-start justify-between mb-3">
                             <RadioGroupItem 
                               value="bumper" 
                               id="bumper-option" 
-                              className="border-2 border-gray-400 w-5 h-5 mt-1"
+                              className="border-2 border-gray-400 w-4 h-4 mt-0.5"
                             />
                             {/* No Fees Badge - GREY */}
-                            <div className="bg-gray-200 text-gray-700 text-xs font-bold px-3 py-1 rounded uppercase">
+                            <div className="bg-gray-200 text-gray-700 text-xs font-bold px-2 py-0.5 rounded uppercase">
                               NO FEES
                             </div>
                           </div>
 
                           {/* Calendar Icon */}
-                          <div className="flex justify-center mb-4">
-                            <div className="bg-orange-100 p-4 rounded-full">
-                              <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="flex justify-center mb-3">
+                            <div className="bg-orange-100 p-3 rounded-full">
+                              <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                               </svg>
                             </div>
                           </div>
 
                           {/* Heading */}
-                          <Label htmlFor="bumper-option" className="block text-center cursor-pointer mb-3">
-                            <h4 className="text-xl font-bold text-black mb-1">Spread the Cost</h4>
-                            <p className="text-sm text-black">Interest-free monthly instalments</p>
+                          <Label htmlFor="bumper-option" className="block text-center cursor-pointer mb-2">
+                            <h4 className="text-lg font-bold text-black mb-1">Spread the Cost</h4>
+                            <p className="text-xs text-black">Interest-free monthly instalments</p>
                           </Label>
 
                           {/* Price Display - Clean & Integrated */}
-                          <div className="bg-orange-50 rounded-lg p-4 mb-4 border border-orange-100">
+                          <div className="bg-orange-50 rounded-lg p-3 mb-3 border border-orange-100">
                             <div className="text-center">
-                              <div className="text-5xl font-black text-black mb-2">
-                                £{Math.round(discountedBumperPrice / 12)}<span className="text-xl">/month</span>
+                              <div className="text-4xl font-black text-black mb-1">
+                                £{Math.round(discountedBumperPrice / 12)}<span className="text-lg">/month</span>
                               </div>
-                              <div className="inline-block bg-orange-100 text-orange-700 text-sm font-bold px-3 py-1 rounded-full mb-2">
+                              <div className="inline-block bg-orange-100 text-orange-700 text-xs font-bold px-2 py-0.5 rounded-full mb-1">
                                 Only 12 payments
                               </div>
-                              <div className="text-base font-bold text-gray-600">
+                              <div className="text-sm font-bold text-gray-600">
                                 £{Math.round(discountedBumperPrice)} total
                               </div>
                             </div>
                           </div>
 
                           {/* Features - GREEN TICKS */}
-                          <div className="space-y-2 mb-4">
+                          <div className="space-y-1.5 mb-3">
                             <div className="flex items-center gap-2 text-sm">
-                              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                              <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
                               <span className="text-black font-medium">12 interest-free payments</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
-                              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                              <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
                               <span className="text-black font-medium">No impact on credit score</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
-                              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                              <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
                               <span className="text-black font-medium">0% interest, no hidden fees</span>
                             </div>
                           </div>
@@ -1667,15 +1667,15 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               e.stopPropagation();
                               setPaymentMethod('bumper');
                             }}
-                            className="w-full font-bold py-3 rounded-lg transition-colors shadow-lg bg-orange-500 hover:bg-orange-600 text-white"
+                            className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-orange-500 hover:bg-orange-600 text-white text-sm"
                           >
                             Complete checkout
                           </Button>
 
                           {/* Powered By */}
-                          <div className="text-center pt-3 border-t mt-4">
+                          <div className="text-center pt-2 border-t mt-3">
                             <span className="text-xs text-black block mb-1">Powered by</span>
-                            <img src={bumperLogo} alt="Bumper" className="h-6 mx-auto" />
+                            <img src={bumperLogo} alt="Bumper" className="h-5 mx-auto" />
                           </div>
                         </div>
                       </div>
@@ -1683,7 +1683,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
 
                     {/* Discount Codes Applied Notice */}
                     {hasValidDiscountCodes && (
-                      <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 text-center">
+                      <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 text-center lg:max-w-md lg:mx-auto">
                         <div className="flex items-center justify-center gap-2 text-sm">
                           <Check className="w-5 h-5 text-green-600" />
                           <span className="text-black font-bold">
@@ -1693,12 +1693,12 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       </div>
                     )}
 
-                    {/* Complete Purchase Button */}
-                    <div className="text-center">
+                    {/* Complete Purchase Button - Centered with max width on desktop */}
+                    <div className="text-center lg:max-w-sm lg:mx-auto">
                       <ProtectedButton
                         actionType="complete_purchase"
                         onClick={handleSubmit}
-                        className="w-full mt-6 bg-orange-500 hover:bg-orange-600 text-white font-bold py-6 text-xl rounded-xl shadow-2xl animate-[breathing_3s_ease-in-out_infinite] transition-all hover:scale-[1.02]"
+                        className="w-full mt-4 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 text-lg rounded-xl shadow-lg animate-[breathing_3s_ease-in-out_infinite] transition-all hover:scale-[1.02]"
                         size="lg"
                         disabled={isLoadingPayment}
                         loading={isLoadingPayment}
@@ -1706,32 +1706,32 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         {isLoadingPayment ? (
                           'Loading Payment Gateway...'
                         ) : (
-                          <span className="flex items-center justify-center gap-3">
-                            <CreditCard className="w-6 h-6" />
+                          <span className="flex items-center justify-center gap-2">
+                            <CreditCard className="w-5 h-5" />
                             Complete Purchase
-                            <ArrowRight className="w-6 h-6" strokeWidth={3} />
+                            <ArrowRight className="w-5 h-5" strokeWidth={3} />
                           </span>
                         )}
                       </ProtectedButton>
-                      <p className="text-sm text-black mt-3 font-medium">Takes less than 1 minute</p>
+                      <p className="text-sm text-black mt-2 font-medium">Takes less than 1 minute</p>
                     </div>
 
-                    {/* Trust & Security - Sticky Reassurance Bar */}
-                    <div className="space-y-4 mt-6">
+                    {/* Trust & Security - Constrained width on desktop */}
+                    <div className="space-y-3 mt-4 lg:max-w-md lg:mx-auto">
                       {/* Security Icons */}
-                      <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
-                        <div className="flex items-center justify-center gap-6 flex-wrap text-xs text-black">
-                          <div className="flex items-center gap-2">
+                      <div className="bg-white border border-gray-200 rounded-lg p-3">
+                        <div className="flex items-center justify-center gap-4 flex-wrap text-xs text-black">
+                          <div className="flex items-center gap-1.5">
                             <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                             </svg>
                             <span className="font-medium">SSL Encrypted</span>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5">
                             <CreditCard className="w-4 h-4 text-green-600" />
                             <span className="font-medium">Visa & Mastercard</span>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5">
                             <Check className="w-4 h-4 text-green-600" />
                             <span className="font-medium">Secure Payments</span>
                           </div>
