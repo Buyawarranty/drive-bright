@@ -2493,6 +2493,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <div className="text-lg font-semibold text-gray-900 mt-1">
                   Total: £{Math.round(displayTotalPrice)}
                 </div>
+                <div className="text-xs text-gray-500 mt-0.5">
+                  🛡️ 14 days to cancel
+                </div>
               </div>
               
               {/* CTA Button */}
@@ -2567,6 +2570,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 </Button>
                 <div className="text-lg font-semibold text-gray-900">
                   Total: £{Math.round(displayTotalPrice)}
+                </div>
+                <div className="text-xs text-gray-500">
+                  🛡️ 14 days to cancel
                 </div>
               </div>
             </div>
