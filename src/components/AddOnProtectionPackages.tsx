@@ -237,11 +237,11 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                          <span className="text-3xl font-bold text-gray-900">{priceDisplay}</span>
                          <span className="text-sm text-gray-600 font-medium">/month</span>
                        </div>
-                       {!isIncluded && (
-                         <p className="text-xs text-green-600 font-semibold">
-                           12 interest-free payments
-                         </p>
-                       )}
+                        {!isIncluded && (
+                          <p className="text-sm text-green-600 font-semibold">
+                            12 interest-free payments
+                          </p>
+                        )}
                        {isIncluded && (
                          <span className="text-xs text-green-700 font-semibold">Included in your plan!</span>
                        )}
