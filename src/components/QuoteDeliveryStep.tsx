@@ -347,22 +347,32 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 </div>
               </div>
 
-              {/* Secondary option - View my quote now (Grey) */}
+              {/* Secondary option - View my quote now (Blue) */}
               <button 
                 onClick={handleSkipClick}
                 disabled={vehicleData.blocked}
-                className={`w-full flex items-center justify-center text-gray-700 font-bold py-4 sm:py-5 px-4 sm:px-8 rounded-xl transition-all duration-200 relative shadow-md border-2 border-gray-300 ${
-                  vehicleData.blocked ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'
+                className={`w-full flex items-center justify-center text-white font-bold py-4 sm:py-5 px-4 sm:px-8 rounded-xl transition-all duration-200 relative shadow-lg ${
+                  vehicleData.blocked ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
-                style={{ backgroundColor: vehicleData.blocked ? '#e5e7eb' : '#f3f4f6' }}
+                style={{ backgroundColor: vehicleData.blocked ? '#9ca3af' : '#224380' }}
+                onMouseEnter={(e) => {
+                  if (!vehicleData.blocked) {
+                    e.currentTarget.style.backgroundColor = '#1e3a70';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!vehicleData.blocked) {
+                    e.currentTarget.style.backgroundColor = '#224380';
+                  }
+                }}
               >
-                <Zap className="w-5 h-5 sm:w-6 sm:h-6 absolute left-4 sm:left-8 text-gray-500" />
+                <Zap className="w-5 h-5 sm:w-6 sm:h-6 absolute left-4 sm:left-8" />
                 <div className="text-center px-8 sm:px-12">
                   <div className="text-base sm:text-xl leading-tight">
                     View my quote now
                   </div>
                 </div>
-                <span className="text-xl sm:text-2xl absolute right-4 sm:right-8 text-gray-500">→</span>
+                <span className="text-xl sm:text-2xl absolute right-4 sm:right-8">→</span>
               </button>
             </div>
 
