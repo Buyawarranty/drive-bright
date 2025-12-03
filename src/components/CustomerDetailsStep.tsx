@@ -902,6 +902,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
             <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 max-w-full">
               {/* Left Column - Personal Details Form (order-2 on mobile, order-1 on desktop) */}
               <div className="w-full min-w-0 order-2 lg:order-1">
+                <div className="bg-gray-100 rounded-lg p-4 sm:p-6">
                 {/* Heading with Security Badge */}
                 <div className="mb-6">
                   <div className="flex items-start gap-2 mb-2">
@@ -1142,6 +1143,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     onAddAnotherWarranty={() => setAddAnotherWarrantyRequested(true)}
                   />
                 </form>
+                </div>
               </div>
 
               {/* Right Column - Order Summary (order-1 on mobile, order-2 on desktop) */}
