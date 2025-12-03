@@ -1502,7 +1502,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         {/* OPTION A: Pay in Full (Stripe) */}
                         <div 
                           onClick={() => setPaymentMethod('stripe')}
-                          className={`relative rounded-xl p-5 cursor-pointer transition-all duration-300 border-2 lg:max-w-[340px] lg:mx-auto w-full ${
+                          className={`relative rounded-xl p-5 cursor-pointer transition-all duration-300 border-2 w-full ${
                             paymentMethod === 'stripe' 
                               ? 'bg-gray-100 border-gray-400 shadow-lg' 
                               : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-md'
@@ -1590,7 +1590,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         {/* OPTION B: Pay Monthly (Bumper) */}
                         <div 
                           onClick={() => setPaymentMethod('bumper')}
-                          className={`relative rounded-xl p-5 cursor-pointer transition-all duration-300 border-2 lg:max-w-[340px] lg:mx-auto w-full ${
+                          className={`relative rounded-xl p-5 cursor-pointer transition-all duration-300 border-2 w-full ${
                             paymentMethod === 'bumper' 
                               ? 'bg-gray-100 border-gray-400 shadow-lg' 
                               : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-md'
