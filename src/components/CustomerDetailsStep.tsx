@@ -17,6 +17,7 @@ import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { getAddOnInfo, isAddOnAutoIncluded, normalizePaymentType, calculateAddOnPrice } from '@/lib/addOnsUtils';
 import { EmailCapturePopup } from '@/components/EmailCapturePopup';
 import MobileNavigation from '@/components/MobileNavigation';
+import TrustpilotHeader from '@/components/TrustpilotHeader';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
 
@@ -1476,15 +1477,19 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
               </div>
 
               {/* Payment Methods Section (order-3 on mobile) */}
-              <div className="order-3 lg:col-span-2 space-y-6">
+              <div className="order-3 lg:col-span-2 space-y-6 bg-gradient-to-b from-gray-50 to-white rounded-2xl p-6 lg:p-8">
                       {/* Section Header */}
-                       <div className="text-center">
+                       <div className="text-center space-y-3">
                           <h3 className="text-2xl font-bold text-black mb-2">
                            Choose how you'd like to pay 🔒
                           </h3>
                          <div className="flex items-center justify-center gap-2 text-sm text-black">
                            <Lock className="w-4 h-4 text-green-600" />
                            <span>Secure Checkout</span>
+                         </div>
+                         {/* Trustpilot Logo */}
+                         <div className="flex justify-center pt-2">
+                           <TrustpilotHeader className="h-8" />
                          </div>
                        </div>
 
