@@ -164,8 +164,8 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
           const totalCost = addon.price * months;
           const monthlyPayment = totalCost / 12;
           priceDisplay = addon.price > 0 
-            ? `£${monthlyPayment.toFixed(2)}`
-            : '£0.00';
+            ? `£${Math.round(monthlyPayment)}`
+            : '£0';
           
           // Calculate savings for multi-year plans
           if (months > 12 && addon.price > 0) {

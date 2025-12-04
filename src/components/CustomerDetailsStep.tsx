@@ -506,7 +506,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
         
         const discountText = data.discountCode.type === 'percentage' 
           ? `${data.discountCode.value}% discount` 
-          : `£${data.discountAmount.toFixed(2)} discount`;
+          : `£${Math.round(data.discountAmount)} discount`;
         toast.success(`Promo code applied! ${discountText}`);
       } else {
         setPromoCodeError(data.error || 'Invalid or expired promo code');
@@ -1314,7 +1314,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                         // Monthly add-on - spread over 12 payments
                                         const totalCost = addOn.monthlyPrice * durationMonths;
                                         const monthlyPayment = totalCost / 12;
-                                        priceDisplay = `Only £${monthlyPayment.toFixed(2)} per month`;
+                                        priceDisplay = `Only £${Math.round(monthlyPayment)} per month`;
                                         
                                         // Determine duration text
                                         const durationText = paymentType === '12months' ? '1 year' : 
@@ -1405,7 +1405,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="text-green-600 font-medium">-£{discount.discountAmount.toFixed(2)}</span>
+                              <span className="text-green-600 font-medium">-£{Math.round(discount.discountAmount)}</span>
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -1451,7 +1451,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           {hasValidDiscountCodes && (
                             <div className="flex justify-between items-center text-sm">
                               <span className="font-medium text-gray-700">Total Discount:</span>
-                              <span className="font-bold text-green-600">-£{totalDiscountAmount.toFixed(2)}</span>
+                              <span className="font-bold text-green-600">-£{Math.round(totalDiscountAmount)}</span>
                             </div>
                           )}
                         </div>
@@ -1697,7 +1697,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               </div>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
-                              <span className="text-green-600 font-bold whitespace-nowrap">-£{discount.discountAmount.toFixed(2)}</span>
+                              <span className="text-green-600 font-bold whitespace-nowrap">-£{Math.round(discount.discountAmount)}</span>
                               <Button
                                 variant="ghost"
                                 size="sm"
