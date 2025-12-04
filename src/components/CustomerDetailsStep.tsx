@@ -1150,7 +1150,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           .replace(/plan/gi, '')
                           .replace(/premium/gi, 'platinum')
                           .trim();
-                        return `Your ${formattedPlanName} plan is ready`;
+                        return `🛡️ Your ${formattedPlanName} plan is ready`;
                       })()}
                     </h2>
                     <Button 
