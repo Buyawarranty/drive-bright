@@ -17,7 +17,7 @@ const addOnPackages = [
     icon: '🔧',
     title: 'Wear & Tear Cover',
     shortDescription: 'Protects key mechanical and electrical parts from natural wear.',
-    price: 9.99,
+    price: 9,
     priceType: 'monthly',
     badge: 'Best Value',
     badgeColor: 'green',
@@ -67,7 +67,7 @@ const addOnPackages = [
     icon: '🌍',
     title: 'Europe Cover',
     shortDescription: 'Enjoy full Platinum-level protection while driving across Europe.',
-    price: 5.99,
+    price: 5,
     priceType: 'monthly',
     bulletPoints: [
       'Same cover level as UK Platinum plan',
@@ -94,7 +94,7 @@ const addOnPackages = [
     icon: '🔁',
     title: 'Transfer Cover',
     shortDescription: 'Transfer your remaining warranty to a new owner to boost resale value.',
-    price: 19.99,
+    price: 19,
     priceType: 'one-off',
     bulletPoints: [
       'Increases vehicle resale appeal',
