@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Check, CheckCircle, ChevronDown, Shield } from 'lucide-react';
+import { Check, CheckCircle, ChevronDown, Shield, ArrowRight } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 
 const CoverClaritySection = () => {
@@ -141,6 +142,17 @@ const CoverClaritySection = () => {
               </div>
             </CollapsibleContent>
           </Collapsible>
+        </div>
+
+        {/* Get My Quote CTA */}
+        <div className="flex justify-center mt-8">
+          <Button 
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="bg-brand-orange hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-lg text-lg flex items-center gap-2 group animate-pulse-gentle"
+          >
+            Get my quote
+            <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+          </Button>
         </div>
       </div>
     </section>
