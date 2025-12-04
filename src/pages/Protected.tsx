@@ -327,14 +327,11 @@ const Protected = () => {
             
             {/* High Performance Vehicles Not Eligible - positioned after What's not covered */}
             <div className="mt-8">
-              <h3 className="text-xl font-bold text-gray-900 text-center mb-4">
-                High-End and Performance vehicles not covered
-              </h3>
               <AccordionItem value="high-performance-vehicles" className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
                 <AccordionTrigger className="px-6 py-4 text-left bg-sky-100 hover:bg-sky-200 transition-all duration-300 hover:no-underline border border-sky-300 rounded-lg">
                   <div className="flex items-center">
                     <X className="w-5 h-5 text-sky-700 mr-3 flex-shrink-0" />
-                    <span className="font-medium text-base text-sky-700">View restricted vehicle models</span>
+                    <span className="font-medium text-base text-sky-700">Exclusions: High-End & Performance Cars</span>
                   </div>
                 </AccordionTrigger>
               <AccordionContent className="px-6 py-4 bg-white">
