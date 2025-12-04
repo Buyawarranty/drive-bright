@@ -21,7 +21,11 @@ const CancelWarranty = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isStaySuccess, setIsStaySuccess] = useState(false);
   const [isCancellingRequest, setIsCancellingRequest] = useState(false);
+  const [isStaying, setIsStaying] = useState(false);
+  const [stayEmail, setStayEmail] = useState('');
+  const [stayRegPlate, setStayRegPlate] = useState('');
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [submittedData, setSubmittedData] = useState<{registrationPlate: string; fullName: string} | null>(null);
 
@@ -172,6 +176,111 @@ const CancelWarranty = () => {
       setIsCancellingRequest(false);
     }
   };
+
+  const handleStayWithUs = async () => {
+    // Validate email and reg plate
+    if (!stayEmail.trim() || !stayRegPlate.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter your email and registration plate.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(stayEmail)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsStaying(true);
+    
+    try {
+      const response = await supabase.functions.invoke('submit-cancellation', {
+        body: {
+          registrationPlate: stayRegPlate,
+          fullName: stayEmail,
+          reason: 'CUSTOMER_STAYING',
+          feedback: `Customer has decided to STAY and keep their warranty. They accepted the 3 months FREE offer. Email: ${stayEmail}, Registration: ${stayRegPlate}. Please add 3 months to their warranty expiry date.`
+        }
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to process request');
+      }
+
+      setIsStaySuccess(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+    } catch (error: any) {
+      console.error('Stay request error:', error);
+      toast({
+        title: "Request Failed",
+        description: "Please contact us directly at support@buyawarranty.co.uk",
+        variant: "destructive",
+      });
+    } finally {
+      setIsStaying(false);
+    }
+  };
+
+  // Success state for customers who chose to stay
+  if (isStaySuccess) {
+    return (
+      <>
+        <SEOHead
+          title="Welcome Back! - Buy a Warranty"
+          description="Thank you for staying with us"
+        />
+
+        <div className="min-h-screen bg-white">
+          <div className="max-w-4xl mx-auto px-4 py-16">
+            <div className="bg-green-50 border-2 border-green-500 rounded-xl p-8 text-center">
+              <div className="text-6xl mb-4">🎉</div>
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4">
+                Welcome Back! We're Thrilled You're Staying!
+              </h1>
+              <p className="text-lg text-gray-700 mb-3">
+                Your warranty is still <strong className="text-green-600">fully active</strong> and protecting your vehicle.
+              </p>
+              <p className="text-lg text-gray-700 mb-6">
+                As a thank you, we'll add <strong className="text-green-600">3 months FREE cover</strong> on top of your original warranty expiry date.
+              </p>
+              
+              <div className="bg-white rounded-lg p-6 mb-6 border border-green-200">
+                <h3 className="font-bold text-gray-900 mb-3">What happens next?</h3>
+                <ul className="space-y-2 text-left max-w-md mx-auto">
+                  <li className="flex items-start gap-2 text-gray-700">
+                    <span className="text-green-500 mt-0.5">✅</span>
+                    <span>Our team will update your policy within 2-3 working days</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-gray-700">
+                    <span className="text-green-500 mt-0.5">✅</span>
+                    <span>You'll receive an email confirmation with your new expiry date</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-gray-700">
+                    <span className="text-green-500 mt-0.5">✅</span>
+                    <span>Your extra 3 months will be added automatically</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <Link to="/">
+                <Button className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8">
+                  Return to Homepage
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   if (isSuccess) {
     return (
@@ -480,8 +589,24 @@ const CancelWarranty = () => {
                 </div>
               </div>
 
+              {/* OR Divider - Mobile only */}
+              <div className="lg:hidden flex items-center justify-center my-6">
+                <div className="flex-1 h-px bg-gray-300"></div>
+                <div className="px-4 py-2 border border-gray-300 rounded-full bg-white">
+                  <span className="text-gray-500 font-medium">or</span>
+                </div>
+                <div className="flex-1 h-px bg-gray-300"></div>
+              </div>
+
               {/* Stay Offer Section - Takes 1 column */}
-              <div className="lg:col-span-1">
+              <div className="lg:col-span-1 relative">
+                {/* OR Divider - Desktop only */}
+                <div className="hidden lg:flex absolute -left-4 top-1/2 transform -translate-y-1/2 -translate-x-full items-center">
+                  <div className="px-3 py-1 border border-gray-300 rounded-full bg-white shadow-sm">
+                    <span className="text-gray-500 font-medium text-sm">or</span>
+                  </div>
+                </div>
+
                 <div className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-500 rounded-xl p-6 text-center">
                   <div className="text-4xl mb-3">🎁</div>
                   <h3 className="text-xl font-bold text-gray-900 mb-3">
@@ -504,11 +629,32 @@ const CancelWarranty = () => {
                       <span>Stay protected longer</span>
                     </li>
                   </ul>
-                  <Link to="/">
-                    <Button className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-semibold text-lg">
-                      👉 Yes, I'll Stay
-                    </Button>
-                  </Link>
+                  
+                  {/* Email and Reg Plate inputs for stay */}
+                  <div className="space-y-3 mb-4">
+                    <Input
+                      type="text"
+                      placeholder="🚗 Your Registration Plate"
+                      value={stayRegPlate}
+                      onChange={(e) => setStayRegPlate(e.target.value)}
+                      className="h-11 border-green-300 focus:border-green-500 focus:ring-green-500 bg-white"
+                    />
+                    <Input
+                      type="email"
+                      placeholder="📧 Your Email Address"
+                      value={stayEmail}
+                      onChange={(e) => setStayEmail(e.target.value)}
+                      className="h-11 border-green-300 focus:border-green-500 focus:ring-green-500 bg-white"
+                    />
+                  </div>
+                  
+                  <Button 
+                    onClick={handleStayWithUs}
+                    disabled={isStaying}
+                    className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-semibold text-lg"
+                  >
+                    {isStaying ? 'Processing...' : "👉 Yes, I'll Stay"}
+                  </Button>
                 </div>
                 
                 {/* Panda Image */}
