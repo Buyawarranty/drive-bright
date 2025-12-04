@@ -122,7 +122,7 @@ const WarrantyBenefitsSection: React.FC = () => {
                       className="flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-lg px-4 py-3 shadow-sm animate-cta-enhanced transition-colors"
                     >
                       <Info className="w-5 h-5 text-white" />
-                      <span className="text-base font-medium text-white whitespace-nowrap">See full coverage</span>
+                      <span className="text-base font-medium text-white whitespace-nowrap">Parts & components list</span>
                       <ChevronDown className={`w-5 h-5 text-white transition-transform duration-300 ${detailsOpen ? 'rotate-180' : ''}`} />
                     </button>
                     <button
@@ -493,7 +493,7 @@ const WarrantyBenefitsSection: React.FC = () => {
                   <button className="w-full flex justify-center items-center gap-3 py-2 group cursor-pointer hover:opacity-80 transition-opacity">
                     <div className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-lg px-4 py-2 shadow-sm animate-cta-enhanced">
                       <Info className="w-5 h-5 text-white" />
-                      <span className="text-base font-medium text-white whitespace-nowrap">See full coverage</span>
+                      <span className="text-base font-medium text-white whitespace-nowrap">Parts & components list</span>
                     </div>
                     <ChevronDown className={`w-10 h-10 text-green-600 transition-transform duration-300 ease-in-out ${detailsOpen ? 'rotate-180' : ''}`} />
                   </button>
