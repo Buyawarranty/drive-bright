@@ -142,7 +142,7 @@ const PrivacyPolicy = () => {
               <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
                 <p className="text-blue-800 font-medium">
                   <strong>PDF Version:</strong> You can also download our complete Privacy Policy as a{' '}
-                  <a href="/Terms-and-Conditions-Your-Extended-Warranty-Guide-v2.2-2.pdf" target="_blank" className="text-[#eb4b00] hover:underline">
+                  <a href="/documents/Terms-and-Conditions-Your-Extended-Warranty-Guide-v2.4.pdf" target="_blank" className="text-[#eb4b00] hover:underline">
                     PDF document
                   </a>.
                 </p>
