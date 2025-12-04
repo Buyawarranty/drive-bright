@@ -243,7 +243,7 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                            <div className="space-y-1">
                              <p className="text-sm text-green-600 font-semibold flex items-center gap-1">
                                <Check className="w-4 h-4 text-green-600" />
-                               12 interest-free payments
+                               Only 12 payments (0% APR)
                              </p>
                              {paymentType === '24months' && (
                                <p className="text-sm text-green-600 font-semibold flex items-center gap-1">
