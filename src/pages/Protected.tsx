@@ -177,12 +177,13 @@ const Protected = () => {
   const VehicleSection = ({ vehicleType }: { vehicleType: typeof vehicleTypes[0] }) => {
     const config = getVehicleConfig(vehicleType.id);
     const IconComponent = config.icon;
+    const isNotCovered = vehicleType.id === 'not-covered';
     
     return (
       <AccordionItem value={vehicleType.id} className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
         <AccordionTrigger 
           className={`w-full px-4 sm:px-6 py-4 text-left flex items-center justify-between transition-all duration-300 hover:no-underline ${config.bgColor} ${config.bgColorHover} ${
-            vehicleType.id === 'not-covered' ? 'text-red-600' : 'text-black'
+            isNotCovered ? 'text-red-600' : 'text-white'
           }`}
         >
           <div className="flex items-center">
@@ -325,13 +326,17 @@ const Protected = () => {
             ))}
             
             {/* High Performance Vehicles Not Eligible - positioned after What's not covered */}
-            <AccordionItem value="high-performance-vehicles" className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
-              <AccordionTrigger className="px-6 py-4 text-left bg-red-100 hover:bg-red-200 transition-all duration-300 hover:no-underline">
-                <div className="flex items-center">
-                  <X className="w-6 h-6 text-red-800 mr-3 flex-shrink-0" />
-                  <span className="font-bold text-lg text-red-800">High-End and Performance vehicles not covered</span>
-                </div>
-              </AccordionTrigger>
+            <div className="mt-8">
+              <h3 className="text-xl font-bold text-gray-900 text-center mb-4">
+                High-End and Performance vehicles not covered
+              </h3>
+              <AccordionItem value="high-performance-vehicles" className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+                <AccordionTrigger className="px-6 py-4 text-left bg-red-50 hover:bg-red-100 transition-all duration-300 hover:no-underline border border-red-200">
+                  <div className="flex items-center">
+                    <X className="w-5 h-5 text-red-700 mr-3 flex-shrink-0" />
+                    <span className="font-medium text-base text-red-700">View restricted vehicle models</span>
+                  </div>
+                </AccordionTrigger>
               <AccordionContent className="px-6 py-4 bg-white">
                 <div className="max-h-[400px] overflow-y-auto space-y-6 text-sm">
                   {/* Disclaimer */}
@@ -665,6 +670,7 @@ const Protected = () => {
                 </div>
               </AccordionContent>
             </AccordionItem>
+            </div>
           </Accordion>
         </div>
       </section>
