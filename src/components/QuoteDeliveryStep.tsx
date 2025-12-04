@@ -448,7 +448,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                     disabled={!!errors.email || sendingEmail}
                     title={sendingEmail ? "Processing..." : ""}
                     className="flex items-center justify-center gap-2 text-white text-base sm:text-lg font-bold py-3 sm:py-3 px-6 sm:px-8 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed animate-breathing"
-                    style={{ backgroundColor: '#224380' }}
+                    style={{ 
+                      backgroundColor: '#224380',
+                      boxShadow: '0 0 20px rgba(34, 67, 128, 0.5), 0 0 40px rgba(34, 67, 128, 0.3)'
+                    }}
                     onMouseEnter={(e) => {
                       if (!errors.email && !sendingEmail) {
                         e.currentTarget.style.backgroundColor = '#1e3a70';
