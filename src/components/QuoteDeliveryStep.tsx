@@ -405,7 +405,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 {touched.email && errors.email && (
                   <p className="text-red-500 text-sm mt-1">{errors.email}</p>
                 )}
-                <p className="text-gray-500 text-sm mt-2">No spam. Unsubscribe anytime.</p>
+                <p className="text-gray-500 text-sm mt-2 text-center">No spam. Unsubscribe anytime.</p>
               </div>
 
               <div className="flex justify-end items-center">
@@ -425,11 +425,12 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                         onSkip();
                       }, 300);
                     }}
-                    className="flex items-center justify-center gap-2 text-sm sm:text-base font-medium py-3 sm:py-3 px-4 sm:px-6 rounded-lg border-2 transition-all duration-200 hover-scale"
+                    className="flex items-center justify-center gap-2 text-sm sm:text-base font-medium py-3 sm:py-3 px-4 sm:px-6 rounded-lg border-2 transition-all duration-200 hover-scale animate-breathing"
                     style={{
                       backgroundColor: 'transparent',
                       borderColor: '#d1d5db',
-                      color: '#6b7280'
+                      color: '#6b7280',
+                      boxShadow: '0 0 15px rgba(107, 114, 128, 0.3), 0 0 30px rgba(107, 114, 128, 0.2)'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.borderColor = '#9ca3af';
