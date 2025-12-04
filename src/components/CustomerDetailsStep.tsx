@@ -892,8 +892,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
         <Card className="border border-gray-200 overflow-hidden">
           <CardContent className="p-4 sm:pt-6 sm:p-6 overflow-x-hidden">
             <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 max-w-full">
-              {/* Left Column - Personal Details Form (order-2 on mobile, order-1 on desktop) */}
-              <div className="w-full min-w-0 order-2 lg:order-1">
+              {/* Left Column - Personal Details Form (order-2 on mobile, order-2 on desktop = right side) */}
+              <div className="w-full min-w-0 order-2 lg:order-2">
                 <div className="bg-gray-100 rounded-lg p-4 sm:p-6">
                 {/* Heading with Security Badge */}
                 <div className="mb-6">
@@ -1135,8 +1135,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                 </div>
               </div>
 
-              {/* Right Column - Order Summary (order-1 on mobile, order-2 on desktop) */}
-              <div className="space-y-6 order-1 lg:order-2">
+              {/* Right Column - Order Summary (order-1 on mobile, order-1 on desktop = left side) */}
+              <div className="space-y-6 order-1 lg:order-1">
                 <div className="bg-gray-100 rounded-lg p-4 sm:p-6">
                 {/* Order Summary Card */}
                 <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border overflow-hidden">
