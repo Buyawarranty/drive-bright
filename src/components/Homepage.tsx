@@ -473,8 +473,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                       onFocus={handleMileageFocus}
                       onBlur={handleMileageBlur}
                       placeholder={mileagePlaceholder}
-                      className={`w-full max-w-56 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-sm sm:text-lg border-2 rounded-lg focus:outline-none min-w-0 ${
-                        mileageError ? 'border-blue-400 focus:border-blue-500' : 'border-gray-300 focus:border-orange-500'
+                      className={`w-full max-w-56 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-sm sm:text-lg border-2 rounded-lg focus:outline-none min-w-0 placeholder:text-gray-500 ${
+                        mileageError ? 'border-blue-400 focus:border-blue-500' : 'border-gray-400 focus:border-orange-500'
                       }`}
                     />
                   </div>
