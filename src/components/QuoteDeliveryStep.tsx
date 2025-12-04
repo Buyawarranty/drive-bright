@@ -390,8 +390,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
-                  className={`w-full border-2 rounded-[6px] px-[12px] sm:px-[16px] py-[12px] sm:py-[14px] focus:outline-none transition-all duration-200 text-base ${
-                    touched.email && errors.email ? 'border-red-500' : 'border-gray-300'
+                  className={`w-full border-2 rounded-[6px] px-[12px] sm:px-[16px] py-[12px] sm:py-[14px] focus:outline-none transition-all duration-200 text-base placeholder:text-gray-500 ${
+                    touched.email && errors.email ? 'border-red-500' : 'border-gray-400'
                   }`}
                   onFocus={(e) => {
                     e.target.style.borderColor = touched.email && errors.email ? '#ef4444' : '#224380';
