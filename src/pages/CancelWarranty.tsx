@@ -358,13 +358,13 @@ const CancelWarranty = () => {
 
         {/* Cancellation Form Section */}
         <section className="bg-gray-50 py-12 px-4">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-5xl mx-auto">
             <div className="text-center mb-8">
               <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
-                Cancellation Form
+                ✅ Cancellation Form
               </h2>
               <p className="text-gray-600 text-lg">
-                Please allow 2–3 working days for processing.
+                We're sorry to see you go! Before you leave, could you share a little feedback? It really helps us improve. 😊
               </p>
             </div>
 
@@ -372,11 +372,13 @@ const CancelWarranty = () => {
               {/* Form Section - Takes 2 columns */}
               <div className="lg:col-span-2">
                 <div className="bg-white p-6 lg:p-8 rounded-xl shadow-lg">
+                  <h3 className="text-xl font-bold text-gray-900 mb-6">Your Details</h3>
+                  
                   <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Registration Plate */}
                     <div>
-                      <Label htmlFor="registrationPlate" className="text-gray-700 font-medium text-sm">
-                        Registration Plate *
+                      <Label htmlFor="registrationPlate" className="text-gray-700 font-medium text-sm flex items-center gap-2">
+                        🚗 Registration Plate *
                       </Label>
                       <Input
                         id="registrationPlate"
@@ -393,14 +395,14 @@ const CancelWarranty = () => {
 
                     {/* Full Name */}
                     <div>
-                      <Label htmlFor="fullName" className="text-gray-700 font-medium text-sm">
-                        Full Name *
+                      <Label htmlFor="fullName" className="text-gray-700 font-medium text-sm flex items-center gap-2">
+                        👤 Full Name *
                       </Label>
                       <Input
                         id="fullName"
                         name="fullName"
                         type="text"
-                        placeholder="Your Full Name"
+                        placeholder="Your full name"
                         value={formData.fullName}
                         onChange={handleInputChange}
                         required
@@ -411,12 +413,12 @@ const CancelWarranty = () => {
 
                     {/* Reason for Cancellation */}
                     <div>
-                      <Label htmlFor="reason" className="text-gray-700 font-medium text-sm">
-                        Reason for Cancellation *
+                      <Label htmlFor="reason" className="text-gray-700 font-medium text-sm flex items-center gap-2">
+                        ❓ Reason for Cancellation *
                       </Label>
                       <Select onValueChange={handleReasonChange} value={formData.reason}>
                         <SelectTrigger className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 ${errors.reason ? 'border-red-500' : ''}`}>
-                          <SelectValue placeholder="Select a reason" />
+                          <SelectValue placeholder="Select a reason from the list" />
                         </SelectTrigger>
                         <SelectContent className="bg-white z-50">
                           <SelectItem value="too-expensive">Too expensive</SelectItem>
@@ -431,18 +433,30 @@ const CancelWarranty = () => {
                     </div>
 
                     {/* Feedback */}
-                    <div>
-                      <Label htmlFor="feedback" className="text-gray-700 font-medium text-sm mb-2 block">
-                        We'd Love Your Honest Thoughts
+                    <div className="bg-gray-50 rounded-lg p-5">
+                      <Label htmlFor="feedback" className="text-gray-900 font-bold text-base mb-2 block">
+                        💬 We'd Love Your Honest Thoughts
                       </Label>
-                      <p className="text-sm text-gray-500 mb-3 italic">
-                        Your Opinion Matters – It Won't Affect Your Refund
-                      </p>
                       <p className="text-sm text-gray-600 mb-3">
-                        There's no right or wrong answer, and you can't offend us. We genuinely want to know what you think, 
-                        even if something didn't go as expected. Your feedback helps us improve for you and others, 
-                        and it won't impact your refund or support in any way. Big or small, we'd love to hear it!
+                        Your opinion matters – and it won't affect your refund.
                       </p>
+                      <p className="text-sm text-gray-600 mb-4">
+                        There's no right or wrong answer, and you can't offend us! We genuinely want to know what you think because:
+                      </p>
+                      <ul className="space-y-2 mb-4">
+                        <li className="flex items-start gap-2 text-sm text-gray-700">
+                          <span className="text-green-500 mt-0.5">✅</span>
+                          <span>Your feedback helps us improve for you and others</span>
+                        </li>
+                        <li className="flex items-start gap-2 text-sm text-gray-700">
+                          <span className="text-green-500 mt-0.5">✅</span>
+                          <span>It won't impact your refund or support in any way</span>
+                        </li>
+                        <li className="flex items-start gap-2 text-sm text-gray-700">
+                          <span className="text-green-500 mt-0.5">✅</span>
+                          <span>Big or small, we'd love to hear it!</span>
+                        </li>
+                      </ul>
                       <Textarea
                         id="feedback"
                         name="feedback"
@@ -450,7 +464,7 @@ const CancelWarranty = () => {
                         value={formData.feedback}
                         onChange={handleInputChange}
                         rows={4}
-                        className="border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+                        className="border-gray-300 focus:border-orange-500 focus:ring-orange-500 bg-white"
                       />
                     </div>
 
@@ -458,21 +472,53 @@ const CancelWarranty = () => {
                     <Button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full h-12 bg-orange-500 hover:bg-orange-600 text-white font-semibold text-lg"
+                      className="w-full h-12 bg-gray-600 hover:bg-gray-700 text-white font-semibold text-lg"
                     >
-                      {isSubmitting ? 'Submitting...' : 'Cancel My Warranty'}
+                      {isSubmitting ? 'Submitting...' : '👉 Cancel My Warranty'}
                     </Button>
                   </form>
                 </div>
               </div>
 
-              {/* Image Section - Takes 1 column */}
-              <div className="lg:col-span-1 flex items-center justify-center">
-                <img 
-                  src={pandaVehicles} 
-                  alt="Panda with vehicles" 
-                  className="w-full max-w-[250px]"
-                />
+              {/* Stay Offer Section - Takes 1 column */}
+              <div className="lg:col-span-1">
+                <div className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-500 rounded-xl p-6 text-center">
+                  <div className="text-4xl mb-3">🎁</div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">
+                    Wait! Want to Stay?
+                  </h3>
+                  <p className="text-gray-700 mb-4">
+                    Get <span className="font-bold text-green-600">3 months FREE</span> cover if you keep your warranty!
+                  </p>
+                  <ul className="space-y-2 text-left mb-6">
+                    <li className="flex items-center gap-2 text-gray-700">
+                      <span className="text-green-500">✅</span>
+                      <span>No extra cost</span>
+                    </li>
+                    <li className="flex items-center gap-2 text-gray-700">
+                      <span className="text-green-500">✅</span>
+                      <span>Immediate benefit</span>
+                    </li>
+                    <li className="flex items-center gap-2 text-gray-700">
+                      <span className="text-green-500">✅</span>
+                      <span>Stay protected longer</span>
+                    </li>
+                  </ul>
+                  <Link to="/">
+                    <Button className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-semibold text-lg">
+                      👉 Yes, I'll Stay
+                    </Button>
+                  </Link>
+                </div>
+                
+                {/* Panda Image */}
+                <div className="mt-6 flex items-center justify-center">
+                  <img 
+                    src={pandaVehicles} 
+                    alt="Panda with vehicles" 
+                    className="w-full max-w-[200px]"
+                  />
+                </div>
               </div>
             </div>
           </div>
