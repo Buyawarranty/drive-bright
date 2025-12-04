@@ -103,7 +103,7 @@ const WarrantyCart: React.FC<WarrantyCartProps> = ({ onAddMore, onProceedToCheck
           discountAmount: data.discountAmount,
           finalAmount: data.finalAmount
         });
-        toast.success(`Discount applied! You save £${Math.round(data.discountAmount)}`);
+        toast.success(`Discount applied! You save £${data.discountAmount.toFixed(2)}`);
       } else {
         setDiscountValidation({
           valid: false,
@@ -358,7 +358,7 @@ const WarrantyCart: React.FC<WarrantyCartProps> = ({ onAddMore, onProceedToCheck
                   {discountValidation && discountValidation.valid && (
                     <div className="flex justify-between items-center text-green-600">
                       <span className="text-sm">Discount code applied:</span>
-                      <span className="text-sm font-medium">-£{Math.round(discountValidation.discountAmount)}</span>
+                      <span className="text-sm font-medium">-£{discountValidation.discountAmount.toFixed(2)}</span>
                     </div>
                   )}
                   

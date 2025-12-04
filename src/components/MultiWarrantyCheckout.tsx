@@ -339,11 +339,11 @@ const MultiWarrantyCheckout: React.FC<MultiWarrantyCheckoutProps> = ({ items, on
       if (data.valid) {
         setDiscountValidation({
           valid: true,
-          message: `Discount applied! You save £${Math.round(data.discountAmount)}`,
+          message: `Discount applied! You save £${data.discountAmount.toFixed(2)}`,
           discountAmount: data.discountAmount,
           finalAmount: data.finalAmount
         });
-        toast.success(`Discount applied! You save £${Math.round(data.discountAmount)}`);
+        toast.success(`Discount applied! You save £${data.discountAmount.toFixed(2)}`);
       } else {
         setDiscountValidation({
           valid: false,
@@ -1050,7 +1050,7 @@ const MultiWarrantyCheckout: React.FC<MultiWarrantyCheckoutProps> = ({ items, on
                                             // Monthly add-on - spread over 12 payments
                                             const totalCost = addOn.monthlyPrice * durationMonths;
                                             const monthlyPayment = totalCost / 12;
-                                            priceDisplay = `Only £${Math.round(monthlyPayment)} per month`;
+                                            priceDisplay = `Only £${monthlyPayment.toFixed(2)} per month`;
                                             
                                             // Determine duration text
                                             const paymentTypeNormalized = normalizePaymentType(item.paymentType);

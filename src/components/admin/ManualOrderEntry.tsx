@@ -1530,7 +1530,7 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
                       🔁 Transfer Cover
                     </Label>
                     <p className="text-xs text-gray-600 mt-0.5">
-                      Transfer warranty to new owner (£20 one-time)
+                      Transfer warranty to new owner (£19.99 one-time)
                     </p>
                   </div>
                 </div>

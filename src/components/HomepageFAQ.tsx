@@ -90,7 +90,7 @@ const HomepageFAQ = () => {
     {
       id: 'transferable',
       question: 'Is the warranty transferable?',
-      answer: 'Yes, our warranties can be transferred to a new owner if you sell your car privately—this can help you sell your vehicle and may even increase its value. There\'s a £20 fee if you choose to transfer the warranty at the time of purchase. If you decide to transfer it later, the fee is £30, so it\'s worth sorting early for the best deal.'
+      answer: 'Yes, our warranties can be transferred to a new owner if you sell your car privately—this can help you sell your vehicle and may even increase its value. There\'s a £19.99 fee if you choose to transfer the warranty at the time of purchase. If you decide to transfer it later, the fee is £30, so it\'s worth sorting early for the best deal.'
     }
   ];
 

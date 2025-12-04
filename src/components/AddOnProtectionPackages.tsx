@@ -94,7 +94,7 @@ const addOnPackages = [
     icon: '🔁',
     title: 'Transfer Cover',
     shortDescription: 'Transfer your remaining warranty to a new owner to boost resale value.',
-    price: 20,
+    price: 19.99,
     priceType: 'one-off',
     bulletPoints: [
       'Increases vehicle resale appeal',
@@ -164,8 +164,8 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
           const totalCost = addon.price * months;
           const monthlyPayment = totalCost / 12;
           priceDisplay = addon.price > 0 
-            ? `£${Math.round(monthlyPayment)}`
-            : '£0';
+            ? `£${monthlyPayment.toFixed(2)}`
+            : '£0.00';
           
           // Calculate savings for multi-year plans
           if (months > 12 && addon.price > 0) {
