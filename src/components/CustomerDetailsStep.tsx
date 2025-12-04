@@ -1690,13 +1690,31 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
 
                     {/* Discount Codes Applied Notice */}
                     {hasValidDiscountCodes && (
-                      <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 text-center lg:max-w-md lg:mx-auto">
-                        <div className="flex items-center justify-center gap-2 text-sm">
-                          <Check className="w-5 h-5 text-green-600" />
-                          <span className="text-black font-bold">
-                            Discount Applied: {appliedDiscountCodes.map(code => code.code).join(', ')}
-                          </span>
-                        </div>
+                      <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 lg:max-w-md lg:mx-auto">
+                        {appliedDiscountCodes.map((discount) => (
+                          <div key={discount.code} className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2">
+                              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                              <div className="flex flex-col">
+                                <span className="text-black font-bold text-sm">{discount.code}</span>
+                                <span className="text-xs text-green-600 font-medium">
+                                  {discount.type === 'percentage' ? `${discount.value}% OFF` : `£${discount.value} OFF`}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-green-600 font-bold">-£{discount.discountAmount.toFixed(2)}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removePromoCode(discount.code)}
+                                className="text-red-600 hover:text-red-800 hover:bg-red-50 h-auto px-2 py-1 text-xs font-medium"
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
 
