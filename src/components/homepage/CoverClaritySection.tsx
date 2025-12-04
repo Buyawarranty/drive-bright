@@ -10,12 +10,13 @@ const CoverClaritySection = () => {
   useEffect(() => {
     const fetchDocumentUrls = async () => {
       try {
-        // Fetch Platinum Plan document
+        // Fetch Platinum Plan document - same query as PricingTable
         const { data: platinumData } = await supabase
           .from('customer_documents')
           .select('file_url')
-          .eq('plan_type', 'Platinum')
-          .eq('vehicle_type', 'car')
+          .eq('plan_type', 'platinum')
+          .order('created_at', { ascending: false })
+          .limit(1)
           .single();
         
         if (platinumData?.file_url) {
@@ -26,7 +27,9 @@ const CoverClaritySection = () => {
         const { data: termsData } = await supabase
           .from('customer_documents')
           .select('file_url')
-          .eq('document_name', 'Terms and Conditions')
+          .eq('plan_type', 'terms-and-conditions')
+          .order('created_at', { ascending: false })
+          .limit(1)
           .single();
         
         if (termsData?.file_url) {
@@ -97,9 +100,9 @@ const CoverClaritySection = () => {
                     href={platinumDocUrl} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-brand-orange hover:text-orange-600 font-semibold text-sm md:text-base transition-colors"
+                    className="text-blue-600 hover:text-blue-800 font-medium text-base underline"
                   >
-                    View Full Platinum Plan Details →
+                    View Full Platinum Plan Details
                   </a>
                 ) : (
                   <span className="text-gray-400 font-medium text-sm">Loading PDF...</span>
@@ -128,9 +131,9 @@ const CoverClaritySection = () => {
                     href={termsDocUrl} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-brand-deep-blue hover:text-blue-700 font-semibold text-sm md:text-base transition-colors"
+                    className="text-blue-600 hover:text-blue-800 font-medium text-base underline"
                   >
-                    View Full Terms and Conditions →
+                    View Full Terms and Conditions
                   </a>
                 ) : (
                   <span className="text-gray-400 font-medium text-sm">Loading PDF...</span>
