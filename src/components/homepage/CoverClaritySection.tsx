@@ -69,7 +69,7 @@ const CoverClaritySection = () => {
                 <div className="w-8 h-8 bg-brand-orange rounded-full flex items-center justify-center">
                   <CheckCircle className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-semibold text-brand-dark-text text-base md:text-lg">Comprehensive Platinum Plan</span>
+                <span className="font-semibold text-brand-dark-text text-lg md:text-xl">Comprehensive Platinum Plan</span>
               </div>
               <ChevronDown className="w-5 h-5 text-brand-orange transition-transform duration-200 group-data-[state=open]:rotate-180" />
             </CollapsibleTrigger>
@@ -118,7 +118,7 @@ const CoverClaritySection = () => {
                 <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
                   <CheckCircle className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-semibold text-brand-dark-text text-base md:text-lg">Terms & Conditions</span>
+                <span className="font-semibold text-brand-dark-text text-lg md:text-xl">Terms & Conditions</span>
               </div>
               <ChevronDown className="w-5 h-5 text-green-600 transition-transform duration-200 group-data-[state=open]:rotate-180" />
             </CollapsibleTrigger>
