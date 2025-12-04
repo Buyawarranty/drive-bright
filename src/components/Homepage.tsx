@@ -621,9 +621,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       </LazySection>
 
       {/* Step 1 - Enter Your Reg Plate */}
-      <section className="pt-6 md:pt-10 pb-12 md:pb-20 bg-white">
+      <section className="pt-6 md:pt-8 pb-10 md:pb-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-8 md:gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-6 md:gap-10 items-center">
             {/* Left - Content */}
             <div className="space-y-6 md:space-y-8 order-2 lg:order-1">
               <div className="mb-4 md:mb-6">
@@ -695,9 +695,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       </section>
 
       {/* Step 2 - Choose Your Plan */}
-      <section className="py-8 md:py-14 bg-brand-gray-bg">
+      <section className="py-6 md:py-10 bg-brand-gray-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-8 md:gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-6 md:gap-10 items-center">
             {/* Left - Panda with plan badges */}
             <div className="relative text-center">
               <OptimizedImage 
@@ -759,9 +759,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       </section>
 
       {/* Step 3 - Drive With Confidence */}
-      <section className="py-8 md:py-16 bg-white">
+      <section className="py-6 md:py-10 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-8 md:gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-6 md:gap-10 items-center">
             {/* Left - Content */}
             <div className="space-y-6 md:space-y-8 order-2 lg:order-1">
               <div className="mb-4 md:mb-6">
@@ -826,9 +826,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       </section>
 
       {/* What's Included Section */}
-      <section className="py-12 md:py-20 bg-gradient-to-r from-blue-50 to-orange-50">
+      <section className="py-8 md:py-12 bg-gradient-to-r from-blue-50 to-orange-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="space-y-6 md:space-y-8">
+          <div className="space-y-4 md:space-y-6">
             <h2 className="text-3xl md:text-5xl font-bold text-brand-deep-blue">
               What's <span className="text-brand-orange">Included?</span>
             </h2>
@@ -839,7 +839,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6 md:gap-8 mt-12">
+            <div className="grid md:grid-cols-3 gap-4 md:gap-6 mt-8">
               <div className="space-y-4">
                 <div className="w-16 h-16 bg-brand-orange rounded-full flex items-center justify-center mx-auto">
                   <Shield className="w-8 h-8 text-white" />
@@ -870,7 +870,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
 
       {/* Coverage Showcase Section */}
-      <section className="py-12 md:py-20 bg-brand-gray-bg text-center">
+      <section className="py-6 md:py-8 bg-brand-gray-bg text-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* CTA Button */}
