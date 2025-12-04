@@ -772,10 +772,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return Math.round(baseMonthly + labourRateDisplayAdjustment + boostDisplayAdjustment);
   }, [totalDiscountedPriceWithoutBoost, labourRateDisplayAdjustment, boostDisplayAdjustment]);
 
-  // Memoized display total price with labour rate and boost display adjustments
+  // Memoized display total price - derived from displayMonthlyPrice to ensure consistency
   const displayTotalPrice = useMemo(() => {
-    return Math.round(totalDiscountedPriceWithoutBoost + (labourRateDisplayAdjustment * 12) + (boostDisplayAdjustment * 12));
-  }, [totalDiscountedPriceWithoutBoost, labourRateDisplayAdjustment, boostDisplayAdjustment]);
+    return displayMonthlyPrice * 12;
+  }, [displayMonthlyPrice]);
 
   // Memoized monthly price calculation - always divide total by 12 for monthly payments
   const monthlyPrice = useMemo(() => {
