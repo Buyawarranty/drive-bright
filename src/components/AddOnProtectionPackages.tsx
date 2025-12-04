@@ -230,21 +230,28 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                      {/* Title */}
                      <h4 className="font-bold text-lg text-gray-900 mb-4 pr-8">{addon.title}</h4>
                      
-                     {/* Price with improved hierarchy */}
-                     <div className="mb-4">
-                       <div className="flex items-baseline gap-1 mb-1">
-                         <span className="text-sm text-gray-600 font-medium">Only</span>
-                         <span className="text-3xl font-bold text-gray-900">{priceDisplay}</span>
-                         <span className="text-sm text-gray-600 font-medium">/month</span>
-                       </div>
-                        {!isIncluded && (
-                          <p className="text-sm text-green-600 font-semibold">
-                            12 interest-free payments
-                          </p>
+                      {/* Price with improved hierarchy */}
+                      <div className="mb-4">
+                        <div className="flex items-baseline gap-1 mb-1">
+                          <span className="text-sm text-gray-600 font-medium">Only</span>
+                          <span className="text-3xl font-bold text-gray-900">{priceDisplay}</span>
+                          <span className="text-sm text-gray-600 font-medium">
+                            {addon.priceType === 'one-off' ? ' one-off' : '/month'}
+                          </span>
+                        </div>
+                         {!isIncluded && addon.priceType !== 'one-off' && (
+                           <p className="text-sm text-green-600 font-semibold">
+                             12 interest-free payments
+                           </p>
+                         )}
+                         {!isIncluded && addon.priceType === 'one-off' && (
+                           <p className="text-sm text-green-600 font-semibold">
+                             One-time payment
+                           </p>
+                         )}
+                        {isIncluded && (
+                          <span className="text-xs text-green-700 font-semibold">Included in your plan!</span>
                         )}
-                       {isIncluded && (
-                         <span className="text-xs text-green-700 font-semibold">Included in your plan!</span>
-                       )}
                      </div>
                      
                      {/* One short benefit */}
