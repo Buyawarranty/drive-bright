@@ -475,10 +475,18 @@ const ThankYou = () => {
                   plan={plan || undefined}
                   paymentType={paymentType || undefined}
                   warrantyStartDate={undefined}
-                  duration={searchParams.get('duration') || undefined}
+                  duration={searchParams.get('duration') || paymentType || undefined}
                   monthlyPrice={searchParams.get('monthly_price') ? parseFloat(searchParams.get('monthly_price')!) : undefined}
-                  totalPrice={searchParams.get('total_price') ? parseFloat(searchParams.get('total_price')!) : undefined}
+                  totalPrice={searchParams.get('total_price') || searchParams.get('final_amount') ? parseFloat(searchParams.get('total_price') || searchParams.get('final_amount')!) : undefined}
                   originalPrice={searchParams.get('original_price') ? parseFloat(searchParams.get('original_price')!) : undefined}
+                  vehicle={searchParams.get('vehicle') || undefined}
+                  vehicleReg={searchParams.get('vehicle_reg') || undefined}
+                  mileage={searchParams.get('mileage') || undefined}
+                  claimLimit={searchParams.get('claim_limit') ? parseInt(searchParams.get('claim_limit')!) : undefined}
+                  labourRate={searchParams.get('labour_rate') ? parseInt(searchParams.get('labour_rate')!) : undefined}
+                  excess={searchParams.get('excess') ? parseInt(searchParams.get('excess')!) : undefined}
+                  addons={searchParams.get('addons') || undefined}
+                  paidInFull={source === 'stripe' || paymentType?.toLowerCase().includes('full')}
                 />
 
                 {/* What Happens Next */}
