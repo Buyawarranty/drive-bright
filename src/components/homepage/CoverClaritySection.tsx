@@ -71,7 +71,7 @@ const CoverClaritySection = () => {
                 </div>
                 <span className="font-semibold text-brand-dark-text text-lg md:text-xl">Comprehensive Platinum Plan</span>
               </div>
-              <ChevronDown className="w-5 h-5 text-brand-orange transition-transform duration-200 group-data-[state=open]:rotate-180" />
+              <ChevronDown className="w-10 h-10 text-brand-orange transition-transform duration-200 group-data-[state=open]:rotate-180" />
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-3">
               <div className="bg-gray-50 rounded-lg p-5 border border-gray-100">
@@ -120,7 +120,7 @@ const CoverClaritySection = () => {
                 </div>
                 <span className="font-semibold text-brand-dark-text text-lg md:text-xl">Terms & Conditions</span>
               </div>
-              <ChevronDown className="w-5 h-5 text-green-600 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+              <ChevronDown className="w-10 h-10 text-green-600 transition-transform duration-200 group-data-[state=open]:rotate-180" />
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-3">
               <div className="bg-gray-50 rounded-lg p-5 border border-gray-100">
