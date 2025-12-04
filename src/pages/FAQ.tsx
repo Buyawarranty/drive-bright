@@ -492,7 +492,7 @@ const FAQ = () => {
         {
           id: 'cancel-warranty-detailed',
           question: 'Can I cancel my warranty?',
-          answer: 'You have 14 days to cancel for a full refund (if no repairs have been paid).'
+          answer: 'You have 14 days to cancel your warranty for a full refund for FREE (if no repairs have been made). After this period, our standard easy to follow cancellation policy applies. Simply visit https://buyawarranty.co.uk/cancel-warranty/'
         }
       ]
      },

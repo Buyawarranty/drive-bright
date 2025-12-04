@@ -85,7 +85,7 @@ const HomepageFAQ = () => {
     {
       id: 'cancel-warranty',
       question: 'Can I cancel my warranty?',
-      answer: 'You have 14 days to cancel your warranty for a full refund (if no repairs have been made). After this period, our standard cancellation policy applies. Contact us at support@buyawarranty.co.uk or call 0330 229 5040.'
+      answer: 'You have 14 days to cancel your warranty for a full refund for FREE (if no repairs have been made). After this period, our standard easy to follow cancellation policy applies. Simply visit https://buyawarranty.co.uk/cancel-warranty/'
     },
     {
       id: 'transferable',
