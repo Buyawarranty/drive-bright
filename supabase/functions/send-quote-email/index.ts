@@ -201,23 +201,10 @@ const handler = async (req: Request): Promise<Response> => {
     // Generate unique quote ID
     const quoteId = `QUO-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
     
-    // Determine the base URL from the request origin or use production URL as fallback
-    const origin = req.headers.get('origin');
-    const referer = req.headers.get('referer');
-    let baseUrl = 'https://buyawarranty.co.uk';
+    // Always use production URL for email links
+    const baseUrl = 'https://buyawarranty.co.uk';
     
-    if (origin) {
-      baseUrl = origin;
-    } else if (referer) {
-      try {
-        const refererUrl = new URL(referer);
-        baseUrl = refererUrl.origin;
-      } catch (e) {
-        logStep('Failed to parse referer URL', { referer });
-      }
-    }
-    
-    logStep('Email URL generation', { origin, referer, baseUrl, quoteId });
+    logStep('Email URL generation', { baseUrl, quoteId });
     
     // Store quote data in database for restoration
     try {
