@@ -70,7 +70,7 @@ export const getAddOnInfo = (paymentType: string, durationMonths: number = 12): 
       monthlyPrice: 4,
       description: 'Roadside assistance and recovery service',
       isAutoIncluded: autoIncluded.includes('breakdown'),
-      displayPrice: autoIncluded.includes('breakdown') ? 'FREE' : `£${(4 * durationMonths).toFixed(0)}`
+      displayPrice: autoIncluded.includes('breakdown') ? 'FREE' : `£${(4 * durationMonths)}`
     },
     {
       key: 'rental',
@@ -78,7 +78,7 @@ export const getAddOnInfo = (paymentType: string, durationMonths: number = 12): 
       monthlyPrice: 7,
       description: 'Courtesy car while yours is being repaired',
       isAutoIncluded: autoIncluded.includes('rental'),
-      displayPrice: autoIncluded.includes('rental') ? 'FREE' : `£${(7 * durationMonths).toFixed(0)}`
+      displayPrice: autoIncluded.includes('rental') ? 'FREE' : `£${(7 * durationMonths)}`
     },
     {
       key: 'tyre',
@@ -86,64 +86,64 @@ export const getAddOnInfo = (paymentType: string, durationMonths: number = 12): 
       monthlyPrice: 8,
       description: 'Protection for tyre damage and punctures',
       isAutoIncluded: autoIncluded.includes('tyre'),
-      displayPrice: autoIncluded.includes('tyre') ? 'FREE' : `£${(8 * durationMonths).toFixed(0)}`
+      displayPrice: autoIncluded.includes('tyre') ? 'FREE' : `£${(8 * durationMonths)}`
     },
     {
       key: 'wearAndTear',
       name: 'Wear & Tear',
-      monthlyPrice: 9.99,
+      monthlyPrice: 9,
       description: 'Coverage for general wear and tear items',
       isAutoIncluded: autoIncluded.includes('wearAndTear'),
-      displayPrice: autoIncluded.includes('wearAndTear') ? 'FREE' : `£${(9.99 * durationMonths).toFixed(2)}`
+      displayPrice: autoIncluded.includes('wearAndTear') ? 'FREE' : `£${(9 * durationMonths)}`
     },
     {
       key: 'european',
       name: 'European Cover',
-      monthlyPrice: 5.99,
+      monthlyPrice: 5,
       description: 'Coverage while driving in Europe',
       isAutoIncluded: autoIncluded.includes('european'),
-      displayPrice: autoIncluded.includes('european') ? 'FREE' : `£${(5.99 * durationMonths).toFixed(2)}`
+      displayPrice: autoIncluded.includes('european') ? 'FREE' : `£${(5 * durationMonths)}`
     },
     {
       key: 'motRepair',
       name: 'MOT Repair',
-      monthlyPrice: 4.00,
+      monthlyPrice: 4,
       description: 'Cover for MOT failure repairs',
       isAutoIncluded: autoIncluded.includes('motRepair'),
-      displayPrice: autoIncluded.includes('motRepair') ? 'FREE' : `£${(4.00 * durationMonths).toFixed(2)}`
+      displayPrice: autoIncluded.includes('motRepair') ? 'FREE' : `£${(4 * durationMonths)}`
     },
     {
       key: 'motFee',
       name: 'MOT Test Fee',
-      monthlyPrice: 1.99,
+      monthlyPrice: 1,
       description: 'Reimbursement of the MOT test fee up to £75',
       isAutoIncluded: autoIncluded.includes('motFee'),
-      displayPrice: autoIncluded.includes('motFee') ? 'FREE' : `£${(1.99 * durationMonths).toFixed(2)}`
+      displayPrice: autoIncluded.includes('motFee') ? 'FREE' : `£${(1 * durationMonths)}`
     },
     {
       key: 'lostKey',
       name: 'Lost Key Cover',
-      monthlyPrice: 3.00,
+      monthlyPrice: 3,
       description: 'Replacement key and locksmith costs',
       isAutoIncluded: autoIncluded.includes('lostKey'),
-      displayPrice: autoIncluded.includes('lostKey') ? 'FREE' : `£${(3.00 * durationMonths).toFixed(2)}`
+      displayPrice: autoIncluded.includes('lostKey') ? 'FREE' : `£${(3 * durationMonths)}`
     },
     {
       key: 'consequential',
       name: 'Consequential Loss',
-      monthlyPrice: 5.00,
+      monthlyPrice: 5,
       description: 'Additional costs due to breakdown',
       isAutoIncluded: autoIncluded.includes('consequential'),
-      displayPrice: autoIncluded.includes('consequential') ? 'FREE' : `£${(5.00 * durationMonths).toFixed(2)}`
+      displayPrice: autoIncluded.includes('consequential') ? 'FREE' : `£${(5 * durationMonths)}`
     },
     {
       key: 'transfer',
       name: 'Transfer Cover',
       monthlyPrice: 0,
-      oneTimePrice: 19.99,
+      oneTimePrice: 19,
       description: 'Transfer warranty to new owner',
       isAutoIncluded: autoIncluded.includes('transfer'),
-      displayPrice: autoIncluded.includes('transfer') ? 'FREE' : '£19.99'
+      displayPrice: autoIncluded.includes('transfer') ? 'FREE' : '£19'
     }
   ];
   
@@ -163,15 +163,15 @@ export const calculateAddOnPrice = (
   if (selectedAddOns.breakdown && !autoIncluded.includes('breakdown')) total += 4 * durationMonths;
   if (selectedAddOns.rental && !autoIncluded.includes('rental')) total += 7 * durationMonths;
   if (selectedAddOns.tyre && !autoIncluded.includes('tyre')) total += 8 * durationMonths;
-  if (selectedAddOns.wearAndTear && !autoIncluded.includes('wearAndTear')) total += 9.99 * durationMonths;
-  if (selectedAddOns.european && !autoIncluded.includes('european')) total += 5.99 * durationMonths;
-  if (selectedAddOns.motRepair && !autoIncluded.includes('motRepair')) total += 4.00 * durationMonths;
-  if (selectedAddOns.motFee && !autoIncluded.includes('motFee')) total += 1.99 * durationMonths;
-  if (selectedAddOns.lostKey && !autoIncluded.includes('lostKey')) total += 3.00 * durationMonths;
-  if (selectedAddOns.consequential && !autoIncluded.includes('consequential')) total += 5.00 * durationMonths;
+  if (selectedAddOns.wearAndTear && !autoIncluded.includes('wearAndTear')) total += 9 * durationMonths;
+  if (selectedAddOns.european && !autoIncluded.includes('european')) total += 5 * durationMonths;
+  if (selectedAddOns.motRepair && !autoIncluded.includes('motRepair')) total += 4 * durationMonths;
+  if (selectedAddOns.motFee && !autoIncluded.includes('motFee')) total += 1 * durationMonths;
+  if (selectedAddOns.lostKey && !autoIncluded.includes('lostKey')) total += 3 * durationMonths;
+  if (selectedAddOns.consequential && !autoIncluded.includes('consequential')) total += 5 * durationMonths;
   
   // One-time add-ons
-  if (selectedAddOns.transfer && !autoIncluded.includes('transfer')) total += 19.99;
+  if (selectedAddOns.transfer && !autoIncluded.includes('transfer')) total += 19;
   
   return Math.round(total * 100) / 100; // Round to 2 decimal places
 };
