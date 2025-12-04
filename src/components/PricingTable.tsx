@@ -716,10 +716,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return discountedPrice;
   }, [basePlanPrice, paymentType]);
 
-  // Memoized total discounted price (with add-ons and boost)
+  // Memoized total discounted price (with add-ons and boost - for API/checkout)
   const totalDiscountedPrice = useMemo(() => {
     return discountedBasePlanPrice + addOnPrice + boostAddonCost;
   }, [discountedBasePlanPrice, addOnPrice, boostAddonCost]);
+
+  // Memoized total discounted price WITHOUT boost (for display calculations)
+  const totalDiscountedPriceWithoutBoost = useMemo(() => {
+    return discountedBasePlanPrice + addOnPrice;
+  }, [discountedBasePlanPrice, addOnPrice]);
 
   // Memoized labour rate display adjustment (display only - doesn't affect API pricing)
   const labourRateDisplayAdjustment = useMemo(() => {
@@ -727,16 +732,21 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
   }, [selectedLabourRate]);
 
-  // Memoized display monthly price with labour rate adjustment
-  const displayMonthlyPrice = useMemo(() => {
-    const baseMonthly = Math.round(totalDiscountedPrice / 12);
-    return baseMonthly + labourRateDisplayAdjustment;
-  }, [totalDiscountedPrice, labourRateDisplayAdjustment]);
+  // Memoized boost display adjustment (display only - £4.99/month instead of actual £7/month)
+  const boostDisplayAdjustment = useMemo(() => {
+    return boostAddon ? 4.99 : 0;
+  }, [boostAddon]);
 
-  // Memoized display total price with labour rate adjustment
+  // Memoized display monthly price with labour rate and boost display adjustments
+  const displayMonthlyPrice = useMemo(() => {
+    const baseMonthly = Math.round(totalDiscountedPriceWithoutBoost / 12);
+    return Math.round(baseMonthly + labourRateDisplayAdjustment + boostDisplayAdjustment);
+  }, [totalDiscountedPriceWithoutBoost, labourRateDisplayAdjustment, boostDisplayAdjustment]);
+
+  // Memoized display total price with labour rate and boost display adjustments
   const displayTotalPrice = useMemo(() => {
-    return totalDiscountedPrice + (labourRateDisplayAdjustment * 12);
-  }, [totalDiscountedPrice, labourRateDisplayAdjustment]);
+    return Math.round(totalDiscountedPriceWithoutBoost + (labourRateDisplayAdjustment * 12) + (boostDisplayAdjustment * 12));
+  }, [totalDiscountedPriceWithoutBoost, labourRateDisplayAdjustment, boostDisplayAdjustment]);
 
   // Memoized monthly price calculation - always divide total by 12 for monthly payments
   const monthlyPrice = useMemo(() => {
