@@ -974,8 +974,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
       
       const baseMonthlyPrice = Math.round(discountedPrice / 12);
       const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
-const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
-      const displayedMonthlyPrice = baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
+      const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
+      const displayedMonthlyPrice = Math.round(baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment);
 
       const planName = emailQuoteDuration === '12months' ? '1-Year Cover' : 
                        emailQuoteDuration === '24months' ? '2-Year Cover' : '3-Year Cover';
@@ -2089,9 +2089,9 @@ const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
               // Calculate display monthly price
               const baseMonthlyPrice = Math.round(discountedPrice / 12);
               const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
-const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
-              const displayedMonthlyPrice = baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
-              const displayedAnnualPrice = discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12);
+              const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
+              const displayedMonthlyPrice = Math.round(baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment);
+              const displayedAnnualPrice = Math.round(discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12));
               const savingsAmount = durationId === '24months' ? 100 : durationId === '36months' ? 200 : 0;
               
               return (
@@ -2706,8 +2706,8 @@ const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
                     const baseMonthlyPrice = Math.round(discountedPrice / 12);
                     const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
                     const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
-                    const displayedMonthlyPrice = baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment;
-                    return Math.round(displayedMonthlyPrice * 12);
+                    const displayedMonthlyPrice = Math.round(baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment);
+                    return displayedMonthlyPrice * 12;
                   })()}
                 </span>
               </div>
