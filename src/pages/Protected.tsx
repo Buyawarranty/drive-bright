@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, ChevronDown, CheckCircle, Phone, Mail, Shield, Clock, Users, Wrench, FileText, Star, X, Fuel, Battery, Zap, Bike, Crown } from 'lucide-react';
+import { Menu, ChevronDown, CheckCircle, Phone, Mail, Shield, Clock, Users, Wrench, FileText, Star, X, Fuel, Battery, Zap, Bike, Crown, ArrowRight } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Link } from 'react-router-dom';
@@ -682,8 +682,9 @@ const Protected = () => {
             Ready to protect your vehicle?
           </h2>
           <Link to="/">
-            <Button size="lg" className="bg-white text-primary hover:bg-gray-100 font-bold px-8 py-3">
+            <Button size="lg" className="bg-white text-primary hover:bg-gray-100 font-bold px-10 py-5 text-lg animate-breathing flex items-center gap-2">
               Get my quote
+              <ArrowRight className="w-5 h-5" />
             </Button>
           </Link>
         </div>
