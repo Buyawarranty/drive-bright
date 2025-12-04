@@ -803,9 +803,10 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
               <button 
                 onClick={scrollToQuoteForm}
-                className="bg-brand-deep-blue hover:bg-blue-800 text-white font-bold px-6 md:px-10 py-3 md:py-4 text-lg md:text-xl rounded shadow-lg transition-colors w-full sm:w-auto animate-cta-enhanced"
+                className="inline-flex items-center gap-2 bg-brand-deep-blue hover:bg-blue-800 text-white font-bold px-6 md:px-10 py-3 md:py-4 text-lg md:text-xl rounded shadow-lg transition-colors w-full sm:w-auto justify-center animate-cta-enhanced"
               >
-                Get Instant Quote
+                Get your instant quote
+                <ArrowRight className="w-5 h-5 md:w-6 md:h-6" />
               </button>
             </div>
 
@@ -875,9 +876,10 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
           {/* CTA Button */}
           <button 
             onClick={scrollToQuoteForm}
-            className="bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 md:px-10 py-4 md:py-6 text-lg md:text-xl rounded-lg shadow-lg transition-colors w-full sm:w-auto animate-cta-enhanced"
+            className="inline-flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 md:px-10 py-4 md:py-6 text-lg md:text-xl rounded-lg shadow-lg transition-colors w-full sm:w-auto justify-center animate-cta-enhanced"
           >
-            Get Instant Quote
+            Secure your warranty
+            <ArrowRight className="w-5 h-5 md:w-6 md:h-6" />
           </button>
         </div>
       </section>
