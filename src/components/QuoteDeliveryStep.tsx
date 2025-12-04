@@ -90,9 +90,9 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
     };
 
     if (!email.trim()) {
-      newErrors.email = 'Email address is required';
+      newErrors.email = 'Enter email address';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = 'Enter a valid email address';
     }
 
     setErrors(newErrors);
