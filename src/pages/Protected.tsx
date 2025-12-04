@@ -331,10 +331,10 @@ const Protected = () => {
                 High-End and Performance vehicles not covered
               </h3>
               <AccordionItem value="high-performance-vehicles" className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
-                <AccordionTrigger className="px-6 py-4 text-left bg-red-50 hover:bg-red-100 transition-all duration-300 hover:no-underline border border-red-200">
+                <AccordionTrigger className="px-6 py-4 text-left bg-[#1e3a5f] hover:bg-[#162d4a] transition-all duration-300 hover:no-underline border border-[#1e3a5f] rounded-lg">
                   <div className="flex items-center">
-                    <X className="w-5 h-5 text-red-700 mr-3 flex-shrink-0" />
-                    <span className="font-medium text-base text-red-700">View restricted vehicle models</span>
+                    <X className="w-5 h-5 text-white mr-3 flex-shrink-0" />
+                    <span className="font-medium text-base text-white">View restricted vehicle models</span>
                   </div>
                 </AccordionTrigger>
               <AccordionContent className="px-6 py-4 bg-white">
