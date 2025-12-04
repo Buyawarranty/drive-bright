@@ -35,7 +35,9 @@ const ConditionalFooter = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const step = searchParams.get('step');
-  const isCheckoutStep = step === '2' || step === '3' || step === '4' || step === '5' || step === '6';
+  
+  // Check if step starts with 2, 3, 4, 5, or 6 (handles cases like "3." or "4")
+  const isCheckoutStep = step && ['2', '3', '4', '5', '6'].some(s => step.startsWith(s));
   
   if (isCheckoutStep) return null;
   return <WebsiteFooter />;
