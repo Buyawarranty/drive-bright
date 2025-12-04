@@ -2355,8 +2355,8 @@ const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
         </div>
 
         {/* Additional Information Section - Redesigned */}
-        <div id="your-cover-details" className="py-10 md:py-16">
-          <div className="bg-gray-100 rounded-2xl p-6 md:p-10 border border-gray-200">
+        <div id="your-cover-details" className="py-6 md:py-10">
+          <div className="bg-gray-50 rounded-2xl p-6 md:p-10 border border-gray-100">
             {/* Section Header */}
             <div className="text-center mb-8">
               <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-4 py-2 mb-4">
@@ -2463,7 +2463,7 @@ const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
                 }}
                 variant="outline"
                 size="sm"
-                className="flex items-center gap-2 text-sm font-medium bg-green-50 hover:bg-green-100 shadow-md animate-bounce"
+                className="flex items-center gap-2 text-sm font-medium bg-brand-orange/10 hover:bg-brand-orange/20 text-brand-orange border-brand-orange/30 shadow-md animate-bounce"
               >
                 <ArrowUp className="w-4 h-4" />
                 Back to Plans
