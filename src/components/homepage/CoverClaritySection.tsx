@@ -53,7 +53,7 @@ const CoverClaritySection = () => {
             <span className="text-sm font-semibold text-green-700">Transparent Coverage</span>
           </div>
           <h2 className="text-2xl md:text-3xl font-bold text-brand-dark-text mb-3">
-            Your cover, made <span className="text-brand-orange">crystal clear</span>
+            Your cover, made <span className="text-green-600">crystal clear</span>
           </h2>
           <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
             See what's included - clear terms, no jargon, no surprises.
@@ -63,14 +63,14 @@ const CoverClaritySection = () => {
         {/* Collapsible Items */}
         <div className="space-y-3 max-w-2xl mx-auto">
           <Collapsible>
-            <CollapsibleTrigger className="flex items-center justify-between w-full bg-gradient-to-r from-orange-50 to-orange-100/50 hover:from-orange-100 hover:to-orange-100 rounded-lg px-5 py-4 transition-all duration-200 group border border-orange-200/50">
+            <CollapsibleTrigger className="flex items-center justify-between w-full bg-gradient-to-r from-green-50 to-green-100/50 hover:from-green-100 hover:to-green-100 rounded-lg px-5 py-4 transition-all duration-200 group border border-green-200/50">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-brand-orange rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
                   <CheckCircle className="w-5 h-5 text-white" />
                 </div>
                 <span className="font-semibold text-brand-dark-text text-base md:text-lg">Your Platinum Plan</span>
               </div>
-              <ChevronDown className="w-5 h-5 text-brand-orange transition-transform duration-200 group-data-[state=open]:rotate-180" />
+              <ChevronDown className="w-5 h-5 text-green-600 transition-transform duration-200 group-data-[state=open]:rotate-180" />
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-3">
               <div className="bg-gray-50 rounded-lg p-5 border border-gray-100">
@@ -100,7 +100,7 @@ const CoverClaritySection = () => {
                     href={platinumDocUrl} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 font-medium text-base underline"
+                    className="text-green-600 hover:text-green-700 font-medium text-base underline"
                   >
                     View Full Platinum Plan Details
                   </a>
@@ -112,14 +112,14 @@ const CoverClaritySection = () => {
           </Collapsible>
 
           <Collapsible>
-            <CollapsibleTrigger className="flex items-center justify-between w-full bg-gradient-to-r from-blue-50 to-blue-100/50 hover:from-blue-100 hover:to-blue-100 rounded-lg px-5 py-4 transition-all duration-200 group border border-blue-200/50">
+            <CollapsibleTrigger className="flex items-center justify-between w-full bg-gradient-to-r from-green-50 to-green-100/50 hover:from-green-100 hover:to-green-100 rounded-lg px-5 py-4 transition-all duration-200 group border border-green-200/50">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-brand-deep-blue rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
                   <CheckCircle className="w-5 h-5 text-white" />
                 </div>
                 <span className="font-semibold text-brand-dark-text text-base md:text-lg">Terms & Conditions</span>
               </div>
-              <ChevronDown className="w-5 h-5 text-brand-deep-blue transition-transform duration-200 group-data-[state=open]:rotate-180" />
+              <ChevronDown className="w-5 h-5 text-green-600 transition-transform duration-200 group-data-[state=open]:rotate-180" />
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-3">
               <div className="bg-gray-50 rounded-lg p-5 border border-gray-100">
@@ -131,7 +131,7 @@ const CoverClaritySection = () => {
                     href={termsDocUrl} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 font-medium text-base underline"
+                    className="text-green-600 hover:text-green-700 font-medium text-base underline"
                   >
                     View Full Terms and Conditions
                   </a>
