@@ -2366,7 +2366,7 @@ const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
               <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
                 Your cover, made <span className="text-brand-orange">crystal clear</span>
               </h3>
-              <p className="text-base md:text-lg text-gray-600">
+              <p className="text-base md:text-lg text-black">
                 See what's included - clear terms, no jargon, no surprises.
               </p>
             </div>
@@ -2461,9 +2461,8 @@ const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
                   const durationSection = document.getElementById('duration-price-section');
                   durationSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }}
-                variant="outline"
                 size="sm"
-                className="flex items-center gap-2 text-sm font-medium bg-brand-orange/10 hover:bg-brand-orange/20 text-brand-orange border-brand-orange/30 shadow-md animate-bounce"
+                className="flex items-center gap-2 text-sm font-medium bg-[#1e3a5f] hover:bg-[#162d4a] text-white shadow-md animate-bounce"
               >
                 <ArrowUp className="w-4 h-4" />
                 Back to Plans
@@ -2475,7 +2474,7 @@ const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
       </div>
 
       {/* Bottom padding for sticky bar */}
-      <div className="pb-48 md:pb-32"></div>
+      <div className="pb-32 md:pb-24"></div>
 
       {/* Sticky Total Bar */}
       {!plansLoading && !plansError && !vehicleAgeError && displayPlans.length > 0 && paymentType && (
