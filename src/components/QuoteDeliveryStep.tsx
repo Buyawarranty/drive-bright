@@ -447,7 +447,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                     type="submit" 
                     disabled={!!errors.email || sendingEmail}
                     title={sendingEmail ? "Processing..." : ""}
-                    className="flex items-center justify-center gap-2 text-white text-base sm:text-lg font-bold py-3 sm:py-3 px-6 sm:px-8 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed animate-[breathing_2.8s_ease-in-out_infinite]"
+                    className="flex items-center justify-center gap-2 text-white text-base sm:text-lg font-bold py-3 sm:py-3 px-6 sm:px-8 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{ 
                       backgroundColor: '#eb4b00'
                     }}
