@@ -350,7 +350,7 @@ const CancelWarranty = () => {
         <section className="bg-white py-12 lg:py-16 px-4">
           <div className="max-w-6xl mx-auto text-center">
             <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              Cancel your warranty
+              Cancel my warranty
             </h1>
             <p className="text-xl text-gray-700 mb-4">
               We understand that <strong>you may change your mind</strong>, and we've made our <span className="bg-yellow-300 px-1">cancel</span>lation process <strong>simple and hassle-free</strong>
