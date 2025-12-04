@@ -7,6 +7,7 @@ import { Check, ArrowLeft, Info, FileText, ExternalLink, ChevronDown, ChevronUp,
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
@@ -1182,19 +1183,20 @@ const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
                   </h2>
                   <ChevronDown className="w-5 h-5 sm:w-8 sm:h-8 text-black transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
                 </div>
-                {/* Instant Cover Badge with Tooltip */}
-                <TooltipProvider delayDuration={0}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="inline-flex items-center gap-1 sm:gap-2 bg-green-50 border border-green-300 rounded-md px-2 sm:px-3 py-1 sm:py-1.5 w-fit cursor-help">
-                        <span className="text-xs sm:text-sm font-semibold text-green-700 whitespace-nowrap">⚡ Instant cover</span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>🛡️ Cover starts immediately after purchase</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                {/* Instant Cover Badge with Popover (works on mobile tap) */}
+                <Popover>
+                  <PopoverTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <div className="inline-flex items-center gap-1 sm:gap-2 bg-green-50 border border-green-300 rounded-md px-2 sm:px-3 py-1 sm:py-1.5 w-fit cursor-help">
+                      <span className="text-xs sm:text-sm font-semibold text-green-700 whitespace-nowrap">⚡ Instant cover</span>
+                    </div>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-3 text-sm" side="top" align="center">
+                    <p className="flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-green-600" />
+                      Cover starts immediately after purchase – excludes pre-existing conditions.
+                    </p>
+                  </PopoverContent>
+                </Popover>
               </div>
             </CollapsibleTrigger>
             
