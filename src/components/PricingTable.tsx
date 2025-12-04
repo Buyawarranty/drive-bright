@@ -761,9 +761,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
   }, [selectedLabourRate]);
 
-  // Memoized boost display adjustment (display only - £4.99/month instead of actual £7/month)
+  // Memoized boost display adjustment (display only - £5/month instead of actual £7/month)
   const boostDisplayAdjustment = useMemo(() => {
-    return boostAddon ? 4.99 : 0;
+    return boostAddon ? 5 : 0;
   }, [boostAddon]);
 
   // Memoized display monthly price with labour rate and boost display adjustments
@@ -1002,7 +1002,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       
       const baseMonthlyPrice = Math.round(discountedPrice / 12);
       const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
-      const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
+      const boostDisplayAdjustment = boostAddon ? 5 : 0;
       const displayedMonthlyPrice = Math.round(baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment);
 
       const planName = emailQuoteDuration === '12months' ? '1-Year Cover' : 
@@ -1975,7 +1975,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
                     </div>
                     <div className="flex items-center gap-1 text-gray-700">
-                      <span>£4.99/month</span>
+                      <span>£5/month</span>
                       <span className="text-sm text-gray-500">Only 12 payments (0% APR)</span>
                     </div>
                   </div>
@@ -2134,7 +2134,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // Calculate display monthly price
               const baseMonthlyPrice = Math.round(discountedPrice / 12);
               const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
-              const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
+              const boostDisplayAdjustment = boostAddon ? 5 : 0;
               const displayedMonthlyPrice = Math.round(baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment);
               const displayedAnnualPrice = Math.round(discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12));
               const savingsAmount = durationId === '24months' ? 100 : durationId === '36months' ? 200 : 0;
@@ -2727,7 +2727,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     
                     const baseMonthlyPrice = Math.round(discountedPrice / 12);
                     const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
-const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
+const boostDisplayAdjustment = boostAddon ? 5 : 0;
                     return Math.round(baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment);
                   })()}/month
                 </span>
@@ -2750,7 +2750,7 @@ const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
                     
                     const baseMonthlyPrice = Math.round(discountedPrice / 12);
                     const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
-                    const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
+                    const boostDisplayAdjustment = boostAddon ? 5 : 0;
                     const displayedMonthlyPrice = Math.round(baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment);
                     return displayedMonthlyPrice * 12;
                   })()}
