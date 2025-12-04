@@ -2294,19 +2294,19 @@ const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
 
         {/* Inline Pricing Summary - Above Trust Section */}
         {!plansLoading && !plansError && !vehicleAgeError && displayPlans.length > 0 && paymentType && (
-          <div className="mt-8 mb-8 bg-gradient-to-r from-orange-50 to-orange-100/50 rounded-xl p-6 border border-orange-200 shadow-sm">
+          <div className="mt-8 mb-8 bg-gradient-to-r from-orange-50 to-orange-100/50 rounded-xl p-6 border border-orange-200 shadow-[0_0_20px_rgba(249,115,22,0.3)]">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               {/* Price Info */}
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <ShieldCheck className="w-5 h-5 text-brand-orange" />
-                  <span className="text-sm font-semibold text-gray-700">Your Selected Cover</span>
+                  <span className="text-sm font-semibold text-black">Your Selected Cover</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3">
                   <span className="text-3xl font-bold text-gray-900">£{displayMonthlyPrice}/month</span>
-                  <span className="text-lg text-gray-600">Total: £{Math.round(displayTotalPrice)}</span>
+                  <span className="text-lg text-black font-medium">Total: £{Math.round(displayTotalPrice)}</span>
                 </div>
-                <div className="flex items-center gap-1 mt-1 text-sm text-gray-600">
+                <div className="flex items-center gap-1 mt-1 text-sm text-black">
                   <Check className="w-4 h-4 text-green-600" />
                   <span>
                     {paymentType === '12months' && '1-Year Cover • 12 payments (0% APR)'}
@@ -2326,7 +2326,7 @@ const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
                   Continue to checkout
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
-                <span className="text-xs text-gray-500 text-center md:text-right">🛡️ 14-day money-back guarantee</span>
+                <span className="text-xs text-black text-center md:text-right">🛡️ 14-day money-back guarantee</span>
               </div>
             </div>
           </div>
