@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ArrowRight, Zap, Mail, Car, Edit3 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Zap, Mail, Car, Edit3, Check } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
 import MobileNavigation from '@/components/MobileNavigation';
@@ -385,23 +385,31 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
             <form onSubmit={handleSubmitContactForm}>
               <div className="mb-6 sm:mb-8">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className={`w-full border-2 rounded-[6px] px-[12px] sm:px-[16px] py-[12px] sm:py-[14px] focus:outline-none transition-all duration-200 text-base placeholder:text-gray-500 ${
-                    touched.email && errors.email ? 'border-red-500' : 'border-gray-400'
-                  }`}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = touched.email && errors.email ? '#ef4444' : '#224380';
-                  }}
-                  onBlur={(e) => {
-                    handleFieldBlur('email');
-                    e.target.style.borderColor = touched.email && errors.email ? '#ef4444' : '#d1d5db';
-                  }}
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    className={`w-full border-2 rounded-[6px] px-[12px] sm:px-[16px] py-[12px] sm:py-[14px] pr-12 focus:outline-none transition-all duration-200 text-base placeholder:text-gray-500 ${
+                      touched.email && errors.email ? 'border-red-500' : email.trim() && /\S+@\S+\.\S+/.test(email) ? 'border-green-500' : 'border-gray-400'
+                    }`}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = touched.email && errors.email ? '#ef4444' : '#224380';
+                    }}
+                    onBlur={(e) => {
+                      handleFieldBlur('email');
+                      const isValid = email.trim() && /\S+@\S+\.\S+/.test(email);
+                      e.target.style.borderColor = touched.email && errors.email ? '#ef4444' : isValid ? '#22c55e' : '#d1d5db';
+                    }}
+                    required
+                  />
+                  {email.trim() && /\S+@\S+\.\S+/.test(email) && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Check className="w-5 h-5 text-green-500" />
+                    </div>
+                  )}
+                </div>
                 {touched.email && errors.email && (
                   <p className="text-red-500 text-sm mt-1">{errors.email}</p>
                 )}
