@@ -405,6 +405,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 {touched.email && errors.email && (
                   <p className="text-red-500 text-sm mt-1">{errors.email}</p>
                 )}
+                <p className="text-gray-500 text-sm mt-2">No spam. Unsubscribe anytime.</p>
               </div>
 
               <div className="flex justify-end items-center">
@@ -446,7 +447,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                     type="submit" 
                     disabled={!!errors.email || sendingEmail}
                     title={sendingEmail ? "Processing..." : ""}
-                    className="flex items-center justify-center gap-2 text-white text-base sm:text-lg font-bold py-3 sm:py-3 px-6 sm:px-8 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center justify-center gap-2 text-white text-base sm:text-lg font-bold py-3 sm:py-3 px-6 sm:px-8 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed animate-breathing"
                     style={{ backgroundColor: '#224380' }}
                     onMouseEnter={(e) => {
                       if (!errors.email && !sendingEmail) {
