@@ -154,7 +154,7 @@ const VideoSection: React.FC<VideoSectionProps> = ({ scrollToQuoteForm }) => {
 
             <button 
               onClick={scrollToQuoteForm}
-              className="bg-brand-deep-blue hover:bg-blue-800 text-white font-bold px-6 md:px-10 py-3 md:py-4 text-lg md:text-xl rounded shadow-lg transition-colors w-full sm:w-auto flex items-center justify-center gap-2"
+              className="bg-brand-deep-blue hover:bg-blue-800 text-white font-bold px-6 md:px-10 py-3 md:py-4 text-lg md:text-xl rounded shadow-lg transition-colors w-full sm:w-auto flex items-center justify-center gap-2 animate-cta-enhanced"
             >
               Start Cover
               <ArrowRight className="w-5 h-5" strokeWidth={3} />
