@@ -18,7 +18,7 @@ import { batchLocalStorageWrite, safeLocalStorageRemove, parseLocalStorageJSON, 
 import PerformanceOptimizedSuspense from '@/components/PerformanceOptimizedSuspense';
 import { BackNavigationConfirmDialog } from '@/components/BackNavigationConfirmDialog';
 import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';
-import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
+
 
 // Lazy load heavy components that are not immediately visible
 const RegistrationForm = lazy(() => import('@/components/RegistrationForm'));
@@ -1114,7 +1114,7 @@ const Index = () => {
         journeyName="warranty journey"
       />
       
-      <ScrollToTopButton />
+      {/* ScrollToTopButton removed */}
     </div>
   );
 };
