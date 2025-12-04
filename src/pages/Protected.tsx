@@ -785,7 +785,9 @@ const Protected = () => {
               src="/images/miles-panda-mechanic.png" 
               alt="Miles the Panda mechanic - Your friendly car warranty expert"
               className="h-auto"
-              style={{ width: '530px' }}
+              style={{ width: '530px', maxWidth: '100%' }}
+              loading="lazy"
+              decoding="async"
             />
           </div>
         </div>
