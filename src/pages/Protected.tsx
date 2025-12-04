@@ -714,7 +714,7 @@ const Protected = () => {
                     <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-orange-200">
                       <CheckCircle className="w-5 h-5 text-green-500" />
                     </div>
-                    <span className="font-semibold text-gray-900">Your Platinum Plan</span>
+                    <span className="font-semibold text-sm text-gray-900">Your Platinum Plan</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pt-3 px-2">
@@ -741,7 +741,7 @@ const Protected = () => {
                     <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-green-200">
                       <CheckCircle className="w-5 h-5 text-green-500" />
                     </div>
-                    <span className="font-semibold text-gray-900">Terms & Conditions</span>
+                    <span className="font-semibold text-sm text-gray-900">Terms & Conditions</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pt-3 px-2">
