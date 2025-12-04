@@ -883,6 +883,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
             className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 border-0 flex-shrink-0"
           >
             <ArrowLeft className="w-4 h-4" />
+            <span className="sm:hidden">Back</span>
             <span className="hidden sm:inline">Back to Plans</span>
           </Button>
           <MobileNavigation />
