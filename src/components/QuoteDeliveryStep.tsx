@@ -328,9 +328,6 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   <span className="text-xl sm:text-2xl absolute right-4 sm:right-8">→</span>
                 </button>
                 
-                <p className="text-center text-sm text-gray-600 mt-2">
-                  Get your quote now and keep it in your inbox for easy access.
-                </p>
                 <p className="text-center text-xs text-gray-400 mt-1">
                   Unsubscribe at any time
                 </p>
