@@ -88,6 +88,7 @@ interface PricingTableProps {
   previousClaimLimit?: number;
   previousSelectedAddOns?: {[addon: string]: boolean};
   previousProtectionAddOns?: {[key: string]: boolean};
+  previousLabourRate?: number;
 }
 
 const PricingTable: React.FC<PricingTableProps> = ({ 
@@ -98,7 +99,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
   previousVoluntaryExcess,
   previousClaimLimit,
   previousSelectedAddOns,
-  previousProtectionAddOns
+  previousProtectionAddOns,
+  previousLabourRate
 }) => {
 
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -209,8 +211,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
     }
   );
   
-  // New state for labour rate selection
-  const [selectedLabourRate, setSelectedLabourRate] = useState<number>(50);
+  // New state for labour rate selection - restore from previous if available
+  const [selectedLabourRate, setSelectedLabourRate] = useState<number>(previousLabourRate || 50);
   
   // Update add-ons when payment type changes to handle auto-included add-ons
   useEffect(() => {
