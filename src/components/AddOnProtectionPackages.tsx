@@ -94,7 +94,7 @@ const addOnPackages = [
     icon: '🔁',
     title: 'Transfer Cover',
     shortDescription: 'Transfer your remaining warranty to a new owner to boost resale value.',
-    price: 19.99,
+    price: 20,
     priceType: 'one-off',
     bulletPoints: [
       'Increases vehicle resale appeal',
