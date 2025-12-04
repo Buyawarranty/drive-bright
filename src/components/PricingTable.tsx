@@ -2298,15 +2298,17 @@ const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               {/* Price Info */}
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <ShieldCheck className="w-5 h-5 text-brand-orange" />
-                  <span className="text-sm font-semibold text-black">Your Selected Cover</span>
+                <div className="flex items-center gap-2 mb-3" role="status" aria-label="Selected cover confirmed">
+                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                    <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                  </div>
+                  <span className="text-base font-bold text-black">Your Selected Cover</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3">
                   <span className="text-3xl font-bold text-gray-900">£{displayMonthlyPrice}/month</span>
                   <span className="text-lg text-black font-medium">Total: £{Math.round(displayTotalPrice)}</span>
                 </div>
-                <div className="flex items-center gap-1 mt-1 text-sm text-black">
+                <div className="flex items-center gap-1 mt-2 text-sm text-black">
                   <Check className="w-4 h-4 text-green-600" />
                   <span>
                     {paymentType === '12months' && '1-Year Cover • 12 payments (0% APR)'}
@@ -2314,6 +2316,15 @@ const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
                     {paymentType === '36months' && '3-Year Cover • 12 payments (0% APR) • Years 2 & 3 FREE'}
                   </span>
                 </div>
+                <button
+                  onClick={() => {
+                    const durationSection = document.getElementById('duration-price-section');
+                    durationSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }}
+                  className="mt-2 text-sm text-gray-600 hover:text-brand-orange underline underline-offset-2 transition-colors"
+                >
+                  Change Cover
+                </button>
               </div>
               
               {/* CTA Button */}
