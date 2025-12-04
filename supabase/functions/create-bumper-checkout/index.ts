@@ -54,7 +54,8 @@ serve(async (req) => {
       addAnotherWarrantyRequested,
       protectionAddOns = {},
       claimLimit = 1250,
-      seasonalBonusMonths = 0
+      seasonalBonusMonths = 0,
+      labourRate = 50
     } = requestData;
 
     // Validate vehicle age (must be 15 years or newer)
@@ -205,7 +206,8 @@ serve(async (req) => {
       protection_addons: {
         ...protectionAddOns,
         voluntaryExcess: voluntaryExcess, // Store user's selection
-        seasonalBonusMonths: seasonalBonusMonths // Store seasonal bonus
+        seasonalBonusMonths: seasonalBonusMonths, // Store seasonal bonus
+        labourRate: labourRate // Store labour rate selection
       },
       final_amount: totalAmount,
       discount_code: discountCode || '',

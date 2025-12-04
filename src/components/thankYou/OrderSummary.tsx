@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Shield, Calendar, CheckCircle2 } from 'lucide-react';
+import { Shield, Calendar, CheckCircle2, Car, Gauge, Wrench, PoundSterling, FileText } from 'lucide-react';
 
 interface OrderSummaryProps {
   plan?: string;
@@ -10,6 +10,15 @@ interface OrderSummaryProps {
   monthlyPrice?: number;
   totalPrice?: number;
   originalPrice?: number;
+  // Additional order details
+  vehicle?: string;
+  vehicleReg?: string;
+  mileage?: string;
+  claimLimit?: number;
+  labourRate?: number;
+  excess?: number;
+  addons?: string; // JSON string of protection add-ons
+  paidInFull?: boolean;
 }
 
 export const OrderSummary: React.FC<OrderSummaryProps> = ({
@@ -19,7 +28,15 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
   duration,
   monthlyPrice,
   totalPrice,
-  originalPrice
+  originalPrice,
+  vehicle,
+  vehicleReg,
+  mileage,
+  claimLimit,
+  labourRate,
+  excess,
+  addons,
+  paidInFull
 }) => {
   const formatDate = (date: string | undefined): string => {
     if (!date) {
@@ -31,9 +48,70 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
   };
 
   // Parse duration to get years
-  const durationYears = duration ? parseInt(duration.replace(/[^\d]/g, '')) : 1;
+  const getDurationDisplay = () => {
+    if (duration) {
+      if (duration === '12months' || duration === 'monthly' || duration === 'yearly') return '1 Year';
+      if (duration === '24months' || duration === 'twoYear') return '2 Years';
+      if (duration === '36months' || duration === 'threeYear') return '3 Years';
+    }
+    return '1 Year';
+  };
+
+  const durationYears = duration ? 
+    (duration === '24months' || duration === 'twoYear' ? 2 : 
+     duration === '36months' || duration === 'threeYear' ? 3 : 1) : 1;
+  
   const hasSavings = originalPrice && totalPrice && originalPrice > totalPrice;
   const savings = hasSavings ? originalPrice - totalPrice : 0;
+
+  // Parse add-ons from JSON string
+  const parsedAddons = React.useMemo(() => {
+    if (!addons) return {};
+    try {
+      return JSON.parse(addons);
+    } catch {
+      return {};
+    }
+  }, [addons]);
+
+  // Get list of included add-ons
+  const includedAddons = React.useMemo(() => {
+    const addonLabels: Record<string, string> = {
+      breakdown_recovery: '24/7 Vehicle Recovery',
+      breakdownRecovery: '24/7 Vehicle Recovery',
+      vehicle_rental: 'Vehicle Rental',
+      vehicleRental: 'Vehicle Rental',
+      europe_cover: 'European Cover',
+      europeCover: 'European Cover',
+      tyre_cover: 'Tyre Cover',
+      tyreCover: 'Tyre Cover',
+      wear_tear: 'Wear & Tear',
+      wearTear: 'Wear & Tear',
+      transfer_cover: 'Transfer Cover',
+      transferCover: 'Transfer Cover',
+      lost_key: 'Lost Key Cover',
+      lostKey: 'Lost Key Cover',
+      consequential: 'Consequential Damage',
+      mot_repair: 'MOT Repair Cover',
+      motRepair: 'MOT Repair Cover',
+    };
+
+    return Object.entries(parsedAddons)
+      .filter(([key, value]) => value === true && addonLabels[key])
+      .map(([key]) => addonLabels[key]);
+  }, [parsedAddons]);
+
+  // Determine payment method display
+  const isPaidInFull = paidInFull || (paymentType && paymentType.toLowerCase().includes('full'));
+  const paymentMethodDisplay = isPaidInFull ? 'Paid in Full' : 'Paid Monthly';
+
+  // Format labour rate display
+  const getLabourRateLabel = (rate: number) => {
+    if (rate <= 40) return 'Local Garages';
+    if (rate <= 50) return 'Independent Garages';
+    if (rate <= 70) return 'Approved Garages';
+    return 'Expert Garages';
+  };
 
   return (
     <Card className="border border-border shadow-sm bg-background">
@@ -45,16 +123,62 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
           Order Summary
         </h2>
         
-        <div className="space-y-6">
-          {/* Payment Breakdown Section */}
-          {monthlyPrice && totalPrice && (
-            <div className="bg-gray-50 rounded-lg p-5 space-y-3">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Your Warranty Plan</p>
-                  <p className="text-base font-medium text-foreground">
-                    Includes: {durationYears === 1 ? '12 months' : `${durationYears} years`} cover
-                  </p>
+        <div className="space-y-4">
+          {/* Plan Details Grid */}
+          <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">Plan</p>
+              <p className="font-semibold text-foreground">{plan || 'Platinum'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">Duration</p>
+              <p className="font-semibold text-foreground">{getDurationDisplay()}</p>
+            </div>
+            {vehicle && (
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Vehicle</p>
+                <p className="font-semibold text-foreground">{vehicle}</p>
+              </div>
+            )}
+            {mileage && (
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Mileage</p>
+                <p className="font-semibold text-foreground">{mileage} miles</p>
+              </div>
+            )}
+            {claimLimit && (
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Claim Limit</p>
+                <p className="font-semibold text-foreground">£{claimLimit.toLocaleString()}</p>
+              </div>
+            )}
+            {labourRate && (
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Labour Rate</p>
+                <p className="font-semibold text-foreground">£{labourRate}/hour</p>
+              </div>
+            )}
+            {excess !== undefined && (
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Excess</p>
+                <p className="font-semibold text-foreground">£{excess}</p>
+              </div>
+            )}
+            {vehicleReg && (
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Registration</p>
+                <p className="font-semibold text-foreground uppercase">{vehicleReg}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Payment Section */}
+          {totalPrice && (
+            <div className="bg-green-50 rounded-lg p-4 border border-green-100">
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center gap-2">
+                  <PoundSterling className="w-5 h-5 text-green-600" />
+                  <span className="font-medium text-foreground">{paymentMethodDisplay}</span>
                 </div>
                 <div className="text-right">
                   {hasSavings && (
@@ -63,64 +187,47 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
                   <p className="text-2xl font-bold text-foreground">£{totalPrice}</p>
                 </div>
               </div>
+              
+              {monthlyPrice && !isPaidInFull && (
+                <p className="text-sm text-muted-foreground">
+                  12 payments of £{monthlyPrice.toFixed(2)}/month
+                </p>
+              )}
 
-              {/* Payment Details */}
-              <div className="space-y-2 pt-3 border-t border-gray-200">
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-foreground">
-                    {paymentType === 'Monthly' ? (
-                      <span>£{monthlyPrice}/month</span>
-                    ) : (
-                      <span>Only 12 easy payments</span>
-                    )}
+              {hasSavings && (
+                <div className="mt-2 pt-2 border-t border-green-200">
+                  <p className="text-sm font-semibold text-green-600">
+                    💰 You Saved £{savings}
                   </p>
                 </div>
-                
-                {durationYears > 1 && paymentType === 'Monthly' && (
-                  <>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-foreground">
-                        Only 12 easy payments
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-foreground">
-                        Nothing to pay in Year {durationYears === 2 ? '2' : '2 and 3'}
-                      </p>
-                    </div>
-                  </>
-                )}
+              )}
+            </div>
+          )}
 
-                {hasSavings && (
-                  <div className="pt-2 mt-2 border-t border-gray-200">
-                    <p className="text-sm font-semibold text-green-600">
-                      💰 You Save £{savings}
-                    </p>
+          {/* Included Protection Add-ons */}
+          {includedAddons.length > 0 && (
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
+              <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                <Shield className="w-4 h-4 text-blue-600" />
+                Included Protection
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                {includedAddons.map((addon, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span className="text-sm text-foreground">{addon}</span>
                   </div>
-                )}
+                ))}
               </div>
             </div>
           )}
           
-          {/* Original Product Details */}
-          <div className="flex justify-between items-start pb-4 border-b border-border">
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Product</p>
-              <p className="text-base md:text-lg font-semibold text-foreground">
-                {plan ? `${plan} Warranty` : 'Comprehensive Warranty'}
-                {paymentType && ` – ${paymentType}`}
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
+          {/* Warranty Start Date */}
+          <div className="flex items-center gap-3 pt-2 border-t border-border">
             <Calendar className="w-5 h-5 text-green-600" />
             <div>
               <p className="text-sm text-muted-foreground">Warranty Start Date</p>
-              <p className="text-base font-semibold text-foreground">
+              <p className="font-semibold text-foreground">
                 {formatDate(warrantyStartDate)}
               </p>
             </div>

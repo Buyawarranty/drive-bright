@@ -404,6 +404,27 @@ serve(async (req) => {
     if (vehicleData?.year) redirectUrl.searchParams.set('vehicle_year', vehicleData.year);
     if (vehicleData?.mileage) redirectUrl.searchParams.set('mileage', vehicleData.mileage);
     
+    // Add combined vehicle name
+    const vehicleName = `${vehicleData?.make || ''} ${vehicleData?.model || ''}`.trim();
+    if (vehicleName) redirectUrl.searchParams.set('vehicle', vehicleName);
+    
+    // Add pricing and coverage details
+    if (claimLimit) redirectUrl.searchParams.set('claim_limit', claimLimit.toString());
+    const labourRate = protectionAddOns?.labourRate || 50;
+    redirectUrl.searchParams.set('labour_rate', labourRate.toString());
+    redirectUrl.searchParams.set('excess', voluntaryExcess.toString());
+    redirectUrl.searchParams.set('duration', originalWarrantyDuration);
+    
+    // Add total and monthly price
+    if (finalAmount) {
+      redirectUrl.searchParams.set('total_price', finalAmount.toString());
+      const monthlyPrice = finalAmount / 12;
+      redirectUrl.searchParams.set('monthly_price', monthlyPrice.toFixed(2));
+    }
+    
+    // Add protection add-ons as JSON
+    redirectUrl.searchParams.set('addons', JSON.stringify(addOnFields));
+    
     // Add discount info if present
     if (discountCode) redirectUrl.searchParams.set('discount_code', discountCode);
     if (finalAmount) redirectUrl.searchParams.set('final_amount', finalAmount.toString());

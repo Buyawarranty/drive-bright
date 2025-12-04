@@ -27,8 +27,8 @@ serve(async (req) => {
     );
 
     const body = await req.json();
-    const { planId, vehicleData, paymentType, voluntaryExcess = 0, customerData, discountCode, finalAmount, protectionAddOns, claimLimit, seasonalBonusMonths = 0 } = body;
-    logStep("Request data", { planId, vehicleData, paymentType, voluntaryExcess, discountCode, finalAmount, protectionAddOns, claimLimit, seasonalBonusMonths });
+    const { planId, vehicleData, paymentType, voluntaryExcess = 0, customerData, discountCode, finalAmount, protectionAddOns, claimLimit, seasonalBonusMonths = 0, labourRate = 50 } = body;
+    logStep("Request data", { planId, vehicleData, paymentType, voluntaryExcess, discountCode, finalAmount, protectionAddOns, claimLimit, seasonalBonusMonths, labourRate });
 
     // Validate vehicle age (must be 15 years or newer)
     const vehicleYear = vehicleData?.year;
@@ -255,7 +255,7 @@ serve(async (req) => {
     console.log("STRIPE DEBUG: Customer data:", { stripeCustomerId, customerEmail });
     
     // Create checkout session
-    // Build success URL with all parameters needed for GA tracking
+    // Build success URL with all parameters needed for GA tracking and order summary
     const successUrlParams = new URLSearchParams({
       plan: planType,
       payment: paymentType,
@@ -266,7 +266,19 @@ serve(async (req) => {
       first_name: customerData?.first_name || '',
       last_name: customerData?.last_name || '',
       street: customerData?.address_line_1 || '',
-      postcode: customerData?.postcode || ''
+      postcode: customerData?.postcode || '',
+      // Additional order details for thank you page
+      vehicle: `${vehicleData?.make || ''} ${vehicleData?.model || ''}`.trim(),
+      vehicle_reg: vehicleData?.regNumber || customerData?.vehicle_reg || '',
+      mileage: vehicleData?.mileage || customerData?.vehicle_mileage || '',
+      claim_limit: (claimLimit || 1250).toString(),
+      labour_rate: (labourRate || 50).toString(),
+      excess: (voluntaryExcess || 100).toString(),
+      duration: paymentType,
+      monthly_price: (paymentType === 'monthly' || paymentType === '12months' ? totalAmount : totalAmount / 12).toFixed(2),
+      total_price: totalAmount.toString(),
+      // Protection add-ons as JSON string
+      addons: JSON.stringify(protectionAddOns || {})
     });
     
     const sessionData: any = {
