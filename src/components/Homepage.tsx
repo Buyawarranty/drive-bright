@@ -660,7 +660,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 
                 <button 
                   onClick={scrollToQuoteForm}
-                  className="inline-flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 md:px-10 py-3 md:py-4 text-lg md:text-xl rounded shadow-lg transition-colors w-full sm:w-auto justify-center animate-cta-enhanced mt-4"
+                  className="inline-flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 md:px-10 py-3 md:py-4 text-lg md:text-xl rounded shadow-lg transition-colors w-full sm:w-auto justify-center animate-cta-enhanced mt-8 mb-4"
                 >
                   Protect Your Vehicle
                   <ArrowRight className="w-5 h-5 md:w-6 md:h-6" />
