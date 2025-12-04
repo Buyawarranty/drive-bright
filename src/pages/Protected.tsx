@@ -763,12 +763,12 @@ const Protected = () => {
               </AccordionItem>
             </Accordion>
 
-            {/* Back to Plans Button */}
-            <div className="flex justify-end">
+            {/* CTA Button */}
+            <div className="flex justify-center">
               <Link to="/">
-                <Button className="bg-[#1e3a5f] hover:bg-[#162d4a] text-white font-medium px-5 py-2 rounded-lg flex items-center gap-2">
-                  <ArrowUp className="w-4 h-4" />
-                  Back to Plans
+                <Button className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-8 py-4 text-lg rounded-lg flex items-center gap-2 animate-breathing">
+                  Protect Your Vehicle Now
+                  <ArrowRight className="w-5 h-5" />
                 </Button>
               </Link>
             </div>
