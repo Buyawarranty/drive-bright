@@ -437,22 +437,22 @@ const CancelWarranty = () => {
                       <Label htmlFor="feedback" className="text-gray-900 font-bold text-base mb-2 block">
                         💬 We'd Love Your Honest Thoughts
                       </Label>
-                      <p className="text-sm text-gray-600 mb-3">
+                      <p className="text-sm text-gray-900 mb-3">
                         Your opinion matters – and it won't affect your refund.
                       </p>
-                      <p className="text-sm text-gray-600 mb-4">
+                      <p className="text-sm text-gray-900 mb-4">
                         There's no right or wrong answer, and you can't offend us! We genuinely want to know what you think because:
                       </p>
                       <ul className="space-y-2 mb-4">
-                        <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <li className="flex items-start gap-2 text-sm text-gray-900">
                           <span className="text-green-500 mt-0.5">✅</span>
                           <span>Your feedback helps us improve for you and others</span>
                         </li>
-                        <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <li className="flex items-start gap-2 text-sm text-gray-900">
                           <span className="text-green-500 mt-0.5">✅</span>
                           <span>It won't impact your refund or support in any way</span>
                         </li>
-                        <li className="flex items-start gap-2 text-sm text-gray-700">
+                        <li className="flex items-start gap-2 text-sm text-gray-900">
                           <span className="text-green-500 mt-0.5">✅</span>
                           <span>Big or small, we'd love to hear it!</span>
                         </li>
