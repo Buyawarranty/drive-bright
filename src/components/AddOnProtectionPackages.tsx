@@ -240,12 +240,28 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                           </span>
                         </div>
                          {!isIncluded && addon.priceType !== 'one-off' && (
-                           <p className="text-sm text-green-600 font-semibold">
-                             12 interest-free payments
-                           </p>
+                           <div className="space-y-1">
+                             <p className="text-sm text-green-600 font-semibold flex items-center gap-1">
+                               <Check className="w-4 h-4 text-green-600" />
+                               12 interest-free payments
+                             </p>
+                             {paymentType === '24months' && (
+                               <p className="text-sm text-green-600 font-semibold flex items-center gap-1">
+                                 <Check className="w-4 h-4 text-green-600" />
+                                 2-year cover included
+                               </p>
+                             )}
+                             {paymentType === '36months' && (
+                               <p className="text-sm text-green-600 font-semibold flex items-center gap-1">
+                                 <Check className="w-4 h-4 text-green-600" />
+                                 3-year cover included
+                               </p>
+                             )}
+                           </div>
                          )}
                          {!isIncluded && addon.priceType === 'one-off' && (
-                           <p className="text-sm text-green-600 font-semibold">
+                           <p className="text-sm text-green-600 font-semibold flex items-center gap-1">
+                             <Check className="w-4 h-4 text-green-600" />
                              One-time payment
                            </p>
                          )}
