@@ -690,87 +690,74 @@ const Protected = () => {
         </div>
       </section>
 
-      {/* Platinum Warranty Plan Section */}
-      <section className="py-16 bg-blue-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <Crown className="w-12 h-12 text-orange-500 mx-auto mb-6" />
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">
-              Platinum Warranty Plan
-            </h2>
-            <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-              Discover the complete details of our comprehensive Platinum Warranty Plan. 
-              This document outlines all the specific coverage, benefits, and protection 
-              included in your premium warranty package.
-            </p>
-            <p className="text-md text-gray-500 mb-8">
-              Review the full Platinum plan details to understand exactly what's covered, 
-              including all mechanical and electrical components, claim procedures, and 
-              the extensive protection we provide for your vehicle.
-            </p>
-            {platinumDocUrl ? (
-              <a 
-                href={platinumDocUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2 bg-orange-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors"
-              >
-                <Crown className="w-5 h-5" />
-                <span>View Platinum Plan Details (PDF)</span>
-              </a>
-            ) : (
-              <div className="inline-flex items-center space-x-2 bg-gray-400 text-white px-8 py-3 rounded-lg font-semibold cursor-not-allowed">
-                <Crown className="w-5 h-5" />
-                <span>Loading PDF...</span>
+      {/* Transparent Coverage Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12 border border-gray-100">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 bg-brand-orange/10 text-brand-orange px-4 py-2 rounded-full text-sm font-medium mb-4">
+                <Shield className="w-4 h-4" />
+                Transparent Coverage
               </div>
-            )}
-            <p className="text-sm text-gray-400 mt-4">
-              Opens in a new tab
-            </p>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
+                Your cover, made <span className="text-brand-orange">crystal clear</span>
+              </h2>
+              <p className="text-base md:text-lg text-black">
+                See what's included - clear terms, no jargon, no surprises.
+              </p>
+            </div>
+
+            {/* Document Links */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+              {platinumDocUrl ? (
+                <a 
+                  href={platinumDocUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 bg-brand-orange text-white px-6 py-3 rounded-lg font-semibold hover:bg-brand-orange/90 transition-colors"
+                >
+                  <Crown className="w-5 h-5" />
+                  <span>Comprehensive Platinum Plan</span>
+                </a>
+              ) : (
+                <div className="inline-flex items-center justify-center gap-2 bg-gray-400 text-white px-6 py-3 rounded-lg font-semibold cursor-not-allowed">
+                  <Crown className="w-5 h-5" />
+                  <span>Loading...</span>
+                </div>
+              )}
+
+              {termsDocUrl ? (
+                <a 
+                  href={termsDocUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 bg-[#1e3a5f] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#162d4a] transition-colors"
+                >
+                  <FileText className="w-5 h-5" />
+                  <span>Terms & Conditions</span>
+                </a>
+              ) : (
+                <div className="inline-flex items-center justify-center gap-2 bg-gray-400 text-white px-6 py-3 rounded-lg font-semibold cursor-not-allowed">
+                  <FileText className="w-5 h-5" />
+                  <span>Loading...</span>
+                </div>
+              )}
+            </div>
+
+            {/* Get My Quote Button */}
+            <div className="text-center">
+              <Link to="/">
+                <Button size="lg" className="bg-primary text-white hover:bg-primary/90 font-bold px-10 py-5 text-lg animate-breathing flex items-center gap-2 mx-auto">
+                  Get my quote
+                  <ArrowRight className="w-5 h-5" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Terms and Conditions Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <FileText className="w-12 h-12 text-primary mx-auto mb-6" />
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">
-              Terms & Conditions
-            </h2>
-            <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-              Our comprehensive terms and conditions are designed to be clear, fair, and transparent. 
-              We believe in honest communication and want you to understand exactly what's covered 
-              and how our warranty protection works for you.
-            </p>
-            <p className="text-md text-gray-500 mb-8">
-              Take a moment to review our full terms and conditions document. It's written in 
-              plain English and contains all the important details about your warranty coverage, 
-              claims process, and our commitment to you.
-            </p>
-            {termsDocUrl ? (
-              <a 
-                href={termsDocUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2 bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
-              >
-                <FileText className="w-5 h-5" />
-                <span>View Terms & Conditions (PDF)</span>
-              </a>
-            ) : (
-              <div className="inline-flex items-center space-x-2 bg-gray-400 text-white px-8 py-3 rounded-lg font-semibold cursor-not-allowed">
-                <FileText className="w-5 h-5" />
-                <span>Loading PDF...</span>
-              </div>
-            )}
-            <p className="text-sm text-gray-400 mt-4">
-              Opens in a new tab
-            </p>
-          </div>
-        </div>
-      </section>
 
       {/* Vehicle Coverage Image Section */}
       <section className="py-16 bg-white">
