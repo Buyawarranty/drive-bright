@@ -2292,6 +2292,46 @@ const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
           />
         </div>
 
+        {/* Inline Pricing Summary - Above Trust Section */}
+        {!plansLoading && !plansError && !vehicleAgeError && displayPlans.length > 0 && paymentType && (
+          <div className="mt-8 mb-8 bg-gradient-to-r from-orange-50 to-orange-100/50 rounded-xl p-6 border border-orange-200 shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              {/* Price Info */}
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <ShieldCheck className="w-5 h-5 text-brand-orange" />
+                  <span className="text-sm font-semibold text-gray-700">Your Selected Cover</span>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3">
+                  <span className="text-3xl font-bold text-gray-900">£{displayMonthlyPrice}/month</span>
+                  <span className="text-lg text-gray-600">Total: £{Math.round(displayTotalPrice)}</span>
+                </div>
+                <div className="flex items-center gap-1 mt-1 text-sm text-gray-600">
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span>
+                    {paymentType === '12months' && '1-Year Cover • 12 payments (0% APR)'}
+                    {paymentType === '24months' && '2-Year Cover • 12 payments (0% APR) • Year 2 FREE'}
+                    {paymentType === '36months' && '3-Year Cover • 12 payments (0% APR) • Years 2 & 3 FREE'}
+                  </span>
+                </div>
+              </div>
+              
+              {/* CTA Button */}
+              <div className="flex flex-col items-stretch md:items-end gap-2">
+                <Button
+                  onClick={handleSelectPlan}
+                  size="lg"
+                  className="text-base font-semibold px-8 py-3 bg-brand-orange hover:bg-brand-orange/90 text-white animate-breathing"
+                >
+                  Continue to checkout
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+                <span className="text-xs text-gray-500 text-center md:text-right">🛡️ 14-day money-back guarantee</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Trust Section - Redesigned */}
         <div className="mt-16 mb-8 bg-green-50 rounded-2xl p-8 border border-green-200">
           <div className="flex items-center max-w-6xl mx-auto gap-8">
