@@ -1538,7 +1538,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           {/* Heading */}
                           <Label htmlFor="stripe-option" className="block text-center cursor-pointer mb-2">
                             <h4 className="text-lg font-bold text-black mb-1">Pay in Full</h4>
-                            <p className="text-xs text-black">One-time payment today</p>
+                            <p className="text-xs font-bold text-gray-700">One-time payment today</p>
                           </Label>
 
                           {/* Price Display - Clean & Integrated */}
@@ -1630,7 +1630,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           {/* Heading */}
                           <Label htmlFor="bumper-option" className="block text-center cursor-pointer mb-2">
                             <h4 className="text-lg font-bold text-black mb-1">Spread the Cost</h4>
-                            <p className="text-xs text-black">Interest-free monthly instalments</p>
+                            <p className="text-xs font-bold text-gray-700">Interest-free monthly instalments</p>
                           </Label>
 
                           {/* Price Display - Clean & Integrated */}
