@@ -425,12 +425,11 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                         onSkip();
                       }, 300);
                     }}
-                    className="flex items-center justify-center gap-2 text-sm sm:text-base font-medium py-3 sm:py-3 px-4 sm:px-6 rounded-lg border-2 transition-all duration-200 hover-scale animate-breathing"
+                    className="flex items-center justify-center gap-2 text-sm sm:text-base font-medium py-3 sm:py-3 px-4 sm:px-6 rounded-lg border-2 transition-all duration-200 hover-scale"
                     style={{
                       backgroundColor: 'transparent',
                       borderColor: '#d1d5db',
-                      color: '#6b7280',
-                      boxShadow: '0 0 15px rgba(107, 114, 128, 0.3), 0 0 30px rgba(107, 114, 128, 0.2)'
+                      color: '#6b7280'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.borderColor = '#9ca3af';
@@ -448,7 +447,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                     type="submit" 
                     disabled={!!errors.email || sendingEmail}
                     title={sendingEmail ? "Processing..." : ""}
-                    className="flex items-center justify-center gap-2 text-white text-base sm:text-lg font-bold py-3 sm:py-3 px-6 sm:px-8 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed animate-breathing"
+                    className="flex items-center justify-center gap-2 text-white text-base sm:text-lg font-bold py-3 sm:py-3 px-6 sm:px-8 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed animate-[breathing_2.8s_ease-in-out_infinite]"
                     style={{ 
                       backgroundColor: '#eb4b00'
                     }}
