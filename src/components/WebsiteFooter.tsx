@@ -82,7 +82,7 @@ const WebsiteFooter = () => {
                 </div>
                 <div>
                   <a href="/cancel-warranty" className="text-[#eb4b00] hover:text-[#d63f00] transition-colors font-semibold">
-                    Cancel Your Warranty
+                    Cancel your warranty
                   </a>
                 </div>
                 <div>

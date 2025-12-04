@@ -44,7 +44,7 @@ const NewFooter = () => {
               className="flex items-center gap-2 text-white hover:text-white/80 transition-colors font-medium"
             >
               <X size={18} className="text-white" />
-              <span className="text-white">Cancel Your Warranty</span>
+              <span className="text-white">Cancel your warranty</span>
             </Link>
           </div>
         </div>

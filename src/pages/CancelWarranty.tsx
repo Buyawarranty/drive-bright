@@ -349,7 +349,7 @@ const CancelWarranty = () => {
         <section className="bg-white py-12 lg:py-16 px-4">
           <div className="max-w-6xl mx-auto text-center">
             <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              Cancel Your Warranty
+              Cancel your warranty
             </h1>
             <p className="text-xl text-gray-700 mb-4">
               We understand that <strong>you may change your mind</strong>, and we've made our <span className="bg-yellow-300 px-1">cancel</span>lation process <strong>simple and hassle-free</strong>
@@ -682,11 +682,11 @@ const CancelWarranty = () => {
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-orange-500 font-bold mt-1">2.</span>
-                  <span className="text-lg">If eligible, your refund will be processed within 2–3 working days.</span>
+                  <span className="text-lg">If eligible, your refund will be processed within 4-5 working days.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-orange-500 font-bold mt-1">3.</span>
-                  <span className="text-lg">If we don't hear from you, your policy will remain active and continue to protect your vehicle.</span>
+                  <span className="text-lg">Thank you for your patience.</span>
                 </li>
               </ul>
             </div>
