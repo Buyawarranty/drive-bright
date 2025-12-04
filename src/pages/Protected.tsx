@@ -762,16 +762,16 @@ const Protected = () => {
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
+          </div>
 
-            {/* CTA Button */}
-            <div className="flex justify-center">
-              <Link to="/">
-                <Button className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-8 py-4 text-lg rounded-lg flex items-center gap-2 animate-breathing">
-                  Protect Your Vehicle Now
-                  <ArrowRight className="w-5 h-5" />
-                </Button>
-              </Link>
-            </div>
+          {/* CTA Button - Outside the box */}
+          <div className="flex justify-center mt-8">
+            <Link to="/">
+              <Button className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-8 py-4 text-lg rounded-lg flex items-center gap-2 animate-breathing">
+                Protect Your Vehicle Now
+                <ArrowRight className="w-5 h-5" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
