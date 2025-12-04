@@ -126,6 +126,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
   // Track if we're restoring from previous selections to avoid overriding them
   const isRestoringFromPrevious = React.useRef(!!previousProtectionAddOns);
   const hasInitializedAddOns = React.useRef(false);
+  // Track if payment type was changed by user action vs restoration/auto-change
+  const isUserPaymentTypeChange = React.useRef(false);
+  // Store the initial payment type to detect changes
+  const initialPaymentTypeRef = React.useRef(previousPaymentType || '24months');
   
   // Vehicle validation
   const vehicleValidation = useMemo(() => {
@@ -214,38 +218,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
   // New state for labour rate selection - restore from previous if available
   const [selectedLabourRate, setSelectedLabourRate] = useState<number>(previousLabourRate || 50);
   
-  // Update add-ons when payment type changes to handle auto-included add-ons
-  useEffect(() => {
-    const newAutoIncluded = getAutoIncludedAddOns(paymentType);
-    
-    console.log('PricingTable - Payment type changed:', paymentType);
-    console.log('PricingTable - New auto-included add-ons:', newAutoIncluded);
-    
-    setSelectedProtectionAddOns(prev => {
-      // All add-ons that can be auto-included in any plan
-      const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental', 'tyre'];
-      
-      // Create new state object
-      const updated: {[key: string]: boolean} = {};
-      
-      // For each add-on, determine its new state
-      Object.keys(prev).forEach(addonKey => {
-        const isAutoIncludedInNewPlan = newAutoIncluded.includes(addonKey);
-        const wasAutoIncludedPreviously = allPossibleAutoIncluded.includes(addonKey);
-        
-        if (wasAutoIncludedPreviously) {
-          // This add-on can be auto-included - set it based on new plan
-          updated[addonKey] = isAutoIncludedInNewPlan;
-        } else {
-          // This is a user-selectable add-on (not auto-included) - preserve user choice
-          updated[addonKey] = prev[addonKey];
-        }
-      });
-      
-      console.log('PricingTable - Updated protection add-ons:', updated);
-      return updated;
-    });
-  }, [paymentType]);
+  // NOTE: Add-on auto-inclusion on payment type change is handled by a single useEffect below (around line 490)
+  // to avoid duplicate state updates that cause pricing inconsistencies when navigating between steps
   
   // Benefits expansion state
   const [expandedBenefits, setExpandedBenefits] = useState<Record<string, boolean>>({});
@@ -487,20 +461,33 @@ const PricingTable: React.FC<PricingTableProps> = ({
   }, [selectedClaimLimit, paymentType, voluntaryExcess, selectedProtectionAddOns]);
 
   // Auto-include add-ons for 2-year and 3-year plans using imported utility
+  // ONLY runs when user explicitly changes payment type via UI, not on restoration
   useEffect(() => {
-    // Skip auto-inclusion on initial mount if we're restoring from previous selections
-    if (isRestoringFromPrevious.current && !hasInitializedAddOns.current) {
+    // Skip auto-inclusion entirely if we're restoring from previous selections
+    if (isRestoringFromPrevious.current) {
       console.log('🔧 Skipping auto-inclusion - restoring from previous selections');
+      // Mark as initialized but don't modify add-ons
       hasInitializedAddOns.current = true;
+      // Clear the restoration flag after first render cycle
+      const timer = setTimeout(() => {
+        isRestoringFromPrevious.current = false;
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+    
+    // Skip if this is not a user-initiated payment type change
+    if (!isUserPaymentTypeChange.current && hasInitializedAddOns.current) {
+      console.log('🔧 Skipping auto-inclusion - not a user-initiated change');
       return;
     }
     
     hasInitializedAddOns.current = true;
+    isUserPaymentTypeChange.current = false; // Reset the flag
     
     // Use the imported function to get auto-included add-ons for consistency
     const newAutoIncluded = getAutoIncludedAddOns(paymentType);
     
-    console.log('🔧 Payment type changed:', paymentType);
+    console.log('🔧 Payment type changed (user action):', paymentType);
     console.log('🔧 New auto-included add-ons:', newAutoIncluded);
     
     setSelectedProtectionAddOns(prev => {
@@ -516,13 +503,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
       });
       
       // For add-ons that are NOT auto-included for this payment type,
-      // reset them to false (but only if they were previously auto-included)
+      // reset them to false ONLY if they were auto-included for the previous selection
+      // This preserves user manual selections while clearing previously auto-included ones
       allPossibleAutoIncluded.forEach(addonKey => {
         if (!newAutoIncluded.includes(addonKey)) {
-          // Only reset to false if this add-on was previously auto-included
-          // This preserves user manual selections while clearing previously auto-included ones
-          const wasAutoIncludedBefore = getAutoIncludedAddOns(paymentType === '12months' ? '24months' : '12months').includes(addonKey);
-          if (wasAutoIncludedBefore) {
+          // Check if this was auto-included in ANY other plan
+          const wasAutoIn24 = getAutoIncludedAddOns('24months').includes(addonKey);
+          const wasAutoIn36 = getAutoIncludedAddOns('36months').includes(addonKey);
+          if (wasAutoIn24 || wasAutoIn36) {
             updated[addonKey] = false;
           }
         }
@@ -2171,6 +2159,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   key={durationId}
                   onClick={() => {
                     console.log('🎯 Duration card clicked:', { durationId, currentPaymentType: paymentType });
+                    isUserPaymentTypeChange.current = true;
                     setPaymentType(durationId);
                   }}
                   className={`relative p-6 rounded-lg border-2 transition-all bg-white pointer-events-auto cursor-pointer hover:shadow-lg ${
@@ -2195,6 +2184,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     className="absolute top-4 right-4 cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
+                      isUserPaymentTypeChange.current = true;
                       setPaymentType(durationId);
                     }}
                   >
@@ -2296,6 +2286,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <Button
                     onClick={(e) => {
                       e.stopPropagation();
+                      isUserPaymentTypeChange.current = true;
                       setPaymentType(durationId);
                     }}
                     className={cn(
