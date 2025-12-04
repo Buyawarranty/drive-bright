@@ -119,7 +119,7 @@ const WarrantyBenefitsSection: React.FC = () => {
                   <div className="flex gap-3">
                     <button 
                       onClick={() => setDetailsOpen(!detailsOpen)}
-                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-lg px-4 py-3 shadow-sm animate-[breathing_3s_ease-in-out_infinite] transition-colors"
+                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-lg px-4 py-3 shadow-sm animate-cta-enhanced transition-colors"
                     >
                       <Info className="w-5 h-5 text-white" />
                       <span className="text-base font-medium text-white whitespace-nowrap">See full coverage</span>
@@ -127,7 +127,7 @@ const WarrantyBenefitsSection: React.FC = () => {
                     </button>
                     <button
                       onClick={scrollToTop}
-                      className="flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-medium px-4 py-3 rounded-lg shadow-sm transition-colors animate-[breathing_3s_ease-in-out_infinite]"
+                      className="flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-medium px-4 py-3 rounded-lg shadow-sm transition-colors animate-cta-enhanced"
                     >
                       Get my quote
                       <ArrowUp className="w-5 h-5" />
@@ -491,7 +491,7 @@ const WarrantyBenefitsSection: React.FC = () => {
               <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
                 <CollapsibleTrigger asChild>
                   <button className="w-full flex justify-center items-center gap-3 py-2 group cursor-pointer hover:opacity-80 transition-opacity">
-                    <div className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-lg px-4 py-2 shadow-sm animate-[breathing_3s_ease-in-out_infinite]">
+                    <div className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-lg px-4 py-2 shadow-sm animate-cta-enhanced">
                       <Info className="w-5 h-5 text-white" />
                       <span className="text-base font-medium text-white whitespace-nowrap">See full coverage</span>
                     </div>
@@ -847,7 +847,7 @@ const WarrantyBenefitsSection: React.FC = () => {
               <div className="flex flex-col items-center gap-4">
                 <button
                   onClick={scrollToTop}
-                  className="inline-flex items-center justify-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 py-3 text-base rounded-lg shadow-lg transition-all animate-[breathing_3s_ease-in-out_infinite]"
+                  className="inline-flex items-center justify-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 py-3 text-base rounded-lg shadow-lg transition-all animate-cta-enhanced"
                 >
                   Get my quote
                   <ArrowUp className="w-6 h-6" />

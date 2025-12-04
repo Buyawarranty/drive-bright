@@ -803,7 +803,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
               <button 
                 onClick={scrollToQuoteForm}
-                className="bg-brand-deep-blue hover:bg-blue-800 text-white font-bold px-6 md:px-10 py-3 md:py-4 text-lg md:text-xl rounded shadow-lg transition-colors w-full sm:w-auto"
+                className="bg-brand-deep-blue hover:bg-blue-800 text-white font-bold px-6 md:px-10 py-3 md:py-4 text-lg md:text-xl rounded shadow-lg transition-colors w-full sm:w-auto animate-cta-enhanced"
               >
                 Get Instant Quote
               </button>
@@ -875,7 +875,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
           {/* CTA Button */}
           <button 
             onClick={scrollToQuoteForm}
-            className="bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 md:px-10 py-4 md:py-6 text-lg md:text-xl rounded-lg shadow-lg transition-colors w-full sm:w-auto"
+            className="bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 md:px-10 py-4 md:py-6 text-lg md:text-xl rounded-lg shadow-lg transition-colors w-full sm:w-auto animate-cta-enhanced"
           >
             Get Instant Quote
           </button>
