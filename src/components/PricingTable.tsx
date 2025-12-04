@@ -2321,7 +2321,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     const durationSection = document.getElementById('duration-price-section');
                     durationSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                   }}
-                  className="mt-2 text-sm text-gray-600 hover:text-brand-orange underline underline-offset-2 transition-colors"
+                  className="mt-2 text-sm text-black hover:text-brand-orange underline underline-offset-2 transition-colors"
                 >
                   Change Cover
                 </button>
@@ -2337,7 +2337,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   Continue to checkout
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
-                <span className="text-xs text-black text-center md:text-right">🛡️ 14-day money-back guarantee</span>
+                <span className="text-sm text-black text-center md:text-right">🛡️ 14-day money-back guarantee</span>
               </div>
             </div>
           </div>
