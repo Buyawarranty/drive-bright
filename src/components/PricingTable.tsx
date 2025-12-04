@@ -2234,7 +2234,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       e.stopPropagation();
                       handleOpenEmailQuoteDialog(durationId);
                     }}
-                    className="w-full text-center text-sm text-gray-500 hover:text-orange-600 transition-colors pointer-events-auto flex items-center justify-center gap-1"
+                    className="w-full text-center text-sm text-black hover:text-orange-600 transition-colors pointer-events-auto flex items-center justify-center gap-1"
                   >
                     <Mail className="w-4 h-4" />
                     <span className="underline">Email me this quote</span>
@@ -2247,7 +2247,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       const coverSection = document.getElementById('your-cover-details');
                       coverSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }}
-                    className="w-full mt-3 text-center text-sm text-gray-500 hover:text-green-600 transition-colors pointer-events-auto flex items-center justify-center gap-1"
+                    className="w-full mt-3 text-center text-sm text-black hover:text-green-600 transition-colors pointer-events-auto flex items-center justify-center gap-1"
                   >
                     <span>🔍 See full cover details</span>
                   </button>
