@@ -36,6 +36,8 @@ interface CustomerPolicy {
   pdf_gold_url?: string;
   pdf_platinum_url?: string;
   payment_amount?: number;
+  stripe_session_id?: string;
+  bumper_order_id?: string;
   document_url?: string; // Add this for fetched documents
   claim_limit?: number;
   voluntary_excess?: number;
@@ -1316,6 +1318,19 @@ const CustomerDashboard = () => {
                                     +{selectedPolicy.seasonal_bonus_months} months FREE bonus applied
                                   </p>
                                 )}
+                              </div>
+                              <div>
+                                <Label className="text-xs sm:text-sm font-medium text-gray-500">Amount Paid</Label>
+                                <p className="font-semibold text-sm sm:text-base text-green-700">
+                                  {selectedPolicy?.payment_amount ? `£${selectedPolicy.payment_amount.toFixed(2)}` : 'N/A'}
+                                </p>
+                              </div>
+                              <div>
+                                <Label className="text-xs sm:text-sm font-medium text-gray-500">Payment Method</Label>
+                                <p className="font-semibold text-sm sm:text-base">
+                                  {selectedPolicy?.bumper_order_id ? 'Bumper (Pay Monthly)' : 
+                                   selectedPolicy?.stripe_session_id ? 'Stripe (Paid in Full)' : 'N/A'}
+                                </p>
                               </div>
                           </div>
 
