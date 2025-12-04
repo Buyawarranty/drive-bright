@@ -1204,10 +1204,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       <span className="text-black text-xs sm:text-sm flex-shrink-0">Vehicle:</span>
                       <span className="font-semibold text-black text-xs sm:text-sm uppercase text-right truncate">{vehicleData.make} {vehicleData.model}</span>
                     </div>
-                    <div className="flex justify-between items-center gap-2">
-                      <span className="text-black text-xs sm:text-sm flex-shrink-0">Registration:</span>
-                      <span className="font-semibold text-black text-xs sm:text-sm text-right">{vehicleData.regNumber}</span>
-                    </div>
                      <div className="flex justify-between items-center gap-2">
                        <span className="text-black text-xs sm:text-sm flex-shrink-0">Mileage:</span>
                        <span className="font-semibold text-black text-xs sm:text-sm text-right">{parseInt(vehicleData.mileage || '0').toLocaleString()} miles</span>
@@ -1226,6 +1222,10 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                        <span className="text-black text-xs sm:text-sm flex-shrink-0">Excess:</span>
                        <span className="font-semibold text-black text-xs sm:text-sm text-right">£{updatedPricingData.voluntaryExcess ?? 0}</span>
                      </div>
+                    <div className="flex justify-between items-center gap-2">
+                      <span className="text-black text-xs sm:text-sm flex-shrink-0">Registration:</span>
+                      <span className="font-semibold text-black text-xs sm:text-sm text-right">{vehicleData.regNumber}</span>
+                    </div>
 
                       {/* Payment Summary - Mobile First */}
                       <div className="border-t pt-4 mt-4 space-y-3">
