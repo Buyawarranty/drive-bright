@@ -17,7 +17,7 @@ const addOnPackages = [
     icon: '🔧',
     title: 'Wear & Tear Cover',
     shortDescription: 'Protects key mechanical and electrical parts from natural wear.',
-    price: 9.99,
+    price: 10,
     priceType: 'monthly',
     badge: 'Best Value',
     badgeColor: 'green',
@@ -35,7 +35,7 @@ const addOnPackages = [
     icon: '🚗',
     title: '24/7 Vehicle Recovery',
     shortDescription: 'Quick and easy claims for vehicle recovery costs',
-    price: 3.99,
+    price: 4,
     priceType: 'monthly',
     bulletPoints: [
       'Use any 24/7 recovery service',
@@ -50,7 +50,7 @@ const addOnPackages = [
     icon: '🛞',
     title: 'Tyre Cover',
     shortDescription: 'Comprehensive cover for accidental, malicious, and puncture-related tyre damage.',
-    price: 7.99,
+    price: 8,
     priceType: 'monthly',
     badge: 'Popular Choice',
     badgeColor: 'orange',
@@ -67,7 +67,7 @@ const addOnPackages = [
     icon: '🌍',
     title: 'Europe Cover',
     shortDescription: 'Enjoy full Platinum-level protection while driving across Europe.',
-    price: 5.99,
+    price: 6,
     priceType: 'monthly',
     bulletPoints: [
       'Same cover level as UK Platinum plan',
@@ -80,7 +80,7 @@ const addOnPackages = [
     icon: '🚘',
     title: 'Vehicle Rental',
     shortDescription: 'Stay mobile with a replacement vehicle during repairs.',
-    price: 6.99,
+    price: 7,
     priceType: 'monthly',
     bulletPoints: [
       'Daily rental allowance',
@@ -94,7 +94,7 @@ const addOnPackages = [
     icon: '🔁',
     title: 'Transfer Cover',
     shortDescription: 'Transfer your remaining warranty to a new owner to boost resale value.',
-    price: 19.99,
+    price: 20,
     priceType: 'one-off',
     bulletPoints: [
       'Increases vehicle resale appeal',
