@@ -912,7 +912,21 @@ const PricingTable: React.FC<PricingTableProps> = ({
         discountedBasePrice = adjustedBasePrice - 200; // £200 discount for 3-year plans
       }
       
-      const totalPrice = discountedBasePrice + recurringAddonTotal + oneTimeAddonTotal;
+      // Calculate boost addon cost (£7/month for 12 months = £84)
+      const boostCost = boostAddon ? 84 : 0;
+      
+      // Calculate labour rate display adjustment (annual)
+      let labourRateAdjust = 0;
+      if (selectedLabourRate === 40) {
+        labourRateAdjust = -3 * 12; // -£36 annually
+      } else if (selectedLabourRate === 70) {
+        labourRateAdjust = 4 * 12; // +£48 annually
+      } else if (selectedLabourRate === 100) {
+        labourRateAdjust = 8 * 12; // +£96 annually
+      }
+      // £50/hr is the default with no adjustment
+      
+      const totalPrice = discountedBasePrice + recurringAddonTotal + oneTimeAddonTotal + boostCost + labourRateAdjust;
       
       // Don't allow progression if vehicle is too old
       if (vehicleAgeError) {
