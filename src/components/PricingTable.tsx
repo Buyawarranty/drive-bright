@@ -310,27 +310,51 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return 0;
   }, [vehicleData?.year]);
 
-  // Filter available duration options based on vehicle age
+  // Calculate vehicle mileage for duration filtering
+  const vehicleMileage = useMemo(() => {
+    if (vehicleData?.mileage) {
+      // Parse mileage - remove commas and non-numeric characters
+      const mileageStr = String(vehicleData.mileage).replace(/[^0-9]/g, '');
+      const mileage = parseInt(mileageStr) || 0;
+      console.log('🚗 Vehicle Mileage Calculation:', { mileage, rawMileage: vehicleData.mileage });
+      return mileage;
+    }
+    console.log('🚗 No vehicle mileage provided, defaulting to 0');
+    return 0;
+  }, [vehicleData?.mileage]);
+
+  // Filter available duration options based on vehicle age AND mileage
   const availableDurations = useMemo(() => {
     type DurationType = '12months' | '24months' | '36months';
     const allDurations: DurationType[] = ['12months', '24months', '36months'];
     
-    console.log('🔍 Available Durations Check:', { vehicleAge });
+    console.log('🔍 Available Durations Check:', { vehicleAge, vehicleMileage });
     
+    // Check age-based restrictions
+    let ageBasedDurations: DurationType[] = allDurations;
     if (vehicleAge === 15) {
-      // 15-year-old vehicles: only 1-year option
       console.log('⚠️ 15-year vehicle detected - limiting to 1-year only');
-      return ['12months'] as DurationType[];
+      ageBasedDurations = ['12months'];
     } else if (vehicleAge === 14) {
-      // 14-year-old vehicles: 1-year and 2-year options
       console.log('⚠️ 14-year vehicle detected - limiting to 1-2 years');
-      return ['12months', '24months'] as DurationType[];
+      ageBasedDurations = ['12months', '24months'];
     }
     
-    // All other vehicles (13 years or younger): all options
-    console.log('✅ All duration options available for this vehicle');
-    return allDurations;
-  }, [vehicleAge]);
+    // Check mileage-based restrictions
+    let mileageBasedDurations: DurationType[] = allDurations;
+    if (vehicleMileage > 140000) {
+      console.log('⚠️ Vehicle over 140,000 miles - limiting to 1-year only');
+      mileageBasedDurations = ['12months'];
+    } else if (vehicleMileage > 120000) {
+      console.log('⚠️ Vehicle over 120,000 miles - limiting to 1-2 years');
+      mileageBasedDurations = ['12months', '24months'];
+    }
+    
+    // Return the most restrictive of the two (intersection)
+    const finalDurations = ageBasedDurations.filter(d => mileageBasedDurations.includes(d)) as DurationType[];
+    console.log('✅ Final available durations:', finalDurations);
+    return finalDurations.length > 0 ? finalDurations : ['12months'];
+  }, [vehicleAge, vehicleMileage]);
 
   // Ensure selected payment type is valid for vehicle age
   useEffect(() => {
@@ -1997,7 +2021,24 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </Alert>
           )}
 
-          {/* Comparison Cards - All Three Durations */}
+          {/* Vehicle mileage restrictions message */}
+          {vehicleMileage > 140000 && vehicleAge < 14 && (
+            <Alert className="mb-6 border-orange-200 bg-orange-50">
+              <Info className="h-4 w-4 text-orange-600" />
+              <AlertDescription className="text-orange-800">
+                Due to your vehicle having over 140,000 miles, only 1-year warranty coverage is available.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {vehicleMileage > 120000 && vehicleMileage <= 140000 && vehicleAge < 14 && (
+            <Alert className="mb-6 border-orange-200 bg-orange-50">
+              <Info className="h-4 w-4 text-orange-600" />
+              <AlertDescription className="text-orange-800">
+                Due to your vehicle having over 120,000 miles, warranty coverage is available for up to 2 years.
+              </AlertDescription>
+            </Alert>
+          )}
           <div className={`grid gap-6 mb-8 ${
             availableDurations.length === 1 
               ? 'grid-cols-1 md:max-w-md md:mx-auto' 
