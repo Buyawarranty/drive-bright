@@ -1319,6 +1319,59 @@ const CustomerDashboard = () => {
                               </div>
                           </div>
 
+                          {/* Document Actions - View T&Cs and Warranty Plan */}
+                          <div className="pt-4 border-t">
+                            <div className="flex flex-wrap gap-3">
+                              <Button 
+                                size="sm"
+                                className="bg-orange-500 hover:bg-orange-600 text-white"
+                                onClick={async () => {
+                                  // Fetch terms and conditions document
+                                  const { data } = await supabase
+                                    .from('customer_documents')
+                                    .select('file_url')
+                                    .eq('plan_type', 'terms-and-conditions')
+                                    .order('created_at', { ascending: false })
+                                    .limit(1)
+                                    .single();
+                                  
+                                  if (data?.file_url) {
+                                    window.open(data.file_url, '_blank');
+                                  } else {
+                                    toast({
+                                      title: "Error",
+                                      description: "Terms and Conditions document not available",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                }}
+                              >
+                                <FileText className="mr-2 h-4 w-4" />
+                                View T's and C's
+                              </Button>
+                              <Button 
+                                size="sm"
+                                className="bg-orange-500 hover:bg-orange-600 text-white"
+                                onClick={() => {
+                                  const pdfUrl = getPolicyPdf(selectedPolicy!);
+                                  if (pdfUrl) {
+                                    window.open(pdfUrl, '_blank');
+                                  } else {
+                                    toast({
+                                      title: "Error",
+                                      description: "Policy document not available",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                }}
+                                disabled={!selectedPolicy}
+                              >
+                                <FileText className="mr-2 h-4 w-4" />
+                                View your warranty plan
+                              </Button>
+                            </div>
+                          </div>
+
                           {/* Add-On Protection Packages */}
                           <AddOnProtectionDisplay
                             mot_fee={selectedPolicy.mot_fee}
@@ -1361,58 +1414,6 @@ const CustomerDashboard = () => {
                                   £{selectedPolicy?.labour_rate || customerData?.labour_rate || 70}/hour
                                 </p>
                               </div>
-                            </div>
-                          </div>
-                          {/* Actions */}
-                          <div className="pt-4 border-t">
-                            <div className="flex flex-wrap gap-3">
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={async () => {
-                                  // Fetch terms and conditions document
-                                  const { data } = await supabase
-                                    .from('customer_documents')
-                                    .select('file_url')
-                                    .eq('plan_type', 'terms-and-conditions')
-                                    .order('created_at', { ascending: false })
-                                    .limit(1)
-                                    .single();
-                                  
-                                  if (data?.file_url) {
-                                    window.open(data.file_url, '_blank');
-                                  } else {
-                                    toast({
-                                      title: "Error",
-                                      description: "Terms and Conditions document not available",
-                                      variant: "destructive",
-                                    });
-                                  }
-                                }}
-                              >
-                                <FileText className="mr-2 h-4 w-4" />
-                                View T's and C's
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => {
-                                  const pdfUrl = getPolicyPdf(selectedPolicy!);
-                                  if (pdfUrl) {
-                                    window.open(pdfUrl, '_blank');
-                                  } else {
-                                    toast({
-                                      title: "Error",
-                                      description: "Policy document not available",
-                                      variant: "destructive",
-                                    });
-                                  }
-                                }}
-                                disabled={!selectedPolicy}
-                              >
-                                <FileText className="mr-2 h-4 w-4" />
-                                View your warranty plan
-                              </Button>
                             </div>
                           </div>
                         </>

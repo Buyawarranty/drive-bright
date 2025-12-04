@@ -66,13 +66,6 @@ const AddOnProtectionDisplay: React.FC<AddOnProtectionDisplayProps> = ({
   
   const addOnItems = [
     { 
-      key: 'mot_fee', 
-      label: 'MOT Test Fee Cover', 
-      value: mot_fee, 
-      icon: '🔧', 
-      description: 'Reimbursement of the MOT test fee'
-    },
-    { 
       key: 'tyre_cover', 
       label: 'Tyre Cover', 
       value: tyre_cover, 
