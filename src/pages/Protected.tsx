@@ -698,9 +698,9 @@ const Protected = () => {
                 <Shield className="w-4 h-4" />
                 Transparent Coverage
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
-                Your cover, made <span className="text-brand-orange">crystal clear</span>
-              </h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
+              What's covered in <span className="text-brand-orange">your warranty</span>
+            </h2>
               <p className="text-base md:text-lg text-gray-600">
                 See what's included - clear terms, no jargon, no surprises.
               </p>
