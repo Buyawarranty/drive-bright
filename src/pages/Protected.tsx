@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, ChevronDown, CheckCircle, Phone, Mail, Shield, Clock, Users, Wrench, FileText, Star, X, Fuel, Battery, Zap, Bike, Crown, ArrowRight } from 'lucide-react';
+import { Menu, ChevronDown, CheckCircle, Phone, Mail, Shield, Clock, Users, Wrench, FileText, Star, X, Fuel, Battery, Zap, Bike, Crown, ArrowRight, ArrowUp } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Link } from 'react-router-dom';
@@ -697,61 +697,81 @@ const Protected = () => {
           <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12 border border-gray-100">
             {/* Header */}
             <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 bg-brand-orange/10 text-brand-orange px-4 py-2 rounded-full text-sm font-medium mb-4">
+              <div className="inline-flex items-center gap-2 bg-green-50 text-green-600 px-4 py-2 rounded-full text-sm font-medium mb-4 border border-green-200">
                 <Shield className="w-4 h-4" />
                 Transparent Coverage
               </div>
               <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
                 Your cover, made <span className="text-brand-orange">crystal clear</span>
               </h2>
-              <p className="text-base md:text-lg text-black">
+              <p className="text-base md:text-lg text-gray-600">
                 See what's included - clear terms, no jargon, no surprises.
               </p>
             </div>
 
-            {/* Document Links */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-              {platinumDocUrl ? (
-                <a 
-                  href={platinumDocUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 bg-brand-orange text-white px-6 py-3 rounded-lg font-semibold hover:bg-brand-orange/90 transition-colors"
-                >
-                  <Crown className="w-5 h-5" />
-                  <span>Comprehensive Platinum Plan</span>
-                </a>
-              ) : (
-                <div className="inline-flex items-center justify-center gap-2 bg-gray-400 text-white px-6 py-3 rounded-lg font-semibold cursor-not-allowed">
-                  <Crown className="w-5 h-5" />
-                  <span>Loading...</span>
-                </div>
-              )}
+            {/* Accordion Document Links */}
+            <Accordion type="multiple" className="space-y-3 mb-6">
+              <AccordionItem value="platinum-plan" className="border-0">
+                <AccordionTrigger className="bg-orange-50 hover:bg-orange-100 px-5 py-4 rounded-lg border border-orange-100 hover:no-underline transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-orange-200">
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                    </div>
+                    <span className="font-semibold text-gray-900">Your Platinum Plan</span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="pt-3 px-2">
+                  {platinumDocUrl ? (
+                    <a 
+                      href={platinumDocUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-brand-orange hover:underline font-medium"
+                    >
+                      <FileText className="w-4 h-4" />
+                      View Platinum Plan Details (PDF)
+                      <ArrowRight className="w-4 h-4" />
+                    </a>
+                  ) : (
+                    <span className="text-gray-400">Loading...</span>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
 
-              {termsDocUrl ? (
-                <a 
-                  href={termsDocUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 bg-[#1e3a5f] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#162d4a] transition-colors"
-                >
-                  <FileText className="w-5 h-5" />
-                  <span>Terms & Conditions</span>
-                </a>
-              ) : (
-                <div className="inline-flex items-center justify-center gap-2 bg-gray-400 text-white px-6 py-3 rounded-lg font-semibold cursor-not-allowed">
-                  <FileText className="w-5 h-5" />
-                  <span>Loading...</span>
-                </div>
-              )}
-            </div>
+              <AccordionItem value="terms-conditions" className="border-0">
+                <AccordionTrigger className="bg-green-50 hover:bg-green-100 px-5 py-4 rounded-lg border border-green-100 hover:no-underline transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border border-green-200">
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                    </div>
+                    <span className="font-semibold text-gray-900">Terms & Conditions</span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="pt-3 px-2">
+                  {termsDocUrl ? (
+                    <a 
+                      href={termsDocUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-green-600 hover:underline font-medium"
+                    >
+                      <FileText className="w-4 h-4" />
+                      View Terms & Conditions (PDF)
+                      <ArrowRight className="w-4 h-4" />
+                    </a>
+                  ) : (
+                    <span className="text-gray-400">Loading...</span>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
 
-            {/* Get My Quote Button */}
-            <div className="text-center">
+            {/* Back to Plans Button */}
+            <div className="flex justify-end">
               <Link to="/">
-                <Button size="lg" className="bg-primary text-white hover:bg-primary/90 font-bold px-10 py-5 text-lg animate-breathing flex items-center gap-2 mx-auto">
-                  Get my quote
-                  <ArrowRight className="w-5 h-5" />
+                <Button className="bg-[#1e3a5f] hover:bg-[#162d4a] text-white font-medium px-5 py-2 rounded-lg flex items-center gap-2">
+                  <ArrowUp className="w-4 h-4" />
+                  Back to Plans
                 </Button>
               </Link>
             </div>
