@@ -8,7 +8,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import pandaMechanic from '@/assets/panda-mechanic.png';
 import pandaVehicles from '@/assets/panda-vehicles.png';
 
 const CancelWarranty = () => {
@@ -174,59 +173,120 @@ const CancelWarranty = () => {
 
       <div className="min-h-screen bg-white">
         {/* Hero Section */}
-        <section className="bg-white py-16 lg:py-24 px-4">
-          <div className="max-w-4xl mx-auto text-center">
+        <section className="bg-white py-12 lg:py-16 px-4">
+          <div className="max-w-6xl mx-auto text-center">
             <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
               Cancel Your Warranty
             </h1>
-            <p className="text-xl lg:text-2xl text-gray-700 mb-8 leading-relaxed">
-              We understand that circumstances change, and you may need to cancel your warranty. Here's everything you need to know:
+            <p className="text-xl text-gray-700 mb-4">
+              We understand that <strong>you may change your mind</strong>, and we've made our <span className="bg-yellow-300 px-1">cancel</span>lation process <strong>simple and hassle-free</strong>
             </p>
           </div>
         </section>
 
-        {/* Cooling-Off Period Section */}
-        <section className="bg-gradient-to-br from-orange-50 to-orange-100 py-12 px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-xl p-8 shadow-lg">
-              <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">Your Cooling-Off Period</h2>
-              <p className="text-lg text-gray-700 mb-4">
-                Under the terms of your warranty, you have a <span className="font-bold text-orange-600">14-day cooling-off period</span>:
-              </p>
-              <ul className="space-y-3 text-gray-700">
-                <li className="flex items-start gap-3">
-                  <span className="text-green-500 font-bold mt-1">✓</span>
-                  <span>If you cancel within this time, you'll receive a <span className="font-semibold">full refund</span>.</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-green-500 font-bold mt-1">✓</span>
-                  <span>No questions asked – we want you to feel confident in your decision.</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        {/* After 14 Days Section with Image */}
-        <section className="py-12 px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-              <div className="lg:col-span-2">
-                <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">After 14 Days</h2>
-                <p className="text-lg text-gray-700 mb-4">
-                  Once the cooling-off period has passed, your cover is already active and protecting your vehicle.
+        {/* 3-Column Info Cards Section */}
+        <section className="py-8 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              {/* Card 1: Full Refund – Cooling-Off Period */}
+              <div className="relative bg-white border-2 border-orange-500 rounded-xl p-6 pt-12">
+                <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xl">💷</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Full Refund – Cooling-Off Period</h3>
+                <p className="text-gray-700 mb-4">
+                  You may <span className="bg-yellow-300 px-1">cancel</span> your policy <strong>within 14 days of purchase for a full refund</strong>, provided no claims have been made.
                 </p>
-                <p className="text-lg text-gray-700">
-                  This means the insurer and/or finance provider has committed to providing that protection for the agreed term, 
-                  so full refunds are processed <span className="font-semibold">pro-rata</span> and include a <span className="font-semibold text-orange-600">£40 flat service fee</span>.
+                <p className="text-gray-700 mb-4">
+                  To <span className="bg-yellow-300 px-1">cancel</span>, you must send an email request within the cooling-off period to{' '}
+                  <a href="mailto:support@buyawarranty.co.uk" className="text-orange-600 underline font-semibold">support@buyawarranty.co.uk</a>.
+                </p>
+                <p className="text-gray-700">
+                  Alternatively, you can complete the '<span className="bg-yellow-300 px-1 font-semibold">Cancel</span> My Warranty' form via the link at the bottom of our homepage.
                 </p>
               </div>
-              <div className="lg:col-span-1">
-                <img 
-                  src={pandaMechanic} 
-                  alt="Panda mechanic mascot" 
-                  className="w-full max-w-[200px] mx-auto"
-                />
+
+              {/* Card 2: Refund policy after 14 days */}
+              <div className="relative bg-white border-2 border-orange-500 rounded-xl p-6 pt-12">
+                <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xl">💰</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Refund policy after 14 days</h3>
+                <p className="text-gray-700 mb-4">
+                  If you need to <span className="bg-yellow-300 px-1">cancel</span> your policy after the initial 14-day cooling-off period, <strong>refunds will be calculated on a pro-rata basis for the unused portion of your cover</strong>, minus:
+                </p>
+                <ul className="space-y-3 text-gray-700 mb-4">
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-1">•</span>
+                    <span>If you <span className="bg-yellow-300 px-1">cancel</span> after the 14-day cooling-off period, your refund will be calculated on a pro-rata basis for the unused portion of your cover, minus:</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-1">•</span>
+                    <span>A standard fair usage fee of <strong>£40</strong></span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-1">•</span>
+                    <span>The first instalment is non-refundable as it covers initial administrative and liability costs</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-1">•</span>
+                    <span>The value of any claims already paid during the policy term</span>
+                  </li>
+                </ul>
+                <p className="text-gray-700 font-semibold">
+                  If you pay by instalments, any remaining payments will be <span className="bg-yellow-300 px-1">cancel</span>led.
+                </p>
+              </div>
+
+              {/* Card 3: Example refund calculation */}
+              <div className="relative bg-white border-2 border-orange-500 rounded-xl p-6 pt-12">
+                <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xl">🧮</span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Example refund calculation</h3>
+                <p className="text-gray-700 mb-4">
+                  To show how refunds work, here's an example if you <span className="bg-yellow-300 px-1">cancel</span> after 1 month:
+                </p>
+                <ul className="space-y-2 text-gray-700">
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-1">•</span>
+                    <span><strong>Policy purchased:</strong> 12-month cover for £450</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-1">•</span>
+                    <span><strong>Monthly instalment:</strong> £37.50</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-1">•</span>
+                    <span><strong><span className="bg-yellow-300 px-1">Cancel</span>led after:</strong> 1 month</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-1">•</span>
+                    <span><strong>Remaining term:</strong> 11 months</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-1">•</span>
+                    <span><strong>Unused premium:</strong> £412.50 (calculated as £37.50 × 11)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-1">•</span>
+                    <span><strong>Fair usage fee :</strong> £40</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-1">•</span>
+                    <span><strong>First instalment</strong> (non-refundable): £37.50</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-gray-400 mt-1">•</span>
+                    <span><strong>Minus any claims paid during the policy term</strong></span>
+                  </li>
+                </ul>
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <p className="text-gray-900 font-bold">Final refund amount:</p>
+                  <p className="text-gray-700">£412.50 – £40 – £37.50 = <strong className="text-lg">£335.00</strong></p>
+                  <p className="text-sm text-gray-500 italic mt-1">(if no claims have been paid)</p>
+                </div>
               </div>
             </div>
           </div>
