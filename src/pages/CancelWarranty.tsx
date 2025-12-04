@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Banknote, Coins, Calculator } from 'lucide-react';
 import pandaVehicles from '@/assets/panda-vehicles.png';
 
 const CancelWarranty = () => {
@@ -365,7 +366,7 @@ const CancelWarranty = () => {
               {/* Card 1: Full Refund – Cooling-Off Period */}
               <div className="relative bg-white border-2 border-orange-500 rounded-xl p-6 pt-12">
                 <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xl">💷</span>
+                  <Banknote className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Full Refund – Cooling-Off Period</h3>
                 <p className="text-gray-700 mb-4">
@@ -383,7 +384,7 @@ const CancelWarranty = () => {
               {/* Card 2: Refund policy after 14 days */}
               <div className="relative bg-white border-2 border-orange-500 rounded-xl p-6 pt-12">
                 <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xl">💰</span>
+                  <Coins className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Refund policy after 14 days</h3>
                 <p className="text-gray-700 mb-4">
@@ -415,7 +416,7 @@ const CancelWarranty = () => {
               {/* Card 3: Example refund calculation */}
               <div className="relative bg-white border-2 border-orange-500 rounded-xl p-6 pt-12">
                 <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xl">🧮</span>
+                  <Calculator className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Example refund calculation</h3>
                 <p className="text-gray-700 mb-4">
