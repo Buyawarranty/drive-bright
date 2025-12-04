@@ -1454,15 +1454,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               <span className="font-bold text-green-600">-£{totalDiscountAmount.toFixed(2)}</span>
                             </div>
                           )}
-                          {seasonalOfferClaimed && (
-                            <div className="flex justify-between items-center text-sm bg-orange-50 p-2 rounded">
-                              <span className="font-medium text-orange-700 flex items-center gap-1">
-                                <span>❄️</span>
-                                <span>3 Months FREE Bonus Cover</span>
-                              </span>
-                              <span className="font-bold text-orange-600">Added!</span>
-                            </div>
-                          )}
                         </div>
                       )}
                     </div>
