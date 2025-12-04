@@ -21,7 +21,9 @@ const CancelWarranty = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isCancellingRequest, setIsCancellingRequest] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [submittedData, setSubmittedData] = useState<{registrationPlate: string; fullName: string} | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -99,6 +101,12 @@ const CancelWarranty = () => {
         throw new Error(response.error.message || 'Failed to submit cancellation request');
       }
 
+      // Store submitted data for potential "Keep My Warranty" action
+      setSubmittedData({
+        registrationPlate: formData.registrationPlate,
+        fullName: formData.fullName
+      });
+
       // Show success message
       setIsSuccess(true);
       
@@ -126,6 +134,45 @@ const CancelWarranty = () => {
     }
   };
 
+  const handleKeepWarranty = async () => {
+    if (!submittedData) return;
+    
+    setIsCancellingRequest(true);
+    
+    try {
+      const response = await supabase.functions.invoke('submit-cancellation', {
+        body: {
+          registrationPlate: submittedData.registrationPlate,
+          fullName: submittedData.fullName,
+          reason: 'CANCELLATION_WITHDRAWN',
+          feedback: 'Customer has changed their mind and wishes to keep their warranty. Please disregard previous cancellation request.'
+        }
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to process request');
+      }
+
+      toast({
+        title: "Great news!",
+        description: "Your warranty will remain active. Welcome back!",
+      });
+      
+      // Navigate to homepage
+      window.location.href = '/';
+      
+    } catch (error: any) {
+      console.error('Keep warranty error:', error);
+      toast({
+        title: "Request Failed",
+        description: "Please contact us directly at support@buyawarranty.co.uk",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCancellingRequest(false);
+    }
+  };
+
   if (isSuccess) {
     return (
       <>
@@ -136,25 +183,42 @@ const CancelWarranty = () => {
 
         <div className="min-h-screen bg-white">
           <div className="max-w-4xl mx-auto px-4 py-16">
-            <div className="bg-green-50 border-2 border-green-500 rounded-xl p-8 text-center">
+            {/* Success Message */}
+            <div className="bg-green-50 border-2 border-green-500 rounded-xl p-8 text-center mb-8">
               <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                Thank You
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4">
+                ✅ Your Cancellation Request Has Been Received
               </h1>
-              <p className="text-xl text-gray-700 mb-6">
-                Your cancellation request has been received
+              <p className="text-lg text-gray-700 mb-3">
+                Our Accounts Team will review your request and process it within <strong>5 working days</strong>.
               </p>
-              <p className="text-gray-600 mb-8">
-                Our Accounts Team will review your request and process it within 2–3 working days.
+              <p className="text-gray-600">
+                Thank you for your patience.
               </p>
-              <Link to="/">
-                <Button className="bg-primary hover:bg-primary/90">
-                  Return to Homepage
-                </Button>
+            </div>
+
+            {/* Changed your mind section */}
+            <div className="bg-orange-50 border-2 border-orange-400 rounded-xl p-8 text-center">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
+                Changed your mind? We'd love to have you back!
+              </h2>
+              <Button
+                onClick={handleKeepWarranty}
+                disabled={isCancellingRequest}
+                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold text-lg px-8 py-3 h-auto"
+              >
+                {isCancellingRequest ? 'Processing...' : '👉 Keep My Warranty'}
+              </Button>
+            </div>
+
+            {/* Return to homepage link */}
+            <div className="text-center mt-8">
+              <Link to="/" className="text-gray-500 hover:text-gray-700 underline">
+                Return to Homepage
               </Link>
             </div>
           </div>
