@@ -331,10 +331,10 @@ const Protected = () => {
                 High-End and Performance vehicles not covered
               </h3>
               <AccordionItem value="high-performance-vehicles" className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
-                <AccordionTrigger className="px-6 py-4 text-left bg-[#1e3a5f] hover:bg-[#162d4a] transition-all duration-300 hover:no-underline border border-[#1e3a5f] rounded-lg">
+                <AccordionTrigger className="px-6 py-4 text-left bg-sky-100 hover:bg-sky-200 transition-all duration-300 hover:no-underline border border-sky-300 rounded-lg">
                   <div className="flex items-center">
-                    <X className="w-5 h-5 text-white mr-3 flex-shrink-0" />
-                    <span className="font-medium text-base text-white">View restricted vehicle models</span>
+                    <X className="w-5 h-5 text-sky-700 mr-3 flex-shrink-0" />
+                    <span className="font-medium text-base text-sky-700">View restricted vehicle models</span>
                   </div>
                 </AccordionTrigger>
               <AccordionContent className="px-6 py-4 bg-white">
@@ -677,12 +677,13 @@ const Protected = () => {
 
       {/* CTA Section */}
       <section className="py-16 bg-primary">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center">
+          <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+            <Shield className="w-8 h-8" />
             Ready to protect your vehicle?
           </h2>
           <Link to="/">
-            <Button size="lg" className="bg-white text-primary hover:bg-gray-100 font-bold px-10 py-5 text-lg animate-breathing flex items-center gap-2">
+            <Button size="lg" className="bg-white text-primary hover:bg-gray-100 font-bold px-10 py-5 text-lg animate-breathing flex items-center gap-2 mx-auto">
               Get my quote
               <ArrowRight className="w-5 h-5" />
             </Button>
