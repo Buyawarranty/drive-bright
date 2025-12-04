@@ -2513,7 +2513,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   durationSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }}
                 size="sm"
-                className="flex items-center gap-1.5 text-xs font-medium bg-white hover:bg-gray-50 text-black border-2 border-gray-400 shadow-md scale-90"
+                className="flex items-center gap-1.5 text-xs font-medium bg-white hover:bg-gray-50 text-black border-2 border-gray-300 shadow-md scale-90"
               >
                 <ArrowUp className="w-3 h-3" />
                 Back to Plans
