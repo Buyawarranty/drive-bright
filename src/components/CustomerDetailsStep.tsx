@@ -420,45 +420,45 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
     
     if (field === 'email') {
       if (!value.trim()) {
-        errorMessage = 'Email address is required for your policy documents';
+        errorMessage = 'Enter a valid email address.';
       } else if (!emailRegex.test(value)) {
-        errorMessage = 'Please enter a valid email (e.g., name@example.com)';
+        errorMessage = 'Enter a valid email address.';
       }
     } else if (field === 'phone') {
       if (!value.trim()) {
-        errorMessage = 'Phone number is required to contact you about your warranty';
+        errorMessage = 'Enter a phone number.';
       } else if (!phoneRegex.test(value)) {
-        errorMessage = 'Please enter a valid UK phone number (e.g., 07123 456789)';
+        errorMessage = 'Enter a valid UK phone number.';
       }
     } else if (field === 'first_name') {
       if (!value.trim()) {
-        errorMessage = 'Please enter your first name';
+        errorMessage = 'Please enter your first name.';
       } else if (value.trim().length < 2) {
-        errorMessage = 'First name must be at least 2 characters';
+        errorMessage = 'Please enter your first name.';
       }
     } else if (field === 'last_name') {
       if (!value.trim()) {
-        errorMessage = 'Please enter your last name';
+        errorMessage = 'Please enter your last name.';
       } else if (value.trim().length < 2) {
-        errorMessage = 'Last name must be at least 2 characters';
+        errorMessage = 'Please enter your last name.';
       }
     } else if (field === 'address_line_1') {
       if (!value.trim()) {
-        errorMessage = 'Street address is required for your policy';
+        errorMessage = 'Enter your street address.';
       } else if (value.trim().length < 3) {
-        errorMessage = 'Please enter a complete street address';
+        errorMessage = 'Enter your street address.';
       }
     } else if (field === 'city') {
       if (!value.trim()) {
-        errorMessage = 'City or town is required';
+        errorMessage = 'Enter your city or town.';
       } else if (value.trim().length < 2) {
-        errorMessage = 'Please enter a valid city or town name';
+        errorMessage = 'Enter your city or town.';
       }
     } else if (field === 'postcode') {
       if (!value.trim()) {
-        errorMessage = 'Postcode is required';
+        errorMessage = 'Enter your postcode.';
       } else if (!postcodeRegex.test(value)) {
-        errorMessage = 'Please enter a valid UK postcode (e.g., SW1A 1AA)';
+        errorMessage = 'Enter a valid UK postcode.';
       }
     }
     
@@ -547,45 +547,45 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
     const postcodeRegex = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
     
     if (!customerData.first_name.trim()) {
-      errors.first_name = 'Please enter your first name';
+      errors.first_name = 'Please enter your first name.';
     } else if (customerData.first_name.trim().length < 2) {
-      errors.first_name = 'First name must be at least 2 characters';
+      errors.first_name = 'Please enter your first name.';
     }
     
     if (!customerData.last_name.trim()) {
-      errors.last_name = 'Please enter your last name';
+      errors.last_name = 'Please enter your last name.';
     } else if (customerData.last_name.trim().length < 2) {
-      errors.last_name = 'Last name must be at least 2 characters';
+      errors.last_name = 'Please enter your last name.';
     }
     
     if (!customerData.email.trim()) {
-      errors.email = 'Email address is required for your policy documents';
+      errors.email = 'Enter a valid email address.';
     } else if (!emailRegex.test(customerData.email)) {
-      errors.email = 'Please enter a valid email (e.g., name@example.com)';
+      errors.email = 'Enter a valid email address.';
     }
     
     if (!customerData.phone.trim()) {
-      errors.phone = 'Phone number is required to contact you about your warranty';
+      errors.phone = 'Enter a phone number.';
     } else if (!phoneRegex.test(customerData.phone)) {
-      errors.phone = 'Please enter a valid UK phone number (e.g., 07123 456789)';
+      errors.phone = 'Enter a valid UK phone number.';
     }
     
     if (!customerData.address_line_1.trim()) {
-      errors.address_line_1 = 'Street address is required for your policy';
+      errors.address_line_1 = 'Enter your street address.';
     } else if (customerData.address_line_1.trim().length < 3) {
-      errors.address_line_1 = 'Please enter a complete street address';
+      errors.address_line_1 = 'Enter your street address.';
     }
     
     if (!customerData.city.trim()) {
-      errors.city = 'City or town is required';
+      errors.city = 'Enter your city or town.';
     } else if (customerData.city.trim().length < 2) {
-      errors.city = 'Please enter a valid city or town name';
+      errors.city = 'Enter your city or town.';
     }
     
     if (!customerData.postcode.trim()) {
-      errors.postcode = 'Postcode is required';
+      errors.postcode = 'Enter your postcode.';
     } else if (!postcodeRegex.test(customerData.postcode)) {
-      errors.postcode = 'Please enter a valid UK postcode (e.g., SW1A 1AA)';
+      errors.postcode = 'Enter a valid UK postcode.';
     }
 
     setFieldErrors(errors);
@@ -945,7 +945,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         )}
                       </div>
                       {fieldErrors.first_name && (
-                        <p className="text-red-500 text-sm mt-1">{fieldErrors.first_name}</p>
+                        <p className="text-red-500 text-xs mt-1" role="alert" aria-live="polite">{fieldErrors.first_name}</p>
                       )}
                     </div>
                     <div>
@@ -969,7 +969,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         )}
                       </div>
                       {fieldErrors.last_name && (
-                        <p className="text-red-500 text-sm mt-1">{fieldErrors.last_name}</p>
+                        <p className="text-red-500 text-xs mt-1" role="alert" aria-live="polite">{fieldErrors.last_name}</p>
                       )}
                     </div>
                   </div>
@@ -1000,7 +1000,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       )}
                     </div>
                     {fieldErrors.email && (
-                      <p className="text-red-500 text-sm mt-1">{fieldErrors.email}</p>
+                      <p className="text-red-500 text-xs mt-1" role="alert" aria-live="polite">{fieldErrors.email}</p>
                     )}
                   </div>
 
@@ -1028,7 +1028,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       )}
                     </div>
                     {fieldErrors.phone && (
-                      <p className="text-red-500 text-sm mt-1">{fieldErrors.phone}</p>
+                      <p className="text-red-500 text-xs mt-1" role="alert" aria-live="polite">{fieldErrors.phone}</p>
                     )}
                   </div>
 
@@ -1058,7 +1058,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         )}
                       </div>
                       {fieldErrors.address_line_1 && (
-                        <p className="text-red-500 text-sm mt-1">{fieldErrors.address_line_1}</p>
+                        <p className="text-red-500 text-xs mt-1" role="alert" aria-live="polite">{fieldErrors.address_line_1}</p>
                       )}
                     </div>
                     
@@ -1125,7 +1125,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           )}
                         </div>
                         {fieldErrors.city && (
-                          <p className="text-red-500 text-sm mt-1">{fieldErrors.city}</p>
+                          <p className="text-red-500 text-xs mt-1" role="alert" aria-live="polite">{fieldErrors.city}</p>
                         )}
                       </div>
                     </div>
