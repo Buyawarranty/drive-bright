@@ -723,6 +723,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           paymentType === '24months' ? 24 : 36;
     return calculateAddOnPrice(selectedProtectionAddOns, paymentType, durationMonths);
   }, [paymentType, selectedProtectionAddOns]);
+
+  // Memoized one-time add-on price (transfer cover only - not included in monthly)
+  const oneTimeAddOnPrice = useMemo(() => {
+    const autoIncluded = getAutoIncludedAddOns(paymentType);
+    return selectedProtectionAddOns.transfer && !autoIncluded.includes('transfer') ? 19 : 0;
+  }, [paymentType, selectedProtectionAddOns]);
+
+  // Memoized recurring add-on price (excludes one-time add-ons)
+  const recurringAddOnPrice = useMemo(() => {
+    return addOnPrice - oneTimeAddOnPrice;
+  }, [addOnPrice, oneTimeAddOnPrice]);
   
   // Calculate boost addon cost (£7/month for 12 months = £84)
   const boostAddonCost = useMemo(() => {
@@ -750,10 +761,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return discountedBasePlanPrice + addOnPrice + boostAddonCost;
   }, [discountedBasePlanPrice, addOnPrice, boostAddonCost]);
 
-  // Memoized total discounted price WITHOUT boost (for display calculations)
+  // Memoized total discounted price WITHOUT boost and WITHOUT one-time add-ons (for monthly display calculations)
   const totalDiscountedPriceWithoutBoost = useMemo(() => {
-    return discountedBasePlanPrice + addOnPrice;
-  }, [discountedBasePlanPrice, addOnPrice]);
+    return discountedBasePlanPrice + recurringAddOnPrice;
+  }, [discountedBasePlanPrice, recurringAddOnPrice]);
 
   // Memoized labour rate display adjustment (display only - doesn't affect API pricing)
   const labourRateDisplayAdjustment = useMemo(() => {
@@ -766,16 +777,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return boostAddon ? 5 : 0;
   }, [boostAddon]);
 
-  // Memoized display monthly price with labour rate and boost display adjustments
+  // Memoized display monthly price with labour rate and boost display adjustments (excludes one-time add-ons)
   const displayMonthlyPrice = useMemo(() => {
     const baseMonthly = Math.round(totalDiscountedPriceWithoutBoost / 12);
     return Math.round(baseMonthly + labourRateDisplayAdjustment + boostDisplayAdjustment);
   }, [totalDiscountedPriceWithoutBoost, labourRateDisplayAdjustment, boostDisplayAdjustment]);
 
-  // Memoized display total price - derived from displayMonthlyPrice to ensure consistency
+  // Memoized display total price - monthly * 12 + one-time add-ons
   const displayTotalPrice = useMemo(() => {
-    return displayMonthlyPrice * 12;
-  }, [displayMonthlyPrice]);
+    return (displayMonthlyPrice * 12) + oneTimeAddOnPrice;
+  }, [displayMonthlyPrice, oneTimeAddOnPrice]);
 
   // Memoized monthly price calculation - always divide total by 12 for monthly payments
   const monthlyPrice = useMemo(() => {
