@@ -35,7 +35,7 @@ const ConditionalFooter = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const step = searchParams.get('step');
-  const isCheckoutStep = step === '2' || step === '3' || step === '4';
+  const isCheckoutStep = step === '2' || step === '3' || step === '4' || step === '5' || step === '6';
   
   if (isCheckoutStep) return null;
   return <WebsiteFooter />;
