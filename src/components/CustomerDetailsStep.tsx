@@ -1217,15 +1217,15 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                        <span className="font-semibold text-black text-xs sm:text-sm text-right">£{(pricingData.claimLimit || 2000).toLocaleString()}</span>
                      </div>
                      <div className="flex justify-between items-center gap-2">
-                       <span className="text-black text-xs sm:text-sm flex-shrink-0">Excess:</span>
-                       <span className="font-semibold text-black text-xs sm:text-sm text-right">£{updatedPricingData.voluntaryExcess ?? 0}</span>
-                     </div>
-                       <div className="flex justify-between items-center gap-2">
                         <span className="text-black text-xs sm:text-sm flex-shrink-0">Labour Rate:</span>
                         <span className="font-semibold text-black text-xs sm:text-sm text-right">
                           £{pricingData.labourRate || 70}/hour
                         </span>
                       </div>
+                     <div className="flex justify-between items-center gap-2">
+                       <span className="text-black text-xs sm:text-sm flex-shrink-0">Excess:</span>
+                       <span className="font-semibold text-black text-xs sm:text-sm text-right">£{updatedPricingData.voluntaryExcess ?? 0}</span>
+                     </div>
 
                       {/* Payment Summary - Mobile First */}
                       <div className="border-t pt-4 mt-4 space-y-3">
