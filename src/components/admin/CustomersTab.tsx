@@ -3313,10 +3313,17 @@ Please log in and change your password after first login.`;
                      )}
                    </TableCell>
                      <TableCell>
-                       <Badge variant="outline">
-                         {customer.bumper_order_id ? 'Bumper' : 
-                          customer.stripe_session_id ? 'Stripe' : 'N/A'}
-                       </Badge>
+                       <div className="flex flex-col gap-1">
+                         <Badge variant="outline">
+                           {customer.bumper_order_id ? 'Bumper' : 
+                            customer.stripe_session_id ? 'Stripe' : 'N/A'}
+                         </Badge>
+                         {customer.final_amount && customer.final_amount > 0 && (
+                           <span className="text-xs font-medium text-green-700">
+                             £{customer.final_amount.toFixed(2)}
+                           </span>
+                         )}
+                       </div>
                      </TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="bg-blue-50 text-blue-700">
