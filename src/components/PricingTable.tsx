@@ -2294,7 +2294,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
         {/* Inline Pricing Summary - Above Trust Section */}
         {!plansLoading && !plansError && !vehicleAgeError && displayPlans.length > 0 && paymentType && (
-          <div className="mt-8 mb-8 bg-gradient-to-r from-orange-50 to-orange-100/50 rounded-xl p-6 border border-orange-200 shadow-[0_0_20px_rgba(249,115,22,0.3)]">
+          <div className="mt-8 mb-8 bg-gradient-to-r from-orange-50 to-orange-100/50 rounded-xl p-6 border-2 border-orange-200 shadow-[0_0_20px_rgba(249,115,22,0.3)]">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               {/* Price Info */}
               <div className="flex-1">
