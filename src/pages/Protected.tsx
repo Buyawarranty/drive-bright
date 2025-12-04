@@ -681,7 +681,7 @@ const Protected = () => {
           </h2>
           <Link to="/">
             <Button size="lg" className="bg-white text-primary hover:bg-gray-100 font-bold px-10 py-5 text-lg animate-breathing flex items-center gap-2 mx-auto">
-              🚗 Get my quote
+              Get my quote
               <ArrowRight className="w-5 h-5" />
             </Button>
           </Link>
