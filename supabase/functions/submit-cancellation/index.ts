@@ -58,7 +58,7 @@ const handler = async (req: Request): Promise<Response> => {
                   padding: 20px;
                 }
                 .header {
-                  background-color: #ff6b35;
+                  background-color: #6b7280;
                   color: white;
                   padding: 20px;
                   text-align: center;
@@ -73,11 +73,11 @@ const handler = async (req: Request): Promise<Response> => {
                   margin: 15px 0;
                   padding: 10px;
                   background-color: white;
-                  border-left: 4px solid #ff6b35;
+                  border-left: 4px solid #6b7280;
                 }
                 .label {
                   font-weight: bold;
-                  color: #ff6b35;
+                  color: #6b7280;
                 }
                 .feedback-box {
                   background-color: white;
