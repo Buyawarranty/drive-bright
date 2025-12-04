@@ -143,11 +143,11 @@ const WarrantyBenefitsSection: React.FC = () => {
                     />
                   </div>
                   
-                  {/* Desktop: Trustpilot - right aligned */}
-                  <TrustpilotHeader className="flex-shrink-0 self-end" />
+                  {/* Desktop: Trustpilot - right aligned, moved up */}
+                  <TrustpilotHeader className="flex-shrink-0 self-end -mt-20" />
                   
-                  {/* Desktop: Security text - right aligned */}
-                  <div className="flex items-center gap-2 text-sm text-gray-600 self-end">
+                  {/* Desktop: Security text - right aligned, moved up */}
+                  <div className="flex items-center gap-2 text-sm text-gray-600 self-end -mt-16">
                     <Lock className="w-4 h-4 text-green-600" />
                     <span>Your details are encrypted and safe.</span>
                   </div>
