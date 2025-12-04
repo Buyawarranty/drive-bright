@@ -2528,19 +2528,19 @@ const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
                 <div className="text-2xl font-bold text-gray-900">
                   £{displayMonthlyPrice}/month
                 </div>
-                <div className="flex items-center justify-center gap-1 text-sm text-gray-600">
+                <div className="flex items-center justify-center gap-1 text-sm text-black">
                   <Check className="w-4 h-4 text-green-600" />
                   <span>Only 12 payments (0% APR)</span>
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-black">
                   {paymentType === '12months' && '1 Year Cover'}
                   {paymentType === '24months' && 'No payments in Year 2 - 🎉 2 Year Cover'}
                   {paymentType === '36months' && 'No payments in Years 2 & 3 - 🎉 3 Year Cover'}
                 </div>
-                <div className="text-lg font-semibold text-gray-900 mt-1">
+                <div className="text-lg font-semibold text-black mt-1">
                   Total: £{Math.round(displayTotalPrice)}
                 </div>
-                <div className="text-xs text-gray-500 mt-0.5">
+                <div className="text-xs text-black mt-0.5">
                   🛡️ 14 days to cancel
                 </div>
               </div>
@@ -2594,11 +2594,11 @@ const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
                 <div className="text-2xl font-bold text-gray-900">
                   £{displayMonthlyPrice}/month
                 </div>
-                <div className="flex items-center gap-1 text-sm text-gray-600">
+                <div className="flex items-center gap-1 text-sm text-black">
                   <Check className="w-4 h-4 text-green-600" />
                   <span>Only 12 payments (0% APR)</span>
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-black">
                   {paymentType === '12months' && '1 Year Cover'}
                   {paymentType === '24months' && 'No payments in Year 2 - 🎉 2 Year Cover'}
                   {paymentType === '36months' && 'No payments in Years 2 & 3 - 🎉 3 Year Cover'}
@@ -2615,10 +2615,10 @@ const boostDisplayAdjustment = boostAddon ? 4.99 : 0;
                   Continue to checkout
                   <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
                 </Button>
-                <div className="text-lg font-semibold text-gray-900">
+                <div className="text-lg font-semibold text-black">
                   Total: £{Math.round(displayTotalPrice)}
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-black">
                   🛡️ 14 days to cancel
                 </div>
               </div>
