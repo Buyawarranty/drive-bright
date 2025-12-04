@@ -2163,13 +2163,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       {durationId === '24months' && (
                         <div className="flex items-center gap-2">
                           <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                          <span className="text-sm text-green-600 font-medium">Year 2 Cover is Free</span>
+                          <span className="text-sm text-green-600 font-medium">Year 2 Cover is FREE</span>
                         </div>
                       )}
                       {durationId === '36months' && (
                         <div className="flex items-center gap-2">
                           <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                          <span className="text-sm text-green-600 font-medium">Year 2 and 3 Cover is Free</span>
+                          <span className="text-sm text-green-600 font-medium">Year 2 and 3 Cover is FREE</span>
                         </div>
                       )}
                     </div>
