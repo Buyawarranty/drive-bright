@@ -284,7 +284,7 @@ const Protected = () => {
           </div>
           
           <p className="text-lg text-gray-900 font-semibold mt-8">
-            If something goes wrong, we look for reasons to say yes!
+            If something goes wrong, <span className="text-brand-orange">we look for reasons to say yes!</span>
           </p>
           
           {/* Trustpilot Section */}
