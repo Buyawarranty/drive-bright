@@ -728,9 +728,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return addOnPrice - oneTimeAddOnPrice;
   }, [addOnPrice, oneTimeAddOnPrice]);
   
-  // Calculate boost addon cost (£7/month for 12 months = £84)
+  // Calculate boost addon cost (£5/month for 12 months = £60)
   const boostAddonCost = useMemo(() => {
-    return boostAddon ? 84 : 0;
+    return boostAddon ? 60 : 0;
   }, [boostAddon]);
 
   // Memoized total price calculation - should be base price + add-ons + boost for consistency
@@ -903,8 +903,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
         discountedBasePrice = adjustedBasePrice - 200; // £200 discount for 3-year plans
       }
       
-      // Calculate boost addon cost (£7/month for 12 months = £84)
-      const boostCost = boostAddon ? 84 : 0;
+      // Calculate boost addon cost (£5/month for 12 months = £60)
+      const boostCost = boostAddon ? 60 : 0;
       
       // Calculate labour rate display adjustment (annual)
       let labourRateAdjust = 0;
