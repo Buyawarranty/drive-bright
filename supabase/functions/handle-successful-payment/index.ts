@@ -454,6 +454,8 @@ serve(async (req) => {
         seasonal_bonus_months: seasonalBonusMonths, // Store seasonal bonus
         bumper_order_id: metadata?.bumper_order_id, // Store Bumper order ID if present
         stripe_session_id: stripeSessionId,
+        // Store payment amount from final_amount in metadata or customerData
+        payment_amount: parseFloat(metadata?.final_amount) || customerData?.final_amount || null,
         // Include final combined add-ons in policy record
         ...finalAddOnsData
       };
