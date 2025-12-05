@@ -579,7 +579,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <strong>End Date:</strong> ${formatDate(policyEndDate)}
               </li>
               <li style="margin-bottom: 8px; color: #333;">
-                <strong>Labour Rate:</strong> £${customerDetails?.labour_rate || 70}/hour
+                <strong>Labour Rate:</strong> £${customerDetails?.labour_rate || 50}/hour
               </li>
               <li style="margin-bottom: 8px; color: #333;">
                 <strong>Payment Method:</strong> ${paymentMethod}
