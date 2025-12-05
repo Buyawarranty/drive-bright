@@ -1917,7 +1917,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           )}
           
           <p className="text-lg font-medium text-foreground mb-4">
-            Choose how much we'll pay for each repair
+            Set your repair limit per claim, with total cover up to your vehicle's full value
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
