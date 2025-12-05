@@ -139,7 +139,7 @@ const ForgotPassword: React.FC = () => {
               </div>
               
               <div className="text-center text-sm text-muted-foreground">
-                <p>Need help? Contact us at <a href="mailto:info@buyawarranty.co.uk" className="text-primary hover:underline">info@buyawarranty.co.uk</a></p>
+                <p>Need help? Contact us at <a href="mailto:support@buyawarranty.co.uk" className="text-primary hover:underline">support@buyawarranty.co.uk</a></p>
               </div>
             </CardContent>
           </Card>
