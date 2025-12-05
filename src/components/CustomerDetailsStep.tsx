@@ -1643,7 +1643,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                 Only 12 payments
                               </div>
                               <div className="text-sm font-bold text-gray-600">
-                                £{Math.round(discountedBumperPrice)} total
+                                £{Math.round(discountedBumperPrice / 12) * 12} total
                               </div>
                             </div>
                           </div>
