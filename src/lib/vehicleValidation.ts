@@ -261,9 +261,9 @@ function getVehicleCategory(vehicleData: VehicleData): string {
     return 'motorbike';
   }
   
-  // Check for Range Rover (highest price adjustment)
-  if (make === 'land rover' && model.includes('range rover')) {
-    console.log('🚗 Detected: Range Rover');
+  // Check for Range Rover and Jaguar (highest price adjustment)
+  if ((make === 'land rover' && model.includes('range rover')) || make === 'jaguar') {
+    console.log('🚗 Detected: Range Rover / Jaguar');
     return 'range_rover';
   }
   
