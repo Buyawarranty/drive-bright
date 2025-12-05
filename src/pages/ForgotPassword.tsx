@@ -75,24 +75,11 @@ const ForgotPassword: React.FC = () => {
                     </AlertDescription>
                   </Alert>
                   
-                  <div className="space-y-2">
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => {
-                        setSent(false);
-                        setEmail('');
-                      }}
-                    >
-                      Send to Different Email
+                  <Link to="/customer-dashboard" className="block">
+                    <Button className="w-full">
+                      Go to Login
                     </Button>
-                    
-                    <Link to="/customer-dashboard" className="block">
-                      <Button className="w-full">
-                        Go to Login
-                      </Button>
-                    </Link>
-                  </div>
+                  </Link>
                 </div>
               ) : (
                 <form onSubmit={handleResendCredentials} className="space-y-4">
