@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Copy, Check, ChevronUp, Sparkles } from 'lucide-react';
+import { Copy, Check, ChevronUp, Car } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface PromoBannerProps {
@@ -26,14 +26,14 @@ export const MinimizedPromoPill: React.FC<{ onExpand: () => void }> = ({ onExpan
         }
       `}</style>
       <div 
-        className="bg-[#1E9E5C] text-white px-3 py-1.5 rounded-full text-xs font-semibold flex items-center justify-center gap-1.5 shadow-lg hover:scale-105 transition-transform border border-white/30 w-full"
+        className="bg-[#1E9E5C] text-white px-3 py-1.5 rounded-full text-xs font-semibold flex items-center justify-center gap-1.5 shadow-lg hover:scale-105 transition-transform border border-white/30 w-full whitespace-nowrap"
         style={{
           animation: 'promoPulse 2s ease-in-out infinite',
         }}
       >
-        <Sparkles className="w-3 h-3" />
+        <Car className="w-3 h-3 flex-shrink-0" />
         <span>{discountPercent}% OFF</span>
-        <ChevronUp className="w-3 h-3" />
+        <ChevronUp className="w-3 h-3 flex-shrink-0" />
       </div>
     </div>
   );
@@ -139,7 +139,7 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({ onApplyDiscount }) => 
         </div>
 
         <div className="flex items-center justify-center gap-2 sm:gap-4 flex-wrap relative">
-          <Sparkles className="w-4 h-4 text-[#1E9E5C] animate-pulse hidden sm:block" />
+          <Car className="w-4 h-4 text-[#1E9E5C] animate-pulse hidden sm:block" />
           
           <span className="text-black font-bold text-xs sm:text-sm uppercase tracking-wide">
             Limited time only
