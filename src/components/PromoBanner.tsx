@@ -169,7 +169,7 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({ onApplyDiscount }) => 
           {/* Single Minimize/Close button */}
           <button
             onClick={handleMinimize}
-            className="text-black/70 hover:text-black transition-colors p-1 focus:outline-none focus:ring-2 focus:ring-green-500 rounded sm:border sm:border-[#6B7280]/30 sm:bg-white/20"
+            className="text-[#1E9E5C] hover:text-[#166B3E] transition-colors p-1 focus:outline-none focus:ring-2 focus:ring-green-500 rounded sm:border sm:border-[#6B7280]/30 sm:bg-white/20"
             aria-label="Minimize banner"
           >
             <ChevronUp className="w-7 h-7 sm:w-4 sm:h-4 stroke-[3] sm:stroke-2" />
