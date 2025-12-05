@@ -1289,11 +1289,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
             
             {/* See full coverage button - matches homepage style */}
             <CollapsibleTrigger asChild>
-              <button className="w-full flex justify-center items-center py-1 group cursor-pointer">
-                <div className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-full px-5 py-2.5 shadow-md transition-colors">
-                  <Info className="w-4 h-4 text-white" />
-                  <span className="text-sm font-medium text-white whitespace-nowrap">Parts & components list</span>
-                  <ChevronDown className="w-4 h-4 text-white transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+              <button className="w-full flex justify-center items-center py-2 group cursor-pointer">
+                <div className="inline-flex items-center gap-3 bg-green-600 hover:bg-green-700 rounded-lg px-7 py-4 shadow-md transition-colors">
+                  <Info className="w-5 h-5 text-white" />
+                  <span className="text-lg font-medium text-white whitespace-nowrap">Parts & components list</span>
+                  <ChevronDown className="w-5 h-5 text-white transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
                 </div>
               </button>
             </CollapsibleTrigger>
