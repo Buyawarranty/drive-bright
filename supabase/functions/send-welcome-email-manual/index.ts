@@ -508,23 +508,22 @@ const handler = async (req: Request): Promise<Response> => {
     // Define login URL for customer portal
     const loginUrl = 'https://buyawarranty.co.uk/auth';
 
-    // Registration plate styling - optimized for both light and dark modes
+    // Registration plate styling - UK-style yellow background with black text
     const regPlate = customerDetails?.registration_plate || 'N/A';
     const regPlateStyle = `
       display: inline-block;
-      background: #1a1a1a;
-      color: #ffffff;
+      background: #FFD700;
+      color: #000000;
       font-family: 'Charles Wright', monospace;
       font-weight: bold;
       font-size: 18px;
-      padding: 8px 12px;
-      border: 2px solid #1a1a1a;
+      padding: 8px 16px;
+      border: 2px solid #000000;
       border-radius: 4px;
       letter-spacing: 2px;
       text-align: center;
       min-width: 120px;
       text-shadow: none;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     `;
 
     // Format dates for display
@@ -577,9 +576,6 @@ const handler = async (req: Request): Promise<Response> => {
               </li>
               <li style="margin-bottom: 8px; color: #333;">
                 <strong>End Date:</strong> ${formatDate(policyEndDate)}
-              </li>
-              <li style="margin-bottom: 8px; color: #333;">
-                <strong>Labour Rate:</strong> £${customerDetails?.labour_rate || 50}/hour
               </li>
               <li style="margin-bottom: 8px; color: #333;">
                 <strong>Payment Method:</strong> ${paymentMethod}
