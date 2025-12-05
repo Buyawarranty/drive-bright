@@ -55,6 +55,13 @@ const RecoveryFallback: React.FC<{
   const [isAttemptingRecovery, setIsAttemptingRecovery] = useState(false);
   const [recoveryFailed, setRecoveryFailed] = useState(false);
 
+  // Scroll to top when recovery fails
+  useEffect(() => {
+    if (recoveryFailed) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [recoveryFailed]);
+
   useEffect(() => {
     // Attempt automatic recovery once
     const attemptRecovery = () => {
@@ -101,11 +108,6 @@ const RecoveryFallback: React.FC<{
   }
 
   if (recoveryFailed) {
-    // Scroll to top so user can see the error message
-    useEffect(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, []);
-    
     return (
       <div className="w-full px-4 py-8">
         <div className="max-w-4xl mx-auto text-center space-y-6">
