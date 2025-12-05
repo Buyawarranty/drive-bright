@@ -2594,8 +2594,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
       {/* Bottom padding for sticky bar */}
       <div className="pb-32 md:pb-24"></div>
 
-      {/* Sticky Total Bar */}
-      {!plansLoading && !plansError && !vehicleAgeError && displayPlans.length > 0 && paymentType && (
+      {/* Sticky Total Bar - Always show when plans loaded */}
+      {!plansLoading && displayPlans.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 bg-gray-50 border-t-2 border-orange-200 shadow-lg z-50">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between p-4 max-w-6xl mx-auto gap-4">
             
