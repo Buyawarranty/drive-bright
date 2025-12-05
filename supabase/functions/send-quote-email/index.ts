@@ -63,13 +63,13 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
     <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 0; background-color: #f5f5f5;">
       <div style="background-color: #ffffff; margin: 20px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
         
-        <!-- Header - Lighter grey (50% lighter) -->
-        <div style="background: #9ca3af; padding: 30px; text-align: center;">
+        <!-- Header - Light yellow/cream -->
+        <div style="background: #FFF8E7; padding: 30px; text-align: center;">
           <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" alt="Buy A Warranty" style="width: 180px; height: auto; margin-bottom: 15px;" />
-          <h1 style="color: #ffffff; font-size: 22px; font-weight: bold; margin: 0 0 8px 0;">
+          <h1 style="color: #000000; font-size: 22px; font-weight: bold; margin: 0 0 8px 0;">
             Your Vehicle Warranty Quote is Ready
           </h1>
-          <p style="color: #ffffff; font-size: 16px; margin: 0;">
+          <p style="color: #000000; font-size: 16px; margin: 0;">
             Lock in Your Price Today
           </p>
         </div>
