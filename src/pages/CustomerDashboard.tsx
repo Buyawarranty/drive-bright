@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, FileText, User, Mail, Lock, MapPin, CreditCard, Eye, EyeOff, Phone, MessageSquare, Download, AlertCircle, CheckCircle, X } from 'lucide-react';
+import { Calendar, FileText, User, Mail, Lock, MapPin, CreditCard, Eye, EyeOff, Phone, MessageSquare, Download, AlertCircle, CheckCircle, X, ArrowLeft } from 'lucide-react';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { getWarrantyDurationDisplay, getPaymentTypeDisplay } from '@/lib/warrantyUtils';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -882,9 +882,17 @@ const CustomerDashboard = () => {
         </div>
 
         <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Button
+            variant="ghost"
+            onClick={() => window.location.href = '/'}
+            className="mb-4 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to homepage
+          </Button>
           <Card>
             <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+              <CardTitle className="text-2xl font-bold">Welcome</CardTitle>
               <CardDescription>
                 Sign in to your customer dashboard to view your warranty details
               </CardDescription>
