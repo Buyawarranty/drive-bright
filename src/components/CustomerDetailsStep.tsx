@@ -128,6 +128,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   }>>([]);
   const [promoCodeInput, setPromoCodeInput] = useState<string>('');
   const [promoCodeError, setPromoCodeError] = useState<string>('');
+  const [isValidatingPromoCode, setIsValidatingPromoCode] = useState(false);
   const [showEmailPopup, setShowEmailPopup] = useState(false);
   const { user } = useAuth();
   
@@ -469,6 +470,11 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   };
 
   const applyPromoCode = async () => {
+    // Prevent double-clicks
+    if (isValidatingPromoCode) {
+      return;
+    }
+    
     if (!promoCodeInput.trim()) {
       setPromoCodeError('Please enter a promo code');
       return;
@@ -480,6 +486,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
       return;
     }
 
+    setIsValidatingPromoCode(true);
+    
     try {
       const { data, error } = await supabase.functions.invoke('validate-discount-code', {
         body: { 
@@ -515,6 +523,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
     } catch (error) {
       console.error('Error validating promo code:', error);
       setPromoCodeError('Unable to validate promo code. Please try again.');
+    } finally {
+      setIsValidatingPromoCode(false);
     }
   };
 
@@ -1436,12 +1446,13 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               setPromoCodeError('');
                             }}
                             className="flex-1"
+                            disabled={isValidatingPromoCode}
                           />
                           <Button
                             onClick={applyPromoCode}
                             variant="outline"
                             size="sm"
-                            disabled={!promoCodeInput.trim()}
+                            disabled={!promoCodeInput.trim() || isValidatingPromoCode}
                           >
                             Apply
                           </Button>
