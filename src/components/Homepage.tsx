@@ -532,7 +532,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             </div>
 
  {/* Right Content - Hero Image */}
-            <div className="relative">
+            <div className="relative flex flex-col">
               <OptimizedImage 
                 src="/extended_warranty_uk-car-trustworthy-reviews.png" 
                 alt="Extended warranty UK - Car trustworthy reviews - Panda mascot with vehicle collection" 
@@ -559,31 +559,73 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   />
                 </a>
               </div>
+              
+              {/* Vehicle Types positioned directly below the image on desktop */}
+              <div className="hidden lg:block w-full mt-4">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="flex items-center justify-center gap-4 lg:gap-6 flex-wrap">
+                    <div className="flex items-center space-x-1.5">
+                      <Car className="w-5 h-5 text-green-500 flex-shrink-0" />
+                      <span className="font-medium text-gray-700 text-base">Cars</span>
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <Truck className="w-5 h-5 text-green-500 flex-shrink-0" />
+                      <span className="font-medium text-gray-700 text-base">Vans</span>
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <Zap className="w-5 h-5 text-green-500 flex-shrink-0" />
+                      <span className="font-medium text-gray-700 text-base">Hybrid</span>
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <Battery className="w-5 h-5 text-green-500 flex-shrink-0" />
+                      <span className="font-medium text-gray-700 text-base">EV</span>
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <Bike className="w-5 h-5 text-green-500 flex-shrink-0" />
+                      <span className="font-medium text-gray-700 text-base">Motorbikes</span>
+                    </div>
+                  </div>
+                  
+                  {/* Instant Activation Badge */}
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="inline-flex items-center gap-2 bg-green-50 border border-green-300 rounded-md px-3.5 py-2 cursor-pointer">
+                          <span className="text-sm font-semibold text-green-700">⚡ Instant cover</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>⚡ Cover starts immediately after purchase</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </div>
             </div>
             
-            {/* Vehicle Types positioned below the image */}
-            <div className="w-full px-4 mt-4 sm:mt-6 lg:col-span-2">
+            {/* Vehicle Types for mobile/tablet - spans full width */}
+            <div className="lg:hidden w-full px-4 mt-4 sm:mt-6 lg:col-span-2">
               <div className="flex flex-col items-center gap-4 sm:gap-6">
-                <div className="flex items-center justify-center gap-3 sm:gap-4 lg:gap-6 flex-wrap max-w-full">
+                <div className="flex items-center justify-center gap-3 sm:gap-4 flex-wrap max-w-full">
                   <div className="flex items-center space-x-1.5 min-w-0">
                     <Car className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                    <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base whitespace-nowrap">Cars</span>
+                    <span className="font-medium text-gray-700 text-xs sm:text-sm whitespace-nowrap">Cars</span>
                   </div>
                   <div className="flex items-center space-x-1.5 min-w-0">
                     <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                    <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base whitespace-nowrap">Vans</span>
+                    <span className="font-medium text-gray-700 text-xs sm:text-sm whitespace-nowrap">Vans</span>
                   </div>
                   <div className="flex items-center space-x-1.5 min-w-0">
                     <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                    <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base whitespace-nowrap">Hybrid</span>
+                    <span className="font-medium text-gray-700 text-xs sm:text-sm whitespace-nowrap">Hybrid</span>
                   </div>
                   <div className="flex items-center space-x-1.5 min-w-0">
                     <Battery className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                    <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base whitespace-nowrap">EV</span>
+                    <span className="font-medium text-gray-700 text-xs sm:text-sm whitespace-nowrap">EV</span>
                   </div>
                   <div className="flex items-center space-x-1.5 min-w-0">
                     <Bike className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                    <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base whitespace-nowrap">Motorbikes</span>
+                    <span className="font-medium text-gray-700 text-xs sm:text-sm whitespace-nowrap">Motorbikes</span>
                   </div>
                 </div>
                 
