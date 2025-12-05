@@ -123,7 +123,7 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({ onApplyDiscount }) => 
   return (
     <div 
       ref={bannerRef}
-      className="sticky top-0 z-[100] w-full bg-[#FFA94D] text-black overflow-hidden"
+      className="sticky top-0 z-[100] w-full bg-[#FFF5EB] text-black overflow-hidden"
       role="banner"
       aria-label="Promotional offer"
     >
@@ -197,7 +197,7 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({ onApplyDiscount }) => 
       {/* Expandable Details Panel */}
       <div 
         id="promo-details"
-        className={`bg-[#FF9933] border-t border-white/30 overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-40 py-3' : 'max-h-0 py-0'}`}
+        className={`bg-[#FFEEDD] border-t border-orange-200 overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-40 py-3' : 'max-h-0 py-0'}`}
         aria-hidden={!isExpanded}
       >
         <div className="px-4 text-center space-y-2">
