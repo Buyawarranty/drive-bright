@@ -188,10 +188,6 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({ onApplyDiscount }) => 
             <ChevronUp className="w-7 h-7 sm:w-4 sm:h-4 stroke-[3] sm:stroke-2" />
           </button>
         </div>
-        
-        <p className="text-center text-black/80 text-[10px] mt-1 sm:hidden font-medium">
-          Ends soon — Don't miss out!
-        </p>
       </div>
       
       {/* Expandable Details Panel */}
@@ -215,9 +211,6 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({ onApplyDiscount }) => 
             >
               T&Cs apply
             </a>
-          </p>
-          <p className="text-black font-medium text-[10px] animate-pulse">
-            ⏰ Ends soon — Don't miss out!
           </p>
         </div>
       </div>
