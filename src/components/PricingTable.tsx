@@ -1289,7 +1289,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             
             {/* See full coverage button - matches homepage style */}
             <CollapsibleTrigger asChild>
-              <button className="w-full flex justify-center items-center py-2 group cursor-pointer">
+              <button className="w-full flex justify-center items-center py-2 mb-6 group cursor-pointer">
                 <div className="inline-flex items-center gap-3 bg-green-600 hover:bg-green-700 rounded-lg px-7 py-4 shadow-md transition-colors">
                   <Info className="w-5 h-5 text-white" />
                   <span className="text-lg font-medium text-white whitespace-nowrap">Parts & components list</span>
@@ -1299,7 +1299,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </CollapsibleTrigger>
             
             <CollapsibleContent>
-              <div className="space-y-6">
+              <div className="space-y-6 pt-2">
             <Collapsible>
               <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-black text-white hover:bg-gray-800 font-semibold py-4 px-6 rounded-lg transition-colors group">
                 <div className="flex items-center gap-3">
