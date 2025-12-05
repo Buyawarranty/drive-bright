@@ -889,7 +889,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       
       // Calculate add-on prices using centralized utility
       const totalAddOnPrice = calculateAddOnPrice(selectedProtectionAddOns, paymentType, durationMonths);
-      const oneTimeAddonTotal = selectedProtectionAddOns.transfer && !getAutoIncludedAddOns(paymentType).includes('transfer') ? 19 : 0;
+      const oneTimeAddonTotal = selectedProtectionAddOns.transfer && !getAutoIncludedAddOns(paymentType).includes('transfer') ? 19.99 : 0;
       const recurringAddonTotal = totalAddOnPrice - oneTimeAddonTotal;
       
       // Calculate total price for selected duration with vehicle adjustments applied
@@ -917,7 +917,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       }
       // £50/hr is the default with no adjustment
       
-      const totalPrice = Math.round(discountedBasePrice + recurringAddonTotal + oneTimeAddonTotal + boostCost + labourRateAdjust);
+      const totalPrice = discountedBasePrice + recurringAddonTotal + oneTimeAddonTotal + boostCost + labourRateAdjust;
       
       // Don't allow progression if vehicle is too old
       if (vehicleAgeError) {
@@ -2594,8 +2594,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
       {/* Bottom padding for sticky bar */}
       <div className="pb-32 md:pb-24"></div>
 
-      {/* Sticky Total Bar - Always show when plans loaded */}
-      {!plansLoading && displayPlans.length > 0 && (
+      {/* Sticky Total Bar */}
+      {!plansLoading && !plansError && !vehicleAgeError && displayPlans.length > 0 && paymentType && (
         <div className="fixed bottom-0 left-0 right-0 bg-gray-50 border-t-2 border-orange-200 shadow-lg z-50">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between p-4 max-w-6xl mx-auto gap-4">
             

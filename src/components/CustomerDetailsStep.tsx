@@ -1236,7 +1236,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             <div className="text-right">
                               <span className="font-bold text-black text-sm sm:text-base">£{Math.round(discountedBumperPrice / 12)}/month</span>
                               <span className="block text-xs text-orange-600 font-medium">12 interest-free payments</span>
-                              <span className="block text-xs text-gray-600 font-medium">Total: £{discountedBumperPrice}</span>
+                              <span className="block text-xs text-gray-600 font-medium">Total: £{Math.round(discountedBumperPrice / 12) * 12}</span>
                             </div>
                           </div>
                         </div>
