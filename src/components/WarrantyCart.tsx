@@ -79,8 +79,13 @@ const WarrantyCart: React.FC<WarrantyCartProps> = ({ onAddMore, onProceedToCheck
     // Prevent multiple rapid clicks
     if (validatingDiscount) return;
     
+    // Prevent applying another code if one is already valid
+    if (discountValidation?.valid) {
+      toast.error('A discount code is already applied. Remove it first to apply a different code.');
+      return;
+    }
+    
     setValidatingDiscount(true);
-    setDiscountValidation(null); // Clear previous validation state
     
     try {
       const { data, error } = await supabase.functions.invoke('validate-discount-code', {
@@ -125,6 +130,12 @@ const WarrantyCart: React.FC<WarrantyCartProps> = ({ onAddMore, onProceedToCheck
     } finally {
       setValidatingDiscount(false);
     }
+  };
+  
+  const handleRemoveDiscount = () => {
+    setDiscountValidation(null);
+    setDiscountCode('');
+    toast.success('Discount code removed');
   };
 
   return (
@@ -395,19 +406,21 @@ const WarrantyCart: React.FC<WarrantyCartProps> = ({ onAddMore, onProceedToCheck
                       placeholder="Enter discount code"
                       value={discountCode}
                       onChange={(e) => {
+                        // Don't allow changes when a valid discount is applied
+                        if (discountValidation?.valid) return;
                         setDiscountCode(e.target.value);
-                        // Clear validation when code changes
-                        if (discountValidation) {
+                        // Clear invalid validation when code changes
+                        if (discountValidation && !discountValidation.valid) {
                           setDiscountValidation(null);
                         }
                       }}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter' && discountCode.trim() && !validatingDiscount) {
+                        if (e.key === 'Enter' && discountCode.trim() && !validatingDiscount && !discountValidation?.valid) {
                           handleValidateDiscount();
                         }
                       }}
                       className="flex-1"
-                      disabled={discountValidation?.valid}
+                      disabled={validatingDiscount || discountValidation?.valid}
                     />
                     <Button 
                       type="button" 
@@ -438,10 +451,7 @@ const WarrantyCart: React.FC<WarrantyCartProps> = ({ onAddMore, onProceedToCheck
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => {
-                              setDiscountValidation(null);
-                              setDiscountCode('');
-                            }}
+                            onClick={handleRemoveDiscount}
                             className="text-xs h-auto py-1 px-2"
                           >
                             Remove
