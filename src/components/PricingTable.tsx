@@ -74,7 +74,8 @@ interface PricingTableProps {
     selectedAddOns: {[addon: string]: boolean}, 
     protectionAddOns?: {[key: string]: boolean},
     claimLimit?: number,
-    labourRate?: number, // Add labour rate to interface
+    labourRate?: number,
+    boostAddon?: boolean,
     installmentBreakdown?: {
       firstInstallment: number,
       standardInstallment: number,
@@ -89,6 +90,7 @@ interface PricingTableProps {
   previousSelectedAddOns?: {[addon: string]: boolean};
   previousProtectionAddOns?: {[key: string]: boolean};
   previousLabourRate?: number;
+  previousBoostAddon?: boolean;
 }
 
 const PricingTable: React.FC<PricingTableProps> = ({ 
@@ -100,7 +102,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
   previousClaimLimit,
   previousSelectedAddOns,
   previousProtectionAddOns,
-  previousLabourRate
+  previousLabourRate,
+  previousBoostAddon
 }) => {
 
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -112,7 +115,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const [selectedAddOns, setSelectedAddOns] = useState<{[planId: string]: {[addon: string]: boolean}}>(
     previousSelectedAddOns ? { 'platinum': previousSelectedAddOns } : {}
   );
-  const [boostAddon, setBoostAddon] = useState(false);
+  const [boostAddon, setBoostAddon] = useState(previousBoostAddon || false);
   const [loading, setLoading] = useState<{[key: string]: boolean}>({});
   const [plansLoading, setPlansLoading] = useState(true);
   const [plansError, setPlansError] = useState<string | null>(null);
@@ -976,7 +979,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
           selectedAddOns: selectedAddOns[selectedPlan.id] || {},
           protectionAddOns: selectedProtectionAddOns,
           claimLimit: effectiveClaimLimit,
-          labourRate: selectedLabourRate // Add labour rate to pricing data
+          labourRate: selectedLabourRate,
+          boostAddon: boostAddon
         }
       );
       
