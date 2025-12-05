@@ -31,6 +31,7 @@ import { CustomerTagsDisplay } from './CustomerTagsDisplay';
 import { InlineCustomerTags } from './InlineCustomerTags';
 import { BulkEmailDialog } from './BulkEmailDialog';
 import { BulkTagDialog } from './BulkTagDialog';
+import { CancelWarrantyDialog } from './CancelWarrantyDialog';
 import CoverageDetailsDisplay from '@/components/CoverageDetailsDisplay';
 import AddOnProtectionDisplay from '@/components/AddOnProtectionDisplay';
 import { W2KAuditLog } from './W2KAuditLog';
@@ -166,6 +167,9 @@ interface Customer {
     warranties_2000_status?: string;
     warranties_2000_sent_at?: string;
     created_at?: string;
+    user_id?: string;
+    customer_id?: string;
+    email?: string;
   }>;
 }
 
@@ -280,6 +284,17 @@ export const CustomersTab = () => {
   const [credentialsLoading, setCredentialsLoading] = useState(false);
   const [sendingCredentials, setSendingCredentials] = useState(false);
   const [credentialsExpanded, setCredentialsExpanded] = useState(false);
+  const [cancelWarrantyDialog, setCancelWarrantyDialog] = useState<{
+    isOpen: boolean;
+    policy: {
+      id: string;
+      email: string;
+      policy_number?: string;
+      user_id?: string;
+      customer_id?: string;
+    } | null;
+    customerName?: string;
+  }>({ isOpen: false, policy: null });
 
   useEffect(() => {
     fetchCustomers();
@@ -531,7 +546,10 @@ export const CustomersTab = () => {
             claim_limit,
             mot_repair,
             lost_key,
-            consequential
+            consequential,
+            user_id,
+            customer_id,
+            email
           ),
           admin_users!assigned_to(
             id,
@@ -799,7 +817,10 @@ export const CustomersTab = () => {
             claim_limit,
             mot_repair,
             lost_key,
-            consequential
+            consequential,
+            user_id,
+            customer_id,
+            email
           ),
           admin_users!deleted_by(
             id,
@@ -3107,23 +3128,18 @@ Please log in and change your password after first login.`;
                                                   <Button
                                                     variant="destructive"
                                                     size="sm"
-                                                    onClick={async () => {
-                                                      if (!confirm('Are you sure you want to cancel this warranty? This action will mark it as inactive for the customer.')) return;
-                                                      
-                                                      try {
-                                                        const { error } = await supabase
-                                                          .from('customer_policies')
-                                                          .update({ status: 'cancelled' })
-                                                          .eq('id', policy.id);
-
-                                                        if (error) throw error;
-
-                                                        toast.success('Warranty cancelled successfully');
-                                                        fetchCustomers(); // Refresh data
-                                                      } catch (error) {
-                                                        console.error('Error cancelling warranty:', error);
-                                                        toast.error('Failed to cancel warranty');
-                                                      }
+                                                    onClick={() => {
+                                                      setCancelWarrantyDialog({
+                                                        isOpen: true,
+                                                        policy: {
+                                                          id: policy.id,
+                                                          email: policy.email,
+                                                          policy_number: policy.policy_number,
+                                                          user_id: policy.user_id,
+                                                          customer_id: policy.customer_id
+                                                        },
+                                                        customerName: editingCustomer?.name
+                                                      });
                                                     }}
                                                   >
                                                     Cancel Warranty
@@ -4101,6 +4117,15 @@ The Buy A Warranty Team
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Cancel Warranty Dialog */}
+      <CancelWarrantyDialog
+        isOpen={cancelWarrantyDialog.isOpen}
+        onClose={() => setCancelWarrantyDialog({ isOpen: false, policy: null })}
+        policy={cancelWarrantyDialog.policy || { id: '', email: '' }}
+        customerName={cancelWarrantyDialog.customerName}
+        onSuccess={fetchCustomers}
+      />
     </div>
   );
 };
