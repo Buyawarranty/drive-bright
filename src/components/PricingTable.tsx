@@ -340,8 +340,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
     if (vehicleMileage >= 140000) {
       console.log('⚠️ Vehicle 140,000+ miles - limiting to 1-year only');
       mileageBasedDurations = ['12months'];
-    } else if (vehicleMileage >= 121000) {
-      console.log('⚠️ Vehicle 121,000-139,999 miles - limiting to 1-2 years');
+    } else if (vehicleMileage > 120000) {
+      console.log('⚠️ Vehicle 120,001-139,999 miles - limiting to 1-2 years');
       mileageBasedDurations = ['12months', '24months'];
     }
     
@@ -2083,7 +2083,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </Alert>
           )}
           
-          {vehicleMileage >= 121000 && vehicleMileage < 140000 && vehicleAge < 14 && (
+          {vehicleMileage > 120000 && vehicleMileage < 140000 && vehicleAge < 14 && (
             <Alert className="mb-6 border-orange-200 bg-orange-50">
               <Info className="h-4 w-4 text-orange-600" />
               <AlertDescription className="text-orange-800">
