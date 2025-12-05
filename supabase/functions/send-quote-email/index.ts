@@ -49,6 +49,9 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
   const customerName = firstName || 'there';
   const vehicleDisplay = `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() || 'your vehicle';
   
+  // SVG checkmark icon as inline data URI for email compatibility
+  const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 10px;"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+  
   return `
     <!DOCTYPE html>
     <html>
@@ -60,12 +63,15 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
     <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 0; background-color: #f5f5f5;">
       <div style="background-color: #ffffff; margin: 20px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
         
-        <!-- Header with Logo -->
-        <div style="background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); padding: 30px; text-align: center;">
+        <!-- Header -->
+        <div style="background: #4b5563; padding: 30px; text-align: center;">
           <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" alt="Buy A Warranty" style="width: 180px; height: auto; margin-bottom: 15px;" />
-          <h1 style="color: #ffffff; font-size: 24px; font-weight: bold; margin: 0;">
-            Your ${vehicleDisplay} Warranty Quote is Ready
+          <h1 style="color: #ffffff; font-size: 22px; font-weight: bold; margin: 0 0 8px 0;">
+            Your Vehicle Warranty Quote is Ready
           </h1>
+          <p style="color: #e5e7eb; font-size: 16px; margin: 0;">
+            Lock in Your Price Today
+          </p>
         </div>
         
         <!-- Main Content -->
@@ -75,33 +81,47 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
           </p>
           
           <p style="font-size: 16px; color: #333; margin-bottom: 25px;">
-            You requested a warranty quote for your <strong>${vehicleDisplay}</strong> (${vehicleData.regNumber}) – and we've saved it for you.
+            You requested a warranty quote for your <strong>${vehicleDisplay}</strong> (${vehicleData.regNumber}), and we've saved it for you.
           </p>
           
           <!-- Benefits List -->
           <div style="background: #f0fdf4; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
-            <p style="font-size: 16px; color: #166534; margin: 0 0 12px 0; display: flex; align-items: center;">
-              ✅ <span style="margin-left: 10px;">Comprehensive cover for peace of mind</span>
-            </p>
-            <p style="font-size: 16px; color: #166534; margin: 0 0 12px 0; display: flex; align-items: center;">
-              ✅ <span style="margin-left: 10px;">UK-based support & easy claims</span>
-            </p>
-            <p style="font-size: 16px; color: #166534; margin: 0 0 12px 0; display: flex; align-items: center;">
-              ✅ <span style="margin-left: 10px;">Cancel within 14 days for a full refund</span>
-            </p>
-            <p style="font-size: 16px; color: #166534; margin: 0; display: flex; align-items: center;">
-              ✅ <span style="margin-left: 10px;">Instant protection when you activate</span>
-            </p>
+            <table cellpadding="0" cellspacing="0" border="0" width="100%">
+              <tr>
+                <td style="padding: 8px 0; font-size: 16px; color: #166534;">
+                  ${checkIcon}
+                  <span style="vertical-align: middle;">Comprehensive cover for peace of mind</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; font-size: 16px; color: #166534;">
+                  ${checkIcon}
+                  <span style="vertical-align: middle;">UK-based support & easy claims</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; font-size: 16px; color: #166534;">
+                  ${checkIcon}
+                  <span style="vertical-align: middle;">Cancel within 14 days for a full refund</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; font-size: 16px; color: #166534;">
+                  ${checkIcon}
+                  <span style="vertical-align: middle;">Instant protection when you activate</span>
+                </td>
+              </tr>
+            </table>
           </div>
           
           <p style="font-size: 18px; color: #1a1a1a; font-weight: 600; text-align: center; margin-bottom: 20px;">
-            Your personalised price is waiting – don't miss out.
+            Your personalised price is locked in for the next 24 hours – don't miss out.
           </p>
           
-          <!-- CTA Button -->
+          <!-- CTA Button - Orange -->
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${baseUrl}/?quoteId=${quoteId}" style="background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); color: #ffffff; padding: 18px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 20px; display: inline-block; box-shadow: 0 4px 14px rgba(22, 163, 74, 0.4);">
-              View My Quote Now →
+            <a href="${baseUrl}/?quoteId=${quoteId}" style="background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: #ffffff; padding: 18px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 18px; display: inline-block; box-shadow: 0 4px 14px rgba(234, 88, 12, 0.4);">
+              Secure My Warranty Now →
             </a>
           </div>
           
@@ -112,20 +132,17 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
           
           <!-- Trust Elements -->
           <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 20px;">
-            <!-- Trustpilot Badge -->
+            <!-- Trustpilot Logo -->
             <div style="text-align: center; margin-bottom: 20px;">
               <a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" target="_blank" style="text-decoration: none;">
-                <div style="display: inline-block; background: #00b67a; color: white; padding: 10px 20px; border-radius: 6px;">
-                  <span style="font-size: 18px;">★★★★★</span>
-                  <span style="font-size: 14px; margin-left: 8px;">Rated <strong>Excellent</strong> on Trustpilot</span>
-                </div>
+                <img src="https://buyawarranty.co.uk/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" alt="Trustpilot 5 stars" style="height: 40px; width: auto;" />
               </a>
             </div>
             
             <!-- Trust Points -->
             <div style="text-align: center; color: #666; font-size: 14px;">
-              <span style="margin: 0 10px;">🛡️ No hidden fees</span>
-              <span style="margin: 0 10px;">✓ 14-day money-back guarantee</span>
+              <span style="margin: 0 8px;">No hidden fees</span> | 
+              <span style="margin: 0 8px;">14-day money-back guarantee</span>
             </div>
           </div>
         </div>
@@ -136,13 +153,13 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
             <strong>The Buy A Warranty Team</strong>
           </p>
           <p style="font-size: 13px; color: #64748b; margin: 5px 0;">
-            📞 Customer Service & Sales: <a href="tel:03302295040" style="color: #ea580c; text-decoration: none;">0330 229 5040</a>
+            Customer Service & Sales: <a href="tel:03302295040" style="color: #ea580c; text-decoration: none;">0330 229 5040</a>
           </p>
           <p style="font-size: 13px; color: #64748b; margin: 5px 0;">
-            📞 Claims Line: <a href="tel:03302295045" style="color: #ea580c; text-decoration: none;">0330 229 5045</a>
+            Claims Line: <a href="tel:03302295045" style="color: #ea580c; text-decoration: none;">0330 229 5045</a>
           </p>
           <p style="font-size: 13px; color: #64748b; margin: 5px 0;">
-            🌐 <a href="https://www.buyawarranty.co.uk" style="color: #ea580c; text-decoration: none;">www.buyawarranty.co.uk</a> | 📧 <a href="mailto:info@buyawarranty.co.uk" style="color: #ea580c; text-decoration: none;">info@buyawarranty.co.uk</a>
+            <a href="https://www.buyawarranty.co.uk" style="color: #ea580c; text-decoration: none;">www.buyawarranty.co.uk</a> | <a href="mailto:info@buyawarranty.co.uk" style="color: #ea580c; text-decoration: none;">info@buyawarranty.co.uk</a>
           </p>
         </div>
       </div>
