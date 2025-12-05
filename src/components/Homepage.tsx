@@ -8,7 +8,7 @@ import WebsiteFooter from './WebsiteFooter';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { VoucherBanner } from './VoucherBanner';
 import { EmailCapturePopup } from './EmailCapturePopup';
-import { PromoBanner } from './PromoBanner';
+import { PromoBanner, MinimizedPromoPill, usePromoBannerState } from './PromoBanner';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import LazySection from './homepage/LazySection';
@@ -27,6 +27,15 @@ import { supabase } from '@/integrations/supabase/client';
 import MileageSlider from './MileageSlider';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
+
+// Wrapper component for minimized promo pill that uses the hook
+const MinimizedPromoPillWrapper: React.FC = () => {
+  const { isMinimized, expandBanner } = usePromoBannerState();
+  
+  if (!isMinimized) return null;
+  
+  return <MinimizedPromoPill onExpand={expandBanner} />;
+};
 
 interface VehicleData {
   regNumber: string;
@@ -544,8 +553,10 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 width={1200}
                 height={800}
               />
-              {/* Trustpilot Logo positioned to the right */}
-              <div className="absolute top-4 right-4 z-10">
+              {/* Minimized Promo Pill + Trustpilot Logo positioned to the right */}
+              <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
+                {/* Minimized promo pill appears above Trustpilot when banner is collapsed */}
+                <MinimizedPromoPillWrapper />
                 <a 
                   href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
                   target="_blank" 
