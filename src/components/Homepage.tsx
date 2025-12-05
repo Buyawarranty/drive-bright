@@ -8,6 +8,7 @@ import WebsiteFooter from './WebsiteFooter';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { VoucherBanner } from './VoucherBanner';
 import { EmailCapturePopup } from './EmailCapturePopup';
+import { PromoBanner } from './PromoBanner';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import LazySection from './homepage/LazySection';
@@ -350,6 +351,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
+      {/* Promo Banner - Sticky at top */}
+      <PromoBanner />
 
       {/* Voucher Banner for returning customers */}
       {showVoucherBanner && (
