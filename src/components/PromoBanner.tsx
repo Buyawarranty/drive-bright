@@ -116,9 +116,36 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({ onApplyDiscount }) => 
     (window as any).promoBannerMinimized = isMinimized;
   }, [isMinimized]);
 
-  // Don't render when minimized - the pill will be rendered elsewhere
+  // On mobile, don't render when minimized - the pill will be rendered elsewhere
+  // On desktop, show a compact minimized version at the top
   if (isMinimized) {
-    return null;
+    return (
+      <div 
+        className="hidden md:block sticky top-0 z-[100] w-full bg-[#F0FFF4] overflow-hidden cursor-pointer"
+        onClick={handleExpand}
+        role="button"
+        aria-label="Expand promo banner"
+      >
+        <div className="px-3 py-1.5 flex items-center justify-center gap-2">
+          <style>{`
+            @keyframes promoPulseDesktop {
+              0%, 100% { box-shadow: 0 0 0 0 rgba(30, 158, 92, 0.4); }
+              50% { box-shadow: 0 0 15px 3px rgba(30, 158, 92, 0.3); }
+            }
+          `}</style>
+          <div 
+            className="bg-[#1E9E5C] text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 border border-white/30"
+            style={{ animation: 'promoPulseDesktop 2s ease-in-out infinite' }}
+          >
+            <Car className="w-3 h-3" />
+            <span>{discountPercent}% OFF</span>
+            <span className="text-white/80">•</span>
+            <span className="font-normal">Use code {promoCode}</span>
+            <ChevronUp className="w-3 h-3 rotate-180" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
