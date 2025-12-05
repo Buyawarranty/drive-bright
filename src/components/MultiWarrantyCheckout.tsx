@@ -339,11 +339,11 @@ const MultiWarrantyCheckout: React.FC<MultiWarrantyCheckoutProps> = ({ items, on
       if (data.valid) {
         setDiscountValidation({
           valid: true,
-          message: `Discount applied! You save £${data.discountAmount.toFixed(2)}`,
+          message: `Discount applied! You save £${Math.floor(data.discountAmount)}`,
           discountAmount: data.discountAmount,
           finalAmount: data.finalAmount
         });
-        toast.success(`Discount applied! You save £${data.discountAmount.toFixed(2)}`);
+        toast.success(`Discount applied! You save £${Math.floor(data.discountAmount)}`);
       } else {
         setDiscountValidation({
           valid: false,
