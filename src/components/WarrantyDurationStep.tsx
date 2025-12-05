@@ -195,6 +195,8 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
     }
     
     const monthlyPrice = Math.round(discountedPrice / 12); // Always use 12 months for monthly calculation
+    // Ensure total matches monthly × 12 to avoid display inconsistency (e.g., £50/month showing £597 total)
+    const consistentTotal = monthlyPrice * 12;
     
     console.log('WarrantyDurationStep - Calculated pricing:', {
       paymentPeriod,
@@ -206,6 +208,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
       totalPrice,
       discountedPrice,
       monthlyPrice,
+      consistentTotal,
       selectedFromMatrix: `${voluntaryExcess}_${claimLimit}`,
       durationMonths,
       addOnBreakdown: {
@@ -214,8 +217,8 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
       }
     });
     
-    // Return discounted price as totalPrice, no originalPrice to avoid showing fake strikethrough
-    return { totalPrice: discountedPrice, monthlyPrice };
+    // Return consistent total (monthly × 12) to match displayed monthly price
+    return { totalPrice: consistentTotal, monthlyPrice };
   };
 
   // Memoize pricing calculations with stable dependencies to prevent fluctuations on re-render
