@@ -170,22 +170,22 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({ onApplyDiscount }) => 
           {/* Expand/Details button */}
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-black/70 hover:text-black text-xs flex items-center gap-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-white rounded px-1 border border-[#6B7280]/30 bg-white/20"
+            className="text-black/70 hover:text-black text-xs flex items-center gap-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 rounded px-1 sm:border sm:border-[#6B7280]/30 sm:bg-white/20"
             aria-expanded={isExpanded}
             aria-controls="promo-details"
             aria-label={isExpanded ? "Hide details" : "Show details"}
           >
             <span className="hidden sm:inline">Details</span>
-            {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            {isExpanded ? <ChevronUp className="w-7 h-7 sm:w-3.5 sm:h-3.5 stroke-[3] sm:stroke-2" /> : <ChevronDown className="w-7 h-7 sm:w-3.5 sm:h-3.5 stroke-[3] sm:stroke-2" />}
           </button>
           
           {/* Minimize button - uses ChevronUp */}
           <button
             onClick={handleMinimize}
-            className="text-black/70 hover:text-black transition-colors p-1 focus:outline-none focus:ring-2 focus:ring-white rounded border border-[#6B7280]/30 bg-white/20"
+            className="text-black/70 hover:text-black transition-colors p-1 focus:outline-none focus:ring-2 focus:ring-green-500 rounded sm:border sm:border-[#6B7280]/30 sm:bg-white/20"
             aria-label="Minimize banner"
           >
-            <ChevronUp className="w-4 h-4" />
+            <ChevronUp className="w-7 h-7 sm:w-4 sm:h-4 stroke-[3] sm:stroke-2" />
           </button>
         </div>
         
