@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Shield, AlertCircle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import { getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 
@@ -137,56 +137,49 @@ const AddOnProtectionDisplay: React.FC<AddOnProtectionDisplayProps> = ({
     return item.value || isAutoIncluded; // Show if purchased OR auto-included
   });
 
+  // Don't render anything if there are no add-ons
+  if (activeAddOns.length === 0) {
+    return null;
+  }
+
   return (
     <Card className={className}>
       <CardContent className="space-y-4 pt-6">
         {/* Add-On Protection Packages */}
-        {activeAddOns.length > 0 && (
-          <div className="space-y-3">
-            <h4 className="text-lg font-semibold text-green-700 flex items-center gap-2">
-              <CheckCircle className="h-4 w-4" />
-              Add-On Protection Packages
-            </h4>
-            <div className="grid grid-cols-1 gap-2">
-              {activeAddOns.map((item) => {
-                const mappedKey = keyMapping[item.key] || item.key;
-                const isAutoIncluded = autoIncludedAddOnKeys.includes(mappedKey);
-                const statusLabel = isAutoIncluded ? 'FREE' : 'PAID';
-                const statusColor = isAutoIncluded 
-                  ? 'bg-green-100 text-green-800 border-green-200' 
-                  : 'bg-blue-100 text-blue-800 border-blue-200';
-                
-                return (
-                  <div 
-                    key={item.key} 
-                    className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-md"
-                  >
-                    <div className="flex items-start gap-3 flex-1">
-                      <span className="text-lg">{item.icon}</span>
-                      <div className="flex-1">
-                        <div className="font-medium text-green-900">{item.label} - {durationText}</div>
-                        <div className="text-xs text-green-700 mt-1">{item.description}</div>
-                      </div>
+        <div className="space-y-3">
+          <h4 className="text-lg font-semibold text-green-700 flex items-center gap-2">
+            <CheckCircle className="h-4 w-4" />
+            Add-On Protection Packages
+          </h4>
+          <div className="grid grid-cols-1 gap-2">
+            {activeAddOns.map((item) => {
+              const mappedKey = keyMapping[item.key] || item.key;
+              const isAutoIncluded = autoIncludedAddOnKeys.includes(mappedKey);
+              const statusLabel = isAutoIncluded ? 'FREE' : 'PAID';
+              const statusColor = isAutoIncluded 
+                ? 'bg-green-100 text-green-800 border-green-200' 
+                : 'bg-blue-100 text-blue-800 border-blue-200';
+              
+              return (
+                <div 
+                  key={item.key} 
+                  className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-md"
+                >
+                  <div className="flex items-start gap-3 flex-1">
+                    <span className="text-lg">{item.icon}</span>
+                    <div className="flex-1">
+                      <div className="font-medium text-green-900">{item.label} - {durationText}</div>
+                      <div className="text-xs text-green-700 mt-1">{item.description}</div>
                     </div>
-                    <Badge className={`text-xs font-semibold ${statusColor} border`}>
-                      {statusLabel}
-                    </Badge>
                   </div>
-                );
-              })}
-            </div>
+                  <Badge className={`text-xs font-semibold ${statusColor} border`}>
+                    {statusLabel}
+                  </Badge>
+                </div>
+              );
+            })}
           </div>
-        )}
-
-
-        {/* No Add-Ons Message */}
-        {activeAddOns.length === 0 && (
-          <div className="text-center py-6 text-gray-500">
-            <Shield className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">No additional protection packages selected</p>
-            <p className="text-xs text-gray-400 mt-1">Only standard warranty coverage applies</p>
-          </div>
-        )}
+        </div>
       </CardContent>
     </Card>
   );
