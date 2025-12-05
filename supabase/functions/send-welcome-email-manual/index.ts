@@ -330,59 +330,77 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Check if user already exists and handle authentication
     console.log(JSON.stringify({ evt: "checking.user.existence", rid, customerEmail: customer.email }));
-    const { data: existingUsers } = await supabase.auth.admin.listUsers();
-    const userExists = existingUsers?.users?.find(u => u.email?.toLowerCase() === customer.email.toLowerCase());
     
     let userId = null;
     
     if (shouldIncludeLoginDetails && tempPassword) {
-      if (userExists) {
-        console.log(JSON.stringify({ evt: "user.exists", rid, userId: userExists.id }));
-        userId = userExists.id;
-        
-        // ALWAYS update the password to ensure it's synced with auth system
-        // This fixes cases where the password exists in welcome_emails but not in auth
-        await supabase.auth.admin.updateUserById(userExists.id, {
-          password: tempPassword,
-          user_metadata: {
-            plan_type: policy.plan_type,
-            policy_number: policy.policy_number,
-            warranty_number: policy.warranty_number
-          }
-        });
-        
-        const passwordAction = latestWelcomeEmail?.temporary_password ? "reapplied" : "set.first.time";
-        console.log(JSON.stringify({ evt: `user.password.${passwordAction}`, rid, userId }));
-      } else {
-        // Create new user account
-        const { data: userData, error: userError } = await supabase.auth.admin.createUser({
-          email: customer.email,
-          password: tempPassword,
-          email_confirm: true,
-          user_metadata: {
-            plan_type: policy.plan_type,
-            policy_number: policy.policy_number,
-            warranty_number: policy.warranty_number
-          }
-        });
+      // Try to create the user first - this is more reliable than searching
+      const { data: userData, error: userError } = await supabase.auth.admin.createUser({
+        email: customer.email,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: {
+          plan_type: policy.plan_type,
+          policy_number: policy.policy_number,
+          warranty_number: policy.warranty_number
+        }
+      });
 
-        if (userError) {
+      if (userError) {
+        // If user already exists, find them and update instead
+        if (userError.message?.includes('already been registered')) {
+          console.log(JSON.stringify({ evt: "user.already.exists", rid, message: "User exists, searching to update" }));
+          
+          // Search through users to find the existing one
+          let page = 1;
+          let foundUser = null;
+          const perPage = 1000;
+          
+          while (!foundUser && page <= 10) { // Max 10 pages (10,000 users)
+            const { data: userList } = await supabase.auth.admin.listUsers({
+              page,
+              perPage
+            });
+            
+            if (!userList?.users || userList.users.length === 0) break;
+            
+            foundUser = userList.users.find(u => u.email?.toLowerCase() === customer.email.toLowerCase());
+            page++;
+          }
+          
+          if (foundUser) {
+            userId = foundUser.id;
+            await supabase.auth.admin.updateUserById(foundUser.id, {
+              password: tempPassword,
+              user_metadata: {
+                plan_type: policy.plan_type,
+                policy_number: policy.policy_number,
+                warranty_number: policy.warranty_number
+              }
+            });
+            console.log(JSON.stringify({ evt: "user.updated", rid, userId }));
+          } else {
+            // Could not find user to update, but continue anyway
+            console.log(JSON.stringify({ evt: "user.not.found.for.update", rid, message: "Continuing without user account link" }));
+          }
+        } else {
           console.log(JSON.stringify({ evt: "user.creation.failed", rid, error: userError.message }));
-          throw new Error(`Failed to create user: ${userError.message}`);
+          // Don't throw - continue sending email without user account
+          console.log(JSON.stringify({ evt: "continuing.without.user.account", rid }));
         }
-
-        if (!userData.user) {
-          throw new Error("User creation returned no user data");
-        }
-
+      } else if (userData?.user) {
         userId = userData.user.id;
         console.log(JSON.stringify({ evt: "user.created", rid, userId }));
       }
     } else {
-      // User has reset password, so they manage their own account
+      // User has reset password, so they manage their own account - try to find them
       console.log(JSON.stringify({ evt: "user.password.reset", rid, message: "User has reset password, no account management needed" }));
-      if (userExists) {
-        userId = userExists.id;
+      
+      // Search for existing user to get their ID for policy linking
+      const { data: userList } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      const existingUser = userList?.users?.find(u => u.email?.toLowerCase() === customer.email.toLowerCase());
+      if (existingUser) {
+        userId = existingUser.id;
       }
     }
 
