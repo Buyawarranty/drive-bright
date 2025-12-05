@@ -46,6 +46,7 @@ export interface CustomerDetailsStepProps {
     voluntaryExcess?: number;
     claimLimit?: number;
     labourRate?: number;
+    boostAddon?: boolean;
     protectionAddOns?: {
       breakdown?: boolean;
       motFee?: boolean;

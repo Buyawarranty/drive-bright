@@ -260,7 +260,8 @@ const Index = () => {
       selectedAddOns: {[addon: string]: boolean},
       protectionAddOns?: {[key: string]: boolean},
       claimLimit?: number,
-      labourRate?: number
+      labourRate?: number,
+      boostAddon?: boolean
     }
   } | null>(getInitialSelectedPlan);
   const getInitialFormData = () => {
@@ -819,7 +820,8 @@ const Index = () => {
       selectedAddOns: {[addon: string]: boolean}, 
       protectionAddOns?: {[key: string]: boolean},
       claimLimit?: number,
-      labourRate?: number
+      labourRate?: number,
+      boostAddon?: boolean
     }
   ) => {
     setSelectedPlan({ id: planId, paymentType, name: planName, pricingData });
@@ -1036,6 +1038,7 @@ const Index = () => {
                 previousSelectedAddOns={selectedPlan?.pricingData?.selectedAddOns}
                 previousProtectionAddOns={selectedPlan?.pricingData?.protectionAddOns}
                 previousLabourRate={selectedPlan?.pricingData?.labourRate}
+                previousBoostAddon={selectedPlan?.pricingData?.boostAddon}
               />
             </PerformanceOptimizedSuspense>
           ) : (
