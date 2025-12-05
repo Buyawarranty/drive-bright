@@ -889,7 +889,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       
       // Calculate add-on prices using centralized utility
       const totalAddOnPrice = calculateAddOnPrice(selectedProtectionAddOns, paymentType, durationMonths);
-      const oneTimeAddonTotal = selectedProtectionAddOns.transfer && !getAutoIncludedAddOns(paymentType).includes('transfer') ? 19.99 : 0;
+      const oneTimeAddonTotal = selectedProtectionAddOns.transfer && !getAutoIncludedAddOns(paymentType).includes('transfer') ? 19 : 0;
       const recurringAddonTotal = totalAddOnPrice - oneTimeAddonTotal;
       
       // Calculate total price for selected duration with vehicle adjustments applied
@@ -917,7 +917,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       }
       // £50/hr is the default with no adjustment
       
-      const totalPrice = discountedBasePrice + recurringAddonTotal + oneTimeAddonTotal + boostCost + labourRateAdjust;
+      const totalPrice = Math.round(discountedBasePrice + recurringAddonTotal + oneTimeAddonTotal + boostCost + labourRateAdjust);
       
       // Don't allow progression if vehicle is too old
       if (vehicleAgeError) {
