@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ProtectedButton } from '@/components/ui/protected-button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Check, ArrowLeft, Info, FileText, ExternalLink, ChevronDown, ChevronUp, Plus, Infinity, Zap, Car, Cog, Settings, Droplets, Cpu, Snowflake, Search, Users, RotateCcw, MapPin, X, Shield, Hash, Calendar, Gauge, Fuel, Edit, HelpCircle, Gift, ArrowRight, ArrowUp, DollarSign, MousePointerClick, ShieldCheck, PartyPopper, CheckCircle, Crown, Battery, Bike, AlertTriangle, AlertCircle, Mail } from 'lucide-react';
+import { Check, ArrowLeft, Info, FileText, ExternalLink, ChevronDown, ChevronUp, Plus, Infinity, Zap, Car, Cog, Settings, Droplets, Cpu, Snowflake, Search, Users, RotateCcw, MapPin, X, Shield, Hash, Calendar, Gauge, Fuel, Edit, HelpCircle, Gift, ArrowRight, ArrowUp, DollarSign, MousePointerClick, ShieldCheck, PartyPopper, CheckCircle, Crown, Battery, Bike, AlertTriangle, AlertCircle, Mail, Wrench } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -1827,7 +1827,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
             <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 flex-shrink-0" />
-              Pick your claim limit
+              Choose your claim limit
             </h2>
             
             <Dialog>
@@ -1916,8 +1916,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </Alert>
           )}
           
-          <p className="text-lg font-medium text-foreground mb-4 flex items-center gap-2">
-            <span>🛡️</span> Choose your repair limit per claim, with total cover up to your vehicle's full value
+          <p className="text-lg font-medium text-gray-600 mb-4 flex items-center gap-2">
+            <Wrench className="w-5 h-5 flex-shrink-0" /> Choose your repair limit per claim, with total cover up to your vehicle's full value
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
