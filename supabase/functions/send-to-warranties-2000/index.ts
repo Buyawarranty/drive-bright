@@ -164,7 +164,7 @@ serve(async (req) => {
             registration_plate, vehicle_make, vehicle_model, vehicle_year,
             mileage, flat_number, building_name, building_number,
             street, town, county, postcode, country, plan_type, payment_type,
-            final_amount, warranty_reference_number, voluntary_excess
+            final_amount, warranty_reference_number, voluntary_excess, labour_rate
           )
         `)
         .eq('id', policyId)
@@ -535,6 +535,8 @@ serve(async (req) => {
       claimLimit: registrationData.MaxClm,
       voluntaryExcess: registrationData.VolEx,
       coverage: registrationData.Month,
+      labourRate: customer?.labour_rate || 70,
+      notes: registrationData.Notes,
       addOns: {
         "Recovery": registrationData.breakdown_recovery ? "Y" : "N",
         "MOTRepair": registrationData.mot_repair ? "Y" : "N",
