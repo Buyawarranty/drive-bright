@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { ProtectedButton } from '@/components/ui/protected-button';
 import { Badge } from '@/components/ui/badge';
@@ -348,6 +348,23 @@ const PricingTable: React.FC<PricingTableProps> = ({
       setPaymentType('12months');
     }
   }, [paymentType, availableDurations]);
+
+  // Retry function for fetching plans
+  const retryFetchPlans = useCallback(async () => {
+    setPlansLoading(true);
+    setPlansError(null);
+    try {
+      const rows = await fetchPlansFor(vt);
+      console.log(`🔍 Fetched ${rows.length} plans for ${vt}:`, rows);
+      setPlans(rows);
+    } catch (e: any) {
+      console.error('💥 Error fetching plans:', e);
+      setPlansError('Failed to load pricing plans. Please try again.');
+      toast.error('Failed to load pricing plans');
+    } finally {
+      setPlansLoading(false);
+    }
+  }, [vt]);
 
   useEffect(() => {
     let alive = true;
@@ -2594,113 +2611,143 @@ const PricingTable: React.FC<PricingTableProps> = ({
       {/* Bottom padding for sticky bar */}
       <div className="pb-32 md:pb-24"></div>
 
-      {/* Sticky Total Bar */}
-      {!plansLoading && !plansError && !vehicleAgeError && displayPlans.length > 0 && paymentType && (
+      {/* Sticky Total Bar - Always visible */}
+      {!vehicleAgeError && (
         <div className="fixed bottom-0 left-0 right-0 bg-gray-50 border-t-2 border-orange-200 shadow-lg z-50">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between p-4 max-w-6xl mx-auto gap-4">
             
-            {/* Mobile Layout - Stacked */}
-            <div className="flex flex-col md:hidden gap-2 w-full">
-              {/* Monthly Price */}
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900">
-                  £{displayMonthlyPrice}/month
-                </div>
-                <div className="flex items-center justify-center gap-1 text-sm text-black">
-                  <Check className="w-4 h-4 text-green-600" />
-                  <span>Only 12 payments (0% APR)</span>
-                </div>
-                <div className="text-sm text-black">
-                  {paymentType === '12months' && '1 Year Cover'}
-                  {paymentType === '24months' && 'No payments in Year 2 - 🎉 2 Year Cover'}
-                  {paymentType === '36months' && 'No payments in Years 2 & 3 - 🎉 3 Year Cover'}
-                </div>
-                <div className="text-lg font-semibold text-black mt-1">
-                  Total: £{Math.round(displayTotalPrice)}
-                </div>
-                <div className="text-xs text-black mt-0.5">
-                  🛡️ 14 days to cancel
+            {/* Loading State */}
+            {plansLoading && (
+              <div className="flex items-center justify-center w-full py-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-gray-600 font-medium">Loading pricing plans...</span>
                 </div>
               </div>
-              
-              {/* CTA Button */}
-              <Button
-                onClick={handleSelectPlan}
-                size="lg"
-                className="w-full text-lg font-semibold py-3.5 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white animate-[breathing_2.4s_ease-in-out_infinite]"
-              >
-                Continue to checkout
-                <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
-              </Button>
-              
-              {/* Trustpilot Badge */}
-              <div className="flex justify-center">
-                <a 
-                  href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                >
-                  <img 
-                    src={trustpilotLogo} 
-                    alt="Trustpilot Excellent Rating" 
-                    className="h-8 w-auto"
-                  />
-                </a>
-              </div>
-            </div>
+            )}
 
-            {/* Desktop Layout - Horizontal */}
-            <div className="hidden md:flex md:items-center md:justify-between w-full">
-              {/* Trustpilot Logo - Left */}
-              <div className="flex-shrink-0">
-                <a 
-                  href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="block"
-                >
-                  <img 
-                    src={trustpilotLogo} 
-                    alt="Trustpilot Excellent Rating" 
-                    className="h-12 w-auto hover:opacity-80 transition-opacity"
-                  />
-                </a>
-              </div>
-              
-              {/* Price Section - Center */}
-              <div className="flex flex-col items-center flex-1 px-8">
-                <div className="text-2xl font-bold text-gray-900">
-                  £{displayMonthlyPrice}/month
-                </div>
-                <div className="flex items-center gap-1 text-sm text-black">
-                  <Check className="w-4 h-4 text-green-600" />
-                  <span>Only 12 payments (0% APR)</span>
-                </div>
-                <div className="text-sm text-black">
-                  {paymentType === '12months' && '1 Year Cover'}
-                  {paymentType === '24months' && 'No payments in Year 2 - 🎉 2 Year Cover'}
-                  {paymentType === '36months' && 'No payments in Years 2 & 3 - 🎉 3 Year Cover'}
-                </div>
-              </div>
-              
-              {/* CTA and Total - Right */}
-              <div className="flex flex-col items-end gap-1.5">
+            {/* Error State */}
+            {!plansLoading && plansError && (
+              <div className="flex items-center justify-center w-full py-2 gap-4">
+                <span className="text-red-600 font-medium">{plansError}</span>
                 <Button
-                  onClick={handleSelectPlan}
-                  size="lg"
-                  className="text-lg font-semibold px-10 py-3.5 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white animate-[breathing_2.4s_ease-in-out_infinite]"
+                  onClick={retryFetchPlans}
+                  size="sm"
+                  className="bg-orange-500 hover:bg-orange-600 text-white"
                 >
-                  Continue to checkout
-                  <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Retry
                 </Button>
-                <div className="text-lg font-semibold text-black">
-                  Total: £{Math.round(displayTotalPrice)}
-                </div>
-                <div className="text-xs text-black">
-                  🛡️ 14 days to cancel
-                </div>
               </div>
-            </div>
+            )}
+
+            {/* Normal State - Show pricing */}
+            {!plansLoading && !plansError && displayPlans.length > 0 && paymentType && (
+              <>
+                {/* Mobile Layout - Stacked */}
+                <div className="flex flex-col md:hidden gap-2 w-full">
+                  {/* Monthly Price */}
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-gray-900">
+                      £{displayMonthlyPrice}/month
+                    </div>
+                    <div className="flex items-center justify-center gap-1 text-sm text-black">
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span>Only 12 payments (0% APR)</span>
+                    </div>
+                    <div className="text-sm text-black">
+                      {paymentType === '12months' && '1 Year Cover'}
+                      {paymentType === '24months' && 'No payments in Year 2 - 🎉 2 Year Cover'}
+                      {paymentType === '36months' && 'No payments in Years 2 & 3 - 🎉 3 Year Cover'}
+                    </div>
+                    <div className="text-lg font-semibold text-black mt-1">
+                      Total: £{Math.round(displayTotalPrice)}
+                    </div>
+                    <div className="text-xs text-black mt-0.5">
+                      🛡️ 14 days to cancel
+                    </div>
+                  </div>
+                  
+                  {/* CTA Button */}
+                  <Button
+                    onClick={handleSelectPlan}
+                    size="lg"
+                    className="w-full text-lg font-semibold py-3.5 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white animate-[breathing_2.4s_ease-in-out_infinite]"
+                  >
+                    Continue to checkout
+                    <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
+                  </Button>
+                  
+                  {/* Trustpilot Badge */}
+                  <div className="flex justify-center">
+                    <a 
+                      href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    >
+                      <img 
+                        src={trustpilotLogo} 
+                        alt="Trustpilot Excellent Rating" 
+                        className="h-8 w-auto"
+                      />
+                    </a>
+                  </div>
+                </div>
+
+                {/* Desktop Layout - Horizontal */}
+                <div className="hidden md:flex md:items-center md:justify-between w-full">
+                  {/* Trustpilot Logo - Left */}
+                  <div className="flex-shrink-0">
+                    <a 
+                      href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
+                      <img 
+                        src={trustpilotLogo} 
+                        alt="Trustpilot Excellent Rating" 
+                        className="h-12 w-auto hover:opacity-80 transition-opacity"
+                      />
+                    </a>
+                  </div>
+                  
+                  {/* Price Section - Center */}
+                  <div className="flex flex-col items-center flex-1 px-8">
+                    <div className="text-2xl font-bold text-gray-900">
+                      £{displayMonthlyPrice}/month
+                    </div>
+                    <div className="flex items-center gap-1 text-sm text-black">
+                      <Check className="w-4 h-4 text-green-600" />
+                      <span>Only 12 payments (0% APR)</span>
+                    </div>
+                    <div className="text-sm text-black">
+                      {paymentType === '12months' && '1 Year Cover'}
+                      {paymentType === '24months' && 'No payments in Year 2 - 🎉 2 Year Cover'}
+                      {paymentType === '36months' && 'No payments in Years 2 & 3 - 🎉 3 Year Cover'}
+                    </div>
+                  </div>
+                  
+                  {/* CTA and Total - Right */}
+                  <div className="flex flex-col items-end gap-1.5">
+                    <Button
+                      onClick={handleSelectPlan}
+                      size="lg"
+                      className="text-lg font-semibold px-10 py-3.5 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white animate-[breathing_2.4s_ease-in-out_infinite]"
+                    >
+                      Continue to checkout
+                      <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
+                    </Button>
+                    <div className="text-lg font-semibold text-black">
+                      Total: £{Math.round(displayTotalPrice)}
+                    </div>
+                    <div className="text-xs text-black">
+                      🛡️ 14 days to cancel
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
             
           </div>
         </div>
