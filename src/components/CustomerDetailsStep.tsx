@@ -358,7 +358,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   const hasValidDiscountCodes = appliedDiscountCodes.length > 0;
   const discountedPrice = hasValidDiscountCodes ? bumperTotalPrice - totalDiscountAmount : bumperTotalPrice;
   const discountedBumperPrice = Math.round(Math.max(discountedPrice, 0)); // Ensure price doesn't go negative
-  const discountedStripePrice = Math.round(discountedPrice * 0.90); // 10% upfront discount on discounted price
+  const discountedStripePrice = Math.round(discountedBumperPrice * 0.90); // 10% upfront discount on rounded bumper price for consistency
 
   console.log('💸 CustomerDetailsStep - Final pricing:', {
     bumperTotalPrice,
