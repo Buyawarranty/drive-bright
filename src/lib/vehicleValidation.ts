@@ -262,7 +262,7 @@ function getVehicleCategory(vehicleData: VehicleData): string {
   }
   
   // Check for Range Rover and Jaguar (highest price adjustment)
-  if ((make === 'land rover' && model.includes('range rover')) || make === 'jaguar') {
+  if ((make === 'land rover' && model.includes('range rover')) || make.startsWith('jaguar')) {
     console.log('🚗 Detected: Range Rover / Jaguar');
     return 'range_rover';
   }
