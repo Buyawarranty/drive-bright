@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Copy, Check, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import { Copy, Check, ChevronUp, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface PromoBannerProps {
@@ -38,7 +38,6 @@ export const MinimizedPromoPill: React.FC<{ onExpand: () => void }> = ({ onExpan
 };
 
 export const PromoBanner: React.FC<PromoBannerProps> = ({ onApplyDiscount }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [hasCopied, setHasCopied] = useState(false);
   const [hasTrackedImpression, setHasTrackedImpression] = useState(false);
@@ -167,19 +166,7 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({ onApplyDiscount }) => 
             Applied at checkout
           </span>
           
-          {/* Expand/Details button */}
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="text-black/70 hover:text-black text-xs flex items-center gap-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 rounded px-1 sm:border sm:border-[#6B7280]/30 sm:bg-white/20"
-            aria-expanded={isExpanded}
-            aria-controls="promo-details"
-            aria-label={isExpanded ? "Hide details" : "Show details"}
-          >
-            <span className="hidden sm:inline">Details</span>
-            {isExpanded ? <ChevronUp className="w-7 h-7 sm:w-3.5 sm:h-3.5 stroke-[3] sm:stroke-2" /> : <ChevronDown className="w-7 h-7 sm:w-3.5 sm:h-3.5 stroke-[3] sm:stroke-2" />}
-          </button>
-          
-          {/* Minimize button - uses ChevronUp */}
+          {/* Single Minimize/Close button */}
           <button
             onClick={handleMinimize}
             className="text-black/70 hover:text-black transition-colors p-1 focus:outline-none focus:ring-2 focus:ring-green-500 rounded sm:border sm:border-[#6B7280]/30 sm:bg-white/20"
@@ -187,31 +174,6 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({ onApplyDiscount }) => 
           >
             <ChevronUp className="w-7 h-7 sm:w-4 sm:h-4 stroke-[3] sm:stroke-2" />
           </button>
-        </div>
-      </div>
-      
-      {/* Expandable Details Panel */}
-      <div 
-        id="promo-details"
-        className={`bg-[#E6FFEC] border-t border-green-200 overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-40 py-3' : 'max-h-0 py-0'}`}
-        aria-hidden={!isExpanded}
-      >
-        <div className="px-4 text-center space-y-2">
-          <p className="text-black text-xs sm:text-sm flex items-center justify-center gap-2">
-            <Check className="w-4 h-4 text-[#1E9E5C]" />
-            <span>Discount applied automatically at checkout</span>
-          </p>
-          <p className="text-black/70 text-[10px] sm:text-xs">
-            Use code <span className="text-[#1E9E5C] font-semibold bg-white/50 px-1 rounded">{promoCode}</span> for {discountPercent}% off your warranty. 
-            <a 
-              href="/terms-and-conditions" 
-              className="underline hover:text-black ml-1 focus:outline-none focus:ring-2 focus:ring-white rounded"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              T&Cs apply
-            </a>
-          </p>
         </div>
       </div>
     </div>
