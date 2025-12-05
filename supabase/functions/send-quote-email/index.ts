@@ -49,8 +49,8 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
   const customerName = firstName || 'there';
   const vehicleDisplay = `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() || 'your vehicle';
   
-  // SVG checkmark icon as inline data URI for email compatibility
-  const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 10px;"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+  // Green checkmark icon matching website style - bright green tick
+  const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 12px;"><path d="M20 6L9 17l-5-5"></path></svg>`;
   
   return `
     <!DOCTYPE html>
@@ -63,13 +63,13 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
     <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 0; background-color: #f5f5f5;">
       <div style="background-color: #ffffff; margin: 20px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
         
-        <!-- Header -->
-        <div style="background: #4b5563; padding: 30px; text-align: center;">
+        <!-- Header - Lighter grey (50% lighter) -->
+        <div style="background: #9ca3af; padding: 30px; text-align: center;">
           <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" alt="Buy A Warranty" style="width: 180px; height: auto; margin-bottom: 15px;" />
           <h1 style="color: #ffffff; font-size: 22px; font-weight: bold; margin: 0 0 8px 0;">
             Your Vehicle Warranty Quote is Ready
           </h1>
-          <p style="color: #e5e7eb; font-size: 16px; margin: 0;">
+          <p style="color: #ffffff; font-size: 16px; margin: 0;">
             Lock in Your Price Today
           </p>
         </div>
@@ -88,25 +88,25 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
           <div style="background: #f0fdf4; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
             <table cellpadding="0" cellspacing="0" border="0" width="100%">
               <tr>
-                <td style="padding: 8px 0; font-size: 16px; color: #166534;">
+                <td style="padding: 10px 0; font-size: 16px; color: #166534;">
                   ${checkIcon}
                   <span style="vertical-align: middle;">Comprehensive cover for peace of mind</span>
                 </td>
               </tr>
               <tr>
-                <td style="padding: 8px 0; font-size: 16px; color: #166534;">
+                <td style="padding: 10px 0; font-size: 16px; color: #166534;">
                   ${checkIcon}
                   <span style="vertical-align: middle;">UK-based support & easy claims</span>
                 </td>
               </tr>
               <tr>
-                <td style="padding: 8px 0; font-size: 16px; color: #166534;">
+                <td style="padding: 10px 0; font-size: 16px; color: #166534;">
                   ${checkIcon}
                   <span style="vertical-align: middle;">Cancel within 14 days for a full refund</span>
                 </td>
               </tr>
               <tr>
-                <td style="padding: 8px 0; font-size: 16px; color: #166534;">
+                <td style="padding: 10px 0; font-size: 16px; color: #166534;">
                   ${checkIcon}
                   <span style="vertical-align: middle;">Instant protection when you activate</span>
                 </td>
@@ -118,9 +118,9 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
             Your personalised price is locked in for the next 24 hours – don't miss out.
           </p>
           
-          <!-- CTA Button - Orange -->
+          <!-- CTA Button - Orange with enhanced glow effect -->
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${baseUrl}/?quoteId=${quoteId}" style="background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: #ffffff; padding: 18px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 18px; display: inline-block; box-shadow: 0 4px 14px rgba(234, 88, 12, 0.4);">
+            <a href="${baseUrl}/?quoteId=${quoteId}" style="background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: #ffffff; padding: 20px 45px; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 20px; display: inline-block; box-shadow: 0 0 20px rgba(249, 115, 22, 0.5), 0 0 40px rgba(249, 115, 22, 0.3), 0 8px 20px rgba(234, 88, 12, 0.4); border: 2px solid #f97316;">
               Secure My Warranty Now →
             </a>
           </div>
