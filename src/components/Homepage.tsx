@@ -434,8 +434,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 <span className="text-gray-900">We've got you </span>
                 <span className="text-brand-orange">covered in 60 seconds!</span>
               </h1>
-              {/* Minimized promo pill appears below headline when banner is collapsed */}
-              <div className="pt-2">
+              {/* Minimized promo pill appears below headline when banner is collapsed - MOBILE ONLY */}
+              <div className="pt-2 md:hidden">
                 <MinimizedPromoPillWrapper />
               </div>
               </div>
