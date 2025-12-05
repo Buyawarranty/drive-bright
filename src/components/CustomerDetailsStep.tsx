@@ -1435,32 +1435,34 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         </div>
                       ))}
                       
-                      {/* Add New Promo Code */}
-                      <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Enter another promo code"
-                            value={promoCodeInput}
-                            onChange={(e) => {
-                              setPromoCodeInput(e.target.value.toUpperCase());
-                              setPromoCodeError('');
-                            }}
-                            className="flex-1"
-                            disabled={isValidatingPromoCode}
-                          />
-                          <Button
-                            onClick={applyPromoCode}
-                            variant="outline"
-                            size="sm"
-                            disabled={!promoCodeInput.trim() || isValidatingPromoCode}
-                          >
-                            Apply
-                          </Button>
+                      {/* Add New Promo Code - only show if no promo applied yet */}
+                      {appliedDiscountCodes.length === 0 && (
+                        <div className="space-y-2">
+                          <div className="flex gap-2">
+                            <Input
+                              placeholder="Enter promo code"
+                              value={promoCodeInput}
+                              onChange={(e) => {
+                                setPromoCodeInput(e.target.value.toUpperCase());
+                                setPromoCodeError('');
+                              }}
+                              className="flex-1"
+                              disabled={isValidatingPromoCode}
+                            />
+                            <Button
+                              onClick={applyPromoCode}
+                              variant="outline"
+                              size="sm"
+                              disabled={!promoCodeInput.trim() || isValidatingPromoCode}
+                            >
+                              Apply
+                            </Button>
+                          </div>
+                          {promoCodeError && (
+                            <p className="text-red-500 text-xs">{promoCodeError}</p>
+                          )}
                         </div>
-                        {promoCodeError && (
-                          <p className="text-red-500 text-xs">{promoCodeError}</p>
-                        )}
-                      </div>
+                      )}
 
                       {/* Total Discount Summary */}
                       {(hasValidDiscountCodes || seasonalOfferClaimed) && (
