@@ -60,18 +60,9 @@ const NotFound = () => {
           </div>
 
           <div className="pt-8 border-t border-border">
-            <p className="text-sm text-muted-foreground mb-4">Looking for car warranty options?</p>
             <div className="flex flex-wrap gap-3 justify-center text-sm">
-              <a href="/buy-a-used-car-warranty-reliable-warranties/" className="text-primary hover:underline">
-                Used Car Warranty
-              </a>
-              <span className="text-muted-foreground">•</span>
-              <a href="/van-warranty/" className="text-primary hover:underline">
-                Van Warranty
-              </a>
-              <span className="text-muted-foreground">•</span>
-              <a href="/ev-warranty/" className="text-primary hover:underline">
-                EV Warranty
+              <a href="/" className="text-primary hover:underline">
+                Get warranty cover
               </a>
               <span className="text-muted-foreground">•</span>
               <a href="/contact-us/" className="text-primary hover:underline">
