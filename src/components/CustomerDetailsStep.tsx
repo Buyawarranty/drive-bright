@@ -693,7 +693,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
             paymentType,
             voluntaryExcess: updatedPricingData.voluntaryExcess,
             claimLimit: updatedPricingData.claimLimit || 1250,
-            labourRate: pricingData.labourRate || 70,
+            labourRate: pricingData.labourRate || 50,
             customerData: {
               ...customerData,
               final_amount: finalPrice
@@ -813,7 +813,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
         paymentType,
         voluntaryExcess: updatedPricingData.voluntaryExcess,
         claimLimit: updatedPricingData.claimLimit || 1250,
-        labourRate: pricingData.labourRate || 70,
+        labourRate: pricingData.labourRate || 50,
         customerData: {
           ...customerData,
           final_amount: finalPrice
@@ -1221,7 +1221,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                      <div className="flex justify-between items-center gap-2">
                         <span className="text-black text-xs sm:text-sm flex-shrink-0">Labour Rate:</span>
                         <span className="font-semibold text-black text-xs sm:text-sm text-right">
-                          £{pricingData.labourRate || 70}/hour
+                          £{pricingData.labourRate || 50}/hour
                         </span>
                       </div>
                      <div className="flex justify-between items-center gap-2">

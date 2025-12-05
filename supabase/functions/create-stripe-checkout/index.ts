@@ -338,7 +338,8 @@ serve(async (req) => {
         addon_mot_fee: protectionAddOns?.motFee ? 'true' : 'false',
         addon_mot_repair: protectionAddOns?.motRepair ? 'true' : 'false',
         addon_lost_key: protectionAddOns?.lostKey ? 'true' : 'false',
-        addon_consequential: protectionAddOns?.consequential ? 'true' : 'false'
+        addon_consequential: protectionAddOns?.consequential ? 'true' : 'false',
+        labour_rate: (labourRate || 50).toString()
       }
     };
 

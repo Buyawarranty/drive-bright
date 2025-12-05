@@ -389,7 +389,7 @@ serve(async (req) => {
               </tr>
               <tr>
                 <td style="padding: 8px 0; color: #555555; font-size: 15px;"><strong>Labour Rate:</strong></td>
-                <td style="padding: 8px 0; color: #333333; font-size: 15px;">£${labourRate || 70}/hour</td>
+                <td style="padding: 8px 0; color: #333333; font-size: 15px;">£${labourRate || 50}/hour</td>
               </tr>
               <tr>
                 <td style="padding: 8px 0; color: #555555; font-size: 15px;"><strong>Payment Method:</strong></td>

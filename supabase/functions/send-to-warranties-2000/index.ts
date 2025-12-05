@@ -482,7 +482,7 @@ serve(async (req) => {
       Ref: policy?.policy_number || policy?.warranty_number || customer.warranty_reference_number || `REF-${Date.now()}`,
       VolEx: String(finalVoluntaryExcess),
       Notes: (() => {
-        const labourRate = customer?.labour_rate || 70;
+        const labourRate = customer?.labour_rate || 50;
         let notes = `Plan: ${policy?.plan_type || customer.plan_type || 'N/A'} | Payment: ${paymentType || 'N/A'} | ClaimLimit: ${finalClaimLimit} | VolExcess: ${finalVoluntaryExcess} | LabourRate: £${labourRate}/hr`;
         
         // Add seasonal bonus information if present
@@ -535,7 +535,7 @@ serve(async (req) => {
       claimLimit: registrationData.MaxClm,
       voluntaryExcess: registrationData.VolEx,
       coverage: registrationData.Month,
-      labourRate: customer?.labour_rate || 70,
+      labourRate: customer?.labour_rate || 50,
       notes: registrationData.Notes,
       addOns: {
         "Recovery": registrationData.breakdown_recovery ? "Y" : "N",
