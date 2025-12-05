@@ -805,10 +805,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return Math.round(baseMonthly + labourRateDisplayAdjustment + boostDisplayAdjustment);
   }, [totalDiscountedPriceWithoutBoost, labourRateDisplayAdjustment, boostDisplayAdjustment]);
 
-  // Memoized display total price - monthly * 12 + one-time add-ons
+  // Memoized display total price - use actual total with adjustments to avoid rounding errors
   const displayTotalPrice = useMemo(() => {
-    return (displayMonthlyPrice * 12) + oneTimeAddOnPrice;
-  }, [displayMonthlyPrice, oneTimeAddOnPrice]);
+    const labourRateTotalAdjustment = labourRateDisplayAdjustment * 12;
+    const boostTotalAdjustment = boostDisplayAdjustment * 12;
+    return totalDiscountedPriceWithoutBoost + labourRateTotalAdjustment + boostTotalAdjustment + oneTimeAddOnPrice;
+  }, [totalDiscountedPriceWithoutBoost, labourRateDisplayAdjustment, boostDisplayAdjustment, oneTimeAddOnPrice]);
 
   // Memoized monthly price calculation - always divide total by 12 for monthly payments
   const monthlyPrice = useMemo(() => {
@@ -2829,11 +2831,11 @@ const boostDisplayAdjustment = boostAddon ? 5 : 0;
                       discountedPrice = adjustedBasePrice - 200;
                     }
                     
-                    const baseMonthlyPrice = Math.round(discountedPrice / 12);
                     const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
                     const boostDisplayAdjustment = boostAddon ? 5 : 0;
-                    const displayedMonthlyPrice = Math.round(baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment);
-                    return displayedMonthlyPrice * 12;
+                    const labourRateTotalAdjustment = labourRateAdjustment * 12;
+                    const boostTotalAdjustment = boostDisplayAdjustment * 12;
+                    return discountedPrice + labourRateTotalAdjustment + boostTotalAdjustment;
                   })()}
                 </span>
               </div>
