@@ -164,9 +164,6 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({ onApplyDiscount }) => 
             )}
           </button>
           
-          <span className="text-black/70 text-[10px] sm:text-xs hidden md:inline">
-            Applied at checkout
-          </span>
           
           {/* Single Minimize/Close button */}
           <button
