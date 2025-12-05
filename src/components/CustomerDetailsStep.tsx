@@ -1251,7 +1251,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             <div className="text-right">
                               <span className="font-bold text-black text-sm sm:text-base">£{Math.round(discountedBumperPrice / 12)}/month</span>
                               <span className="block text-xs text-orange-600 font-medium">12 interest-free payments</span>
-                              <span className="block text-xs text-gray-600 font-medium">Total: £{Math.round(discountedBumperPrice / 12) * 12}</span>
+                              <span className="block text-xs text-gray-600 font-medium">Total: £{discountedBumperPrice}</span>
                             </div>
                           </div>
                         </div>
@@ -1559,10 +1559,10 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             <div className="text-center">
                               <div className="text-4xl font-black text-black mb-1">£{discountedStripePrice}</div>
                               <div className="inline-block bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                                Save £{(Math.round(discountedBumperPrice / 12) * 12) - discountedStripePrice} today
+                                Save £{discountedBumperPrice - discountedStripePrice} today
                               </div>
                               <div className="text-sm font-bold text-gray-600 mt-1">
-                                (normally £{Math.round(discountedBumperPrice / 12) * 12})
+                                (normally £{discountedBumperPrice})
                               </div>
                             </div>
                           </div>
@@ -1656,7 +1656,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                 Only 12 payments
                               </div>
                               <div className="text-sm font-bold text-gray-600">
-                                £{Math.round(discountedBumperPrice / 12) * 12} total
+                                £{discountedBumperPrice} total
                               </div>
                             </div>
                           </div>
