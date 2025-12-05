@@ -232,23 +232,22 @@ serve(async (req) => {
       planUrl: planDoc.file_url 
     });
 
-    // Registration plate styling - optimized for both light and dark modes
+    // Registration plate styling - UK-style yellow background with black text
     const regPlate = registrationPlate || 'N/A';
     const regPlateStyle = `
       display: inline-block;
-      background: #1a1a1a;
-      color: #ffffff;
+      background: #FFD700;
+      color: #000000;
       font-family: 'Charles Wright', monospace;
       font-weight: bold;
       font-size: 18px;
-      padding: 8px 12px;
-      border: 2px solid #1a1a1a;
+      padding: 8px 16px;
+      border: 2px solid #000000;
       border-radius: 4px;
       letter-spacing: 2px;
       text-align: center;
       min-width: 120px;
       text-shadow: none;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     `;
 
     const finalCustomerName = customerName || email.split('@')[0];
@@ -386,10 +385,6 @@ serve(async (req) => {
               <tr>
                 <td style="padding: 8px 0; color: #555555; font-size: 15px;"><strong>End Date:</strong></td>
                 <td style="padding: 8px 0; color: #333333; font-size: 15px;">${formatDate(endDate)}</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; color: #555555; font-size: 15px;"><strong>Labour Rate:</strong></td>
-                <td style="padding: 8px 0; color: #333333; font-size: 15px;">£${labourRate || 50}/hour</td>
               </tr>
               <tr>
                 <td style="padding: 8px 0; color: #555555; font-size: 15px;"><strong>Payment Method:</strong></td>
