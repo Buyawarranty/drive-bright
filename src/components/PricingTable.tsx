@@ -115,7 +115,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const [selectedAddOns, setSelectedAddOns] = useState<{[planId: string]: {[addon: string]: boolean}}>(
     previousSelectedAddOns ? { 'platinum': previousSelectedAddOns } : {}
   );
-  const [boostAddon, setBoostAddon] = useState(previousBoostAddon || false);
+  // Detect if boost was enabled - either from explicit prop or inferred from boosted claim limit
+  const wasBoostEnabled = previousBoostAddon || 
+    (previousClaimLimit && previousClaimLimit > 2000 && [1750, 2250, 3000].includes(previousClaimLimit));
+  const [boostAddon, setBoostAddon] = useState(wasBoostEnabled || false);
   const [loading, setLoading] = useState<{[key: string]: boolean}>({});
   const [plansLoading, setPlansLoading] = useState(true);
   const [plansError, setPlansError] = useState<string | null>(null);
@@ -165,10 +168,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isFloatingBarVisible, setIsFloatingBarVisible] = useState(false);
   // Validate previousClaimLimit is a valid option (750, 1250, 2000), otherwise default to 1250
+  // Account for boost addon which adds 1000 to the claim limit value
   const validClaimLimits = [750, 1250, 2000];
-  const [selectedClaimLimit, setSelectedClaimLimit] = useState<number | null>(
-    previousClaimLimit && validClaimLimits.includes(previousClaimLimit) ? previousClaimLimit : 1250
-  );
+  const getValidatedClaimLimit = (): number => {
+    if (!previousClaimLimit) return 1250;
+    // Check if it's a valid base claim limit
+    if (validClaimLimits.includes(previousClaimLimit)) return previousClaimLimit;
+    // Check if it's a boosted claim limit (base + 1000)
+    const possibleBaseLimit = previousClaimLimit - 1000;
+    if (validClaimLimits.includes(possibleBaseLimit)) return possibleBaseLimit;
+    // Default to 1250
+    return 1250;
+  };
+  const [selectedClaimLimit, setSelectedClaimLimit] = useState<number | null>(getValidatedClaimLimit());
   const [summaryDismissed, setSummaryDismissed] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   
