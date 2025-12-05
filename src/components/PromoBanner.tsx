@@ -12,15 +12,24 @@ export const MinimizedPromoPill: React.FC<{ onExpand: () => void }> = ({ onExpan
   
   return (
     <div 
-      className="cursor-pointer animate-pulse"
+      className="cursor-pointer"
       onClick={onExpand}
       role="button"
       aria-label="Expand promo banner"
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && onExpand()}
+      style={{
+        animation: 'promoPulse 1s ease-in-out infinite',
+      }}
     >
+      <style>{`
+        @keyframes promoPulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.03); opacity: 0.9; }
+        }
+      `}</style>
       <div className="bg-[#1E9E5C] text-white px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-lg hover:scale-105 transition-transform border border-white/30">
-        <Sparkles className="w-3 h-3 animate-spin" style={{ animationDuration: '3s' }} />
+        <Sparkles className="w-3 h-3" />
         <span>{discountPercent}% OFF</span>
         <ChevronUp className="w-3 h-3" />
       </div>
