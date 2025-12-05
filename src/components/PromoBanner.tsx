@@ -58,12 +58,19 @@ export const PromoBanner: React.FC<PromoBannerProps> = ({ onApplyDiscount }) => 
     }
   }, [hasTrackedImpression]);
 
-  // Check for minimized state in sessionStorage
+  // Check for minimized state in sessionStorage and poll for changes
   useEffect(() => {
-    const minimized = sessionStorage.getItem('promo_banner_minimized');
-    if (minimized === 'true') {
-      setIsMinimized(true);
-    }
+    const checkMinimized = () => {
+      const minimized = sessionStorage.getItem('promo_banner_minimized');
+      setIsMinimized(minimized === 'true');
+    };
+    
+    checkMinimized();
+    
+    // Poll for changes since sessionStorage events don't fire in the same tab
+    const interval = setInterval(checkMinimized, 100);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const copyToClipboard = async () => {
