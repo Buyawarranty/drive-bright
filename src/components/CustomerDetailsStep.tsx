@@ -649,8 +649,13 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
     if (!validateForm()) {
       console.log('❌ Form validation failed');
       
-      // Scroll to top of page immediately on first click
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Scroll to the form section on validation error (not top of page)
+      const formSection = document.getElementById('customer-form-section');
+      if (formSection) {
+        formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
       
       toast.error('Please fill in all required fields', {
         style: {
@@ -895,7 +900,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
           <CardContent className="p-4 sm:pt-6 sm:p-6 overflow-x-hidden">
             <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 max-w-full">
               {/* Left Column - Personal Details Form (order-2 on mobile, order-2 on desktop = right side) */}
-              <div className="w-full min-w-0 order-2 lg:order-2">
+              <div id="customer-form-section" className="w-full min-w-0 order-2 lg:order-2">
                 <div className="bg-gray-100 rounded-lg p-4 sm:p-6">
                 {/* Heading with Security Badge */}
                 <div className="mb-6">
