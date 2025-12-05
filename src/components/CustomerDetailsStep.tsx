@@ -515,7 +515,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
         
         const discountText = data.discountCode.type === 'percentage' 
           ? `${data.discountCode.value}% discount` 
-          : `£${data.discountAmount.toFixed(2)} discount`;
+          : `£${Math.floor(data.discountAmount)} discount`;
         toast.success(`Promo code applied! ${discountText}`);
       } else {
         setPromoCodeError(data.error || 'Invalid or expired promo code');
@@ -1260,7 +1260,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             <span className="text-black text-xs sm:text-sm font-medium">Pay in Full:</span>
                             <div className="text-right">
                               <span className="font-bold text-black text-sm sm:text-base">£{discountedStripePrice}</span>
-                              <span className="block text-xs text-green-600 font-medium">Save £{Math.round(discountedBumperPrice * 0.10)} today</span>
+                              <span className="block text-xs text-green-600 font-medium">Save £{Math.floor(discountedBumperPrice * 0.10)} today</span>
                               <span className="block text-xs text-gray-600 font-medium">Total: £{discountedStripePrice} (10% off)</span>
                             </div>
                           </div>
@@ -1421,7 +1421,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="text-green-600 font-medium">-£{discount.discountAmount.toFixed(2)}</span>
+                              <span className="text-green-600 font-medium">-£{Math.floor(discount.discountAmount)}</span>
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -1470,7 +1470,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           {hasValidDiscountCodes && (
                             <div className="flex justify-between items-center text-sm">
                               <span className="font-medium text-gray-700">Total Discount:</span>
-                              <span className="font-bold text-green-600">-£{totalDiscountAmount.toFixed(2)}</span>
+                              <span className="font-bold text-green-600">-£{Math.floor(totalDiscountAmount)}</span>
                             </div>
                           )}
                         </div>
@@ -1559,7 +1559,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             <div className="text-center">
                               <div className="text-4xl font-black text-black mb-1">£{discountedStripePrice}</div>
                               <div className="inline-block bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                                Save £{Math.round(discountedBumperPrice * 0.10)} today
+                                Save £{Math.floor(discountedBumperPrice * 0.10)} today
                               </div>
                               <div className="text-sm font-bold text-gray-600 mt-1">
                                 (normally £{discountedBumperPrice})
@@ -1716,7 +1716,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               </div>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
-                              <span className="text-green-600 font-bold whitespace-nowrap">-£{discount.discountAmount.toFixed(2)}</span>
+                              <span className="text-green-600 font-bold whitespace-nowrap">-£{Math.floor(discount.discountAmount)}</span>
                               <Button
                                 variant="ghost"
                                 size="sm"
