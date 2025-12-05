@@ -817,7 +817,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 <div className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
                    <span className="text-base md:text-lg text-brand-dark-text">
-                     <strong>Save an Extra 20% with our longer term plans</strong>
+                     <strong>Save an Extra £200 with our longer term plans</strong>
                    </span>
                 </div>
                 <div className="flex items-start gap-3">
