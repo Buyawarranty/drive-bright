@@ -553,10 +553,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 width={1200}
                 height={800}
               />
-              {/* Minimized Promo Pill + Trustpilot Logo positioned to the right */}
+              {/* Trustpilot Logo + Minimized Promo Pill positioned to the right */}
               <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
-                {/* Minimized promo pill appears above Trustpilot when banner is collapsed */}
-                <MinimizedPromoPillWrapper />
                 <a 
                   href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
                   target="_blank" 
@@ -572,6 +570,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     height={100}
                   />
                 </a>
+                {/* Minimized promo pill appears below Trustpilot when banner is collapsed */}
+                <MinimizedPromoPillWrapper />
               </div>
               
               {/* Vehicle Types positioned directly below the image on desktop */}
