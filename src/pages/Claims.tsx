@@ -304,15 +304,15 @@ Additional Information: ${formData.additionalInfo}
             <div className="mt-16 mb-12">
               <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-8">Why You're in Safe Hands</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-orange-100 hover:border-orange-200">
+                <div className="bg-orange-50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-orange-100 hover:border-orange-200">
                   <h3 className="text-xl font-bold text-gray-900 mb-3">Quick Response</h3>
                   <p className="text-sm text-gray-700">We respond to claims quickly and fairly, with no unnecessary delays</p>
                 </div>
-                <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-orange-100 hover:border-orange-200">
+                <div className="bg-green-50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-green-100 hover:border-green-200">
                   <h3 className="text-xl font-bold text-gray-900 mb-3">UK-Based Team</h3>
                   <p className="text-sm text-gray-700">Our UK-based claims team is here to guide you every step of the way</p>
                 </div>
-                <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-orange-100 hover:border-orange-200">
+                <div className="bg-blue-50 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-100 hover:border-blue-200">
                   <h3 className="text-xl font-bold text-gray-900 mb-3">Simple Process</h3>
                   <p className="text-sm text-gray-700">We keep things simple, with no confusing jargon or hidden terms</p>
                 </div>
