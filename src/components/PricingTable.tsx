@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ProtectedButton } from '@/components/ui/protected-button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Check, ArrowLeft, Info, FileText, ExternalLink, ChevronDown, ChevronUp, Plus, Infinity, Zap, Car, Cog, Settings, Droplets, Cpu, Snowflake, Search, Users, RotateCcw, MapPin, X, Shield, Hash, Calendar, Gauge, Fuel, Edit, HelpCircle, Gift, ArrowRight, ArrowUp, DollarSign, MousePointerClick, ShieldCheck, PartyPopper, CheckCircle, Crown, Battery, Bike, AlertTriangle, AlertCircle, Mail, Wrench } from 'lucide-react';
+import { Check, ArrowLeft, Info, FileText, ExternalLink, ChevronDown, ChevronUp, Plus, Infinity, Zap, Car, Cog, Settings, Droplets, Cpu, Snowflake, Search, Users, RotateCcw, MapPin, X, Shield, Hash, Calendar, Gauge, Fuel, Edit, HelpCircle, Gift, ArrowRight, ArrowUp, DollarSign, MousePointerClick, ShieldCheck, PartyPopper, CheckCircle, Crown, Battery, Bike, AlertTriangle, AlertCircle, Mail, Wrench, Lock } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -2701,60 +2701,64 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   </a>
                 </div>
 
-                {/* Desktop Layout - Horizontal */}
-                <div className="hidden md:flex md:items-center md:justify-between w-full gap-6">
-                  {/* Trustpilot Logo - Left */}
-                  <TrustpilotHeader className="flex-shrink-0" />
+                {/* Desktop Layout - Clean 3-Section Card */}
+                <div className="hidden md:flex md:items-stretch w-full bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                   
-                  {/* Price - Large and prominent */}
-                  <div className="flex-shrink-0 text-center">
-                    <div className="text-2xl font-bold text-gray-900">
-                      £{displayMonthlyPrice}/month
-                    </div>
-                    <div className="text-xs text-gray-600">
-                      12 payments · 0% APR
-                    </div>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="h-10 w-px bg-gray-200 flex-shrink-0"></div>
-                  
-                  {/* Cover Details */}
-                  <div className="flex-shrink-0 text-center">
-                    <div className="text-sm font-semibold text-black">
-                      {paymentType === '12months' && '1-Year Cover'}
-                      {paymentType === '24months' && '2-Year Cover'}
-                      {paymentType === '36months' && '3-Year Cover'}
-                    </div>
-                    <div className="text-xs text-green-600 font-medium">
-                      {paymentType === '12months' && 'Instant protection'}
-                      {paymentType === '24months' && 'Year 2 FREE 🎉'}
-                      {paymentType === '36months' && 'Years 2 & 3 FREE 🎉'}
-                    </div>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="h-10 w-px bg-gray-200 flex-shrink-0"></div>
-                  
-                  {/* Total */}
-                  <div className="flex-shrink-0 text-center">
-                    <div className="text-sm font-semibold text-black">
-                      Total: £{Math.round(displayTotalPrice)}
-                    </div>
-                    <div className="text-xs text-gray-600">
-                      14-day money-back
+                  {/* LEFT SECTION: Trust & Reassurance */}
+                  <div className="flex flex-col items-center justify-center px-6 py-4 bg-gray-50 border-r border-gray-200">
+                    <TrustpilotHeader className="flex-shrink-0" />
+                    <div className="text-xs text-gray-500 mt-2">
+                      14 days to cancel
                     </div>
                   </div>
                   
-                  {/* CTA - Right */}
-                  <div className="flex-shrink-0 ml-auto">
+                  {/* MIDDLE SECTION: Offer Details */}
+                  <div className="flex-1 flex items-center justify-center px-8 py-4 gap-8">
+                    {/* Price */}
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-gray-900">
+                        £{displayMonthlyPrice}<span className="text-lg font-medium text-gray-600">/month</span>
+                      </div>
+                      <div className="text-sm text-gray-600 mt-1">
+                        Only 12 payments – 0% APR
+                      </div>
+                    </div>
+                    
+                    {/* Divider */}
+                    <div className="h-12 w-px bg-gray-200"></div>
+                    
+                    {/* Cover & Total */}
+                    <div className="text-center">
+                      <div className="text-base font-semibold text-black">
+                        {paymentType === '12months' && '1-Year Cover'}
+                        {paymentType === '24months' && '2-Year Cover'}
+                        {paymentType === '36months' && '3-Year Cover'}
+                        {paymentType !== '12months' && (
+                          <span className="ml-2 text-green-600 font-bold">
+                            {paymentType === '24months' && 'Year 2 FREE 🎉'}
+                            {paymentType === '36months' && 'Years 2 & 3 FREE 🎉'}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-sm text-gray-700 mt-1 font-medium">
+                        Total: £{Math.round(displayTotalPrice)}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* RIGHT SECTION: CTA */}
+                  <div className="flex flex-col items-center justify-center px-6 py-4 bg-gray-50 border-l border-gray-200">
                     <Button
                       onClick={handleSelectPlan}
                       size="lg"
-                      className="text-lg font-semibold px-8 py-3.5 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white animate-[breathing_2.4s_ease-in-out_infinite]"
+                      className="text-lg font-semibold px-8 py-3.5 bg-[#FF6B35] hover:bg-[#e55a2a] hover:shadow-lg text-white animate-[breathing_2.4s_ease-in-out_infinite] transition-all duration-200"
                     >
                       Continue to checkout →
                     </Button>
+                    <div className="flex items-center gap-1.5 mt-2 text-xs text-gray-500">
+                      <Lock className="h-3 w-3" />
+                      <span>Secure checkout – No hidden fees</span>
+                    </div>
                   </div>
                 </div>
               </>
