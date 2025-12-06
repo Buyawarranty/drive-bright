@@ -2714,34 +2714,37 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   
                   {/* MIDDLE SECTION: Offer Details - Reversed order, no boxes */}
                   <div className="flex-1 flex items-center justify-center px-8 py-4 gap-8 bg-gray-50">
-                    {/* Cover & Total - First */}
+                    {/* Cover & Total - 3 lines */}
                     <div className="text-center">
                       <div className="text-base font-semibold text-black">
                         {paymentType === '12months' && '1-Year Cover'}
                         {paymentType === '24months' && '2-Year Cover'}
                         {paymentType === '36months' && '3-Year Cover'}
-                        {paymentType !== '12months' && (
-                          <span className="ml-2 text-green-600 font-bold">
-                            {paymentType === '24months' && 'Year 2 FREE 🎉'}
-                            {paymentType === '36months' && 'Years 2 & 3 FREE 🎉'}
-                          </span>
-                        )}
                       </div>
-                      <div className="text-sm text-gray-700 mt-1 font-medium">
+                      {paymentType !== '12months' && (
+                        <div className="text-green-600 font-bold text-sm mt-0.5">
+                          {paymentType === '24months' && 'Year 2 FREE 🎉'}
+                          {paymentType === '36months' && 'Years 2 & 3 FREE 🎉'}
+                        </div>
+                      )}
+                      <div className="text-sm text-gray-700 mt-0.5 font-medium">
                         Total: £{Math.round(displayTotalPrice)}
                       </div>
                     </div>
                     
                     {/* Divider */}
-                    <div className="h-12 w-px bg-gray-200"></div>
+                    <div className="h-14 w-px bg-gray-200"></div>
                     
-                    {/* Price - Closer to CTA */}
+                    {/* Price - 3 lines */}
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-gray-900">
-                        £{displayMonthlyPrice}<span className="text-lg font-medium text-gray-600">/month</span>
+                      <div className="text-2xl font-bold text-gray-900">
+                        £{displayMonthlyPrice}/month
                       </div>
-                      <div className="text-sm text-gray-600 mt-1">
-                        Only 12 payments – 0% APR
+                      <div className="text-sm text-gray-600 mt-0.5">
+                        Only 12 payments
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        0% APR
                       </div>
                     </div>
                   </div>
