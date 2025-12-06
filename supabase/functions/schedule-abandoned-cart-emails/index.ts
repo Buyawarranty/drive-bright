@@ -78,12 +78,12 @@ const handler = async (req: Request): Promise<Response> => {
         }
 
         // Determine trigger type based on step - send only ONE email per cart
-        let triggerType: 'pricing_page_view' | 'plan_selected' | 'pricing_page_view_24h' | 'pricing_page_view_72h' | null = null;
+        let triggerType: 'pricing_page_view' | 'plan_selected' | 'pricing_page_view_24h' | 'pricing_page_view_72h' | 'checkout_abandoned' | null = null;
         
         if (cart.step_abandoned === 3) {
           triggerType = 'pricing_page_view';
         } else if (cart.step_abandoned === 4) {
-          triggerType = 'plan_selected';
+          triggerType = 'checkout_abandoned';
         } else {
           continue; // Skip if not a step we want to send emails for
         }
