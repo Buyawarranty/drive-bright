@@ -2713,7 +2713,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   </div>
                   
                   {/* MIDDLE SECTION: Offer Details - Reversed order, no boxes */}
-                  <div className="flex-1 flex items-center justify-center px-8 py-4 gap-8">
+                  <div className="flex-1 flex items-center justify-center px-8 py-4 gap-8 bg-gray-50">
                     {/* Cover & Total - First */}
                     <div className="text-center">
                       <div className="text-base font-semibold text-black">
