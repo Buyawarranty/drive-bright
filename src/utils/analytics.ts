@@ -174,6 +174,30 @@ export const trackPurchaseComplete = (
   // NOTE: Enhanced conversion user_data should be set on the page BEFORE calling this
   // using gtag('set', 'user_data', {...}) - see ThankYou.tsx for implementation
   
+  console.log('🛒 trackPurchaseComplete called:', { value, transactionId, enhancedData });
+  
+  // Push to dataLayer for GTM (Google Tag Manager)
+  if (typeof window !== 'undefined' && window.dataLayer) {
+    window.dataLayer.push({
+      'event': 'purchase',
+      'ecommerce': {
+        'transaction_id': transactionId,
+        'value': value,
+        'currency': 'GBP'
+      },
+      'user_data': enhancedData ? {
+        email: enhancedData.email,
+        phone_number: enhancedData.phone,
+        address: {
+          first_name: enhancedData.firstName,
+          last_name: enhancedData.lastName,
+          street: enhancedData.address
+        }
+      } : undefined
+    });
+    console.log('✅ GTM dataLayer purchase event pushed');
+  }
+  
   // Main purchase conversion with specific Google Ads conversion label
   trackGoogleAdsConversion('U-BnCJKD2KUbEPWAqMVA', value, transactionId, enhancedData);
   
