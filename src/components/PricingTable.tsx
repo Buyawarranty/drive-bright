@@ -2705,15 +2705,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <div className="hidden md:flex md:items-stretch w-full bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                   
                   {/* LEFT SECTION: Trust & Reassurance */}
-                  <div className="flex flex-col items-center justify-center px-6 py-4 bg-gray-50 border-r border-gray-200">
+                  <div className="flex flex-col items-center justify-center px-6 py-4 bg-gray-50">
                     <TrustpilotHeader className="flex-shrink-0" />
                     <div className="text-xs text-gray-500 mt-2">
                       14 days to cancel
                     </div>
                   </div>
                   
-                  {/* MIDDLE SECTION: Offer Details - Reversed order, no boxes */}
-                  <div className="flex-1 flex items-center justify-center px-8 py-4 gap-8 bg-gray-50">
+                  {/* MIDDLE SECTION: Offer Details */}
+                  <div className="flex-1 flex items-center justify-center px-8 py-4 gap-12 bg-gray-50">
                     {/* Cover & Total - 3 lines */}
                     <div className="text-center">
                       <div className="text-base font-semibold text-black">
@@ -2732,9 +2732,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
                     </div>
                     
-                    {/* Divider */}
-                    <div className="h-14 w-px bg-gray-200"></div>
-                    
                     {/* Price - 3 lines */}
                     <div className="text-center">
                       <div className="text-2xl font-bold text-gray-900">
@@ -2750,7 +2747,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   </div>
                   
                   {/* RIGHT SECTION: CTA */}
-                  <div className="flex flex-col items-center justify-center px-6 py-4 bg-gray-50 border-l border-gray-200">
+                  <div className="flex flex-col items-center justify-center px-6 py-4 bg-gray-50">
                     <Button
                       onClick={handleSelectPlan}
                       size="lg"
