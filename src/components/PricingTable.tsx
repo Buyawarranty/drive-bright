@@ -2751,7 +2751,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <Button
                       onClick={handleSelectPlan}
                       size="lg"
-                      className="text-lg font-semibold px-8 py-3.5 bg-[#FF6B35] hover:bg-[#e55a2a] hover:shadow-lg text-white animate-[breathing_2.4s_ease-in-out_infinite] transition-all duration-200"
+                      className="text-lg font-semibold px-8 py-3.5 bg-brand-orange hover:bg-brand-orange/90 hover:shadow-lg text-white animate-cta-enhanced transition-all duration-200"
                     >
                       Continue to checkout →
                     </Button>
