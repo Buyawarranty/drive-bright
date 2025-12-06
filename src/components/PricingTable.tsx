@@ -2666,7 +2666,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       £{displayMonthlyPrice}/month
                     </div>
                     <div className="text-sm text-black">
-                      12 payments, 0% APR
+                      Only 12 payments – 0% APR
                     </div>
                     <div className="text-sm text-black font-medium">
                       {paymentType === '12months' && '1-Year Cover'}
@@ -2711,7 +2711,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       £{displayMonthlyPrice}/month
                     </div>
                     <div className="text-sm text-black">
-                      12 payments, 0% APR
+                      Only 12 payments – 0% APR
                     </div>
                     <div className="text-sm text-black font-medium">
                       {paymentType === '12months' && '1-Year Cover'}
