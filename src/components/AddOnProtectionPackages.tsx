@@ -84,7 +84,6 @@ const addOnPackages = [
     priceType: 'monthly',
     bulletPoints: [
       'Daily rental allowance',
-      'Requires prior approval',
       'Minimises disruption to daily life',
       'Seamless integration with Platinum claims'
     ]
