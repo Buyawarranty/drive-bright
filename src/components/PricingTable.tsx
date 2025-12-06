@@ -2712,22 +2712,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </div>
                   </div>
                   
-                  {/* MIDDLE SECTION: Offer Details */}
+                  {/* MIDDLE SECTION: Offer Details - Reversed order, no boxes */}
                   <div className="flex-1 flex items-center justify-center px-8 py-4 gap-8">
-                    {/* Price */}
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-gray-900">
-                        £{displayMonthlyPrice}<span className="text-lg font-medium text-gray-600">/month</span>
-                      </div>
-                      <div className="text-sm text-gray-600 mt-1">
-                        Only 12 payments – 0% APR
-                      </div>
-                    </div>
-                    
-                    {/* Divider */}
-                    <div className="h-12 w-px bg-gray-200"></div>
-                    
-                    {/* Cover & Total */}
+                    {/* Cover & Total - First */}
                     <div className="text-center">
                       <div className="text-base font-semibold text-black">
                         {paymentType === '12months' && '1-Year Cover'}
@@ -2742,6 +2729,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
                       <div className="text-sm text-gray-700 mt-1 font-medium">
                         Total: £{Math.round(displayTotalPrice)}
+                      </div>
+                    </div>
+                    
+                    {/* Divider */}
+                    <div className="h-12 w-px bg-gray-200"></div>
+                    
+                    {/* Price - Closer to CTA */}
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-gray-900">
+                        £{displayMonthlyPrice}<span className="text-lg font-medium text-gray-600">/month</span>
+                      </div>
+                      <div className="text-sm text-gray-600 mt-1">
+                        Only 12 payments – 0% APR
                       </div>
                     </div>
                   </div>
