@@ -2702,30 +2702,52 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 </div>
 
                 {/* Desktop Layout - Horizontal */}
-                <div className="hidden md:flex md:items-center md:justify-between w-full">
+                <div className="hidden md:flex md:items-center md:justify-between w-full gap-6">
                   {/* Trustpilot Logo - Left */}
                   <TrustpilotHeader className="flex-shrink-0" />
                   
-                  {/* Price Section - Center */}
-                  <div className="flex items-center gap-3 flex-1 justify-center">
+                  {/* Price - Large and prominent */}
+                  <div className="flex-shrink-0 text-center">
                     <div className="text-2xl font-bold text-gray-900">
                       £{displayMonthlyPrice}/month
                     </div>
-                    <div className="text-sm text-black font-bold">
-                      Only 12 payments – 0% APR
+                    <div className="text-xs text-gray-600">
+                      12 payments · 0% APR
                     </div>
-                    <div className="text-sm text-black">
+                  </div>
+
+                  {/* Divider */}
+                  <div className="h-10 w-px bg-gray-200 flex-shrink-0"></div>
+                  
+                  {/* Cover Details */}
+                  <div className="flex-shrink-0 text-center">
+                    <div className="text-sm font-semibold text-black">
                       {paymentType === '12months' && '1-Year Cover'}
-                      {paymentType === '24months' && <>2-Year Cover | <span className="font-bold">Year 2 FREE</span> 🎉</>}
-                      {paymentType === '36months' && <>3-Year Cover | <span className="font-bold">Years 2 & 3 FREE</span> 🎉</>}
+                      {paymentType === '24months' && '2-Year Cover'}
+                      {paymentType === '36months' && '3-Year Cover'}
                     </div>
-                    <div className="text-sm text-black">
-                      Total: £{Math.round(displayTotalPrice)} | 14-days to cancel
+                    <div className="text-xs text-green-600 font-medium">
+                      {paymentType === '12months' && 'Instant protection'}
+                      {paymentType === '24months' && 'Year 2 FREE 🎉'}
+                      {paymentType === '36months' && 'Years 2 & 3 FREE 🎉'}
+                    </div>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="h-10 w-px bg-gray-200 flex-shrink-0"></div>
+                  
+                  {/* Total */}
+                  <div className="flex-shrink-0 text-center">
+                    <div className="text-sm font-semibold text-black">
+                      Total: £{Math.round(displayTotalPrice)}
+                    </div>
+                    <div className="text-xs text-gray-600">
+                      14-day money-back
                     </div>
                   </div>
                   
                   {/* CTA - Right */}
-                  <div className="flex-shrink-0">
+                  <div className="flex-shrink-0 ml-auto">
                     <Button
                       onClick={handleSelectPlan}
                       size="lg"
