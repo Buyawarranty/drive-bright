@@ -2701,57 +2701,54 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   </a>
                 </div>
 
-                {/* Desktop Layout - Clean 3-Section Card */}
-                <div className="hidden md:flex md:items-stretch w-full bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                {/* Desktop Layout - Clean 4-Section Card with Equal Spacing */}
+                <div className="hidden md:flex md:items-stretch md:justify-between w-full bg-gray-50 rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                   
-                  {/* LEFT SECTION: Trust & Reassurance */}
-                  <div className="flex flex-col items-center justify-center px-6 py-4 bg-gray-50">
+                  {/* SECTION 1: Trust & Reassurance */}
+                  <div className="flex-1 flex flex-col items-center justify-center px-6 py-4">
                     <TrustpilotHeader className="flex-shrink-0" />
                     <div className="text-xs text-gray-500 mt-2">
                       14 days to cancel
                     </div>
                   </div>
                   
-                  {/* MIDDLE SECTION: Offer Details */}
-                  <div className="flex-1 flex items-center justify-center px-8 py-4 gap-12 bg-gray-50">
-                    {/* Cover & Total - 3 lines */}
-                    <div className="text-center">
-                      <div className="text-base font-semibold text-black">
-                        {paymentType === '12months' && '1-Year Cover'}
-                        {paymentType === '24months' && '2-Year Cover'}
-                        {paymentType === '36months' && '3-Year Cover'}
-                      </div>
-                      {paymentType !== '12months' && (
-                        <div className="text-green-600 font-bold text-sm mt-0.5">
-                          {paymentType === '24months' && 'Year 2 FREE 🎉'}
-                          {paymentType === '36months' && 'Years 2 & 3 FREE 🎉'}
-                        </div>
-                      )}
-                      <div className="text-sm text-gray-700 mt-0.5 font-medium">
-                        Total: £{Math.round(displayTotalPrice)}
-                      </div>
+                  {/* SECTION 2: Cover & Total */}
+                  <div className="flex-1 flex flex-col items-center justify-center px-6 py-4">
+                    <div className="text-base font-semibold text-black">
+                      {paymentType === '12months' && '1-Year Cover'}
+                      {paymentType === '24months' && '2-Year Cover'}
+                      {paymentType === '36months' && '3-Year Cover'}
                     </div>
-                    
-                    {/* Price - 3 lines */}
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-gray-900">
-                        £{displayMonthlyPrice}/month
+                    {paymentType !== '12months' && (
+                      <div className="text-green-600 font-bold text-sm mt-0.5">
+                        {paymentType === '24months' && 'Year 2 FREE 🎉'}
+                        {paymentType === '36months' && 'Years 2 & 3 FREE 🎉'}
                       </div>
-                      <div className="text-sm text-gray-600 mt-0.5">
-                        Only 12 payments
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        0% APR
-                      </div>
+                    )}
+                    <div className="text-sm text-gray-700 mt-0.5 font-medium">
+                      Total: £{Math.round(displayTotalPrice)}
                     </div>
                   </div>
                   
-                  {/* RIGHT SECTION: CTA */}
-                  <div className="flex flex-col items-center justify-center px-6 py-4 bg-gray-50">
+                  {/* SECTION 3: Price */}
+                  <div className="flex-1 flex flex-col items-center justify-center px-6 py-4">
+                    <div className="text-2xl font-bold text-gray-900">
+                      £{displayMonthlyPrice}/month
+                    </div>
+                    <div className="text-sm text-gray-600 mt-0.5">
+                      Only 12 payments
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      0% APR
+                    </div>
+                  </div>
+                  
+                  {/* SECTION 4: CTA */}
+                  <div className="flex-1 flex flex-col items-center justify-center px-6 py-4">
                     <Button
                       onClick={handleSelectPlan}
                       size="lg"
-                      className="text-lg font-semibold px-8 py-3.5 bg-[#FF6B35] hover:bg-[#FF6B35]/90 hover:shadow-lg text-white animate-[breathing_2.4s_ease-in-out_infinite] transition-all duration-200"
+                      className="text-lg font-semibold px-8 py-3.5 bg-[#FF6B35] hover:bg-[#FF6B35]/90 hover:shadow-lg text-white transition-all duration-200"
                     >
                       Continue to checkout →
                     </Button>
