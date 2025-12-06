@@ -64,7 +64,7 @@ interface SendEmailRequest {
   mileage?: string;
   fuelType?: string;
   transmission?: string;
-  triggerType: 'pricing_page_view' | 'plan_selected' | 'pricing_page_view_24h' | 'pricing_page_view_72h';
+  triggerType: 'pricing_page_view' | 'plan_selected' | 'pricing_page_view_24h' | 'pricing_page_view_72h' | 'checkout_abandoned';
   planName?: string;
   paymentType?: string;
 }
@@ -81,8 +81,18 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
   let showPromo = false;
   let promoCode = '';
   let promoText = '';
+  let ctaText = 'View My Quote';
   
-  if (request.triggerType === 'pricing_page_view_24h') {
+  if (request.triggerType === 'checkout_abandoned') {
+    subject = `${vehicleReg} - Complete your warranty purchase`;
+    heading = `You're Almost There!`;
+    intro = `Hi ${firstName}, you were just a step away from protecting your ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''}.`;
+    body = "Your warranty details are saved and ready. Complete your purchase now to get instant cover.";
+    ctaText = 'Complete My Purchase';
+    showPromo = true;
+    promoCode = 'COMPLETE10';
+    promoText = 'Complete your purchase now and save 10% with code COMPLETE10.';
+  } else if (request.triggerType === 'pricing_page_view_24h') {
     showPromo = true;
     promoCode = 'SAVE10NOW';
     promoText = 'Special offer: Use code SAVE10NOW for 10% off (valid for 24 hours).';
@@ -137,8 +147,8 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
 
       <!-- CTA Button -->
       <div style="text-align: center; margin: 32px 0;">
-        <a href="${continueUrl}" style="background-color: #0066cc; border-radius: 6px; color: #fff; font-size: 18px; font-weight: bold; text-decoration: none; padding: 16px 32px; display: inline-block;">
-          View My Quote
+        <a href="${continueUrl}" style="background-color: #ea580c; border-radius: 6px; color: #fff; font-size: 18px; font-weight: bold; text-decoration: none; padding: 16px 32px; display: inline-block;">
+          ${ctaText}
         </a>
       </div>
 
@@ -231,9 +241,12 @@ const handler = async (req: Request): Promise<Response> => {
     let continueUrl = baseUrl;
 
     if (emailRequest.vehicleReg) {
+      // Determine target step based on trigger type
       let targetStep = 2;
       if (emailRequest.triggerType === 'plan_selected') {
         targetStep = 3;
+      } else if (emailRequest.triggerType === 'checkout_abandoned') {
+        targetStep = 4;
       }
       
       const stateParam = btoa(JSON.stringify({
