@@ -2668,10 +2668,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <div className="text-sm text-black font-bold">
                       Only 12 payments – 0% APR
                     </div>
-                    <div className="text-sm text-black font-medium">
+                    <div className="text-sm text-black">
                       {paymentType === '12months' && '1-Year Cover'}
-                      {paymentType === '24months' && '2-Year Cover | Year 2 FREE 🎉'}
-                      {paymentType === '36months' && '3-Year Cover | Years 2 & 3 FREE 🎉'}
+                      {paymentType === '24months' && <>2-Year Cover | <span className="font-bold">Year 2 FREE</span> 🎉</>}
+                      {paymentType === '36months' && <>3-Year Cover | <span className="font-bold">Years 2 & 3 FREE</span> 🎉</>}
                     </div>
                     <div className="text-sm text-black">
                       Total: £{Math.round(displayTotalPrice)} | 14-days to cancel
@@ -2723,10 +2723,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <div className="text-sm text-black font-bold">
                       Only 12 payments – 0% APR
                     </div>
-                    <div className="text-sm text-black font-medium">
+                    <div className="text-sm text-black">
                       {paymentType === '12months' && '1-Year Cover'}
-                      {paymentType === '24months' && '2-Year Cover | Year 2 FREE 🎉'}
-                      {paymentType === '36months' && '3-Year Cover | Years 2 & 3 FREE 🎉'}
+                      {paymentType === '24months' && <>2-Year Cover | <span className="font-bold">Year 2 FREE</span> 🎉</>}
+                      {paymentType === '36months' && <>3-Year Cover | <span className="font-bold">Years 2 & 3 FREE</span> 🎉</>}
                     </div>
                     <div className="text-sm text-black">
                       Total: £{Math.round(displayTotalPrice)} | 14-days to cancel
