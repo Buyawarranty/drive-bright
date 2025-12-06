@@ -890,10 +890,10 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
 
   return (
     <div className="min-h-screen bg-orange-50 w-full overflow-x-hidden">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6">
         
         {/* Header with Back Button, Logo and Mobile Menu */}
-        <div className="flex justify-between items-center mb-8 relative">
+        <div className="flex justify-between items-center mb-4 sm:mb-6 relative">
           <Button
             onClick={onBack}
             className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 border-0 flex-shrink-0"
