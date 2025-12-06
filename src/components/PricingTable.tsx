@@ -2703,17 +2703,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
                 {/* Desktop Layout - Horizontal */}
                 <div className="hidden md:flex md:items-center md:justify-between w-full">
-                  {/* Trustpilot - Left */}
-                  <a 
-                    href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 flex-shrink-0 hover:opacity-80 transition-opacity"
-                  >
-                    <span className="text-sm text-gray-600">Trustpilot</span>
-                    <span className="text-[#00b67a]">★★★★★</span>
-                    <span className="text-sm text-gray-600">Rated Excellent</span>
-                  </a>
+                  {/* Trustpilot Logo - Left */}
+                  <TrustpilotHeader className="flex-shrink-0" />
                   
                   {/* Price Section - Center */}
                   <div className="flex items-center gap-3 flex-1 justify-center">
