@@ -2660,25 +2660,21 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <>
                 {/* Mobile Layout - Stacked */}
                 <div className="flex flex-col md:hidden gap-2 w-full">
-                  {/* Monthly Price */}
-                  <div className="text-center">
+                  {/* Compact Price Summary */}
+                  <div className="text-center space-y-0.5">
                     <div className="text-2xl font-bold text-gray-900">
                       £{displayMonthlyPrice}/month
                     </div>
-                    <div className="flex items-center justify-center gap-1 text-sm text-black">
-                      <Check className="w-4 h-4 text-green-600" />
-                      <span>Only 12 payments (0% APR)</span>
+                    <div className="text-sm text-black">
+                      12 payments, 0% APR
+                    </div>
+                    <div className="text-sm text-black font-medium">
+                      {paymentType === '12months' && '1-Year Cover'}
+                      {paymentType === '24months' && '2-Year Cover | Year 2 FREE 🎉'}
+                      {paymentType === '36months' && '3-Year Cover | Years 2 & 3 FREE 🎉'}
                     </div>
                     <div className="text-sm text-black">
-                      {paymentType === '12months' && '1 Year Cover'}
-                      {paymentType === '24months' && 'No payments in Year 2 - 🎉 2 Year Cover'}
-                      {paymentType === '36months' && 'No payments in Years 2 & 3 - 🎉 3 Year Cover'}
-                    </div>
-                    <div className="text-lg font-semibold text-black mt-1">
-                      Total: £{Math.round(displayTotalPrice)}
-                    </div>
-                    <div className="text-xs text-black mt-0.5">
-                      🛡️ 14 days to cancel
+                      Total: £{Math.round(displayTotalPrice)} | 14-days to cancel
                     </div>
                   </div>
                   
@@ -2693,71 +2689,49 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   </Button>
                   
                   {/* Trustpilot Badge */}
-                  <div className="flex justify-center">
-                    <a 
-                      href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                    >
-                      <img 
-                        src={trustpilotLogo} 
-                        alt="Trustpilot Excellent Rating" 
-                        className="h-8 w-auto"
-                      />
-                    </a>
+                  <div className="flex justify-center items-center gap-1">
+                    <span className="text-xs text-gray-600">Trustpilot</span>
+                    <span className="text-yellow-500 text-xs">★★★★★</span>
+                    <span className="text-xs text-gray-600">Rated Excellent</span>
                   </div>
                 </div>
 
                 {/* Desktop Layout - Horizontal */}
                 <div className="hidden md:flex md:items-center md:justify-between w-full">
-                  {/* Trustpilot Logo - Left */}
-                  <div className="flex-shrink-0">
-                    <a 
-                      href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="block"
-                    >
-                      <img 
-                        src={trustpilotLogo} 
-                        alt="Trustpilot Excellent Rating" 
-                        className="h-12 w-auto hover:opacity-80 transition-opacity"
-                      />
-                    </a>
+                  {/* Trustpilot - Left */}
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <span className="text-sm text-gray-600">Trustpilot</span>
+                    <span className="text-yellow-500">★★★★★</span>
+                    <span className="text-sm text-gray-600">Rated Excellent</span>
                   </div>
                   
                   {/* Price Section - Center */}
-                  <div className="flex flex-col items-center flex-1 px-8">
+                  <div className="flex items-center gap-3 flex-1 justify-center">
                     <div className="text-2xl font-bold text-gray-900">
                       £{displayMonthlyPrice}/month
                     </div>
-                    <div className="flex items-center gap-1 text-sm text-black">
-                      <Check className="w-4 h-4 text-green-600" />
-                      <span>Only 12 payments (0% APR)</span>
+                    <div className="text-sm text-black">
+                      12 payments, 0% APR
+                    </div>
+                    <div className="text-sm text-black font-medium">
+                      {paymentType === '12months' && '1-Year Cover'}
+                      {paymentType === '24months' && '2-Year Cover | Year 2 FREE 🎉'}
+                      {paymentType === '36months' && '3-Year Cover | Years 2 & 3 FREE 🎉'}
                     </div>
                     <div className="text-sm text-black">
-                      {paymentType === '12months' && '1 Year Cover'}
-                      {paymentType === '24months' && 'No payments in Year 2 - 🎉 2 Year Cover'}
-                      {paymentType === '36months' && 'No payments in Years 2 & 3 - 🎉 3 Year Cover'}
+                      Total: £{Math.round(displayTotalPrice)} | 14-days to cancel
                     </div>
                   </div>
                   
-                  {/* CTA and Total - Right */}
-                  <div className="flex flex-col items-end gap-1.5">
+                  {/* CTA - Right */}
+                  <div className="flex-shrink-0">
                     <Button
                       onClick={handleSelectPlan}
                       size="lg"
-                      className="text-lg font-semibold px-10 py-3.5 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white animate-[breathing_2.4s_ease-in-out_infinite]"
+                      className="text-lg font-semibold px-8 py-3.5 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white animate-[breathing_2.4s_ease-in-out_infinite]"
                     >
-                      Continue to checkout
-                      <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
+                      Continue to checkout →
                     </Button>
-                    <div className="text-lg font-semibold text-black">
-                      Total: £{Math.round(displayTotalPrice)}
-                    </div>
-                    <div className="text-xs text-black">
-                      🛡️ 14 days to cancel
-                    </div>
                   </div>
                 </div>
               </>
