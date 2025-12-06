@@ -176,8 +176,9 @@ export const trackPurchaseComplete = (
   
   console.log('🛒 trackPurchaseComplete called:', { value, transactionId, enhancedData });
   
-  // Push to dataLayer for GTM (Google Tag Manager)
+  // Push to dataLayer for GTM (Google Tag Manager) - Primary Conversion Event
   if (typeof window !== 'undefined' && window.dataLayer) {
+    // Push the primary purchase conversion event for GTM
     window.dataLayer.push({
       'event': 'purchase',
       'ecommerce': {
@@ -195,7 +196,23 @@ export const trackPurchaseComplete = (
         }
       } : undefined
     });
-    console.log('✅ GTM dataLayer purchase event pushed');
+    console.log('✅ GTM dataLayer "purchase" event pushed (Primary Conversion)');
+    
+    // Also push a specific 'Purchase GTM' event for Google Ads Primary Website conversion
+    window.dataLayer.push({
+      'event': 'Purchase GTM',
+      'transaction_id': transactionId,
+      'value': value,
+      'currency': 'GBP',
+      'user_data': enhancedData ? {
+        email: enhancedData.email,
+        phone_number: enhancedData.phone,
+        first_name: enhancedData.firstName,
+        last_name: enhancedData.lastName,
+        street: enhancedData.address
+      } : undefined
+    });
+    console.log('✅ GTM dataLayer "Purchase GTM" event pushed (Google Ads Primary Website Conversion)');
   }
   
   // Main purchase conversion with specific Google Ads conversion label
