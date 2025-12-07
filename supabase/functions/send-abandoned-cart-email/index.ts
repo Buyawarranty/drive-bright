@@ -70,13 +70,17 @@ interface SendEmailRequest {
 }
 
 const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { html: string, subject: string } => {
-  const firstName = request.firstName || 'there';
+  // Use first name if available and it's not an email address, otherwise use a friendly greeting
+  const isEmailAddress = (str: string) => str && str.includes('@');
+  const firstName = request.firstName && request.firstName.trim() && !isEmailAddress(request.firstName.trim()) 
+    ? request.firstName.trim() 
+    : 'there';
   const vehicleInfo = `${request.vehicleMake || ''} ${request.vehicleModel || ''}`.trim() || 'your vehicle';
   const vehicleReg = request.vehicleReg || '';
   
   let subject = `${vehicleReg} - Your warranty quote from Buy A Warranty`;
   let heading = `Your Warranty Quote for ${vehicleInfo}`;
-  let intro = `Hi ${firstName}, you requested a warranty quote for your ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''}.`;
+  let intro = `You requested a warranty quote for your ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''}.`;
   let body = "We've saved your quote details. You can review and complete your application whenever you're ready.";
   let showPromo = false;
   let promoCode = '';
@@ -86,21 +90,21 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
   if (request.triggerType === 'checkout_abandoned') {
     subject = `${vehicleReg} - Complete your warranty purchase`;
     heading = `You're Almost There!`;
-    intro = `Hi ${firstName}, you were just a step away from protecting your ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''}.`;
+    intro = `You were just a step away from protecting your ${vehicleInfo}${vehicleReg ? ` (${vehicleReg})` : ''}.`;
     body = "Your warranty details are saved and ready. Complete your purchase now to get instant cover.";
     ctaText = 'Complete My Purchase';
     showPromo = true;
-    promoCode = 'COMPLETE10';
-    promoText = 'Complete your purchase now and save 10% with code COMPLETE10.';
+    promoCode = 'SAVE10PERCENT';
+    promoText = 'Complete your purchase now and save 10% with code SAVE10PERCENT.';
   } else if (request.triggerType === 'pricing_page_view_24h') {
     showPromo = true;
-    promoCode = 'SAVE10NOW';
-    promoText = 'Special offer: Use code SAVE10NOW for 10% off (valid for 24 hours).';
+    promoCode = 'SAVE10PERCENT';
+    promoText = 'Special offer: Use code SAVE10PERCENT for 10% off (valid for 24 hours).';
   } else if (request.triggerType === 'pricing_page_view_72h') {
     showPromo = true;
-    promoCode = 'SAVE10NOW';
-    promoText = 'Limited time: Use code SAVE10NOW for 10% off your purchase.';
-    intro = `Hi ${firstName}, this is a reminder about your warranty quote for ${vehicleReg}.`;
+    promoCode = 'SAVE10PERCENT';
+    promoText = 'Limited time: Use code SAVE10PERCENT for 10% off your purchase.';
+    intro = `This is a reminder about your warranty quote for ${vehicleReg}.`;
     body = "Your quote information is still available to review.";
   }
   
@@ -132,7 +136,8 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
       <!-- Promo Section -->
       <div style="background-color: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center;">
         <p style="color: #856404; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">${promoText}</p>
-        <div style="background-color: #ffc107; color: #000; font-size: 24px; font-weight: bold; padding: 12px 24px; border-radius: 4px; display: inline-block; letter-spacing: 2px;">${promoCode}</div>
+        <div style="background-color: #ffc107; color: #000; font-size: 24px; font-weight: bold; padding: 12px 24px; border-radius: 4px; display: inline-block; letter-spacing: 2px; cursor: pointer; user-select: all;" title="Click to copy">${promoCode}</div>
+        <p style="color: #856404; font-size: 12px; margin: 8px 0 0 0;">Click code to copy</p>
       </div>
       ` : ''}
 
@@ -141,8 +146,8 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
         <p style="color: #1a1a1a; font-size: 18px; font-weight: 600; margin: 0 0 12px 0;">Your Quote Includes:</p>
         <p style="color: #484848; font-size: 15px; line-height: 24px; margin: 4px 0;">• Comprehensive vehicle warranty coverage</p>
         <p style="color: #484848; font-size: 15px; line-height: 24px; margin: 4px 0;">• UK-based customer support</p>
-        <p style="color: #484848; font-size: 15px; line-height: 24px; margin: 4px 0;">• Straightforward claims process</p>
-        <p style="color: #484848; font-size: 15px; line-height: 24px; margin: 4px 0;">• 14-day cooling-off period</p>
+        <p style="color: #484848; font-size: 15px; line-height: 24px; margin: 4px 0;">• Easy claims, Fast payouts</p>
+        <p style="color: #484848; font-size: 15px; line-height: 24px; margin: 4px 0;">• 14-day money back guarantee</p>
       </div>
 
       <!-- CTA Button -->
