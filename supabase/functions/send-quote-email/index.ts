@@ -45,10 +45,13 @@ const formatPaymentType = (paymentType: string): string => {
 };
 
 const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string => {
-  const { vehicleData, firstName, lastName, selectedPlan, quoteId } = data;
+  const { vehicleData, firstName, lastName, selectedPlan, quoteId, email } = data;
   
-  // Use first name if available, otherwise use a friendly greeting
-  const customerName = firstName && firstName.trim() ? firstName.trim() : 'there';
+  // Use first name if available and it's not an email address, otherwise use a friendly greeting
+  const isEmailAddress = (str: string) => str && str.includes('@');
+  const customerName = firstName && firstName.trim() && !isEmailAddress(firstName.trim()) 
+    ? firstName.trim() 
+    : 'there';
   const vehicleDisplay = `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() || 'your vehicle';
   
   // Green checkmark icon matching website style - bright green tick
@@ -78,10 +81,6 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
         
         <!-- Main Content -->
         <div style="padding: 30px;">
-          <p style="font-size: 18px; color: #1a1a1a; margin-bottom: 20px;">
-            Hi ${customerName},
-          </p>
-          
           <p style="font-size: 16px; color: #333; margin-bottom: 25px;">
             Great news! Your personalised warranty quote for your <strong>${vehicleDisplay}</strong> is ready and waiting.
           </p>
