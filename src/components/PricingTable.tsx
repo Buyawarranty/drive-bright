@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ProtectedButton } from '@/components/ui/protected-button';
 import { Badge } from '@/components/ui/badge';
@@ -105,6 +106,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
   previousLabourRate,
   previousBoostAddon
 }) => {
+
+  const navigate = useNavigate();
 
   const [plans, setPlans] = useState<Plan[]>([]);
   const [paymentType, setPaymentType] = useState<'12months' | '24months' | '36months' | null>(previousPaymentType || '24months');
@@ -1236,7 +1239,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   onClick={() => {
                     localStorage.removeItem('warrantyVehicleData');
                     localStorage.removeItem('warrantyFormData');
-                    window.location.href = '/';
+                    navigate('/', { replace: true });
                   }}
                   variant="ghost"
                   size="sm"
@@ -1263,7 +1266,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               onClick={() => {
                 localStorage.removeItem('warrantyVehicleData');
                 localStorage.removeItem('warrantyFormData');
-                window.location.href = '/';
+                navigate('/', { replace: true });
               }}
               variant="ghost"
               size="sm"
