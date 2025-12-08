@@ -2609,9 +2609,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   >
                     <div className="flex flex-col items-center text-center">
                       <span className="text-3xl font-bold text-gray-900">
-                        £{displayMonthlyPrice}/month
+                        £{displayMonthlyPrice} × 12 payments
                       </span>
-                      <span className="text-sm text-gray-600">Total: £{Math.round(displayTotalPrice)}</span>
+                      <span className="text-sm text-gray-600">or Pay in full: £{Math.round(displayTotalPrice).toLocaleString()}</span>
                     </div>
                     <div className={`absolute right-0 p-1.5 rounded-full bg-gray-200 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : 'rotate-0'}`}>
                       <ChevronDown className="w-5 h-5 text-gray-700" />
@@ -2625,10 +2625,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <div className="text-sm text-black font-bold">
                         Only 12 payments – 0% APR
                       </div>
-                      <div className="text-sm text-black">
-                        {paymentType === '12months' && <span className="font-bold">1-Year Cover</span>}
-                        {paymentType === '24months' && <><span className="font-bold">Year 2 FREE</span> 🎉 | <span className="font-bold">2-Year Cover</span></>}
-                        {paymentType === '36months' && <><span className="font-bold">Years 2 & 3 FREE</span> 🎉 | <span className="font-bold">3-Year Cover</span></>}
+                      <div className="text-sm text-black font-bold">
+                        {paymentType === '12months' && <span>1-Year Cover</span>}
+                        {paymentType === '24months' && <><span>Year 2 FREE</span> 🎉 · <span>2-Year Cover</span></>}
+                        {paymentType === '36months' && <><span>Years 2 & 3 FREE</span> 🎉 · <span>3-Year Cover</span></>}
                       </div>
                       <div className="text-sm text-black">
                         14-days to cancel
@@ -2642,9 +2642,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       rel="noopener noreferrer"
                       className="flex justify-center items-center gap-1 hover:opacity-80 transition-opacity pb-2"
                     >
-                      <span className="text-xs text-gray-600">Trustpilot</span>
-                      <span className="text-[#00b67a] text-xs">★★★★★</span>
-                      <span className="text-xs text-gray-600">Rated Excellent</span>
+                      <span className="text-gray-600 text-sm">⭐</span>
+                      <span className="text-sm text-gray-600">Rated Excellent on Trustpilot</span>
                     </a>
                   </div>
                   
