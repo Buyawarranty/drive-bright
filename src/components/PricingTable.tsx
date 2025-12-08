@@ -2392,7 +2392,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         <div className="mt-8 mb-6">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
             <div className="flex flex-col gap-1">
-              <p className="text-sm font-semibold text-foreground">
+              <p className="text-base font-semibold text-foreground">
                 94% of claims approved fast
               </p>
               <p className="text-sm text-muted-foreground">
