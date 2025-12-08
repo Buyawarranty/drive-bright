@@ -1152,8 +1152,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </button>
 
             <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-primary" />
-              <h1 className="text-lg sm:text-xl font-bold text-foreground">
+              <Zap className="w-6 h-6 text-primary" />
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">
                 Get Covered in 60 Seconds
               </h1>
             </div>
@@ -1167,7 +1167,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
 
           {/* Subtitle and Trustpilot */}
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-1">
             <p className="text-muted-foreground text-sm">
               Choose your plan, customise options, and pay in 12 easy instalments.
             </p>
