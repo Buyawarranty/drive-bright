@@ -1,0 +1,151 @@
+import React, { useState } from 'react';
+import { Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface TermOption {
+  id: '12months' | '24months' | '36months';
+  label: string;
+  description: string;
+  monthlyPrice: number;
+  isPopular?: boolean;
+  isBestValue?: boolean;
+}
+
+interface TermSelectorProps {
+  selectedTerm: '12months' | '24months' | '36months' | null;
+  onTermChange: (term: '12months' | '24months' | '36months') => void;
+  availableDurations: ('12months' | '24months' | '36months')[];
+  getPriceForTerm: (term: string) => number;
+}
+
+const TermSelector: React.FC<TermSelectorProps> = ({
+  selectedTerm,
+  onTermChange,
+  availableDurations,
+  getPriceForTerm
+}) => {
+  const [showAllOptions, setShowAllOptions] = useState(false);
+
+  const allTerms: TermOption[] = [
+    {
+      id: '24months',
+      label: '12 months + 12 FREE',
+      description: '2-year cover',
+      monthlyPrice: getPriceForTerm('24months'),
+      isPopular: true
+    },
+    {
+      id: '12months',
+      label: '12 months',
+      description: '1-year cover',
+      monthlyPrice: getPriceForTerm('12months')
+    },
+    {
+      id: '36months',
+      label: '12 months + 24 FREE',
+      description: '3-year cover',
+      monthlyPrice: getPriceForTerm('36months'),
+      isBestValue: true
+    }
+  ];
+
+  // Filter to available durations
+  const terms = allTerms.filter(t => availableDurations.includes(t.id));
+  
+  // Default term to show (most popular available)
+  const defaultTerm = terms.find(t => t.isPopular) || terms[0];
+  
+  // Terms to show based on expand state
+  const visibleTerms = showAllOptions ? terms : [defaultTerm];
+
+  return (
+    <div className="px-4 py-4">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold">
+          1
+        </div>
+        <h3 className="font-semibold text-lg text-foreground">Choose Your Term</h3>
+      </div>
+
+      <div className="space-y-3">
+        {visibleTerms.map((term) => {
+          const isSelected = selectedTerm === term.id;
+          
+          return (
+            <button
+              key={term.id}
+              onClick={() => onTermChange(term.id)}
+              className={cn(
+                "w-full p-4 rounded-xl border-2 text-left transition-all relative",
+                isSelected
+                  ? "border-success bg-success/5"
+                  : "border-border bg-card hover:border-success/50"
+              )}
+            >
+              {/* Badge */}
+              {term.isPopular && (
+                <span className="absolute -top-2.5 right-4 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
+                  Most popular
+                </span>
+              )}
+              {term.isBestValue && (
+                <span className="absolute -top-2.5 right-4 bg-success text-success-foreground text-xs font-bold px-3 py-1 rounded-full">
+                  Best value
+                </span>
+              )}
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-2xl font-bold text-foreground">
+                    £{term.monthlyPrice}
+                    <span className="text-sm font-normal text-muted-foreground">/month</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground mt-1">
+                    {term.label}
+                  </div>
+                </div>
+                
+                {/* Selection indicator */}
+                <div className={cn(
+                  "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
+                  isSelected
+                    ? "bg-success border-success"
+                    : "border-border bg-card"
+                )}>
+                  {isSelected && <Check className="w-4 h-4 text-success-foreground" />}
+                </div>
+              </div>
+            </button>
+          );
+        })}
+
+        {/* Show all options toggle */}
+        {terms.length > 1 && (
+          <button
+            onClick={() => setShowAllOptions(!showAllOptions)}
+            className="w-full py-3 text-sm font-medium text-muted-foreground hover:text-foreground flex items-center justify-center gap-2 transition-colors"
+          >
+            {showAllOptions ? (
+              <>
+                Hide options <ChevronUp className="w-4 h-4" />
+              </>
+            ) : (
+              <>
+                Show all {terms.length} options <ChevronDown className="w-4 h-4" />
+              </>
+            )}
+          </button>
+        )}
+      </div>
+
+      {/* Live Price Update */}
+      {selectedTerm && (
+        <div className="mt-3 text-sm font-medium text-success animate-fade-in">
+          Updated price: £{getPriceForTerm(selectedTerm)}/month
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default TermSelector;
