@@ -160,13 +160,16 @@ const WarrantyBenefitsSection: React.FC = () => {
               <div className="hidden lg:block mt-8">
                 <div className="space-y-3">
                   {/* Petrol & Diesel Vehicles */}
-                  <div>
-                    <div className="flex items-center gap-3 w-full text-left bg-brand-dark-text text-white font-semibold py-4 px-6 rounded-t-lg">
-                      <Car className="w-6 h-6" />
-                      <span className="text-lg">Petrol & Diesel (Combustion Engine) Vehicles</span>
-                    </div>
-                    <div>
-                      <div className="p-6 bg-white rounded-b-lg border border-t-0 border-gray-200 shadow-sm">
+                  <Collapsible>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-gray-800 text-white hover:bg-gray-700 font-semibold py-4 px-6 rounded-lg transition-colors group">
+                      <div className="flex items-center gap-3">
+                        <Car className="w-6 h-6" />
+                        <span className="text-lg">Petrol & Diesel (Combustion Engine) Vehicles</span>
+                      </div>
+                      <ChevronDown className="w-6 h-6 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="mt-3 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
                         <ul className="grid md:grid-cols-2 gap-3 text-sm">
                           <li className="flex items-start gap-2">
                             <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
@@ -237,18 +240,28 @@ const WarrantyBenefitsSection: React.FC = () => {
                             <span>Convertible power-hood, motors, hydraulic parts, buttons, switches, wiring, sensors and related parts</span>
                           </li>
                         </ul>
+                        {/* Close button at bottom */}
+                        <CollapsibleTrigger asChild>
+                          <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                            <span className="text-sm font-medium">Close</span>
+                            <ChevronDown className="w-5 h-5 rotate-180" />
+                          </button>
+                        </CollapsibleTrigger>
                       </div>
-                    </div>
-                  </div>
+                    </CollapsibleContent>
+                  </Collapsible>
 
                   {/* Hybrid & PHEV Vehicles */}
-                  <div>
-                    <div className="flex items-center gap-3 w-full text-left bg-gray-600 text-white font-semibold py-4 px-6 rounded-t-lg">
-                      <Battery className="w-6 h-6" />
-                      <span className="text-lg">Hybrid & PHEV Vehicles</span>
-                    </div>
-                    <div>
-                      <div className="p-6 bg-white rounded-b-lg border border-t-0 border-gray-200 shadow-sm">
+                  <Collapsible>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-gray-700 text-white hover:bg-gray-600 font-semibold py-4 px-6 rounded-lg transition-colors group">
+                      <div className="flex items-center gap-3">
+                        <Battery className="w-6 h-6" />
+                        <span className="text-lg">Hybrid & PHEV Vehicles</span>
+                      </div>
+                      <ChevronDown className="w-6 h-6 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="mt-3 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
                         <div className="flex items-center gap-2 mb-4">
                           <ShieldCheck className="w-5 h-5 text-black flex-shrink-0" />
                           <p className="text-black font-medium">
@@ -289,18 +302,28 @@ const WarrantyBenefitsSection: React.FC = () => {
                             <span>Hybrid Transmission Components</span>
                           </li>
                         </ul>
+                        {/* Close button at bottom */}
+                        <CollapsibleTrigger asChild>
+                          <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                            <span className="text-sm font-medium">Close</span>
+                            <ChevronDown className="w-5 h-5 rotate-180" />
+                          </button>
+                        </CollapsibleTrigger>
                       </div>
-                    </div>
-                  </div>
+                    </CollapsibleContent>
+                  </Collapsible>
 
                   {/* Electric vehicles (EVs) */}
-                  <div>
-                    <div className="flex items-center gap-3 w-full text-left bg-brand-orange text-white font-semibold py-4 px-6 rounded-t-lg">
-                      <Zap className="w-6 h-6" />
-                      <span className="text-lg">Electric vehicles (EVs)</span>
-                    </div>
-                    <div>
-                      <div className="p-6 bg-white rounded-b-lg border border-t-0 border-gray-200 shadow-sm">
+                  <Collapsible>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-orange-500 text-white hover:bg-orange-600 font-semibold py-4 px-6 rounded-lg transition-colors group">
+                      <div className="flex items-center gap-3">
+                        <Zap className="w-6 h-6" />
+                        <span className="text-lg">Electric vehicles (EVs)</span>
+                      </div>
+                      <ChevronDown className="w-6 h-6 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="mt-3 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
                         <div className="flex items-center gap-2 mb-4">
                           <ShieldCheck className="w-5 h-5 text-black flex-shrink-0" />
                           <p className="text-black font-medium">
@@ -349,18 +372,28 @@ const WarrantyBenefitsSection: React.FC = () => {
                             <span>Regenerative Braking System Components</span>
                           </li>
                         </ul>
+                        {/* Close button at bottom */}
+                        <CollapsibleTrigger asChild>
+                          <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                            <span className="text-sm font-medium">Close</span>
+                            <ChevronDown className="w-5 h-5 rotate-180" />
+                          </button>
+                        </CollapsibleTrigger>
                       </div>
-                    </div>
-                  </div>
+                    </CollapsibleContent>
+                  </Collapsible>
 
                   {/* Motorcycles */}
-                  <div>
-                    <div className="flex items-center gap-3 w-full text-left bg-green-600 text-white font-semibold py-4 px-6 rounded-t-lg">
-                      <Bike className="w-6 h-6" />
-                      <span className="text-lg">Motorcycles (Petrol, Hybrid, EV)</span>
-                    </div>
-                    <div>
-                      <div className="p-6 bg-white rounded-b-lg border border-t-0 border-gray-200 shadow-sm">
+                  <Collapsible>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-green-600 text-white hover:bg-green-700 font-semibold py-4 px-6 rounded-lg transition-colors group">
+                      <div className="flex items-center gap-3">
+                        <Bike className="w-6 h-6" />
+                        <span className="text-lg">Motorcycles (Petrol, Hybrid, EV)</span>
+                      </div>
+                      <ChevronDown className="w-6 h-6 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="mt-3 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
                         <ul className="grid md:grid-cols-2 gap-3 text-sm">
                           <li className="flex items-start gap-2">
                             <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
@@ -391,18 +424,28 @@ const WarrantyBenefitsSection: React.FC = () => {
                             <span>EV/Hybrid Motor & Battery Components</span>
                           </li>
                         </ul>
+                        {/* Close button at bottom */}
+                        <CollapsibleTrigger asChild>
+                          <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                            <span className="text-sm font-medium">Close</span>
+                            <ChevronDown className="w-5 h-5 rotate-180" />
+                          </button>
+                        </CollapsibleTrigger>
                       </div>
-                    </div>
-                  </div>
+                    </CollapsibleContent>
+                  </Collapsible>
 
                   {/* What's not covered */}
-                  <div>
-                    <div className="flex items-center gap-3 w-full text-left bg-red-500 text-white font-semibold py-4 px-6 rounded-t-lg">
-                      <X className="w-6 h-6" />
-                      <span className="text-lg">What's not covered</span>
-                    </div>
-                    <div>
-                      <div className="p-6 bg-white rounded-b-lg border border-t-0 border-gray-200 shadow-sm">
+                  <Collapsible>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-red-500 text-white hover:bg-red-600 font-semibold py-4 px-6 rounded-lg transition-colors group">
+                      <div className="flex items-center gap-3">
+                        <X className="w-6 h-6" />
+                        <span className="text-lg">What's not covered</span>
+                      </div>
+                      <ChevronDown className="w-6 h-6 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="mt-3 p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
                         <ul className="grid md:grid-cols-2 gap-3 text-sm">
                           <li className="flex items-start gap-2">
                             <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
@@ -429,9 +472,16 @@ const WarrantyBenefitsSection: React.FC = () => {
                             <span className="text-gray-700">Vehicles used for hire or reward</span>
                           </li>
                         </ul>
+                        {/* Close button at bottom */}
+                        <CollapsibleTrigger asChild>
+                          <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                            <span className="text-sm font-medium">Close</span>
+                            <ChevronDown className="w-5 h-5 rotate-180" />
+                          </button>
+                        </CollapsibleTrigger>
                       </div>
-                    </div>
-                  </div>
+                    </CollapsibleContent>
+                  </Collapsible>
                 </div>
               </div>
             )}
@@ -452,13 +502,16 @@ const WarrantyBenefitsSection: React.FC = () => {
                 <CollapsibleContent>
                   <div className="space-y-3 mt-4">
                     {/* Petrol & Diesel Vehicles */}
-                    <div>
-                      <div className="flex items-center gap-3 w-full text-left bg-brand-dark-text text-white font-semibold py-3 px-4 rounded-t-lg">
-                        <Car className="w-5 h-5" />
-                        <span className="text-base">Petrol & Diesel Vehicles</span>
-                      </div>
-                      <div>
-                        <div className="p-4 bg-white rounded-b-lg border border-t-0 border-gray-200 shadow-sm max-h-[400px] overflow-y-auto">
+                    <Collapsible>
+                      <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-black text-white hover:bg-gray-800 font-semibold py-3 px-4 rounded-lg transition-colors group">
+                        <div className="flex items-center gap-3">
+                          <Car className="w-5 h-5" />
+                          <span className="text-base">Petrol & Diesel Vehicles</span>
+                        </div>
+                        <ChevronDown className="w-5 h-5 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="mt-3 p-4 bg-white rounded-lg border border-gray-200 shadow-sm max-h-[400px] overflow-y-auto">
                           <ul className="space-y-1.5 text-sm">
                             <li className="flex items-start gap-2">
                               <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
@@ -529,18 +582,28 @@ const WarrantyBenefitsSection: React.FC = () => {
                               <span>Convertible power-hood, motors, hydraulic parts, buttons, switches, wiring, sensors and related parts</span>
                             </li>
                           </ul>
+                          {/* Close button at bottom */}
+                          <CollapsibleTrigger asChild>
+                            <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                              <span className="text-sm font-medium">Close</span>
+                              <ChevronDown className="w-5 h-5 rotate-180" />
+                            </button>
+                          </CollapsibleTrigger>
                         </div>
-                      </div>
-                    </div>
+                      </CollapsibleContent>
+                    </Collapsible>
 
                     {/* Hybrid & PHEV Vehicles */}
-                    <div>
-                      <div className="flex items-center gap-3 w-full text-left bg-gray-600 text-white font-semibold py-3 px-4 rounded-t-lg">
-                        <Battery className="w-5 h-5" />
-                        <span className="text-base">Hybrid & PHEV Vehicles</span>
-                      </div>
-                      <div>
-                        <div className="p-4 bg-white rounded-b-lg border border-t-0 border-gray-200 shadow-sm">
+                    <Collapsible>
+                      <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-gray-600 text-white hover:bg-gray-700 font-semibold py-3 px-4 rounded-lg transition-colors group">
+                        <div className="flex items-center gap-3">
+                          <Battery className="w-5 h-5" />
+                          <span className="text-base">Hybrid & PHEV Vehicles</span>
+                        </div>
+                        <ChevronDown className="w-5 h-5 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="mt-3 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
                           <div className="flex items-center gap-2 mb-3">
                             <ShieldCheck className="w-4 h-4 text-black flex-shrink-0" />
                             <p className="text-black font-medium text-sm">
@@ -581,18 +644,28 @@ const WarrantyBenefitsSection: React.FC = () => {
                               <span>Hybrid Transmission Components</span>
                             </li>
                           </ul>
+                          {/* Close button at bottom */}
+                          <CollapsibleTrigger asChild>
+                            <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                              <span className="text-sm font-medium">Close</span>
+                              <ChevronDown className="w-5 h-5 rotate-180" />
+                            </button>
+                          </CollapsibleTrigger>
                         </div>
-                      </div>
-                    </div>
+                      </CollapsibleContent>
+                    </Collapsible>
 
                     {/* Electric vehicles (EVs) */}
-                    <div>
-                      <div className="flex items-center gap-3 w-full text-left bg-brand-orange text-white font-semibold py-3 px-4 rounded-t-lg">
-                        <Zap className="w-5 h-5" />
-                        <span className="text-base">Electric vehicles (EVs)</span>
-                      </div>
-                      <div>
-                        <div className="p-4 bg-white rounded-b-lg border border-t-0 border-gray-200 shadow-sm">
+                    <Collapsible>
+                      <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-orange-500 text-white hover:bg-orange-600 font-semibold py-3 px-4 rounded-lg transition-colors group">
+                        <div className="flex items-center gap-3">
+                          <Zap className="w-5 h-5" />
+                          <span className="text-base">Electric vehicles (EVs)</span>
+                        </div>
+                        <ChevronDown className="w-5 h-5 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="mt-3 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
                           <div className="flex items-center gap-2 mb-3">
                             <ShieldCheck className="w-4 h-4 text-black flex-shrink-0" />
                             <p className="text-black font-medium text-sm">
@@ -641,18 +714,28 @@ const WarrantyBenefitsSection: React.FC = () => {
                               <span>Regenerative Braking System Components</span>
                             </li>
                           </ul>
+                          {/* Close button at bottom */}
+                          <CollapsibleTrigger asChild>
+                            <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                              <span className="text-sm font-medium">Close</span>
+                              <ChevronDown className="w-5 h-5 rotate-180" />
+                            </button>
+                          </CollapsibleTrigger>
                         </div>
-                      </div>
-                    </div>
+                      </CollapsibleContent>
+                    </Collapsible>
 
                     {/* Motorcycles */}
-                    <div>
-                      <div className="flex items-center gap-3 w-full text-left bg-green-600 text-white font-semibold py-3 px-4 rounded-t-lg">
-                        <Bike className="w-5 h-5" />
-                        <span className="text-base">Motorcycles (Petrol, Hybrid, EV)</span>
-                      </div>
-                      <div>
-                        <div className="p-4 bg-white rounded-b-lg border border-t-0 border-gray-200 shadow-sm">
+                    <Collapsible>
+                      <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-green-500 text-white hover:bg-green-600 font-semibold py-3 px-4 rounded-lg transition-colors group">
+                        <div className="flex items-center gap-3">
+                          <Bike className="w-5 h-5" />
+                          <span className="text-base">Motorcycles (Petrol, Hybrid, EV)</span>
+                        </div>
+                        <ChevronDown className="w-5 h-5 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="mt-3 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
                           <ul className="space-y-1.5 text-sm">
                             <li className="flex items-start gap-2">
                               <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
@@ -695,18 +778,28 @@ const WarrantyBenefitsSection: React.FC = () => {
                               <span>Instrumentation & Rider Controls</span>
                             </li>
                           </ul>
+                          {/* Close button at bottom */}
+                          <CollapsibleTrigger asChild>
+                            <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                              <span className="text-sm font-medium">Close</span>
+                              <ChevronDown className="w-5 h-5 rotate-180" />
+                            </button>
+                          </CollapsibleTrigger>
                         </div>
-                      </div>
-                    </div>
+                      </CollapsibleContent>
+                    </Collapsible>
 
                     {/* What's not covered */}
-                    <div>
-                      <div className="flex items-center gap-3 w-full text-left bg-red-500 text-white font-semibold py-3 px-4 rounded-t-lg">
-                        <X className="w-5 h-5" />
-                        <span className="text-base">What's not covered</span>
-                      </div>
-                      <div>
-                        <div className="p-4 bg-red-50 rounded-b-lg border border-t-0 border-red-200">
+                    <Collapsible>
+                      <CollapsibleTrigger className="flex items-center justify-between w-full text-left bg-red-100 text-red-700 hover:bg-red-200 font-semibold py-3 px-4 rounded-lg transition-colors group">
+                        <div className="flex items-center gap-3">
+                          <X className="w-5 h-5" />
+                          <span className="text-base">What's not covered</span>
+                        </div>
+                        <ChevronDown className="w-5 h-5 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="mt-3 p-4 bg-red-50 rounded-lg border border-red-200">
                           <p className="text-gray-700 font-medium mb-3 text-sm">
                             We keep things straightforward and transparent.
                           </p>
@@ -724,9 +817,16 @@ const WarrantyBenefitsSection: React.FC = () => {
                               <span className="text-gray-700">Vehicles used for hire or reward</span>
                             </li>
                           </ul>
+                          {/* Close button at bottom */}
+                          <CollapsibleTrigger asChild>
+                            <button className="w-full mt-4 pt-3 border-t border-gray-200 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
+                              <span className="text-sm font-medium">Close</span>
+                              <ChevronDown className="w-5 h-5 rotate-180" />
+                            </button>
+                          </CollapsibleTrigger>
                         </div>
-                      </div>
-                    </div>
+                      </CollapsibleContent>
+                    </Collapsible>
                   </div>
                 </CollapsibleContent>
               </Collapsible>
