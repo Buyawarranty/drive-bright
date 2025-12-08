@@ -163,7 +163,7 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
           const totalCost = addon.price * months;
           const monthlyPayment = totalCost / 12;
           priceDisplay = addon.price > 0 
-            ? `£${Math.round(monthlyPayment)}`
+            ? `+£${Math.round(monthlyPayment)}`
             : '£0';
           
           // Calculate savings for multi-year plans
@@ -174,7 +174,7 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
             }
           }
         } else {
-          priceDisplay = isIncluded ? '£0' : `£${addon.price}`;
+          priceDisplay = isIncluded ? '£0' : `+£${addon.price}`;
         }
               
               return (
