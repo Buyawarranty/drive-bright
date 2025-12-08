@@ -22,11 +22,10 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           {/* Price Summary */}
           <div>
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-foreground">£{monthlyPrice}</span>
-              <span className="text-muted-foreground text-sm">/month</span>
+              <span className="text-2xl font-bold text-foreground">£{monthlyPrice} × 12 payments</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              12 payments · 0% APR
+              0% APR
             </p>
           </div>
           
