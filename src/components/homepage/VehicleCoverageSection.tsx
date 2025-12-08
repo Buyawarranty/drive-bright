@@ -188,7 +188,7 @@ const VehicleCoverageSection: React.FC = () => {
                 <div className="flex items-center gap-2 mb-4">
                   <ShieldCheck className="w-5 h-5 text-black flex-shrink-0" />
                   <p className="text-black font-medium">
-                    Comprehensive EV coverage including:
+                    Includes ALL petrol/diesel engine parts and labour PLUS:
                   </p>
                 </div>
                 <ul className="grid md:grid-cols-2 gap-3 text-sm">
