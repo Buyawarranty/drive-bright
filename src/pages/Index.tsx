@@ -23,7 +23,7 @@ import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';
 // Lazy load heavy components that are not immediately visible
 const RegistrationForm = lazy(() => import('@/components/RegistrationForm'));
 const PricingTable = lazy(() => import('@/components/PricingTable'));
-const Step3Mobile = lazy(() => import('@/components/step3/Step3Mobile'));
+// Step3Mobile removed - using PricingTable for now
 const CarJourneyProgress = lazy(() => import('@/components/CarJourneyProgress'));
 const CustomerDetailsStep = lazy(() => import('@/components/CustomerDetailsStep'));
 const MaintenanceBanner = lazy(() => import('@/components/MaintenanceBanner'));
@@ -1018,7 +1018,7 @@ const Index = () => {
         <div className="w-full">
           {vehicleData ? (
             <PerformanceOptimizedSuspense height="60vh">
-              <Step3Mobile 
+              <PricingTable 
                 vehicleData={vehicleData} 
                 onBack={() => handleBackToStep(2)} 
                 onPlanSelected={handlePlanSelected}
