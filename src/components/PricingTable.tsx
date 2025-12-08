@@ -1609,15 +1609,27 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
         <div id="whats-covered" className="section-header rounded-lg p-4 sm:p-8 mb-8">
           <Collapsible open={whatsCoveredOpen} onOpenChange={setWhatsCoveredOpen}>
-            <CollapsibleTrigger className="w-full">
-              <div className="flex items-center gap-2 sm:gap-3 mb-4 cursor-pointer group">
-                <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-black flex-shrink-0" />
-                <h2 className="text-lg sm:text-xl font-semibold text-black">
-                  Instant all-in-one cover
-                </h2>
-                <ChevronDown className="w-5 h-5 sm:w-8 sm:h-8 text-black transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
-              </div>
-            </CollapsibleTrigger>
+            {/* Header row with title and button */}
+            <div className="flex items-start justify-between mb-4">
+              <CollapsibleTrigger className="flex-1">
+                <div className="flex items-center gap-2 sm:gap-3 cursor-pointer group">
+                  <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-black flex-shrink-0" />
+                  <h2 className="text-lg sm:text-xl font-semibold text-black">
+                    Instant all-in-one cover
+                  </h2>
+                  <ChevronDown className="w-5 h-5 sm:w-8 sm:h-8 text-black transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                </div>
+              </CollapsibleTrigger>
+              
+              {/* Parts & components button - top right on desktop */}
+              <CollapsibleTrigger asChild>
+                <button className="hidden md:inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 rounded-lg px-5 py-3 shadow-md transition-colors group cursor-pointer">
+                  <Info className="w-4 h-4 text-white" />
+                  <span className="text-base font-medium text-white whitespace-nowrap">Parts & components list</span>
+                  <ChevronDown className="w-4 h-4 text-white transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                </button>
+              </CollapsibleTrigger>
+            </div>
             
             {/* Summary text below heading */}
             <div className="mb-6">
@@ -1642,9 +1654,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
             </div>
             
-            {/* See full coverage button - matches homepage style */}
+            {/* Mobile-only Parts & components button */}
             <CollapsibleTrigger asChild>
-              <button className="w-full flex justify-center items-center py-2 mb-6 group cursor-pointer">
+              <button className="md:hidden w-full flex justify-center items-center py-2 mb-6 group cursor-pointer">
                 <div className="inline-flex items-center gap-3 bg-green-600 hover:bg-green-700 rounded-lg px-7 py-4 shadow-md transition-colors">
                   <Info className="w-5 h-5 text-white" />
                   <span className="text-lg font-medium text-white whitespace-nowrap">Parts & components list</span>
