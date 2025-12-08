@@ -1194,7 +1194,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <span className="text-muted-foreground hidden sm:inline">·</span>
               <span className="text-muted-foreground hidden sm:inline">{vehicleData?.fuelType}</span>
               <span className="text-muted-foreground hidden sm:inline">·</span>
-              <span className="bg-white border border-gray-300 rounded px-2 py-0.5 font-mono font-bold text-foreground text-sm">
+              <span className="bg-yellow-400 border-2 border-black rounded px-2 py-0.5 font-mono font-bold text-black text-sm">
                 {vehicleData?.regNumber}
               </span>
             </div>
