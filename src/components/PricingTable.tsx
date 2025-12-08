@@ -167,6 +167,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const [showAddOnInfo, setShowAddOnInfo] = useState<{[planId: string]: boolean}>({});
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isFloatingBarVisible, setIsFloatingBarVisible] = useState(false);
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
   // Validate previousClaimLimit is a valid option (750, 1250, 2000), otherwise default to 1250
   // Account for boost addon which adds 1000 to the claim limit value
   const validClaimLimits = [750, 1250, 2000];
@@ -2615,27 +2616,55 @@ const PricingTable: React.FC<PricingTableProps> = ({
             {/* Normal State - Show pricing */}
             {!plansLoading && !plansError && displayPlans.length > 0 && paymentType && (
               <>
-                {/* Mobile Layout - Stacked */}
+                {/* Mobile Layout - Collapsible */}
                 <div className="flex flex-col md:hidden gap-2 w-full">
-                  {/* Compact Price Summary */}
-                  <div className="text-center space-y-0.5">
-                    <div className="text-2xl font-bold text-gray-900">
-                      £{displayMonthlyPrice}/month
+                  {/* Collapse/Expand Header */}
+                  <button
+                    onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+                    className="flex items-center justify-between w-full py-1 -mt-1"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl font-bold text-gray-900">
+                        £{displayMonthlyPrice}/month
+                      </span>
+                      <span className="text-sm text-gray-600">Total: £{Math.round(displayTotalPrice)}</span>
                     </div>
-                    <div className="text-sm text-black font-bold">
-                      Only 12 payments – 0% APR
+                    <div className={`p-1.5 rounded-full bg-gray-200 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : 'rotate-0'}`}>
+                      <ChevronDown className="w-5 h-5 text-gray-700" />
                     </div>
-                    <div className="text-sm text-black">
-                      {paymentType === '12months' && '1-Year Cover'}
-                      {paymentType === '24months' && <>2-Year Cover | <span className="font-bold">Year 2 FREE</span> 🎉</>}
-                      {paymentType === '36months' && <>3-Year Cover | <span className="font-bold">Years 2 & 3 FREE</span> 🎉</>}
+                  </button>
+                  
+                  {/* Expandable Content */}
+                  <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSummaryExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                    {/* Price Details */}
+                    <div className="text-center space-y-0.5 pb-2">
+                      <div className="text-sm text-black font-bold">
+                        Only 12 payments – 0% APR
+                      </div>
+                      <div className="text-sm text-black">
+                        {paymentType === '12months' && '1-Year Cover'}
+                        {paymentType === '24months' && <>2-Year Cover | <span className="font-bold">Year 2 FREE</span> 🎉</>}
+                        {paymentType === '36months' && <>3-Year Cover | <span className="font-bold">Years 2 & 3 FREE</span> 🎉</>}
+                      </div>
+                      <div className="text-sm text-black">
+                        14-days to cancel
+                      </div>
                     </div>
-                    <div className="text-sm text-black">
-                      Total: £{Math.round(displayTotalPrice)} | 14-days to cancel
-                    </div>
+                    
+                    {/* Trustpilot Badge */}
+                    <a 
+                      href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex justify-center items-center gap-1 hover:opacity-80 transition-opacity pb-2"
+                    >
+                      <span className="text-xs text-gray-600">Trustpilot</span>
+                      <span className="text-[#00b67a] text-xs">★★★★★</span>
+                      <span className="text-xs text-gray-600">Rated Excellent</span>
+                    </a>
                   </div>
                   
-                  {/* CTA Button */}
+                  {/* CTA Button - Always visible */}
                   <Button
                     onClick={handleSelectPlan}
                     size="lg"
@@ -2644,18 +2673,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     Continue to checkout
                     <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
                   </Button>
-                  
-                  {/* Trustpilot Badge */}
-                  <a 
-                    href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex justify-center items-center gap-1 hover:opacity-80 transition-opacity"
-                  >
-                    <span className="text-xs text-gray-600">Trustpilot</span>
-                    <span className="text-[#00b67a] text-xs">★★★★★</span>
-                    <span className="text-xs text-gray-600">Rated Excellent</span>
-                  </a>
                 </div>
 
                 {/* Desktop Layout - Clean 4-Section Card with Equal Spacing */}
