@@ -2383,7 +2383,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3">
                   <span className="text-3xl font-bold text-gray-900">£{displayMonthlyPrice} × 12 easy payments</span>
                 </div>
-                <div className="text-lg text-black font-medium mt-1">Total: £{Math.round(displayTotalPrice)}</div>
+                <div className="text-lg text-black font-medium mt-1">Or pay in full £{Math.round(displayTotalPrice)}</div>
                 <div className="flex items-center gap-1 mt-2 text-sm text-black">
                   <Check className="w-4 h-4 text-green-600" />
                   <span>
