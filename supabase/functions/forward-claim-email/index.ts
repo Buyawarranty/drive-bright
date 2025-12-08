@@ -48,16 +48,27 @@ serve(async (req) => {
       );
     }
 
-    // Prepare email content
+    // Prepare email content with REG PLATE at top
+    const regPlateDisplay = claim.vehicle_registration ? claim.vehicle_registration.toUpperCase() : 'NO REG PROVIDED';
+    
     let emailHtml = `
-      <h3>New Claim Submission (Forwarded)</h3>
-      <p><strong>Name:</strong> ${claim.name}</p>
-      <p><strong>Email:</strong> ${claim.email}</p>
-      <p><strong>Phone:</strong> ${claim.phone || 'Not provided'}</p>
-      <p><strong>Submitted:</strong> ${new Date(claim.created_at).toLocaleString()}</p>
-      
-      <h4>Message:</h4>
-      <p>${claim.message || 'No message provided'}</p>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <!-- REG PLATE PROMINENTLY AT TOP -->
+        <div style="background-color: #FFD700; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 3px solid #000;">
+          <p style="margin: 0; font-size: 28px; font-weight: bold; color: #000; letter-spacing: 2px; font-family: 'Arial Black', Arial, sans-serif;">
+            ${regPlateDisplay}
+          </p>
+        </div>
+        
+        <h3>Claim Submission (Forwarded)</h3>
+        <p><strong>Name:</strong> ${claim.name}</p>
+        <p><strong>Email:</strong> ${claim.email}</p>
+        <p><strong>Phone:</strong> ${claim.phone || 'Not provided'}</p>
+        <p><strong>Submitted:</strong> ${new Date(claim.created_at).toLocaleString()}</p>
+        
+        <h4>Message:</h4>
+        <p>${claim.message || 'No message provided'}</p>
+      </div>
     `;
 
     if (claim.file_url && claim.file_name) {
@@ -68,7 +79,7 @@ serve(async (req) => {
       `;
     }
 
-    // Send email to claims team
+    // Send email to claims team with REG PLATE as subject
     const emailResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -78,7 +89,7 @@ serve(async (req) => {
       body: JSON.stringify({
         from: 'support@buyawarranty.co.uk',
         to: ['claims@buyawarranty.co.uk', 'info@buyawarranty.co.uk'],
-        subject: `[FORWARDED] New Claim Submission from ${claim.name}`,
+        subject: `[FORWARDED] Claim: ${regPlateDisplay}`,
         html: emailHtml,
       }),
     });
