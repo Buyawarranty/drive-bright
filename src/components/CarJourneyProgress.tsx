@@ -44,34 +44,7 @@ const CarJourneyProgress: React.FC<CarJourneyProgressProps> = ({
 
   return (
     <div className="w-full max-w-4xl mx-auto py-6 px-4">
-      {/* Brand Header */}
-      <div className="text-center mb-8">
-        {onLogoClick ? (
-          <button
-            onClick={onLogoClick}
-            className="inline-block transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded cursor-pointer"
-            aria-label="Go back to home page"
-          >
-            <img 
-              src={buyAWarrantyLogo} 
-              alt="Buy a Warranty Logo" 
-              className="h-10 sm:h-12 w-auto mx-auto"
-            />
-          </button>
-        ) : (
-          <Link
-            to="/"
-            className="inline-block transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
-            aria-label="Go back to home page"
-          >
-            <img 
-              src={buyAWarrantyLogo} 
-              alt="Buy a Warranty Logo" 
-              className="h-10 sm:h-12 w-auto mx-auto"
-            />
-          </Link>
-        )}
-      </div>
+      {/* Logo removed - already in sticky navigation */}
 
       {/* Progress Container */}
       <div className="relative">
