@@ -1202,7 +1202,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               onClick={() => window.location.href = '/'}
               variant="ghost"
               size="sm"
-              className="text-muted-foreground hover:text-foreground flex-shrink-0"
+              className="text-black hover:text-black/80 flex-shrink-0"
             >
               <Edit className="h-4 w-4" />
             </Button>
