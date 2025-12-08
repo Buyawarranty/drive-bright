@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, ArrowUp, Settings, Cpu, Zap, Wrench, Lock } from 'lucide-react';
+import { Check, ArrowRight, Settings, Cpu, Zap, Wrench, Lock } from 'lucide-react';
 import warrantyPandaMascot from '@/assets/warranty-panda-mascot.png';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 
@@ -110,33 +110,32 @@ const WarrantyBenefitsSection: React.FC = () => {
                 ))}
                 
                 {/* Desktop CTAs - below EV & Hybrid box */}
-                <div className="hidden lg:flex flex-col items-start gap-4 mt-4">
-                  <div className="flex gap-3">
-                    <button
-                      onClick={scrollToTop}
-                      className="flex items-center gap-2 bg-brand-orange hover:bg-orange-600 text-white font-medium px-4 py-3 rounded-lg shadow-sm transition-colors animate-cta-enhanced"
-                    >
-                      Get my quote
-                      <ArrowUp className="w-5 h-5" />
-                    </button>
-                  </div>
+                <div className="hidden lg:flex flex-col items-end gap-4 mt-4">
+                  {/* CTA Button - right aligned, above Trustpilot */}
+                  <button
+                    onClick={scrollToTop}
+                    className="flex items-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 py-4 text-lg rounded-lg shadow-lg transition-colors animate-cta-enhanced"
+                  >
+                    Get my quote
+                    <ArrowRight className="w-6 h-6" />
+                  </button>
                   
-                  {/* Desktop: Panda below CTAs */}
-                  <div className="flex justify-start">
-                    <img 
-                      src={warrantyPandaMascot} 
-                      alt="Miles the Panda mascot with car" 
-                      className="w-48 md:w-56 lg:w-64 h-auto object-contain"
-                    />
-                  </div>
-                  
-                  {/* Desktop: Trustpilot + Security text grouped together, moved up */}
-                  <div className="flex flex-col items-end gap-2 self-end -mt-20">
+                  {/* Trustpilot + Security text */}
+                  <div className="flex flex-col items-end gap-2">
                     <TrustpilotHeader className="flex-shrink-0" />
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Lock className="w-4 h-4 text-green-600" />
                       <span>Your details are encrypted and safe.</span>
                     </div>
+                  </div>
+                  
+                  {/* Desktop: Panda */}
+                  <div className="flex justify-end w-full -mt-16">
+                    <img 
+                      src={warrantyPandaMascot} 
+                      alt="Miles the Panda mascot with car" 
+                      className="w-48 md:w-56 lg:w-64 h-auto object-contain"
+                    />
                   </div>
                 </div>
               </div>
@@ -157,10 +156,10 @@ const WarrantyBenefitsSection: React.FC = () => {
               <div className="flex flex-col items-center gap-4">
                 <button
                   onClick={scrollToTop}
-                  className="inline-flex items-center justify-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 py-3 text-base rounded-lg shadow-lg transition-all animate-cta-enhanced"
+                  className="inline-flex items-center justify-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-bold px-8 py-4 text-lg rounded-lg shadow-lg transition-all animate-cta-enhanced"
                 >
                   Get my quote
-                  <ArrowUp className="w-6 h-6" />
+                  <ArrowRight className="w-7 h-7" />
                 </button>
                 
                 {/* Trust & Reassurance */}
