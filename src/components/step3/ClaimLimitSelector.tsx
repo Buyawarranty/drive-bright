@@ -149,7 +149,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
             <div>
               <div className="text-sm font-semibold text-foreground">🚀 Boost Claim Limit</div>
               <div className="text-xs text-muted-foreground">
-                £2,000 → £3,000 | +£5/month × 12 payments
+                £2,000 → <span className="text-success font-semibold">£3,000</span> | +£5/month × 12 payments
               </div>
             </div>
           </div>

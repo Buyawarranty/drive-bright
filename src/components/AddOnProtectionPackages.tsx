@@ -35,8 +35,7 @@ const addOnPackages = [
     bulletPoints: [
       'Use any 24/7 recovery service',
       'Recovery to a garage or location your choice',
-      'Hassle-free claims process',
-      'Claim limits apply'
+      'Hassle-free claims process'
     ]
   },
   {
