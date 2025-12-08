@@ -2611,7 +2611,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <span className="text-3xl font-bold text-gray-900">
                         £{displayMonthlyPrice} × 12 payments
                       </span>
-                      <span className="text-sm text-gray-600">or Pay in full: £{Math.round(displayTotalPrice).toLocaleString()}</span>
+                      <span className="text-sm text-gray-600">or Pay in full: £{Math.round(displayTotalPrice)}</span>
                     </div>
                     <div className={`absolute right-0 p-1.5 rounded-full bg-gray-200 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : 'rotate-0'}`}>
                       <ChevronDown className="w-5 h-5 text-gray-700" />
