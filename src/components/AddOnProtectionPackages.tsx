@@ -212,7 +212,7 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
               <CollapsibleTrigger asChild>
                 <button
                   onClick={(e) => toggleExpanded(addon.key, e)}
-                  className="w-full px-3 py-2 text-xs text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1 border-t border-gray-100"
+                  className="w-full px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-1 border-t border-gray-100 transition-colors"
                 >
                   <span>{expandedItems[addon.key] ? 'Hide details' : 'Details'}</span>
                   <ChevronDown className={`w-3 h-3 transition-transform ${expandedItems[addon.key] ? 'rotate-180' : ''}`} />
