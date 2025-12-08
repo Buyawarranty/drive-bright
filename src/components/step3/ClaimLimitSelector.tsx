@@ -81,10 +81,33 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
         })}
       </div>
 
-      {/* Helper Text */}
-      <p className="text-xs text-muted-foreground mb-2">
-        Claim limit is the maximum we pay per repair. Higher limit = more protection.
-      </p>
+      {/* Boost Option - Compact */}
+      <div className="flex items-center justify-between p-2 rounded-lg border border-border bg-card mb-2">
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={boostAddon && selectedClaimLimit === 2000}
+            onChange={(e) => {
+              if (e.target.checked) {
+                onClaimLimitChange(2000);
+                onBoostChange(true);
+              } else {
+                onBoostChange(false);
+              }
+            }}
+            className="w-4 h-4 rounded border-gray-300 text-success focus:ring-success"
+          />
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-foreground">Boost Claim Limit</span>
+              <span className="text-[10px] bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full font-medium">Popular</span>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              £2,000 → £3,000 | +£5/month <span className="text-[10px]">(12 payments, 0% APR)</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Live Price Update */}
       {selectedClaimLimit !== null && (
