@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check, Info } from 'lucide-react';
 import { getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 
 interface AddOnProtectionPackagesProps {
@@ -225,9 +225,12 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
               <CollapsibleTrigger asChild>
                 <button
                   onClick={(e) => toggleExpanded(addon.key, e)}
-                  className="w-full px-3 py-2 text-sm text-gray-600 hover:text-gray-800 flex items-center justify-center gap-1.5 border-t border-gray-100 transition-colors bg-gray-50 hover:bg-gray-100 rounded-b-lg"
+                  className="w-full px-4 py-2.5 text-sm text-gray-700 hover:text-gray-900 flex items-center justify-between border-t border-gray-100 transition-colors bg-gray-50 hover:bg-gray-100 rounded-b-lg"
                 >
-                  <span className="font-medium">{expandedItems[addon.key] ? 'Hide details' : 'Details'}</span>
+                  <div className="flex items-center gap-2">
+                    <Info className="w-4 h-4" />
+                    <span className="font-medium">Details</span>
+                  </div>
                   <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${expandedItems[addon.key] ? 'rotate-180' : ''}`} />
                 </button>
               </CollapsibleTrigger>
