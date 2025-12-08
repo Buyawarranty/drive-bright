@@ -1227,6 +1227,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <span className="font-bold text-foreground text-center">
                   {vehicleData?.year} {vehicleData?.make?.toUpperCase()} {vehicleData?.model?.toUpperCase()}
                 </span>
+                <Button
+                  onClick={() => window.location.href = '/'}
+                  variant="ghost"
+                  size="sm"
+                  className="text-primary hover:text-primary/80 p-1 h-auto"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
               </div>
               <div className="flex items-center gap-2 justify-center">
                 <span className="bg-yellow-400 border-2 border-black rounded px-2 py-0.5 font-mono font-bold text-black text-sm">
@@ -1245,9 +1253,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
               onClick={() => window.location.href = '/'}
               variant="ghost"
               size="sm"
-              className="text-black hover:text-black/80 flex-shrink-0 sm:block hidden"
+              className="text-primary hover:text-primary/80 flex-shrink-0 hidden sm:flex items-center gap-1"
             >
               <Edit className="h-4 w-4" />
+              <span className="text-sm">Edit</span>
             </Button>
           </div>
         </div>
