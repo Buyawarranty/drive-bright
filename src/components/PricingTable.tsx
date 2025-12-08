@@ -2398,7 +2398,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 Add extras
               </h3>
             </div>
-            <p className="text-muted-foreground sm:ml-2 text-sm">Enhance your warranty ✨</p>
+            <p className="text-gray-600 sm:ml-2 text-base font-bold">Enhance your warranty ✨</p>
           </div>
           <AddOnProtectionPackages 
             selectedAddOns={selectedProtectionAddOns}
