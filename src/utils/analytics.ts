@@ -215,8 +215,8 @@ export const trackPurchaseComplete = (
     console.log('✅ GTM dataLayer "Purchase GTM" event pushed (Google Ads Primary Website Conversion)');
   }
   
-  // Main purchase conversion with specific Google Ads conversion label
-  trackGoogleAdsConversion('U-BnCJKD2KUbEPWAqMVA', value, transactionId, enhancedData);
+  // Main purchase conversion with specific Google Ads conversion label (Purchase GTM Primary)
+  trackGoogleAdsConversion('D-BnCJRD2MUbEPWAqMVA', value, transactionId, enhancedData);
   
   // Track as GA4 purchase event
   trackEvent('purchase', {
