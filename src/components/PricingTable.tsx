@@ -1610,28 +1610,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
         <div id="whats-covered" className="section-header rounded-lg p-4 sm:p-8 mb-8">
           <Collapsible open={whatsCoveredOpen} onOpenChange={setWhatsCoveredOpen}>
             <CollapsibleTrigger className="w-full">
-              <div className="flex items-center justify-between gap-2 mb-4 cursor-pointer group">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-black flex-shrink-0" />
-                  <h2 className="text-lg sm:text-xl font-semibold text-black">
-                    What's covered?
-                  </h2>
-                  <ChevronDown className="w-5 h-5 sm:w-8 sm:h-8 text-black transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
-                </div>
-                {/* Instant Cover Badge with Popover (works on mobile tap) */}
-                <Popover>
-                  <PopoverTrigger asChild onClick={(e) => e.stopPropagation()}>
-                    <div className="inline-flex items-center gap-1 sm:gap-2 bg-green-50 border border-green-300 rounded-md px-2 sm:px-3 py-1 sm:py-1.5 w-fit cursor-help">
-                      <span className="text-xs sm:text-sm font-semibold text-green-700 whitespace-nowrap uppercase">⚡ INSTANT COVER</span>
-                    </div>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-3 text-sm" side="top" align="center">
-                    <p className="flex items-center gap-2">
-                      <Shield className="w-4 h-4 text-green-600" />
-                      Cover starts immediately after purchase – excludes pre-existing conditions.
-                    </p>
-                  </PopoverContent>
-                </Popover>
+              <div className="flex items-center gap-2 sm:gap-3 mb-4 cursor-pointer group">
+                <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-black flex-shrink-0" />
+                <h2 className="text-lg sm:text-xl font-semibold text-black">
+                  Instant all-in-one cover
+                </h2>
+                <ChevronDown className="w-5 h-5 sm:w-8 sm:h-8 text-black transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
               </div>
             </CollapsibleTrigger>
             
@@ -1642,7 +1626,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <div className="flex items-center gap-2">
                     <ShieldCheck className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                     <p className="text-muted-foreground font-bold">
-                      All-in-one cover – Labour, electrical and mechanical parts included.
+                      Labour, Electrical & Mechanical Parts – Everything Covered.
                     </p>
                   </div>
                   <button
