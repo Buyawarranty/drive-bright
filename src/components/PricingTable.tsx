@@ -1213,7 +1213,337 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
         </div>
 
-        {/* What's Covered Section */}
+        {/* Choose Warranty Duration - Moved to top */}
+        <div id="duration-price-section" className="section-header rounded-lg p-4 sm:p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
+              1
+            </div>
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
+              <Calendar className="w-5 h-5 flex-shrink-0" />
+              Choose your cover duration
+            </h2>
+          </div>
+
+          {validationErrors.paymentType && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-red-600 font-medium">
+                Please choose a warranty duration to continue.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Vehicle age restrictions message */}
+          {vehicleAge === 15 && (
+            <Alert className="mb-6 border-orange-200 bg-orange-50">
+              <Info className="h-4 w-4 text-orange-600" />
+              <AlertDescription className="text-orange-800">
+                Due to your vehicle being 15 years old, only 1-year warranty coverage is available.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {vehicleAge === 14 && (
+            <Alert className="mb-6 border-orange-200 bg-orange-50">
+              <Info className="h-4 w-4 text-orange-600" />
+              <AlertDescription className="text-orange-800">
+                Due to your vehicle being 14 years old, warranty coverage is available for up to 2 years.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Vehicle mileage restrictions message */}
+          {vehicleMileage >= 140000 && vehicleAge < 14 && (
+            <Alert className="mb-6 border-orange-200 bg-orange-50">
+              <Info className="h-4 w-4 text-orange-600" />
+              <AlertDescription className="text-orange-800">
+                Due to your vehicle having 140,000+ miles, only 1-year warranty coverage is available.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {vehicleMileage > 120000 && vehicleMileage < 140000 && vehicleAge < 14 && (
+            <Alert className="mb-6 border-orange-200 bg-orange-50">
+              <Info className="h-4 w-4 text-orange-600" />
+              <AlertDescription className="text-orange-800">
+                Due to your vehicle's mileage, warranty coverage is available for up to 2 years.
+              </AlertDescription>
+            </Alert>
+          )}
+          <div className={`grid gap-6 mb-8 ${
+            availableDurations.length === 1 
+              ? 'grid-cols-1 md:max-w-md md:mx-auto' 
+              : availableDurations.length === 2 
+                ? 'grid-cols-1 md:grid-cols-2 md:max-w-3xl md:mx-auto' 
+                : 'grid-cols-1 md:grid-cols-3'
+          }`}>
+            {[
+              { 
+                id: '12months', 
+                label: '1-year cover', 
+                badge: null, 
+                planName: 'Platinum Complete Plan',
+                features: [
+                  'All mechanical & electrical parts',
+                  'Up to 10 claims per year',
+                  'Total cover up to vehicle value',
+                  'Labour costs included',
+                  'Fault diagnostics',
+                  'Consequential damage cover',
+                  'Fast claims process',
+                  'Choose your own garage',
+                  '14-day money-back guarantee',
+                  'Optional extras available',
+                  'Pre-existing faults are not covered'
+                ]
+              },
+              { 
+                id: '24months', 
+                label: '2-year cover', 
+                badge: 'MOST POPULAR', 
+                planName: 'Platinum Complete Plan',
+                features: [
+                  'All mechanical & electrical parts',
+                  'Unlimited Claims',
+                  'Total cover up to vehicle value',
+                  'Labour costs included',
+                  'Fault diagnostics',
+                  'Vehicle recovery claim-back',
+                  'Consequential damage cover',
+                  'Fast claims process',
+                  'Choose your own garage',
+                  '14-day money-back guarantee',
+                  'Optional extras available',
+                  'Pre-existing faults are not covered'
+                ]
+              },
+              { 
+                id: '36months', 
+                label: '3-year cover', 
+                badge: 'BEST VALUE', 
+                planName: 'Platinum Complete Plan',
+                features: [
+                  'All mechanical & electrical parts',
+                  'Unlimited Claims',
+                  'Total cover up to vehicle value',
+                  'Labour costs included',
+                  'Fault diagnostics',
+                  'Vehicle recovery claim-back',
+                  'Europe repair cover',
+                  'Vehicle rental cover',
+                  'Consequential damage cover',
+                  'Fast claims process',
+                  'Choose your own garage',
+                  '14-day money-back guarantee',
+                  'Optional extras available',
+                  'Pre-existing faults are not covered'
+                ]
+              }
+            ].filter(duration => availableDurations.includes(duration.id as any)).map((duration) => {
+              const durationId = duration.id as '12months' | '24months' | '36months';
+              const isSelected = paymentType === durationId;
+              const [isExpanded, setIsExpanded] = React.useState(false);
+              
+              // Calculate pricing for this duration
+              const warrantyYears = durationId === '12months' ? 1 : durationId === '24months' ? 2 : 3;
+              const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
+              const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, durationId);
+              const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
+              
+              // Apply automatic discounts
+              let discountedPrice = adjustedBasePrice;
+              if (durationId === '24months') {
+                discountedPrice = adjustedBasePrice - 100;
+              } else if (durationId === '36months') {
+                discountedPrice = adjustedBasePrice - 200;
+              }
+              
+              // Calculate display monthly price
+              const baseMonthlyPrice = Math.round(discountedPrice / 12);
+              const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
+              const boostDisplayAdjustment = boostAddon ? 5 : 0;
+              const displayedMonthlyPrice = Math.round(baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment);
+              const displayedAnnualPrice = Math.round(discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12));
+              const savingsAmount = durationId === '24months' ? 100 : durationId === '36months' ? 200 : 0;
+              
+              return (
+                <div
+                  key={durationId}
+                  onClick={() => {
+                    console.log('🎯 Duration card clicked:', { durationId, currentPaymentType: paymentType });
+                    isUserPaymentTypeChange.current = true;
+                    setPaymentType(durationId);
+                  }}
+                  className={`relative p-6 rounded-lg border-2 transition-all bg-white pointer-events-auto cursor-pointer hover:shadow-lg ${
+                    isSelected
+                      ? 'border-orange-500 shadow-lg shadow-orange-500/30'
+                      : 'border-gray-300 hover:border-orange-300'
+                  }`}
+                  style={{ position: 'relative', zIndex: 1 }}
+                >
+                  {/* Badge */}
+                  {duration.badge && (
+                    <span className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
+                      durationId === '24months' ? 'bg-orange-500 text-white' : 'bg-green-600 text-white'
+                    }`}>
+                      {duration.badge}
+                    </span>
+                  )}
+                  
+                  {/* Selection Checkbox - Top Right */}
+                  <div 
+                    className="absolute top-4 right-4 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      isUserPaymentTypeChange.current = true;
+                      setPaymentType(durationId);
+                    }}
+                  >
+                    <div className={cn(
+                      "w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all duration-200",
+                      isSelected 
+                        ? "bg-green-500 border-green-500" 
+                        : "bg-white border-gray-300 hover:border-green-400"
+                    )}>
+                      {isSelected && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
+                    </div>
+                  </div>
+
+                  {/* Duration Title */}
+                  <h4 className="text-xl font-bold text-gray-900 mb-1">
+                    {duration.label}
+                  </h4>
+                  <p className="text-sm text-gray-500 mb-3">{duration.planName}</p>
+                  
+                  {/* Price Section */}
+                  <div className="mb-4">
+                    {/* Monthly Price */}
+                    <div className="text-4xl font-bold text-black">
+                      £{displayedMonthlyPrice}<span className="text-base font-normal text-gray-600">/month</span>
+                    </div>
+                    
+                    {/* Total */}
+                    <div className="text-base text-gray-600 mb-3">
+                      Total £{Math.round(displayedAnnualPrice)}
+                    </div>
+                    
+                    {/* Savings - show before payment terms for 2yr and 3yr */}
+                    {savingsAmount > 0 && (
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                        <span className="line-through text-red-500 text-sm">
+                          Was £{adjustedBasePrice}
+                        </span>
+                        <Badge className="bg-green-600 hover:bg-green-700 text-white font-semibold px-3 py-1">
+                          Save £{savingsAmount} Today
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    {/* Payment Terms */}
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                        <span className="text-sm text-green-600 font-medium">12 payments, 0% APR</span>
+                      </div>
+                      {durationId === '24months' && (
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                          <span className="text-sm text-green-600 font-medium">Year 2 Cover is FREE</span>
+                        </div>
+                      )}
+                      {durationId === '36months' && (
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                          <span className="text-sm text-green-600 font-medium">Year 2 and 3 Cover is FREE</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* What's Included Collapsible */}
+                  <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+                    <CollapsibleTrigger className="w-full mb-4">
+                      <div className="flex items-center justify-between w-full border border-gray-300 rounded-lg px-4 py-3 hover:border-gray-400 transition-colors">
+                        <span className="text-lg font-medium text-gray-800">See What's Included</span>
+                        <ChevronDown 
+                          className={cn(
+                            "w-5 h-5 text-gray-600 transition-transform duration-300",
+                            isExpanded && "transform rotate-180"
+                          )}
+                        />
+                      </div>
+                    </CollapsibleTrigger>
+                    
+                    <CollapsibleContent className="mb-4">
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
+                        {duration.features.map((feature, idx) => {
+                          const isExclusion = feature.toLowerCase().includes('pre-existing faults');
+                          return (
+                            <div key={idx} className="flex items-start gap-2">
+                              {isExclusion ? (
+                                <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                              ) : (
+                                <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                              )}
+                              <span className="text-sm text-gray-700">{feature}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                  
+                  {/* CTA Button with Hover Effect and Arrow */}
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      isUserPaymentTypeChange.current = true;
+                      setPaymentType(durationId);
+                    }}
+                    className={cn(
+                      "w-full mb-3 font-bold text-base py-6 transition-all duration-300 group",
+                      isSelected
+                        ? "bg-black hover:bg-black/90 text-white shadow-lg border-2 border-black"
+                        : "bg-brand-orange hover:bg-brand-orange/90 text-white border-2 border-brand-orange"
+                    )}
+                    size="lg"
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <span>{isSelected ? 'Selected' : 'Get Instant Cover'}</span>
+                      {!isSelected && <ArrowRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" />}
+                    </div>
+                  </Button>
+                  
+                  {/* Email Quote Link */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenEmailQuoteDialog(durationId);
+                    }}
+                    className="w-full text-center text-sm text-black hover:text-orange-600 transition-colors pointer-events-auto flex items-center justify-center gap-1"
+                  >
+                    <Mail className="w-4 h-4" />
+                    <span className="underline">Email me this quote</span>
+                  </button>
+                  
+                  {/* See Full Cover Details Link */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const coverSection = document.getElementById('your-cover-details');
+                      coverSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }}
+                    className="w-full mt-3 text-center text-sm text-black hover:text-green-600 transition-colors pointer-events-auto flex items-center justify-center gap-1"
+                  >
+                    <span>🔍 See full cover details</span>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         <div id="whats-covered" className="section-header rounded-lg p-4 sm:p-8 mb-8">
           <Collapsible open={whatsCoveredOpen} onOpenChange={setWhatsCoveredOpen}>
             <CollapsibleTrigger className="w-full">
@@ -1997,341 +2327,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
             </div>
         </div>
-
-
-        {/* Choose Warranty Duration */}
-        <div id="duration-price-section" className="section-header rounded-lg p-4 sm:p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
-              5
-            </div>
-            <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
-              <Calendar className="w-5 h-5 flex-shrink-0" />
-              Choose your duration
-            </h2>
-          </div>
-
-          {validationErrors.paymentType && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="text-red-600 font-medium">
-                Please choose a warranty duration to continue.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Vehicle age restrictions message */}
-          {vehicleAge === 15 && (
-            <Alert className="mb-6 border-orange-200 bg-orange-50">
-              <Info className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="text-orange-800">
-                Due to your vehicle being 15 years old, only 1-year warranty coverage is available.
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          {vehicleAge === 14 && (
-            <Alert className="mb-6 border-orange-200 bg-orange-50">
-              <Info className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="text-orange-800">
-                Due to your vehicle being 14 years old, warranty coverage is available for up to 2 years.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Vehicle mileage restrictions message */}
-          {vehicleMileage >= 140000 && vehicleAge < 14 && (
-            <Alert className="mb-6 border-orange-200 bg-orange-50">
-              <Info className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="text-orange-800">
-                Due to your vehicle having 140,000+ miles, only 1-year warranty coverage is available.
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          {vehicleMileage > 120000 && vehicleMileage < 140000 && vehicleAge < 14 && (
-            <Alert className="mb-6 border-orange-200 bg-orange-50">
-              <Info className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="text-orange-800">
-                Due to your vehicle's mileage, warranty coverage is available for up to 2 years.
-              </AlertDescription>
-            </Alert>
-          )}
-          <div className={`grid gap-6 mb-8 ${
-            availableDurations.length === 1 
-              ? 'grid-cols-1 md:max-w-md md:mx-auto' 
-              : availableDurations.length === 2 
-                ? 'grid-cols-1 md:grid-cols-2 md:max-w-3xl md:mx-auto' 
-                : 'grid-cols-1 md:grid-cols-3'
-          }`}>
-            {[
-              { 
-                id: '12months', 
-                label: '1-year cover', 
-                badge: null, 
-                planName: 'Platinum Complete Plan',
-                features: [
-                  'All mechanical & electrical parts',
-                  'Up to 10 claims per year',
-                  'Total cover up to vehicle value',
-                  'Labour costs included',
-                  'Fault diagnostics',
-                  'Consequential damage cover',
-                  'Fast claims process',
-                  'Choose your own garage',
-                  '14-day money-back guarantee',
-                  'Optional extras available',
-                  'Pre-existing faults are not covered'
-                ]
-              },
-              { 
-                id: '24months', 
-                label: '2-year cover', 
-                badge: 'MOST POPULAR', 
-                planName: 'Platinum Complete Plan',
-                features: [
-                  'All mechanical & electrical parts',
-                  'Unlimited Claims',
-                  'Total cover up to vehicle value',
-                  'Labour costs included',
-                  'Fault diagnostics',
-                  'Vehicle recovery claim-back',
-                  'Consequential damage cover',
-                  'Fast claims process',
-                  'Choose your own garage',
-                  '14-day money-back guarantee',
-                  'Optional extras available',
-                  'Pre-existing faults are not covered'
-                ]
-              },
-              { 
-                id: '36months', 
-                label: '3-year cover', 
-                badge: 'BEST VALUE', 
-                planName: 'Platinum Complete Plan',
-                features: [
-                  'All mechanical & electrical parts',
-                  'Unlimited Claims',
-                  'Total cover up to vehicle value',
-                  'Labour costs included',
-                  'Fault diagnostics',
-                  'Vehicle recovery claim-back',
-                  'Europe repair cover',
-                  'Vehicle rental cover',
-                  'Consequential damage cover',
-                  'Fast claims process',
-                  'Choose your own garage',
-                  '14-day money-back guarantee',
-                  'Optional extras available',
-                  'Pre-existing faults are not covered'
-                ]
-              }
-            ].filter(duration => availableDurations.includes(duration.id as any)).map((duration) => {
-              const durationId = duration.id as '12months' | '24months' | '36months';
-              const isSelected = paymentType === durationId;
-              const [isExpanded, setIsExpanded] = React.useState(false);
-              
-              // Calculate pricing for this duration
-              const warrantyYears = durationId === '12months' ? 1 : durationId === '24months' ? 2 : 3;
-              const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
-              const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, durationId);
-              const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
-              
-              // Apply automatic discounts
-              let discountedPrice = adjustedBasePrice;
-              if (durationId === '24months') {
-                discountedPrice = adjustedBasePrice - 100;
-              } else if (durationId === '36months') {
-                discountedPrice = adjustedBasePrice - 200;
-              }
-              
-              // Calculate display monthly price
-              const baseMonthlyPrice = Math.round(discountedPrice / 12);
-              const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
-              const boostDisplayAdjustment = boostAddon ? 5 : 0;
-              const displayedMonthlyPrice = Math.round(baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment);
-              const displayedAnnualPrice = Math.round(discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12));
-              const savingsAmount = durationId === '24months' ? 100 : durationId === '36months' ? 200 : 0;
-              
-              return (
-                <div
-                  key={durationId}
-                  onClick={() => {
-                    console.log('🎯 Duration card clicked:', { durationId, currentPaymentType: paymentType });
-                    isUserPaymentTypeChange.current = true;
-                    setPaymentType(durationId);
-                  }}
-                  className={`relative p-6 rounded-lg border-2 transition-all bg-white pointer-events-auto cursor-pointer hover:shadow-lg ${
-                    isSelected
-                      ? 'border-orange-500 shadow-lg shadow-orange-500/30'
-                      : 'border-gray-300 hover:border-orange-300'
-                  }`}
-                  style={{ position: 'relative', zIndex: 1 }}
-                >
-                  {/* Badge */}
-                  {duration.badge && (
-                    <span className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
-                      durationId === '24months' ? 'bg-orange-500 text-white' : 'bg-green-600 text-white'
-                    }`}>
-                      {duration.badge}
-                    </span>
-                  )}
-                  
-                  {/* Collapsible Section for What's Covered */}
-                  {/* Selection Checkbox - Top Right */}
-                  <div 
-                    className="absolute top-4 right-4 cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      isUserPaymentTypeChange.current = true;
-                      setPaymentType(durationId);
-                    }}
-                  >
-                    <div className={cn(
-                      "w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all duration-200",
-                      isSelected 
-                        ? "bg-green-500 border-green-500" 
-                        : "bg-white border-gray-300 hover:border-green-400"
-                    )}>
-                      {isSelected && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
-                    </div>
-                  </div>
-
-                  {/* Duration Title */}
-                  <h4 className="text-xl font-bold text-gray-900 mb-1">
-                    {duration.label}
-                  </h4>
-                  <p className="text-sm text-gray-500 mb-3">{duration.planName}</p>
-                  
-                  {/* Price Section */}
-                  <div className="mb-4">
-                    {/* Monthly Price */}
-                    <div className="text-4xl font-bold text-black">
-                      £{displayedMonthlyPrice}<span className="text-base font-normal text-gray-600">/month</span>
-                    </div>
-                    
-                    {/* Total */}
-                    <div className="text-base text-gray-600 mb-3">
-                      Total £{Math.round(displayedAnnualPrice)}
-                    </div>
-                    
-                    {/* Savings - show before payment terms for 2yr and 3yr */}
-                    {savingsAmount > 0 && (
-                      <div className="flex flex-wrap items-center gap-2 mb-3">
-                        <span className="line-through text-red-500 text-sm">
-                          Was £{adjustedBasePrice}
-                        </span>
-                        <Badge className="bg-green-600 hover:bg-green-700 text-white font-semibold px-3 py-1">
-                          Save £{savingsAmount} Today
-                        </Badge>
-                      </div>
-                    )}
-                    
-                    {/* Payment Terms */}
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                        <span className="text-sm text-green-600 font-medium">12 payments, 0% APR</span>
-                      </div>
-                      {durationId === '24months' && (
-                        <div className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                          <span className="text-sm text-green-600 font-medium">Year 2 Cover is FREE</span>
-                        </div>
-                      )}
-                      {durationId === '36months' && (
-                        <div className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                          <span className="text-sm text-green-600 font-medium">Year 2 and 3 Cover is FREE</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* What's Included Collapsible */}
-                  <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-                    <CollapsibleTrigger className="w-full mb-4">
-                      <div className="flex items-center justify-between w-full border border-gray-300 rounded-lg px-4 py-3 hover:border-gray-400 transition-colors">
-                        <span className="text-lg font-medium text-gray-800">See What's Included</span>
-                        <ChevronDown 
-                          className={cn(
-                            "w-5 h-5 text-gray-600 transition-transform duration-300",
-                            isExpanded && "transform rotate-180"
-                          )}
-                        />
-                      </div>
-                    </CollapsibleTrigger>
-                    
-                    <CollapsibleContent className="mb-4">
-                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
-                        {duration.features.map((feature, idx) => {
-                          const isExclusion = feature.toLowerCase().includes('pre-existing faults');
-                          return (
-                            <div key={idx} className="flex items-start gap-2">
-                              {isExclusion ? (
-                                <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                              ) : (
-                                <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                              )}
-                              <span className="text-sm text-gray-700">{feature}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-                  
-                  {/* CTA Button with Hover Effect and Arrow */}
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      isUserPaymentTypeChange.current = true;
-                      setPaymentType(durationId);
-                    }}
-                    className={cn(
-                      "w-full mb-3 font-bold text-base py-6 transition-all duration-300 group",
-                      isSelected
-                        ? "bg-black hover:bg-black/90 text-white shadow-lg border-2 border-black"
-                        : "bg-brand-orange hover:bg-brand-orange/90 text-white border-2 border-brand-orange"
-                    )}
-                    size="lg"
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <span>{isSelected ? 'Selected' : 'Get Instant Cover'}</span>
-                      {!isSelected && <ArrowRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" />}
-                    </div>
-                  </Button>
-                  
-                  {/* Email Quote Link */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenEmailQuoteDialog(durationId);
-                    }}
-                    className="w-full text-center text-sm text-black hover:text-orange-600 transition-colors pointer-events-auto flex items-center justify-center gap-1"
-                  >
-                    <Mail className="w-4 h-4" />
-                    <span className="underline">Email me this quote</span>
-                  </button>
-                  
-                  {/* See Full Cover Details Link */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const coverSection = document.getElementById('your-cover-details');
-                      coverSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }}
-                    className="w-full mt-3 text-center text-sm text-black hover:text-green-600 transition-colors pointer-events-auto flex items-center justify-center gap-1"
-                  >
-                    <span>🔍 See full cover details</span>
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Add-On Protection Packages */}
         <div className="section-header rounded-lg p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-6">
             <div className="flex items-center gap-3">
