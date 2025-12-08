@@ -66,7 +66,7 @@ const WarrantyBenefitsSection: React.FC = () => {
               {/* Left Column - Mechanical & Electrical, Features */}
               <div className="space-y-4">
                 {leftColumnCategories.map((category, idx) => (
-                  <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                  <div key={idx} className="bg-gray-50 rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
                     {category.headerText && (
                       <p className="text-center lg:text-left font-bold text-brand-dark-text mb-3">{category.headerText}</p>
                     )}
@@ -91,7 +91,7 @@ const WarrantyBenefitsSection: React.FC = () => {
               {/* Right Column - Tech & Safety, EV & Hybrid */}
               <div className="space-y-4">
                 {rightColumnCategories.map((category, idx) => (
-                  <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                  <div key={idx} className="bg-gray-50 rounded-xl p-4 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-9 h-9 rounded-lg bg-brand-orange/10 flex items-center justify-center">
                         <category.icon className="w-5 h-5 text-brand-orange" />
