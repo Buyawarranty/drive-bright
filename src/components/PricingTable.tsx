@@ -1181,8 +1181,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
         
         {/* Vehicle Information - Simplified */}
         <div className="bg-gray-50 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            {/* Desktop layout */}
+            <div className="hidden sm:flex items-center gap-3 flex-wrap">
               <Car className="w-5 h-5 text-muted-foreground flex-shrink-0" />
               <span className="font-bold text-foreground">
                 {vehicleData?.year} {vehicleData?.make?.toUpperCase()} {vehicleData?.model?.toUpperCase()}
@@ -1191,20 +1192,40 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <span className="text-muted-foreground">
                 {vehicleData?.mileage ? parseInt(vehicleData.mileage).toLocaleString() : '0'} miles
               </span>
-              <span className="text-muted-foreground hidden sm:inline">·</span>
-              <span className="text-muted-foreground hidden sm:inline">{vehicleData?.fuelType}</span>
-              <span className="text-muted-foreground hidden sm:inline">·</span>
+              <span className="text-muted-foreground">·</span>
+              <span className="text-muted-foreground">{vehicleData?.fuelType}</span>
+              <span className="text-muted-foreground">·</span>
               <span className="bg-yellow-400 border-2 border-black rounded px-2 py-0.5 font-mono font-bold text-black text-sm">
                 {vehicleData?.regNumber}
               </span>
-              {/* Mobile-only fuel type - side by side with reg */}
-              <span className="text-muted-foreground sm:hidden">{vehicleData?.fuelType}</span>
             </div>
+            
+            {/* Mobile layout - centered */}
+            <div className="sm:hidden flex flex-col items-center gap-2 w-full">
+              <div className="flex items-center gap-2">
+                <Car className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                <span className="font-bold text-foreground text-center">
+                  {vehicleData?.year} {vehicleData?.make?.toUpperCase()} {vehicleData?.model?.toUpperCase()}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 justify-center">
+                <span className="bg-yellow-400 border-2 border-black rounded px-2 py-0.5 font-mono font-bold text-black text-sm">
+                  {vehicleData?.regNumber}
+                </span>
+                <span className="text-muted-foreground">·</span>
+                <span className="text-muted-foreground">{vehicleData?.fuelType}</span>
+                <span className="text-muted-foreground">·</span>
+                <span className="text-muted-foreground">
+                  {vehicleData?.mileage ? parseInt(vehicleData.mileage).toLocaleString() : '0'} miles
+                </span>
+              </div>
+            </div>
+            
             <Button
               onClick={() => window.location.href = '/'}
               variant="ghost"
               size="sm"
-              className="text-black hover:text-black/80 flex-shrink-0"
+              className="text-black hover:text-black/80 flex-shrink-0 sm:block hidden"
             >
               <Edit className="h-4 w-4" />
             </Button>
