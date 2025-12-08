@@ -2637,10 +2637,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="flex justify-center items-center gap-1 hover:opacity-80 transition-opacity pb-2"
+                      className="flex justify-center items-center hover:opacity-80 transition-opacity pb-2"
                     >
-                      <span className="text-gray-600 text-sm">⭐</span>
-                      <span className="text-sm text-gray-600">Rated Excellent on Trustpilot</span>
+                      <TrustpilotHeader className="h-6" />
                     </a>
                   </div>
                   
