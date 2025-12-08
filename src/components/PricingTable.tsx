@@ -2403,10 +2403,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <p className="text-base text-muted-foreground mb-4">
                 No jargon. No surprises.
               </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-sm">
+              <div className="flex items-center justify-center text-sm">
                 <span className="font-semibold text-foreground">94% of claims approved fast</span>
-                <span className="hidden sm:block text-muted-foreground">•</span>
-                <span className="text-muted-foreground">Clear cover – no hidden catches</span>
               </div>
             </div>
             
