@@ -105,7 +105,7 @@ const handler = async (req: Request): Promise<Response> => {
       additionalInfo && `Additional Info: ${additionalInfo}`
     ].filter(Boolean).join('\n');
 
-    // Store submission in database
+    // Store submission in database with vehicle registration
     const { data: submissionData, error: dbError } = await supabase
       .from('claims_submissions')
       .insert([
@@ -117,7 +117,8 @@ const handler = async (req: Request): Promise<Response> => {
           file_url: fileUrl,
           file_name: fileName,
           file_size: fileSize,
-          status: 'new'
+          status: 'new',
+          vehicle_registration: vehicleReg || null
         }
       ])
       .select()
@@ -130,23 +131,31 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Submission stored in database:', submissionData.id);
 
-    // Prepare email content with all form fields
-    const emailSubject = `New Claim Submission from ${name}`;
+    // Prepare email content with all form fields - REG PLATE AS SUBJECT AND AT TOP
+    const regPlateDisplay = vehicleReg ? vehicleReg.toUpperCase() : 'NO REG PROVIDED';
+    const emailSubject = `Claim: ${regPlateDisplay}`;
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <!-- REG PLATE PROMINENTLY AT TOP -->
+        <div style="background-color: #FFD700; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 3px solid #000;">
+          <p style="margin: 0; font-size: 28px; font-weight: bold; color: #000; letter-spacing: 2px; font-family: 'Arial Black', Arial, sans-serif;">
+            ${regPlateDisplay}
+          </p>
+        </div>
+        
         <h1 style="color: #eb4b00;">New Claim Submission</h1>
+        
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h2 style="color: #333; margin-top: 0;">Vehicle Details</h2>
+          <p><strong>Registration:</strong> ${regPlateDisplay}</p>
+          ${currentMileage ? `<p><strong>Current Mileage:</strong> ${currentMileage.toLocaleString()} miles</p>` : ''}
+        </div>
         
         <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h2 style="color: #333; margin-top: 0;">Contact Information</h2>
           <p><strong>Name:</strong> ${name}</p>
           <p><strong>Email:</strong> ${email}</p>
           <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>
-        </div>
-        
-        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h2 style="color: #333; margin-top: 0;">Vehicle Details</h2>
-          <p><strong>Vehicle Reg/Make/Model:</strong> ${vehicleReg || 'Not provided'}</p>
-          ${currentMileage ? `<p><strong>Current Mileage:</strong> ${currentMileage.toLocaleString()} miles</p>` : ''}
         </div>
         
         <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">

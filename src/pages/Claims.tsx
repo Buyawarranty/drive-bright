@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, Upload, X, Mail, Phone } from 'lucide-react';
+import { Menu, Upload, X, Mail, Phone, Search, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
@@ -43,6 +43,8 @@ const Claims = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [isDragging, setIsDragging] = useState(false);
+  const [isLookingUpVehicle, setIsLookingUpVehicle] = useState(false);
+  const [vehicleDetails, setVehicleDetails] = useState<{make?: string; model?: string; year?: string} | null>(null);
 
   // Validation functions
   const validateEmail = (email: string): boolean => {
@@ -155,6 +157,38 @@ const Claims = () => {
   };
 
 
+  // DVLA vehicle lookup function
+  const lookupVehicle = async (regPlate: string) => {
+    const cleanReg = regPlate.replace(/\s/g, '').toUpperCase();
+    if (cleanReg.length < 2) return;
+    
+    setIsLookingUpVehicle(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
+        body: { registrationNumber: cleanReg }
+      });
+      
+      if (error) {
+        console.error('Vehicle lookup error:', error);
+        setVehicleDetails(null);
+        return;
+      }
+      
+      if (data?.make || data?.model) {
+        setVehicleDetails({
+          make: data.make,
+          model: data.model,
+          year: data.yearOfManufacture || data.manufactureYear
+        });
+      }
+    } catch (err) {
+      console.error('Vehicle lookup failed:', err);
+      setVehicleDetails(null);
+    } finally {
+      setIsLookingUpVehicle(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -175,6 +209,10 @@ const Claims = () => {
       newErrors.phone = 'Phone number is required';
     } else if (!validatePhone(formData.phone)) {
       newErrors.phone = 'Please enter a valid UK phone number (e.g., 07123456789 or +44 7123 456789)';
+    }
+
+    if (!formData.vehicleReg.trim()) {
+      newErrors.vehicleReg = 'Vehicle registration is required';
     }
     
     if (Object.keys(newErrors).length > 0) {
@@ -462,17 +500,43 @@ Additional Information: ${formData.additionalInfo}
 
                           <div>
                             <Label htmlFor="vehicleReg" className="text-gray-700 font-medium text-sm">
-                              Vehicle Reg/Make/Model
+                              Vehicle Registration *
                             </Label>
-                            <Input
-                              id="vehicleReg"
-                              name="vehicleReg"
-                              type="text"
-                              placeholder="AB12 CDE"
-                              value={formData.vehicleReg}
-                              onChange={handleInputChange}
-                              className="mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500"
-                            />
+                            <div className="relative">
+                              <Input
+                                id="vehicleReg"
+                                name="vehicleReg"
+                                type="text"
+                                placeholder="AB12 CDE"
+                                value={formData.vehicleReg}
+                                onChange={(e) => {
+                                  handleInputChange(e);
+                                  // Clear vehicle details when reg changes
+                                  setVehicleDetails(null);
+                                }}
+                                onBlur={(e) => {
+                                  const value = e.target.value.trim();
+                                  if (value.length >= 2) {
+                                    lookupVehicle(value);
+                                  }
+                                }}
+                                required
+                                className={`mt-1.5 h-11 border-gray-300 focus:border-orange-500 focus:ring-orange-500 pr-10 ${errors.vehicleReg ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+                              />
+                              {isLookingUpVehicle && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 mt-0.5">
+                                  <Loader2 className="w-4 h-4 animate-spin text-orange-500" />
+                                </div>
+                              )}
+                            </div>
+                            {errors.vehicleReg && <p className="mt-1 text-sm text-red-600">{errors.vehicleReg}</p>}
+                            {vehicleDetails && (vehicleDetails.make || vehicleDetails.model) && (
+                              <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md">
+                                <p className="text-sm text-green-700 font-medium">
+                                  ✓ {vehicleDetails.make} {vehicleDetails.model} {vehicleDetails.year ? `(${vehicleDetails.year})` : ''}
+                                </p>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
