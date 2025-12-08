@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Sparkles } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import confetti from 'canvas-confetti';
 
 interface ClaimLimitSelectorProps {
   selectedClaimLimit: number | null;
@@ -31,6 +32,26 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
   boostPrice
 }) => {
   const [openDetails, setOpenDetails] = useState<number | null>(null);
+  
+  // Tiny spark effect when boost is clicked
+  const triggerBoostSpark = useCallback((event: React.MouseEvent) => {
+    const rect = (event.target as HTMLElement).getBoundingClientRect();
+    const x = (rect.left + rect.width / 2) / window.innerWidth;
+    const y = (rect.top + rect.height / 2) / window.innerHeight;
+    
+    confetti({
+      particleCount: 15,
+      spread: 30,
+      startVelocity: 15,
+      decay: 0.95,
+      scalar: 0.4,
+      ticks: 30,
+      origin: { x, y },
+      colors: ['#f97316', '#facc15', '#fb923c'],
+      shapes: ['star'],
+      gravity: 0.5
+    });
+  }, []);
 
   // Handle selection - £3000 option automatically enables boost
   const handleSelect = (limit: number) => {
@@ -131,23 +152,31 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
         <span className="absolute -top-0 left-3 z-10 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide">
           POPULAR
         </span>
-        <div className="flex items-center justify-between p-4 rounded-lg border-2 border-border bg-white shadow-sm">
+        <div 
+          onClick={(e) => {
+            const isCurrentlyChecked = boostAddon && selectedClaimLimit === 2000;
+            if (!isCurrentlyChecked) {
+              triggerBoostSpark(e);
+              onClaimLimitChange(2000);
+              onBoostChange(true);
+            } else {
+              onBoostChange(false);
+            }
+          }}
+          className="flex items-center justify-between p-4 rounded-lg border-2 border-border bg-white shadow-sm cursor-pointer hover:border-success/50 transition-all"
+        >
           <div className="flex items-center gap-3">
             <input
               type="checkbox"
               checked={boostAddon && selectedClaimLimit === 2000}
-              onChange={(e) => {
-                if (e.target.checked) {
-                  onClaimLimitChange(2000);
-                  onBoostChange(true);
-                } else {
-                  onBoostChange(false);
-                }
-              }}
-              className="w-5 h-5 rounded border-gray-300 text-success focus:ring-success"
+              onChange={() => {}}
+              className="w-5 h-5 rounded border-gray-300 text-success focus:ring-success pointer-events-none"
             />
             <div>
-              <div className="text-sm font-semibold text-foreground">🚀 Boost Claim Limit</div>
+              <div className="text-sm font-semibold text-foreground flex items-center gap-1">
+                🚀 Boost Claim Limit
+                <Sparkles className="w-3 h-3 text-orange-500" />
+              </div>
               <div className="text-xs text-muted-foreground">
                 £{selectedClaimLimit ? selectedClaimLimit.toLocaleString() : '1,250'} → <span className="text-success font-semibold">£{selectedClaimLimit ? (selectedClaimLimit + 1000).toLocaleString() : '2,250'}</span> | +£5/month × 12 payments
               </div>

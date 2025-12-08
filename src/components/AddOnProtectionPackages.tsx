@@ -240,7 +240,7 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                   {addon.bulletPoints.map((point, index) => (
                     <div key={index} className="flex items-start gap-2">
                       <Check className="h-3 w-3 text-green-600 flex-shrink-0 mt-0.5" strokeWidth={3} />
-                      <span className="text-xs text-gray-600">{point}</span>
+                      <span className="text-xs text-black">{point}</span>
                     </div>
                   ))}
                 </div>
