@@ -1564,7 +1564,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       setPaymentType(durationId);
                     }}
                     className={cn(
-                      "w-full mb-3 font-bold text-base py-6 transition-all duration-300 group",
+                      "w-full mb-1.5 font-bold text-base py-6 transition-all duration-300 group",
                       isSelected
                         ? "bg-black hover:bg-black/90 text-white shadow-lg border-2 border-black"
                         : "bg-brand-orange hover:bg-brand-orange/90 text-white border-2 border-brand-orange"
@@ -1596,7 +1596,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       const coverSection = document.getElementById('your-cover-details');
                       coverSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }}
-                    className="w-full mt-3 text-center text-sm text-black hover:text-green-600 transition-colors pointer-events-auto flex items-center justify-center gap-1"
+                    className="w-full mt-1.5 text-center text-sm text-black hover:text-green-600 transition-colors pointer-events-auto flex items-center justify-center gap-1"
                   >
                     <span>🔍 See full cover details</span>
                   </button>
