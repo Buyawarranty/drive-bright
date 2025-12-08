@@ -1734,28 +1734,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       </div>
                     )}
 
-                    {/* Complete Purchase Button - Centered with max width on desktop */}
-                    <div className="text-center lg:max-w-sm lg:mx-auto">
-                      <ProtectedButton
-                        actionType="complete_purchase"
-                        onClick={handleSubmit}
-                        className="w-full mt-4 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 text-lg rounded-xl shadow-lg animate-[breathing_3s_ease-in-out_infinite] transition-all hover:scale-[1.02]"
-                        size="lg"
-                        disabled={isLoadingPayment}
-                        loading={isLoadingPayment}
-                      >
-                        {isLoadingPayment ? (
-                          'Loading Payment Gateway...'
-                        ) : (
-                          <span className="flex items-center justify-center gap-2">
-                            <CreditCard className="w-5 h-5" />
-                            Complete Purchase
-                            <ArrowRight className="w-5 h-5" strokeWidth={3} />
-                          </span>
-                        )}
-                      </ProtectedButton>
-                      <p className="text-sm text-black mt-2 font-medium">Takes less than 1 minute</p>
-                    </div>
+                    {/* Complete Purchase Button removed - CTAs are in payment option cards */}
 
                     {/* Trust & Security - Constrained width on desktop */}
                     <div className="space-y-3 mt-4 lg:max-w-md lg:mx-auto">
