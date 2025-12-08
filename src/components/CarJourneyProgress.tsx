@@ -32,8 +32,10 @@ const CarJourneyProgress: React.FC<CarJourneyProgressProps> = ({
   }, [currentStep]);
 
   const getCarPosition = () => {
+    // Clamp the car position to stay within bounds (accounting for car width)
     const progress = Math.min(Math.max((animatedStep - 1) / 3, 0), 1);
-    return `${progress * 85 + 7.5}%`;
+    // Use calc to ensure car stays within container on all screen sizes
+    return `calc(${progress * 80 + 10}% - 24px)`;
   };
 
   const getStepStatus = (stepId: number) => {
@@ -43,13 +45,13 @@ const CarJourneyProgress: React.FC<CarJourneyProgressProps> = ({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto py-6 px-4">
+    <div className="w-full max-w-4xl mx-auto py-6 px-6 sm:px-4 overflow-hidden">
       {/* Logo removed - already in sticky navigation */}
 
       {/* Progress Container */}
-      <div className="relative">
+      <div className="relative overflow-visible">
         {/* Progress Line */}
-        <div className="relative h-2 bg-gray-200 rounded-full">
+        <div className="relative h-2 bg-gray-200 rounded-full mx-2 sm:mx-0">
           <div 
             className="h-full bg-[#1e40af] rounded-full transition-all duration-1000 ease-in-out"
             style={{ width: `${Math.max(12.5 + (currentStep - 1) / 3 * 75, 12.5)}%` }}
@@ -58,14 +60,13 @@ const CarJourneyProgress: React.FC<CarJourneyProgressProps> = ({
 
         {/* Moving Car */}
         <div 
-          className="absolute -top-6 transition-all duration-1000 ease-in-out transform"
+          className="absolute -top-5 sm:-top-6 transition-all duration-1000 ease-in-out"
           style={{ 
             left: getCarPosition(),
-            transform: 'translateX(-50%)',
             animation: 'gentle-bounce 4s ease-in-out infinite'
           }}
         >
-          <svg width="48" height="32" viewBox="0 0 48 32" className="drop-shadow-md">
+          <svg width="40" height="28" viewBox="0 0 48 32" className="drop-shadow-md sm:w-12 sm:h-8">
             {/* Car Body */}
             <rect x="3" y="12" width="42" height="12" rx="3" fill="#ea580c" />
             <rect x="9" y="6" width="30" height="9" rx="3" fill="#fb923c" />
