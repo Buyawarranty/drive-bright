@@ -2267,8 +2267,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <div 
               className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
                 selectedClaimLimit === 750
-                  ? 'border-2 border-green-500 shadow-lg shadow-green-500/30'
-                  : 'border-2 border-gray-200 hover:border-gray-300 hover:shadow-md'
+                  ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30'
+                  : 'border-2 border-gray-200 hover:border-orange-300 hover:shadow-md'
               }`}
               onClick={() => {
                 setSelectedClaimLimit(750);
@@ -2294,8 +2294,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <div 
               className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
                 selectedClaimLimit === 1250
-                  ? 'border-2 border-green-500 shadow-lg shadow-green-500/30'
-                  : 'border-2 border-gray-200 hover:border-gray-300 hover:shadow-md'
+                  ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30'
+                  : 'border-2 border-gray-200 hover:border-orange-300 hover:shadow-md'
               }`}
               onClick={() => {
                 setSelectedClaimLimit(1250);
@@ -2324,8 +2324,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <div 
               className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
                 selectedClaimLimit === 2000
-                  ? 'border-2 border-green-500 shadow-lg shadow-green-500/30'
-                  : 'border-2 border-gray-200 hover:border-gray-300 hover:shadow-md'
+                  ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30'
+                  : 'border-2 border-gray-200 hover:border-orange-300 hover:shadow-md'
               }`}
               onClick={() => {
                 setSelectedClaimLimit(2000);
@@ -2352,8 +2352,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
           <div 
             className={`mt-4 p-6 rounded-lg transition-all duration-200 cursor-pointer bg-white ${
               boostAddon 
-                ? 'border-2 border-green-500 shadow-lg shadow-green-500/30' 
-                : 'border-2 border-gray-200 hover:border-gray-300 hover:shadow-md'
+                ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30' 
+                : 'border-2 border-gray-200 hover:border-orange-300 hover:shadow-md'
             }`}
             onClick={() => setBoostAddon(!boostAddon)}
           >
