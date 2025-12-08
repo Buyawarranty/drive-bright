@@ -197,10 +197,10 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                 {/* Left side - Title and price info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">{addon.icon}</span>
-                    <h4 className="font-semibold text-gray-900 text-sm">{addon.title}</h4>
+                    <span className="text-xl">{addon.icon}</span>
+                    <h4 className="font-semibold text-gray-900 text-base">{addon.title}</h4>
                   </div>
-                  <p className="text-xs text-gray-600 mt-0.5">
+                  <p className="text-sm text-gray-600 mt-0.5">
                     <span className="font-bold text-gray-900">{isIncluded ? '£0' : priceText}</span>
                     <span className="mx-1">·</span>
                     {descriptionText}
@@ -225,13 +225,13 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
               <CollapsibleTrigger asChild>
                 <button
                   onClick={(e) => toggleExpanded(addon.key, e)}
-                  className="w-full px-4 py-2.5 text-sm text-gray-700 hover:text-gray-900 flex items-center justify-between border-t border-gray-100 transition-colors bg-gray-50 hover:bg-gray-100 rounded-b-lg"
+                  className="w-full px-4 py-2.5 text-base text-gray-700 hover:text-gray-900 flex items-center justify-between border-t border-gray-100 transition-colors bg-gray-50 hover:bg-gray-100 rounded-b-lg"
                 >
                   <div className="flex items-center gap-2">
-                    <Info className="w-4 h-4" />
+                    <Info className="w-5 h-5" />
                     <span className="font-medium">Details</span>
                   </div>
-                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${expandedItems[addon.key] ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${expandedItems[addon.key] ? 'rotate-180' : ''}`} />
                 </button>
               </CollapsibleTrigger>
               
@@ -239,8 +239,8 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                 <div className="space-y-1.5 pt-2">
                   {addon.bulletPoints.map((point, index) => (
                     <div key={index} className="flex items-start gap-2">
-                      <Check className="h-3 w-3 text-green-600 flex-shrink-0 mt-0.5" strokeWidth={3} />
-                      <span className="text-xs text-black">{point}</span>
+                      <Check className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" strokeWidth={3} />
+                      <span className="text-sm text-black">{point}</span>
                     </div>
                   ))}
                 </div>
