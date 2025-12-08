@@ -2427,7 +2427,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 No jargon. No surprises.
               </p>
               <div className="inline-flex items-center justify-center bg-green-50 border border-green-200 rounded-full px-4 py-2">
-                <Check className="w-4 h-4 text-green-600 mr-1.5 flex-shrink-0" />
                 <span className="font-semibold text-green-700 text-sm leading-none">94% of claims approved in under 48 hours</span>
               </div>
             </div>
