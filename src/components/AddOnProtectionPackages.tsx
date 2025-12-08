@@ -16,7 +16,7 @@ const addOnPackages = [
     title: 'Wear & Tear Cover',
     price: 9,
     priceType: 'monthly',
-    badge: 'Best value',
+    badge: 'BEST VALUE',
     badgeColor: 'blue',
     bulletPoints: [
       'Covers engine, gearbox, differential and drivetrain components',
@@ -44,7 +44,7 @@ const addOnPackages = [
     title: 'Tyre Cover',
     price: 8,
     priceType: 'monthly',
-    badge: 'Popular',
+    badge: 'POPULAR',
     badgeColor: 'orange',
     bulletPoints: [
       'Up to £150 per tyre for repair or replacement',
@@ -153,12 +153,12 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
         // Build the description line
         let descriptionParts: string[] = [];
         if (isIncluded) {
-          descriptionParts.push('Included in your plan');
+          descriptionParts.push('INCLUDED IN YOUR PLAN');
         } else if (addon.priceType === 'monthly') {
-          descriptionParts.push('12 payments');
-          descriptionParts.push(`${coverYears} cover`);
+          descriptionParts.push('12 PAYMENTS');
+          descriptionParts.push(`${coverYears.toUpperCase()} COVER`);
         } else {
-          descriptionParts.push('One-time payment');
+          descriptionParts.push('ONE-TIME PAYMENT');
         }
         const descriptionText = descriptionParts.join(' · ');
 
@@ -180,8 +180,8 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
             {(showIncludedBadge || showAddonBadge) && (
               <div className="absolute -top-3 left-3">
                 {showIncludedBadge ? (
-                  <span className="bg-green-600 text-white text-xs font-semibold px-3 py-1 rounded shadow-sm">
-                    Included free
+                  <span className="bg-green-600 text-white text-xs font-semibold px-3 py-1 rounded shadow-sm uppercase">
+                    INCLUDED FREE
                   </span>
                 ) : showAddonBadge ? (
                   <span className={`text-xs font-semibold px-3 py-1 rounded shadow-sm ${getBadgeClasses(addon.badgeColor || 'gray')}`}>
