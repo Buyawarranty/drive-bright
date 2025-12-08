@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import { ChevronDown, Sparkles } from 'lucide-react';
+import { ChevronDown, Sparkles, Check } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import confetti from 'canvas-confetti';
 
@@ -175,6 +175,14 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
               </div>
             </div>
           </div>
+          
+          {/* Selected indicator - desktop only */}
+          {boostAddon && selectedClaimLimit === 2000 && (
+            <div className="hidden md:flex items-center gap-1.5 text-success font-semibold text-sm">
+              <Check className="w-4 h-4" />
+              <span>Selected</span>
+            </div>
+          )}
         </div>
       </div>
 
