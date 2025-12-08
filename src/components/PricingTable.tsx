@@ -1158,18 +1158,21 @@ const PricingTable: React.FC<PricingTableProps> = ({
         </div>
       </div>
 
-      {/* Pick Your Perfect Cover heading and Trustpilot on same line */}
-      <div className="max-w-6xl mx-auto px-4 pt-5 pb-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-orange-100 rounded-full">
-              <Shield className="w-6 h-6 text-orange-500" />
-            </div>
-            <h1 className="text-xl font-semibold text-gray-900">
-              Pick your perfect cover
+      {/* Get Covered in 60 Seconds heading */}
+      <div className="max-w-6xl mx-auto px-4 pt-6 pb-4">
+        <div className="text-center space-y-2">
+          <div className="flex items-center justify-center gap-2">
+            <Zap className="w-6 h-6 text-primary" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+              Get Covered in 60 Seconds
             </h1>
           </div>
-          <TrustpilotHeader className="h-8 sm:h-10" />
+          <p className="text-muted-foreground text-sm sm:text-base">
+            Choose your plan, customise options, and pay in 12 easy instalments.
+          </p>
+          <div className="flex justify-center pt-2">
+            <TrustpilotHeader className="h-8 sm:h-10" />
+          </div>
         </div>
       </div>
 
