@@ -2360,9 +2360,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <span className="text-base font-bold text-black">Your Selected Cover</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3">
-                  <span className="text-3xl font-bold text-gray-900">£{displayMonthlyPrice}/month</span>
-                  <span className="text-lg text-black font-medium">Total: £{Math.round(displayTotalPrice)}</span>
+                  <span className="text-3xl font-bold text-gray-900">£{displayMonthlyPrice} × 12 easy payments</span>
                 </div>
+                <div className="text-lg text-black font-medium mt-1">Total: £{Math.round(displayTotalPrice)}</div>
                 <div className="flex items-center gap-1 mt-2 text-sm text-black">
                   <Check className="w-4 h-4 text-green-600" />
                   <span>
@@ -2649,31 +2649,37 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </div>
                   </div>
                   
-                  {/* SECTION 2: Cover & Total */}
-                  <div className="flex-1 flex flex-col items-center justify-center px-6 py-4">
-                    {paymentType !== '12months' && (
-                      <div className="text-green-600 font-bold text-sm">
-                        {paymentType === '24months' && 'Year 2 FREE 🎉'}
-                        {paymentType === '36months' && 'Years 2 & 3 FREE 🎉'}
-                      </div>
-                    )}
-                    <div className="text-base font-bold text-black mt-0.5">
-                      {paymentType === '12months' && '1-Year Cover'}
-                      {paymentType === '24months' && '2-Year Cover'}
-                      {paymentType === '36months' && '3-Year Cover'}
-                    </div>
-                  </div>
-                  
-                  {/* SECTION 3: Price */}
+                  {/* SECTION 2: Price */}
                   <div className="flex-1 flex flex-col items-center justify-center px-6 py-4">
                     <div className="text-2xl font-bold text-gray-900">
-                      £{displayMonthlyPrice}/month
+                      £{displayMonthlyPrice} × 12 payments
+                    </div>
+                    <div className="text-sm text-gray-700 font-medium mt-0.5">
+                      Total: £{Math.round(displayTotalPrice)}
                     </div>
                     <div className="text-sm text-gray-600 mt-0.5">
                       Only 12 payments – 0% APR
                     </div>
-                    <div className="text-sm text-gray-700 font-medium">
-                      Total: £{Math.round(displayTotalPrice)}
+                  </div>
+                  
+                  {/* SECTION 3: Cover & Free Years */}
+                  <div className="flex-1 flex flex-col items-center justify-center px-6 py-4">
+                    <div className="text-sm text-gray-900">
+                      {paymentType !== '12months' && (
+                        <span className="text-green-600 font-bold">
+                          {paymentType === '24months' && 'Year 2 FREE 🎉'}
+                          {paymentType === '36months' && 'Years 2 & 3 FREE 🎉'}
+                        </span>
+                      )}
+                      {paymentType !== '12months' && ' | '}
+                      <span className="font-bold text-black">
+                        {paymentType === '12months' && '1-Year Cover'}
+                        {paymentType === '24months' && '2-Year Cover'}
+                        {paymentType === '36months' && '3-Year Cover'}
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      14 days to cancel
                     </div>
                   </div>
                   
