@@ -40,16 +40,9 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
     const y = (rect.top + rect.height / 2) / window.innerHeight;
     
     confetti({
-      particleCount: 15,
-      spread: 30,
-      startVelocity: 15,
-      decay: 0.95,
-      scalar: 0.4,
-      ticks: 30,
-      origin: { x, y },
-      colors: ['#f97316', '#facc15', '#fb923c'],
-      shapes: ['star'],
-      gravity: 0.5
+      particleCount: 5,
+      spread: 70,
+      origin: { x, y }
     });
   }, []);
 
