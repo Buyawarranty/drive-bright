@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ProtectedButton } from '@/components/ui/protected-button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Check, ArrowLeft, Info, FileText, ExternalLink, ChevronDown, ChevronUp, Plus, Infinity, Zap, Car, Cog, Settings, Droplets, Cpu, Snowflake, Search, Users, RotateCcw, MapPin, X, Shield, Hash, Calendar, Gauge, Fuel, Edit, HelpCircle, Gift, ArrowRight, ArrowUp, DollarSign, MousePointerClick, ShieldCheck, PartyPopper, CheckCircle, Crown, Battery, Bike, AlertTriangle, AlertCircle, Mail, Wrench, Lock } from 'lucide-react';
+import { Check, ArrowLeft, Info, FileText, ExternalLink, ChevronDown, ChevronUp, Plus, Infinity, Zap, Car, Cog, Settings, Droplets, Cpu, Snowflake, Search, Users, RotateCcw, MapPin, X, Shield, Hash, Calendar, Gauge, Fuel, Edit3, HelpCircle, Gift, ArrowRight, ArrowUp, DollarSign, MousePointerClick, ShieldCheck, PartyPopper, CheckCircle, Crown, Battery, Bike, AlertTriangle, AlertCircle, Mail, Wrench, Lock } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -1235,19 +1235,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <span className="font-bold text-foreground text-center">
                   {vehicleData?.year} {vehicleData?.make?.toUpperCase()} {vehicleData?.model?.toUpperCase()}
                 </span>
-                <Button
+                <button
                   onClick={() => {
                     localStorage.removeItem('warrantyVehicleData');
                     localStorage.removeItem('warrantyFormData');
                     navigate('/', { replace: true });
                   }}
-                  variant="ghost"
-                  size="sm"
-                  className="text-primary hover:text-primary/80 p-1 h-auto"
+                  className="flex items-center gap-2 text-sm sm:text-base font-medium text-orange-600 hover:text-orange-700 transition-colors duration-200 py-1 px-2 rounded"
                   type="button"
                 >
-                  <Edit className="h-4 w-4" />
-                </Button>
+                  <Edit3 className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="hidden xs:inline">Change Vehicle</span>
+                  <span className="xs:hidden">Change</span>
+                </button>
               </div>
               <div className="flex items-center gap-2 justify-center">
                 <span className="bg-yellow-400 border-2 border-black rounded px-2 py-0.5 font-mono font-bold text-black text-sm">
@@ -1262,20 +1262,18 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
             </div>
             
-            <Button
+            <button
               onClick={() => {
                 localStorage.removeItem('warrantyVehicleData');
                 localStorage.removeItem('warrantyFormData');
                 navigate('/', { replace: true });
               }}
-              variant="ghost"
-              size="sm"
-              className="text-primary hover:text-primary/80 flex-shrink-0 hidden sm:flex items-center gap-1"
+              className="hidden sm:flex items-center gap-2 text-sm sm:text-base font-medium text-orange-600 hover:text-orange-700 transition-colors duration-200 py-1 px-2 rounded flex-shrink-0"
               type="button"
             >
-              <Edit className="h-4 w-4" />
-              <span className="text-sm">Edit</span>
-            </Button>
+              <Edit3 className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span>Change</span>
+            </button>
           </div>
         </div>
 
