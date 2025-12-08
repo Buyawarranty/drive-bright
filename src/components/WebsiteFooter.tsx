@@ -10,32 +10,32 @@ const WebsiteFooter = () => {
       {/* Main Footer */}
       <footer className="bg-white pt-0 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 pt-4">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">
+          <div className="text-center mb-8 pt-2">
+            <h2 className="text-xl font-bold text-gray-900 mb-3">
               Need advice? Have any questions?
             </h2>
-            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-8">
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-6">
               <a 
                 href="tel:03302295040" 
-                className="flex items-center text-lg font-semibold text-[#eb4b00] hover:text-[#d63f00] transition-colors"
+                className="flex items-center text-sm font-semibold text-[#eb4b00] hover:text-[#d63f00] transition-colors"
               >
-                <Phone className="w-5 h-5 mr-2" />
+                <Phone className="w-4 h-4 mr-1.5" />
                 Call us: 0330 229 5040
               </a>
               <a 
                 href="mailto:support@buyawarranty.co.uk" 
-                className="flex items-center text-lg font-semibold text-[#eb4b00] hover:text-[#d63f00] transition-colors"
+                className="flex items-center text-sm font-semibold text-[#eb4b00] hover:text-[#d63f00] transition-colors"
               >
-                <Mail className="w-5 h-5 mr-2" />
+                <Mail className="w-4 h-4 mr-1.5" />
                 support@buyawarranty.co.uk
               </a>
               <a 
                 href="https://wa.me/message/SPQPJ6O3UBF5B1" 
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center text-lg font-semibold text-[#25D366] hover:text-[#20BA5A] transition-colors"
+                className="flex items-center text-sm font-semibold text-[#25D366] hover:text-[#20BA5A] transition-colors"
               >
-                <MessageCircle className="w-5 h-5 mr-2" />
+                <MessageCircle className="w-4 h-4 mr-1.5" />
                 WhatsApp Us
               </a>
             </div>
