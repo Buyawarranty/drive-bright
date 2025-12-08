@@ -21,6 +21,7 @@ const VideoSection = lazy(() => import('./homepage/VideoSection'));
 const AdditionalCoverSection = lazy(() => import('./homepage/AdditionalCoverSection'));
 const WarrantyBenefitsSection = lazy(() => import('./homepage/WarrantyBenefitsSection'));
 const CoverClaritySection = lazy(() => import('./homepage/CoverClaritySection'));
+const VehicleCoverageSection = lazy(() => import('./homepage/VehicleCoverageSection'));
 
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -669,6 +670,13 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       <LazySection>
         <Suspense fallback={<div className="py-12 md:py-20 bg-white min-h-[400px]" />}>
           <WarrantyBenefitsSection />
+        </Suspense>
+      </LazySection>
+
+      {/* Vehicle Coverage Accordion Section */}
+      <LazySection>
+        <Suspense fallback={<div className="py-12 md:py-16 bg-gray-50 min-h-[300px]" />}>
+          <VehicleCoverageSection />
         </Suspense>
       </LazySection>
 
