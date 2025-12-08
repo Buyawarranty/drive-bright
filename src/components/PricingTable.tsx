@@ -1167,12 +1167,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <div className="hidden lg:block w-20"></div>
           </div>
 
-          {/* Subtitle and Trustpilot */}
-          <div className="text-center space-y-1">
+          {/* Subtitle only - Trustpilot removed (shown in sticky bar) */}
+          <div className="text-center">
             <p className="text-muted-foreground text-sm">
               Choose your plan, customise options, and pay in 12 easy instalments.
             </p>
-            <TrustpilotHeader className="h-8 sm:h-10 mx-auto" />
           </div>
         </div>
       </div>
@@ -2616,25 +2615,25 @@ const PricingTable: React.FC<PricingTableProps> = ({
             {/* Normal State - Show pricing */}
             {!plansLoading && !plansError && displayPlans.length > 0 && paymentType && (
               <>
-                {/* Mobile Layout - Collapsible */}
+                {/* Mobile Layout - Collapsible & Centralized */}
                 <div className="flex flex-col md:hidden gap-2 w-full">
-                  {/* Collapse/Expand Header */}
+                  {/* Collapse/Expand Header - Centralized */}
                   <button
                     onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
-                    className="flex items-center justify-between w-full py-1 -mt-1"
+                    className="flex items-center justify-center w-full py-1 -mt-1 relative"
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl font-bold text-gray-900">
+                    <div className="flex flex-col items-center text-center">
+                      <span className="text-3xl font-bold text-gray-900">
                         £{displayMonthlyPrice}/month
                       </span>
                       <span className="text-sm text-gray-600">Total: £{Math.round(displayTotalPrice)}</span>
                     </div>
-                    <div className={`p-1.5 rounded-full bg-gray-200 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : 'rotate-0'}`}>
+                    <div className={`absolute right-0 p-1.5 rounded-full bg-gray-200 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : 'rotate-0'}`}>
                       <ChevronDown className="w-5 h-5 text-gray-700" />
                     </div>
                   </button>
                   
-                  {/* Expandable Content */}
+                  {/* Expandable Content - Centralized */}
                   <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSummaryExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
                     {/* Price Details */}
                     <div className="text-center space-y-0.5 pb-2">
