@@ -2388,17 +2388,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
         </div>
         <div className="section-header rounded-lg p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
-                6
-              </div>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
+              6
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
               <h3 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
                 <Shield className="w-5 h-5 flex-shrink-0" />
                 Add extras
               </h3>
+              <p className="text-gray-600 text-base font-bold">Enhance your warranty ✨</p>
             </div>
-            <p className="text-gray-600 sm:ml-2 text-base font-bold">Enhance your warranty ✨</p>
           </div>
           <AddOnProtectionPackages 
             selectedAddOns={selectedProtectionAddOns}
