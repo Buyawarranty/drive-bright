@@ -2389,28 +2389,25 @@ const PricingTable: React.FC<PricingTableProps> = ({
         </div>
 
         {/* Trust Section - Simplified */}
-        <div className="mt-12 mb-8 bg-green-50 rounded-xl p-6 border border-green-200">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto">
-            <div className="flex flex-col gap-2">
-              <p className="text-lg font-bold text-foreground">
+        <div className="mt-8 mb-6">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
+            <div className="flex flex-col gap-1">
+              <p className="text-sm font-semibold text-foreground">
                 94% of claims approved fast
               </p>
-              <div className="flex items-center gap-2">
-                <Check className="h-5 w-5 text-green-500 flex-shrink-0" strokeWidth={3} />
-                <p className="text-base text-foreground font-medium">
-                  Clear cover – no hidden catches
-                </p>
-              </div>
+              <p className="text-sm text-muted-foreground">
+                Clear cover – no hidden catches
+              </p>
             </div>
-            
+            <span className="hidden sm:block text-muted-foreground">•</span>
             <a 
               href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+              className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
             >
-              <span className="text-base font-bold text-gray-900">⭐ Rated Excellent on</span>
-              <TrustpilotHeader className="h-8" />
+              <span className="text-sm font-medium text-foreground">⭐ Rated Excellent on</span>
+              <TrustpilotHeader className="h-6" />
             </a>
           </div>
         </div>
