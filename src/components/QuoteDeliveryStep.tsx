@@ -299,7 +299,46 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             </div>
 
             <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
-              {/* Primary option - See now + Get email (Orange) */}
+              {/* Primary option - View my quote now (Blue) */}
+              <button 
+                onClick={handleSkipClick}
+                disabled={vehicleData.blocked}
+                className={`w-full flex items-center justify-center text-white font-bold py-4 sm:py-5 px-4 sm:px-8 rounded-xl transition-all duration-200 relative shadow-lg ${
+                  vehicleData.blocked ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                style={{ backgroundColor: vehicleData.blocked ? '#9ca3af' : '#224380' }}
+                onMouseEnter={(e) => {
+                  if (!vehicleData.blocked) {
+                    e.currentTarget.style.backgroundColor = '#1e3a70';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!vehicleData.blocked) {
+                    e.currentTarget.style.backgroundColor = '#224380';
+                  }
+                }}
+              >
+                <Zap className="w-5 h-5 sm:w-6 sm:h-6 absolute left-4 sm:left-8" />
+                <div className="text-center px-8 sm:px-12">
+                  <div className="text-base sm:text-xl leading-tight">
+                    View my quote now
+                  </div>
+                </div>
+                <span className="text-xl sm:text-2xl absolute right-4 sm:right-8">→</span>
+              </button>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="bg-white px-4 sm:px-6 py-2 text-gray-700 text-base sm:text-lg font-semibold border border-gray-300 rounded-full">
+                    or
+                  </span>
+                </div>
+              </div>
+
+              {/* Secondary option - See now + Get email (Orange) */}
               <div>
                 <button 
                   onClick={handleEmailQuoteClick}
@@ -332,45 +371,6 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   Unsubscribe at any time
                 </p>
               </div>
-
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
-                </div>
-                <div className="relative flex justify-center">
-                  <span className="bg-white px-4 sm:px-6 py-2 text-gray-700 text-base sm:text-lg font-semibold border border-gray-300 rounded-full">
-                    or
-                  </span>
-                </div>
-              </div>
-
-              {/* Secondary option - View my quote now (Blue) */}
-              <button 
-                onClick={handleSkipClick}
-                disabled={vehicleData.blocked}
-                className={`w-full flex items-center justify-center text-white font-bold py-4 sm:py-5 px-4 sm:px-8 rounded-xl transition-all duration-200 relative shadow-lg ${
-                  vehicleData.blocked ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-                style={{ backgroundColor: vehicleData.blocked ? '#9ca3af' : '#224380' }}
-                onMouseEnter={(e) => {
-                  if (!vehicleData.blocked) {
-                    e.currentTarget.style.backgroundColor = '#1e3a70';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!vehicleData.blocked) {
-                    e.currentTarget.style.backgroundColor = '#224380';
-                  }
-                }}
-              >
-                <Zap className="w-5 h-5 sm:w-6 sm:h-6 absolute left-4 sm:left-8" />
-                <div className="text-center px-8 sm:px-12">
-                  <div className="text-base sm:text-xl leading-tight">
-                    View my quote now
-                  </div>
-                </div>
-                <span className="text-xl sm:text-2xl absolute right-4 sm:right-8">→</span>
-              </button>
             </div>
 
           </>
