@@ -1496,8 +1496,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         <span className="line-through text-red-500 text-sm">
                           Was £{adjustedBasePrice}
                         </span>
-                        <Badge className="bg-green-600 hover:bg-green-700 text-white font-semibold px-3 py-1">
-                          Save £{savingsAmount} Today
+                        <Badge className="bg-green-600 hover:bg-green-700 text-white font-semibold px-3 py-1 uppercase">
+                          SAVE £{savingsAmount} TODAY
                         </Badge>
                       </div>
                     )}
@@ -1621,7 +1621,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <Popover>
                   <PopoverTrigger asChild onClick={(e) => e.stopPropagation()}>
                     <div className="inline-flex items-center gap-1 sm:gap-2 bg-green-50 border border-green-300 rounded-md px-2 sm:px-3 py-1 sm:py-1.5 w-fit cursor-help">
-                      <span className="text-xs sm:text-sm font-semibold text-green-700 whitespace-nowrap">⚡ Instant cover</span>
+                      <span className="text-xs sm:text-sm font-semibold text-green-700 whitespace-nowrap uppercase">⚡ INSTANT COVER</span>
                     </div>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-3 text-sm" side="top" align="center">

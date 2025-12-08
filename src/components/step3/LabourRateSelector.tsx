@@ -45,8 +45,8 @@ const LabourRateSelector: React.FC<LabourRateSelectorProps> = ({
               )}
             >
               {option.isPopular && (
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
-                  Most popular
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap uppercase">
+                  MOST POPULAR
                 </span>
               )}
               {option.label}
