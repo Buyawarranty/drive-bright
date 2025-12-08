@@ -193,18 +193,18 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
             
             {/* Main content area */}
             <div className="p-3 pt-1">
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex items-start justify-between gap-3">
                 {/* Left side - Title and price info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">{addon.icon}</span>
+                <div className="flex-1 min-w-0 flex items-start gap-2">
+                  <span className="text-xl flex-shrink-0">{addon.icon}</span>
+                  <div>
                     <h4 className="font-semibold text-gray-900 text-base">{addon.title}</h4>
+                    <p className="text-sm text-gray-600 mt-0.5">
+                      <span className="font-bold text-gray-900">{isIncluded ? '£0' : priceText}</span>
+                      <span className="mx-1">·</span>
+                      {descriptionText}
+                    </p>
                   </div>
-                  <p className="text-sm text-gray-600 mt-0.5">
-                    <span className="font-bold text-gray-900">{isIncluded ? '£0' : priceText}</span>
-                    <span className="mx-1">·</span>
-                    {descriptionText}
-                  </p>
                 </div>
                 
                 {/* Right side - Checkbox */}
