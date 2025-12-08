@@ -2388,34 +2388,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
           />
         </div>
 
-        {/* Trust Section - Simplified */}
-        <div className="mt-8 mb-6">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
-            <div className="flex flex-col gap-1">
-              <p className="text-base font-semibold text-foreground">
-                94% of claims approved fast
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Clear cover – no hidden catches
-              </p>
-            </div>
-            <span className="hidden sm:block text-muted-foreground">•</span>
-            <a 
-              href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
-            >
-              <span className="text-sm font-medium text-foreground">⭐ Rated Excellent on</span>
-              <TrustpilotHeader className="h-6" />
-            </a>
-          </div>
-        </div>
-
         {/* Additional Information Section - Redesigned */}
         <div id="your-cover-details" className="py-6 md:py-10">
           <div className="bg-gray-50 rounded-2xl p-6 md:p-10 border border-gray-100">
-            {/* Section Header */}
+            {/* Section Header with Trust Info */}
             <div className="text-center mb-8">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <span className="text-2xl">💎</span>
@@ -2423,9 +2399,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   Crystal clear cover
                 </h3>
               </div>
-              <p className="text-base text-muted-foreground">
+              <p className="text-base text-muted-foreground mb-4">
                 No jargon. No surprises.
               </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-sm">
+                <span className="font-semibold text-foreground">94% of claims approved fast</span>
+                <span className="hidden sm:block text-muted-foreground">•</span>
+                <span className="text-muted-foreground">Clear cover – no hidden catches</span>
+              </div>
             </div>
             
             {/* Collapsible Items */}
