@@ -517,45 +517,36 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
                 
                 {/* Pricing Section */}
                 <div className="space-y-2 mt-6 mb-4">
-                  <div className="text-3xl font-bold text-gray-900">
-                    £{option.monthlyPrice}/month
+                  {/* Monthly price × 12 payments */}
+                  <div className="text-2xl font-bold text-gray-900">
+                    £{option.monthlyPrice} × 12 payments only
                   </div>
-                  <div className="text-sm text-gray-600">
-                    {option.id === '12months' 
-                      ? '12 monthly payments' 
-                      : option.id === '24months' 
-                        ? '12 monthly payments' 
-                        : '12 monthly payments'
-                    }
+                  
+                  {/* Or pay in full */}
+                  <div className="text-base text-gray-700">
+                    or pay in full <span className="font-bold text-gray-900">£{option.totalPrice}</span>
                   </div>
-                  <div className="text-sm text-gray-600 mb-1">
-                    {option.id === '24months' 
-                      ? 'No payments in Year 2' 
-                      : option.id === '36months'
-                        ? 'No payments in Years 2 & 3'
-                        : ''
-                    }
-                  </div>
-                  <div className="mt-3">
-                    <div className="text-sm font-semibold text-gray-900 mb-2">
-                      Total cost:
+                  
+                  {/* Was price (strikethrough) · Save amount */}
+                  {option.originalPrice && (
+                    <div className="text-sm text-gray-600">
+                      <span className="line-through">Was £{option.originalPrice}</span>
+                      <span className="mx-1">·</span>
+                      <span className="text-green-600 font-bold">Save £{option.originalPrice - option.totalPrice} Today</span>
                     </div>
-                    {option.originalPrice ? (
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-base line-through text-gray-500">£{option.originalPrice}</span>
-                          <span className="text-4xl font-bold text-green-600">£{option.totalPrice}</span>
-                        </div>
-                        <div className="text-sm text-green-600 font-bold">
-                          Save £{option.originalPrice - option.totalPrice}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-4xl font-bold text-blue-600">
-                        £{option.totalPrice}
-                      </div>
-                    )}
-                  </div>
+                  )}
+                  
+                  {/* Free year messaging */}
+                  {option.id === '24months' && (
+                    <div className="text-sm font-semibold text-orange-600 mt-2">
+                      🎉 Year 2 Cover is FREE
+                    </div>
+                  )}
+                  {option.id === '36months' && (
+                    <div className="text-sm font-semibold text-green-600 mt-2">
+                      🎉 Years 2 & 3 Cover is FREE
+                    </div>
+                  )}
                 </div>
                 
                 {/* Select Button */}
