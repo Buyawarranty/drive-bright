@@ -1140,31 +1140,51 @@ const PricingTable: React.FC<PricingTableProps> = ({
       <div className="bg-white border-b">
         <div className="max-w-6xl mx-auto px-4 py-4">
           {/* Back button + Heading row */}
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+            {/* Mobile: Centered heading */}
+            <div className="flex items-center justify-center gap-2 sm:hidden">
+              <Zap className="w-6 h-6 text-primary" />
+              <h1 className="text-xl font-bold text-foreground">
+                Get Covered in 60 Seconds
+              </h1>
+            </div>
+            
+            {/* Mobile: Back and Nav row */}
+            <div className="flex items-center justify-between sm:hidden">
+              <button 
+                onClick={() => {
+                  console.log('🔙 PricingTable Back button clicked');
+                  onBack();
+                }}
+                className="flex items-center gap-2 text-sm font-medium py-2 px-3 rounded-lg transition-all duration-200 bg-gray-100 hover:bg-gray-200 text-gray-700"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </button>
+              <MobileNavigation />
+            </div>
+            
+            {/* Desktop layout */}
             <button 
               onClick={() => {
                 console.log('🔙 PricingTable Back button clicked');
                 onBack();
               }}
-              className="flex items-center gap-2 text-sm font-medium py-2 px-3 rounded-lg transition-all duration-200 bg-gray-100 hover:bg-gray-200 text-gray-700"
+              className="hidden sm:flex items-center gap-2 text-sm font-medium py-2 px-3 rounded-lg transition-all duration-200 bg-gray-100 hover:bg-gray-200 text-gray-700"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
             </button>
 
-            <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2">
               <Zap className="w-6 h-6 text-primary" />
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+              <h1 className="text-2xl font-bold text-foreground">
                 Get Covered in 60 Seconds
               </h1>
             </div>
 
-            {/* Mobile Navigation */}
-            <div className="lg:hidden">
-              <MobileNavigation />
-            </div>
             {/* Spacer for desktop to balance the layout */}
-            <div className="hidden lg:block w-20"></div>
+            <div className="hidden sm:block w-20"></div>
           </div>
 
           {/* Subtitle only - Trustpilot removed (shown in sticky bar) */}
