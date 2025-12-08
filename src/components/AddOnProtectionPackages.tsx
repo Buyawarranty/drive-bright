@@ -153,12 +153,12 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
         // Build the description line
         let descriptionParts: string[] = [];
         if (isIncluded) {
-          descriptionParts.push('INCLUDED IN YOUR PLAN');
+          descriptionParts.push('Included in your plan');
         } else if (addon.priceType === 'monthly') {
-          descriptionParts.push('12 PAYMENTS');
-          descriptionParts.push(`${coverYears.toUpperCase()} COVER`);
+          descriptionParts.push('12 payments');
+          descriptionParts.push(`${coverYears} cover`);
         } else {
-          descriptionParts.push('ONE-TIME PAYMENT');
+          descriptionParts.push('One-time payment');
         }
         const descriptionText = descriptionParts.join(' · ');
 
