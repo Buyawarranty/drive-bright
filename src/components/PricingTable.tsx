@@ -2623,15 +2623,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     {/* Price Details */}
                     <div className="text-center space-y-0.5 pb-2">
                       <div className="text-sm text-black font-bold">
-                        Only 12 payments – 0% APR
-                      </div>
-                      <div className="text-sm text-black font-bold">
                         {paymentType === '12months' && <span>1-Year Cover</span>}
                         {paymentType === '24months' && <><span>Year 2 FREE</span> 🎉 · <span>2-Year Cover</span></>}
                         {paymentType === '36months' && <><span>Years 2 & 3 FREE</span> 🎉 · <span>3-Year Cover</span></>}
                       </div>
                       <div className="text-sm text-black">
-                        14-days to cancel
+                        0% APR | 14-days to cancel
                       </div>
                     </div>
                     
