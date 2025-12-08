@@ -926,18 +926,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Personal Information Section */}
                   <div className="space-y-4">
-                    <div className="border-b border-gray-200 pb-2">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <Mail className="w-5 h-5 text-gray-600 flex-shrink-0" />
-                          <h4 className="text-base font-semibold text-gray-900 tracking-wide">Where should we send your policy?</h4>
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200 self-start sm:self-auto">
-                          <Lock className="w-3 h-3" />
-                          <span className="font-medium">Secure & Encrypted</span>
-                        </div>
-                      </div>
-                    </div>
                   
                   {/* Name Fields */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
