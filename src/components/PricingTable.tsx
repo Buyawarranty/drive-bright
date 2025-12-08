@@ -2452,9 +2452,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
             {/* Section Header */}
             <div className="text-center mb-8">
               <div className="flex items-center justify-center gap-2 mb-2">
-                <Shield className="w-6 h-6 text-green-600" />
+                <span className="text-2xl">💎</span>
                 <h3 className="text-2xl md:text-3xl font-bold text-foreground">
-                  Your cover, <span className="text-brand-orange">crystal clear</span>
+                  Crystal clear cover
                 </h3>
               </div>
               <p className="text-base text-muted-foreground">
