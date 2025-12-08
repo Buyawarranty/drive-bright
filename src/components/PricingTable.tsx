@@ -2568,7 +2568,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </span>
                       <span className="text-sm text-gray-600">or Pay in full: £{Math.round(displayTotalPrice)}</span>
                     </div>
-                    <div className={`absolute right-0 p-1.5 rounded-full bg-gray-200 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : 'rotate-0'}`}>
+                    <div className={`absolute right-0 p-1.5 rounded-full bg-gray-200 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-0' : 'rotate-180'}`}>
                       <ChevronDown className="w-5 h-5 text-gray-700" />
                     </div>
                   </button>
