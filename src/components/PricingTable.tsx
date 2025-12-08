@@ -2266,9 +2266,18 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 setValidationErrors(prev => ({ ...prev, claimLimit: false }));
               }}
             >
-              <h4 className="text-xl font-bold text-black mb-1">AutoCare Essential</h4>
-              <div className="text-3xl font-bold text-black">
-                £{selectedClaimLimit === 750 && boostAddon ? '1,750' : '750'} <span className="text-base">per claim</span>
+              <div className="flex items-start gap-3">
+                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-1 ${
+                  selectedClaimLimit === 750 ? 'bg-orange-500 border-orange-500' : 'border-gray-300'
+                }`}>
+                  {selectedClaimLimit === 750 && <Check className="w-3 h-3 text-white" />}
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-black mb-1">AutoCare Essential</h4>
+                  <div className="text-3xl font-bold text-black">
+                    £{selectedClaimLimit === 750 && boostAddon ? '1,750' : '750'} <span className="text-base">per claim</span>
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -2287,9 +2296,18 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <div className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
                 MOST POPULAR
               </div>
-              <h4 className="text-xl font-bold text-black mb-1">AutoCare Advantage</h4>
-              <div className="text-3xl font-bold text-black">
-                £{selectedClaimLimit === 1250 && boostAddon ? '2,250' : '1,250'} <span className="text-base">per claim</span>
+              <div className="flex items-start gap-3">
+                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-1 ${
+                  selectedClaimLimit === 1250 ? 'bg-orange-500 border-orange-500' : 'border-gray-300'
+                }`}>
+                  {selectedClaimLimit === 1250 && <Check className="w-3 h-3 text-white" />}
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-black mb-1">AutoCare Advantage</h4>
+                  <div className="text-3xl font-bold text-black">
+                    £{selectedClaimLimit === 1250 && boostAddon ? '2,250' : '1,250'} <span className="text-base">per claim</span>
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -2305,9 +2323,18 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 setValidationErrors(prev => ({ ...prev, claimLimit: false }));
               }}
             >
-              <h4 className="text-xl font-bold text-black mb-1">AutoCare Elite</h4>
-              <div className="text-3xl font-bold text-black">
-                £{selectedClaimLimit === 2000 && boostAddon ? '3,000' : '2,000'} <span className="text-base">per claim</span>
+              <div className="flex items-start gap-3">
+                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-1 ${
+                  selectedClaimLimit === 2000 ? 'bg-orange-500 border-orange-500' : 'border-gray-300'
+                }`}>
+                  {selectedClaimLimit === 2000 && <Check className="w-3 h-3 text-white" />}
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-black mb-1">AutoCare Elite</h4>
+                  <div className="text-3xl font-bold text-black">
+                    £{selectedClaimLimit === 2000 && boostAddon ? '3,000' : '2,000'} <span className="text-base">per claim</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -2321,14 +2348,23 @@ const PricingTable: React.FC<PricingTableProps> = ({
             }`}
             onClick={() => setBoostAddon(!boostAddon)}
           >
-            <div className="flex items-center gap-2 mb-1">
-              <h4 className="text-xl font-bold text-black">Boost Claim Limit</h4>
-              <span className="bg-orange-500 text-white px-2 py-0.5 rounded-full text-xs font-semibold">Popular</span>
+            <div className="flex items-start gap-3">
+              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 mt-1 ${
+                boostAddon ? 'bg-orange-500 border-orange-500' : 'border-gray-300'
+              }`}>
+                {boostAddon && <Check className="w-3 h-3 text-white" />}
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="text-xl font-bold text-black">Boost Claim Limit</h4>
+                  <span className="bg-orange-500 text-white px-2 py-0.5 rounded-full text-xs font-semibold">Popular</span>
+                </div>
+                <div className="text-3xl font-bold text-black mb-1">
+                  £{selectedClaimLimit.toLocaleString()} → £{(selectedClaimLimit + 1000).toLocaleString()}
+                </div>
+                <p className="text-sm text-gray-600">+ £5/month x 12 payments</p>
+              </div>
             </div>
-            <div className="text-3xl font-bold text-black mb-2">
-              £{selectedClaimLimit.toLocaleString()} → £{(selectedClaimLimit + 1000).toLocaleString()} <span className="text-base">+£5/month</span>
-            </div>
-            <p className="text-sm text-gray-600">(12 payments, 0% APR)</p>
           </div>
         </div>
         <div className="section-header rounded-lg p-4 sm:p-6">
