@@ -1179,78 +1179,39 @@ const PricingTable: React.FC<PricingTableProps> = ({
       {/* Configuration Sections */}
       <div className="max-w-6xl mx-auto px-4 py-3 space-y-6">
         
-        {/* Vehicle Information */}
-        <div className="section-header rounded-lg p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
-                1
-              </div>
-              <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
-                <Car className="h-5 w-5 flex-shrink-0" />
-                Vehicle Information
-              </h2>
+        {/* Vehicle Information - Simplified */}
+        <div className="bg-gray-50 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 flex-wrap">
+              <Car className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+              <span className="font-bold text-foreground">
+                {vehicleData?.year} {vehicleData?.make?.toUpperCase()} {vehicleData?.model?.toUpperCase()}
+              </span>
+              <span className="text-muted-foreground">·</span>
+              <span className="text-muted-foreground">
+                {vehicleData?.mileage ? parseInt(vehicleData.mileage).toLocaleString() : '0'} miles
+              </span>
+              <span className="text-muted-foreground hidden sm:inline">·</span>
+              <span className="text-muted-foreground hidden sm:inline">{vehicleData?.fuelType}</span>
+              <span className="text-muted-foreground hidden sm:inline">·</span>
+              <span className="bg-white border border-gray-300 rounded px-2 py-0.5 font-mono font-bold text-foreground text-sm">
+                {vehicleData?.regNumber}
+              </span>
             </div>
             <Button
               onClick={() => window.location.href = '/'}
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground flex-shrink-0"
             >
               <Edit className="h-4 w-4" />
-              <span className="md:hidden">Edit</span>
-              <span className="hidden md:inline">Change vehicle</span>
             </Button>
           </div>
-           
-            {vehicleData && (
-              <>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm mb-4">
-               <div className="flex items-center gap-2">
-                 <Hash className="h-5 w-5 text-primary" />
-                 <div>
-                   <span className="text-muted-foreground block">Registration</span>
-                   <span className="font-semibold text-foreground">{vehicleData.regNumber}</span>
-                 </div>
-               </div>
-               <div className="flex items-center gap-2">
-                 <Car className="h-5 w-5 text-primary" />
-                 <div>
-                   <span className="text-muted-foreground block">Vehicle</span>
-                   <span className="font-semibold text-foreground">
-                     {vehicleData.make} {vehicleData.model || 'Vehicle'}
-                   </span>
-                 </div>
-               </div>
-               {vehicleData.fuelType && (
-                 <div className="flex items-center gap-2">
-                   <Fuel className="h-5 w-5 text-primary" />
-                   <div>
-                     <span className="text-muted-foreground block">Fuel Type</span>
-                     <span className="font-semibold text-foreground">{vehicleData.fuelType}</span>
-                   </div>
-                 </div>
-               )}
-               {vehicleData.year && (
-                 <div className="flex items-center gap-2">
-                   <Calendar className="h-5 w-5 text-primary" />
-                   <div>
-                     <span className="text-muted-foreground block">Year</span>
-                     <span className="font-semibold text-foreground">{vehicleData.year}</span>
-                   </div>
-                 </div>
-               )}
-                <div className="flex items-center gap-2">
-                  <Gauge className="h-5 w-5 text-primary" />
-                  <div>
-                    <span className="text-muted-foreground block">Mileage</span>
-                    <span className="font-semibold text-foreground">{parseInt(vehicleData.mileage).toLocaleString()} miles</span>
-                  </div>
-                </div>
-                 </div>
-                 </>
-                )}
+          {/* Mobile-only fuel type */}
+          <div className="sm:hidden mt-2 flex items-center gap-2">
+            <span className="text-muted-foreground text-sm">{vehicleData?.fuelType}</span>
           </div>
+        </div>
 
         {/* What's Covered Section */}
         <div id="whats-covered" className="section-header rounded-lg p-4 sm:p-8 mb-8">
