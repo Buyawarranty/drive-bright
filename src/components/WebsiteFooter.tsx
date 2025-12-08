@@ -10,7 +10,7 @@ const WebsiteFooter = () => {
       {/* Main Footer */}
       <footer className="bg-white pt-0 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <div className="text-center mb-12 pt-4">
             <h2 className="text-3xl font-bold text-gray-900 mb-6">
               Need advice? Have any questions?
             </h2>
@@ -27,7 +27,7 @@ const WebsiteFooter = () => {
                 className="flex items-center text-lg font-semibold text-[#eb4b00] hover:text-[#d63f00] transition-colors"
               >
                 <Mail className="w-5 h-5 mr-1" />
-                Email us: support@buyawarranty.co.uk
+                <span>Email us:</span>&nbsp;support@buyawarranty.co.uk
               </a>
               <a 
                 href="https://wa.me/message/SPQPJ6O3UBF5B1" 
