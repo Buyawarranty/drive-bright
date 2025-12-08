@@ -23,6 +23,7 @@ import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';
 // Lazy load heavy components that are not immediately visible
 const RegistrationForm = lazy(() => import('@/components/RegistrationForm'));
 const PricingTable = lazy(() => import('@/components/PricingTable'));
+const Step3Mobile = lazy(() => import('@/components/step3/Step3Mobile'));
 const CarJourneyProgress = lazy(() => import('@/components/CarJourneyProgress'));
 const CustomerDetailsStep = lazy(() => import('@/components/CustomerDetailsStep'));
 const MaintenanceBanner = lazy(() => import('@/components/MaintenanceBanner'));
@@ -1014,23 +1015,10 @@ const Index = () => {
       )}
 
       {currentStep === 3 && (
-        <div className="bg-[#e8f4fb] w-full">
-          {(() => {
-            console.log('🚗 Step 3 rendering - vehicleData:', vehicleData);
-            console.log('🚗 vehicleData exists:', !!vehicleData);
-            if (vehicleData) {
-              console.log('✅ Rendering PricingTable with vehicleData:', {
-                regNumber: vehicleData.regNumber,
-                make: vehicleData.make,
-                model: vehicleData.model
-              });
-            } else {
-              console.log('❌ No vehicleData available, showing fallback');
-            }
-            return vehicleData;
-          })() ? (
+        <div className="w-full">
+          {vehicleData ? (
             <PerformanceOptimizedSuspense height="60vh">
-              <PricingTable 
+              <Step3Mobile 
                 vehicleData={vehicleData} 
                 onBack={() => handleBackToStep(2)} 
                 onPlanSelected={handlePlanSelected}

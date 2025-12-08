@@ -1,0 +1,10 @@
+export { default as Step3Mobile } from './Step3Mobile';
+export { default as Step3Header } from './Step3Header';
+export { default as Step3Hero } from './Step3Hero';
+export { default as TermSelector } from './TermSelector';
+export { default as ExcessSelector } from './ExcessSelector';
+export { default as ClaimLimitSelector } from './ClaimLimitSelector';
+export { default as LabourRateSelector } from './LabourRateSelector';
+export { default as ExtrasSelector } from './ExtrasSelector';
+export { default as CoverageTransparency } from './CoverageTransparency';
+export { default as StickyFooter } from './StickyFooter';
