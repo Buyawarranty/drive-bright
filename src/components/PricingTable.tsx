@@ -2426,8 +2426,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <p className="text-base text-muted-foreground mb-4">
                 No jargon. No surprises.
               </p>
-              <div className="flex items-center justify-center text-sm">
-                <span className="font-semibold text-foreground">94% of claims approved fast</span>
+              <div className="inline-flex items-center justify-center bg-green-50 border border-green-200 rounded-full px-4 py-2">
+                <Check className="w-4 h-4 text-green-600 mr-2" />
+                <span className="font-semibold text-green-700 text-sm">94% of claims approved in under 48 hours</span>
               </div>
             </div>
             
@@ -2439,7 +2440,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <div className="w-8 h-8 bg-brand-orange rounded-full flex items-center justify-center">
                       <CheckCircle className="w-5 h-5 text-white" />
                     </div>
-                    <span className="font-semibold text-foreground text-base md:text-lg">Your Platinum Plan</span>
+                    <span className="font-semibold text-foreground text-base md:text-lg">What your Platinum plan covers</span>
                   </div>
                   <ChevronDown className="w-5 h-5 text-brand-orange transition-transform duration-200 group-data-[state=open]:rotate-180" />
                 </CollapsibleTrigger>
@@ -2488,9 +2489,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
                       <CheckCircle className="w-5 h-5 text-white" />
                     </div>
-                    <span className="font-semibold text-foreground text-base md:text-lg">Terms & Conditions</span>
+                    <span className="font-semibold text-foreground text-base md:text-lg">Terms and conditions</span>
                   </div>
-                  <ChevronDown className="w-5 h-5 text-brand-orange transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                  <ChevronDown className="w-5 h-5 text-green-600 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pt-3">
                   <div className="bg-white rounded-lg p-5 border border-gray-100">
@@ -2525,7 +2526,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 className="flex items-center gap-1.5 text-xs font-medium bg-white hover:bg-gray-50 text-black border-2 border-gray-300 shadow-md scale-90"
               >
                 <ArrowUp className="w-3 h-3" />
-                Back to Plans
+                Back to plans
               </Button>
             </div>
           </div>
