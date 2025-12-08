@@ -2398,65 +2398,30 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
         )}
 
-        {/* Trust Section - Redesigned */}
-        <div className="mt-16 mb-8 bg-green-50 rounded-2xl p-8 border border-green-200">
-          <div className="flex items-center max-w-6xl mx-auto gap-8">
-            <div className="flex-1">
-              <h3 className="text-xl font-semibold text-foreground mb-6">
+        {/* Trust Section - Simplified */}
+        <div className="mt-12 mb-8 bg-green-50 rounded-xl p-6 border border-green-200">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto">
+            <div className="flex flex-col gap-2">
+              <p className="text-lg font-bold text-foreground">
                 94% of claims approved fast
-              </h3>
-              
-              <div className="space-y-3 mb-6">
-                <div className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-green-500 mt-1 flex-shrink-0" strokeWidth={3} />
-                  <p className="text-lg text-foreground font-medium">
-                    Clear cover – no hidden catches
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-green-500 mt-1 flex-shrink-0" strokeWidth={3} />
-                  <p className="text-lg text-foreground font-medium">
-                    We look for reasons to say YES
-                  </p>
-                </div>
-              </div>
-              
-              <p className="text-xl text-black font-bold mb-8">
-                🛡️ Real protection. Real peace of mind. Guaranteed.
               </p>
-              
-              {/* Trustpilot Section */}
-              <div className="mt-6 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="text-center sm:text-left">
-                    <p className="text-base font-bold text-gray-900 mb-1 flex items-center gap-2">
-                      ⭐ Rated Excellent on Trustpilot
-                    </p>
-                    <p className="text-sm text-gray-600">Don't just take our word for it – see what customers say.</p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <a 
-                      href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-block hover:opacity-80 transition-opacity"
-                    >
-                      <TrustpilotHeader className="h-12" />
-                    </a>
-                  </div>
-                </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-5 w-5 text-green-500 flex-shrink-0" strokeWidth={3} />
+                <p className="text-base text-foreground font-medium">
+                  Clear cover – no hidden catches
+                </p>
               </div>
             </div>
             
-            <div className="flex-shrink-0 hidden md:block">
-              <div className="w-60 h-60 flex flex-col items-center justify-center bg-orange-50 rounded-full border-4 border-orange-200">
-                <ShieldCheck className="w-24 h-24 text-orange-500 mb-2" />
-                <div className="text-center px-4">
-                  <p className="text-sm font-bold text-orange-600">14 day money</p>
-                  <p className="text-sm font-bold text-orange-600">back guarantee</p>
-                </div>
-              </div>
-            </div>
+            <a 
+              href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
+              <span className="text-base font-bold text-gray-900">⭐ Rated Excellent on</span>
+              <TrustpilotHeader className="h-8" />
+            </a>
           </div>
         </div>
 
