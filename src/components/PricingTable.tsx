@@ -2430,15 +2430,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
           <div className="bg-gray-50 rounded-2xl p-6 md:p-10 border border-gray-100">
             {/* Section Header */}
             <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-4 py-2 mb-4">
-                <Shield className="w-5 h-5 text-green-600" />
-                <span className="text-sm font-semibold text-green-700">Transparent Coverage</span>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Shield className="w-6 h-6 text-green-600" />
+                <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+                  Your cover, <span className="text-brand-orange">crystal clear</span>
+                </h3>
               </div>
-              <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
-                Your cover, made <span className="text-brand-orange">crystal clear</span>
-              </h3>
-              <p className="text-base md:text-lg text-black">
-                See what's included - clear terms, no jargon, no surprises.
+              <p className="text-base text-muted-foreground">
+                No jargon. No surprises.
               </p>
             </div>
             
