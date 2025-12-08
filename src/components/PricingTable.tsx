@@ -1197,6 +1197,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <span className="bg-yellow-400 border-2 border-black rounded px-2 py-0.5 font-mono font-bold text-black text-sm">
                 {vehicleData?.regNumber}
               </span>
+              {/* Mobile-only fuel type - side by side with reg */}
+              <span className="text-muted-foreground sm:hidden">{vehicleData?.fuelType}</span>
             </div>
             <Button
               onClick={() => window.location.href = '/'}
@@ -1206,10 +1208,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
             >
               <Edit className="h-4 w-4" />
             </Button>
-          </div>
-          {/* Mobile-only fuel type */}
-          <div className="sm:hidden mt-2 flex items-center gap-2">
-            <span className="text-muted-foreground text-sm">{vehicleData?.fuelType}</span>
           </div>
         </div>
 
