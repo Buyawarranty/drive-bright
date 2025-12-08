@@ -153,10 +153,11 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
         return (
           <div 
             key={addon.key}
-            className={`relative rounded-lg border transition-all ${
+            onClick={() => !isIncluded && onAddOnChange(addon.key, !selectedAddOns[addon.key])}
+            className={`relative rounded-lg border-2 transition-all cursor-pointer bg-white ${
               isSelected
-                ? 'border-green-600 bg-green-50' 
-                : 'border-gray-200 bg-white hover:border-gray-300'
+                ? 'border-orange-500 shadow-lg shadow-orange-500/30' 
+                : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
             }`}
           >
             {/* Top badges row */}
@@ -175,11 +176,8 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
               )}
             </div>
             
-            {/* Main clickable area */}
-            <div 
-              onClick={() => !isIncluded && onAddOnChange(addon.key, !selectedAddOns[addon.key])}
-              className="p-3 pt-1 cursor-pointer"
-            >
+            {/* Main content area */}
+            <div className="p-3 pt-1">
               <div className="flex items-center justify-between gap-3">
                 {/* Left side - Title and price info */}
                 <div className="flex-1 min-w-0">
@@ -197,7 +195,7 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                 {/* Right side - Checkbox */}
                 <div className="flex-shrink-0">
                   {isSelected ? (
-                    <div className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full bg-green-500 border-2 border-green-500 flex items-center justify-center">
                       <Check className="w-4 h-4 text-white" strokeWidth={3} />
                     </div>
                   ) : (
