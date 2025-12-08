@@ -110,32 +110,34 @@ const WarrantyBenefitsSection: React.FC = () => {
                 ))}
                 
                 {/* Desktop CTAs - below EV & Hybrid box */}
-                <div className="hidden lg:flex flex-col items-end gap-4 mt-4">
-                  {/* CTA Button - right aligned, above Trustpilot */}
-                  <button
-                    onClick={scrollToTop}
-                    className="flex items-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 py-4 text-lg rounded-lg shadow-lg transition-colors animate-cta-enhanced"
-                  >
-                    Get my quote
-                    <ArrowRight className="w-6 h-6" />
-                  </button>
-                  
-                  {/* Trustpilot + Security text */}
-                  <div className="flex flex-col items-end gap-2">
-                    <TrustpilotHeader className="flex-shrink-0" />
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Lock className="w-4 h-4 text-green-600" />
-                      <span>Your details are encrypted and safe.</span>
-                    </div>
-                  </div>
-                  
-                  {/* Desktop: Panda */}
-                  <div className="flex justify-end w-full -mt-16">
+                <div className="hidden lg:flex flex-row justify-between items-end mt-4">
+                  {/* Panda - left side */}
+                  <div className="flex justify-start">
                     <img 
                       src={warrantyPandaMascot} 
                       alt="Miles the Panda mascot with car" 
                       className="w-48 md:w-56 lg:w-64 h-auto object-contain"
                     />
+                  </div>
+                  
+                  {/* CTA + Trustpilot - right side */}
+                  <div className="flex flex-col items-end gap-4">
+                    <button
+                      onClick={scrollToTop}
+                      className="flex items-center gap-3 bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 py-4 text-lg rounded-lg shadow-lg transition-colors animate-cta-enhanced"
+                    >
+                      Get my quote
+                      <ArrowRight className="w-6 h-6" />
+                    </button>
+                    
+                    {/* Trustpilot + Security text */}
+                    <div className="flex flex-col items-end gap-2">
+                      <TrustpilotHeader className="flex-shrink-0" />
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Lock className="w-4 h-4 text-green-600" />
+                        <span>Your details are encrypted and safe.</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
