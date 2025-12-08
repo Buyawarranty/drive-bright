@@ -2563,13 +2563,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     className="flex items-center justify-center w-full py-1 -mt-1 relative"
                   >
                     <div className="flex flex-col items-center text-center">
-                      <span className="text-3xl font-bold text-gray-900">
+                      <span className="text-xl font-bold text-gray-900">
                         £{displayMonthlyPrice} × 12 payments
                       </span>
                       <span className="text-sm text-gray-600">or Pay in full: £{Math.round(displayTotalPrice)}</span>
                     </div>
-                    <div className={`absolute right-0 p-1.5 rounded-full bg-gray-200 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-0' : 'rotate-180'}`}>
-                      <ChevronDown className="w-5 h-5 text-gray-700" />
+                    <div className={`absolute right-0 p-1.5 rounded-full bg-orange-500 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-0' : 'rotate-180'}`}>
+                      <ChevronDown className="w-5 h-5 text-white" />
                     </div>
                   </button>
                   
