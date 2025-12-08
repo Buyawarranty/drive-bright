@@ -1439,12 +1439,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <div className="mb-4">
                     {/* Monthly Price */}
                     <div className="text-4xl font-bold text-black">
-                      £{displayedMonthlyPrice}<span className="text-base font-normal text-gray-600">/month</span>
+                      £{displayedMonthlyPrice} <span className="text-base font-normal text-gray-600">× 12 payments</span>
                     </div>
                     
                     {/* Total */}
                     <div className="text-base text-gray-600 mb-3">
-                      Total £{Math.round(displayedAnnualPrice)}
+                      or pay in full total £{Math.round(displayedAnnualPrice)}
                     </div>
                     
                     {/* Savings - show before payment terms for 2yr and 3yr */}
