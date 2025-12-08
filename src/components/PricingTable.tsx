@@ -1135,43 +1135,43 @@ const PricingTable: React.FC<PricingTableProps> = ({
   return (
     <div className="min-h-screen bg-white">
       
-      {/* Header */}
+      {/* Header with Back button and Get Covered heading */}
       <div className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          {/* Back button + Heading row */}
+          <div className="flex items-center justify-between mb-3">
             <button 
               onClick={() => {
                 console.log('🔙 PricingTable Back button clicked');
                 onBack();
               }}
-              className="flex items-center gap-2 text-sm font-medium py-2.5 px-4 rounded-lg transition-all duration-200 bg-gray-100 hover:bg-gray-200 text-gray-700"
+              className="flex items-center gap-2 text-sm font-medium py-2 px-3 rounded-lg transition-all duration-200 bg-gray-100 hover:bg-gray-200 text-gray-700"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
             </button>
 
+            <div className="flex items-center gap-2">
+              <Zap className="w-5 h-5 text-primary" />
+              <h1 className="text-lg sm:text-xl font-bold text-foreground">
+                Get Covered in 60 Seconds
+              </h1>
+            </div>
+
             {/* Mobile Navigation */}
             <div className="lg:hidden">
               <MobileNavigation />
             </div>
+            {/* Spacer for desktop to balance the layout */}
+            <div className="hidden lg:block w-20"></div>
           </div>
-        </div>
-      </div>
 
-      {/* Get Covered in 60 Seconds heading */}
-      <div className="max-w-6xl mx-auto px-4 pt-6 pb-4">
-        <div className="text-center space-y-2">
-          <div className="flex items-center justify-center gap-2">
-            <Zap className="w-6 h-6 text-primary" />
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              Get Covered in 60 Seconds
-            </h1>
-          </div>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Choose your plan, customise options, and pay in 12 easy instalments.
-          </p>
-          <div className="flex justify-center pt-2">
-            <TrustpilotHeader className="h-8 sm:h-10" />
+          {/* Subtitle and Trustpilot */}
+          <div className="text-center space-y-2">
+            <p className="text-muted-foreground text-sm">
+              Choose your plan, customise options, and pay in 12 easy instalments.
+            </p>
+            <TrustpilotHeader className="h-8 sm:h-10 mx-auto" />
           </div>
         </div>
       </div>
