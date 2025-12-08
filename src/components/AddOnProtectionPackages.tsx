@@ -16,8 +16,8 @@ const addOnPackages = [
     title: 'Wear & Tear Cover',
     price: 9,
     priceType: 'monthly',
-    badge: 'Best Value',
-    badgeColor: 'green',
+    badge: 'Best value',
+    badgeColor: 'blue',
     bulletPoints: [
       'Covers engine, gearbox, differential and drivetrain components',
       'Includes critical electrical parts like ECUs and alternators',
@@ -122,8 +122,21 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
   const months = getMonthsFromPaymentType(paymentType);
   const coverYears = months === 12 ? '1-year' : months === 24 ? '2-year' : '3-year';
 
+  const getBadgeClasses = (badgeColor: string) => {
+    switch (badgeColor) {
+      case 'blue':
+        return 'bg-blue-600 text-white';
+      case 'orange':
+        return 'bg-orange-500 text-white';
+      case 'green':
+        return 'bg-green-600 text-white';
+      default:
+        return 'bg-gray-600 text-white';
+    }
+  };
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       {addOnPackages.map((addon) => {
         const isIncluded = isAutoIncluded(addon.key);
         const isSelected = selectedAddOns[addon.key] || isIncluded;
@@ -149,32 +162,35 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
           descriptionParts.push('One-time payment');
         }
         const descriptionText = descriptionParts.join(' · ');
+
+        // Determine badge to show
+        const showIncludedBadge = isIncluded;
+        const showAddonBadge = addon.badge && !isIncluded;
               
         return (
           <div 
             key={addon.key}
             onClick={() => !isIncluded && onAddOnChange(addon.key, !selectedAddOns[addon.key])}
-            className={`relative rounded-lg border-2 transition-all cursor-pointer bg-white ${
+            className={`relative rounded-lg border-2 transition-all cursor-pointer bg-white pt-4 ${
               isSelected
                 ? 'border-orange-500 shadow-lg shadow-orange-500/30' 
                 : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
             }`}
           >
-            {/* Top badges row */}
-            <div className="flex items-center gap-2 px-3 pt-2">
-              {isIncluded && (
-                <span className="bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded">
-                  INCLUDED FREE
-                </span>
-              )}
-              {addon.badge && !isIncluded && (
-                <span className={`text-white text-xs font-bold px-2 py-0.5 rounded ${
-                  addon.badgeColor === 'green' ? 'bg-green-600' : 'bg-orange-500'
-                }`}>
-                  {addon.badge}
-                </span>
-              )}
-            </div>
+            {/* Overlapping badge - positioned to stick out of box */}
+            {(showIncludedBadge || showAddonBadge) && (
+              <div className="absolute -top-3 left-3">
+                {showIncludedBadge ? (
+                  <span className="bg-green-600 text-white text-xs font-semibold px-3 py-1 rounded shadow-sm">
+                    Included free
+                  </span>
+                ) : showAddonBadge ? (
+                  <span className={`text-xs font-semibold px-3 py-1 rounded shadow-sm ${getBadgeClasses(addon.badgeColor || 'gray')}`}>
+                    {addon.badge}
+                  </span>
+                ) : null}
+              </div>
+            )}
             
             {/* Main content area */}
             <div className="p-3 pt-1">
@@ -205,20 +221,20 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
               </div>
             </div>
             
-            {/* Expandable details */}
+            {/* Expandable details - styled as dropdown box */}
             <Collapsible open={expandedItems[addon.key]}>
               <CollapsibleTrigger asChild>
                 <button
                   onClick={(e) => toggleExpanded(addon.key, e)}
-                  className="w-full px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-1 border-t border-gray-100 transition-colors"
+                  className="w-full px-3 py-2 text-sm text-gray-600 hover:text-gray-800 flex items-center justify-center gap-1.5 border-t border-gray-100 transition-colors bg-gray-50 hover:bg-gray-100 rounded-b-lg"
                 >
-                  <span>{expandedItems[addon.key] ? 'Hide details' : 'Details'}</span>
-                  <ChevronDown className={`w-3 h-3 transition-transform ${expandedItems[addon.key] ? 'rotate-180' : ''}`} />
+                  <span className="font-medium">{expandedItems[addon.key] ? 'Hide details' : 'Details'}</span>
+                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${expandedItems[addon.key] ? 'rotate-180' : ''}`} />
                 </button>
               </CollapsibleTrigger>
               
-              <CollapsibleContent className="px-3 pb-3">
-                <div className="space-y-1.5 pt-2 border-t border-gray-100">
+              <CollapsibleContent className="px-3 pb-3 bg-gray-50 rounded-b-lg">
+                <div className="space-y-1.5 pt-2">
                   {addon.bulletPoints.map((point, index) => (
                     <div key={index} className="flex items-start gap-2">
                       <Check className="h-3 w-3 text-green-600 flex-shrink-0 mt-0.5" strokeWidth={3} />
