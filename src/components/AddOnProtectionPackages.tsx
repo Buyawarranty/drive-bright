@@ -269,10 +269,6 @@ const AddOnProtectionPackages: React.FC<AddOnProtectionPackagesProps> = ({
                         )}
                      </div>
                      
-                     {/* One short benefit */}
-                     <p className="text-sm text-gray-600 mb-4 leading-relaxed min-h-[3rem]">
-                       {addon.shortDescription.split('.')[0]}.
-                     </p>
                      
                       {/* View Details Button */}
                       <Collapsible open={expandedItems[addon.key]} onOpenChange={() => toggleExpanded(addon.key)}>
