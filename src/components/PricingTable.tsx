@@ -1205,6 +1205,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
             {/* Desktop layout */}
             <div className="hidden sm:flex items-center gap-3 flex-wrap">
               <Car className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+              <span className="text-muted-foreground font-medium">Your vehicle details</span>
+              <span className="text-muted-foreground">·</span>
               <span className="font-bold text-foreground">
                 {vehicleData?.year} {vehicleData?.make?.toUpperCase()} {vehicleData?.model?.toUpperCase()}
               </span>
@@ -1224,16 +1226,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <div className="sm:hidden flex flex-col items-center gap-2 w-full">
               <div className="flex items-center gap-2">
                 <Car className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                <span className="text-muted-foreground font-medium text-sm">Your vehicle details</span>
+              </div>
+              <div className="flex items-center gap-2">
                 <span className="font-bold text-foreground text-center">
                   {vehicleData?.year} {vehicleData?.make?.toUpperCase()} {vehicleData?.model?.toUpperCase()}
                 </span>
                 <Button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                  onClick={() => {
                     localStorage.removeItem('warrantyVehicleData');
                     localStorage.removeItem('warrantyFormData');
-                    window.location.replace('/');
+                    window.location.href = '/';
                   }}
                   variant="ghost"
                   size="sm"
@@ -1257,12 +1260,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
             
             <Button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
+              onClick={() => {
                 localStorage.removeItem('warrantyVehicleData');
                 localStorage.removeItem('warrantyFormData');
-                window.location.replace('/');
+                window.location.href = '/';
               }}
               variant="ghost"
               size="sm"
