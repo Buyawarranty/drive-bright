@@ -4,7 +4,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 
 const VehicleCoverageSection: React.FC = () => {
   return (
-    <section className="py-12 md:py-16 bg-gray-50">
+    <section className="py-6 md:py-8 bg-gray-50">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-8">
@@ -13,7 +13,8 @@ const VehicleCoverageSection: React.FC = () => {
             <span className="text-sm font-semibold text-green-700">Full Coverage Details</span>
           </div>
           <h2 className="text-2xl md:text-3xl font-bold text-brand-dark-text mb-3">
-            Every Part Covered. <span className="text-brand-orange">Drive Worry-Free</span>
+            Every Part Covered.<br />
+            <span className="text-brand-orange">Drive Worry-Free</span>
           </h2>
           <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
             From engine to electrics, see exactly what's protected
