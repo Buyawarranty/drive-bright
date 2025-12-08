@@ -2608,7 +2608,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       rel="noopener noreferrer"
                       className="flex justify-center items-center hover:opacity-80 transition-opacity pb-2"
                     >
-                      <TrustpilotHeader className="h-6" />
+                      <TrustpilotHeader className="h-4 scale-75" />
                     </a>
                   </div>
                   
@@ -2628,7 +2628,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   
                   {/* SECTION 1: Trust & Reassurance */}
                   <div className="flex-1 flex flex-col items-center justify-center px-6 py-4">
-                    <TrustpilotHeader className="flex-shrink-0" />
+                    <a 
+                      href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="hover:opacity-80 transition-opacity"
+                    >
+                      <TrustpilotHeader className="flex-shrink-0 scale-75" />
+                    </a>
                     <div className="text-xs text-gray-500 mt-2">
                       14 days to cancel
                     </div>
