@@ -1228,10 +1228,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   {vehicleData?.year} {vehicleData?.make?.toUpperCase()} {vehicleData?.model?.toUpperCase()}
                 </span>
                 <Button
-                  onClick={() => window.location.href = '/'}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    localStorage.removeItem('warrantyVehicleData');
+                    localStorage.removeItem('warrantyFormData');
+                    window.location.replace('/');
+                  }}
                   variant="ghost"
                   size="sm"
                   className="text-primary hover:text-primary/80 p-1 h-auto"
+                  type="button"
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
@@ -1250,10 +1257,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
             
             <Button
-              onClick={() => window.location.href = '/'}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                localStorage.removeItem('warrantyVehicleData');
+                localStorage.removeItem('warrantyFormData');
+                window.location.replace('/');
+              }}
               variant="ghost"
               size="sm"
               className="text-primary hover:text-primary/80 flex-shrink-0 hidden sm:flex items-center gap-1"
+              type="button"
             >
               <Edit className="h-4 w-4" />
               <span className="text-sm">Edit</span>
