@@ -5,7 +5,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 const VehicleCoverageSection: React.FC = () => {
   return (
     <section className="py-12 md:py-16 bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="space-y-3">
           {/* Petrol & Diesel Vehicles */}
           <Collapsible>
