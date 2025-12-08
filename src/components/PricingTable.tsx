@@ -2641,9 +2641,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         Only 12 payments – 0% APR
                       </div>
                       <div className="text-sm text-black">
-                        {paymentType === '12months' && '1-Year Cover'}
-                        {paymentType === '24months' && <>2-Year Cover | <span className="font-bold">Year 2 FREE</span> 🎉</>}
-                        {paymentType === '36months' && <>3-Year Cover | <span className="font-bold">Years 2 & 3 FREE</span> 🎉</>}
+                        {paymentType === '12months' && <span className="font-bold">1-Year Cover</span>}
+                        {paymentType === '24months' && <><span className="font-bold">Year 2 FREE</span> 🎉 | <span className="font-bold">2-Year Cover</span></>}
+                        {paymentType === '36months' && <><span className="font-bold">Years 2 & 3 FREE</span> 🎉 | <span className="font-bold">3-Year Cover</span></>}
                       </div>
                       <div className="text-sm text-black">
                         14-days to cancel
@@ -2687,17 +2687,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   
                   {/* SECTION 2: Cover & Total */}
                   <div className="flex-1 flex flex-col items-center justify-center px-6 py-4">
-                    <div className="text-base font-semibold text-black">
-                      {paymentType === '12months' && '1-Year Cover'}
-                      {paymentType === '24months' && '2-Year Cover'}
-                      {paymentType === '36months' && '3-Year Cover'}
-                    </div>
                     {paymentType !== '12months' && (
-                      <div className="text-green-600 font-bold text-sm mt-0.5">
+                      <div className="text-green-600 font-bold text-sm">
                         {paymentType === '24months' && 'Year 2 FREE 🎉'}
                         {paymentType === '36months' && 'Years 2 & 3 FREE 🎉'}
                       </div>
                     )}
+                    <div className="text-base font-bold text-black mt-0.5">
+                      {paymentType === '12months' && '1-Year Cover'}
+                      {paymentType === '24months' && '2-Year Cover'}
+                      {paymentType === '36months' && '3-Year Cover'}
+                    </div>
                     <div className="text-sm text-gray-700 mt-0.5 font-medium">
                       Total: £{Math.round(displayTotalPrice)}
                     </div>
