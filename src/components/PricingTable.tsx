@@ -1236,12 +1236,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   {vehicleData?.year} {vehicleData?.make?.toUpperCase()} {vehicleData?.model?.toUpperCase()}
                 </span>
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     localStorage.removeItem('warrantyVehicleData');
                     localStorage.removeItem('warrantyFormData');
                     navigate('/', { replace: true });
                   }}
-                  className="flex items-center gap-2 text-sm sm:text-base font-medium text-orange-600 hover:text-orange-700 transition-colors duration-200 py-1 px-2 rounded"
+                  className="flex items-center gap-2 text-sm sm:text-base font-medium text-orange-600 hover:text-orange-700 transition-colors duration-200 py-1 px-2 rounded cursor-pointer z-10"
                   type="button"
                 >
                   <Edit3 className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -1263,12 +1265,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
             
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 localStorage.removeItem('warrantyVehicleData');
                 localStorage.removeItem('warrantyFormData');
                 navigate('/', { replace: true });
               }}
-              className="hidden sm:flex items-center gap-2 text-sm sm:text-base font-medium text-orange-600 hover:text-orange-700 transition-colors duration-200 py-1 px-2 rounded flex-shrink-0"
+              className="hidden sm:flex items-center gap-2 text-sm sm:text-base font-medium text-orange-600 hover:text-orange-700 transition-colors duration-200 py-1 px-2 rounded flex-shrink-0 cursor-pointer z-10"
               type="button"
             >
               <Edit3 className="w-4 h-4 sm:w-5 sm:h-5" />
