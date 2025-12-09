@@ -160,7 +160,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
           }}
           className={cn(
             "relative p-5 rounded-xl cursor-pointer transition-all overflow-hidden",
-            "bg-gradient-to-br from-orange-50 via-amber-50 to-green-50",
+            "bg-green-50",
             boostAddon && selectedClaimLimit === 2000
               ? "border-2 border-green-500 shadow-lg shadow-green-500/20"
               : "border-2 border-green-300 hover:border-green-400 hover:shadow-md"
