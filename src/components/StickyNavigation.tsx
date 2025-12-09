@@ -11,7 +11,9 @@ const StickyNavigation: React.FC = () => {
 
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Navigate to homepage and clear any step query params
+    // Clear checkout flow state and navigate to homepage
+    localStorage.removeItem('warrantyVehicleData');
+    localStorage.removeItem('warrantyFormData');
     navigate('/', { replace: true });
     window.scrollTo(0, 0);
   };
