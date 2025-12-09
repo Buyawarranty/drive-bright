@@ -202,7 +202,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
           
           {/* Mini comparison cue */}
           <div className="text-sm text-gray-600 font-medium">
-            +£1,000 extra coverage for <span className="text-green-600 font-semibold">+£5/month</span>
+            +£1,000 extra coverage for <span className="text-green-600 font-semibold">Only £5/month × 12 payments</span>
           </div>
         </div>
       </div>
