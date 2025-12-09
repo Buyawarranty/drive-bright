@@ -1598,7 +1598,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       const coverSection = document.getElementById('your-cover-details');
                       coverSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }}
-                    className="w-full mt-1.5 text-center text-sm text-black hover:text-green-600 transition-colors pointer-events-auto flex items-center justify-center gap-1"
+                    className="w-full mt-3 text-center text-sm text-black hover:text-green-600 transition-colors pointer-events-auto flex items-center justify-center gap-1"
                   >
                     <span>🔍 See full cover details</span>
                   </button>
