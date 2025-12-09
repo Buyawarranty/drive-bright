@@ -68,6 +68,7 @@ interface PricingTableProps {
     vehicleType?: string;
   };
   onBack: () => void;
+  onChangeVehicle?: () => void;
   onPlanSelected?: (planId: string, paymentType: string, planName?: string, pricingData?: {
     totalPrice: number, 
     monthlyPrice: number, 
@@ -96,7 +97,8 @@ interface PricingTableProps {
 
 const PricingTable: React.FC<PricingTableProps> = ({ 
   vehicleData, 
-  onBack, 
+  onBack,
+  onChangeVehicle,
   onPlanSelected,
   previousPaymentType,
   previousVoluntaryExcess,
@@ -1241,7 +1243,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     e.stopPropagation();
                     localStorage.removeItem('warrantyVehicleData');
                     localStorage.removeItem('warrantyFormData');
-                    navigate('/', { replace: true });
+                    if (onChangeVehicle) {
+                      onChangeVehicle();
+                    } else {
+                      navigate('/', { replace: true });
+                    }
                   }}
                   className="flex items-center gap-2 text-sm sm:text-base font-medium text-orange-600 hover:text-orange-700 transition-colors duration-200 py-1 px-2 rounded cursor-pointer z-10"
                   type="button"
@@ -1270,7 +1276,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 e.stopPropagation();
                 localStorage.removeItem('warrantyVehicleData');
                 localStorage.removeItem('warrantyFormData');
-                navigate('/', { replace: true });
+                if (onChangeVehicle) {
+                  onChangeVehicle();
+                } else {
+                  navigate('/', { replace: true });
+                }
               }}
               className="hidden sm:flex items-center gap-2 text-sm sm:text-base font-medium text-orange-600 hover:text-orange-700 transition-colors duration-200 py-1 px-2 rounded flex-shrink-0 cursor-pointer z-10"
               type="button"

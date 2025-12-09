@@ -1020,7 +1020,12 @@ const Index = () => {
             <PerformanceOptimizedSuspense height="60vh">
               <PricingTable 
                 vehicleData={vehicleData} 
-                onBack={() => handleBackToStep(2)} 
+                onBack={() => handleBackToStep(2)}
+                onChangeVehicle={() => {
+                  setVehicleData(null);
+                  setSelectedPlan(null);
+                  handleStepChange(1);
+                }}
                 onPlanSelected={handlePlanSelected}
                 previousPaymentType={selectedPlan?.paymentType as '12months' | '24months' | '36months' | undefined}
                 previousVoluntaryExcess={selectedPlan?.pricingData?.voluntaryExcess}
