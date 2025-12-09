@@ -21,7 +21,11 @@ interface ExtrasSelectorProps {
   currentMonthlyPrice: number;
 }
 
-const allExtras: Extra[] = [
+interface ExtraWithBadge extends Extra {
+  badge?: { text: string; color: 'orange' | 'green' };
+}
+
+const allExtras: ExtraWithBadge[] = [
   {
     key: 'breakdown',
     title: 'Roadside Assistance',
@@ -36,7 +40,8 @@ const allExtras: Extra[] = [
     shortDescription: 'Protects key parts from natural wear',
     price: 9,
     priceType: 'monthly',
-    icon: '🔧'
+    icon: '🔧',
+    badge: { text: 'BEST VALUE', color: 'orange' }
   },
   {
     key: 'tyre',
@@ -44,7 +49,8 @@ const allExtras: Extra[] = [
     shortDescription: 'Accidental and malicious tyre damage',
     price: 8,
     priceType: 'monthly',
-    icon: '🛞'
+    icon: '🛞',
+    badge: { text: 'POPULAR', color: 'green' }
   },
   {
     key: 'european',
@@ -88,7 +94,7 @@ const ExtrasSelector: React.FC<ExtrasSelectorProps> = ({
   
   const visibleExtras = showAllExtras ? allExtras : popularExtras;
 
-  const renderExtra = (extra: Extra) => {
+  const renderExtra = (extra: ExtraWithBadge) => {
     const isAutoIncluded = autoIncluded.includes(extra.key);
     const isSelected = selectedAddOns[extra.key] || isAutoIncluded;
     
@@ -103,20 +109,32 @@ const ExtrasSelector: React.FC<ExtrasSelectorProps> = ({
         key={extra.key}
         className={cn(
           "p-4 rounded-xl border-2 transition-all",
-          isSelected
-            ? "border-success bg-success/5"
-            : "border-border bg-card"
+          isAutoIncluded
+            ? "border-green-200 bg-green-50"
+            : isSelected
+              ? "border-success bg-success/5"
+              : "border-border bg-card"
         )}
       >
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1">
             <span className="text-2xl">{extra.icon}</span>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h4 className="font-semibold text-foreground">{extra.title}</h4>
                 {isAutoIncluded && (
-                  <span className="bg-success text-success-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
-                    FREE
+                  <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-green-200">
+                    INCLUDED FREE
+                  </span>
+                )}
+                {!isAutoIncluded && extra.badge && (
+                  <span className={cn(
+                    "text-[10px] font-bold px-2 py-0.5 rounded-full",
+                    extra.badge.color === 'orange' 
+                      ? "bg-orange-500 text-white"
+                      : "bg-green-500 text-white"
+                  )}>
+                    {extra.badge.text}
                   </span>
                 )}
               </div>
@@ -138,8 +156,8 @@ const ExtrasSelector: React.FC<ExtrasSelectorProps> = ({
           )}
           
           {isAutoIncluded && (
-            <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center">
-              <Check className="w-4 h-4 text-success-foreground" />
+            <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+              <Check className="w-4 h-4 text-white" />
             </div>
           )}
         </div>
