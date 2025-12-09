@@ -2437,7 +2437,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <div className="w-8 h-8 bg-brand-orange rounded-full flex items-center justify-center">
                       <CheckCircle className="w-5 h-5 text-white" />
                     </div>
-                    <span className="font-semibold text-foreground text-base md:text-lg">What your Platinum plan covers</span>
+                    <span className="font-semibold text-foreground text-base md:text-lg text-left">
+                      <span className="block md:inline">What your Platinum</span>
+                      <span className="block md:inline md:ml-1">plan covers</span>
+                    </span>
                   </div>
                   <ChevronDown className="w-5 h-5 text-brand-orange transition-transform duration-200 group-data-[state=open]:rotate-180" />
                 </CollapsibleTrigger>
