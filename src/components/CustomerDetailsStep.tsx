@@ -1146,7 +1146,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
               {/* Right Column - Order Summary (order-1 on mobile, order-1 on desktop = left side) */}
               <div className="space-y-6 order-1 lg:order-1">
                 {/* Order Summary Card */}
-                <div className="bg-gray-50 rounded-xl shadow-md p-4 sm:p-6 border-2 border-gray-200 overflow-hidden">
+                <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 border-2 border-gray-200 overflow-hidden">
                   <div className="flex items-start justify-between mb-4 gap-2">
                     <h2 className="text-lg sm:text-2xl font-bold text-black flex-1 min-w-0">
                       {(() => {
