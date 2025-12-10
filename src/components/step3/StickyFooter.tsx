@@ -1,5 +1,5 @@
-import React from 'react';
-import { ArrowRight, Lock, Star } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowRight, Lock, Star, ChevronUp, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface StickyFooterProps {
@@ -19,6 +19,8 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
   isLoading,
   isValid
 }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
   // Calculate pay in full price (10% discount)
   const payInFullPrice = Math.floor(totalPrice * 0.9);
 
@@ -31,67 +33,107 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] z-50">
-      <div className="max-w-4xl mx-auto px-4 py-4">
-        {/* Main content grid */}
-        <div className="flex items-start justify-between gap-4">
-          {/* Left: Trustpilot */}
-          <div className="flex flex-col items-start gap-1">
-            <div className="flex items-center gap-1">
-              <span className="text-xs font-semibold text-black">Trustpilot</span>
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3 h-3 fill-green-500 text-green-500" />
-                ))}
+      <div className="max-w-4xl mx-auto px-4 py-3">
+        {/* Expand/Collapse toggle */}
+        <button 
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full flex items-center justify-center mb-2"
+        >
+          {isExpanded ? (
+            <ChevronDown className="w-5 h-5 text-muted-foreground" />
+          ) : (
+            <ChevronUp className="w-5 h-5 text-muted-foreground" />
+          )}
+        </button>
+
+        {/* Collapsed view - always show price and CTA */}
+        {!isExpanded && (
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1 text-center">
+              <div className="text-lg font-bold text-foreground">
+                £{monthlyPrice}/Month <span className="text-sm text-muted-foreground font-normal">– 0% APR</span>
               </div>
             </div>
+            <Button
+              onClick={onContinue}
+              disabled={isLoading || !isValid}
+              className="bg-brand-orange hover:bg-brand-orange/90 text-white font-semibold py-5 px-6 rounded-xl text-sm gap-2 animate-cta-enhanced"
+            >
+              {isLoading ? 'Loading...' : (
+                <>
+                  Continue
+                  <ArrowRight className="w-4 h-4" strokeWidth={3} />
+                </>
+              )}
+            </Button>
           </div>
+        )}
 
-          {/* Center: Price Summary */}
-          <div className="flex-1 text-center space-y-0.5">
-            <div className="text-lg font-bold text-foreground">
-              £{monthlyPrice}/Month – 0% APR
+        {/* Expanded view - full details */}
+        {isExpanded && (
+          <>
+            {/* Main content grid */}
+            <div className="flex items-start justify-between gap-4">
+              {/* Left: Trustpilot */}
+              <div className="flex flex-col items-start gap-1">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-semibold text-black">Trustpilot</span>
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-3 h-3 fill-green-500 text-green-500" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Center: Price Summary */}
+              <div className="flex-1 text-center space-y-0.5">
+                <div className="text-lg font-bold text-foreground">
+                  £{monthlyPrice}/Month <span className="text-sm text-muted-foreground font-normal">– 0% APR</span>
+                </div>
+                <p className="text-sm text-muted-foreground">Only 12 payments</p>
+                <p className="text-sm text-foreground">
+                  Pay in full: <span className="font-bold">£{payInFullPrice}</span>
+                </p>
+              </div>
+
+              {/* Right: Cover details */}
+              <div className="text-right space-y-0.5">
+                {freeYearText && (
+                  <p className="text-sm font-medium text-foreground">
+                    {freeYearText} 🎉
+                  </p>
+                )}
+                <p className="text-sm text-muted-foreground">{getCoverDuration()}</p>
+                <p className="text-xs text-muted-foreground">14 days to cancel</p>
+              </div>
             </div>
-            <p className="text-sm text-muted-foreground">Only 12 payments</p>
-            <p className="text-sm text-foreground">
-              Pay in full: <span className="font-bold">£{payInFullPrice}</span>
-            </p>
-          </div>
-
-          {/* Right: Cover details */}
-          <div className="text-right space-y-0.5">
-            {freeYearText && (
-              <p className="text-sm font-medium text-foreground">
-                {freeYearText} 🎉
-              </p>
-            )}
-            <p className="text-sm text-muted-foreground">{getCoverDuration()}</p>
-            <p className="text-xs text-muted-foreground">14 days to cancel</p>
-          </div>
-        </div>
-        
-        {/* CTA Button - Full width */}
-        <div className="mt-3">
-          <Button
-            onClick={onContinue}
-            disabled={isLoading || !isValid}
-            className="w-full bg-brand-orange hover:bg-brand-orange/90 text-white font-semibold py-6 rounded-xl text-base gap-2 animate-cta-enhanced"
-          >
-            {isLoading ? (
-              'Loading...'
-            ) : (
-              <>
-                Continue to checkout
-                <ArrowRight className="w-5 h-5" strokeWidth={3} />
-              </>
-            )}
-          </Button>
-        </div>
-        
-        {/* Trust signal */}
-        <div className="flex items-center justify-center gap-1 mt-2 text-xs text-muted-foreground">
-          <Lock className="w-3 h-3" />
-          <span>Secure checkout – No hidden fees</span>
-        </div>
+            
+            {/* CTA Button - Full width */}
+            <div className="mt-3">
+              <Button
+                onClick={onContinue}
+                disabled={isLoading || !isValid}
+                className="w-full bg-brand-orange hover:bg-brand-orange/90 text-white font-semibold py-6 rounded-xl text-base gap-2 animate-cta-enhanced"
+              >
+                {isLoading ? (
+                  'Loading...'
+                ) : (
+                  <>
+                    Continue to checkout
+                    <ArrowRight className="w-5 h-5" strokeWidth={3} />
+                  </>
+                )}
+              </Button>
+            </div>
+            
+            {/* Trust signal */}
+            <div className="flex items-center justify-center gap-1 mt-2 text-xs text-muted-foreground">
+              <Lock className="w-3 h-3" />
+              <span>Secure checkout – No hidden fees</span>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
