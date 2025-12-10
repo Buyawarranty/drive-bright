@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, CheckCircle, Edit, User, CreditCard, MapPin, X, ArrowUp, Check, ArrowRight, Lock, Car, Mail } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Edit, User, CreditCard, MapPin, X, ArrowUp, Check, ArrowRight, Lock, Car, Mail, ChevronDown } from 'lucide-react';
 import { PostcodeAutocomplete } from '@/components/ui/uk-postcode-autocomplete';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -1139,6 +1139,23 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     </div>
                   </div>
 
+                  {/* Desktop Only: Continue to Payment CTA */}
+                  <div className="hidden lg:block pt-6">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        const paymentSection = document.getElementById('payment-section');
+                        if (paymentSection) {
+                          paymentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                      }}
+                      className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2"
+                    >
+                      Continue to Payment Options
+                      <ChevronDown className="w-5 h-5" />
+                    </Button>
+                  </div>
+
                 </form>
                 </div>
               </div>
@@ -1472,7 +1489,23 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
               </div>
 
               {/* Payment Methods Section (order-3 on mobile) */}
-              <div className="order-3 lg:col-span-2 space-y-6 bg-gradient-to-b from-gray-50 to-white rounded-2xl p-6 lg:p-8">
+              <div id="payment-section" className="order-3 lg:col-span-2 space-y-6 bg-gradient-to-b from-gray-50 to-white rounded-2xl p-6 lg:p-8">
+                      
+                      {/* Desktop Only: Visual Continuation Cue */}
+                      <div className="hidden lg:flex flex-col items-center -mt-2 mb-4">
+                        <div className="w-px h-8 bg-gradient-to-b from-transparent to-green-400"></div>
+                        <div className="bg-green-100 border border-green-300 rounded-full p-2 animate-bounce">
+                          <ChevronDown className="w-5 h-5 text-green-600" />
+                        </div>
+                      </div>
+                      
+                      {/* Desktop Only: Inline Prompt */}
+                      <div className="hidden lg:block bg-green-50 border border-green-200 rounded-lg p-4 text-center mb-4">
+                        <p className="text-green-800 font-semibold text-lg">
+                          ✅ Almost done! Choose how you'd like to pay to complete your warranty.
+                        </p>
+                      </div>
+                      
                       {/* Section Header */}
                        <div className="text-center space-y-3">
                           <h3 className="text-2xl font-bold text-black mb-2">
