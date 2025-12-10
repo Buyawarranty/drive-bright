@@ -2526,6 +2526,22 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </Collapsible>
             </div>
             
+            {/* Why Drivers Trust Us */}
+            <div className="mt-6 text-center">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <span className="text-xl">🚗</span>
+                <h4 className="text-lg font-semibold text-foreground">Why drivers trust us</h4>
+              </div>
+              <a 
+                href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 hover:opacity-80 transition-opacity"
+              >
+                <TrustpilotHeader className="scale-90" />
+              </a>
+            </div>
+            
             {/* Back to Plans button - bottom right of section */}
             <div className="flex justify-end mt-2 mb-0">
               <Button
