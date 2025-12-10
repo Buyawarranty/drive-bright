@@ -2590,7 +2590,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   >
                     <div className="flex flex-col items-center text-center">
                       <span className="text-xl font-bold text-gray-900">
-                        £{displayMonthlyPrice}/Month – 0% APR
+                        £{displayMonthlyPrice}/Month <span className="text-base text-gray-400">– 0% APR</span>
                       </span>
                       <span className="text-sm text-gray-600">Only 12 payments</span>
                       <span className="text-sm text-gray-900 font-medium">Pay in full: £{Math.round(displayTotalPrice * 0.9)}</span>
@@ -2655,9 +2655,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   </div>
                   
                   {/* SECTION 2: Price */}
-                  <div className="flex-1 flex flex-col items-center justify-center px-6 py-4">
+                  <div className="flex-1 flex flex-col items-center justify-center px-6 py-4 text-center">
                     <div className="text-2xl font-bold text-gray-900">
-                      £{displayMonthlyPrice}/Month – 0% APR
+                      £{displayMonthlyPrice}/Month <span className="text-lg text-gray-400">– 0% APR</span>
                     </div>
                     <div className="text-sm text-gray-600 mt-0.5">
                       Only 12 payments
