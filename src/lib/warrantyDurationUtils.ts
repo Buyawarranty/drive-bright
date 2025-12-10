@@ -21,28 +21,42 @@ export function getWarrantyDurationInMonths(paymentType: string): number {
     case '12months':
     case '12month':
     case 'yearly':
+    case '1year':
+    case 'oneyear':
       return 12;
     case '24months':
     case '24month':
     case 'twomonthly':
     case '2monthly':
     case 'twoyearly':
+    case 'twoyear':
+    case '2year':
+    case '2years':
       return 24;
     case '36months':
     case '36month':
     case 'threemonthly':
     case '3monthly':
     case 'threeyearly':
+    case 'threeyear':
+    case '3year':
+    case '3years':
       return 36;
     case '48months':
     case '48month':
     case 'fourmonthly':
     case '4monthly':
+    case 'fouryear':
+    case '4year':
+    case '4years':
       return 48;
     case '60months':
     case '60month':
     case 'fivemonthly':
     case '5monthly':
+    case 'fiveyear':
+    case '5year':
+    case '5years':
       return 60;
     default:
       console.warn(`Unknown payment type: ${paymentType}, defaulting to 12 months`);
@@ -76,28 +90,42 @@ export function getPaymentTypeDisplay(paymentType: string): string {
     case '12months':
     case '12month':
     case 'yearly':
+    case '1year':
+    case 'oneyear':
       return '12 months';
     case '24months':
     case '24month':
     case 'twomonthly':
     case '2monthly':
     case 'twoyearly':
+    case 'twoyear':
+    case '2year':
+    case '2years':
       return '24 months';
     case '36months':
     case '36month':
     case 'threemonthly':
     case '3monthly':
     case 'threeyearly':
+    case 'threeyear':
+    case '3year':
+    case '3years':
       return '36 months';
     case '48months':
     case '48month':
     case 'fourmonthly':
     case '4monthly':
+    case 'fouryear':
+    case '4year':
+    case '4years':
       return '48 months';
     case '60months':
     case '60month':
     case 'fivemonthly':
     case '5monthly':
+    case 'fiveyear':
+    case '5year':
+    case '5years':
       return '60 months';
     default:
       return paymentType || 'Unknown';

@@ -475,7 +475,8 @@ const ThankYou = () => {
                   plan={plan || undefined}
                   paymentType={paymentType || undefined}
                   warrantyStartDate={undefined}
-                  duration={searchParams.get('duration') || paymentType || undefined}
+                  duration={searchParams.get('duration') || searchParams.get('payment') || paymentType || undefined}
+                  warrantyNumber={policyNumber || searchParams.get('warranty_number') || searchParams.get('policy_number') || undefined}
                   monthlyPrice={searchParams.get('monthly_price') ? parseFloat(searchParams.get('monthly_price')!) : undefined}
                   totalPrice={searchParams.get('total_price') || searchParams.get('final_amount') ? parseFloat(searchParams.get('total_price') || searchParams.get('final_amount')!) : undefined}
                   originalPrice={searchParams.get('original_price') ? parseFloat(searchParams.get('original_price')!) : undefined}

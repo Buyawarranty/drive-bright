@@ -29,7 +29,7 @@ export const ConfirmationSection: React.FC<ConfirmationSectionProps> = ({
             
             {policyNumber && (
               <p className="text-lg text-foreground mb-3">
-                Your order reference is <span className="font-bold font-mono">{policyNumber}</span>.
+                Your warranty number is <span className="font-bold font-mono bg-green-100 px-2 py-1 rounded">{policyNumber}</span>
               </p>
             )}
             
