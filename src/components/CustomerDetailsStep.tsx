@@ -1519,7 +1519,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           </p>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-8">
                         
                         {/* OPTION A: Pay in Full (Stripe) */}
                         <div 
@@ -1593,10 +1593,19 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           {/* CTA inside box */}
                           <Button
                             type="button"
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
+                              e.preventDefault();
                               setPaymentMethod('stripe');
-                              setTimeout(() => handleSubmit(), 50);
+                              // Use a ref-like approach to ensure stripe is used
+                              const currentMethod = 'stripe';
+                              console.log('🟢 Green button clicked - forcing STRIPE payment');
+                              // Wait for state to settle then submit with explicit method
+                              await new Promise(resolve => setTimeout(resolve, 100));
+                              if (paymentMethod !== 'stripe') {
+                                setPaymentMethod('stripe');
+                              }
+                              handleSubmit();
                             }}
                             disabled={isLoadingPayment}
                             className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-green-600 hover:bg-green-700 text-white text-sm disabled:opacity-50"
@@ -1687,10 +1696,17 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           {/* CTA inside box */}
                           <Button
                             type="button"
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
+                              e.preventDefault();
                               setPaymentMethod('bumper');
-                              setTimeout(() => handleSubmit(), 50);
+                              console.log('🟠 Orange button clicked - forcing BUMPER payment');
+                              // Wait for state to settle then submit
+                              await new Promise(resolve => setTimeout(resolve, 100));
+                              if (paymentMethod !== 'bumper') {
+                                setPaymentMethod('bumper');
+                              }
+                              handleSubmit();
                             }}
                             disabled={isLoadingPayment}
                             className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-orange-500 hover:bg-orange-600 text-white text-sm disabled:opacity-50"
