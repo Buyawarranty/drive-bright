@@ -170,10 +170,6 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
               <p className="text-xs text-muted-foreground uppercase tracking-wide">Plan</p>
               <p className="font-semibold text-foreground">{plan || 'Platinum'}</p>
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Duration</p>
-              <p className="font-semibold text-foreground">{getDurationDisplay()}</p>
-            </div>
             {vehicle && (
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-wide">Vehicle</p>
