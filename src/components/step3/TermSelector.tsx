@@ -130,7 +130,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                   )}
                   
                   {/* Small print */}
-                  <div className="text-sm font-bold text-muted-foreground mt-1">
+                  <div className="text-sm font-bold text-muted-foreground mt-1 ml-[22px]">
                     Total £{getTotalForTerm(term.id)}. 0% APR.
                   </div>
                   
