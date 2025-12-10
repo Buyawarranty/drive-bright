@@ -26,23 +26,36 @@ const TermSelector: React.FC<TermSelectorProps> = ({
 }) => {
   const [showAllOptions, setShowAllOptions] = useState(false);
 
+  // Calculate savings for each term
+  const getSavingsForTerm = (termId: string): number => {
+    if (termId === '24months') return 100;
+    if (termId === '36months') return 200;
+    return 0;
+  };
+
+  // Calculate total price for a term
+  const getTotalForTerm = (termId: string): number => {
+    const monthly = getPriceForTerm(termId);
+    return monthly * 12;
+  };
+
   const allTerms: TermOption[] = [
     {
       id: '24months',
-      label: '12 months + 12 FREE',
+      label: '2-Year Cover',
       description: '2-year cover',
       monthlyPrice: getPriceForTerm('24months'),
       isPopular: true
     },
     {
       id: '12months',
-      label: '12 months',
+      label: '1-Year Cover',
       description: '1-year cover',
       monthlyPrice: getPriceForTerm('12months')
     },
     {
       id: '36months',
-      label: '12 months + 24 FREE',
+      label: '3-Year Cover',
       description: '3-year cover',
       monthlyPrice: getPriceForTerm('36months'),
       isBestValue: true
@@ -95,19 +108,40 @@ const TermSelector: React.FC<TermSelectorProps> = ({
               )}
 
               <div className="flex items-center justify-between">
-                <div>
+                <div className="flex-1">
+                  {/* Price Headline */}
                   <div className="text-2xl font-bold text-foreground">
-                    £{term.monthlyPrice}
-                    <span className="text-sm font-normal text-muted-foreground">/month</span>
+                    £{term.monthlyPrice}/month for 12 months
                   </div>
+                  
+                  {/* Free year indicator for multi-year */}
+                  {term.id === '24months' && (
+                    <div className="text-sm font-medium text-success mt-0.5">
+                      (Year 2: £0/month – FREE cover)
+                    </div>
+                  )}
+                  {term.id === '36months' && (
+                    <div className="text-sm font-medium text-success mt-0.5">
+                      (Years 2 & 3: £0/month – FREE cover)
+                    </div>
+                  )}
+                  
+                  {/* Sub-line */}
                   <div className="text-sm text-muted-foreground mt-1">
-                    {term.label}
+                    12 payments only. Total £{getTotalForTerm(term.id)}. 0% APR.
                   </div>
+                  
+                  {/* Savings badge */}
+                  {getSavingsForTerm(term.id) > 0 && (
+                    <div className="inline-block mt-2 bg-success/10 text-success text-xs font-bold px-2 py-1 rounded">
+                      Save £{getSavingsForTerm(term.id)} Today
+                    </div>
+                  )}
                 </div>
                 
                 {/* Selection indicator */}
                 <div className={cn(
-                  "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
+                  "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ml-3",
                   isSelected
                     ? "bg-success border-success"
                     : "border-border bg-card"
