@@ -142,9 +142,9 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
 
       {/* Boost Option - Premium Redesign */}
       <div className="relative pt-5 mb-2">
-        {/* BEST VALUE Badge - sticks out halfway */}
+        {/* UPGRADE Badge - sticks out halfway */}
         <span className="absolute -top-1 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg shadow-green-500/30">
-          BEST VALUE
+          UPGRADE
         </span>
         
         <div 
