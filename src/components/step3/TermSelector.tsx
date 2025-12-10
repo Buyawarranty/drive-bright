@@ -132,7 +132,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                   {/* Price Headline */}
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold text-foreground">£{term.monthlyPrice}/month</span>
-                    <span className="text-xs text-muted-foreground">(12 payments only)</span>
+                    <span className="text-sm font-bold text-muted-foreground">(12 payments only)</span>
                   </div>
                   
                   {/* Free year benefit line with tick */}
@@ -149,9 +149,9 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                     </div>
                   )}
                   
-                  {/* Pay in full total with was price */}
+                  {/* Pay in full with was price */}
                   <div className="text-sm mt-2">
-                    <span className="font-bold text-foreground">Pay in full total £{payInFullPrice}</span>
+                    <span className="font-bold text-foreground">Pay in full £{payInFullPrice}</span>
                     {savings > 0 && (
                       <span className="text-destructive line-through ml-2">(Was £{wasPrice})</span>
                     )}

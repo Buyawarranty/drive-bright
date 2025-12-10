@@ -1502,7 +1502,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     {/* Price Headline */}
                     <div className="flex items-baseline gap-2">
                       <span className="text-2xl font-bold text-black">£{displayedMonthlyPrice}/month</span>
-                      <span className="text-xs text-gray-400">(12 payments only)</span>
+                      <span className="text-sm font-bold text-gray-400">(12 payments only)</span>
                     </div>
                     
                     {/* Free year benefit line with tick */}
@@ -1519,9 +1519,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
                     )}
                     
-                    {/* Pay in full total with was price */}
+                    {/* Pay in full with was price */}
                     <div className="text-sm mt-2">
-                      <span className="font-bold text-black">Pay in full total £{Math.round(displayedAnnualPrice * 0.9)}</span>
+                      <span className="font-bold text-black">Pay in full £{Math.round(displayedAnnualPrice * 0.9)}</span>
                       {savingsAmount > 0 && (
                         <span className="text-red-500 line-through ml-2">(Was £{Math.round(displayedAnnualPrice)})</span>
                       )}
