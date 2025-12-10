@@ -225,7 +225,12 @@ const ExtrasSelector: React.FC<ExtrasSelectorProps> = ({
           </p>
         )}
         
-        {visibleExtras.map(renderExtra)}
+        <div className={cn(
+          "grid gap-3",
+          showAllExtras ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
+        )}>
+          {visibleExtras.map(renderExtra)}
+        </div>
 
         {/* View All Toggle */}
         <button
