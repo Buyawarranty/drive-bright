@@ -19,7 +19,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
   isLoading,
   isValid
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   
   // Calculate pay in full price (10% discount)
   const payInFullPrice = Math.floor(totalPrice * 0.9);
@@ -34,59 +34,10 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] z-50">
       <div className="max-w-4xl mx-auto px-4 py-3">
-        {/* Expand/Collapse toggle */}
-        <button 
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full flex items-center justify-center mb-2"
-        >
-          {isExpanded ? (
-            <ChevronDown className="w-5 h-5 text-muted-foreground" />
-          ) : (
-            <ChevronUp className="w-5 h-5 text-muted-foreground" />
-          )}
-        </button>
-
-        {/* Collapsed view - always show price and CTA */}
-        {!isExpanded && (
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex-1 text-center">
-              <div className="text-lg font-bold text-foreground">
-                £{monthlyPrice}/Month <span className="text-sm text-muted-foreground font-normal">– 0% APR</span>
-              </div>
-            </div>
-            <Button
-              onClick={onContinue}
-              disabled={isLoading || !isValid}
-              className="bg-brand-orange hover:bg-brand-orange/90 text-white font-semibold py-5 px-6 rounded-xl text-sm gap-2 animate-cta-enhanced"
-            >
-              {isLoading ? 'Loading...' : (
-                <>
-                  Continue
-                  <ArrowRight className="w-4 h-4" strokeWidth={3} />
-                </>
-              )}
-            </Button>
-          </div>
-        )}
-
-        {/* Expanded view - full details */}
+        {/* Expanded view - price summary with CTA (default) */}
         {isExpanded && (
           <>
-            {/* Main content grid */}
-            <div className="flex items-start justify-between gap-4">
-              {/* Left: Trustpilot */}
-              <div className="flex flex-col items-start gap-1">
-                <div className="flex items-center gap-1">
-                  <span className="text-xs font-semibold text-black">Trustpilot</span>
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-3 h-3 fill-green-500 text-green-500" />
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Center: Price Summary */}
+            <div className="flex items-center justify-between gap-3">
               <div className="flex-1 text-center space-y-0.5">
                 <div className="text-lg font-bold text-foreground">
                   £{monthlyPrice}/Month <span className="text-sm text-muted-foreground font-normal">– 0% APR</span>
@@ -96,17 +47,12 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
                   Pay in full: <span className="font-bold">£{payInFullPrice}</span>
                 </p>
               </div>
-
-              {/* Right: Cover details */}
-              <div className="text-right space-y-0.5">
-                {freeYearText && (
-                  <p className="text-sm font-medium text-foreground">
-                    {freeYearText} 🎉
-                  </p>
-                )}
-                <p className="text-sm text-muted-foreground">{getCoverDuration()}</p>
-                <p className="text-xs text-muted-foreground">14 days to cancel</p>
-              </div>
+              <button 
+                onClick={() => setIsExpanded(false)}
+                className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0"
+              >
+                <ChevronUp className="w-5 h-5 text-muted-foreground" />
+              </button>
             </div>
             
             {/* CTA Button - Full width */}
@@ -126,13 +72,24 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
                 )}
               </Button>
             </div>
-            
-            {/* Trust signal */}
-            <div className="flex items-center justify-center gap-1 mt-2 text-xs text-muted-foreground">
-              <Lock className="w-3 h-3" />
-              <span>Secure checkout – No hidden fees</span>
-            </div>
           </>
+        )}
+
+        {/* Collapsed view - compact */}
+        {!isExpanded && (
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1 text-center">
+              <div className="text-lg font-bold text-foreground">
+                £{monthlyPrice}/Month <span className="text-sm text-muted-foreground font-normal">– 0% APR</span>
+              </div>
+            </div>
+            <button 
+              onClick={() => setIsExpanded(true)}
+              className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0"
+            >
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+            </button>
+          </div>
         )}
       </div>
     </div>
