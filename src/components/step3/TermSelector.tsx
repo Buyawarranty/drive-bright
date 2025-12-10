@@ -93,7 +93,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
           </div>
           <h3 className="font-semibold text-lg text-foreground">Choose your cover duration</h3>
         </div>
-        <span className="text-sm text-muted-foreground ml-9 sm:ml-0">0% APR · No hidden fees</span>
+        <span className="text-sm text-muted-foreground font-semibold text-center w-full sm:w-auto sm:ml-0 sm:text-base">0% APR · No hidden fees</span>
       </div>
 
       <div className="space-y-3">
