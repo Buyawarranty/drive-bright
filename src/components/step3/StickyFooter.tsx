@@ -19,8 +19,11 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
   isLoading,
   isValid
 }) => {
+  // Calculate pay in full price (10% discount)
+  const payInFullPrice = Math.floor(totalPrice * 0.9);
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl border-t border-border shadow-[0_-8px_30px_rgba(0,0,0,0.12)] z-50" style={{ backgroundColor: '#ffffff' }}>
+    <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.15)] z-50">
       <div className="max-w-2xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4">
           {/* Price Summary */}
@@ -28,11 +31,10 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             <div className="text-xl font-bold text-foreground">
               £{monthlyPrice}/Month – 0% APR
             </div>
-            <p className="text-xs text-muted-foreground">Only 12 payments</p>
-            <p className="text-xs text-muted-foreground">Total: £{totalPrice}</p>
-            {freeYearText && (
-              <p className="text-xs text-muted-foreground">{freeYearText}</p>
-            )}
+            <p className="text-sm text-muted-foreground">Only 12 payments</p>
+            <p className="text-sm text-foreground">
+              Pay in full: <span className="font-bold">£{payInFullPrice}</span> <span className="text-success font-medium">(Save 10%)</span>
+            </p>
           </div>
           
           {/* CTA Button */}
