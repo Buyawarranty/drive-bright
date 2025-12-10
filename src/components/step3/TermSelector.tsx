@@ -110,8 +110,9 @@ const TermSelector: React.FC<TermSelectorProps> = ({
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   {/* Price Headline */}
-                  <div className="text-xl font-bold text-muted-foreground">
-                    £{term.monthlyPrice}/month <span className="font-normal">(12 payments only)</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-bold text-foreground">£{term.monthlyPrice}/month</span>
+                    <span className="text-sm font-bold text-muted-foreground">(12 payments only)</span>
                   </div>
                   
                   {/* Free year benefit line with tick */}
