@@ -34,14 +34,33 @@ declare global {
 const ThankYou = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const plan = searchParams.get('plan');
-  // Get duration from multiple possible params with fallback chain
-  const paymentType = searchParams.get('duration') || searchParams.get('payment') || searchParams.get('paymentType');
+  
+  // Extract ALL URL params for order summary display
+  const plan = searchParams.get('plan') || 'Platinum';
+  const duration = searchParams.get('duration') || searchParams.get('payment') || searchParams.get('paymentType') || '';
   const sessionId = searchParams.get('session_id');
+  const email = searchParams.get('email');
+  const firstName = searchParams.get('first_name');
+  const lastName = searchParams.get('last_name');
+  const mobile = searchParams.get('mobile');
+  const street = searchParams.get('street');
+  const postcode = searchParams.get('postcode');
+  const vehicle = searchParams.get('vehicle') || `${searchParams.get('vehicle_make') || ''} ${searchParams.get('vehicle_model') || ''}`.trim();
+  const vehicleReg = searchParams.get('vehicle_reg');
+  const mileage = searchParams.get('mileage');
+  const claimLimit = searchParams.get('claim_limit');
+  const labourRate = searchParams.get('labour_rate');
+  const excess = searchParams.get('excess');
+  const addons = searchParams.get('addons');
+  const finalAmount = searchParams.get('final_amount') || searchParams.get('total_price');
+  const monthlyPrice = searchParams.get('monthly_price');
+  
   // Detect source - check for bumper indicators if source param is missing
   const source = searchParams.get('source') || 
     (searchParams.get('bumper_order_id') ? 'bumper' : null) ||
-    (sessionId && sessionId.startsWith('cs_') ? 'stripe' : null);
+    (sessionId && sessionId.startsWith('cs_') ? 'stripe' : null) ||
+    (sessionId && sessionId.startsWith('VW-') ? 'bumper' : null);
+  
   const [isProcessing, setIsProcessing] = useState(true);
   const [policyNumber, setPolicyNumber] = useState<string>('');
   const [timeRemaining, setTimeRemaining] = useState<string>('');
@@ -216,7 +235,7 @@ const ThankYou = () => {
             recipientName: fullName,
             referenceId: policyNum,
             orderDate: new Date().toISOString(),
-            productName: `${plan} Warranty - ${paymentType}`,
+            productName: `${plan} Warranty - ${duration}`,
           });
         }
         
@@ -349,7 +368,7 @@ const ThankYou = () => {
               recipientName: fullName,
               referenceId: transactionId,
               orderDate: new Date().toISOString(),
-              productName: `${plan} Warranty - ${paymentType}`,
+              productName: `${plan} Warranty - ${duration}`,
             });
           }
           
@@ -417,7 +436,7 @@ const ThankYou = () => {
     }, 300);
 
     return () => clearInterval(interval);
-  }, [sessionId, plan, paymentType, source]);
+  }, [sessionId, plan, duration, source]);
 
   const handleGetSecondWarranty = () => {
     // Track CTA click
@@ -439,10 +458,7 @@ const ThankYou = () => {
     window.location.href = 'https://www.buyawarranty.co.uk';
   };
 
-  // Extract customer data from URL params
-  const email = searchParams.get('email');
-  const firstName = searchParams.get('first_name');
-  const lastName = searchParams.get('last_name');
+  // Customer data already extracted at the top of component
 
   return (
     <div className="bg-gradient-to-br from-background via-background to-muted/20 min-h-screen">
@@ -503,21 +519,21 @@ const ThankYou = () => {
 
                 {/* Order Summary */}
                 <OrderSummary 
-                  plan={plan || 'Platinum'}
-                  paymentType={paymentType || undefined}
+                  plan={plan}
+                  paymentType={duration || undefined}
                   warrantyStartDate={undefined}
-                  duration={paymentType || searchParams.get('duration') || searchParams.get('payment') || undefined}
+                  duration={duration || undefined}
                   warrantyNumber={policyNumber || searchParams.get('warranty_number') || searchParams.get('policy_number') || undefined}
-                  monthlyPrice={searchParams.get('monthly_price') ? parseFloat(searchParams.get('monthly_price')!) : undefined}
-                  totalPrice={searchParams.get('total_price') || searchParams.get('final_amount') ? parseFloat(searchParams.get('total_price') || searchParams.get('final_amount')!) : undefined}
+                  monthlyPrice={monthlyPrice ? parseFloat(monthlyPrice) : undefined}
+                  totalPrice={finalAmount ? parseFloat(finalAmount) : undefined}
                   originalPrice={searchParams.get('original_price') ? parseFloat(searchParams.get('original_price')!) : undefined}
-                  vehicle={searchParams.get('vehicle') || `${searchParams.get('vehicle_make') || ''} ${searchParams.get('vehicle_model') || ''}`.trim() || undefined}
-                  vehicleReg={searchParams.get('vehicle_reg') || undefined}
-                  mileage={searchParams.get('mileage') || undefined}
-                  claimLimit={searchParams.get('claim_limit') ? parseInt(searchParams.get('claim_limit')!) : undefined}
-                  labourRate={searchParams.get('labour_rate') ? parseInt(searchParams.get('labour_rate')!) : undefined}
-                  excess={searchParams.get('excess') ? parseInt(searchParams.get('excess')!) : undefined}
-                  addons={searchParams.get('addons') || undefined}
+                  vehicle={vehicle || undefined}
+                  vehicleReg={vehicleReg || undefined}
+                  mileage={mileage || undefined}
+                  claimLimit={claimLimit ? parseInt(claimLimit) : undefined}
+                  labourRate={labourRate ? parseInt(labourRate) : undefined}
+                  excess={excess ? parseInt(excess) : undefined}
+                  addons={addons || undefined}
                   paidInFull={source === 'stripe'}
                   source={source || undefined}
                 />
