@@ -73,11 +73,14 @@ const TermSelector: React.FC<TermSelectorProps> = ({
 
   return (
     <div className="px-4 py-4">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold">
-          1
+      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold">
+            1
+          </div>
+          <h3 className="font-semibold text-lg text-foreground">Choose your cover duration</h3>
         </div>
-        <h3 className="font-semibold text-lg text-foreground">Choose Your Term</h3>
+        <span className="text-sm text-muted-foreground ml-9 sm:ml-0">0% APR · No hidden fees · Secure checkout</span>
       </div>
 
       <div className="space-y-3">
@@ -129,17 +132,10 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                     </div>
                   )}
                   
-                  {/* Small print */}
-                  <div className="text-sm font-bold text-muted-foreground mt-1 ml-[22px]">
-                    Total £{getTotalForTerm(term.id)}. 0% APR.
+                  {/* Total and pay in full line */}
+                  <div className="text-sm font-bold text-foreground mt-1 ml-[22px]">
+                    Total £{getTotalForTerm(term.id)} - <span className="text-success">Pay in full & save 10%</span>
                   </div>
-                  
-                  {/* Savings badge */}
-                  {getSavingsForTerm(term.id) > 0 && (
-                    <div className="inline-block mt-2 bg-success/10 text-success text-xs font-bold px-2 py-1 rounded">
-                      Save £{getSavingsForTerm(term.id)} Today
-                    </div>
-                  )}
                 </div>
                 
                 {/* Selection indicator */}
