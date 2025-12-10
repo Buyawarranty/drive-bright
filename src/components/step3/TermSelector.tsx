@@ -110,25 +110,27 @@ const TermSelector: React.FC<TermSelectorProps> = ({
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   {/* Price Headline */}
-                  <div className="text-2xl font-bold text-foreground">
-                    £{term.monthlyPrice}/month for 12 months
+                  <div className="text-xl font-bold text-muted-foreground">
+                    £{term.monthlyPrice}/month <span className="font-normal">(12 payments only)</span>
                   </div>
                   
-                  {/* Free year indicator for multi-year */}
+                  {/* Free year benefit line with tick */}
                   {term.id === '24months' && (
-                    <div className="text-sm font-medium text-success mt-0.5">
-                      (Year 2: £0/month – FREE cover)
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <Check className="w-4 h-4 text-success flex-shrink-0" />
+                      <span className="text-sm font-medium text-foreground">Year 2 FREE cover</span>
                     </div>
                   )}
                   {term.id === '36months' && (
-                    <div className="text-sm font-medium text-success mt-0.5">
-                      (Years 2 & 3: £0/month – FREE cover)
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <Check className="w-4 h-4 text-success flex-shrink-0" />
+                      <span className="text-sm font-medium text-foreground">Years 2 & 3 FREE cover</span>
                     </div>
                   )}
                   
-                  {/* Sub-line */}
-                  <div className="text-sm text-muted-foreground mt-1">
-                    12 payments only. Total £{getTotalForTerm(term.id)}. 0% APR.
+                  {/* Small print */}
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Total £{getTotalForTerm(term.id)}. 0% APR.
                   </div>
                   
                   {/* Savings badge */}

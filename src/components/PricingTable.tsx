@@ -1497,25 +1497,27 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   {/* Price Section */}
                   <div className="mb-4">
                     {/* Price Headline */}
-                    <div className="text-2xl font-bold text-black">
-                      £{displayedMonthlyPrice}/month for 12 months
+                    <div className="text-xl font-bold text-gray-500">
+                      £{displayedMonthlyPrice}/month <span className="font-normal">(12 payments only)</span>
                     </div>
                     
-                    {/* Free year indicator for multi-year */}
+                    {/* Free year benefit line with tick */}
                     {durationId === '24months' && (
-                      <div className="text-sm font-medium text-green-600 mt-0.5">
-                        (Year 2: £0/month – FREE cover)
+                      <div className="flex items-center gap-1.5 mt-2">
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                        <span className="text-sm font-medium text-black">Year 2 FREE cover</span>
                       </div>
                     )}
                     {durationId === '36months' && (
-                      <div className="text-sm font-medium text-green-600 mt-0.5">
-                        (Years 2 & 3: £0/month – FREE cover)
+                      <div className="flex items-center gap-1.5 mt-2">
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                        <span className="text-sm font-medium text-black">Years 2 & 3 FREE cover</span>
                       </div>
                     )}
                     
-                    {/* Sub-line */}
-                    <div className="text-sm text-gray-600 mt-1">
-                      12 payments only. Total £{Math.round(displayedAnnualPrice)}. 0% APR.
+                    {/* Small print */}
+                    <div className="text-xs text-gray-500 mt-1">
+                      Total £{Math.round(displayedAnnualPrice)}. 0% APR.
                     </div>
                     
                     {/* Savings badge */}
