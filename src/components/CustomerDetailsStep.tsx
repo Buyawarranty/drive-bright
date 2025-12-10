@@ -1489,16 +1489,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
               </div>
 
               {/* Payment Methods Section (order-3 on mobile) */}
-              <div id="payment-section" className="order-3 lg:col-span-2 space-y-6 bg-gradient-to-b from-gray-50 to-white rounded-2xl p-6 lg:p-8">
-                      
-                      {/* Desktop Only: Visual Continuation Cue */}
-                      <div className="hidden lg:flex flex-col items-center -mt-2 mb-4">
-                        <div className="w-px h-8 bg-gradient-to-b from-transparent to-green-400"></div>
-                        <div className="bg-green-100 border border-green-300 rounded-full p-2 animate-bounce">
-                          <ChevronDown className="w-5 h-5 text-green-600" />
-                        </div>
-                      </div>
-                      
+              <div id="payment-section" className="order-3 lg:col-span-2 lg:mt-4 space-y-6 bg-gradient-to-b from-gray-50 to-white rounded-2xl p-6 lg:p-8">
                       
                       {/* Section Header */}
                        <div className="text-center space-y-3">
