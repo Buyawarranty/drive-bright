@@ -1496,47 +1496,34 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   
                   {/* Price Section */}
                   <div className="mb-4">
-                    {/* Monthly Price */}
-                    <div className="text-3xl font-bold text-black">
-                      £{displayedMonthlyPrice} <span className="text-base font-normal text-gray-600">× 12 payments</span>
+                    {/* Price Headline */}
+                    <div className="text-2xl font-bold text-black">
+                      £{displayedMonthlyPrice}/month for 12 months
                     </div>
                     
-                    {/* Total */}
-                    <div className="text-base text-gray-600 mb-3">
-                      or pay in full total £{Math.round(displayedAnnualPrice)}
-                    </div>
-                    
-                    {/* Savings - show before payment terms for 2yr and 3yr */}
-                    {savingsAmount > 0 && (
-                      <div className="flex flex-wrap items-center gap-2 mb-3">
-                        <span className="line-through text-red-500 text-sm">
-                          Was £{adjustedBasePrice}
-                        </span>
-                        <Badge className="bg-green-600 hover:bg-green-700 text-white font-semibold px-3 py-1 uppercase">
-                          SAVE £{savingsAmount} TODAY
-                        </Badge>
+                    {/* Free year indicator for multi-year */}
+                    {durationId === '24months' && (
+                      <div className="text-sm font-medium text-green-600 mt-0.5">
+                        (Year 2: £0/month – FREE cover)
+                      </div>
+                    )}
+                    {durationId === '36months' && (
+                      <div className="text-sm font-medium text-green-600 mt-0.5">
+                        (Years 2 & 3: £0/month – FREE cover)
                       </div>
                     )}
                     
-                    {/* Payment Terms */}
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                        <span className="text-sm text-green-600 font-medium">12 payments, 0% APR</span>
-                      </div>
-                      {durationId === '24months' && (
-                        <div className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                          <span className="text-sm text-green-600 font-medium">Year 2 Cover is FREE</span>
-                        </div>
-                      )}
-                      {durationId === '36months' && (
-                        <div className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                          <span className="text-sm text-green-600 font-medium">Year 2 and 3 Cover is FREE</span>
-                        </div>
-                      )}
+                    {/* Sub-line */}
+                    <div className="text-sm text-gray-600 mt-1">
+                      12 payments only. Total £{Math.round(displayedAnnualPrice)}. 0% APR.
                     </div>
+                    
+                    {/* Savings badge */}
+                    {savingsAmount > 0 && (
+                      <div className="inline-block mt-2 bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded">
+                        Save £{savingsAmount} Today
+                      </div>
+                    )}
                   </div>
                   
                   {/* What's Included Collapsible */}
