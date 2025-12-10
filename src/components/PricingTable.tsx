@@ -1523,14 +1523,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <div className="text-sm mt-2">
                       <span className="font-bold text-black">Pay in full £{Math.round(displayedAnnualPrice * 0.9)}</span>
                       {savingsAmount > 0 && (
-                        <span className="text-red-500 line-through ml-2">(Was £{Math.round(displayedAnnualPrice)})</span>
+                        <span className="text-red-500 line-through ml-1">(Was £{Math.round(displayedAnnualPrice * 0.9) + savingsAmount})</span>
                       )}
+                      {savingsAmount > 0 && <span className="ml-1">🔥</span>}
                     </div>
                     
-                    {/* Savings badge with fire emoji */}
+                    {/* Savings line */}
                     {savingsAmount > 0 && (
-                      <div className="flex items-center gap-1 mt-2">
-                        <span className="text-base">🔥</span>
+                      <div className="flex items-center gap-1 mt-1">
                         <span className="text-sm font-bold text-green-600">Save £{savingsAmount} Today</span>
                       </div>
                     )}
