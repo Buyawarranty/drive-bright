@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 
 interface StickyFooterProps {
   monthlyPrice: number;
+  totalPrice: number;
+  freeYearText?: string;
   onContinue: () => void;
   isLoading: boolean;
   isValid: boolean;
@@ -11,6 +13,8 @@ interface StickyFooterProps {
 
 const StickyFooter: React.FC<StickyFooterProps> = ({
   monthlyPrice,
+  totalPrice,
+  freeYearText,
   onContinue,
   isLoading,
   isValid
@@ -20,13 +24,15 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
       <div className="max-w-2xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4">
           {/* Price Summary */}
-          <div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-foreground">£{monthlyPrice}/month</span>
+          <div className="space-y-0.5">
+            <div className="text-xl font-bold text-foreground">
+              £{monthlyPrice}/Month – 0% APR
             </div>
-            <p className="text-xs text-muted-foreground">
-              0% APR
-            </p>
+            <p className="text-xs text-muted-foreground">Only 12 payments</p>
+            <p className="text-xs text-muted-foreground">Total: £{totalPrice}</p>
+            {freeYearText && (
+              <p className="text-xs text-muted-foreground">{freeYearText}</p>
+            )}
           </div>
           
           {/* CTA Button */}
