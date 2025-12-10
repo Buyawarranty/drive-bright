@@ -11,7 +11,7 @@ import { PostcodeAutocomplete } from '@/components/ui/uk-postcode-autocomplete';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
-import { trackFormSubmission, trackEvent } from '@/utils/analytics';
+import { trackFormSubmission, trackEvent, trackBumperCheckoutClick } from '@/utils/analytics';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { getAddOnInfo, isAddOnAutoIncluded, normalizePaymentType, calculateAddOnPrice } from '@/lib/addOnsUtils';
 import { EmailCapturePopup } from '@/components/EmailCapturePopup';
@@ -1699,6 +1699,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             onClick={async (e) => {
                               e.stopPropagation();
                               e.preventDefault();
+                              // Track Google Ads conversion for Bumper checkout click
+                              trackBumperCheckoutClick();
                               setPaymentMethod('bumper');
                               console.log('🟠 Orange button clicked - forcing BUMPER payment');
                               // Wait for state to settle then submit

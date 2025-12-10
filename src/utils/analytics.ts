@@ -252,6 +252,16 @@ export const trackEmailClick = (emailId: string, campaignName: string, linkUrl: 
   });
 };
 
+// Track Bumper checkout button click (Complete checkout bumper conversion)
+export const trackBumperCheckoutClick = () => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    console.log('🎯 Tracking Bumper checkout click conversion');
+    window.gtag('event', 'conversion', {
+      'send_to': 'AW-17325228149/WFAyCJiD2KUbEPWAqMVA'
+    });
+  }
+};
+
 export const trackEmailConversion = (emailId: string, campaignName: string, value?: number) => {
   trackEvent('email_conversion', {
     event_category: 'Email',
