@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, Lock, Star, ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowRight, ChevronUp, ChevronDown, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface StickyFooterProps {
@@ -40,11 +40,15 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             <div className="flex items-center justify-between gap-3">
               <div className="flex-1 text-center space-y-0.5">
                 <div className="text-lg font-bold text-foreground">
-                  £{monthlyPrice}/Month <span className="text-sm text-muted-foreground font-normal">– 0% APR</span>
+                  £{monthlyPrice}/month
                 </div>
                 <p className="text-sm text-muted-foreground">Only 12 payments</p>
                 <p className="text-sm text-foreground">
-                  Pay in full: <span className="font-bold">£{payInFullPrice}</span>
+                  Pay in Full: <span className="font-bold">£{payInFullPrice}</span>
+                </p>
+                <p className="text-sm text-foreground flex items-center justify-center gap-1">
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span>{getCoverDuration()}</span>
                 </p>
               </div>
               <button 
@@ -66,7 +70,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
                   'Loading...'
                 ) : (
                   <>
-                    Continue to checkout
+                    Continue to Checkout
                     <ArrowRight className="w-5 h-5" strokeWidth={3} />
                   </>
                 )}
@@ -80,7 +84,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           <div className="flex items-center justify-between gap-3">
             <div className="flex-1 text-center">
               <div className="text-lg font-bold text-foreground">
-                £{monthlyPrice}/Month <span className="text-sm text-muted-foreground font-normal">– 0% APR</span>
+                £{monthlyPrice}/month
               </div>
             </div>
             <button 
