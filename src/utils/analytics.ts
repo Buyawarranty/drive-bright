@@ -262,6 +262,16 @@ export const trackBumperCheckoutClick = () => {
   }
 };
 
+// Track Stripe checkout page load (Step 4 page view conversion)
+export const trackStripeCheckoutPageLoad = () => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    console.log('🎯 Tracking Stripe checkout page load conversion');
+    window.gtag('event', 'conversion', {
+      'send_to': 'AW-17325228149'
+    });
+  }
+};
+
 export const trackEmailConversion = (emailId: string, campaignName: string, value?: number) => {
   trackEvent('email_conversion', {
     event_category: 'Email',

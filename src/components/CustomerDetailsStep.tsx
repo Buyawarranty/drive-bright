@@ -11,7 +11,7 @@ import { PostcodeAutocomplete } from '@/components/ui/uk-postcode-autocomplete';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
-import { trackFormSubmission, trackEvent, trackBumperCheckoutClick } from '@/utils/analytics';
+import { trackFormSubmission, trackEvent, trackBumperCheckoutClick, trackStripeCheckoutPageLoad } from '@/utils/analytics';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { getAddOnInfo, isAddOnAutoIncluded, normalizePaymentType, calculateAddOnPrice } from '@/lib/addOnsUtils';
 import { EmailCapturePopup } from '@/components/EmailCapturePopup';
@@ -205,6 +205,11 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []); // Run only on mount
+
+  // Track Stripe checkout page load for Google Ads conversion
+  useEffect(() => {
+    trackStripeCheckoutPageLoad();
+  }, []);
   
   // Recalculate pricing when initial pricingData changes (e.g., when add-ons are selected)
   useEffect(() => {
