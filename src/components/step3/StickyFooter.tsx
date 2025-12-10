@@ -20,13 +20,19 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
       <div className="max-w-2xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4">
           {/* Price Summary */}
-          <div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-foreground">£{monthlyPrice} × 12 payments</span>
+          <div className="space-y-0.5">
+            <div className="text-2xl font-bold text-foreground">
+              £{monthlyPrice}/month
             </div>
-            <p className="text-xs text-muted-foreground">
-              0% APR
-            </p>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <svg className="w-3.5 h-3.5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Only 12 payments (0% APR)</span>
+            </div>
+            <div className="text-sm font-semibold text-foreground">
+              Total: £{monthlyPrice * 12}
+            </div>
           </div>
           
           {/* CTA Button */}
