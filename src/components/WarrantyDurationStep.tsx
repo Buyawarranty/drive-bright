@@ -128,7 +128,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
   const getPricingForDuration = (paymentPeriod: string) => {
     if (!pricingData) return { totalPrice: 0, monthlyPrice: 0 };
     
-    const { voluntaryExcess = 50, claimLimit = 1250, protectionAddOns = {}, selectedAddOns = {} } = pricingData;
+    const { voluntaryExcess = 100, claimLimit = 1250, protectionAddOns = {}, selectedAddOns = {} } = pricingData;
     
     console.log('WarrantyDurationStep - getPricingForDuration Debug:', {
       paymentPeriod,
