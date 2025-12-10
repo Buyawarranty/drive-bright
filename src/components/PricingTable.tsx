@@ -1303,7 +1303,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 Choose your cover duration
               </h2>
             </div>
-            <span className="text-sm text-muted-foreground ml-11 sm:ml-0">0% APR · No hidden fees</span>
+            <span className="text-sm text-muted-foreground font-semibold text-center w-full sm:w-auto sm:ml-0 sm:text-base">0% APR · No hidden fees</span>
           </div>
 
           {validationErrors.paymentType && (
