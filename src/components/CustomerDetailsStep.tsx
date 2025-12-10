@@ -1499,12 +1499,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         </div>
                       </div>
                       
-                      {/* Desktop Only: Inline Prompt */}
-                      <div className="hidden lg:block bg-green-50 border border-green-200 rounded-lg p-4 text-center mb-4">
-                        <p className="text-green-800 font-semibold text-lg">
-                          ✅ Almost done! Choose how you'd like to pay to complete your warranty.
-                        </p>
-                      </div>
                       
                       {/* Section Header */}
                        <div className="text-center space-y-3">
