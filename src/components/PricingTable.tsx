@@ -2562,7 +2562,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       </div>
 
       {/* Bottom padding for sticky bar */}
-      <div className="pb-32 md:pb-24 -mt-4"></div>
+      <div className="pb-20 md:pb-24 -mt-4"></div>
 
       {/* Sticky Total Bar - Always visible */}
       {!vehicleAgeError && (
