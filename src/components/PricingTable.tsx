@@ -1517,7 +1517,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     )}
                     
                     {/* Small print */}
-                    <div className="text-xs text-gray-500 mt-1">
+                    <div className="text-sm font-bold text-gray-500 mt-1">
                       Total £{Math.round(displayedAnnualPrice)}. 0% APR.
                     </div>
                     
