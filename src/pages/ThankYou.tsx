@@ -35,9 +35,12 @@ const ThankYou = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const plan = searchParams.get('plan');
-  const paymentType = searchParams.get('payment');
+  const paymentType = searchParams.get('payment') || searchParams.get('duration');
   const sessionId = searchParams.get('session_id');
-  const source = searchParams.get('source');
+  // Detect source - check for bumper indicators if source param is missing
+  const source = searchParams.get('source') || 
+    (searchParams.get('bumper_order_id') ? 'bumper' : null) ||
+    (sessionId && sessionId.startsWith('cs_') ? 'stripe' : null);
   const [isProcessing, setIsProcessing] = useState(true);
   const [policyNumber, setPolicyNumber] = useState<string>('');
   const [timeRemaining, setTimeRemaining] = useState<string>('');
@@ -223,17 +226,20 @@ const ThankYou = () => {
       // But check if we have policy_number which means payment was already processed
       const existingPolicyNumber = searchParams.get('policy_number') || searchParams.get('warranty_number');
       
-      if (!sessionId && !existingPolicyNumber) {
-        console.error('Missing Stripe session ID and no existing policy', { sessionId, existingPolicyNumber, source });
+      // If we have final_amount and customer data, we can still show order summary even without session
+      const hasSufficientData = searchParams.get('final_amount') && searchParams.get('email');
+      
+      if (!sessionId && !existingPolicyNumber && !hasSufficientData) {
+        console.error('Missing payment session information', { sessionId, existingPolicyNumber, source, hasSufficientData });
         toast.error('Missing payment session information');
         setIsProcessing(false);
         return;
       }
       
-      // If we have policy number but no session, skip processing (already done)
-      if (existingPolicyNumber && !sessionId) {
-        console.log('Payment already processed, showing confirmation', { existingPolicyNumber });
-        setPolicyNumber(existingPolicyNumber);
+      // If we have policy number but no session, or have sufficient display data, skip processing
+      if ((existingPolicyNumber && !sessionId) || (!sessionId && hasSufficientData)) {
+        console.log('Payment data available, showing confirmation', { existingPolicyNumber, hasSufficientData });
+        if (existingPolicyNumber) setPolicyNumber(existingPolicyNumber);
         setIsProcessing(false);
         return;
       }
@@ -495,7 +501,7 @@ const ThankYou = () => {
 
                 {/* Order Summary */}
                 <OrderSummary 
-                  plan={plan || undefined}
+                  plan={plan || 'Platinum'}
                   paymentType={paymentType || undefined}
                   warrantyStartDate={undefined}
                   duration={searchParams.get('duration') || searchParams.get('payment') || paymentType || undefined}
@@ -503,14 +509,15 @@ const ThankYou = () => {
                   monthlyPrice={searchParams.get('monthly_price') ? parseFloat(searchParams.get('monthly_price')!) : undefined}
                   totalPrice={searchParams.get('total_price') || searchParams.get('final_amount') ? parseFloat(searchParams.get('total_price') || searchParams.get('final_amount')!) : undefined}
                   originalPrice={searchParams.get('original_price') ? parseFloat(searchParams.get('original_price')!) : undefined}
-                  vehicle={searchParams.get('vehicle') || undefined}
+                  vehicle={searchParams.get('vehicle') || `${searchParams.get('vehicle_make') || ''} ${searchParams.get('vehicle_model') || ''}`.trim() || undefined}
                   vehicleReg={searchParams.get('vehicle_reg') || undefined}
                   mileage={searchParams.get('mileage') || undefined}
                   claimLimit={searchParams.get('claim_limit') ? parseInt(searchParams.get('claim_limit')!) : undefined}
                   labourRate={searchParams.get('labour_rate') ? parseInt(searchParams.get('labour_rate')!) : undefined}
                   excess={searchParams.get('excess') ? parseInt(searchParams.get('excess')!) : undefined}
                   addons={searchParams.get('addons') || undefined}
-                  paidInFull={source === 'stripe' || paymentType?.toLowerCase().includes('full')}
+                  paidInFull={source === 'stripe'}
+                  source={source || undefined}
                 />
 
                 {/* What Happens Next */}

@@ -21,6 +21,7 @@ interface OrderSummaryProps {
   addons?: string; // JSON string of protection add-ons
   paidInFull?: boolean;
   warrantyNumber?: string;
+  source?: string; // 'stripe' or 'bumper'
 }
 
 export const OrderSummary: React.FC<OrderSummaryProps> = ({
@@ -39,7 +40,8 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
   excess,
   addons,
   paidInFull,
-  warrantyNumber
+  warrantyNumber,
+  source
 }) => {
   const formatDate = (date: string | undefined): string => {
     if (!date) {
@@ -130,9 +132,9 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
       .map(([key]) => addonLabels[key]);
   }, [parsedAddons]);
 
-  // Determine payment method display
-  const isPaidInFull = paidInFull || (paymentType && paymentType.toLowerCase().includes('full'));
-  const paymentMethodDisplay = isPaidInFull ? 'Paid in Full' : 'Paid Monthly';
+  // Determine payment method display based on source
+  const paymentMethodDisplay = source === 'bumper' ? 'Paid via Bumper (0% APR)' : 
+    (paidInFull ? 'Paid in Full' : 'Paid Monthly');
 
   // Format labour rate display
   const getLabourRateLabel = (rate: number) => {
@@ -225,7 +227,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
                 </div>
               </div>
               
-              {monthlyPrice && !isPaidInFull && (
+              {monthlyPrice && source === 'bumper' && (
                 <p className="text-sm text-muted-foreground">
                   12 payments of £{monthlyPrice.toFixed(2)}/month
                 </p>
