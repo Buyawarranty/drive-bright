@@ -1598,16 +1598,34 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             </div>
                           </div>
 
-                          {/* CTA inside box */}
+                          {/* CTA inside box - DEDICATED STRIPE HANDLER */}
                           <Button
                             type="button"
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
                               e.preventDefault();
-                              console.log('🟢 Green button clicked - forcing STRIPE payment');
+                              console.log('🟢 STRIPE BUTTON CLICKED - Processing STRIPE payment directly');
+                              
+                              // Set visual state
                               setPaymentMethod('stripe');
-                              // Pass 'stripe' explicitly to handleSubmit to avoid state race condition
-                              handleSubmit(undefined, 'stripe');
+                              setShowValidation(true);
+                              
+                              if (!validateForm()) {
+                                console.log('❌ Form validation failed');
+                                const formSection = document.getElementById('customer-form-section');
+                                if (formSection) {
+                                  formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                }
+                                toast.error('Please fill in all required fields');
+                                return;
+                              }
+                              
+                              setIsLoadingPayment(true);
+                              trackFormSubmission('customer_details', { payment_method: 'stripe' });
+                              
+                              // DIRECTLY process Stripe - no state dependency
+                              console.log('💳 Processing Stripe payment directly...');
+                              await processStripeCheckout();
                             }}
                             disabled={isLoadingPayment}
                             className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-green-600 hover:bg-green-700 text-white text-sm disabled:opacity-50"
@@ -1695,18 +1713,107 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             </div>
                           </div>
 
-                          {/* CTA inside box */}
+                          {/* CTA inside box - DEDICATED BUMPER HANDLER */}
                           <Button
                             type="button"
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
                               e.preventDefault();
+                              console.log('🟠 BUMPER BUTTON CLICKED - Processing BUMPER payment directly');
+                              
                               // Track Google Ads conversion for Bumper checkout click
                               trackBumperCheckoutClick();
-                              console.log('🟠 Orange button clicked - forcing BUMPER payment');
+                              
+                              // Set visual state
                               setPaymentMethod('bumper');
-                              // Pass 'bumper' explicitly to handleSubmit to avoid state race condition
-                              handleSubmit(undefined, 'bumper');
+                              setShowValidation(true);
+                              
+                              if (!validateForm()) {
+                                console.log('❌ Form validation failed');
+                                const formSection = document.getElementById('customer-form-section');
+                                if (formSection) {
+                                  formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                }
+                                toast.error('Please fill in all required fields');
+                                return;
+                              }
+                              
+                              setIsLoadingPayment(true);
+                              trackFormSubmission('customer_details', { payment_method: 'bumper' });
+                              
+                              // DIRECTLY process Bumper - no state dependency
+                              console.log('🏦 Processing Bumper payment directly...');
+                              const finalPrice = discountedBumperPrice;
+                              
+                              try {
+                                const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-bumper-checkout', {
+                                  body: {
+                                    planId,
+                                    vehicleData,
+                                    paymentType,
+                                    voluntaryExcess: updatedPricingData.voluntaryExcess,
+                                    claimLimit: updatedPricingData.claimLimit || 1250,
+                                    labourRate: pricingData.labourRate || 50,
+                                    customerData: {
+                                      ...customerData,
+                                      final_amount: finalPrice
+                                    },
+                                    discountCode: appliedDiscountCodes.map(code => code.code).join(', '),
+                                    finalAmount: finalPrice,
+                                    addAnotherWarrantyRequested,
+                                    protectionAddOns: {
+                                      tyre: updatedPricingData.protectionAddOns?.tyre || false,
+                                      wearAndTear: updatedPricingData.protectionAddOns?.wearAndTear || false,
+                                      european: updatedPricingData.protectionAddOns?.european || false,
+                                      breakdown: updatedPricingData.protectionAddOns?.breakdown || false,
+                                      rental: updatedPricingData.protectionAddOns?.rental || false,
+                                      transfer: updatedPricingData.protectionAddOns?.transfer || false,
+                                      motRepair: false,
+                                      motFee: updatedPricingData.protectionAddOns?.motFee || false,
+                                      lostKey: false,
+                                      consequential: false
+                                    },
+                                    seasonalBonusMonths: seasonalOfferClaimed ? 3 : 0
+                                  }
+                                });
+
+                                if (checkoutError) {
+                                  console.error('Bumper checkout error:', checkoutError);
+                                  toast.error('Payment processing failed. Please try again.');
+                                  setIsLoadingPayment(false);
+                                  return;
+                                }
+
+                                if (checkoutData?.fallbackToStripe) {
+                                  toast.error('Monthly payments temporarily unavailable. Please use Pay in Full option.');
+                                  setIsLoadingPayment(false);
+                                  return;
+                                } else if (checkoutData?.url) {
+                                  console.log('🌐 Redirecting to Bumper checkout:', checkoutData.url);
+                                  
+                                  const currentState = {
+                                    step: 4,
+                                    vehicleData,
+                                    selectedPlan: { id: planId, paymentType, name: planName, pricingData: updatedPricingData },
+                                    formData: customerData,
+                                    timestamp: Date.now()
+                                  };
+                                  
+                                  localStorage.setItem('warrantyJourneyState', JSON.stringify(currentState));
+                                  localStorage.setItem('buyawarranty_currentStep', '4');
+                                  localStorage.setItem('buyawarranty_customerData', JSON.stringify(customerData));
+                                  localStorage.setItem('buyawarranty_returnedFromPayment', 'true');
+                                  
+                                  window.location.href = checkoutData.url;
+                                } else {
+                                  toast.error('Payment setup failed. Please try again.');
+                                  setIsLoadingPayment(false);
+                                }
+                              } catch (error) {
+                                console.error('Error processing Bumper payment:', error);
+                                toast.error('Payment processing failed. Please try again.');
+                                setIsLoadingPayment(false);
+                              }
                             }}
                             disabled={isLoadingPayment}
                             className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-orange-500 hover:bg-orange-600 text-white text-sm disabled:opacity-50"
