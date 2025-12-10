@@ -20,7 +20,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
   isValid
 }) => {
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl border-t border-border shadow-[0_-8px_30px_rgba(0,0,0,0.12)] z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl border-t border-border shadow-[0_-8px_30px_rgba(0,0,0,0.12)] z-50" style={{ backgroundColor: '#ffffff' }}>
       <div className="max-w-2xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4">
           {/* Price Summary */}
