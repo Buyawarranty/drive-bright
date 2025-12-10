@@ -1497,8 +1497,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   {/* Price Section */}
                   <div className="mb-4">
                     {/* Price Headline */}
-                    <div className="text-xl font-bold text-gray-500">
-                      £{displayedMonthlyPrice}/month <span className="font-normal">(12 payments only)</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-bold text-black">£{displayedMonthlyPrice}/month</span>
+                      <span className="text-sm font-bold text-gray-500">(12 payments only)</span>
                     </div>
                     
                     {/* Free year benefit line with tick */}
