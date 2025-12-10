@@ -2649,9 +2649,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     >
                       <TrustpilotHeader className="flex-shrink-0 scale-75" />
                     </a>
-                    <div className="text-xs text-gray-500 mt-2">
-                      14 days to cancel
-                    </div>
                   </div>
                   
                   {/* SECTION 2: Price */}
