@@ -131,6 +131,7 @@ serve(async (req) => {
       const redirectUrl = new URL(baseRedirectUrl);
       redirectUrl.searchParams.set('plan', transactionData.plan_id);
       redirectUrl.searchParams.set('payment', transactionData.payment_type);
+      redirectUrl.searchParams.set('duration', transactionData.payment_type); // CRITICAL: Add duration
       redirectUrl.searchParams.set('source', 'bumper');
       redirectUrl.searchParams.set('session_id', transactionId);
       
@@ -162,6 +163,7 @@ serve(async (req) => {
       const redirectUrl = new URL(baseRedirectUrl);
       redirectUrl.searchParams.set('plan', transactionData.plan_id);
       redirectUrl.searchParams.set('payment', transactionData.payment_type);
+      redirectUrl.searchParams.set('duration', transactionData.payment_type); // CRITICAL: Add duration
       redirectUrl.searchParams.set('source', 'bumper');
       redirectUrl.searchParams.set('session_id', transactionId);
       
@@ -203,6 +205,7 @@ serve(async (req) => {
       const redirectUrl = new URL(baseRedirectUrl);
       redirectUrl.searchParams.set('plan', transactionData.plan_id);
       redirectUrl.searchParams.set('payment', transactionData.payment_type);
+      redirectUrl.searchParams.set('duration', transactionData.payment_type); // CRITICAL: Add duration
       redirectUrl.searchParams.set('source', 'bumper');
       redirectUrl.searchParams.set('session_id', transactionId);
       
