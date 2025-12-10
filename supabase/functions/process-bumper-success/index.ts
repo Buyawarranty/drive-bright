@@ -281,6 +281,8 @@ serve(async (req) => {
     // CRITICAL: Use user's selected voluntary excess, not a calculated default
     const voluntaryExcess = protectionAddOns?.voluntaryExcess ?? 0;
     const seasonalBonusMonths = protectionAddOns?.seasonalBonusMonths ?? 0;
+    // CRITICAL: Extract labour rate from user's selection (default to £50/hr if not set)
+    const labourRate = protectionAddOns?.labourRate ?? 50;
 
     logStep("Using claim limit with correct warranty duration", { 
       transactionClaimLimit: transactionData.claim_limit, 
@@ -289,7 +291,9 @@ serve(async (req) => {
       voluntaryExcess: voluntaryExcess,
       voluntaryExcessSource: protectionAddOns?.voluntaryExcess !== undefined ? 'user_selection' : 'default',
       warrantyDuration: originalWarrantyDuration,
-      seasonalBonusMonths: seasonalBonusMonths
+      seasonalBonusMonths: seasonalBonusMonths,
+      labourRate: labourRate,
+      labourRateSource: protectionAddOns?.labourRate !== undefined ? 'user_selection' : 'default'
     });
 
     // Call handle-successful-payment with proper metadata including protectionAddOns and claim_limit
@@ -307,6 +311,7 @@ serve(async (req) => {
       claimLimit: claimLimit, // Pass as direct parameter
       voluntaryExcess: voluntaryExcess, // Pass as direct parameter - user's actual selection
       seasonalBonusMonths: seasonalBonusMonths, // Pass seasonal bonus
+      labourRate: labourRate, // CRITICAL: Pass user's selected labour rate
       skipEmail: false, // CRITICAL: Ensure welcome emails are sent for Bumper purchases
       metadata: {
         source: 'bumper',
@@ -410,7 +415,7 @@ serve(async (req) => {
     
     // Add pricing and coverage details
     if (claimLimit) redirectUrl.searchParams.set('claim_limit', claimLimit.toString());
-    const labourRate = protectionAddOns?.labourRate || 50;
+    // Use labourRate extracted from protectionAddOns earlier (line ~285)
     redirectUrl.searchParams.set('labour_rate', labourRate.toString());
     redirectUrl.searchParams.set('excess', voluntaryExcess.toString());
     redirectUrl.searchParams.set('duration', originalWarrantyDuration);
