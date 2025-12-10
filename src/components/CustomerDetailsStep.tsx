@@ -608,13 +608,16 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e?: React.FormEvent) => {
+  const handleSubmit = async (e?: React.FormEvent, explicitPaymentMethod?: 'stripe' | 'bumper') => {
     if (e) {
       e.preventDefault();
     }
 
+    // Use explicit payment method if provided, otherwise fall back to state
+    const effectivePaymentMethod = explicitPaymentMethod || paymentMethod;
+
     console.log('🚀 Submit button clicked - starting payment process');
-    console.log('Payment method:', paymentMethod);
+    console.log('Payment method:', effectivePaymentMethod, '(explicit:', explicitPaymentMethod, ', state:', paymentMethod, ')');
     console.log('Form data:', { planId, vehicleData, customerData });
 
     // Track abandoned cart BEFORE any validation or payment processing
@@ -690,15 +693,15 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
     // Track customer details form submission
     trackFormSubmission('customer_details', {
       payment_type: paymentType,
-      payment_method: paymentMethod
+      payment_method: effectivePaymentMethod
     });
 
     try {
-      const finalPrice = paymentMethod === 'stripe' ? discountedStripePrice : discountedBumperPrice;
+      const finalPrice = effectivePaymentMethod === 'stripe' ? discountedStripePrice : discountedBumperPrice;
       console.log('💰 Final price calculated:', finalPrice);
       
       // Process payment based on selected method
-      if (paymentMethod === 'bumper') {
+      if (effectivePaymentMethod === 'bumper') {
         console.log('🏦 Processing Bumper payment...');
         // Create Bumper checkout
         const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-bumper-checkout', {
@@ -1598,19 +1601,13 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           {/* CTA inside box */}
                           <Button
                             type="button"
-                            onClick={async (e) => {
+                            onClick={(e) => {
                               e.stopPropagation();
                               e.preventDefault();
-                              setPaymentMethod('stripe');
-                              // Use a ref-like approach to ensure stripe is used
-                              const currentMethod = 'stripe';
                               console.log('🟢 Green button clicked - forcing STRIPE payment');
-                              // Wait for state to settle then submit with explicit method
-                              await new Promise(resolve => setTimeout(resolve, 100));
-                              if (paymentMethod !== 'stripe') {
-                                setPaymentMethod('stripe');
-                              }
-                              handleSubmit();
+                              setPaymentMethod('stripe');
+                              // Pass 'stripe' explicitly to handleSubmit to avoid state race condition
+                              handleSubmit(undefined, 'stripe');
                             }}
                             disabled={isLoadingPayment}
                             className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-green-600 hover:bg-green-700 text-white text-sm disabled:opacity-50"
@@ -1701,19 +1698,15 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           {/* CTA inside box */}
                           <Button
                             type="button"
-                            onClick={async (e) => {
+                            onClick={(e) => {
                               e.stopPropagation();
                               e.preventDefault();
                               // Track Google Ads conversion for Bumper checkout click
                               trackBumperCheckoutClick();
-                              setPaymentMethod('bumper');
                               console.log('🟠 Orange button clicked - forcing BUMPER payment');
-                              // Wait for state to settle then submit
-                              await new Promise(resolve => setTimeout(resolve, 100));
-                              if (paymentMethod !== 'bumper') {
-                                setPaymentMethod('bumper');
-                              }
-                              handleSubmit();
+                              setPaymentMethod('bumper');
+                              // Pass 'bumper' explicitly to handleSubmit to avoid state race condition
+                              handleSubmit(undefined, 'bumper');
                             }}
                             disabled={isLoadingPayment}
                             className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-orange-500 hover:bg-orange-600 text-white text-sm disabled:opacity-50"
