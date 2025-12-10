@@ -259,6 +259,7 @@ serve(async (req) => {
     const successUrlParams = new URLSearchParams({
       plan: planType,
       payment: paymentType,
+      source: 'stripe',
       session_id: '{CHECKOUT_SESSION_ID}',
       final_amount: totalAmount.toString(),
       email: customerEmail,
