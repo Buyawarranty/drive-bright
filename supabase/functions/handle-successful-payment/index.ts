@@ -244,10 +244,27 @@ serve(async (req) => {
       mot_fee: autoIncludedAddOns.includes('motFee')
     };
     
+    // CRITICAL: For Bumper purchases, user selections are EXPLICIT - don't override with auto-inclusion
+    // For Stripe (non-Bumper), apply auto-inclusion as fallback for unselected add-ons
+    const isBumperPurchase = metadata?.source === 'bumper' || !!metadata?.bumper_order_id;
+    
     // Use USER SELECTIONS as priority - only auto-include if user didn't make an explicit choice
-    // This ensures user's actual choices are respected, not overridden by defaults
-    const finalAddOnsForCustomer = {
-      // For each add-on, use user selection if available, otherwise check auto-included
+    // For Bumper: respect exact user selections (they explicitly chose each add-on)
+    // For Stripe: apply auto-inclusion for eligible add-ons if user didn't explicitly select
+    const finalAddOnsForCustomer = isBumperPurchase ? {
+      // Bumper flow: Use EXACTLY what the user selected, no auto-inclusion
+      tyre_cover: userSelectedAddOns.tyre_cover,
+      wear_tear: userSelectedAddOns.wear_tear,
+      europe_cover: userSelectedAddOns.europe_cover,
+      transfer_cover: userSelectedAddOns.transfer_cover,
+      breakdown_recovery: userSelectedAddOns.breakdown_recovery,
+      vehicle_rental: userSelectedAddOns.vehicle_rental,
+      mot_fee: userSelectedAddOns.mot_fee,
+      mot_repair: userSelectedAddOns.mot_repair,
+      lost_key: userSelectedAddOns.lost_key,
+      consequential: userSelectedAddOns.consequential
+    } : {
+      // Stripe flow: Apply auto-inclusion for unselected add-ons
       tyre_cover: userSelectedAddOns.tyre_cover || autoIncludedMap.tyre_cover,
       wear_tear: userSelectedAddOns.wear_tear,
       europe_cover: userSelectedAddOns.europe_cover,

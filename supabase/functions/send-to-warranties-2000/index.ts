@@ -496,20 +496,24 @@ serve(async (req) => {
       // Note: Add-ons are only sent when actually selected to avoid W2000 API validation errors
     };
 
-    // Auto-include addons for multi-year plans if not already set
-    const autoIncludedAddons = getAutoIncludedAddonsForDuration(coverageMonths);
+    // Auto-include addons for multi-year plans ONLY if not explicitly set by user
+    // For Bumper purchases, users explicitly select add-ons, so we should respect those choices
+    const isBumperPurchase = !!customer?.bumper_order_id;
+    const autoIncludedAddons = isBumperPurchase ? [] : getAutoIncludedAddonsForDuration(coverageMonths);
     
     // W2000 API requires add-on fields to match the registration API format
-    // Priority: 1. Policy data (from handle-successful-payment), 2. Customer data, 3. Auto-inclusion for duration
-    registrationData.mot_fee = (policy?.mot_fee === true || customer?.mot_fee === true || autoIncludedAddons.includes('motFee')); 
-    registrationData.tyre_cover = (policy?.tyre_cover === true || customer?.tyre_cover === true || autoIncludedAddons.includes('tyre'));
+    // Priority: 1. Policy data (from handle-successful-payment), 2. Customer data
+    // For Bumper: Use EXACT values from database (user's explicit selections)
+    // For Stripe: Apply auto-inclusion as fallback only if value is null/undefined
+    registrationData.mot_fee = (policy?.mot_fee === true || customer?.mot_fee === true); 
+    registrationData.tyre_cover = (policy?.tyre_cover === true || customer?.tyre_cover === true);
     registrationData.wear_tear = (policy?.wear_tear === true || customer?.wear_tear === true); 
     registrationData.europe_cover = (policy?.europe_cover === true || customer?.europe_cover === true); 
     registrationData.transfer_cover = (policy?.transfer_cover === true || customer?.transfer_cover === true); 
     
-    // Additional add-ons with auto-inclusion support
-    registrationData.breakdown_recovery = (policy?.breakdown_recovery === true || customer?.breakdown_recovery === true || autoIncludedAddons.includes('breakdown'));
-    registrationData.vehicle_rental = (policy?.vehicle_rental === true || customer?.vehicle_rental === true || autoIncludedAddons.includes('rental'));
+    // Additional add-ons - use database values directly, no auto-inclusion override
+    registrationData.breakdown_recovery = (policy?.breakdown_recovery === true || customer?.breakdown_recovery === true);
+    registrationData.vehicle_rental = (policy?.vehicle_rental === true || customer?.vehicle_rental === true);
     registrationData.mot_repair = (policy?.mot_repair === true || customer?.mot_repair === true); 
     registrationData.lost_key = (policy?.lost_key === true || customer?.lost_key === true); 
     registrationData.consequential = (policy?.consequential === true || customer?.consequential === true);
