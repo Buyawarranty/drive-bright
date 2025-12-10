@@ -2543,7 +2543,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
             
             {/* Back to Plans button - bottom right of section */}
-            <div className="flex justify-end mt-2 mb-0">
+            <div className="flex justify-center md:justify-end mt-2 mb-0">
               <Button
                 onClick={() => {
                   const durationSection = document.getElementById('duration-price-section');
