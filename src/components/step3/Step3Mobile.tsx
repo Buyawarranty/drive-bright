@@ -247,6 +247,16 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
   // Current monthly price
   const currentMonthlyPrice = useMemo(() => calculateMonthlyPrice(), [calculateMonthlyPrice]);
 
+  // Calculate total price for sticky footer
+  const currentTotalPrice = useMemo(() => currentMonthlyPrice * 12, [currentMonthlyPrice]);
+
+  // Free year text for sticky footer
+  const freeYearText = useMemo(() => {
+    if (paymentType === '24months') return 'Year 2: £0/month';
+    if (paymentType === '36months') return 'Years 2 & 3: £0/month';
+    return undefined;
+  }, [paymentType]);
+
   // Check if form is valid
   const isFormValid = useMemo(() => {
     return paymentType !== null && voluntaryExcess !== null && selectedClaimLimit !== null;
@@ -416,6 +426,8 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
 
       <StickyFooter
         monthlyPrice={currentMonthlyPrice}
+        totalPrice={currentTotalPrice}
+        freeYearText={freeYearText}
         onContinue={handleContinue}
         isLoading={loading}
         isValid={isFormValid}
