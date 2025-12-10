@@ -135,6 +135,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   // State for managing updated pricing data when add-ons are removed
   const [updatedPricingData, setUpdatedPricingData] = useState(pricingData);
   const [isLoadingPayment, setIsLoadingPayment] = useState(false);
+  const [isLoadingStripe, setIsLoadingStripe] = useState(false);
+  const [isLoadingBumper, setIsLoadingBumper] = useState(false);
   
   // State for scroll-to-top button
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -1604,10 +1606,15 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             onClick={async (e) => {
                               e.stopPropagation();
                               e.preventDefault();
+                              
+                              // Prevent double-clicks and prevent if other payment is processing
+                              if (isLoadingStripe || isLoadingBumper) {
+                                console.log('⚠️ Payment already in progress, ignoring click');
+                                return;
+                              }
+                              
                               console.log('🟢 STRIPE BUTTON CLICKED - Processing STRIPE payment directly');
                               
-                              // Set visual state
-                              setPaymentMethod('stripe');
                               setShowValidation(true);
                               
                               if (!validateForm()) {
@@ -1620,6 +1627,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                 return;
                               }
                               
+                              // Use dedicated Stripe loading state
+                              setIsLoadingStripe(true);
                               setIsLoadingPayment(true);
                               trackFormSubmission('customer_details', { payment_method: 'stripe' });
                               
@@ -1627,10 +1636,10 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               console.log('💳 Processing Stripe payment directly...');
                               await processStripeCheckout();
                             }}
-                            disabled={isLoadingPayment}
+                            disabled={isLoadingStripe || isLoadingBumper}
                             className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-green-600 hover:bg-green-700 text-white text-sm disabled:opacity-50"
                           >
-                            {isLoadingPayment && paymentMethod === 'stripe' ? 'Processing...' : 'Complete checkout'}
+                            {isLoadingStripe ? 'Processing...' : 'Complete checkout'}
                           </Button>
 
                           {/* Powered By */}
@@ -1719,13 +1728,18 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             onClick={async (e) => {
                               e.stopPropagation();
                               e.preventDefault();
+                              
+                              // Prevent double-clicks and prevent if other payment is processing
+                              if (isLoadingStripe || isLoadingBumper) {
+                                console.log('⚠️ Payment already in progress, ignoring click');
+                                return;
+                              }
+                              
                               console.log('🟠 BUMPER BUTTON CLICKED - Processing BUMPER payment directly');
                               
                               // Track Google Ads conversion for Bumper checkout click
                               trackBumperCheckoutClick();
                               
-                              // Set visual state
-                              setPaymentMethod('bumper');
                               setShowValidation(true);
                               
                               if (!validateForm()) {
@@ -1738,6 +1752,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                 return;
                               }
                               
+                              // Use dedicated Bumper loading state
+                              setIsLoadingBumper(true);
                               setIsLoadingPayment(true);
                               trackFormSubmission('customer_details', { payment_method: 'bumper' });
                               
@@ -1780,12 +1796,14 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                 if (checkoutError) {
                                   console.error('Bumper checkout error:', checkoutError);
                                   toast.error('Payment processing failed. Please try again.');
+                                  setIsLoadingBumper(false);
                                   setIsLoadingPayment(false);
                                   return;
                                 }
 
                                 if (checkoutData?.fallbackToStripe) {
                                   toast.error('Monthly payments temporarily unavailable. Please use Pay in Full option.');
+                                  setIsLoadingBumper(false);
                                   setIsLoadingPayment(false);
                                   return;
                                 } else if (checkoutData?.url) {
@@ -1807,18 +1825,20 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                   window.location.href = checkoutData.url;
                                 } else {
                                   toast.error('Payment setup failed. Please try again.');
+                                  setIsLoadingBumper(false);
                                   setIsLoadingPayment(false);
                                 }
                               } catch (error) {
                                 console.error('Error processing Bumper payment:', error);
                                 toast.error('Payment processing failed. Please try again.');
+                                setIsLoadingBumper(false);
                                 setIsLoadingPayment(false);
                               }
                             }}
-                            disabled={isLoadingPayment}
+                            disabled={isLoadingStripe || isLoadingBumper}
                             className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-orange-500 hover:bg-orange-600 text-white text-sm disabled:opacity-50"
                           >
-                            {isLoadingPayment && paymentMethod === 'bumper' ? 'Processing...' : 'Complete checkout'}
+                            {isLoadingBumper ? 'Processing...' : 'Complete checkout'}
                           </Button>
 
                           {/* Powered By */}
