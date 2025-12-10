@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface TermOption {
@@ -33,10 +33,23 @@ const TermSelector: React.FC<TermSelectorProps> = ({
     return 0;
   };
 
-  // Calculate total price for a term
+  // Calculate total price for a term (12 monthly payments)
   const getTotalForTerm = (termId: string): number => {
     const monthly = getPriceForTerm(termId);
     return monthly * 12;
+  };
+
+  // Calculate "was" price (total before savings)
+  const getWasPriceForTerm = (termId: string): number => {
+    const total = getTotalForTerm(termId);
+    const savings = getSavingsForTerm(termId);
+    return total + savings;
+  };
+
+  // Calculate pay in full price (10% discount)
+  const getPayInFullPrice = (termId: string): number => {
+    const total = getTotalForTerm(termId);
+    return Math.floor(total * 0.9);
   };
 
   const allTerms: TermOption[] = [
@@ -80,12 +93,16 @@ const TermSelector: React.FC<TermSelectorProps> = ({
           </div>
           <h3 className="font-semibold text-lg text-foreground">Choose your cover duration</h3>
         </div>
-        <span className="text-sm text-muted-foreground ml-9 sm:ml-0">0% APR · No hidden fees · Secure checkout</span>
+        <span className="text-sm text-muted-foreground ml-9 sm:ml-0">0% APR · No hidden fees</span>
       </div>
 
       <div className="space-y-3">
         {visibleTerms.map((term) => {
           const isSelected = selectedTerm === term.id;
+          const savings = getSavingsForTerm(term.id);
+          const total = getTotalForTerm(term.id);
+          const wasPrice = getWasPriceForTerm(term.id);
+          const payInFullPrice = getPayInFullPrice(term.id);
           
           return (
             <button
@@ -115,7 +132,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                   {/* Price Headline */}
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold text-foreground">£{term.monthlyPrice}/month</span>
-                    <span className="text-sm font-bold text-muted-foreground">(12 payments only)</span>
+                    <span className="text-xs text-muted-foreground">(12 payments only)</span>
                   </div>
                   
                   {/* Free year benefit line with tick */}
@@ -132,10 +149,21 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                     </div>
                   )}
                   
-                  {/* Total and pay in full line */}
-                  <div className="text-sm font-bold text-foreground mt-1 ml-[22px]">
-                    Total £{getTotalForTerm(term.id)} - <span className="text-success">Pay in full & save 10%</span>
+                  {/* Was price and pay in full line */}
+                  <div className="mt-2 ml-[22px]">
+                    {savings > 0 && (
+                      <span className="text-sm text-destructive line-through mr-2">Was £{wasPrice}</span>
+                    )}
+                    <span className="text-sm font-bold text-foreground">Pay in full total £{payInFullPrice}</span>
                   </div>
+                  
+                  {/* Save today line */}
+                  {savings > 0 && (
+                    <div className="flex items-center gap-1.5 mt-1 ml-[22px]">
+                      <Flame className="w-4 h-4 text-primary flex-shrink-0" />
+                      <span className="text-sm font-bold text-primary">Save £{savings} Today</span>
+                    </div>
+                  )}
                 </div>
                 
                 {/* Selection indicator */}
