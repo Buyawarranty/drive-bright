@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Shield, Calendar, CheckCircle2, Car, Gauge, Wrench, PoundSterling, FileText } from 'lucide-react';
+import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 
 interface OrderSummaryProps {
   plan?: string;
@@ -19,6 +20,7 @@ interface OrderSummaryProps {
   excess?: number;
   addons?: string; // JSON string of protection add-ons
   paidInFull?: boolean;
+  warrantyNumber?: string;
 }
 
 export const OrderSummary: React.FC<OrderSummaryProps> = ({
@@ -36,7 +38,8 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
   labourRate,
   excess,
   addons,
-  paidInFull
+  paidInFull,
+  warrantyNumber
 }) => {
   const formatDate = (date: string | undefined): string => {
     if (!date) {
@@ -47,20 +50,19 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
     return dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
-  // Parse duration to get years
+  // Parse duration to get years using centralized utility
   const getDurationDisplay = () => {
-    if (duration) {
-      if (duration === '12months' || duration === 'monthly' || duration === 'yearly') return '1 Year';
-      if (duration === '24months' || duration === 'twoYear') return '2 Years';
-      if (duration === '36months' || duration === 'threeYear') return '3 Years';
-    }
+    const durationValue = duration || paymentType;
+    if (!durationValue) return '1 Year';
+    
+    const months = getWarrantyDurationInMonths(durationValue);
+    if (months === 24) return '2 Years';
+    if (months === 36) return '3 Years';
+    if (months === 48) return '4 Years';
+    if (months === 60) return '5 Years';
     return '1 Year';
   };
 
-  const durationYears = duration ? 
-    (duration === '24months' || duration === 'twoYear' ? 2 : 
-     duration === '36months' || duration === 'threeYear' ? 3 : 1) : 1;
-  
   const hasSavings = originalPrice && totalPrice && originalPrice > totalPrice;
   const savings = hasSavings ? originalPrice - totalPrice : 0;
 
@@ -124,6 +126,14 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
         </h2>
         
         <div className="space-y-4">
+          {/* Warranty Number - Prominent Display */}
+          {warrantyNumber && (
+            <div className="bg-green-50 rounded-lg p-4 border border-green-200 text-center">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Warranty Number</p>
+              <p className="text-xl font-bold text-foreground font-mono">{warrantyNumber}</p>
+            </div>
+          )}
+          
           {/* Plan Details Grid */}
           <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
             <div>
