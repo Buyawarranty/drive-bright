@@ -77,7 +77,15 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
     if (lower.includes('four')) return '4 Years';
     if (lower.includes('five')) return '5 Years';
     
-    // Final fallback
+    // Handle 'yearly' and similar
+    if (lower.includes('yearly') || lower.includes('annual') || lower.includes('monthly')) return '1 Year';
+    
+    // Final fallback - use utility function for any remaining cases
+    const months = getWarrantyDurationInMonths(durationValue);
+    if (months >= 36) return '3 Years';
+    if (months >= 24) return '2 Years';
+    if (months >= 12) return '1 Year';
+    
     console.warn('[ORDER-SUMMARY] Could not parse duration, defaulting to 1 Year:', durationValue);
     return '1 Year';
   };
