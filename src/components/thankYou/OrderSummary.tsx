@@ -50,12 +50,31 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
     return dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
-  // Parse duration to get years using centralized utility
+  // Parse duration to get years - robust parsing that extracts number directly
   const getDurationDisplay = () => {
     const durationValue = duration || paymentType;
+    console.log('[ThankYou] getDurationDisplay - durationValue:', durationValue, 'duration prop:', duration, 'paymentType prop:', paymentType);
+    
     if (!durationValue) return '1 Year';
     
+    // First try to extract the number directly from the string (e.g., "36months" -> 36)
+    const monthsMatch = durationValue.match(/(\d+)/);
+    if (monthsMatch) {
+      const monthsNum = parseInt(monthsMatch[1], 10);
+      console.log('[ThankYou] Extracted months number:', monthsNum);
+      
+      // Handle both month values and year values
+      if (monthsNum === 24 || monthsNum === 2) return '2 Years';
+      if (monthsNum === 36 || monthsNum === 3) return '3 Years';
+      if (monthsNum === 48 || monthsNum === 4) return '4 Years';
+      if (monthsNum === 60 || monthsNum === 5) return '5 Years';
+      if (monthsNum === 12 || monthsNum === 1) return '1 Year';
+    }
+    
+    // Fallback to centralized utility
     const months = getWarrantyDurationInMonths(durationValue);
+    console.log('[ThankYou] getWarrantyDurationInMonths returned:', months);
+    
     if (months === 24) return '2 Years';
     if (months === 36) return '3 Years';
     if (months === 48) return '4 Years';
