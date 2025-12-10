@@ -2387,7 +2387,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <h4 className="text-xl font-bold text-black">🚀 Boost Claim Limit</h4>
-                  <span className="bg-orange-500 text-white px-2 py-0.5 rounded-full text-xs font-semibold">Popular</span>
+                  <span className="bg-green-500 text-white px-2 py-0.5 rounded-full text-xs font-semibold">UPGRADE</span>
                 </div>
                 <div className="text-3xl font-bold text-black mb-1">
                   £{selectedClaimLimit.toLocaleString()} → £{(selectedClaimLimit + 1000).toLocaleString()}
