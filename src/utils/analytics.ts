@@ -262,6 +262,16 @@ export const trackBumperCheckoutClick = () => {
   }
 };
 
+// Track Stripe checkout button click (Complete checkout stripe conversion)
+export const trackStripeCheckoutClick = () => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    console.log('🎯 Tracking Stripe checkout click conversion');
+    window.gtag('event', 'conversion', {
+      'send_to': 'AW-17325228149'
+    });
+  }
+};
+
 // Track Stripe checkout page load (Step 4 page view conversion)
 export const trackStripeCheckoutPageLoad = () => {
   if (typeof window !== 'undefined' && window.gtag) {
