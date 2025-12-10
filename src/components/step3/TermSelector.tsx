@@ -149,19 +149,19 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                     </div>
                   )}
                   
-                  {/* Was price and pay in full line */}
-                  <div className="mt-2 ml-[22px]">
+                  {/* Pay in full total with was price */}
+                  <div className="text-sm mt-2">
+                    <span className="font-bold text-foreground">Pay in full total £{payInFullPrice}</span>
                     {savings > 0 && (
-                      <span className="text-sm text-destructive line-through mr-2">Was £{wasPrice}</span>
+                      <span className="text-destructive line-through ml-2">(Was £{wasPrice})</span>
                     )}
-                    <span className="text-sm font-bold text-foreground">Pay in full total £{payInFullPrice}</span>
                   </div>
                   
-                  {/* Save today line */}
+                  {/* Save today line with fire emoji */}
                   {savings > 0 && (
-                    <div className="flex items-center gap-1.5 mt-1 ml-[22px]">
-                      <Flame className="w-4 h-4 text-primary flex-shrink-0" />
-                      <span className="text-sm font-bold text-primary">Save £{savings} Today</span>
+                    <div className="flex items-center gap-1 mt-2">
+                      <span className="text-base">🔥</span>
+                      <span className="text-sm font-bold text-success">Save £{savings} Today</span>
                     </div>
                   )}
                 </div>

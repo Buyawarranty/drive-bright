@@ -1293,14 +1293,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
         {/* Choose Warranty Duration - Moved to top */}
         <div id="duration-price-section" className="section-header rounded-lg p-4 sm:p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
-              1
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
+                1
+              </div>
+              <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
+                <Calendar className="w-5 h-5 flex-shrink-0" />
+                Choose your cover duration
+              </h2>
             </div>
-            <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
-              <Calendar className="w-5 h-5 flex-shrink-0" />
-              Choose your cover duration
-            </h2>
+            <span className="text-sm text-muted-foreground ml-11 sm:ml-0">0% APR · No hidden fees</span>
           </div>
 
           {validationErrors.paymentType && (
@@ -1499,7 +1502,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     {/* Price Headline */}
                     <div className="flex items-baseline gap-2">
                       <span className="text-2xl font-bold text-black">£{displayedMonthlyPrice}/month</span>
-                      <span className="text-sm font-bold text-gray-500">(12 payments only)</span>
+                      <span className="text-xs text-gray-400">(12 payments only)</span>
                     </div>
                     
                     {/* Free year benefit line with tick */}
@@ -1516,15 +1519,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
                     )}
                     
-                    {/* Small print */}
-                    <div className="text-sm font-bold text-gray-500 mt-1 ml-[22px]">
-                      Total £{Math.round(displayedAnnualPrice)}. 0% APR.
+                    {/* Pay in full total with was price */}
+                    <div className="text-sm mt-2">
+                      <span className="font-bold text-black">Pay in full total £{Math.round(displayedAnnualPrice * 0.9)}</span>
+                      {savingsAmount > 0 && (
+                        <span className="text-red-500 line-through ml-2">(Was £{Math.round(displayedAnnualPrice)})</span>
+                      )}
                     </div>
                     
-                    {/* Savings badge */}
+                    {/* Savings badge with fire emoji */}
                     {savingsAmount > 0 && (
-                      <div className="inline-block mt-2 bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded">
-                        Save £{savingsAmount} Today
+                      <div className="flex items-center gap-1 mt-2">
+                        <span className="text-base">🔥</span>
+                        <span className="text-sm font-bold text-green-600">Save £{savingsAmount} Today</span>
                       </div>
                     )}
                   </div>
