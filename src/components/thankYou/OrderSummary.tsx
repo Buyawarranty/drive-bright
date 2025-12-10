@@ -59,6 +59,12 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
     
     console.log('[ORDER-SUMMARY] Duration parsing:', { duration, paymentType, durationValue, lower });
     
+    // Empty check - default to 1 Year only as last resort
+    if (!lower) {
+      console.warn('[ORDER-SUMMARY] No duration value provided');
+      return '1 Year';
+    }
+    
     // Direct number checks (24, 36, etc.)
     if (lower === '24' || lower === '2') return '2 Years';
     if (lower === '36' || lower === '3') return '3 Years';
@@ -66,24 +72,19 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
     if (lower === '60' || lower === '5') return '5 Years';
     if (lower === '12' || lower === '1') return '1 Year';
     
-    // Month-based formats (24months, 36months, etc.)
-    if (lower.includes('24')) return '2 Years';
-    if (lower.includes('36')) return '3 Years';
-    if (lower.includes('48')) return '4 Years';
-    if (lower.includes('60')) return '5 Years';
-    if (lower.includes('12')) return '1 Year';
+    // Month-based formats (24months, 36months, etc.) - check these BEFORE 12
+    if (lower.includes('24') || lower.includes('two')) return '2 Years';
+    if (lower.includes('36') || lower.includes('three')) return '3 Years';
+    if (lower.includes('48') || lower.includes('four')) return '4 Years';
+    if (lower.includes('60') || lower.includes('five')) return '5 Years';
+    if (lower.includes('12') || lower.includes('one')) return '1 Year';
     
-    // Year-based text formats
-    if (lower.includes('two')) return '2 Years';
-    if (lower.includes('three')) return '3 Years';
-    if (lower.includes('four')) return '4 Years';
-    if (lower.includes('five')) return '5 Years';
-    
-    // Handle 'yearly' and similar
+    // Handle 'yearly', 'monthly', 'annual' and similar
     if (lower.includes('yearly') || lower.includes('annual') || lower.includes('monthly')) return '1 Year';
     
     // Final fallback - use utility function for any remaining cases
     const months = getWarrantyDurationInMonths(durationValue);
+    console.log('[ORDER-SUMMARY] Using utility function, months:', months);
     if (months >= 36) return '3 Years';
     if (months >= 24) return '2 Years';
     if (months >= 12) return '1 Year';

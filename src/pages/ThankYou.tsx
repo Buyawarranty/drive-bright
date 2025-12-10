@@ -35,7 +35,8 @@ const ThankYou = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const plan = searchParams.get('plan');
-  const paymentType = searchParams.get('payment') || searchParams.get('duration');
+  // Get duration from multiple possible params with fallback chain
+  const paymentType = searchParams.get('duration') || searchParams.get('payment') || searchParams.get('paymentType');
   const sessionId = searchParams.get('session_id');
   // Detect source - check for bumper indicators if source param is missing
   const source = searchParams.get('source') || 
@@ -226,9 +227,10 @@ const ThankYou = () => {
       // But check if we have policy_number which means payment was already processed
       const existingPolicyNumber = searchParams.get('policy_number') || searchParams.get('warranty_number');
       
-      // If we have final_amount and customer data, we can still show order summary even without session
-      const hasSufficientData = searchParams.get('final_amount') && searchParams.get('email');
+      // If we have source identified or any useful data, we can show the page
+      const hasSufficientData = searchParams.get('final_amount') || searchParams.get('email') || searchParams.get('plan') || source;
       
+      // Only show error if we truly have no data at all
       if (!sessionId && !existingPolicyNumber && !hasSufficientData) {
         console.error('Missing payment session information', { sessionId, existingPolicyNumber, source, hasSufficientData });
         toast.error('Missing payment session information');
@@ -504,7 +506,7 @@ const ThankYou = () => {
                   plan={plan || 'Platinum'}
                   paymentType={paymentType || undefined}
                   warrantyStartDate={undefined}
-                  duration={searchParams.get('duration') || searchParams.get('payment') || paymentType || undefined}
+                  duration={paymentType || searchParams.get('duration') || searchParams.get('payment') || undefined}
                   warrantyNumber={policyNumber || searchParams.get('warranty_number') || searchParams.get('policy_number') || undefined}
                   monthlyPrice={searchParams.get('monthly_price') ? parseFloat(searchParams.get('monthly_price')!) : undefined}
                   totalPrice={searchParams.get('total_price') || searchParams.get('final_amount') ? parseFloat(searchParams.get('total_price') || searchParams.get('final_amount')!) : undefined}
