@@ -50,31 +50,39 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
     return dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
-  // Parse duration to get years - robust parsing that extracts number directly
+  // Parse duration to get years - ultra-robust parsing
   const getDurationDisplay = () => {
     const durationValue = duration || paymentType;
-    console.log('[ThankYou] getDurationDisplay - durationValue:', durationValue, 'duration prop:', duration, 'paymentType prop:', paymentType);
     
     if (!durationValue) return '1 Year';
     
-    // First try to extract the number directly from the string (e.g., "36months" -> 36)
-    const monthsMatch = durationValue.match(/(\d+)/);
-    if (monthsMatch) {
-      const monthsNum = parseInt(monthsMatch[1], 10);
-      console.log('[ThankYou] Extracted months number:', monthsNum);
-      
-      // Handle both month values and year values
-      if (monthsNum === 24 || monthsNum === 2) return '2 Years';
-      if (monthsNum === 36 || monthsNum === 3) return '3 Years';
-      if (monthsNum === 48 || monthsNum === 4) return '4 Years';
-      if (monthsNum === 60 || monthsNum === 5) return '5 Years';
-      if (monthsNum === 12 || monthsNum === 1) return '1 Year';
+    const lower = durationValue.toLowerCase().replace(/[_\-\s]/g, '');
+    
+    // Explicit string matching first - most reliable
+    if (lower.includes('24months') || lower.includes('24month') || lower === '24') return '2 Years';
+    if (lower.includes('36months') || lower.includes('36month') || lower === '36') return '3 Years';
+    if (lower.includes('48months') || lower.includes('48month') || lower === '48') return '4 Years';
+    if (lower.includes('60months') || lower.includes('60month') || lower === '60') return '5 Years';
+    if (lower.includes('12months') || lower.includes('12month') || lower === '12') return '1 Year';
+    
+    // Check for year-based strings
+    if (lower.includes('2year') || lower.includes('twoyear') || lower.includes('two')) return '2 Years';
+    if (lower.includes('3year') || lower.includes('threeyear') || lower.includes('three')) return '3 Years';
+    if (lower.includes('4year') || lower.includes('fouryear') || lower.includes('four')) return '4 Years';
+    if (lower.includes('5year') || lower.includes('fiveyear') || lower.includes('five')) return '5 Years';
+    
+    // Try to extract number from string
+    const numMatch = lower.match(/(\d+)/);
+    if (numMatch) {
+      const num = parseInt(numMatch[1], 10);
+      if (num === 24 || num === 2) return '2 Years';
+      if (num === 36 || num === 3) return '3 Years';
+      if (num === 48 || num === 4) return '4 Years';
+      if (num === 60 || num === 5) return '5 Years';
     }
     
-    // Fallback to centralized utility
+    // Final fallback to utility function
     const months = getWarrantyDurationInMonths(durationValue);
-    console.log('[ThankYou] getWarrantyDurationInMonths returned:', months);
-    
     if (months === 24) return '2 Years';
     if (months === 36) return '3 Years';
     if (months === 48) return '4 Years';

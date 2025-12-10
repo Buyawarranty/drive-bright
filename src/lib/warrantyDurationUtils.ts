@@ -12,7 +12,15 @@ export interface PaymentDuration {
  * This is the MASTER function for warranty duration calculation
  */
 export function getWarrantyDurationInMonths(paymentType: string): number {
-  const normalizedPaymentType = paymentType?.toLowerCase().replace(/[_-]/g, '').trim();
+  if (!paymentType) return 12;
+  
+  const normalizedPaymentType = paymentType?.toLowerCase().replace(/[_\-\s]/g, '').trim();
+  
+  // Check for number-based patterns first (e.g., "24months", "24")
+  if (normalizedPaymentType.includes('24') || normalizedPaymentType === '24') return 24;
+  if (normalizedPaymentType.includes('36') || normalizedPaymentType === '36') return 36;
+  if (normalizedPaymentType.includes('48') || normalizedPaymentType === '48') return 48;
+  if (normalizedPaymentType.includes('60') || normalizedPaymentType === '60') return 60;
   
   switch (normalizedPaymentType) {
     case 'monthly':
@@ -32,6 +40,7 @@ export function getWarrantyDurationInMonths(paymentType: string): number {
     case 'twoyear':
     case '2year':
     case '2years':
+    case 'two':
       return 24;
     case '36months':
     case '36month':
@@ -41,6 +50,7 @@ export function getWarrantyDurationInMonths(paymentType: string): number {
     case 'threeyear':
     case '3year':
     case '3years':
+    case 'three':
       return 36;
     case '48months':
     case '48month':
@@ -49,6 +59,7 @@ export function getWarrantyDurationInMonths(paymentType: string): number {
     case 'fouryear':
     case '4year':
     case '4years':
+    case 'four':
       return 48;
     case '60months':
     case '60month':
@@ -57,8 +68,18 @@ export function getWarrantyDurationInMonths(paymentType: string): number {
     case 'fiveyear':
     case '5year':
     case '5years':
+    case 'five':
       return 60;
     default:
+      // Try to extract a number
+      const numMatch = normalizedPaymentType.match(/(\d+)/);
+      if (numMatch) {
+        const num = parseInt(numMatch[1], 10);
+        if (num === 24 || num === 2) return 24;
+        if (num === 36 || num === 3) return 36;
+        if (num === 48 || num === 4) return 48;
+        if (num === 60 || num === 5) return 60;
+      }
       console.warn(`Unknown payment type: ${paymentType}, defaulting to 12 months`);
       return 12;
   }
