@@ -112,6 +112,18 @@ const ThankYou = () => {
   }, []);
 
   useEffect(() => {
+    // Debug: Log all URL parameters
+    console.log('[THANK-YOU] URL Parameters:', {
+      plan: searchParams.get('plan'),
+      payment: searchParams.get('payment'),
+      duration: searchParams.get('duration'),
+      session_id: searchParams.get('session_id'),
+      source: searchParams.get('source'),
+      policy_number: searchParams.get('policy_number'),
+      final_amount: searchParams.get('final_amount'),
+      allParams: Object.fromEntries(searchParams.entries())
+    });
+    
     const processPayment = async () => {
       // For Bumper payments, we get data from URL params
       if (source === 'bumper') {
@@ -208,9 +220,20 @@ const ThankYou = () => {
       }
       
       // For Stripe payments, we need the session ID
-      if (!sessionId) {
-        console.error('Missing Stripe session ID', { sessionId, source });
+      // But check if we have policy_number which means payment was already processed
+      const existingPolicyNumber = searchParams.get('policy_number') || searchParams.get('warranty_number');
+      
+      if (!sessionId && !existingPolicyNumber) {
+        console.error('Missing Stripe session ID and no existing policy', { sessionId, existingPolicyNumber, source });
         toast.error('Missing payment session information');
+        setIsProcessing(false);
+        return;
+      }
+      
+      // If we have policy number but no session, skip processing (already done)
+      if (existingPolicyNumber && !sessionId) {
+        console.log('Payment already processed, showing confirmation', { existingPolicyNumber });
+        setPolicyNumber(existingPolicyNumber);
         setIsProcessing(false);
         return;
       }
