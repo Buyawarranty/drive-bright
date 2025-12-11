@@ -79,21 +79,45 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           </>
         )}
 
-        {/* Collapsed view - compact */}
+        {/* Collapsed view - shows price summary and CTA */}
         {!isExpanded && (
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex-1 text-center">
-              <div className="text-lg font-bold text-foreground">
-                £{monthlyPrice}/month
+          <>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1 text-center space-y-0.5">
+                <div className="text-lg font-bold text-foreground">
+                  £{monthlyPrice}/Month <span className="text-sm font-normal text-muted-foreground">– 0% APR</span>
+                </div>
+                <p className="text-sm text-muted-foreground">Only 12 payments</p>
+                <p className="text-sm text-foreground">
+                  Pay in full: <span className="font-bold">£{payInFullPrice}</span>
+                </p>
               </div>
+              <button 
+                onClick={() => setIsExpanded(true)}
+                className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0"
+              >
+                <ChevronUp className="w-5 h-5 text-muted-foreground" />
+              </button>
             </div>
-            <button 
-              onClick={() => setIsExpanded(true)}
-              className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0"
-            >
-              <ChevronDown className="w-5 h-5 text-muted-foreground" />
-            </button>
-          </div>
+            
+            {/* CTA Button */}
+            <div className="mt-3">
+              <Button
+                onClick={onContinue}
+                disabled={isLoading || !isValid}
+                className="w-full bg-brand-orange hover:bg-brand-orange/90 text-white font-semibold py-6 rounded-xl text-base gap-2 animate-cta-enhanced"
+              >
+                {isLoading ? (
+                  'Loading...'
+                ) : (
+                  <>
+                    Continue to Checkout
+                    <ArrowRight className="w-5 h-5" strokeWidth={3} />
+                  </>
+                )}
+              </Button>
+            </div>
+          </>
         )}
       </div>
     </div>
