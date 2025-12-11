@@ -108,11 +108,11 @@ const initialOrderData: ManualOrderData = {
   claimLimit: 1250,
   totalAmount: '',
   wearTearCover: false,
-  vehicleRecovery: true,
+  vehicleRecovery: false, // Auto-included for 2-year and 3-year only
   tyreCover: false,
   europeCover: false,
-  vehicleRental: false,
-  motFeeCover: true,
+  vehicleRental: false, // Auto-included for 3-year only
+  motFeeCover: false,
   transferCover: false,
   notes: '',
   sendToWarranties2000: false,
@@ -269,11 +269,11 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
         claimLimit: policyToEdit.claim_limit || 1250,
         totalAmount: policyToEdit.payment_amount?.toString() || '',
         wearTearCover: policyToEdit.wear_tear || false,
-        vehicleRecovery: policyToEdit.breakdown_recovery || true,
+        vehicleRecovery: policyToEdit.breakdown_recovery || false,
         tyreCover: policyToEdit.tyre_cover || false,
         europeCover: policyToEdit.europe_cover || false,
         vehicleRental: policyToEdit.vehicle_rental || false,
-        motFeeCover: policyToEdit.mot_fee || true,
+        motFeeCover: policyToEdit.mot_fee || false,
         transferCover: policyToEdit.transfer_cover || false,
         notes: '',
         sendToWarranties2000: false,
@@ -295,6 +295,33 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
       }
     }
   }, [orderData.startDate, orderData.duration]);
+
+  // Auto-update add-ons based on duration (matching checkout flow auto-inclusions)
+  useEffect(() => {
+    // Skip if we're in edit mode (data is loaded from existing policy)
+    if (customerToEdit || policyToEdit) return;
+    
+    const duration = orderData.duration;
+    let vehicleRecovery = false;
+    let vehicleRental = false;
+    
+    // Match the auto-included add-ons from getAutoIncludedAddOns in addOnsUtils.ts
+    // 12 months: No auto-included add-ons
+    // 24 months: Vehicle Recovery only
+    // 36 months: Vehicle Recovery + Vehicle Rental
+    if (duration === '24months') {
+      vehicleRecovery = true;
+    } else if (duration === '36months') {
+      vehicleRecovery = true;
+      vehicleRental = true;
+    }
+    
+    setOrderData(prev => ({
+      ...prev,
+      vehicleRecovery,
+      vehicleRental
+    }));
+  }, [orderData.duration, customerToEdit, policyToEdit]);
 
   const updateOrderData = (field: keyof ManualOrderData, value: string | boolean | number) => {
     setOrderData(prev => ({ ...prev, [field]: value }));
