@@ -182,7 +182,7 @@ serve(async (req) => {
   }
 });
 
-// Helper function for warranty reference
+// Helper function for warranty reference - uses MAN- prefix for manual entries
 async function generateWarrantyReference(): Promise<string> {
   try {
     const supabaseClient = createClient(
@@ -196,23 +196,23 @@ async function generateWarrantyReference(): Promise<string> {
     if (error || !data) {
       console.error('Failed to get warranty serial:', error);
       const now = new Date();
-      const year = now.getFullYear().toString().slice(-2);
+      const day = now.getDate().toString().padStart(2, '0');
       const month = (now.getMonth() + 1).toString().padStart(2, '0');
       const timestamp = now.getTime().toString().slice(-6);
-      return `BAW-${year}${month}-${timestamp}`;
+      return `MAN-${day}${month}-${timestamp}`;
     }
 
     const now = new Date();
-    const year = now.getFullYear().toString().slice(-2);
+    const day = now.getDate().toString().padStart(2, '0');
     const month = (now.getMonth() + 1).toString().padStart(2, '0');
     
-    return `BAW-${year}${month}-${data}`;
+    return `MAN-${day}${month}-${data}`;
   } catch (error) {
     console.error('Error generating warranty reference:', error);
     const now = new Date();
-    const year = now.getFullYear().toString().slice(-2);
+    const day = now.getDate().toString().padStart(2, '0');
     const month = (now.getMonth() + 1).toString().padStart(2, '0');
     const timestamp = now.getTime().toString().slice(-6);
-    return `BAW-${year}${month}-${timestamp}`;
+    return `MAN-${day}${month}-${timestamp}`;
   }
 }
