@@ -6,6 +6,7 @@ export interface VehicleData {
   vehicleType?: string;
   regNumber: string;
   year?: string;
+  mileage?: string | number;
 }
 
 export interface PriceAdjustment {
@@ -365,6 +366,30 @@ export function calculateVehiclePriceAdjustment(
         baseAdjustment: 0,
         adjustmentReason: 'Standard vehicle - no adjustment applied'
       });
+  }
+  
+  // High mileage adjustment: 120,001 - 150,000 miles
+  // +£100 for 1-year, +£200 for 2-year, +£300 for 3-year
+  const mileageStr = vehicleData?.mileage?.toString().replace(/,/g, '') || '0';
+  const vehicleMileage = parseInt(mileageStr, 10) || 0;
+  
+  if (vehicleMileage > 120000 && vehicleMileage <= 150000) {
+    let mileageAdjustment = 0;
+    if (warrantyDurationYears === 1) mileageAdjustment = 100;
+    else if (warrantyDurationYears === 2) mileageAdjustment = 200;
+    else if (warrantyDurationYears === 3) mileageAdjustment = 300;
+    
+    adjustmentAmount += mileageAdjustment;
+    breakdown.push({
+      baseAdjustment: mileageAdjustment,
+      adjustmentReason: `High mileage (${vehicleMileage.toLocaleString()} miles) premium: +£${mileageAdjustment} for ${warrantyDurationYears} year warranty`
+    });
+    
+    console.log('🚗 High mileage adjustment applied:', {
+      mileage: vehicleMileage,
+      adjustment: mileageAdjustment,
+      warrantyYears: warrantyDurationYears
+    });
   }
   
   const result = {
