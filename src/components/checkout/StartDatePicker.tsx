@@ -130,7 +130,7 @@ export const StartDatePicker: React.FC<StartDatePickerProps> = ({
                 Select your cover start date
               </p>
               <p className="text-xs text-gray-500 mt-0.5">
-                Up to {maxDaysAhead} days from today
+                Up to 365 days from today
               </p>
             </div>
             <Calendar
