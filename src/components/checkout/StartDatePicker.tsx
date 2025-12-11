@@ -15,6 +15,9 @@ interface StartDatePickerProps {
   value: Date | undefined;
   onChange: (date: Date | undefined) => void;
   maxDaysAhead?: number;
+  allowPastDates?: boolean;
+  hideHeader?: boolean;
+  hideHelperText?: boolean;
   error?: string;
   className?: string;
 }
@@ -23,6 +26,9 @@ export const StartDatePicker: React.FC<StartDatePickerProps> = ({
   value,
   onChange,
   maxDaysAhead = 365,
+  allowPastDates = false,
+  hideHeader = false,
+  hideHelperText = false,
   error,
   className,
 }) => {
@@ -51,6 +57,9 @@ export const StartDatePicker: React.FC<StartDatePickerProps> = ({
 
   const isDateDisabled = (date: Date) => {
     const dateStart = startOfDay(date);
+    if (allowPastDates) {
+      return isAfter(dateStart, maxDate);
+    }
     return isBefore(dateStart, today) || isAfter(dateStart, maxDate);
   };
 
@@ -65,19 +74,21 @@ export const StartDatePicker: React.FC<StartDatePickerProps> = ({
   return (
     <div className={cn("space-y-2", className)}>
       {/* Section Header */}
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-          <Clock className="w-4 h-4 text-green-600" />
+      {!hideHeader && (
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+            <Clock className="w-4 h-4 text-green-600" />
+          </div>
+          <div>
+            <Label 
+              htmlFor="start-date" 
+              className="text-base font-semibold text-gray-900"
+            >
+              Choose Your Start Date <span className="text-red-500">*</span>
+            </Label>
+          </div>
         </div>
-        <div>
-          <Label 
-            htmlFor="start-date" 
-            className="text-base font-semibold text-gray-900"
-          >
-            Choose Your Start Date <span className="text-red-500">*</span>
-          </Label>
-        </div>
-      </div>
+      )}
 
       {/* Quick Options */}
       <div className="grid grid-cols-2 gap-3 mb-3">
@@ -174,11 +185,13 @@ export const StartDatePicker: React.FC<StartDatePickerProps> = ({
       )}
 
       {/* Helper Text */}
-      <p className="text-xs text-gray-500 leading-relaxed">
-        Start your warranty today or schedule it for any date up to 365 days ahead.
-        <br />
-        <span className="text-green-600 font-medium">✔ Instant confirmation! 🔔</span>
-      </p>
+      {!hideHelperText && (
+        <p className="text-xs text-gray-500 leading-relaxed">
+          Start your warranty today or schedule it for any date up to 365 days ahead.
+          <br />
+          <span className="text-green-600 font-medium">✔ Instant confirmation! 🔔</span>
+        </p>
+      )}
     </div>
   );
 };

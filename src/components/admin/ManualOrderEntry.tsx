@@ -13,6 +13,7 @@ import { PostcodeAutocomplete } from '@/components/ui/uk-postcode-autocomplete';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Plus, User, Car, CreditCard, FileText, MapPin, Search, Sparkles, Edit } from 'lucide-react';
+import { StartDatePicker } from '@/components/checkout/StartDatePicker';
 
 interface ManualOrderData {
   // Customer details
@@ -1390,11 +1391,17 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
 
               <div>
                 <Label htmlFor="startDate">Warranty Start Date</Label>
-                <Input
-                  id="startDate"
-                  type="date"
-                  value={orderData.startDate}
-                  onChange={(e) => updateOrderData('startDate', e.target.value)}
+                <StartDatePicker
+                  value={orderData.startDate ? new Date(orderData.startDate) : undefined}
+                  onChange={(date) => {
+                    if (date) {
+                      updateOrderData('startDate', date.toISOString().split('T')[0]);
+                    }
+                  }}
+                  maxDaysAhead={365}
+                  allowPastDates={true}
+                  hideHeader={true}
+                  hideHelperText={true}
                 />
               </div>
 
