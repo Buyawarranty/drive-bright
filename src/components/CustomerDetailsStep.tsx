@@ -974,7 +974,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         }
                       }
                     }}
-                    maxDaysAhead={30}
+                    maxDaysAhead={365}
                     error={startDateError}
                   />
                 </div>
