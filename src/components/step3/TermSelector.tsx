@@ -155,13 +155,12 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                     {savings > 0 && (
                       <span className="text-destructive line-through ml-1">(Was £{payInFullPrice + savings})</span>
                     )}
-                    {savings > 0 && <span className="ml-1">🔥</span>}
                   </div>
                   
                   {/* Save today line */}
                   {savings > 0 && (
                     <div className="flex items-center gap-1 mt-1">
-                      <span className="text-sm font-bold text-success">Save £{savings} Today</span>
+                      <span className="text-sm font-bold text-success">Save £{savings} Today 🔥</span>
                     </div>
                   )}
                 </div>
