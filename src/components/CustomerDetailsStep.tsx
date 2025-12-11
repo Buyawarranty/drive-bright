@@ -19,6 +19,8 @@ import MobileNavigation from '@/components/MobileNavigation';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
+import { StartDatePicker } from '@/components/checkout/StartDatePicker';
+import { startOfDay, format, isToday } from 'date-fns';
 
 export interface CustomerDetailsStepProps {
   vehicleData: {
@@ -146,6 +148,20 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   
   // State for field validation
   const [validatedFields, setValidatedFields] = useState<{[key: string]: boolean}>({});
+  
+  // State for warranty start date - default to today
+  const [startDate, setStartDate] = useState<Date | undefined>(() => {
+    try {
+      const savedStartDate = localStorage.getItem('buyawarranty_startDate');
+      if (savedStartDate) {
+        return new Date(savedStartDate);
+      }
+    } catch (error) {
+      console.error('Error restoring start date:', error);
+    }
+    return startOfDay(new Date());
+  });
+  const [startDateError, setStartDateError] = useState<string>('');
 
   // Scroll listener for scroll-to-top button
   useEffect(() => {
@@ -606,8 +622,15 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
       errors.postcode = 'Enter a valid UK postcode.';
     }
 
+    // Start date validation
+    if (!startDate) {
+      setStartDateError('Please select a valid start date within the next 30 days.');
+    } else {
+      setStartDateError('');
+    }
+
     setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
+    return Object.keys(errors).length === 0 && !!startDate;
   };
 
   const handleSubmit = async (e?: React.FormEvent, explicitPaymentMethod?: 'stripe' | 'bumper') => {
@@ -716,7 +739,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
             labourRate: pricingData.labourRate || 50,
             customerData: {
               ...customerData,
-              final_amount: finalPrice
+              final_amount: finalPrice,
+              start_date: startDate?.toISOString()
             },
             discountCode: appliedDiscountCodes.map(code => code.code).join(', '),
             finalAmount: finalPrice,
@@ -836,7 +860,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
         labourRate: pricingData.labourRate || 50,
         customerData: {
           ...customerData,
-          final_amount: finalPrice
+          final_amount: finalPrice,
+          start_date: startDate?.toISOString()
         },
         protectionAddOns: {
           tyre: updatedPricingData.protectionAddOns?.tyre || false,
@@ -931,6 +956,27 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                   <p className="text-xs sm:text-sm text-gray-600 ml-7 sm:ml-8">
                     Secure your warranty. Your details are safe.
                   </p>
+                </div>
+                
+                {/* Start Date Picker - Positioned before personal details for early reassurance */}
+                <div className="mb-6 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <StartDatePicker
+                    value={startDate}
+                    onChange={(date) => {
+                      setStartDate(date);
+                      setStartDateError('');
+                      // Persist to localStorage
+                      if (date) {
+                        try {
+                          localStorage.setItem('buyawarranty_startDate', date.toISOString());
+                        } catch (error) {
+                          console.error('Error saving start date:', error);
+                        }
+                      }
+                    }}
+                    maxDaysAhead={30}
+                    error={startDateError}
+                  />
                 </div>
                 
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -1259,7 +1305,14 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       <span className="text-black text-xs sm:text-sm flex-shrink-0">Registration:</span>
                       <span className="font-semibold text-black text-xs sm:text-sm text-right">{vehicleData.regNumber}</span>
                     </div>
-
+                    {startDate && (
+                      <div className="flex justify-between items-center gap-2 bg-green-50 rounded-lg px-2 py-1.5 -mx-2">
+                        <span className="text-green-700 text-xs sm:text-sm flex-shrink-0 font-medium">Start Date:</span>
+                        <span className="font-semibold text-green-700 text-xs sm:text-sm text-right">
+                          {isToday(startDate) ? `Today (${format(startDate, 'd MMM yyyy')})` : format(startDate, 'd MMM yyyy')}
+                        </span>
+                      </div>
+                    )}
                       {/* Payment Summary - Mobile First */}
                       <div className="border-t pt-4 mt-4 space-y-3">
                         <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
