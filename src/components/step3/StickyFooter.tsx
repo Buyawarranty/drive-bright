@@ -19,7 +19,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
   isLoading,
   isValid
 }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   
   // Calculate pay in full price (10% discount)
   const payInFullPrice = Math.floor(totalPrice * 0.9);
