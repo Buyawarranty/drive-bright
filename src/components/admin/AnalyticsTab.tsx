@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Users, CreditCard, TrendingUp, AlertCircle } from 'lucide-react';
+import { Users, CreditCard, PoundSterling } from 'lucide-react';
 import { toast } from 'sonner';
 import { ApiConnectivityTest } from './ApiConnectivityTest';
 
@@ -14,19 +14,19 @@ interface Customer {
   plan_type: string;
   signup_date: string;
   status: string;
-  voluntary_excess: number;
+  final_amount: number | null;
 }
 
-interface Payment {
-  id: string;
-  amount: number;
-  plan_type: string;
-  payment_date: string;
-}
+// Test names to exclude from analytics
+const TEST_NAMES = ['kamran qureshi', 'prajwal chauhan', 'accepttest'];
+
+const isTestOrder = (name: string): boolean => {
+  const lowerName = name?.toLowerCase() || '';
+  return TEST_NAMES.some(testName => lowerName.includes(testName));
+};
 
 export const AnalyticsTab = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,26 +37,20 @@ export const AnalyticsTab = () => {
     try {
       console.log('Fetching analytics data...');
       
-      const [customersResponse, paymentsResponse] = await Promise.all([
-        supabase.from('customers').select('*'),
-        supabase.from('payments').select('*')
-      ]);
+      const { data, error } = await supabase
+        .from('customers')
+        .select('id, name, email, plan_type, signup_date, status, final_amount');
 
-      if (customersResponse.error) {
-        console.error('Error fetching customers:', customersResponse.error);
-        throw customersResponse.error;
+      if (error) {
+        console.error('Error fetching customers:', error);
+        throw error;
       }
 
-      if (paymentsResponse.error) {
-        console.error('Error fetching payments:', paymentsResponse.error);
-        throw paymentsResponse.error;
-      }
-
-      console.log('Customers data:', customersResponse.data);
-      console.log('Payments data:', paymentsResponse.data);
+      // Filter out test orders
+      const realCustomers = (data || []).filter(c => !isTestOrder(c.name));
+      console.log('Real customers (excluding test):', realCustomers.length);
       
-      setCustomers(customersResponse.data || []);
-      setPayments(paymentsResponse.data || []);
+      setCustomers(realCustomers);
     } catch (error) {
       console.error('Error fetching analytics data:', error);
       toast.error('Failed to load analytics data');
@@ -68,10 +62,7 @@ export const AnalyticsTab = () => {
   // Calculate metrics with safe defaults
   const totalCustomers = customers.length;
   const activeCustomers = customers.filter(c => c.status === 'Active').length;
-  const totalRevenue = payments.length > 0 ? payments.reduce((sum, payment) => sum + Number(payment.amount), 0) : 0;
-  const averageExcess = customers.length > 0 && customers.some(c => c.voluntary_excess) 
-    ? customers.filter(c => c.voluntary_excess).reduce((sum, customer) => sum + Number(customer.voluntary_excess), 0) / customers.filter(c => c.voluntary_excess).length 
-    : 0;
+  const totalRevenue = customers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
 
   // Plan distribution data
   const planDistribution = customers.reduce((acc: Record<string, number>, customer) => {
@@ -107,6 +98,32 @@ export const AnalyticsTab = () => {
     return months;
   }, [customers]);
 
+  // Monthly revenue data (last 12 months)
+  const monthlyRevenue = React.useMemo(() => {
+    const months = Array.from({ length: 12 }, (_, i) => {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      return {
+        month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        monthKey: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
+        revenue: 0
+      };
+    }).reverse();
+
+    customers.forEach(customer => {
+      if (customer.final_amount && customer.signup_date) {
+        const signupDate = new Date(customer.signup_date);
+        const monthKey = `${signupDate.getFullYear()}-${String(signupDate.getMonth() + 1).padStart(2, '0')}`;
+        const monthData = months.find(m => m.monthKey === monthKey);
+        if (monthData) {
+          monthData.revenue += Number(customer.final_amount) || 0;
+        }
+      }
+    });
+
+    return months;
+  }, [customers]);
+
   const COLORS = ['#f97316', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
   if (loading) {
@@ -121,11 +138,11 @@ export const AnalyticsTab = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h2>
-        <p className="text-sm text-gray-600">Overview of your warranty business</p>
+        <p className="text-sm text-gray-600">Overview of your warranty business (excludes test orders)</p>
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
@@ -145,43 +162,53 @@ export const AnalyticsTab = () => {
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">£{totalRevenue.toFixed(2)}</div>
+            <div className="text-2xl font-bold">£{totalRevenue.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
             <p className="text-xs text-muted-foreground">
-              From {payments.length} payments
+              From {customers.filter(c => c.final_amount).length} paid orders
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Excess</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">£{averageExcess.toFixed(0)}</div>
-            <p className="text-xs text-muted-foreground">
-              Customer voluntary excess
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Rate</CardTitle>
-            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Average Order Value</CardTitle>
+            <PoundSterling className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {totalCustomers > 0 ? Math.round((activeCustomers / totalCustomers) * 100) : 0}%
+              £{customers.filter(c => c.final_amount).length > 0 
+                ? Math.round(totalRevenue / customers.filter(c => c.final_amount).length)
+                : 0}
             </div>
             <p className="text-xs text-muted-foreground">
-              Customer retention rate
+              Per warranty sale
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Charts */}
+      {/* Monthly Revenue Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Total Revenue by Month (Last 12 Months)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={monthlyRevenue}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+              <YAxis tickFormatter={(value) => `£${value.toLocaleString()}`} />
+              <Tooltip 
+                formatter={(value: number) => [`£${value.toLocaleString('en-GB', { minimumFractionDigits: 0 })}`, 'Revenue']}
+                labelStyle={{ fontWeight: 'bold' }}
+              />
+              <Bar dataKey="revenue" fill="#10b981" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -194,7 +221,7 @@ export const AnalyticsTab = () => {
                 <XAxis dataKey="month" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="signups" fill="#f97316" />
+                <Bar dataKey="signups" fill="#f97316" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -256,6 +283,11 @@ export const AnalyticsTab = () => {
                     <p className="text-xs text-gray-500">
                       {new Date(customer.signup_date).toLocaleDateString()}
                     </p>
+                    {customer.final_amount && (
+                      <p className="text-xs font-semibold text-green-600">
+                        £{Number(customer.final_amount).toLocaleString()}
+                      </p>
+                    )}
                   </div>
                 </div>
               ))}
