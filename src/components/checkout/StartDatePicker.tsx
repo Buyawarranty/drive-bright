@@ -22,7 +22,7 @@ interface StartDatePickerProps {
 export const StartDatePicker: React.FC<StartDatePickerProps> = ({
   value,
   onChange,
-  maxDaysAhead = 30,
+  maxDaysAhead = 365,
   error,
   className,
 }) => {
@@ -175,8 +175,9 @@ export const StartDatePicker: React.FC<StartDatePickerProps> = ({
 
       {/* Helper Text */}
       <p className="text-xs text-gray-500 leading-relaxed">
-        Start your warranty today or schedule it for a later date (up to {maxDaysAhead} days ahead). 
-        Your cover will begin on the selected date. You'll receive confirmation instantly.
+        Start your warranty today or schedule it for any date up to 365 days ahead.
+        <br />
+        <span className="text-green-600 font-medium">✔ Instant confirmation! 🔔</span>
       </p>
     </div>
   );
