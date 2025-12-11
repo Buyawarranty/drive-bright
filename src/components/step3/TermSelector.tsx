@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, ChevronDown, ChevronUp, Wrench } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Flame, Wrench } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface TermOption {
