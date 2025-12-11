@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus } from 'lucide-react';
+import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -143,6 +143,12 @@ const defaultTabs: Tab[] = [
     label: 'Abandoned Carts',
     icon: ShoppingCart,
     description: 'Track and follow up with incomplete purchases'
+  },
+  {
+    id: 'pending-w2000',
+    label: 'Pending W2000',
+    icon: Clock,
+    description: 'Scheduled warranty submissions to W2000'
   },
   {
     id: 'emails',

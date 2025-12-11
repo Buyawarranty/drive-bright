@@ -150,3 +150,6 @@ verify_jwt = true
 
 [functions.send-trustpilot-review-emails]
 verify_jwt = false
+
+[functions.process-scheduled-w2000]
+verify_jwt = false

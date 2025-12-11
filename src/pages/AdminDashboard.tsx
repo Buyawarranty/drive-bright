@@ -40,6 +40,7 @@ import { ClickFraudTab } from '@/components/admin/ClickFraudTab';
 import { ResetCustomerPassword } from '@/components/admin/ResetCustomerPassword';
 import { TestTrustpilotEmail } from '@/components/admin/TestTrustpilotEmail';
 import { TestAbandonedCartEmail } from '@/components/admin/TestAbandonedCartEmail';
+import { PendingW2000Tab } from '@/components/admin/PendingW2000Tab';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -143,6 +144,8 @@ const AdminDashboard = () => {
         return <ContactSubmissionsTab />;
       case 'abandoned-carts':
         return <AbandonedCartsTab />;
+      case 'pending-w2000':
+        return <PendingW2000Tab />;
       case 'emails':
         return <UnifiedEmailHub />;
       case 'analytics':
