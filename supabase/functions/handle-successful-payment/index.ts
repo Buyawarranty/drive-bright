@@ -68,8 +68,8 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { planId, paymentType, userEmail, userId, stripeSessionId, vehicleData, customerData, skipEmail, metadata, protectionAddOns, claimLimit, voluntaryExcess, seasonalBonusMonths = 0, labourRate } = await req.json();
-    logStep("Request data", { planId, paymentType, userEmail, userId, stripeSessionId, skipEmail, hasMetadata: !!metadata, hasProtectionAddOns: !!protectionAddOns, claimLimit, voluntaryExcess, seasonalBonusMonths, labourRate });
+    const { planId, paymentType, userEmail, userId, stripeSessionId, vehicleData, customerData, skipEmail, metadata, protectionAddOns, claimLimit, voluntaryExcess, seasonalBonusMonths = 0, labourRate, startDate } = await req.json();
+    logStep("Request data", { planId, paymentType, userEmail, userId, stripeSessionId, skipEmail, hasMetadata: !!metadata, hasProtectionAddOns: !!protectionAddOns, claimLimit, voluntaryExcess, seasonalBonusMonths, labourRate, startDate });
 
     if (!planId || !paymentType || !userEmail) {
       throw new Error("Missing required parameters");
@@ -455,6 +455,24 @@ serve(async (req) => {
         finalAddOns: finalAddOnsData
       });
 
+      // Determine the policy start date - use customer selected start date or default to now
+      const selectedStartDate = startDate || customerData?.start_date || metadata?.start_date;
+      const policyStartDate = selectedStartDate ? new Date(selectedStartDate) : new Date();
+      
+      // Check if start date is in the future (for W2000 scheduling)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const startDateOnly = new Date(policyStartDate);
+      startDateOnly.setHours(0, 0, 0, 0);
+      const isStartDateInFuture = startDateOnly > today;
+      
+      logStep("Start date processing", { 
+        selectedStartDate, 
+        policyStartDate: policyStartDate.toISOString(),
+        isStartDateInFuture,
+        today: today.toISOString()
+      });
+
       // Create policy record
       const policyRecord = {
         customer_id: customerData2.id,
@@ -463,8 +481,8 @@ serve(async (req) => {
         plan_type: planName.toLowerCase(), // Use the actual plan name in lowercase for customer_policies table
         payment_type: paymentType,
         policy_number: warrantyReference,
-        policy_start_date: new Date().toISOString(),
-        policy_end_date: calculatePolicyEndDate(paymentType),
+        policy_start_date: policyStartDate.toISOString(),
+        policy_end_date: calculatePolicyEndDate(paymentType, policyStartDate),
         status: 'active',
         claim_limit: parseInt(metadata?.claim_limit || customerData?.claimLimit || claimLimit || protectionAddOns?.claimLimit || '1250'), // User-selected claim limit
         voluntary_excess: getStandardizedVoluntaryExcess(metadata, customerData, vehicleData, voluntaryExcess), // Fixed field name
@@ -473,6 +491,9 @@ serve(async (req) => {
         stripe_session_id: stripeSessionId,
         // Store payment amount from final_amount in metadata or customerData
         payment_amount: parseFloat(metadata?.final_amount) || customerData?.final_amount || null,
+        // W2000 scheduling: if start date is in future, schedule for that date
+        warranties_2000_status: isStartDateInFuture ? 'scheduled' : 'not_sent',
+        warranties_2000_scheduled_for: isStartDateInFuture ? policyStartDate.toISOString() : null,
         // Include final combined add-ons in policy record
         ...finalAddOnsData
       };
@@ -587,16 +608,22 @@ serve(async (req) => {
         if (policyData?.id) {
           logStep("Found policy for warranty registration", { policyId: policyData.id });
 
-          // Check if warranty has already been sent to W2000 to prevent duplicates
+          // Check if warranty has already been sent to W2000 or is scheduled for future
           const { data: existingPolicy } = await supabaseClient
             .from('customer_policies')
-            .select('warranties_2000_status')
+            .select('warranties_2000_status, warranties_2000_scheduled_for')
             .eq('id', policyData.id)
             .single();
 
           if (existingPolicy?.warranties_2000_status === 'sent') {
             logStep("Warranty already sent to W2000, skipping duplicate call", { policyId: policyData.id });
+          } else if (existingPolicy?.warranties_2000_status === 'scheduled') {
+            logStep("Warranty scheduled for future start date, skipping W2000 call", { 
+              policyId: policyData.id,
+              scheduledFor: existingPolicy.warranties_2000_scheduled_for 
+            });
           } else {
+            // Send to W2000 immediately (start date is today or not specified)
             const { data: warrantyData, error: warrantyError } = await supabaseClient.functions.invoke('send-to-warranties-2000', {
               body: { policyId: policyData.id, customerId: customerData2.id }
             });
@@ -1002,11 +1029,11 @@ function getWarrantyDurationInMonths(paymentType: string): number {
   }
 }
 // Helper function to calculate policy end date using centralized logic
-function calculatePolicyEndDate(paymentType: string): string {
+function calculatePolicyEndDate(paymentType: string, startDate?: Date): string {
   const months = getWarrantyDurationInMonths(paymentType);
-  const now = new Date();
-  now.setMonth(now.getMonth() + months);
-  return now.toISOString();
+  const date = startDate ? new Date(startDate) : new Date();
+  date.setMonth(date.getMonth() + months);
+  return date.toISOString();
 }
 
 // Helper function to convert payment type to user-friendly display format

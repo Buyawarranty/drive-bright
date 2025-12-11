@@ -27,8 +27,8 @@ serve(async (req) => {
     );
 
     const body = await req.json();
-    const { planId, vehicleData, paymentType, voluntaryExcess = 0, customerData, discountCode, finalAmount, protectionAddOns, claimLimit, seasonalBonusMonths = 0, labourRate = 50 } = body;
-    logStep("Request data", { planId, vehicleData, paymentType, voluntaryExcess, discountCode, finalAmount, protectionAddOns, claimLimit, seasonalBonusMonths, labourRate });
+    const { planId, vehicleData, paymentType, voluntaryExcess = 0, customerData, discountCode, finalAmount, protectionAddOns, claimLimit, seasonalBonusMonths = 0, labourRate = 50, startDate } = body;
+    logStep("Request data", { planId, vehicleData, paymentType, voluntaryExcess, discountCode, finalAmount, protectionAddOns, claimLimit, seasonalBonusMonths, labourRate, startDate });
 
     // Validate vehicle age (must be 15 years or newer)
     const vehicleYear = vehicleData?.year;
@@ -340,7 +340,8 @@ serve(async (req) => {
         addon_mot_repair: protectionAddOns?.motRepair ? 'true' : 'false',
         addon_lost_key: protectionAddOns?.lostKey ? 'true' : 'false',
         addon_consequential: protectionAddOns?.consequential ? 'true' : 'false',
-        labour_rate: (labourRate || 50).toString()
+        labour_rate: (labourRate || 50).toString(),
+        start_date: startDate || ''
       }
     };
 

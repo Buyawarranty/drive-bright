@@ -1165,6 +1165,7 @@ export type Database = {
           vehicle_rental: boolean | null
           voluntary_excess: number | null
           warranties_2000_response: Json | null
+          warranties_2000_scheduled_for: string | null
           warranties_2000_sent_at: string | null
           warranties_2000_status: string | null
           warranty_number: string | null
@@ -1214,6 +1215,7 @@ export type Database = {
           vehicle_rental?: boolean | null
           voluntary_excess?: number | null
           warranties_2000_response?: Json | null
+          warranties_2000_scheduled_for?: string | null
           warranties_2000_sent_at?: string | null
           warranties_2000_status?: string | null
           warranty_number?: string | null
@@ -1263,6 +1265,7 @@ export type Database = {
           vehicle_rental?: boolean | null
           voluntary_excess?: number | null
           warranties_2000_response?: Json | null
+          warranties_2000_scheduled_for?: string | null
           warranties_2000_sent_at?: string | null
           warranties_2000_status?: string | null
           warranty_number?: string | null
