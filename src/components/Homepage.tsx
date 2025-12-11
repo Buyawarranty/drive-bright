@@ -8,7 +8,6 @@ import WebsiteFooter from './WebsiteFooter';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { VoucherBanner } from './VoucherBanner';
 import { EmailCapturePopup } from './EmailCapturePopup';
-import { PromoBanner, MinimizedPromoPill, usePromoBannerState } from './PromoBanner';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import LazySection from './homepage/LazySection';
@@ -28,15 +27,6 @@ import { supabase } from '@/integrations/supabase/client';
 import MileageSlider from './MileageSlider';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
-
-// Wrapper component for minimized promo pill that uses the hook
-const MinimizedPromoPillWrapper: React.FC = () => {
-  const { isMinimized, expandBanner } = usePromoBannerState();
-  
-  if (!isMinimized) return null;
-  
-  return <MinimizedPromoPill onExpand={expandBanner} />;
-};
 
 interface VehicleData {
   regNumber: string;
@@ -361,9 +351,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
-      {/* Promo Banner - Sticky at top */}
-      <PromoBanner />
-
       {/* Voucher Banner for returning customers */}
       {showVoucherBanner && (
         <div className="bg-green-50 border-b border-green-200 py-3">
@@ -435,10 +422,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 <span className="text-gray-900">We've got you </span>
                 <span className="text-brand-orange">covered in 60 seconds!</span>
               </h1>
-              {/* Minimized promo pill appears below headline when banner is collapsed - MOBILE ONLY */}
-              <div className="pt-2 md:hidden">
-                <MinimizedPromoPillWrapper />
-              </div>
               </div>
 
               {/* Benefits */}
