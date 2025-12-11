@@ -19,6 +19,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 import { CustomerNotesSection } from './CustomerNotesSection';
+import { CustomerServiceNotes } from './CustomerServiceNotes';
 import { WarrantyActions } from './WarrantyActions';
 import { ManualOrderEntry } from './ManualOrderEntry';
 import { EditOrderButton } from './EditOrderButton';
@@ -3207,7 +3208,7 @@ Please log in and change your password after first login.`;
 
                                 <TabsContent value="notes">
                                   {selectedCustomer && (
-                                    <CustomerNotesSection customerId={selectedCustomer.id} />
+                                    <CustomerServiceNotes customerId={selectedCustomer.id} customerType="active" />
                                   )}
                                 </TabsContent>
 
@@ -4026,44 +4027,68 @@ The Buy A Warranty Team
 
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button variant="ghost" size="sm" title="Contact Customer">
+                              <Button variant="ghost" size="sm" title="Customer Notes & Contact">
                                 <Mail className="h-4 w-4" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent>
+                            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                               <DialogHeader>
-                                <DialogTitle>Update Contact Status</DialogTitle>
+                                <DialogTitle className="flex items-center gap-2">
+                                  <User className="h-5 w-5" />
+                                  {customer.full_name || customer.email}
+                                </DialogTitle>
                               </DialogHeader>
-                              <div className="space-y-4">
+                              
+                              {/* Customer Quick Info */}
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 bg-muted/50 rounded-lg text-sm">
                                 <div>
-                                  <Label>Contact Status</Label>
+                                  <span className="text-muted-foreground">Email:</span>
+                                  <p className="font-medium truncate">{customer.email}</p>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Phone:</span>
+                                  <p className="font-medium">{customer.phone || 'N/A'}</p>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Vehicle:</span>
+                                  <p className="font-medium">{customer.vehicle_reg || 'N/A'}</p>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Plan:</span>
+                                  <p className="font-medium">{customer.plan_name || 'N/A'}</p>
+                                </div>
+                              </div>
+
+                              {/* Contact Status Update */}
+                              <div className="space-y-3 p-4 border rounded-lg">
+                                <Label className="font-semibold">Quick Status Update</Label>
+                                <div className="flex items-center gap-2">
                                   <Select 
                                     defaultValue={customer.contact_status}
                                     onValueChange={(value) => {
-                                      const notes = document.getElementById(`notes-${customer.id}`) as HTMLTextAreaElement;
-                                      updateContactStatus(customer.id, value, notes?.value);
+                                      updateContactStatus(customer.id, value);
                                     }}
                                   >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="w-[200px]">
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
                                       <SelectItem value="not_contacted">Not Contacted</SelectItem>
                                       <SelectItem value="contacted">Contacted</SelectItem>
-                                      <SelectItem value="follow_up">Follow-up Done</SelectItem>
+                                      <SelectItem value="follow_up">Follow-up Needed</SelectItem>
                                     </SelectContent>
                                   </Select>
-                                </div>
-                                <div>
-                                  <Label>Contact Notes</Label>
-                                  <Textarea
-                                    id={`notes-${customer.id}`}
-                                    placeholder="Add notes about contact attempt..."
-                                    defaultValue={customer.contact_notes || ''}
-                                    rows={3}
+                                  <div 
+                                    className={`w-3 h-3 rounded-full ${getContactStatusColor(customer.contact_status)}`}
                                   />
                                 </div>
                               </div>
+
+                              {/* Full Notes Section */}
+                              <CustomerServiceNotes 
+                                customerId={customer.id} 
+                                customerType="incomplete"
+                              />
                             </DialogContent>
                           </Dialog>
                           
