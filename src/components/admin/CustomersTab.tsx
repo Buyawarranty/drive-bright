@@ -2224,6 +2224,7 @@ export const CustomersTab = () => {
                 />
               </TableHead>
               <TableHead>Name</TableHead>
+              <TableHead>Purchase Date</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>RegNum</TableHead>
@@ -3256,6 +3257,11 @@ Please log in and change your password after first login.`;
                       </div>
                     </div>
                   </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      {format(new Date(customer.signup_date), 'dd/MM/yyyy')}
+                    </div>
+                  </TableCell>
                   <TableCell>{customer.email}</TableCell>
                   <TableCell>{customer.phone || 'N/A'}</TableCell>
                   <TableCell>
@@ -3857,7 +3863,7 @@ Please log in and change your password after first login.`;
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          {format(new Date(customer.created_at), 'MMM dd, yyyy')}
+                          {format(new Date(customer.created_at), 'dd/MM/yyyy')}
                         </div>
                         <div className="text-xs text-gray-500">
                           {format(new Date(customer.created_at), 'HH:mm')}
