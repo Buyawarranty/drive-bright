@@ -120,7 +120,7 @@ const MotorcycleWarranty = () => {
           <div className="flex items-center justify-between h-16 sm:h-20">
             <div className="flex items-center">
               <Link to="/">
-                <img src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" alt="Buy a Warranty" className="h-6 sm:h-8 w-auto" />
+                <img src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" alt="Buy a Warranty" className="h-6 sm:h-8 w-auto" width="120" height="32" />
               </Link>
             </div>
             
@@ -224,7 +224,7 @@ const MotorcycleWarranty = () => {
               </div>
             </div>
             <div className="relative flex justify-center">
-              <img src={motorcycleHero} alt="Motorcycle Extended Warranty UK - Protect Your Bike" className="w-full h-auto" />
+              <img src={motorcycleHero} alt="Motorcycle Extended Warranty UK - Protect Your Bike" className="w-full h-auto" width="600" height="400" loading="lazy" />
             </div>
           </div>
         </section>
@@ -290,7 +290,7 @@ const MotorcycleWarranty = () => {
               <p className="text-lg font-semibold">No hidden fees. No complicated exclusions.</p>
             </div>
             <div className="relative flex justify-center">
-              <img src={motorcycleCoverage} alt="Motorcycle Warranty Coverage UK" className="w-3/4 h-auto" />
+              <img src={motorcycleCoverage} alt="Motorcycle Warranty Coverage UK" className="w-3/4 h-auto" width="450" height="300" loading="lazy" />
             </div>
           </div>
         </section>
@@ -476,7 +476,7 @@ const MotorcycleWarranty = () => {
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="relative flex justify-center">
-              <img src={motorcyclePanda} alt="Motorcycle Warranty Payment Options" className="w-1/2 h-auto" />
+              <img src={motorcyclePanda} alt="Motorcycle Warranty Payment Options" className="w-1/2 h-auto" width="300" height="300" loading="lazy" />
             </div>
             <div className="space-y-6">
               <h2 className="text-3xl md:text-4xl font-bold">
@@ -602,7 +602,7 @@ const MotorcycleWarranty = () => {
               rel="noopener noreferrer"
               className="fixed bottom-24 right-4 z-40 bg-green-500 text-white p-1 rounded-full shadow-lg hover:bg-green-600 transition-all duration-300 flex items-center justify-center"
             >
-              <img src={whatsappIconNew} alt="WhatsApp" className="w-12 h-12" />
+              <img src={whatsappIconNew} alt="WhatsApp" className="w-12 h-12" width="48" height="48" />
             </a>
             <a
               href="tel:03302295040"

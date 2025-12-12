@@ -53,6 +53,8 @@ export function VehicleWidget({ redirectUrl = window.location.origin, className 
               src="/lovable-uploads/081c51be-1add-43a7-b083-4895a3a22de3.png" 
               alt="UK Plate Symbol" 
               className="w-8 h-6 mr-3 rounded-sm"
+              width="32"
+              height="24"
             />
             <Input
               type="text"

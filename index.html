@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -16,11 +15,9 @@
     <!-- DNS prefetch for third-party analytics (loaded later) -->
     <link rel="dns-prefetch" href="https://www.googletagmanager.com">
     <link rel="dns-prefetch" href="https://www.google-analytics.com">
-    <link rel="dns-prefetch" href="https://connect.facebook.net">
-    <link rel="dns-prefetch" href="https://analytics.tiktok.com">
     
-    <!-- Preload LCP image for faster initial paint -->
-    <link rel="preload" href="/extended_warranty_uk-car-trustworthy-reviews.png" as="image" fetchpriority="high">
+    <!-- Preload LCP image for faster initial paint - with size hints -->
+    <link rel="preload" href="/extended_warranty_uk-car-trustworthy-reviews.png" as="image" type="image/png" fetchpriority="high" imagesizes="(max-width: 768px) 100vw, 600px">
     
     <link rel="icon" href="/favicon.png" type="image/png">
     <link rel="apple-touch-icon" href="/favicon.png">
@@ -53,8 +50,16 @@
       .w-8{width:2rem}
       .border-b-2{border-bottom-width:2px;border-style:solid}
       .border-primary{border-color:#22c55e}
+      /* Prevent CLS for images - reserve space */
+      img{max-width:100%;height:auto}
       /* Hide loading spinner once app loads */
       .app-loading{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#fff}
+      /* Critical layout styles */
+      .bg-white{background:#fff}
+      .overflow-x-hidden{overflow-x:hidden}
+      .grid{display:grid}
+      .gap-4{gap:1rem}
+      @media(min-width:1024px){.lg\\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}}
     </style>
 
     <!-- Optimized font loading - swap for better CLS, preload critical font -->
@@ -73,10 +78,14 @@
     <!-- Main app bundle - loads first -->
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Deferred analytics scripts - load after main content -->
+    <!-- Deferred analytics scripts - load after user interaction or timeout -->
     <script>
-      // Defer all tracking scripts until after page is interactive
+      // Load analytics only after user interaction or 5s timeout
+      var analyticsLoaded = false;
       function loadAnalytics() {
+        if (analyticsLoaded) return;
+        analyticsLoaded = true;
+        
         // Google Tag Manager
         (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
         new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -98,27 +107,15 @@
           gtag('config', 'G-T5P06P67GM');
           gtag('config', 'AW-17325228149');
         };
-        
-        // Trustpilot
-        (function(w,d,s,r,n){w.TrustpilotObject=n;w[n]=w[n]||function(){(w[n].q=w[n].q||[]).push(arguments)};
-        a=d.createElement(s);a.async=1;a.src=r;a.type='text/javascript';f=d.getElementsByTagName(s)[0];
-        f.parentNode.insertBefore(a,f)})(window,document,'script', 'https://invitejs.trustpilot.com/tp.min.js', 'tp');
-        tp('register', '22W6EewqMy8GRws3');
       }
       
-      // Load analytics after page is fully interactive
-      if (document.readyState === 'complete') {
-        setTimeout(loadAnalytics, 100);
-      } else {
-        window.addEventListener('load', function() {
-          // Use requestIdleCallback for optimal timing
-          if ('requestIdleCallback' in window) {
-            requestIdleCallback(loadAnalytics, { timeout: 3000 });
-          } else {
-            setTimeout(loadAnalytics, 2000);
-          }
-        });
-      }
+      // Trigger on user interaction (prioritizes interactivity)
+      ['scroll', 'click', 'touchstart', 'keydown'].forEach(function(evt) {
+        document.addEventListener(evt, loadAnalytics, {once: true, passive: true});
+      });
+      
+      // Fallback timeout after 5 seconds
+      setTimeout(loadAnalytics, 5000);
     </script>
     
     <!-- GTM noscript fallback -->

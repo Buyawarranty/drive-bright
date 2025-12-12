@@ -199,6 +199,8 @@ const PasswordReset = () => {
               src="/lovable-uploads/9b53da8c-70f3-4fc2-8497-e1958a650b4a.png" 
               alt="BuyAWarranty" 
               className="h-12 w-auto mx-auto mb-4"
+              width="150"
+              height="48"
             />
             <CardTitle>Validating Reset Link</CardTitle>
             <CardDescription>
@@ -222,6 +224,8 @@ const PasswordReset = () => {
             src="/lovable-uploads/9b53da8c-70f3-4fc2-8497-e1958a650b4a.png" 
             alt="BuyAWarranty" 
             className="h-12 w-auto mx-auto mb-4"
+            width="150"
+            height="48"
           />
           <CardTitle>Set Your Password</CardTitle>
           <CardDescription>

@@ -121,7 +121,7 @@ const NissanWarranty = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Link to="/" className="hover:opacity-80 transition-opacity">
-                <img src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" alt="Buy a Warranty Logo - Affordable Car Warranty UK" className="h-6 sm:h-8 w-auto" />
+                <img src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" alt="Buy a Warranty Logo - Affordable Car Warranty UK" className="h-6 sm:h-8 w-auto" width="120" height="32" />
               </Link>
             </div>
             
@@ -471,7 +471,7 @@ const NissanWarranty = () => {
           className="fixed bottom-20 right-4 z-40 bg-[#25D366] rounded-full p-1 shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center"
           aria-label="Contact us on WhatsApp"
         >
-          <img src={whatsappIconNew} alt="WhatsApp" className="w-12 h-12" />
+          <img src={whatsappIconNew} alt="WhatsApp" className="w-12 h-12" width="48" height="48" />
         </a>
       )}
 
