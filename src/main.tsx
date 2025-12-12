@@ -2,14 +2,6 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
-// Remove initial loader once React hydrates
-const removeLoader = () => {
-  const loader = document.getElementById('initial-loader');
-  if (loader) {
-    loader.style.display = 'none';
-  }
-};
-
 // Defer third-party scripts for better TBT
 const initDeferredScripts = () => {
   // Use dynamic import for third-party scripts to reduce main bundle
@@ -25,8 +17,21 @@ if ('requestIdleCallback' in window) {
   setTimeout(initDeferredScripts, 3000);
 }
 
-const root = createRoot(document.getElementById("root")!);
-root.render(<App />);
+// Remove initial loader - called after React mounts
+const removeLoader = () => {
+  const loader = document.getElementById('initial-loader');
+  if (loader) {
+    loader.style.display = 'none';
+  }
+};
 
-// Remove loader after initial render
-removeLoader();
+const root = createRoot(document.getElementById("root")!);
+
+// Wrap App to ensure loader is removed after mount
+const AppWithLoaderRemoval = () => {
+  // Remove loader immediately when this component renders
+  removeLoader();
+  return <App />;
+};
+
+root.render(<AppWithLoaderRemoval />);
