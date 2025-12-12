@@ -68,8 +68,12 @@
   </head>
 
   <body>
-    <!-- App root - React will render here -->
-    <div id="root"></div>
+    <!-- App root with loading state -->
+    <div id="root">
+      <div class="app-loading" id="initial-loader">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    </div>
     
     <!-- Main app bundle - loads first -->
     <script type="module" src="/src/main.tsx"></script>
