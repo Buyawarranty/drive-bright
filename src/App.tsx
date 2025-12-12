@@ -7,10 +7,12 @@ import { redirectWwwToNonWww } from "@/utils/wwwRedirect";
 import Index from "./pages/Index";
 import ScrollToTop from "@/components/ScrollToTop";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+
+// Lazy load SubscriptionProvider since it uses auth hooks
+const SubscriptionProvider = lazy(() => import("@/contexts/SubscriptionContext").then(m => ({ default: m.SubscriptionProvider })));
 
 // Lazy load non-critical UI components
 const WebsiteFooter = lazy(() => import("@/components/WebsiteFooter"));
@@ -134,12 +136,13 @@ const App = () => {
   return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <SubscriptionProvider>
-        <CartProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <ScrollToTop />
+      <Suspense fallback={null}>
+        <SubscriptionProvider>
+          <CartProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <ScrollToTop />
               <Suspense fallback={null}>
                 <PageViewTracker />
                 <CookieBanner />
@@ -210,7 +213,8 @@ const App = () => {
             </div>
           </BrowserRouter>
         </CartProvider>
-      </SubscriptionProvider>
+        </SubscriptionProvider>
+      </Suspense>
     </TooltipProvider>
   </QueryClientProvider>
   );
