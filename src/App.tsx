@@ -6,13 +6,13 @@ import { redirectWwwToNonWww } from "@/utils/wwwRedirect";
 // Critical path components - eagerly loaded for fast LCP
 import Index from "./pages/Index";
 import ScrollToTop from "@/components/ScrollToTop";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
+import { CartProvider } from "@/contexts/CartContext";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 
 // Lazy load non-critical UI components
-const Toaster = lazy(() => import("@/components/ui/toaster").then(m => ({ default: m.Toaster })));
-const Sonner = lazy(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
-const TooltipProvider = lazy(() => import("@/components/ui/tooltip").then(m => ({ default: m.TooltipProvider })));
-const SubscriptionProvider = lazy(() => import("@/contexts/SubscriptionContext").then(m => ({ default: m.SubscriptionProvider })));
-const CartProvider = lazy(() => import("@/contexts/CartContext").then(m => ({ default: m.CartProvider })));
 const WebsiteFooter = lazy(() => import("@/components/WebsiteFooter"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const CookieBanner = lazy(() => import("@/components/CookieBanner").then(m => ({ default: m.CookieBanner })));
@@ -133,16 +133,13 @@ const App = () => {
 
   return (
   <QueryClientProvider client={queryClient}>
-    <Suspense fallback={minimalFallback}>
-      <TooltipProvider>
-        <SubscriptionProvider>
-          <CartProvider>
-            <Suspense fallback={null}>
-              <Toaster />
-              <Sonner />
-            </Suspense>
-            <BrowserRouter>
-              <ScrollToTop />
+    <TooltipProvider>
+      <SubscriptionProvider>
+        <CartProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <ScrollToTop />
               <Suspense fallback={null}>
                 <PageViewTracker />
                 <CookieBanner />
@@ -215,7 +212,6 @@ const App = () => {
         </CartProvider>
       </SubscriptionProvider>
     </TooltipProvider>
-    </Suspense>
   </QueryClientProvider>
   );
 };
