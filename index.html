@@ -8,17 +8,22 @@
     <meta name="description" content="Get instant warranty quotes for cars, vans, EVs & motorbikes. UK's trusted warranty provider with 5-star reviews. Flexible plans with no hidden fees." />
     <meta name="author" content="Buy A Warranty" />
     
-    <!-- Preconnect to external domains for faster loading -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <!-- Critical resource hints - preconnect to essential domains only -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+    <link rel="preconnect" href="https://mzlpuxzwyrcyrgrongeb.supabase.co" crossorigin>
+    
+    <!-- DNS prefetch for third-party analytics (loaded later) -->
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
     <link rel="dns-prefetch" href="https://www.google-analytics.com">
     <link rel="dns-prefetch" href="https://connect.facebook.net">
     <link rel="dns-prefetch" href="https://analytics.tiktok.com">
     
+    <!-- Preload LCP image for faster initial paint -->
+    <link rel="preload" href="/extended_warranty_uk-car-trustworthy-reviews.png" as="image" fetchpriority="high">
+    
     <link rel="icon" href="/favicon.png" type="image/png">
     <link rel="apple-touch-icon" href="/favicon.png">
-    <link rel="shortcut icon" href="/favicon.png">
 
     <meta property="og:title" content="Buy A Warranty | UK Vehicle Warranty & Extended Cover" />
     <meta property="og:description" content="Get instant warranty quotes for cars, vans, EVs & motorbikes. UK's trusted warranty provider with 5-star reviews. Flexible plans with no hidden fees." />
@@ -29,48 +34,95 @@
     <meta name="twitter:site" content="@lovable_dev" />
     <meta name="twitter:image" content="https://buyawarranty.co.uk/favicon.png" />
 
-    <!-- Optimized font loading with display=swap for faster render -->
-    <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;700&display=swap" rel="stylesheet"></noscript>
-    
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-PJNTC6DX');</script>
-    <!-- End Google Tag Manager -->
-    
-    <!-- Google tag (gtag.js) - Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-T5P06P67GM"></script>
-    <!-- Google tag (gtag.js) - Ads -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17325228149"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+    <!-- Critical CSS for above-the-fold content - prevents FOUC and improves FCP -->
+    <style>
+      /* Critical path CSS inline for instant rendering */
+      *,*::before,*::after{box-sizing:border-box}
+      html{-webkit-text-size-adjust:100%;line-height:1.5}
+      body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#fff;color:#1a1a1a}
+      #root{min-height:100vh;display:flex;flex-direction:column}
+      .min-h-screen{min-height:100vh}
+      .flex{display:flex}
+      .flex-col{flex-direction:column}
+      .items-center{align-items:center}
+      .justify-center{justify-content:center}
+      .animate-spin{animation:spin 1s linear infinite}
+      @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+      .rounded-full{border-radius:9999px}
+      .h-8{height:2rem}
+      .w-8{width:2rem}
+      .border-b-2{border-bottom-width:2px;border-style:solid}
+      .border-primary{border-color:#22c55e}
+      /* Hide loading spinner once app loads */
+      .app-loading{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#fff}
+    </style>
 
-      gtag('config', 'G-T5P06P67GM');
-      gtag('config', 'AW-17325228149');
-    </script>
-    
-    <!-- Facebook & TikTok Pixels loaded via thirdPartyScripts.ts -->
-    
-    <!-- Trustpilot Invitation Script -->
-    <script>
-        (function(w,d,s,r,n){w.TrustpilotObject=n;w[n]=w[n]||function(){(w[n].q=w[n].q||[]).push(arguments)};
-            a=d.createElement(s);a.async=1;a.src=r;a.type='text/java'+s;f=d.getElementsByTagName(s)[0];
-            f.parentNode.insertBefore(a,f)})(window,document,'script', 'https://invitejs.trustpilot.com/tp.min.js', 'tp');
-            tp('register', '22W6EewqMy8GRws3');
-    </script>
+    <!-- Optimized font loading - swap for better CLS, preload critical font -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"></noscript>
   </head>
 
   <body>
-    <!-- Google Tag Manager (noscript) -->
+    <!-- Inline loading state for perceived performance -->
+    <div id="root">
+      <div class="app-loading" id="initial-loader">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    </div>
+    
+    <!-- Main app bundle - loads first -->
+    <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Deferred analytics scripts - load after main content -->
+    <script>
+      // Defer all tracking scripts until after page is interactive
+      function loadAnalytics() {
+        // Google Tag Manager
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-PJNTC6DX');
+        
+        // Google Analytics
+        var gaScript = document.createElement('script');
+        gaScript.async = true;
+        gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-T5P06P67GM';
+        document.head.appendChild(gaScript);
+        
+        gaScript.onload = function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          window.gtag = gtag;
+          gtag('js', new Date());
+          gtag('config', 'G-T5P06P67GM');
+          gtag('config', 'AW-17325228149');
+        };
+        
+        // Trustpilot
+        (function(w,d,s,r,n){w.TrustpilotObject=n;w[n]=w[n]||function(){(w[n].q=w[n].q||[]).push(arguments)};
+        a=d.createElement(s);a.async=1;a.src=r;a.type='text/javascript';f=d.getElementsByTagName(s)[0];
+        f.parentNode.insertBefore(a,f)})(window,document,'script', 'https://invitejs.trustpilot.com/tp.min.js', 'tp');
+        tp('register', '22W6EewqMy8GRws3');
+      }
+      
+      // Load analytics after page is fully interactive
+      if (document.readyState === 'complete') {
+        setTimeout(loadAnalytics, 100);
+      } else {
+        window.addEventListener('load', function() {
+          // Use requestIdleCallback for optimal timing
+          if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadAnalytics, { timeout: 3000 });
+          } else {
+            setTimeout(loadAnalytics, 2000);
+          }
+        });
+      }
+    </script>
+    
+    <!-- GTM noscript fallback -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PJNTC6DX"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

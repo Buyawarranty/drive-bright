@@ -1,48 +1,53 @@
-import React, { Suspense, lazy, useEffect } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import React, { Suspense, lazy, useEffect, memo } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
-import { CartProvider } from "@/contexts/CartContext";
 import { redirectWwwToNonWww } from "@/utils/wwwRedirect";
-import { preloadCriticalRoutes } from "@/utils/preloadRoutes";
 
-// Eager load critical components
+// Critical path components - eagerly loaded for fast LCP
 import Index from "./pages/Index";
-import WebsiteFooter from "@/components/WebsiteFooter";
 import ScrollToTop from "@/components/ScrollToTop";
-import NotFound from "./pages/NotFound";
-import { CookieBanner } from "@/components/CookieBanner";
-import { PageViewTracker } from "@/components/PageViewTracker";
-import { SeasonalOfferBanner } from "@/components/SeasonalOfferBanner";
-import StickyNavigation from "@/components/StickyNavigation";
 
-// Component to conditionally render banner only on homepage
-const ConditionalSeasonalBanner = () => {
+// Lazy load non-critical UI components
+const Toaster = lazy(() => import("@/components/ui/toaster").then(m => ({ default: m.Toaster })));
+const Sonner = lazy(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
+const TooltipProvider = lazy(() => import("@/components/ui/tooltip").then(m => ({ default: m.TooltipProvider })));
+const SubscriptionProvider = lazy(() => import("@/contexts/SubscriptionContext").then(m => ({ default: m.SubscriptionProvider })));
+const CartProvider = lazy(() => import("@/contexts/CartContext").then(m => ({ default: m.CartProvider })));
+const WebsiteFooter = lazy(() => import("@/components/WebsiteFooter"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const CookieBanner = lazy(() => import("@/components/CookieBanner").then(m => ({ default: m.CookieBanner })));
+const PageViewTracker = lazy(() => import("@/components/PageViewTracker").then(m => ({ default: m.PageViewTracker })));
+const SeasonalOfferBanner = lazy(() => import("@/components/SeasonalOfferBanner").then(m => ({ default: m.SeasonalOfferBanner })));
+const StickyNavigation = lazy(() => import("@/components/StickyNavigation"));
+
+// Lightweight conditional components
+const ConditionalSeasonalBanner = memo(() => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const hasStep = searchParams.has('step');
   const isHomepage = (location.pathname === '/' || location.pathname === '/home' || location.pathname === '/home/') && !hasStep;
   
   if (!isHomepage) return null;
-  return <SeasonalOfferBanner />;
-};
+  return (
+    <Suspense fallback={null}>
+      <SeasonalOfferBanner />
+    </Suspense>
+  );
+});
 
-// Component to conditionally hide footer during checkout steps
-const ConditionalFooter = () => {
+const ConditionalFooter = memo(() => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const step = searchParams.get('step');
-  
-  // Check if step starts with 2, 3, 4, 5, or 6 (handles cases like "3.", "3", "4" etc.)
-  // Also check for any step that begins with these numbers
   const isCheckoutStep = step && /^[2-6]/.test(step);
   
   if (isCheckoutStep) return null;
-  return <WebsiteFooter />;
-};
+  return (
+    <Suspense fallback={null}>
+      <WebsiteFooter />
+    </Suspense>
+  );
+});
 
 // Lazy load pages
 const FAQ = lazy(() => import("./pages/FAQ"));
@@ -105,35 +110,44 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  // Redirect www to non-www on mount and preload critical routes
+  // Redirect www to non-www on mount, preload routes after idle
   useEffect(() => {
     redirectWwwToNonWww();
     
-    // Preload critical routes after initial load
-    if (document.readyState === 'complete') {
-      preloadCriticalRoutes();
+    // Defer route preloading to avoid blocking main thread
+    const preloadRoutes = () => {
+      import('@/utils/preloadRoutes').then(({ preloadCriticalRoutes }) => {
+        preloadCriticalRoutes();
+      });
+    };
+    
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(preloadRoutes, { timeout: 5000 });
     } else {
-      window.addEventListener('load', preloadCriticalRoutes);
-      return () => window.removeEventListener('load', preloadCriticalRoutes);
+      setTimeout(preloadRoutes, 3000);
     }
   }, []);
 
+  // Minimal loading fallback for better perceived performance
+  const minimalFallback = <div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>;
+
   return (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <SubscriptionProvider>
-        <CartProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <ScrollToTop />
-            <PageViewTracker />
-            <CookieBanner />
-            <div className="min-h-screen flex flex-col w-full">
-              <StickyNavigation />
-              <ConditionalSeasonalBanner />
-              <main className="flex-1 pb-16 w-full overflow-x-hidden">
-                <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
+    <Suspense fallback={null}>
+      <TooltipProvider>
+        <SubscriptionProvider>
+          <CartProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <ScrollToTop />
+              <PageViewTracker />
+              <CookieBanner />
+              <div className="min-h-screen flex flex-col w-full">
+                <StickyNavigation />
+                <ConditionalSeasonalBanner />
+                <main className="flex-1 pb-16 w-full overflow-x-hidden">
+                  <Suspense fallback={minimalFallback}>
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/home" element={<Index />} />
@@ -195,6 +209,7 @@ const App = () => {
         </CartProvider>
       </SubscriptionProvider>
     </TooltipProvider>
+    </Suspense>
   </QueryClientProvider>
   );
 };

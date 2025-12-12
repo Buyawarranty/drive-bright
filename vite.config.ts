@@ -24,36 +24,68 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
-    exclude: ['fsevents']
+    exclude: ['fsevents'],
+    include: ['react', 'react-dom', 'react-router-dom'] // Pre-bundle critical deps
   },
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          supabase: ['@supabase/supabase-js'],
-          query: ['@tanstack/react-query'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-select', '@radix-ui/react-tabs'],
-          forms: ['react-hook-form', '@hookform/resolvers', 'zod']
+        manualChunks: (id) => {
+          // Core React - loaded first
+          if (id.includes('react-dom') || (id.includes('react') && !id.includes('react-router') && !id.includes('react-query') && !id.includes('react-hook-form'))) {
+            return 'react-core';
+          }
+          // Router - needed for navigation
+          if (id.includes('react-router')) {
+            return 'router';
+          }
+          // Supabase - defer as it's heavy
+          if (id.includes('@supabase')) {
+            return 'supabase';
+          }
+          // Query library - can be deferred
+          if (id.includes('@tanstack/react-query')) {
+            return 'query';
+          }
+          // UI components - split by usage
+          if (id.includes('@radix-ui')) {
+            return 'ui-radix';
+          }
+          // Forms - only needed on specific pages
+          if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('zod')) {
+            return 'forms';
+          }
+          // Charts - only on admin
+          if (id.includes('recharts')) {
+            return 'charts';
+          }
+          // Lucide icons - frequently used
+          if (id.includes('lucide-react')) {
+            return 'icons';
+          }
         }
       }
     },
-    chunkSizeWarningLimit: 1600,
+    chunkSizeWarningLimit: 500, // Reduced for better code splitting
     target: 'esnext',
     minify: 'terser',
     terserOptions: {
       compress: {
         drop_console: true,
         drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info'],
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
         passes: 2
       },
       mangle: {
         safari10: true
       }
     },
-    cssMinify: true
+    cssMinify: true,
+    cssCodeSplit: true, // Split CSS for faster loading
+    modulePreload: {
+      polyfill: true // Ensure module preload works across browsers
+    },
+    sourcemap: false // Disable sourcemaps in production for smaller builds
   },
   esbuild: {
     drop: mode === 'production' ? ['console', 'debugger'] : [],
