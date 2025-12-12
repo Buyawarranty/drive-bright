@@ -8,11 +8,9 @@ import Index from "./pages/Index";
 import ScrollToTop from "@/components/ScrollToTop";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { CartProvider } from "@/contexts/CartContext";
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-
-// Lazy load SubscriptionProvider since it uses auth hooks
-const SubscriptionProvider = lazy(() => import("@/contexts/SubscriptionContext").then(m => ({ default: m.SubscriptionProvider })));
 
 // Lazy load non-critical UI components
 const WebsiteFooter = lazy(() => import("@/components/WebsiteFooter"));
@@ -136,17 +134,16 @@ const App = () => {
   return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Suspense fallback={null}>
-        <SubscriptionProvider>
-          <CartProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <ScrollToTop />
-              <Suspense fallback={null}>
-                <PageViewTracker />
-                <CookieBanner />
-              </Suspense>
+      <CartProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <SubscriptionProvider>
+            <ScrollToTop />
+            <Suspense fallback={null}>
+              <PageViewTracker />
+              <CookieBanner />
+            </Suspense>
               <div className="min-h-screen flex flex-col w-full">
                 <Suspense fallback={<div className="h-16" />}>
                   <StickyNavigation />
@@ -211,10 +208,9 @@ const App = () => {
               </main>
               <ConditionalFooter />
             </div>
-          </BrowserRouter>
-        </CartProvider>
-        </SubscriptionProvider>
-      </Suspense>
+          </SubscriptionProvider>
+        </BrowserRouter>
+      </CartProvider>
     </TooltipProvider>
   </QueryClientProvider>
   );
