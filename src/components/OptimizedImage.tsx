@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 
 interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
@@ -12,9 +12,9 @@ interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> 
 /**
  * Optimized image component with lazy loading and intersection observer
  * Improves Core Web Vitals by deferring off-screen images
- * Automatically adds proper dimensions to prevent CLS
+ * Priority images load immediately for LCP optimization
  */
-export const OptimizedImage: React.FC<OptimizedImageProps> = ({
+export const OptimizedImage: React.FC<OptimizedImageProps> = memo(({
   src,
   alt,
   width,
@@ -24,12 +24,18 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   style,
   ...props
 }) => {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(priority); // Priority images start as loaded
   const [isInView, setIsInView] = useState(priority);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     if (priority) return; // Skip observer for priority images
+
+    // Use native lazy loading support check
+    if ('loading' in HTMLImageElement.prototype) {
+      setIsInView(true);
+      return;
+    }
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -41,7 +47,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         });
       },
       {
-        rootMargin: '100px', // Start loading before image enters viewport
+        rootMargin: '200px', // Start loading earlier for smoother experience
       }
     );
 
@@ -60,6 +66,26 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     ...(width && height && { aspectRatio: `${width}/${height}` }),
   };
 
+  // For priority images, render immediately with fetchpriority
+  if (priority) {
+    return (
+      <img
+        ref={imgRef}
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        loading="eager"
+        decoding="async"
+        // @ts-ignore - fetchpriority is valid but not in React types yet
+        fetchpriority="high"
+        className={className}
+        style={imageStyle}
+        {...props}
+      />
+    );
+  }
+
   return (
     <img
       ref={imgRef}
@@ -67,16 +93,12 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
       alt={alt}
       width={width}
       height={height}
-      loading={priority ? 'eager' : 'lazy'}
+      loading="lazy"
       decoding="async"
-      className={`${className} ${
-        priority 
-          ? '' 
-          : `${isLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`
-      }`}
+      className={`${className} ${isLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}
       style={imageStyle}
       onLoad={() => setIsLoaded(true)}
       {...props}
     />
   );
-};
+});
