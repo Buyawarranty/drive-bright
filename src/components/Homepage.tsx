@@ -1,14 +1,18 @@
-import React, { useState, useEffect, lazy, Suspense, useCallback, memo } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
-import { Check, ArrowRight, Car, Truck, Battery, Bike, X, Zap, Shield, Clock, Phone } from 'lucide-react';
+import { Check, ArrowRight, Star, Shield, Clock, Zap, Car, Truck, Battery, Bike, Menu, X, Phone, FileCheck, MessageCircle } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Link } from 'react-router-dom';
+import WebsiteFooter from './WebsiteFooter';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { VoucherBanner } from './VoucherBanner';
+import { EmailCapturePopup } from './EmailCapturePopup';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import LazySection from './homepage/LazySection';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
-import { supabase } from '@/integrations/supabase/client';
-import { trackButtonClick, trackQuoteRequest } from '@/utils/analytics';
 
 // Lazy load heavy components to reduce initial bundle size
 const HomepageFAQ = lazy(() => import('./HomepageFAQ'));
@@ -17,18 +21,12 @@ const AdditionalCoverSection = lazy(() => import('./homepage/AdditionalCoverSect
 const WarrantyBenefitsSection = lazy(() => import('./homepage/WarrantyBenefitsSection'));
 const CoverClaritySection = lazy(() => import('./homepage/CoverClaritySection'));
 const VehicleCoverageSection = lazy(() => import('./homepage/VehicleCoverageSection'));
-const VoucherBanner = lazy(() => import('./VoucherBanner').then(m => ({ default: m.VoucherBanner })));
-const EmailCapturePopup = lazy(() => import('./EmailCapturePopup').then(m => ({ default: m.EmailCapturePopup })));
-
-// Lazy load tooltip - not critical for initial render
-const TooltipProvider = lazy(() => import('@/components/ui/tooltip').then(m => ({ default: m.TooltipProvider })));
-const Tooltip = lazy(() => import('@/components/ui/tooltip').then(m => ({ default: m.Tooltip })));
-const TooltipTrigger = lazy(() => import('@/components/ui/tooltip').then(m => ({ default: m.TooltipTrigger })));
-const TooltipContent = lazy(() => import('@/components/ui/tooltip').then(m => ({ default: m.TooltipContent })));
 
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import MileageSlider from './MileageSlider';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
+import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
 
 interface VehicleData {
   regNumber: string;

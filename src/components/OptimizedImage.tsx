@@ -7,8 +7,6 @@ interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> 
   height?: number;
   priority?: boolean;
   className?: string;
-  /** Enable native lazy loading only (faster, less JS) */
-  nativeOnly?: boolean;
 }
 
 /**
@@ -24,15 +22,14 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = memo(({
   priority = false,
   className = '',
   style,
-  nativeOnly = true, // Default to native-only for better performance
   ...props
 }) => {
-  const [isLoaded, setIsLoaded] = useState(priority);
-  const [isInView, setIsInView] = useState(priority || nativeOnly);
+  const [isLoaded, setIsLoaded] = useState(priority); // Priority images start as loaded
+  const [isInView, setIsInView] = useState(priority);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    if (priority || nativeOnly) return; // Skip observer for priority/native-only images
+    if (priority) return; // Skip observer for priority images
 
     // Use native lazy loading support check
     if ('loading' in HTMLImageElement.prototype) {
@@ -61,53 +58,47 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = memo(({
     return () => {
       observer.disconnect();
     };
-  }, [priority, nativeOnly]);
+  }, [priority]);
 
   // Prevent layout shift by providing explicit dimensions
   const imageStyle: React.CSSProperties = {
     ...style,
-    ...(width && height && { 
-      aspectRatio: `${width}/${height}`,
-      width: '100%',
-      height: 'auto'
-    }),
-  };
-
-  // Common props for both priority and non-priority images
-  const commonProps = {
-    ref: imgRef,
-    alt,
-    width,
-    height,
-    className: `${className} ${isLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`,
-    style: imageStyle,
-    onLoad: () => setIsLoaded(true),
-    ...props
+    ...(width && height && { aspectRatio: `${width}/${height}` }),
   };
 
   // For priority images, render immediately with fetchpriority
   if (priority) {
     return (
       <img
-        {...commonProps}
+        ref={imgRef}
         src={src}
+        alt={alt}
+        width={width}
+        height={height}
         loading="eager"
         decoding="async"
         // @ts-ignore - fetchpriority is valid but not in React types yet
         fetchpriority="high"
         className={className}
+        style={imageStyle}
+        {...props}
       />
     );
   }
 
   return (
     <img
-      {...commonProps}
+      ref={imgRef}
       src={isInView ? src : undefined}
+      alt={alt}
+      width={width}
+      height={height}
       loading="lazy"
       decoding="async"
+      className={`${className} ${isLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}
+      style={imageStyle}
+      onLoad={() => setIsLoaded(true)}
+      {...props}
     />
   );
 });
-
-OptimizedImage.displayName = 'OptimizedImage';
