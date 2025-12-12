@@ -133,18 +133,24 @@ const App = () => {
 
   return (
   <QueryClientProvider client={queryClient}>
-    <Suspense fallback={null}>
+    <Suspense fallback={minimalFallback}>
       <TooltipProvider>
         <SubscriptionProvider>
           <CartProvider>
-            <Toaster />
-            <Sonner />
+            <Suspense fallback={null}>
+              <Toaster />
+              <Sonner />
+            </Suspense>
             <BrowserRouter>
               <ScrollToTop />
-              <PageViewTracker />
-              <CookieBanner />
+              <Suspense fallback={null}>
+                <PageViewTracker />
+                <CookieBanner />
+              </Suspense>
               <div className="min-h-screen flex flex-col w-full">
-                <StickyNavigation />
+                <Suspense fallback={<div className="h-16" />}>
+                  <StickyNavigation />
+                </Suspense>
                 <ConditionalSeasonalBanner />
                 <main className="flex-1 pb-16 w-full overflow-x-hidden">
                   <Suspense fallback={minimalFallback}>
@@ -188,13 +194,13 @@ const App = () => {
                     <Route path="/car-extended-warranty/" element={<CarExtendedWarranty />} />
                     <Route path="/car-extended-warranty/hyundai/" element={<HyundaiWarranty />} />
                     <Route path="/car-extended-warranty/bmw/" element={<BMWWarranty />} />
-        <Route path="/car-extended-warranty/audi/" element={<AudiWarranty />} />
-        <Route path="/car-extended-warranty/mercedes-benz/" element={<MercedesWarranty />} />
-        <Route path="/car-extended-warranty/volkswagen/" element={<VolkswagenWarranty />} />
+                    <Route path="/car-extended-warranty/audi/" element={<AudiWarranty />} />
+                    <Route path="/car-extended-warranty/mercedes-benz/" element={<MercedesWarranty />} />
+                    <Route path="/car-extended-warranty/volkswagen/" element={<VolkswagenWarranty />} />
                     <Route path="/car-extended-warranty/ford/" element={<FordWarranty />} />
-        <Route path="/car-extended-warranty/nissan/" element={<NissanWarranty />} />
-        <Route path="/car-extended-warranty/land-rover/" element={<LandRoverWarranty />} />
-        <Route path="/car-extended-warranty/jaguar/" element={<JaguarWarranty />} />
+                    <Route path="/car-extended-warranty/nissan/" element={<NissanWarranty />} />
+                    <Route path="/car-extended-warranty/land-rover/" element={<LandRoverWarranty />} />
+                    <Route path="/car-extended-warranty/jaguar/" element={<JaguarWarranty />} />
                     <Route path="/car-extended-warranty/skoda/" element={<SkodaWarranty />} />
                     <Route path="/used-car-warranty-uk/" element={<UsedCarWarrantyUK />} />
                     
