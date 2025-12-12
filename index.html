@@ -68,14 +68,15 @@
   </head>
 
   <body>
-    <!-- App root with loading state -->
-    <div id="root">
-      <div class="app-loading" id="initial-loader">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+    <!-- Initial loader - shown until React mounts -->
+    <div id="initial-loader" class="app-loading">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
     </div>
     
-    <!-- Main app bundle - loads first -->
+    <!-- App root - React mounts here -->
+    <div id="root"></div>
+    
+    <!-- Main app bundle -->
     <script type="module" src="/src/main.tsx"></script>
     
     <!-- Deferred analytics scripts - load after user interaction or timeout -->

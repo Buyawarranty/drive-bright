@@ -2,12 +2,6 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
-// Remove initial loader immediately
-const loader = document.getElementById('initial-loader');
-if (loader) {
-  loader.style.display = 'none';
-}
-
 // Defer third-party scripts for better TBT
 const initDeferredScripts = () => {
   import('@/utils/thirdPartyScripts').then(({ initThirdPartyScripts }) => {
@@ -21,5 +15,16 @@ if ('requestIdleCallback' in window) {
   setTimeout(initDeferredScripts, 3000);
 }
 
+// Remove initial loader after React renders
+const removeLoader = () => {
+  const loader = document.getElementById('initial-loader');
+  if (loader) {
+    loader.style.display = 'none';
+  }
+};
+
 const root = createRoot(document.getElementById("root")!);
 root.render(<App />);
+
+// Hide loader after render
+removeLoader();
