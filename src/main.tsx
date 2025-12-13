@@ -1,30 +1,21 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+import { initPerformanceMonitoring } from '@/utils/performanceMonitor'
+import { initThirdPartyScripts } from '@/utils/thirdPartyScripts'
 
-// Defer third-party scripts for better TBT
-const initDeferredScripts = () => {
-  import('@/utils/thirdPartyScripts').then(({ initThirdPartyScripts }) => {
-    initThirdPartyScripts();
-  });
-};
-
-if ('requestIdleCallback' in window) {
-  requestIdleCallback(initDeferredScripts, { timeout: 5000 });
-} else {
-  setTimeout(initDeferredScripts, 3000);
+// Initialize performance monitoring only in development
+if (process.env.NODE_ENV === 'development') {
+  initPerformanceMonitoring();
 }
 
-// Remove initial loader after React renders
-const removeLoader = () => {
-  const loader = document.getElementById('initial-loader');
-  if (loader) {
-    loader.style.display = 'none';
-  }
-};
+// Initialize deferred third-party scripts
+if (typeof window !== 'undefined') {
+  setTimeout(() => {
+    initThirdPartyScripts();
+  }, 0);
+}
 
-const root = createRoot(document.getElementById("root")!);
-root.render(<App />);
-
-// Hide loader after render
-removeLoader();
+createRoot(document.getElementById("root")!).render(
+  <App />
+)

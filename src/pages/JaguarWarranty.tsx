@@ -627,7 +627,7 @@ const JaguarWarranty = () => {
               className="bg-[#25D366] p-1 rounded-full shadow-lg hover:bg-[#128C7E] transition-all hover:scale-110 flex items-center justify-center"
               aria-label="WhatsApp us"
             >
-              <img src={whatsappIconNew} alt="WhatsApp" className="w-12 h-12" width="48" height="48" />
+              <img src={whatsappIconNew} alt="WhatsApp" className="w-12 h-12" />
             </a>
             {showScrollTop && (
               <button

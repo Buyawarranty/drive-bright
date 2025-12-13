@@ -125,7 +125,7 @@ const MercedesWarranty = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <Link to="/" className="hover:opacity-80 transition-opacity">
-                  <img src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" alt="Buy a Warranty Logo - Affordable Car Warranty UK" className="h-6 sm:h-8 w-auto" width="120" height="32" />
+                  <img src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" alt="Buy a Warranty Logo - Affordable Car Warranty UK" className="h-6 sm:h-8 w-auto" />
                 </Link>
               </div>
               
@@ -252,7 +252,7 @@ const MercedesWarranty = () => {
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-[#25D366] hover:bg-[#20BD5A] text-white rounded-lg transition-colors"
                   >
-                    <img src={whatsappIconNew} alt="WhatsApp" className="w-6 h-6" width="24" height="24" />
+                    <img src={whatsappIconNew} alt="WhatsApp" className="w-6 h-6" />
                     <span className="text-lg font-medium">WhatsApp Us</span>
                   </a>
                 </div>

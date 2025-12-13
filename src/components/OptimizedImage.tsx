@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, memo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
@@ -12,9 +12,9 @@ interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> 
 /**
  * Optimized image component with lazy loading and intersection observer
  * Improves Core Web Vitals by deferring off-screen images
- * Priority images load immediately for LCP optimization
+ * Automatically adds proper dimensions to prevent CLS
  */
-export const OptimizedImage: React.FC<OptimizedImageProps> = memo(({
+export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   src,
   alt,
   width,
@@ -24,64 +24,59 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = memo(({
   style,
   ...props
 }) => {
-  const [isLoaded, setIsLoaded] = useState(priority);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(priority);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    if (priority) return;
+    if (priority) return; // Skip observer for priority images
 
-    // Use native lazy loading - no need for IntersectionObserver
-    setIsInView(true);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsInView(true);
+            observer.disconnect();
+          }
+        });
+      },
+      {
+        rootMargin: '100px', // Start loading before image enters viewport
+      }
+    );
+
+    if (imgRef.current) {
+      observer.observe(imgRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
   }, [priority]);
 
   // Prevent layout shift by providing explicit dimensions
   const imageStyle: React.CSSProperties = {
     ...style,
-    // Always set aspect ratio when dimensions provided to prevent CLS
-    ...(width && height && { 
-      aspectRatio: `${width}/${height}`,
-      width: '100%',
-      height: 'auto'
-    }),
+    ...(width && height && { aspectRatio: `${width}/${height}` }),
   };
-
-  // Common img attributes for performance
-  const commonProps = {
-    ref: imgRef,
-    alt,
-    width,
-    height,
-    decoding: 'async' as const,
-    ...props
-  };
-
-  // For priority images, render immediately with fetchpriority
-  if (priority) {
-    return (
-      <img
-        {...commonProps}
-        src={src}
-        loading="eager"
-        // @ts-ignore - fetchpriority is valid but not in React types yet
-        fetchpriority="high"
-        className={className}
-        style={imageStyle}
-      />
-    );
-  }
 
   return (
     <img
-      {...commonProps}
+      ref={imgRef}
       src={isInView ? src : undefined}
-      data-src={src}
-      loading="lazy"
-      className={`${className} ${isLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}
+      alt={alt}
+      width={width}
+      height={height}
+      loading={priority ? 'eager' : 'lazy'}
+      decoding="async"
+      className={`${className} ${
+        priority 
+          ? '' 
+          : `${isLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`
+      }`}
       style={imageStyle}
       onLoad={() => setIsLoaded(true)}
+      {...props}
     />
   );
-});
-
-OptimizedImage.displayName = 'OptimizedImage';
+};

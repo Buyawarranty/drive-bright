@@ -61,7 +61,7 @@ const MotorbikeWarranty = () => {
             {/* Logo */}
             <div className="flex items-center">
               <Link to="/">
-                <img src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" alt="Buy a Warranty" className="h-6 sm:h-8 w-auto" width="120" height="32" />
+                <img src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" alt="Buy a Warranty" className="h-6 sm:h-8 w-auto" />
               </Link>
             </div>
             
@@ -609,7 +609,7 @@ const MotorbikeWarranty = () => {
               className="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#20BA5A] text-white p-1 rounded-full shadow-lg transition-all duration-300 hover:scale-110 flex items-center justify-center"
               onClick={() => trackButtonClick('motorbike_whatsapp_float')}
             >
-              <img src={whatsappIconNew} alt="WhatsApp" className="w-12 h-12" width="48" height="48" />
+              <img src={whatsappIconNew} alt="WhatsApp" className="w-12 h-12" />
             </a>
             <a
               href="tel:02033228888"

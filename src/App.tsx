@@ -1,53 +1,48 @@
-import React, { Suspense, lazy, useEffect, memo } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { redirectWwwToNonWww } from "@/utils/wwwRedirect";
-
-// Critical path components - eagerly loaded for fast LCP
-import Index from "./pages/Index";
-import ScrollToTop from "@/components/ScrollToTop";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { CartProvider } from "@/contexts/CartContext";
-import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
+import React, { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
+import { CartProvider } from "@/contexts/CartContext";
+import { redirectWwwToNonWww } from "@/utils/wwwRedirect";
+import { preloadCriticalRoutes } from "@/utils/preloadRoutes";
 
-// Lazy load non-critical UI components
-const WebsiteFooter = lazy(() => import("@/components/WebsiteFooter"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const CookieBanner = lazy(() => import("@/components/CookieBanner").then(m => ({ default: m.CookieBanner })));
-const PageViewTracker = lazy(() => import("@/components/PageViewTracker").then(m => ({ default: m.PageViewTracker })));
-const SeasonalOfferBanner = lazy(() => import("@/components/SeasonalOfferBanner").then(m => ({ default: m.SeasonalOfferBanner })));
-const StickyNavigation = lazy(() => import("@/components/StickyNavigation"));
+// Eager load critical components
+import Index from "./pages/Index";
+import WebsiteFooter from "@/components/WebsiteFooter";
+import ScrollToTop from "@/components/ScrollToTop";
+import NotFound from "./pages/NotFound";
+import { CookieBanner } from "@/components/CookieBanner";
+import { PageViewTracker } from "@/components/PageViewTracker";
+import { SeasonalOfferBanner } from "@/components/SeasonalOfferBanner";
+import StickyNavigation from "@/components/StickyNavigation";
 
-// Lightweight conditional components
-const ConditionalSeasonalBanner = memo(() => {
+// Component to conditionally render banner only on homepage
+const ConditionalSeasonalBanner = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const hasStep = searchParams.has('step');
   const isHomepage = (location.pathname === '/' || location.pathname === '/home' || location.pathname === '/home/') && !hasStep;
   
   if (!isHomepage) return null;
-  return (
-    <Suspense fallback={null}>
-      <SeasonalOfferBanner />
-    </Suspense>
-  );
-});
+  return <SeasonalOfferBanner />;
+};
 
-const ConditionalFooter = memo(() => {
+// Component to conditionally hide footer during checkout steps
+const ConditionalFooter = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const step = searchParams.get('step');
+  
+  // Check if step starts with 2, 3, 4, 5, or 6 (handles cases like "3.", "3", "4" etc.)
+  // Also check for any step that begins with these numbers
   const isCheckoutStep = step && /^[2-6]/.test(step);
   
   if (isCheckoutStep) return null;
-  return (
-    <Suspense fallback={null}>
-      <WebsiteFooter />
-    </Suspense>
-  );
-});
+  return <WebsiteFooter />;
+};
 
 // Lazy load pages
 const FAQ = lazy(() => import("./pages/FAQ"));
@@ -110,47 +105,35 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  // Redirect www to non-www on mount, preload routes after idle
+  // Redirect www to non-www on mount and preload critical routes
   useEffect(() => {
     redirectWwwToNonWww();
     
-    // Defer route preloading to avoid blocking main thread
-    const preloadRoutes = () => {
-      import('@/utils/preloadRoutes').then(({ preloadCriticalRoutes }) => {
-        preloadCriticalRoutes();
-      });
-    };
-    
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(preloadRoutes, { timeout: 5000 });
+    // Preload critical routes after initial load
+    if (document.readyState === 'complete') {
+      preloadCriticalRoutes();
     } else {
-      setTimeout(preloadRoutes, 3000);
+      window.addEventListener('load', preloadCriticalRoutes);
+      return () => window.removeEventListener('load', preloadCriticalRoutes);
     }
   }, []);
-
-  // Minimal loading fallback for better perceived performance
-  const minimalFallback = <div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>;
 
   return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <CartProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <SubscriptionProvider>
+      <SubscriptionProvider>
+        <CartProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
             <ScrollToTop />
-            <Suspense fallback={null}>
-              <PageViewTracker />
-              <CookieBanner />
-            </Suspense>
-              <div className="min-h-screen flex flex-col w-full">
-                <Suspense fallback={<div className="h-16" />}>
-                  <StickyNavigation />
-                </Suspense>
-                <ConditionalSeasonalBanner />
-                <main className="flex-1 pb-16 w-full overflow-x-hidden">
-                  <Suspense fallback={minimalFallback}>
+            <PageViewTracker />
+            <CookieBanner />
+            <div className="min-h-screen flex flex-col w-full">
+              <StickyNavigation />
+              <ConditionalSeasonalBanner />
+              <main className="flex-1 pb-16 w-full overflow-x-hidden">
+                <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>}>
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/home" element={<Index />} />
@@ -191,13 +174,13 @@ const App = () => {
                     <Route path="/car-extended-warranty/" element={<CarExtendedWarranty />} />
                     <Route path="/car-extended-warranty/hyundai/" element={<HyundaiWarranty />} />
                     <Route path="/car-extended-warranty/bmw/" element={<BMWWarranty />} />
-                    <Route path="/car-extended-warranty/audi/" element={<AudiWarranty />} />
-                    <Route path="/car-extended-warranty/mercedes-benz/" element={<MercedesWarranty />} />
-                    <Route path="/car-extended-warranty/volkswagen/" element={<VolkswagenWarranty />} />
+        <Route path="/car-extended-warranty/audi/" element={<AudiWarranty />} />
+        <Route path="/car-extended-warranty/mercedes-benz/" element={<MercedesWarranty />} />
+        <Route path="/car-extended-warranty/volkswagen/" element={<VolkswagenWarranty />} />
                     <Route path="/car-extended-warranty/ford/" element={<FordWarranty />} />
-                    <Route path="/car-extended-warranty/nissan/" element={<NissanWarranty />} />
-                    <Route path="/car-extended-warranty/land-rover/" element={<LandRoverWarranty />} />
-                    <Route path="/car-extended-warranty/jaguar/" element={<JaguarWarranty />} />
+        <Route path="/car-extended-warranty/nissan/" element={<NissanWarranty />} />
+        <Route path="/car-extended-warranty/land-rover/" element={<LandRoverWarranty />} />
+        <Route path="/car-extended-warranty/jaguar/" element={<JaguarWarranty />} />
                     <Route path="/car-extended-warranty/skoda/" element={<SkodaWarranty />} />
                     <Route path="/used-car-warranty-uk/" element={<UsedCarWarrantyUK />} />
                     
@@ -208,9 +191,9 @@ const App = () => {
               </main>
               <ConditionalFooter />
             </div>
-          </SubscriptionProvider>
-        </BrowserRouter>
-      </CartProvider>
+          </BrowserRouter>
+        </CartProvider>
+      </SubscriptionProvider>
     </TooltipProvider>
   </QueryClientProvider>
   );
