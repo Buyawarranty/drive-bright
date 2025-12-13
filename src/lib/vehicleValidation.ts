@@ -6,6 +6,7 @@ export interface VehicleData {
   vehicleType?: string;
   regNumber: string;
   year?: string;
+  mileage?: string | number;
 }
 
 export interface PriceAdjustment {
@@ -365,6 +366,26 @@ export function calculateVehiclePriceAdjustment(
         baseAdjustment: 0,
         adjustmentReason: 'Standard vehicle - no adjustment applied'
       });
+  }
+  
+  // Add mileage-based premium for vehicles between 120,001 and 150,000 miles
+  const mileage = typeof vehicleData.mileage === 'string' 
+    ? parseInt(vehicleData.mileage.replace(/[^0-9]/g, '')) 
+    : vehicleData.mileage;
+  
+  if (mileage && mileage > 120000 && mileage <= 150000) {
+    let mileagePremium = 0;
+    if (warrantyDurationYears === 1) mileagePremium = 100;
+    else if (warrantyDurationYears === 2) mileagePremium = 200;
+    else if (warrantyDurationYears === 3) mileagePremium = 300;
+    
+    adjustmentAmount += mileagePremium;
+    breakdown.push({
+      baseAdjustment: mileagePremium,
+      adjustmentReason: `High mileage premium (${mileage?.toLocaleString()} miles): +£${mileagePremium} for ${warrantyDurationYears} year warranty`
+    });
+    
+    console.log('💰 Mileage Premium Applied:', { mileage, mileagePremium, warrantyDurationYears });
   }
   
   const result = {
