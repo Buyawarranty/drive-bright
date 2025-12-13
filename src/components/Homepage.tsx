@@ -538,8 +538,9 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 alt="Extended warranty UK - Car trustworthy reviews - Panda mascot with vehicle collection" 
                 className="w-full h-auto"
                 priority={true}
-                width={1200}
-                height={800}
+                width={651}
+                height={434}
+                sizes="(max-width: 768px) 100vw, 651px"
               />
               {/* Trustpilot Logo positioned to the right */}
               <div className="absolute top-4 right-4 z-10">
@@ -554,8 +555,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     alt="Trustpilot Excellent Rating" 
                     className="h-auto w-24 sm:w-40 object-contain"
                     priority={false}
-                    width={320}
-                    height={100}
+                    width={160}
+                    height={68}
                   />
                 </a>
               </div>
@@ -976,7 +977,11 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
             <img 
               src={whatsappIconNew} 
               alt="WhatsApp" 
+              width={56}
+              height={56}
               className="w-14 h-14"
+              loading="lazy"
+              decoding="async"
             />
           </a>
           

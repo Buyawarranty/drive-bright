@@ -178,8 +178,9 @@ const BMWWarranty: React.FC = () => {
                   src={bmwHeroImage}
                   alt="BMW extended used car warranty - white BMW 3 series"
                   className="w-full h-auto rounded-lg shadow-lg object-cover"
-                  width={1200}
-                  height={675}
+                  width={600}
+                  height={338}
+                  sizes="(max-width: 768px) 100vw, 600px"
                 />
               </div>
               <TrustpilotHeader className="mb-8" />
