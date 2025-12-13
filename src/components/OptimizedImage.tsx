@@ -60,15 +60,19 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     ...(width && height && { aspectRatio: `${width}/${height}` }),
   };
 
+  // For priority images, always set src immediately for LCP discoverability
+  // For non-priority images, wait for intersection observer
+  const imageSrc = priority ? src : (isInView ? src : undefined);
+
   return (
     <img
       ref={imgRef}
-      src={isInView ? src : undefined}
+      src={imageSrc}
       alt={alt}
       width={width}
       height={height}
       loading={priority ? 'eager' : 'lazy'}
-      decoding="async"
+      decoding={priority ? 'sync' : 'async'}
       fetchPriority={priority ? 'high' : 'auto'}
       className={`${className} ${
         priority 
