@@ -475,8 +475,9 @@ const CarExtendedWarranty: React.FC = () => {
                       alt="Extended warranty UK - Car trustworthy reviews - Panda mascot with vehicle collection" 
                       className="w-full h-auto"
                       priority={true}
-                      width={1200}
-                      height={800}
+                      width={651}
+                      height={434}
+                      sizes="(max-width: 1024px) 100vw, 651px"
                     />
                     {/* Trustpilot Logo positioned to the right */}
                     <div className="absolute top-4 right-4 z-10">

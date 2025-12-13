@@ -116,10 +116,14 @@ const MileageSlider: React.FC<MileageSliderProps> = ({
           <img 
             src={pandaHead} 
             alt="Panda slider handle" 
+            width={48}
+            height={48}
             className={`w-12 h-12 object-contain ${
               isDragging ? 'drop-shadow-lg' : 'hover:drop-shadow-md'
             } transition-all duration-150`}
             draggable={false}
+            loading="lazy"
+            decoding="async"
           />
           
           {/* Static Light Grey Arrow next to panda head */}

@@ -301,8 +301,9 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
               alt="Extended warranty UK - Car trustworthy reviews - Panda mascot with vehicle collection" 
               className="w-full h-auto"
               priority={true}
-              width={1200}
-              height={800}
+              width={651}
+              height={434}
+              sizes="(max-width: 768px) 100vw, 651px"
             />
             {/* Trustpilot Logo positioned to the right */}
             <div className="absolute top-4 right-4 z-10">
@@ -317,8 +318,8 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                   alt="Trustpilot Excellent Rating" 
                   className="h-auto w-40 object-contain"
                   priority={false}
-                  width={320}
-                  height={100}
+                  width={160}
+                  height={68}
                 />
               </a>
             </div>
