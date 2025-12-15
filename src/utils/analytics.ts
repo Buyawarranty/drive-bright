@@ -282,6 +282,25 @@ export const trackStripeCheckoutPageLoad = () => {
   }
 };
 
+// Track Step 4 email entry conversion (user enters email on checkout page)
+export const trackStep4EmailEntry = (email?: string) => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    console.log('🎯 Tracking Step 4 email entry conversion');
+    window.gtag('event', 'conversion', {
+      'send_to': 'AW-17325228149',
+      'event_category': 'Checkout',
+      'event_label': 'Step 4 Email Entry'
+    });
+    
+    // Also track as a custom event for analytics
+    window.gtag('event', 'step4_email_entry', {
+      'event_category': 'Checkout',
+      'event_label': 'Email Entered',
+      'user_email': email ? email.substring(0, 3) + '***' : undefined // Partial email for analytics
+    });
+  }
+};
+
 export const trackEmailConversion = (emailId: string, campaignName: string, value?: number) => {
   trackEvent('email_conversion', {
     event_category: 'Email',

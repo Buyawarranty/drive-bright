@@ -11,7 +11,7 @@ import { PostcodeAutocomplete } from '@/components/ui/uk-postcode-autocomplete';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
-import { trackFormSubmission, trackEvent, trackBumperCheckoutClick, trackStripeCheckoutClick, trackStripeCheckoutPageLoad } from '@/utils/analytics';
+import { trackFormSubmission, trackEvent, trackBumperCheckoutClick, trackStripeCheckoutClick, trackStripeCheckoutPageLoad, trackStep4EmailEntry } from '@/utils/analytics';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { getAddOnInfo, isAddOnAutoIncluded, normalizePaymentType, calculateAddOnPrice } from '@/lib/addOnsUtils';
 import { EmailCapturePopup } from '@/components/EmailCapturePopup';
@@ -252,6 +252,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
     const timeoutId = setTimeout(async () => {
       try {
         console.log('🔔 Tracking abandoned cart for email:', customerData.email);
+        
+        // Track Google Ads conversion for Step 4 email entry
+        trackStep4EmailEntry(customerData.email);
         
         await supabase.functions.invoke('track-abandoned-cart', {
           body: {
