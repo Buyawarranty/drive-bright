@@ -172,7 +172,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const [showAddOnInfo, setShowAddOnInfo] = useState<{[planId: string]: boolean}>({});
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isFloatingBarVisible, setIsFloatingBarVisible] = useState(false);
-  const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
   // Validate previousClaimLimit is a valid option (750, 1250, 2000), otherwise default to 1250
   // Account for boost addon which adds 1000 to the claim limit value
   const validClaimLimits = [750, 1250, 2000];
