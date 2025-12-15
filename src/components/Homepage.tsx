@@ -279,24 +279,58 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         return;
       }
       
-      // Check vehicle age if data found and year is available
-      if (data?.found && data.yearOfManufacture) {
-        const currentYear = new Date().getFullYear();
-        const vehicleYear = parseInt(data.yearOfManufacture);
-        const vehicleAge = currentYear - vehicleYear;
+      // Check vehicle age using precise manufactureDate if available
+      if (data?.found) {
+        const now = new Date();
+        let vehicleAgePrecise: number | null = null;
         
-        if (vehicleAge > 15) {
-          setVehicleAgeError('We cannot offer warranties for vehicles over 15 years old');
-          toast({
-            title: "Vehicle Not Eligible",
-            description: "We cannot offer warranties for vehicles over 15 years of age.",
-            variant: "destructive",
-          });
-          setIsLookingUp(false);
-          return;
-        } else {
-          setVehicleAgeError('');
+        // Try to use manufactureDate for precise age calculation (15 years and 1 day check)
+        if (data.manufactureDate) {
+          const manufactureDate = new Date(data.manufactureDate);
+          if (!isNaN(manufactureDate.getTime())) {
+            const ageInMs = now.getTime() - manufactureDate.getTime();
+            const msPerYear = 365.25 * 24 * 60 * 60 * 1000; // Account for leap years
+            vehicleAgePrecise = ageInMs / msPerYear;
+            
+            console.log('🔍 Precise age calculation:', {
+              manufactureDate: data.manufactureDate,
+              vehicleAgePrecise: vehicleAgePrecise.toFixed(4),
+              threshold: '> 15 years'
+            });
+            
+            // Block if over 15 years (15 years and 1 day or older)
+            if (vehicleAgePrecise > 15) {
+              setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
+              toast({
+                title: "Vehicle Not Eligible",
+                description: "Sorry, we only cover vehicles under 150,000 miles and less than 15 years old.",
+                variant: "destructive",
+              });
+              setIsLookingUp(false);
+              return;
+            }
+          }
         }
+        
+        // Fallback to year-based calculation if no manufactureDate
+        if (vehicleAgePrecise === null && data.yearOfManufacture) {
+          const currentYear = now.getFullYear();
+          const vehicleYear = parseInt(data.yearOfManufacture);
+          const vehicleAge = currentYear - vehicleYear;
+          
+          if (vehicleAge > 15) {
+            setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
+            toast({
+              title: "Vehicle Not Eligible",
+              description: "Sorry, we only cover vehicles under 150,000 miles and less than 15 years old.",
+              variant: "destructive",
+            });
+            setIsLookingUp(false);
+            return;
+          }
+        }
+        
+        setVehicleAgeError('');
       }
       
       // Prepare vehicle data
