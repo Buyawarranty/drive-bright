@@ -375,9 +375,9 @@ export function calculateVehiclePriceAdjustment(
   
   if (mileage && mileage > 120000 && mileage <= 150000) {
     let mileagePremium = 0;
-    if (warrantyDurationYears === 1) mileagePremium = 100;
-    else if (warrantyDurationYears === 2) mileagePremium = 200;
-    else if (warrantyDurationYears === 3) mileagePremium = 300;
+    if (warrantyDurationYears === 1) mileagePremium = 200;
+    else if (warrantyDurationYears === 2) mileagePremium = 400;
+    else if (warrantyDurationYears === 3) mileagePremium = 600;
     
     adjustmentAmount += mileagePremium;
     breakdown.push({
