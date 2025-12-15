@@ -417,7 +417,7 @@ const CarExtendedWarranty: React.FC = () => {
                             onBlur={handleMileageBlur}
                             placeholder={mileagePlaceholder}
                             className={`w-full max-w-full px-3 sm:px-4 py-2.5 sm:py-3 text-base sm:text-lg border-2 rounded-lg focus:outline-none ${
-                              mileageError ? 'border-blue-400 focus:border-blue-500' : 'border-gray-300 focus:border-orange-500'
+                              mileageError ? 'border-destructive focus:border-destructive' : 'border-gray-300 focus:border-orange-500'
                             }`}
                           />
                         </div>
@@ -432,15 +432,10 @@ const CarExtendedWarranty: React.FC = () => {
                           />
                         </div>
 
-                        {/* Error Messages */}
+                        {/* Error Message (single) */}
                         {mileageError && (
-                          <p className="text-xs sm:text-sm text-blue-600 font-medium px-1">
+                          <p className="text-xs sm:text-sm text-destructive font-medium px-1 text-left">
                             {mileageError}
-                          </p>
-                        )}
-                        {vehicleAgeError && (
-                          <p className="text-xs sm:text-sm text-blue-600 font-medium px-1">
-                            {vehicleAgeError}
                           </p>
                         )}
                       </div>
@@ -450,11 +445,11 @@ const CarExtendedWarranty: React.FC = () => {
                         <Button 
                           type="submit"
                           className={`w-full max-w-full px-4 sm:px-6 md:px-12 h-[54px] sm:h-[66px] text-base sm:text-lg md:text-xl font-bold rounded-lg transition-all ${
-                            isLookingUp
+                            isLookingUp || mileageError
                               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                               : 'bg-brand-orange hover:bg-brand-orange/90 text-white animate-cta-enhanced'
                           }`}
-                          disabled={isLookingUp}
+                          disabled={isLookingUp || !!mileageError}
                         >
                           {isLookingUp ? 'Looking up...' : (
                             <>
