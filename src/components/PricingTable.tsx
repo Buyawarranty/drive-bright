@@ -1348,7 +1348,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <Alert className="mb-6 border-orange-200 bg-orange-50">
               <Info className="h-4 w-4 text-orange-600" />
               <AlertDescription className="text-orange-800">
-                Due to your vehicle's mileage, warranty coverage is available for up to 2 years.
+                Based on your vehicle's mileage, you're eligible for warranty cover for up to 2 years.
               </AlertDescription>
             </Alert>
           )}
