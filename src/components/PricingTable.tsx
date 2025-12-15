@@ -2563,16 +2563,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
       {/* Bottom padding for sticky bar */}
       <div className="pb-20 md:pb-24 -mt-4"></div>
 
-      {/* Sticky Total Bar - Always visible */}
+      {/* Sticky Total Bar - Button only */}
       {!vehicleAgeError && (
-        <div className="fixed bottom-0 left-0 right-0 bg-gray-50 border-t-2 border-orange-200 shadow-lg z-50">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between p-4 max-w-6xl mx-auto gap-4">
+        <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] z-50">
+          <div className="p-4 max-w-4xl mx-auto">
             
             {/* Loading State */}
             {plansLoading && (
               <div className="flex items-center justify-center w-full py-2">
                 <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-5 h-5 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
                   <span className="text-gray-600 font-medium">Loading pricing plans...</span>
                 </div>
               </div>
@@ -2585,7 +2585,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <Button
                   onClick={retryFetchPlans}
                   size="sm"
-                  className="bg-orange-500 hover:bg-orange-600 text-white"
+                  className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   <RotateCcw className="w-4 h-4 mr-2" />
                   Retry
@@ -2593,130 +2593,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
             )}
 
-            {/* Normal State - Show pricing */}
+            {/* Normal State - Button only */}
             {!plansLoading && !plansError && displayPlans.length > 0 && paymentType && (
-              <>
-                {/* Mobile Layout - Collapsible & Centralized */}
-                <div className="flex flex-col md:hidden gap-2 w-full">
-                  {/* Collapse/Expand Header - Centralized */}
-                  <button
-                    onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
-                    className="flex items-center justify-center w-full py-1 -mt-1 relative"
-                  >
-                    <div className="flex flex-col items-center text-center">
-                      <span className="text-xl font-bold text-gray-900">
-                        £{displayMonthlyPrice}/Month <span className="text-base text-gray-400">– 0% APR</span>
-                      </span>
-                      <span className="text-sm text-gray-600">Only 12 payments</span>
-                      <span className="text-sm text-gray-900 font-medium">Pay in full: £{Math.round(displayTotalPrice * 0.9)}</span>
-                    </div>
-                    <div className={`absolute right-0 p-1.5 rounded-full bg-orange-500 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-0' : 'rotate-180'}`}>
-                      <ChevronDown className="w-5 h-5 text-white" />
-                    </div>
-                  </button>
-                  
-                  {/* Expandable Content - Centralized */}
-                  <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSummaryExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-                    {/* Price Details */}
-                    <div className="text-center space-y-0.5 pb-2">
-                      <div className="text-sm text-black font-bold">
-                        {paymentType === '12months' && <span>1-Year Cover</span>}
-                        {paymentType === '24months' && <><span>Year 2 FREE</span> 🎉 · <span>2-Year Cover</span></>}
-                        {paymentType === '36months' && <><span>Years 2 & 3 FREE</span> 🎉 · <span>3-Year Cover</span></>}
-                      </div>
-                      <div className="text-sm text-black">
-                        14 days to cancel
-                      </div>
-                    </div>
-                    
-                    {/* Trustpilot Badge */}
-                    <a 
-                      href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex justify-center items-center hover:opacity-80 transition-opacity pb-2"
-                    >
-                      <TrustpilotHeader className="h-4 scale-75" />
-                    </a>
-                  </div>
-                  
-                  {/* CTA Button - Always visible */}
-                  <Button
-                    onClick={handleSelectPlan}
-                    size="lg"
-                    className="w-full text-lg font-semibold py-3.5 bg-brand-orange hover:bg-brand-orange/90 text-white animate-cta-enhanced"
-                  >
-                    Continue to checkout
-                    <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
-                  </Button>
-                </div>
-
-                {/* Desktop Layout - Clean 4-Section Card with Equal Spacing */}
-                <div className="hidden md:flex md:items-stretch md:justify-between w-full bg-gray-50 rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                  
-                  {/* SECTION 1: Trust & Reassurance */}
-                  <div className="flex-1 flex flex-col items-center justify-center px-6 py-4">
-                    <a 
-                      href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="hover:opacity-80 transition-opacity"
-                    >
-                      <TrustpilotHeader className="flex-shrink-0 scale-75" />
-                    </a>
-                  </div>
-                  
-                  {/* SECTION 2: Price */}
-                  <div className="flex-1 flex flex-col items-center justify-center px-6 py-4 text-center">
-                    <div className="text-2xl font-bold text-gray-900">
-                      £{displayMonthlyPrice}/Month <span className="text-lg text-gray-400">– 0% APR</span>
-                    </div>
-                    <div className="text-sm text-gray-600 mt-0.5">
-                      Only 12 payments
-                    </div>
-                    <div className="text-sm text-gray-900 font-medium mt-0.5">
-                      Pay in full: £{Math.round(displayTotalPrice * 0.9)}
-                    </div>
-                  </div>
-                  
-                  {/* SECTION 3: Cover & Free Years */}
-                  <div className="flex-1 flex flex-col items-center justify-center px-6 py-4">
-                    <div className="text-sm text-gray-900">
-                      {paymentType !== '12months' && (
-                        <span className="text-green-600 font-bold">
-                          {paymentType === '24months' && 'Year 2 FREE 🎉'}
-                          {paymentType === '36months' && 'Years 2 & 3 FREE 🎉'}
-                        </span>
-                      )}
-                      {paymentType !== '12months' && ' | '}
-                      <span className="font-bold text-black">
-                        {paymentType === '12months' && '1-Year Cover'}
-                        {paymentType === '24months' && '2-Year Cover'}
-                        {paymentType === '36months' && '3-Year Cover'}
-                      </span>
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      14 days to cancel
-                    </div>
-                  </div>
-                  
-                  {/* SECTION 4: CTA */}
-                  <div className="flex-1 flex flex-col items-center justify-center px-6 py-4">
-                    <Button
-                      onClick={handleSelectPlan}
-                      size="lg"
-                      className="text-lg font-semibold px-8 py-3.5 bg-brand-orange hover:bg-brand-orange/90 hover:shadow-lg text-white animate-cta-enhanced"
-                    >
-                      Continue to checkout
-                      <ArrowRight className="w-5 h-5 ml-2" strokeWidth={3} />
-                    </Button>
-                    <div className="flex items-center gap-1.5 mt-2 text-xs text-gray-500">
-                      <Lock className="h-3 w-3" />
-                      <span>Secure checkout – No hidden fees</span>
-                    </div>
-                  </div>
-                </div>
-              </>
+              <Button
+                onClick={handleSelectPlan}
+                size="lg"
+                className="w-full text-lg font-semibold py-6 bg-green-600 hover:bg-green-700 text-white rounded-xl animate-cta-enhanced"
+              >
+                Continue to checkout
+                <ArrowRight className="w-5 h-5 ml-2" strokeWidth={3} />
+              </Button>
             )}
             
           </div>
