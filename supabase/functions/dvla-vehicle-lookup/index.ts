@@ -465,7 +465,7 @@ serve(async (req) => {
       throw new Error(`DVSA API failed after ${maxRetries} attempts: ${errorMessage}`);
     }
 
-    console.log('DVSA API response:', vehicleData);
+    console.log('DVSA response for:', vehicleData.make, vehicleData.model);
 
     // Extract vehicle information from DVSA response
     let make = vehicleData.make;
@@ -518,37 +518,21 @@ serve(async (req) => {
     const makeLower = make?.toLowerCase() || '';
     const modelLower = model?.toLowerCase() || '';
     
-    console.log(`🔍 Vehicle classification data:`, {
-      make: makeLower,
-      model: modelLower,
-      typeApproval,
-      wheelplan,
-      fuelType: fuelTypeLower,
-      engineCapacity,
-      revenueWeight
-    });
-    
     // First check for electric/hybrid vehicles (these can be cars, vans, or motorbikes)
     const isElectric = fuelTypeLower.includes('electricity') || fuelTypeLower === 'electric';
     const isHybrid = fuelTypeLower.includes('hybrid') || fuelTypeLower.includes('petrol/electric') || fuelTypeLower.includes('plug-in hybrid');
     
-    // CRITICAL: Enhanced commercial vehicle detection with explicit logging
+    // Commercial vehicle detection
+    const vanModels = ['transit', 'sprinter', 'crafter', 'master', 'boxer', 'ducato', 'daily', 'nv200', 'nv300', 'nv400'];
+    const vanMakes = ['ford', 'mercedes', 'mercedes-benz', 'volkswagen', 'renault', 'peugeot', 'citroen', 'fiat', 'iveco', 'nissan'];
+    
     const isCommercialVehicle = (
-      // Type approval based
       typeApproval.startsWith('n1') || 
       typeApproval.includes('commercial') ||
       wheelplan.includes('van') ||
       wheelplan.includes('commercial') ||
-      // Weight-based detection for vans (typically heavier than cars)
       (revenueWeight > 2000 && revenueWeight <= 3500) ||
-      // Make/model based detection for common van manufacturers - ENHANCED LOGGING
-      (['ford', 'mercedes', 'mercedes-benz', 'volkswagen', 'renault', 'peugeot', 'citroen', 'fiat', 'iveco', 'nissan'].includes(makeLower) &&
-       ['transit', 'sprinter', 'crafter', 'master', 'boxer', 'ducato', 'daily', 'nv200', 'nv300', 'nv400'].some(vanModel => {
-         const modelContains = modelLower.includes(vanModel);
-         console.log(`🔍 Checking van model '${vanModel}' in '${modelLower}': ${modelContains}`);
-         return modelContains;
-       })) ||
-      // Explicit model pattern matching for common commercial vehicles
+      (vanMakes.includes(makeLower) && vanModels.some(vanModel => modelLower.includes(vanModel))) ||
       /\btransit\b/i.test(modelLower) ||
       /\bsprinter\b/i.test(modelLower) ||
       /\bcrafter\b/i.test(modelLower) ||
@@ -560,19 +544,7 @@ serve(async (req) => {
       /\bcustom\b/i.test(modelLower)
     );
     
-    console.log(`🔍 Commercial vehicle detection for ${makeLower} ${modelLower}:`, {
-      makeInList: ['ford', 'mercedes', 'mercedes-benz', 'volkswagen', 'renault', 'peugeot', 'citroen', 'fiat', 'iveco', 'nissan'].includes(makeLower),
-      modelHasVanPattern: ['transit', 'sprinter', 'crafter', 'master', 'boxer', 'ducato', 'daily', 'nv200', 'nv300', 'nv400'].some(vanModel => modelLower.includes(vanModel)),
-      regexTests: {
-        transit: /\btransit\b/i.test(modelLower),
-        sprinter: /\bsprinter\b/i.test(modelLower),
-        crafter: /\bcrafter\b/i.test(modelLower)
-      },
-      isCommercialVehicle
-    });
-    
     if (isCommercialVehicle) {
-      console.log('🚐 DETECTED: Commercial vehicle (van)');
       if (isElectric) {
         vehicleType = 'EV'; // Electric van
       } else if (isHybrid) {
@@ -609,20 +581,10 @@ serve(async (req) => {
        // Safety check - make sure it's not a commercial vehicle model
        !['transit', 'sprinter', 'crafter', 'master', 'boxer', 'ducato', 'daily', 'connect', 'custom', 'van', 'commercial'].some(commercial => modelLower.includes(commercial)))
     ) {
-      
-      console.log('🏍️ DETECTED: Motorcycle with strict criteria');
-      console.log('🏍️ Motorcycle detection details:', {
-        typeApproval,
-        wheelplan,
-        engineCapacity,
-        make: makeLower,
-        model: modelLower
-      });
-      
       if (isElectric) {
-        vehicleType = 'EV'; // Electric motorcycle
+        vehicleType = 'EV';
       } else if (isHybrid) {
-        vehicleType = 'PHEV'; // Hybrid motorcycle (rare but possible)
+        vehicleType = 'PHEV';
       } else {
         vehicleType = 'MOTORBIKE';
       }
@@ -637,18 +599,8 @@ serve(async (req) => {
         vehicleType = 'car';
       }
     }
-    
-    console.log(`🔧 FINAL vehicle type determination: ${vehicleType} for ${makeLower} ${modelLower}`);
-    console.log(`🔧 Detection summary:`, {
-      isCommercialVehicle: isCommercialVehicle,
-      passedMotorcycleChecks: (
-        (typeApproval.startsWith('l') && (typeApproval.includes('motorcycle') || typeApproval.includes('moped'))) ||
-        (wheelplan.includes('2 wheels') && wheelplan.includes('motorcycle')) ||
-        (engineCapacity > 0 && engineCapacity <= 800 && 
-         ['yamaha', 'kawasaki', 'ducati', 'ktm', 'harley-davidson', 'triumph', 'aprilia', 'husqvarna', 'mv agusta'].includes(makeLower))
-      ),
-      finalVehicleType: vehicleType
-    });
+
+    console.log(`Vehicle type: ${vehicleType} for ${make} ${model}`);
 
     // Validate vehicle eligibility (check blocked makes/models)
     const vehicleValidation = validateVehicleEligibility({
@@ -770,14 +722,7 @@ serve(async (req) => {
         mot_expiry_date: motExpiryDateForStorage ? new Date(motExpiryDateForStorage).toISOString().split('T')[0] : null,
       };
 
-      console.log('Attempting to store MOT history for:', registrationNumber.toUpperCase());
-      console.log('MOT history data to store:', {
-        registration: motHistoryData.registration,
-        make: motHistoryData.make,
-        model: motHistoryData.model,
-        testCount: motHistoryData.mot_tests?.length || 0,
-        sampleTest: motHistoryData.mot_tests?.[0]
-      });
+      console.log('Storing MOT history for:', registrationNumber.toUpperCase());
 
       const { data, error } = await supabase
         .from('mot_history')
@@ -786,26 +731,11 @@ serve(async (req) => {
         .single();
 
       if (error) {
-        console.error('Database error storing MOT history:', error);
-        console.error('Error details:', {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint
-        });
+        console.error('Database error storing MOT history:', error.message);
         throw error;
       }
 
-      if (!data) {
-        console.error('No data returned from upsert operation');
-        throw new Error('Failed to store MOT history - no data returned');
-      }
-
-      console.log('MOT history stored successfully:', {
-        id: data.id,
-        registration: data.registration,
-        testCount: data.mot_tests?.length || 0
-      });
+      console.log('MOT history stored:', data?.id);
     } catch (error) {
       console.error('Error storing MOT history:', error);
       // Continue with response even if storage fails
