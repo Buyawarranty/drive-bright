@@ -19,6 +19,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 import { CustomerNotesSection } from './CustomerNotesSection';
+import { StructuredNotesSection } from './StructuredNotesSection';
 import { CustomerServiceNotes } from './CustomerServiceNotes';
 import { WarrantyActions } from './WarrantyActions';
 import { ManualOrderEntry } from './ManualOrderEntry';
@@ -3213,9 +3214,17 @@ Please log in and change your password after first login.`;
                                   )}
                                 </TabsContent>
 
-                                <TabsContent value="notes">
+                                <TabsContent value="notes" className="space-y-6">
                                   {selectedCustomer && (
-                                    <CustomerServiceNotes customerId={selectedCustomer.id} customerType="active" />
+                                    <>
+                                      <StructuredNotesSection 
+                                        customerId={selectedCustomer.id}
+                                        customerName={selectedCustomer.name}
+                                        policyNumber={selectedCustomer.customer_policies?.[0]?.policy_number}
+                                        vehicleReg={selectedCustomer.registration_plate}
+                                      />
+                                      <CustomerServiceNotes customerId={selectedCustomer.id} customerType="active" />
+                                    </>
                                   )}
                                 </TabsContent>
 
