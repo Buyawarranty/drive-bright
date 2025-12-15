@@ -46,6 +46,7 @@ interface VehicleData {
   isManualEntry?: boolean;
   blocked?: boolean;
   blockReason?: string;
+  manufactureDate?: string; // Full manufacture date for precise age calculation
 }
 
 // Recovery fallback component

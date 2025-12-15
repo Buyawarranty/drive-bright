@@ -820,6 +820,7 @@ serve(async (req) => {
       fuelType: fuelType,
       transmission: null, // DVSA doesn't provide transmission data
       yearOfManufacture: yearOfManufacture,
+      manufactureDate: vehicleData.manufactureDate || null, // Full manufacture date for precise age calculation
       colour: colour,
       engineCapacity: vehicleData.engineCapacity,
       vehicleType: vehicleType,
