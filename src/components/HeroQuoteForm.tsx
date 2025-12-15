@@ -146,14 +146,37 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
         return;
       }
 
-      const currentYear = new Date().getFullYear();
-      const vehicleYear = parseInt(data.yearOfManufacture || data.year || '0', 10);
-      const vehicleAge = currentYear - vehicleYear;
+      // Check vehicle age using precise manufactureDate if available
+      const now = new Date();
+      let vehicleAgePrecise: number | null = null;
+      
+      // Try to use manufactureDate for precise age calculation (15 years and 1 day check)
+      if (data.manufactureDate) {
+        const manufactureDate = new Date(data.manufactureDate);
+        if (!isNaN(manufactureDate.getTime())) {
+          const ageInMs = now.getTime() - manufactureDate.getTime();
+          const msPerYear = 365.25 * 24 * 60 * 60 * 1000;
+          vehicleAgePrecise = ageInMs / msPerYear;
+          
+          if (vehicleAgePrecise > 15) {
+            setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
+            setIsLookingUp(false);
+            return;
+          }
+        }
+      }
+      
+      // Fallback to year-based calculation if no manufactureDate
+      if (vehicleAgePrecise === null) {
+        const currentYear = now.getFullYear();
+        const vehicleYear = parseInt(data.yearOfManufacture || data.year || '0', 10);
+        const vehicleAge = currentYear - vehicleYear;
 
-      if (vehicleAge > 15) {
-        setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
-        setIsLookingUp(false);
-        return;
+        if (vehicleAge > 15) {
+          setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
+          setIsLookingUp(false);
+          return;
+        }
       }
 
       const vehicleData: VehicleData = {
