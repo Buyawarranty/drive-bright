@@ -2484,6 +2484,112 @@ export type Database = {
         }
         Relationships: []
       }
+      structured_customer_notes: {
+        Row: {
+          actions_taken: Json | null
+          call_recording_id: string | null
+          claim_reference: string | null
+          compliance_notes: string | null
+          created_at: string | null
+          created_by: string | null
+          customer_id: string
+          deadlines: Json | null
+          document_ids: string[] | null
+          id: string
+          interaction_date: string | null
+          interaction_type:
+            | Database["public"]["Enums"]["interaction_type"]
+            | null
+          next_steps: Json | null
+          policy_number: string | null
+          purpose: Database["public"]["Enums"]["note_purpose"] | null
+          risk_level: Database["public"]["Enums"]["risk_level"] | null
+          risk_reason: string | null
+          summary: string
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          updated_by: string | null
+          vehicle_reg: string | null
+        }
+        Insert: {
+          actions_taken?: Json | null
+          call_recording_id?: string | null
+          claim_reference?: string | null
+          compliance_notes?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          customer_id: string
+          deadlines?: Json | null
+          document_ids?: string[] | null
+          id?: string
+          interaction_date?: string | null
+          interaction_type?:
+            | Database["public"]["Enums"]["interaction_type"]
+            | null
+          next_steps?: Json | null
+          policy_number?: string | null
+          purpose?: Database["public"]["Enums"]["note_purpose"] | null
+          risk_level?: Database["public"]["Enums"]["risk_level"] | null
+          risk_reason?: string | null
+          summary: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          updated_by?: string | null
+          vehicle_reg?: string | null
+        }
+        Update: {
+          actions_taken?: Json | null
+          call_recording_id?: string | null
+          claim_reference?: string | null
+          compliance_notes?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          customer_id?: string
+          deadlines?: Json | null
+          document_ids?: string[] | null
+          id?: string
+          interaction_date?: string | null
+          interaction_type?:
+            | Database["public"]["Enums"]["interaction_type"]
+            | null
+          next_steps?: Json | null
+          policy_number?: string | null
+          purpose?: Database["public"]["Enums"]["note_purpose"] | null
+          risk_level?: Database["public"]["Enums"]["risk_level"] | null
+          risk_reason?: string | null
+          summary?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          vehicle_reg?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "structured_customer_notes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "structured_customer_notes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "structured_customer_notes_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriber_segments: {
         Row: {
           created_at: string
@@ -3015,6 +3121,16 @@ export type Database = {
       verify_warranty_selection: { Args: { audit_id: string }; Returns: Json }
     }
     Enums: {
+      interaction_type: "call" | "email" | "chat" | "in_person"
+      note_purpose:
+        | "claim_query"
+        | "sales_enquiry"
+        | "cancellation"
+        | "renewal"
+        | "payment"
+        | "general"
+        | "complaint"
+      risk_level: "low" | "medium" | "high"
       user_role:
         | "admin"
         | "customer"
@@ -3150,6 +3266,17 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      interaction_type: ["call", "email", "chat", "in_person"],
+      note_purpose: [
+        "claim_query",
+        "sales_enquiry",
+        "cancellation",
+        "renewal",
+        "payment",
+        "general",
+        "complaint",
+      ],
+      risk_level: ["low", "medium", "high"],
       user_role: [
         "admin",
         "customer",
