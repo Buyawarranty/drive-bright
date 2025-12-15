@@ -188,21 +188,77 @@ function checkIfMotorbike(make: string, model: string, vehicleType: string): boo
 
 /**
  * Check if a vehicle is excluded from coverage
+ * Blocking criteria:
+ * - Vehicles 15 years and 1 day old or older (using precise manufactureDate when available)
+ * - Vehicles with mileage over 150,000 miles
+ * - Excluded makes/models
  */
 export function validateVehicleEligibility(vehicleData: VehicleData): { isValid: boolean; errorMessage?: string } {
   const make = vehicleData.make?.toLowerCase().trim() || '';
   const model = vehicleData.model?.toLowerCase().trim() || '';
   
-  // Check vehicle age (must be 15 years or newer)
-  if (vehicleData.year) {
-    const currentYear = new Date().getFullYear();
+  // Standard error message for age/mileage exclusions
+  const AGE_MILEAGE_ERROR = 'Sorry, we only cover vehicles under 150,000 miles and less than 15 years old';
+  
+  // Check mileage - block if over 150,000 miles
+  const mileage = typeof vehicleData.mileage === 'string' 
+    ? parseInt(vehicleData.mileage.replace(/[^0-9]/g, '')) 
+    : vehicleData.mileage;
+  
+  if (mileage && mileage > 150000) {
+    console.log('❌ Vehicle blocked: Mileage over 150,000 miles', { mileage });
+    return {
+      isValid: false,
+      errorMessage: AGE_MILEAGE_ERROR
+    };
+  }
+  
+  // Check vehicle age using precise manufactureDate if available
+  const now = new Date();
+  let vehicleAgePrecise: number | null = null;
+  
+  // Try to use manufactureDate for precise age calculation
+  if (vehicleData.manufactureDate) {
+    const manufactureDate = new Date(vehicleData.manufactureDate);
+    if (!isNaN(manufactureDate.getTime())) {
+      const ageInMs = now.getTime() - manufactureDate.getTime();
+      const msPerYear = 365.25 * 24 * 60 * 60 * 1000; // Account for leap years
+      vehicleAgePrecise = ageInMs / msPerYear;
+      
+      console.log('🔍 Precise age calculation:', {
+        manufactureDate: vehicleData.manufactureDate,
+        vehicleAgePrecise: vehicleAgePrecise.toFixed(4),
+        threshold: '> 15 years'
+      });
+      
+      // Block if over 15 years (15 years and 1 day or older)
+      if (vehicleAgePrecise > 15) {
+        console.log('❌ Vehicle blocked: Over 15 years old (precise)', { vehicleAgePrecise });
+        return {
+          isValid: false,
+          errorMessage: AGE_MILEAGE_ERROR
+        };
+      }
+    }
+  }
+  
+  // Fallback to year-based calculation if no manufactureDate
+  if (vehicleAgePrecise === null && vehicleData.year) {
+    const currentYear = now.getFullYear();
     const vehicleYear = parseInt(vehicleData.year);
     const vehicleAge = currentYear - vehicleYear;
     
+    console.log('🔍 Year-based age calculation (fallback):', {
+      year: vehicleData.year,
+      vehicleAge,
+      threshold: '> 15 years'
+    });
+    
     if (vehicleAge > 15) {
+      console.log('❌ Vehicle blocked: Over 15 years old (year-based)', { vehicleAge });
       return {
         isValid: false,
-        errorMessage: 'We cannot offer warranties for vehicles over 15 years old. This applies to all vehicle types including cars, vans, SUVs, motorbikes, and special vehicles.'
+        errorMessage: AGE_MILEAGE_ERROR
       };
     }
   }
