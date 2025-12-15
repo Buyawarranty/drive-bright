@@ -379,6 +379,8 @@ export function calculateVehiclePriceAdjustment(
   
   const mileageQualifies = mileage && mileage > 120000 && mileage <= 150000;
   
+  console.log('🔍 Mileage Check:', { mileage, mileageQualifies, threshold: '120,001 - 150,000' });
+  
   // Calculate age-based premium for vehicles strictly > 12 years old AND <= 15 years old
   // Boundary: 12 years 1 day triggers, exactly 12 years does NOT. 15 years triggers, 15 years 1 day does NOT.
   let vehicleAgeYears: number | null = null;
@@ -391,6 +393,14 @@ export function calculateVehiclePriceAdjustment(
   }
   
   const ageQualifies = vehicleAgeYears !== null && vehicleAgeYears > 12 && vehicleAgeYears <= 15;
+  
+  console.log('🔍 Age Check:', { 
+    'vehicleData.year': vehicleData.year, 
+    vehicleAgeYears, 
+    ageQualifies, 
+    threshold: '>12 and <=15 years',
+    currentYear: new Date().getFullYear()
+  });
   
   // Determine surcharge amount based on warranty duration
   // Matches Jaguar/Range Rover pricing: +£200/+£400/+£600 for 1/2/3-year cover
