@@ -144,7 +144,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     
     // Validate mileage
     if (value && numericValue > 150000) {
-      setMileageError('We can only cover vehicles up to 150,000 miles');
+      setMileageError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
     } else {
       setMileageError('');
     }
@@ -168,7 +168,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     
     // Validate mileage
     if (value > 150000) {
-      setMileageError('We can only cover vehicles up to 150,000 miles');
+      setMileageError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
     } else {
       setMileageError('');
     }
@@ -233,7 +233,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     
     // Check mileage validation before proceeding
     if (numericMileage > 150000) {
-      setMileageError('We can only cover vehicles up to 150,000 miles');
+      setMileageError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
       return;
     }
     

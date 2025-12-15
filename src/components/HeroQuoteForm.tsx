@@ -151,7 +151,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
       const vehicleAge = currentYear - vehicleYear;
 
       if (vehicleAge > 15) {
-        setVehicleAgeError(`Sorry, we can only cover vehicles up to 15 years old. Your vehicle is ${vehicleAge} years old.`);
+        setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
         setIsLookingUp(false);
         return;
       }
