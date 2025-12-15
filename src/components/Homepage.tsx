@@ -506,11 +506,11 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   <Button 
                     onClick={handleGetQuote}
                     className={`w-full max-w-56 px-3 sm:px-6 md:px-12 h-[48px] sm:h-[60px] md:h-[66px] text-sm sm:text-lg md:text-xl font-bold rounded-lg transition-all min-w-0 ${
-                      isLookingUp
+                      isLookingUp || eligibilityError
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         : 'bg-brand-orange hover:bg-brand-orange/90 text-white animate-cta-enhanced'
                     }`}
-                    disabled={isLookingUp}
+                    disabled={isLookingUp || !!eligibilityError}
                   >
                     {isLookingUp ? (
                       <>

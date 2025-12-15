@@ -57,7 +57,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
     }
 
     if (numValue > 150000) {
-      setMileageError('Maximum mileage is 150,000. For higher mileage, please call us.');
+      setMileageError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
       setMileage(value);
       setSliderMileage(150000);
       return;
@@ -81,7 +81,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
     setMileage(value.toString());
     
     if (value > 150000) {
-      setMileageError('Maximum mileage is 150,000. For higher mileage, please call us.');
+      setMileageError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
     } else {
       setMileageError('');
     }
@@ -244,7 +244,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                     onBlur={handleMileageBlur}
                     placeholder={mileagePlaceholder}
                     className={`w-full px-4 py-3 text-lg border-2 rounded-lg focus:outline-none ${
-                      mileageError ? 'border-blue-400 focus:border-blue-500' : 'border-gray-300 focus:border-orange-500'
+                      mileageError || vehicleAgeError ? 'border-destructive focus:border-destructive' : 'border-gray-300 focus:border-orange-500'
                     }`}
                   />
                 </div>
@@ -259,15 +259,10 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                   />
                 </div>
 
-                {/* Error Messages */}
-                {mileageError && (
-                  <p className="text-sm text-blue-600 font-medium">
-                    {mileageError}
-                  </p>
-                )}
-                {vehicleAgeError && (
-                  <p className="text-sm text-blue-600 font-medium">
-                    {vehicleAgeError}
+                {/* Error Message (single) */}
+                {(mileageError || vehicleAgeError) && (
+                  <p className="text-sm text-destructive font-medium text-left">
+                    {mileageError || vehicleAgeError}
                   </p>
                 )}
               </div>
@@ -277,11 +272,11 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                 <Button 
                   onClick={handleGetQuote}
                   className={`w-full px-12 h-[66px] text-xl font-bold rounded-lg transition-all ${
-                    isLookingUp
+                    isLookingUp || mileageError || vehicleAgeError
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-brand-orange hover:bg-brand-orange/90 text-white animate-cta-enhanced'
                   }`}
-                  disabled={isLookingUp}
+                  disabled={isLookingUp || !!mileageError || !!vehicleAgeError}
                 >
                   {isLookingUp ? 'Looking up vehicle...' : (
                     <>
