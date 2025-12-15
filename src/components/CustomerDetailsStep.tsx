@@ -959,7 +959,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                 </div>
                 
                 {/* Start Date Picker - Positioned before personal details for early reassurance */}
-                <div className="mb-6 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div id="start-date-section" className="mb-6 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
                   <StartDatePicker
                     value={startDate}
                     onChange={(date) => {
@@ -1308,9 +1308,24 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     {startDate && (
                       <div className="flex justify-between items-center gap-2 bg-green-50 rounded-lg px-2 py-1.5 -mx-2">
                         <span className="text-green-700 text-xs sm:text-sm flex-shrink-0 font-medium">Start Date:</span>
-                        <span className="font-semibold text-green-700 text-xs sm:text-sm text-right">
-                          {isToday(startDate) ? `Today (${format(startDate, 'd MMM yyyy')})` : format(startDate, 'd MMM yyyy')}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-green-700 text-xs sm:text-sm text-right">
+                            {isToday(startDate) ? `Today (${format(startDate, 'd MMM yyyy')})` : format(startDate, 'd MMM yyyy')}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const startDateSection = document.getElementById('start-date-section');
+                              if (startDateSection) {
+                                startDateSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                              }
+                            }}
+                            className="p-1 hover:bg-green-100 rounded transition-colors"
+                            aria-label="Edit start date"
+                          >
+                            <Edit className="w-3.5 h-3.5 text-green-600" />
+                          </button>
+                        </div>
                       </div>
                     )}
                       {/* Payment Summary - Mobile First */}
@@ -1319,9 +1334,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           <div className="flex justify-between items-center">
                             <span className="text-black text-xs sm:text-sm font-medium">Pay Monthly:</span>
                             <div className="text-right">
-                              <span className="font-bold text-black text-sm sm:text-base">£{Math.round(discountedBumperPrice / 12)}/month</span>
-                              <span className="block text-xs text-orange-600 font-medium">12 interest-free payments</span>
-                              <span className="block text-xs text-gray-600 font-medium">Total: £{discountedBumperPrice}</span>
+                              <span className="font-bold text-black text-sm sm:text-base">Total: £{discountedBumperPrice}</span>
+                              <span className="block text-xs text-orange-600 font-medium">£{Math.round(discountedBumperPrice / 12)}/month</span>
+                              <span className="block text-xs text-gray-600 font-medium">12 interest-free payments</span>
                             </div>
                           </div>
                         </div>
@@ -1329,9 +1344,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           <div className="flex justify-between items-center">
                             <span className="text-black text-xs sm:text-sm font-medium">Pay in Full:</span>
                             <div className="text-right">
-                              <span className="font-bold text-black text-sm sm:text-base">£{discountedStripePrice}</span>
-                              <span className="block text-xs text-green-600 font-medium">Save £{Math.floor(discountedBumperPrice * 0.10)} today</span>
-                              <span className="block text-xs text-gray-600 font-medium">Total: £{discountedStripePrice} (10% off)</span>
+                              <span className="font-bold text-black text-sm sm:text-base">Total: £{discountedStripePrice}</span>
+                              <span className="block text-xs text-green-600 font-medium">Save £{Math.floor(discountedBumperPrice * 0.10)} (10% off)</span>
                             </div>
                           </div>
                         </div>
