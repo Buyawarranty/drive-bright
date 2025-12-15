@@ -33,6 +33,7 @@ import { InlineCustomerTags } from './InlineCustomerTags';
 import { BulkEmailDialog } from './BulkEmailDialog';
 import { BulkTagDialog } from './BulkTagDialog';
 import { CancelWarrantyDialog } from './CancelWarrantyDialog';
+import { InvoiceDialog } from './InvoiceDialog';
 import CoverageDetailsDisplay from '@/components/CoverageDetailsDisplay';
 import AddOnProtectionDisplay from '@/components/AddOnProtectionDisplay';
 import { W2KAuditLog } from './W2KAuditLog';
@@ -2163,6 +2164,11 @@ export const CustomersTab = () => {
               <div className="flex items-center gap-2">
                 {selectedCustomers.size > 0 && (
                   <>
+                    <InvoiceDialog
+                      customers={filteredCustomers}
+                      selectedCustomerIds={Array.from(selectedCustomers)}
+                      onComplete={() => setSelectedCustomers(new Set())}
+                    />
                     <BulkTagDialog 
                       selectedCustomerIds={Array.from(selectedCustomers)}
                       onComplete={() => {
