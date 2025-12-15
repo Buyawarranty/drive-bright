@@ -1525,13 +1525,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       {savingsAmount > 0 && (
                         <span className="text-red-500 line-through ml-1">(Was £{Math.round(displayedAnnualPrice * 0.9) + savingsAmount})</span>
                       )}
-                      {savingsAmount > 0 && <span className="ml-1">🔥</span>}
                     </div>
                     
                     {/* Savings line */}
                     {savingsAmount > 0 && (
                       <div className="flex items-center gap-1 mt-1">
-                        <span className="text-sm font-bold text-green-600">Save £{savingsAmount} Today</span>
+                        <span className="text-sm font-bold text-green-600">Save £{savingsAmount} Today 🔥</span>
                       </div>
                     )}
                   </div>
