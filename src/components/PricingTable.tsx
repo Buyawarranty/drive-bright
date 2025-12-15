@@ -1584,7 +1584,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     size="lg"
                   >
                     <div className="flex items-center justify-center gap-2">
-                      <span>{isSelected ? 'Selected' : 'Get Instant Cover'}</span>
+                      <span>{isSelected ? 'Selected' : 'Select this plan'}</span>
                       {!isSelected && <ArrowRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" />}
                     </div>
                   </Button>
