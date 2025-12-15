@@ -78,7 +78,7 @@ const CarExtendedWarranty: React.FC = () => {
     }
     
     if (value && numericValue > 150000) {
-      setMileageError('We can only cover vehicles up to 150,000 miles');
+      setMileageError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
     } else {
       setMileageError('');
     }
@@ -101,7 +101,7 @@ const CarExtendedWarranty: React.FC = () => {
     setMileage(value.toLocaleString());
     
     if (value > 150000) {
-      setMileageError('We can only cover vehicles up to 150,000 miles');
+      setMileageError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
     } else {
       setMileageError('');
     }
@@ -137,7 +137,7 @@ const CarExtendedWarranty: React.FC = () => {
     }
     
     if (numericMileage > 150000) {
-      setMileageError('We can only cover vehicles up to 150,000 miles');
+      setMileageError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
       return;
     }
     
