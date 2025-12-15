@@ -86,12 +86,12 @@ const MileageSlider: React.FC<MileageSliderProps> = ({
     }
   }, [isDragging]);
 
-  const percentage = ((value - min) / (max - min)) * 100;
-  // Constrain panda position to stay within visible area (5% to 95%)
-  const pandaPosition = Math.max(5, Math.min(95, percentage));
+  const clampedValue = Math.max(min, Math.min(max, value));
+  const percentage = ((clampedValue - min) / (max - min)) * 100;
+  const fillPercentage = Math.max(0, Math.min(100, percentage));
 
   return (
-    <div className="w-full max-w-xs py-2">
+    <div className="w-full py-2">
       {/* Slider Track */}
       <div 
         ref={sliderRef}
@@ -101,7 +101,7 @@ const MileageSlider: React.FC<MileageSliderProps> = ({
         {/* Selected Area (Brand Orange) */}
         <div 
           className="absolute top-0 left-0 h-full bg-primary rounded-lg transition-all duration-150"
-          style={{ width: `${percentage}%` }}
+          style={{ width: `${fillPercentage}%` }}
         />
         
         {/* Panda Head Handle */}
@@ -109,7 +109,7 @@ const MileageSlider: React.FC<MileageSliderProps> = ({
           className={`absolute top-1/2 transform -translate-y-1/2 -translate-x-1/2 cursor-grab ${
             isDragging ? 'cursor-grabbing scale-110' : ''
           } transition-all duration-150 ease-out`}
-          style={{ left: `${pandaPosition}%` }}
+          style={{ left: `clamp(24px, ${fillPercentage}%, calc(100% - 24px))` }}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
         >
@@ -127,7 +127,7 @@ const MileageSlider: React.FC<MileageSliderProps> = ({
           />
           
           {/* Static Light Grey Arrow next to panda head */}
-          {!isDragging && percentage < 15 && (
+          {!isDragging && fillPercentage < 15 && (
             <div className="absolute top-1/2 left-full transform -translate-y-1/2 ml-1">
               <ArrowRight className="w-6 h-6 text-gray-300 drop-shadow-sm" />
             </div>
@@ -139,13 +139,6 @@ const MileageSlider: React.FC<MileageSliderProps> = ({
       <div className="text-left text-sm text-muted-foreground mt-2">
         Slide the panda or click on the slider to set mileage
       </div>
-
-      {/* Validation Message */}
-      {value > 150000 && (
-        <div className="text-left text-sm text-red-600 font-medium mt-2">
-          Sorry, we only cover vehicles under 150,000 miles and less than 15 years old
-        </div>
-      )}
     </div>
   );
 };

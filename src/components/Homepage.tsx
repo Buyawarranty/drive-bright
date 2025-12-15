@@ -349,7 +349,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     }
   };
 
-  const isFormValid = regNumber.trim() && mileage.trim() && !mileageError && !vehicleAgeError;
+  const eligibilityError = mileageError || vehicleAgeError;
+  const isFormValid = regNumber.trim() && mileage.trim() && !eligibilityError;
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
@@ -476,7 +477,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                       onBlur={handleMileageBlur}
                       placeholder={mileagePlaceholder}
                       className={`w-full max-w-56 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-sm sm:text-lg border-2 rounded-lg focus:outline-none min-w-0 placeholder:text-gray-500 ${
-                        mileageError ? 'border-blue-400 focus:border-blue-500' : 'border-gray-400 focus:border-orange-500'
+                        eligibilityError ? 'border-destructive focus:border-destructive' : 'border-gray-400 focus:border-orange-500'
                       }`}
                     />
                   </div>
@@ -492,15 +493,10 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     />
                   </div>
 
-                  {/* Error Messages */}
-                  {mileageError && (
-                    <p className="text-sm text-blue-600 font-medium">
-                      {mileageError}
-                    </p>
-                  )}
-                  {vehicleAgeError && (
-                    <p className="text-sm text-blue-600 font-medium">
-                      {vehicleAgeError}
+                  {/* Error Message (single) */}
+                  {eligibilityError && (
+                    <p className="text-sm text-destructive font-medium text-left w-full">
+                      {eligibilityError}
                     </p>
                   )}
                 </div>
