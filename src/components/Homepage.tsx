@@ -39,6 +39,7 @@ interface VehicleData {
   vehicleType?: string;
   blocked?: boolean;
   blockReason?: string;
+  manufactureDate?: string; // Full manufacture date for precise age calculation
 }
 
 interface HomepageProps {
@@ -312,6 +313,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         vehicleData.transmission = data.transmission;
         vehicleData.year = data.yearOfManufacture;
         vehicleData.vehicleType = data.vehicleType || 'car';
+        vehicleData.manufactureDate = data.manufactureDate; // Full manufacture date for precise age calculation
         if (data.blocked) {
           vehicleData.blocked = true;
           vehicleData.blockReason = data.blockReason;

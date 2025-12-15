@@ -92,7 +92,7 @@ function testMileageBoundaries3Year() {
   console.log('✅ Mileage boundaries (3-year) tests passed');
 }
 
-// Age-Based Surcharge Boundaries Tests
+// Age-Based Surcharge Boundaries Tests (using year only - fallback)
 function testAgeBoundaries() {
   const currentYear = new Date().getFullYear(); // 2025
 
@@ -127,6 +127,65 @@ function testAgeBoundaries() {
   console.assert(result6.adjustmentAmount === 600, '14 years old (3-year) should have +£600 surcharge');
 
   console.log('✅ Age boundaries tests passed');
+}
+
+// Age-Based Surcharge with Precise ManufactureDate Tests
+function testPreciseAgeBoundaries() {
+  const now = new Date();
+  
+  // Calculate a date that is exactly 12 years ago (should NOT qualify)
+  const exactly12YearsAgo = new Date(now);
+  exactly12YearsAgo.setFullYear(exactly12YearsAgo.getFullYear() - 12);
+  const vehicle1 = createVehicleData({ 
+    manufactureDate: exactly12YearsAgo.toISOString(), 
+    mileage: '50000' 
+  });
+  const result1 = calculateVehiclePriceAdjustment(vehicle1, 1);
+  console.assert(result1.adjustmentAmount === 0, 'Exactly 12 years old should have no surcharge');
+
+  // Calculate a date that is 12 years and 1 day ago (SHOULD qualify)
+  const over12YearsAgo = new Date(now);
+  over12YearsAgo.setFullYear(over12YearsAgo.getFullYear() - 12);
+  over12YearsAgo.setDate(over12YearsAgo.getDate() - 1);
+  const vehicle2 = createVehicleData({ 
+    manufactureDate: over12YearsAgo.toISOString(), 
+    mileage: '50000' 
+  });
+  const result2 = calculateVehiclePriceAdjustment(vehicle2, 1);
+  console.assert(result2.adjustmentAmount === 200, '12 years + 1 day old should have +£200 surcharge');
+
+  // Calculate a date that is exactly 15 years ago (SHOULD qualify)
+  const exactly15YearsAgo = new Date(now);
+  exactly15YearsAgo.setFullYear(exactly15YearsAgo.getFullYear() - 15);
+  const vehicle3 = createVehicleData({ 
+    manufactureDate: exactly15YearsAgo.toISOString(), 
+    mileage: '50000' 
+  });
+  const result3 = calculateVehiclePriceAdjustment(vehicle3, 1);
+  console.assert(result3.adjustmentAmount === 200, 'Exactly 15 years old should have +£200 surcharge');
+
+  // Calculate a date that is 15 years and 1 day ago (should NOT qualify - over 15)
+  const over15YearsAgo = new Date(now);
+  over15YearsAgo.setFullYear(over15YearsAgo.getFullYear() - 15);
+  over15YearsAgo.setDate(over15YearsAgo.getDate() - 1);
+  const vehicle4 = createVehicleData({ 
+    manufactureDate: over15YearsAgo.toISOString(), 
+    mileage: '50000' 
+  });
+  const result4 = calculateVehiclePriceAdjustment(vehicle4, 1);
+  console.assert(result4.adjustmentAmount === 0, '15 years + 1 day old should have no surcharge (over 15)');
+
+  // Test BL62 GVO scenario: Feb 2013 vehicle (12 years 10 months old as of Dec 2025)
+  // This should now qualify since it's > 12 years
+  const feb2013 = new Date('2013-02-09');
+  const vehicle5 = createVehicleData({ 
+    manufactureDate: feb2013.toISOString(), 
+    mileage: '50000' 
+  });
+  const result5 = calculateVehiclePriceAdjustment(vehicle5, 1);
+  console.assert(result5.adjustmentAmount === 200, 'Feb 2013 vehicle (12y 10m old) should have +£200 surcharge');
+
+  console.log('✅ Precise age boundaries tests passed');
 }
 
 // Non-Stacking Behavior Tests
@@ -232,6 +291,7 @@ export function runAllVehicleValidationTests() {
   testMileageBoundaries2Year();
   testMileageBoundaries3Year();
   testAgeBoundaries();
+  testPreciseAgeBoundaries();
   testNonStackingBehavior();
   testJaguarRangeRoverParity();
   testSurchargeOrdering();
@@ -245,6 +305,7 @@ export {
   testMileageBoundaries2Year,
   testMileageBoundaries3Year,
   testAgeBoundaries,
+  testPreciseAgeBoundaries,
   testNonStackingBehavior,
   testJaguarRangeRoverParity,
   testSurchargeOrdering,

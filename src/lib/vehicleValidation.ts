@@ -7,6 +7,7 @@ export interface VehicleData {
   regNumber: string;
   year?: string;
   mileage?: string | number;
+  manufactureDate?: string; // Full manufacture date (ISO format) for precise age calculation
 }
 
 export interface PriceAdjustment {
@@ -382,24 +383,44 @@ export function calculateVehiclePriceAdjustment(
   console.log('🔍 Mileage Check:', { mileage, mileageQualifies, threshold: '120,001 - 150,000' });
   
   // Calculate age-based premium for vehicles strictly > 12 years old AND <= 15 years old
+  // Uses precise age from manufactureDate if available, otherwise falls back to year calculation
   // Boundary: 12 years 1 day triggers, exactly 12 years does NOT. 15 years triggers, 15 years 1 day does NOT.
+  let vehicleAgePrecise: number | null = null;
   let vehicleAgeYears: number | null = null;
-  if (vehicleData.year) {
-    const year = typeof vehicleData.year === 'string' ? parseInt(vehicleData.year) : vehicleData.year;
-    if (!isNaN(year)) {
-      const currentYear = new Date().getFullYear();
-      vehicleAgeYears = currentYear - year;
+  const now = new Date();
+  
+  // Try to use manufactureDate for precise age calculation (in years as decimal)
+  if (vehicleData.manufactureDate) {
+    const manufactureDate = new Date(vehicleData.manufactureDate);
+    if (!isNaN(manufactureDate.getTime())) {
+      const ageInMs = now.getTime() - manufactureDate.getTime();
+      const msPerYear = 365.25 * 24 * 60 * 60 * 1000; // Account for leap years
+      vehicleAgePrecise = ageInMs / msPerYear;
+      vehicleAgeYears = Math.floor(vehicleAgePrecise); // Full years for display
     }
   }
   
-  const ageQualifies = vehicleAgeYears !== null && vehicleAgeYears > 12 && vehicleAgeYears <= 15;
+  // Fallback to year-based calculation if no manufactureDate
+  if (vehicleAgePrecise === null && vehicleData.year) {
+    const year = typeof vehicleData.year === 'string' ? parseInt(vehicleData.year) : vehicleData.year;
+    if (!isNaN(year)) {
+      const currentYear = now.getFullYear();
+      vehicleAgeYears = currentYear - year;
+      vehicleAgePrecise = vehicleAgeYears; // Use whole years as fallback
+    }
+  }
   
-  console.log('🔍 Age Check:', { 
+  // Age qualifies if strictly > 12 years (12.0001+) AND <= 15 years
+  const ageQualifies = vehicleAgePrecise !== null && vehicleAgePrecise > 12 && vehicleAgePrecise <= 15;
+  
+  console.log('🔍 Age Check (Precise):', { 
+    'vehicleData.manufactureDate': vehicleData.manufactureDate,
     'vehicleData.year': vehicleData.year, 
-    vehicleAgeYears, 
+    vehicleAgePrecise: vehicleAgePrecise?.toFixed(4),
+    vehicleAgeYears,
     ageQualifies, 
-    threshold: '>12 and <=15 years',
-    currentYear: new Date().getFullYear()
+    threshold: '>12.0 and <=15.0 years',
+    currentDate: now.toISOString()
   });
   
   // Determine surcharge amount based on warranty duration
