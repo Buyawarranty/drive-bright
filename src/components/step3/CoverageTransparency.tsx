@@ -7,12 +7,10 @@ interface CoverageTransparencyProps {
   termsDocUrl: string;
 }
 
-const coverageItems = [
-  'Engine & gearbox',
-  'Clutch & cooling',
-  'Electrics',
-  'Braking & steering',
-  'Drivetrain & transmission'
+const summaryBullets = [
+  'No hidden catches',
+  'Easy claims, Fast payouts',
+  '14-day money-back guarantee'
 ];
 
 const CoverageTransparency: React.FC<CoverageTransparencyProps> = ({
@@ -88,7 +86,7 @@ const CoverageTransparency: React.FC<CoverageTransparencyProps> = ({
       <div className="bg-card rounded-xl border-2 border-border p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
-            <span className="bg-yellow-100 px-2 py-1 rounded">Your cover, made crystal clear</span>
+            <span>Your cover, made crystal clear</span>
             <span className="text-xl">💎</span>
           </h3>
           <button 
@@ -100,36 +98,42 @@ const CoverageTransparency: React.FC<CoverageTransparencyProps> = ({
           </button>
         </div>
 
-        <div className="flex items-center gap-2 mb-4 text-foreground">
-          <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-          <span>See what's included - clear terms, no jargon, no surprises.</span>
+        {/* Summary Bullets */}
+        <div className="space-y-2 mb-4">
+          {summaryBullets.map((bullet, index) => (
+            <div key={index} className="flex items-center gap-2 text-foreground">
+              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <span>{bullet}</span>
+            </div>
+          ))}
         </div>
+
+        {/* Microcopy */}
+        <p className="text-sm text-muted-foreground mb-4 italic">
+          Want the details? Expand below — no jargon, no surprises.
+        </p>
 
         {/* Your Platinum Plan Collapsible */}
         <Collapsible className="mb-3">
           <CollapsibleTrigger className="w-full">
             <div className="flex items-center gap-2 py-2 text-left hover:opacity-80 transition-opacity">
-              <ChevronDown className="w-4 h-4 text-orange-500 transition-transform duration-300 group-data-[state=open]:rotate-180" />
-              <span className="font-medium text-orange-500">Your Platinum Plan</span>
+              <ChevronDown className="w-4 h-4 text-green-600 transition-transform duration-300 group-data-[state=open]:rotate-180" />
+              <span className="font-medium text-green-600">Your Platinum Plan</span>
             </div>
           </CollapsibleTrigger>
           
           <CollapsibleContent>
-            <div className="ml-6 p-4 bg-orange-50 rounded-lg border border-orange-100">
-              <ul className="space-y-2 mb-4">
-                {coverageItems.map((item, index) => (
-                  <li key={index} className="flex items-center gap-2 text-sm text-foreground">
-                    <Check className="w-4 h-4 text-orange-500 flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
+            <div className="ml-6 p-4 bg-green-50 rounded-lg border border-green-100">
+              <div className="flex items-center gap-2 text-sm text-foreground mb-4">
+                <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                <span className="font-medium">The most comprehensive warranty plan</span>
+              </div>
               {platinumDocUrl && (
                 <a
                   href={platinumDocUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-orange-500 hover:text-orange-600 text-sm font-medium"
+                  className="flex items-center gap-1.5 text-green-600 hover:text-green-700 text-sm font-medium"
                 >
                   <FileText className="w-4 h-4" />
                   View full plan (PDF)
