@@ -233,15 +233,49 @@ const handler = async (req: Request): Promise<Response> => {
     const htmlContent = generateQuoteEmail({ ...data, quoteId }, baseUrl);
 
     const vehicleDisplay = `${data.vehicleData.make || ''} ${data.vehicleData.model || ''}`.trim() || 'Your Vehicle';
+    const emailSubject = `Your ${vehicleDisplay} Warranty Quote is Ready – Lock in Your Price Today`;
     
     const emailResponse = await resend.emails.send({
       from: "BuyaWarranty <noreply@buyawarranty.co.uk>",
       to: [data.email],
-      subject: `Your ${vehicleDisplay} Warranty Quote is Ready – Lock in Your Price Today`,
+      subject: emailSubject,
       html: htmlContent,
     });
 
     logStep('Email sent successfully', emailResponse);
+
+    // Log the customer quote email to abandoned_cart_emails table
+    try {
+      // First, try to find the abandoned cart for this email
+      const { data: cartData } = await supabase
+        .from('abandoned_carts')
+        .select('id')
+        .eq('email', data.email)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      const { error: logError } = await supabase
+        .from('abandoned_cart_emails')
+        .insert({
+          abandoned_cart_id: cartData?.id || null,
+          customer_email: data.email,
+          email_type: 'customer_quote',
+          subject: emailSubject,
+          vehicle_reg: data.vehicleData.regNumber,
+          plan_name: data.selectedPlan?.name || null,
+          price_amount: data.selectedPlan?.price || null,
+        });
+
+      if (logError) {
+        console.error('Error logging quote email:', logError);
+      } else {
+        logStep('Quote email logged to abandoned_cart_emails');
+      }
+    } catch (logErr) {
+      console.error('Exception logging quote email:', logErr);
+    }
+
     logStep('Quote email sent and logged successfully');
 
     return new Response(JSON.stringify({ success: true, emailId: emailResponse.data?.id }), {
