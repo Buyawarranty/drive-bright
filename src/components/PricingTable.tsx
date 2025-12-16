@@ -1089,7 +1089,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
       if (error) throw error;
 
-      toast.success('Quote email sent successfully!');
+      toast.success('Quote email sent successfully!', {
+        style: {
+          background: '#16a34a',
+          color: 'white',
+          border: 'none',
+        },
+      });
       setEmailQuoteDialogOpen(false);
       setEmailQuoteEmail('');
     } catch (error: any) {
@@ -1597,7 +1603,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     }}
                     className="w-full text-center text-sm text-black hover:text-orange-600 transition-colors pointer-events-auto flex items-center justify-center gap-1"
                   >
-                    <Mail className="w-4 h-4" />
+                    <Mail className="w-4 h-4 text-orange-500" />
                     <span className="underline">Email me this quote</span>
                   </button>
                   
