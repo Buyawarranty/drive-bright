@@ -2426,141 +2426,172 @@ const PricingTable: React.FC<PricingTableProps> = ({
           />
         </div>
 
-        {/* Additional Information Section - Redesigned */}
-        <div id="your-cover-details" className="py-6 md:py-10">
-          <div className="bg-gray-50 rounded-2xl p-6 md:p-10 border border-gray-100">
-            {/* Section Header with Trust Info */}
-            <div className="text-center mb-8">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <span className="text-2xl">💎</span>
-                <h3 className="text-2xl md:text-3xl font-bold text-foreground">
-                  Crystal clear cover
-                </h3>
-              </div>
-              <p className="text-base text-muted-foreground mb-4">
-                No jargon. No surprises.
-              </p>
-              <div className="inline-flex items-center justify-center bg-green-50 border border-green-200 rounded-full px-4 py-2">
-                <span className="font-semibold text-green-700 text-sm leading-none">94% of claims approved in under 48 hours</span>
-              </div>
-            </div>
-            
-            {/* Collapsible Items */}
-            <div className="space-y-3 max-w-2xl mx-auto">
-              <Collapsible>
-                <CollapsibleTrigger className="flex items-center justify-between w-full bg-gradient-to-r from-orange-50 to-orange-100/50 hover:from-orange-100 hover:to-orange-100 rounded-lg px-5 py-4 transition-all duration-200 group border border-orange-200/50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-brand-orange rounded-full flex items-center justify-center">
-                      <CheckCircle className="w-5 h-5 text-white" />
-                    </div>
-                    <span className="font-semibold text-foreground text-base md:text-lg text-left">
-                      <span className="block md:inline">What your Platinum</span>
-                      <span className="block md:inline md:ml-1">plan covers</span>
-                    </span>
+        {/* Additional Information Section - Original Design */}
+        <div id="your-cover-details" className="py-6 md:py-10 space-y-4">
+          {/* First Card: 94% Claims Section */}
+          <div className="bg-gradient-to-r from-green-50 to-white rounded-xl border border-border p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h3 className="font-bold text-lg text-foreground mb-3">94% of claims approved fast</h3>
+                
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center gap-2 text-foreground">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <span>Clear cover – no hidden catches</span>
                   </div>
-                  <ChevronDown className="w-5 h-5 text-brand-orange transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                </CollapsibleTrigger>
-                <CollapsibleContent className="pt-3">
-                  <div className="bg-white rounded-lg p-5 border border-gray-100">
-                    <p className="text-gray-700 text-sm md:text-base leading-relaxed mb-4">
-                      The Platinum Plan provides comprehensive coverage for your vehicle and complete peace of mind.
-                    </p>
-                    <ul className="text-gray-700 text-sm md:text-base space-y-2 mb-4">
-                      <li className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span>Fast and easy claims</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span>Fault diagnostics included</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span>Consequential damage protection</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span>14-day money-back guarantee</span>
-                      </li>
-                    </ul>
-                    {platinumDocUrl ? (
-                      <a 
-                        href={platinumDocUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-brand-orange hover:text-orange-600 font-medium text-base underline"
-                      >
-                        View Full Platinum Plan Details
-                      </a>
-                    ) : (
-                      <span className="text-gray-400 font-medium text-sm">Loading PDF...</span>
-                    )}
+                  <div className="flex items-center gap-2 text-foreground">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <span>We look for reasons to say YES</span>
                   </div>
-                </CollapsibleContent>
-              </Collapsible>
+                </div>
 
-              <Collapsible>
-                <CollapsibleTrigger className="flex items-center justify-between w-full bg-gradient-to-r from-green-50 to-green-100/50 hover:from-green-100 hover:to-green-100 rounded-lg px-5 py-4 transition-all duration-200 group border border-green-200/50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-                      <CheckCircle className="w-5 h-5 text-white" />
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xl">🛡️</span>
+                  <span className="font-bold text-foreground">Real protection. Real peace of mind. Guaranteed.</span>
+                </div>
+
+                {/* Trustpilot Badge */}
+                <div className="bg-white rounded-lg border border-border p-3 flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-1 text-sm font-medium">
+                      <span>⭐</span>
+                      <span>Rated Excellent on Trustpilot</span>
                     </div>
-                    <span className="font-semibold text-foreground text-base md:text-lg">Terms and conditions</span>
+                    <p className="text-sm text-muted-foreground">Don't just take our word for it – see what customers say.</p>
                   </div>
-                  <ChevronDown className="w-5 h-5 text-green-600 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                </CollapsibleTrigger>
-                <CollapsibleContent className="pt-3">
-                  <div className="bg-white rounded-lg p-5 border border-gray-100">
-                    <p className="text-gray-700 text-sm md:text-base leading-relaxed mb-4">
-                      Clear, straightforward terms designed to protect you and give you peace of mind. No hidden surprises.
-                    </p>
-                    {termsDocUrl ? (
-                      <a 
-                        href={termsDocUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-green-600 hover:text-green-700 font-medium text-base underline"
-                      >
-                        View Full Terms and Conditions
-                      </a>
-                    ) : (
-                      <span className="text-gray-400 font-medium text-sm">Loading PDF...</span>
-                    )}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-            </div>
-            
-            {/* Why Drivers Trust Us */}
-            <div className="mt-6 text-center">
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <span className="text-xl">🚗</span>
-                <h4 className="text-lg font-semibold text-foreground">Why drivers trust us</h4>
+                  <a 
+                    href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:opacity-80 transition-opacity"
+                  >
+                    <TrustpilotHeader className="scale-75" />
+                  </a>
+                </div>
               </div>
-              <a 
-                href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 hover:opacity-80 transition-opacity"
-              >
-                <TrustpilotHeader className="scale-90" />
-              </a>
+
+              {/* 14 Day Guarantee Badge */}
+              <div className="ml-4 hidden sm:flex flex-col items-center">
+                <div className="w-24 h-24 rounded-full border-4 border-orange-200 bg-orange-50 flex flex-col items-center justify-center">
+                  <div className="text-orange-500">
+                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </div>
+                  <Check className="w-4 h-4 text-orange-500" />
+                </div>
+                <span className="text-sm text-orange-500 font-medium mt-1 text-center">14 day money<br />back guarantee</span>
+              </div>
             </div>
-            
-            {/* Back to Plans button - bottom right of section */}
-            <div className="flex justify-center md:justify-end mt-2 mb-0">
+          </div>
+
+          {/* Second Card: Crystal Clear Cover Section */}
+          <div className="bg-card rounded-xl border border-border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
+                <span className="bg-yellow-100 px-2 py-1 rounded">Your cover, made crystal clear</span>
+                <span className="text-xl">💎</span>
+              </h3>
               <Button
                 onClick={() => {
                   const durationSection = document.getElementById('duration-price-section');
                   durationSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }}
+                variant="outline"
                 size="sm"
-                className="flex items-center gap-1.5 text-xs font-medium bg-white hover:bg-gray-50 text-black border-2 border-gray-300 shadow-md scale-90"
+                className="flex items-center gap-1 text-sm font-medium"
               >
-                <ArrowUp className="w-3 h-3" />
-                Back to plans
+                <ArrowUp className="w-4 h-4" />
+                Back to Plans
               </Button>
             </div>
+
+            <div className="flex items-center gap-2 mb-4 text-foreground">
+              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <span>See what's included - clear terms, no jargon, no surprises.</span>
+            </div>
+
+            {/* Your Platinum Plan Collapsible */}
+            <Collapsible className="mb-3">
+              <CollapsibleTrigger className="w-full">
+                <div className="flex items-center gap-2 py-2 text-left hover:opacity-80 transition-opacity">
+                  <ChevronDown className="w-4 h-4 text-orange-500 transition-transform duration-300 group-data-[state=open]:rotate-180" />
+                  <span className="font-medium text-orange-500">Your Platinum Plan</span>
+                </div>
+              </CollapsibleTrigger>
+              
+              <CollapsibleContent>
+                <div className="ml-6 p-4 bg-orange-50 rounded-lg border border-orange-100">
+                  <p className="text-gray-700 text-sm leading-relaxed mb-4">
+                    The Platinum Plan provides comprehensive coverage for your vehicle and complete peace of mind.
+                  </p>
+                  <ul className="space-y-2 mb-4">
+                    <li className="flex items-center gap-2 text-sm text-foreground">
+                      <Check className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                      Fast and easy claims
+                    </li>
+                    <li className="flex items-center gap-2 text-sm text-foreground">
+                      <Check className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                      Fault diagnostics included
+                    </li>
+                    <li className="flex items-center gap-2 text-sm text-foreground">
+                      <Check className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                      Consequential damage protection
+                    </li>
+                    <li className="flex items-center gap-2 text-sm text-foreground">
+                      <Check className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                      14-day money-back guarantee
+                    </li>
+                  </ul>
+                  {platinumDocUrl ? (
+                    <a 
+                      href={platinumDocUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-orange-500 hover:text-orange-600 text-sm font-medium"
+                    >
+                      <FileText className="w-4 h-4" />
+                      View full plan (PDF)
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <span className="text-gray-400 font-medium text-sm">Loading PDF...</span>
+                  )}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+
+            {/* Terms & Conditions Collapsible */}
+            <Collapsible>
+              <CollapsibleTrigger className="w-full">
+                <div className="flex items-center gap-2 py-2 text-left hover:opacity-80 transition-opacity">
+                  <ChevronDown className="w-4 h-4 text-green-600 transition-transform duration-300 group-data-[state=open]:rotate-180" />
+                  <span className="font-medium text-green-600">Terms & Conditions</span>
+                </div>
+              </CollapsibleTrigger>
+              
+              <CollapsibleContent>
+                <div className="ml-6 p-4 bg-green-50 rounded-lg border border-green-100">
+                  <p className="text-sm text-foreground mb-3">
+                    Our terms are written in plain English so you know exactly what you're getting.
+                  </p>
+                  {termsDocUrl ? (
+                    <a 
+                      href={termsDocUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-green-600 hover:text-green-700 text-sm font-medium"
+                    >
+                      <FileText className="w-4 h-4" />
+                      View Terms & Conditions (PDF)
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <span className="text-gray-400 font-medium text-sm">Loading PDF...</span>
+                  )}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
           </div>
         </div>
 
