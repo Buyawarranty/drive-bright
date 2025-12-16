@@ -2696,8 +2696,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <span className="text-sm text-gray-600">Only 12 payments</span>
                       <span className="text-sm text-gray-900 font-medium">Pay in full: £{Math.round(displayTotalPrice * 0.9)}</span>
                     </div>
-                    <div className={`absolute right-0 p-1.5 rounded-full bg-green-600 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-0' : 'rotate-180'}`}>
-                      <ChevronDown className="w-5 h-5 text-white" />
+                    <div className="absolute right-0 flex items-center gap-1">
+                      {/* Animated Details text - only show when collapsed */}
+                      {!isSummaryExpanded && (
+                        <span className="text-xs font-medium text-gray-500 animate-pulse">Details</span>
+                      )}
+                      <div className={`p-1.5 rounded-full bg-green-600 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-0' : 'rotate-180'}`}>
+                        <ChevronDown className="w-5 h-5 text-white" />
+                      </div>
                     </div>
                   </button>
                   
