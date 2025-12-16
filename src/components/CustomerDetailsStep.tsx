@@ -1955,10 +1955,10 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       </div>
                     </RadioGroup>
 
-                    {/* Discount Codes Applied Notice */}
-                    {hasValidDiscountCodes && (
+                    {/* Discount Codes Applied Notice - Hide auto-applied 5% promo since banner already shows it */}
+                    {hasValidDiscountCodes && appliedDiscountCodes.some(d => d.code !== '5PERCENTSAVENOW') && (
                       <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 lg:max-w-md lg:mx-auto">
-                        {appliedDiscountCodes.map((discount) => (
+                        {appliedDiscountCodes.filter(d => d.code !== '5PERCENTSAVENOW').map((discount) => (
                           <div key={discount.code} className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2 min-w-0">
                               <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
