@@ -380,8 +380,14 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
     return () => clearTimeout(timer);
   }, [bumperTotalPrice]);
 
-  // Calculate total discount from all applied codes
-  const totalDiscountAmount = appliedDiscountCodes.reduce((total, code) => total + code.discountAmount, 0);
+  // Calculate total discount from all applied codes - recalculate percentage discounts dynamically
+  const totalDiscountAmount = appliedDiscountCodes.reduce((total, code) => {
+    if (code.type === 'percentage') {
+      // Recalculate percentage discount based on current price (always floor)
+      return total + Math.floor(bumperTotalPrice * (code.value / 100));
+    }
+    return total + code.discountAmount;
+  }, 0);
   const hasValidDiscountCodes = appliedDiscountCodes.length > 0;
   const discountedPrice = hasValidDiscountCodes ? bumperTotalPrice - totalDiscountAmount : bumperTotalPrice;
   const discountedBumperPrice = Math.round(Math.max(discountedPrice, 0)); // Ensure price doesn't go negative
@@ -1531,7 +1537,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="text-green-600 font-medium">-£{Math.floor(discount.discountAmount)}</span>
+                              <span className="text-green-600 font-medium">-£{discount.type === 'percentage' ? Math.floor(bumperTotalPrice * (discount.value / 100)) : Math.floor(discount.discountAmount)}</span>
                               <Button
                                 variant="ghost"
                                 size="sm"
