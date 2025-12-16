@@ -519,7 +519,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
                 <div className="space-y-2 mt-6 mb-4">
                   {/* Monthly price × 12 payments */}
                   <div className="text-2xl font-bold text-gray-900">
-                    £{option.monthlyPrice} × 12 payments only
+                    £{option.monthlyPrice} <span className="text-gray-600">× 12 payments only</span>
                   </div>
                   
                   {/* Or pay in full */}
@@ -552,6 +552,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
                 {/* Select Button */}
                 <div className="mt-4">
                   <Button 
+                    variant="ghost"
                     className={`w-full font-semibold mb-3 ${
                       selectedPaymentType === option.id 
                         ? 'bg-green-600 hover:bg-green-700 text-white border-2 border-green-600' 
