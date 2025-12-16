@@ -6,7 +6,7 @@ import { trackEvent } from '@/utils/analytics';
 const CONFIG = {
   PROMO_CODE: '5PERCENTSAVENOW',
   PROMO_PERCENT: 0.05,
-  COUNTDOWN_SECONDS: 900, // 15 minutes
+  COUNTDOWN_SECONDS: 1200, // 20 minutes
   ALLOW_REAPPLY: true,
   NON_STACKING: true // apply best available only
 };
