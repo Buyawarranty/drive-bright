@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Mail, Copy, Send, Loader2 } from 'lucide-react';
 
 interface FollowUpEmailDialogProps {
+  cartId: string;
   customerEmail: string;
   customerName: string | null;
   vehicleReg: string | null;
@@ -21,6 +22,7 @@ interface FollowUpEmailDialogProps {
   vehicleModel: string | null;
   planName: string | null;
   totalPrice?: number;
+  onEmailSent?: () => void;
 }
 
 const generateEmailTemplate = (
@@ -60,6 +62,7 @@ www.buyawarranty.co.uk`;
 };
 
 export const FollowUpEmailDialog: React.FC<FollowUpEmailDialogProps> = ({
+  cartId,
   customerEmail,
   customerName,
   vehicleReg,
@@ -67,6 +70,7 @@ export const FollowUpEmailDialog: React.FC<FollowUpEmailDialogProps> = ({
   vehicleModel,
   planName,
   totalPrice,
+  onEmailSent,
 }) => {
   const [open, setOpen] = useState(false);
   const [toEmail, setToEmail] = useState(customerEmail);
@@ -114,8 +118,26 @@ export const FollowUpEmailDialog: React.FC<FollowUpEmailDialogProps> = ({
 
       if (error) throw error;
 
+      // Log the admin follow-up email
+      const { error: logError } = await supabase
+        .from('abandoned_cart_emails')
+        .insert({
+          abandoned_cart_id: cartId,
+          customer_email: toEmail,
+          email_type: 'admin_followup',
+          subject: subject,
+          vehicle_reg: vehicleReg,
+          plan_name: planName,
+          price_amount: totalPrice,
+        });
+
+      if (logError) {
+        console.error('Error logging follow-up email:', logError);
+      }
+
       toast.success('Follow-up email sent successfully!');
       setOpen(false);
+      onEmailSent?.();
     } catch (error) {
       console.error('Error sending email:', error);
       toast.error('Failed to send email. Please try again.');

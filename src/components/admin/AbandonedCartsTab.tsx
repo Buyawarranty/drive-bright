@@ -72,6 +72,16 @@ interface AbandonedCart {
   };
 }
 
+interface CartEmail {
+  id: string;
+  email_type: 'customer_quote' | 'admin_followup';
+  subject: string;
+  sent_at: string;
+  vehicle_reg: string | null;
+  plan_name: string | null;
+  price_amount: number | null;
+}
+
 export const AbandonedCartsTab: React.FC = () => {
   const [carts, setCarts] = useState<AbandonedCart[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,9 +90,11 @@ export const AbandonedCartsTab: React.FC = () => {
   const [contactNotes, setContactNotes] = useState('');
   const [savingNotes, setSavingNotes] = useState(false);
   const [newCartsCount, setNewCartsCount] = useState(0);
+  const [cartEmails, setCartEmails] = useState<Record<string, CartEmail[]>>({});
 
   useEffect(() => {
     fetchAbandonedCarts();
+    fetchAllCartEmails();
     
     // Set up real-time subscription for new abandoned carts
     const channel = supabase
@@ -98,10 +110,11 @@ export const AbandonedCartsTab: React.FC = () => {
           console.log('New abandoned cart:', payload);
           setNewCartsCount(prev => prev + 1);
           toast.info('New abandoned cart detected!', {
-            description: `Customer: ${payload.new.email}`,
+            description: `Customer: ${(payload.new as AbandonedCart).email}`,
             duration: 5000
           });
           fetchAbandonedCarts();
+          fetchAllCartEmails();
         }
       )
       .subscribe();
@@ -128,6 +141,34 @@ export const AbandonedCartsTab: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchAllCartEmails = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('abandoned_cart_emails')
+        .select('*')
+        .order('sent_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Group emails by cart ID and customer email
+      const emailsMap: Record<string, CartEmail[]> = {};
+      (data || []).forEach((email: any) => {
+        const key = email.abandoned_cart_id || email.customer_email;
+        if (!emailsMap[key]) {
+          emailsMap[key] = [];
+        }
+        emailsMap[key].push(email as CartEmail);
+      });
+      setCartEmails(emailsMap);
+    } catch (error) {
+      console.error('Error fetching cart emails:', error);
+    }
+  };
+
+  const getCartEmailHistory = (cart: AbandonedCart): CartEmail[] => {
+    return cartEmails[cart.id] || cartEmails[cart.email] || [];
   };
 
   const updateContactStatus = async (cartId: string, status: string) => {
@@ -464,6 +505,37 @@ export const AbandonedCartsTab: React.FC = () => {
                     </div>
                   )}
 
+                  {/* Email History */}
+                  {getCartEmailHistory(cart).length > 0 && (
+                    <div className="bg-orange-50 p-3 rounded">
+                      <p className="text-sm font-medium flex items-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        Email History ({getCartEmailHistory(cart).length})
+                      </p>
+                      <div className="space-y-2 mt-2">
+                        {getCartEmailHistory(cart).map((email) => (
+                          <div key={email.id} className="text-xs bg-white p-2 rounded border">
+                            <div className="flex items-center gap-2 justify-between">
+                              <Badge 
+                                variant="outline" 
+                                className={email.email_type === 'customer_quote' 
+                                  ? 'bg-blue-50 text-blue-700 border-blue-200' 
+                                  : 'bg-green-50 text-green-700 border-green-200'
+                                }
+                              >
+                                {email.email_type === 'customer_quote' ? 'Customer Request' : 'Admin Follow-up'}
+                              </Badge>
+                              <span className="text-gray-500">
+                                {new Date(email.sent_at).toLocaleDateString('en-GB')} {new Date(email.sent_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                            <p className="text-gray-700 mt-1 truncate" title={email.subject}>{email.subject}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Contact Notes */}
                   {cart.contact_notes && (
                     <div className="bg-blue-50 p-3 rounded">
@@ -497,6 +569,7 @@ export const AbandonedCartsTab: React.FC = () => {
 
                   {/* Follow-up Email Button */}
                   <FollowUpEmailDialog
+                    cartId={cart.id}
                     customerEmail={cart.email}
                     customerName={cart.full_name}
                     vehicleReg={cart.vehicle_reg}
@@ -504,6 +577,7 @@ export const AbandonedCartsTab: React.FC = () => {
                     vehicleModel={cart.vehicle_model}
                     planName={cart.plan_name}
                     totalPrice={cart.cart_metadata?.total_price}
+                    onEmailSent={fetchAllCartEmails}
                   />
                   
                   {cart.contact_status === 'not_contacted' && (

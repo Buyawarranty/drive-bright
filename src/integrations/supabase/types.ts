@@ -53,6 +53,56 @@ export type Database = {
         }
         Relationships: []
       }
+      abandoned_cart_emails: {
+        Row: {
+          abandoned_cart_id: string | null
+          created_at: string
+          customer_email: string
+          email_type: string
+          id: string
+          plan_name: string | null
+          price_amount: number | null
+          sent_at: string
+          sent_by: string | null
+          subject: string
+          vehicle_reg: string | null
+        }
+        Insert: {
+          abandoned_cart_id?: string | null
+          created_at?: string
+          customer_email: string
+          email_type: string
+          id?: string
+          plan_name?: string | null
+          price_amount?: number | null
+          sent_at?: string
+          sent_by?: string | null
+          subject: string
+          vehicle_reg?: string | null
+        }
+        Update: {
+          abandoned_cart_id?: string | null
+          created_at?: string
+          customer_email?: string
+          email_type?: string
+          id?: string
+          plan_name?: string | null
+          price_amount?: number | null
+          sent_at?: string
+          sent_by?: string | null
+          subject?: string
+          vehicle_reg?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abandoned_cart_emails_abandoned_cart_id_fkey"
+            columns: ["abandoned_cart_id"]
+            isOneToOne: false
+            referencedRelation: "abandoned_carts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       abandoned_carts: {
         Row: {
           cart_metadata: Json | null
