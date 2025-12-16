@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Clock, Check, X } from 'lucide-react';
+import { Lock, Unlock, Check, X, Gift } from 'lucide-react';
 import { trackEvent } from '@/utils/analytics';
 
 // Configuration flags
@@ -36,14 +36,16 @@ export const AutoApplyPromoBanner: React.FC<AutoApplyPromoBannerProps> = ({
 }) => {
   const [secondsRemaining, setSecondsRemaining] = useState(CONFIG.COUNTDOWN_SECONDS);
   const [isExpired, setIsExpired] = useState(false);
-  const [isAutoApplied, setIsAutoApplied] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const [showBetterDiscountNote, setShowBetterDiscountNote] = useState(false);
   const hasTrackedApply = useRef(false);
   const hasTracked300 = useRef(false);
   const hasTracked60 = useRef(false);
   const hasTrackedExpiry = useRef(false);
+  const timerStarted = useRef(false);
 
-  // Calculate 5% discount amount
+  // Calculate 5% discount amount (always round down)
   const promoDiscountAmount = Math.floor(basePrice * CONFIG.PROMO_PERCENT);
 
   // Check if there's a better existing discount
@@ -57,12 +59,8 @@ export const AutoApplyPromoBanner: React.FC<AutoApplyPromoBannerProps> = ({
   // Check if our promo is already applied
   const isPromoApplied = currentDiscounts.some(d => d.code === CONFIG.PROMO_CODE);
 
-  // Auto-apply promo on mount
+  // Check for existing state on mount
   useEffect(() => {
-    // Don't apply if already expired or already applied
-    if (isExpired || isPromoApplied) return;
-
-    // Check session/localStorage for existing promo state
     const savedPromoState = sessionStorage.getItem('autoPromo5Percent');
     if (savedPromoState) {
       const state = JSON.parse(savedPromoState);
@@ -70,19 +68,30 @@ export const AutoApplyPromoBanner: React.FC<AutoApplyPromoBannerProps> = ({
         setIsExpired(true);
         return;
       }
+      if (state.unlocked) {
+        setIsUnlocked(true);
+        timerStarted.current = true;
+      }
       if (state.secondsRemaining > 0) {
         setSecondsRemaining(state.secondsRemaining);
       }
     }
 
-    // If there's a better discount, show note but don't apply ours
+    // If there's a better discount, show note
     if (CONFIG.NON_STACKING && existingBetterDiscount) {
       setShowBetterDiscountNote(true);
-      return;
     }
+  }, [existingBetterDiscount]);
 
-    // Apply the promo code
-    if (!isAutoApplied && !isPromoApplied) {
+  // Handle unlock click
+  const handleUnlock = useCallback(() => {
+    if (isUnlocked || isExpired) return;
+
+    // Start animation
+    setIsAnimating(true);
+
+    // Apply the promo code after brief animation
+    setTimeout(() => {
       const discount = {
         code: CONFIG.PROMO_CODE,
         type: 'percentage' as const,
@@ -91,22 +100,31 @@ export const AutoApplyPromoBanner: React.FC<AutoApplyPromoBannerProps> = ({
       };
       
       onApplyPromo(discount);
-      setIsAutoApplied(true);
+      setIsUnlocked(true);
+      timerStarted.current = true;
+      setIsAnimating(false);
+
+      // Save state
+      sessionStorage.setItem('autoPromo5Percent', JSON.stringify({
+        unlocked: true,
+        secondsRemaining: CONFIG.COUNTDOWN_SECONDS,
+        expired: false
+      }));
 
       // Track analytics
       if (!hasTrackedApply.current) {
-        trackEvent('promo_auto_applied', { 
+        trackEvent('promo_unlocked', { 
           promo_code: CONFIG.PROMO_CODE, 
           timestamp: Date.now() 
         });
         hasTrackedApply.current = true;
       }
-    }
-  }, [existingBetterDiscount, isExpired, isPromoApplied, isAutoApplied, onApplyPromo, promoDiscountAmount]);
+    }, 400);
+  }, [isUnlocked, isExpired, onApplyPromo, promoDiscountAmount]);
 
-  // Countdown timer
+  // Countdown timer - only starts after unlock
   useEffect(() => {
-    if (isExpired) return;
+    if (isExpired || !isUnlocked) return;
 
     const interval = setInterval(() => {
       setSecondsRemaining(prev => {
@@ -114,6 +132,7 @@ export const AutoApplyPromoBanner: React.FC<AutoApplyPromoBannerProps> = ({
         
         // Save state to session
         sessionStorage.setItem('autoPromo5Percent', JSON.stringify({
+          unlocked: true,
           secondsRemaining: newValue,
           expired: newValue <= 0
         }));
@@ -148,7 +167,7 @@ export const AutoApplyPromoBanner: React.FC<AutoApplyPromoBannerProps> = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isExpired, isPromoApplied, onRemovePromo]);
+  }, [isExpired, isUnlocked, isPromoApplied, onRemovePromo]);
 
   // Format time as MM:SS
   const formatTime = (seconds: number) => {
@@ -164,12 +183,18 @@ export const AutoApplyPromoBanner: React.FC<AutoApplyPromoBannerProps> = ({
     // Reset state
     setIsExpired(false);
     setSecondsRemaining(CONFIG.COUNTDOWN_SECONDS);
+    setIsUnlocked(true);
+    timerStarted.current = true;
     hasTracked300.current = false;
     hasTracked60.current = false;
     hasTrackedExpiry.current = false;
 
-    // Clear session storage
-    sessionStorage.removeItem('autoPromo5Percent');
+    // Clear and update session storage
+    sessionStorage.setItem('autoPromo5Percent', JSON.stringify({
+      unlocked: true,
+      secondsRemaining: CONFIG.COUNTDOWN_SECONDS,
+      expired: false
+    }));
 
     // Apply the promo
     const discount = {
@@ -180,7 +205,6 @@ export const AutoApplyPromoBanner: React.FC<AutoApplyPromoBannerProps> = ({
     };
     
     onApplyPromo(discount);
-    setIsAutoApplied(true);
 
     trackEvent('promo_reapplied', { 
       promo_code: CONFIG.PROMO_CODE, 
@@ -211,27 +235,93 @@ export const AutoApplyPromoBanner: React.FC<AutoApplyPromoBannerProps> = ({
     );
   }
 
+  // LOCKED STATE - Show unlock button
+  if (!isUnlocked && !isExpired) {
+    return (
+      <div 
+        className="promo-banner mb-4 rounded-xl border overflow-hidden bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200 shadow-sm"
+        role="status"
+        aria-live="polite"
+      >
+        <div className="p-4">
+          <button
+            onClick={handleUnlock}
+            disabled={isAnimating}
+            className={`w-full flex items-center justify-between gap-3 transition-all duration-300 ${
+              isAnimating ? 'scale-95 opacity-80' : 'hover:scale-[1.01]'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              {/* Lock/Gift Icon with animation */}
+              <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                isAnimating 
+                  ? 'bg-[#2BB673] rotate-12 scale-110' 
+                  : 'bg-[#FF9F1A]'
+              }`}>
+                {isAnimating ? (
+                  <Unlock className="w-5 h-5 text-white" strokeWidth={2.5} />
+                ) : (
+                  <Gift className="w-5 h-5 text-white" strokeWidth={2.5} />
+                )}
+              </div>
+              
+              <div className="text-left">
+                <p className={`text-base font-bold transition-all duration-300 ${
+                  isAnimating ? 'text-[#2BB673]' : 'text-gray-900'
+                }`}>
+                  {isAnimating ? 'Unlocking...' : 'Unlock 5% discount'}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Save <span className="font-bold text-[#2BB673]">£{promoDiscountAmount}</span> on your order
+                </p>
+              </div>
+            </div>
+            
+            {/* Unlock Button */}
+            <div className={`flex-shrink-0 px-4 py-2 rounded-lg font-bold text-sm transition-all duration-300 ${
+              isAnimating 
+                ? 'bg-[#2BB673] text-white' 
+                : 'bg-[#FF9F1A] text-white hover:bg-orange-500'
+            }`}>
+              {isAnimating ? (
+                <span className="flex items-center gap-1">
+                  <Check className="w-4 h-4" />
+                  Applied!
+                </span>
+              ) : (
+                'Tap to unlock'
+              )}
+            </div>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // UNLOCKED STATE - Show applied discount with timer
   return (
     <div 
-      className={`promo-banner mb-4 rounded-xl border overflow-hidden transition-all duration-300 ${
-        isExpired ? 'bg-gray-50 border-gray-200' : 'bg-white border-gray-200 shadow-sm'
+      className={`promo-banner mb-4 rounded-xl border overflow-hidden transition-all duration-500 ${
+        isExpired 
+          ? 'bg-gray-50 border-gray-200' 
+          : 'bg-white border-green-200 shadow-sm'
       }`}
       role="status"
       aria-live="polite"
     >
       {!isExpired ? (
         <div className="p-4">
-          {/* Main content - Benefit → Action → Timer hierarchy */}
+          {/* Main content - Applied state */}
           <div className="flex items-start gap-3">
             {/* Checkmark icon */}
-            <div className="flex-shrink-0 w-7 h-7 bg-[#2BB673] rounded-full flex items-center justify-center mt-0.5">
+            <div className="flex-shrink-0 w-7 h-7 bg-[#2BB673] rounded-full flex items-center justify-center mt-0.5 animate-scale-in">
               <Check className="w-4 h-4 text-white" strokeWidth={3} />
             </div>
             
             <div className="flex-1 min-w-0">
               {/* Benefit line */}
               <p className="text-base font-semibold text-gray-900">
-                5% discount applied - <span className="text-[#2BB673]">You save £{promoDiscountAmount}</span>
+                5% discount applied - <span className="text-[#2BB673] animate-fade-in">You save £{promoDiscountAmount}</span>
               </p>
               
               {/* Action line */}
