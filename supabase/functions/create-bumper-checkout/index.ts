@@ -183,6 +183,8 @@ serve(async (req) => {
         ...customerData,
         // Store the original warranty duration for later processing
         original_warranty_duration: warrantyDuration,
+        // CRITICAL: Preserve customer's selected start date for delayed activation
+        start_date: customerData?.start_date || null,
         // Ensure vehicle registration is available in customer data
         vehicle_reg: customerData?.vehicle_reg || vehicleData?.regNumber || vehicleData?.registration,
         vehicle_make: customerData?.vehicle_make || vehicleData?.make,

@@ -231,6 +231,8 @@ serve(async (req) => {
     const originalWarrantyDuration = transactionData.payment_type || '12months'; // Use stored payment_type as warranty duration
     const finalAmount = transactionData.final_amount;
     const discountCode = transactionData.discount_code;
+    // CRITICAL: Extract customer's selected start date for delayed activation
+    const selectedStartDate = customerData?.start_date || null;
 
     logStep("Extracted transaction details", {
       customerEmail: customerData?.email,
@@ -239,7 +241,8 @@ serve(async (req) => {
       finalAmount,
       protectionAddOns,
       vehicleData: vehicleData,
-      discountCode
+      discountCode,
+      selectedStartDate
     });
 
     // Convert protection add-ons to consistent boolean format and map to database fields
@@ -315,6 +318,8 @@ serve(async (req) => {
       voluntaryExcess: voluntaryExcess, // Pass as direct parameter - user's actual selection
       seasonalBonusMonths: seasonalBonusMonths, // Pass seasonal bonus
       labourRate: labourRate, // CRITICAL: Pass user's selected labour rate
+      // CRITICAL: Pass customer's selected start date for delayed warranty activation
+      startDate: selectedStartDate,
       skipEmail: false, // CRITICAL: Ensure welcome emails are sent for Bumper purchases
       metadata: {
         source: 'bumper',
@@ -325,6 +330,8 @@ serve(async (req) => {
         voluntary_excess: voluntaryExcess,
         seasonal_bonus_months: seasonalBonusMonths, // Include in metadata
         final_amount: finalAmount,
+        // CRITICAL: Include start_date in metadata as backup
+        start_date: selectedStartDate,
         // Vehicle details for metadata - ensure these are populated
         vehicle_reg: vehicleData?.regNumber || vehicleData?.registration || customerData?.vehicle_reg,
         vehicle_make: vehicleData?.make || customerData?.vehicle_make,
@@ -353,7 +360,8 @@ serve(async (req) => {
       warrantyDuration: originalWarrantyDuration,
       claimLimit,
       protectionAddOns: addOnFields,
-      hasBumperOrderId: !!transactionId
+      hasBumperOrderId: !!transactionId,
+      selectedStartDate
     });
 
     const { data: paymentResult, error: handlePaymentError } = await supabaseClient.functions.invoke(
