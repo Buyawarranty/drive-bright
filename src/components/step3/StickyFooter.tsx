@@ -18,7 +18,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
 }) => {
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] border-t border-[rgba(0,0,0,0.1)] z-50">
       <div className="max-w-4xl mx-auto px-4 py-3">
         {/* Button only - summary text hidden */}
         <Button
