@@ -214,7 +214,7 @@ const ExtrasSelector: React.FC<ExtrasSelectorProps> = ({
         <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold">
           5
         </div>
-        <h3 className="font-semibold text-lg text-foreground">Add Extras</h3>
+        <h3 className="font-semibold text-lg text-foreground">Optional Add-Ons</h3>
       </div>
 
       <div className="space-y-3">
