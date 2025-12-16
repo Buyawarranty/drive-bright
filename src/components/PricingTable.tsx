@@ -2412,9 +2412,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
               <h3 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
                 <Shield className="w-5 h-5 flex-shrink-0" />
-                Add extras
+                Optional Add-Ons
               </h3>
-              <p className="text-gray-600 text-base font-bold">Enhance your warranty ✨</p>
+              <p className="text-muted-foreground text-base font-bold">Boost Your Cover ✨</p>
             </div>
           </div>
           <AddOnProtectionPackages 
