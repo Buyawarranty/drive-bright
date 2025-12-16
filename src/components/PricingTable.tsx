@@ -1215,8 +1215,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             {/* Desktop layout */}
             <div className="hidden sm:flex items-center gap-3 flex-wrap">
-              <Car className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-              <span className="text-muted-foreground font-medium">Your vehicle details</span>
+              <Car className="w-5 h-5 text-foreground flex-shrink-0" />
+              <span className="text-foreground font-medium">Your vehicle details</span>
               <span className="text-muted-foreground">·</span>
               <span className="font-bold text-foreground">
                 {vehicleData?.year} {vehicleData?.make?.toUpperCase()} {vehicleData?.model?.toUpperCase()}
@@ -1236,8 +1236,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
             {/* Mobile layout - centered */}
             <div className="sm:hidden flex flex-col items-center gap-2 w-full">
               <div className="flex items-center gap-2">
-                <Car className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-                <span className="text-muted-foreground font-medium text-sm">Your vehicle details</span>
+                <Car className="w-5 h-5 text-foreground flex-shrink-0" />
+                <span className="text-foreground font-medium text-sm">Your vehicle details</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-foreground text-center">
