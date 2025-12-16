@@ -188,31 +188,24 @@ export const AutoApplyPromoBanner: React.FC<AutoApplyPromoBannerProps> = ({
     });
   }, [onApplyPromo, promoDiscountAmount]);
 
-  // Determine background color based on time remaining
-  const getBannerBgClass = () => {
-    if (isExpired) return 'bg-gray-100 border-gray-300';
-    if (secondsRemaining <= 60) return 'bg-orange-100 border-orange-400';
-    if (secondsRemaining <= 300) return 'bg-orange-50 border-orange-300';
-    return 'bg-orange-50/70 border-orange-200';
-  };
+  // Calculate progress percentage (starts at 100%, decreases to 0%)
+  const progressPercent = (secondsRemaining / CONFIG.COUNTDOWN_SECONDS) * 100;
 
   // If there's a better discount and non-stacking is enabled, show note
   if (showBetterDiscountNote && existingBetterDiscount) {
     return (
       <div 
-        className="promo-banner mb-4 px-4 py-3 rounded-lg border bg-green-50 border-green-200"
+        className="promo-banner mb-4 px-4 py-3 rounded-xl border bg-green-50 border-green-200"
         role="status"
         aria-live="polite"
       >
         <div className="flex items-center gap-3">
-          <div className="flex-shrink-0">
-            <Check className="w-5 h-5 text-green-600" />
+          <div className="flex-shrink-0 w-6 h-6 bg-[#2BB673] rounded-full flex items-center justify-center">
+            <Check className="w-4 h-4 text-white" />
           </div>
-          <div className="flex-1">
-            <p className="text-sm text-gray-700">
-              We automatically apply your best available saving.
-            </p>
-          </div>
+          <p className="text-sm text-gray-700">
+            We automatically apply your best available saving.
+          </p>
         </div>
       </div>
     );
@@ -220,74 +213,87 @@ export const AutoApplyPromoBanner: React.FC<AutoApplyPromoBannerProps> = ({
 
   return (
     <div 
-      className={`promo-banner mb-4 px-4 py-3 rounded-lg border transition-colors duration-300 ${getBannerBgClass()}`}
+      className={`promo-banner mb-4 rounded-xl border overflow-hidden transition-all duration-300 ${
+        isExpired ? 'bg-gray-50 border-gray-200' : 'bg-white border-gray-200 shadow-sm'
+      }`}
       role="status"
       aria-live="polite"
     >
       {!isExpired ? (
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-          {/* Checkmark and main text */}
-          <div className="flex items-center gap-2 flex-1">
-            <div className="flex-shrink-0 w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
-              <Check className="w-4 h-4 text-white" />
+        <div className="p-4">
+          {/* Main content - Benefit → Action → Timer hierarchy */}
+          <div className="flex items-start gap-3">
+            {/* Checkmark icon */}
+            <div className="flex-shrink-0 w-7 h-7 bg-[#2BB673] rounded-full flex items-center justify-center mt-0.5">
+              <Check className="w-4 h-4 text-white" strokeWidth={3} />
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-900">
-                Your 5% discount has been applied automatically. You're saving £{promoDiscountAmount}.
+            
+            <div className="flex-1 min-w-0">
+              {/* Benefit line */}
+              <p className="text-base font-semibold text-gray-900">
+                5% discount applied — <span className="text-[#2BB673]">You save £{promoDiscountAmount}</span>
               </p>
-              <p className="text-xs text-gray-600">
-                Reserved for{' '}
-                <span 
-                  className="font-mono font-bold text-orange-700"
-                  aria-label={`${Math.floor(secondsRemaining / 60)} minutes and ${secondsRemaining % 60} seconds remaining`}
-                >
-                  {formatTime(secondsRemaining)}
-                </span>
-                {' '}– Complete your checkout now to lock in your cover.
+              
+              {/* Action line */}
+              <p className="text-sm text-gray-600 mt-0.5">
+                Complete checkout now to lock in your cover
               </p>
             </div>
           </div>
           
-          {/* Timer icon - mobile only */}
-          <div className="flex items-center gap-2 sm:hidden">
-            <Clock className="w-4 h-4 text-orange-600" />
-            <span className="text-sm font-mono font-bold text-orange-700">
-              {formatTime(secondsRemaining)}
-            </span>
-          </div>
-          
-          {/* Desktop timer */}
-          <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
-            <Clock className="w-5 h-5 text-orange-600" />
-            <span 
-              className="text-lg font-mono font-bold text-orange-700"
-              aria-label={`${Math.floor(secondsRemaining / 60)} minutes and ${secondsRemaining % 60} seconds remaining`}
+          {/* Timer bar section */}
+          <div className="mt-4">
+            {/* Progress bar */}
+            <div 
+              className="h-2 rounded-full bg-gray-100 overflow-hidden"
+              role="progressbar"
+              aria-valuenow={progressPercent}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={`Offer expires in ${formatTime(secondsRemaining)}`}
             >
-              {formatTime(secondsRemaining)}
-            </span>
+              <div 
+                className="h-full rounded-full transition-all duration-1000 ease-linear"
+                style={{ 
+                  width: `${progressPercent}%`,
+                  background: `linear-gradient(90deg, #2BB673 0%, #FF9F1A 100%)`
+                }}
+              />
+            </div>
+            
+            {/* Time label */}
+            <p className="text-xs text-gray-500 mt-1.5 text-center">
+              Offer ends in{' '}
+              <span 
+                className="font-mono font-semibold text-gray-700"
+                aria-label={`${Math.floor(secondsRemaining / 60)} minutes and ${secondsRemaining % 60} seconds remaining`}
+              >
+                {formatTime(secondsRemaining)}
+              </span>
+            </p>
           </div>
         </div>
       ) : (
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-          <div className="flex items-center gap-2 flex-1">
-            <div className="flex-shrink-0 w-6 h-6 bg-gray-400 rounded-full flex items-center justify-center">
-              <X className="w-4 h-4 text-white" />
+        <div className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 w-7 h-7 bg-gray-400 rounded-full flex items-center justify-center">
+              <X className="w-4 h-4 text-white" strokeWidth={3} />
             </div>
             <div className="flex-1">
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-600">
                 This offer has expired. You can still complete your cover.
               </p>
             </div>
+            
+            {CONFIG.ALLOW_REAPPLY && (
+              <button
+                onClick={handleReapply}
+                className="text-sm font-medium text-[#FF9F1A] hover:text-orange-600 underline underline-offset-2 transition-colors flex-shrink-0"
+              >
+                Reapply code
+              </button>
+            )}
           </div>
-          
-          {CONFIG.ALLOW_REAPPLY && (
-            <button
-              onClick={handleReapply}
-              className="text-sm font-medium text-orange-600 hover:text-orange-700 underline underline-offset-2 transition-colors"
-            >
-              Reapply code
-            </button>
-          )}
         </div>
       )}
     </div>
