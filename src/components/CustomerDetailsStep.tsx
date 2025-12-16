@@ -1545,6 +1545,14 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         </div>
                       ))}
                       
+                      {/* Unlock 5% Promo Banner */}
+                      <AutoApplyPromoBanner
+                        currentDiscounts={appliedDiscountCodes}
+                        basePrice={bumperTotalPrice}
+                        onApplyPromo={handleAutoApplyPromo}
+                        onRemovePromo={handleAutoRemovePromo}
+                      />
+                      
                       {/* Add New Promo Code - only show if no promo applied yet */}
                       {appliedDiscountCodes.length === 0 && (
                         <div className="space-y-2">
@@ -1594,13 +1602,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
               {/* Payment Methods Section (order-3 on mobile) */}
               <div id="payment-section" className="order-3 lg:col-span-2 lg:mt-4 space-y-6 bg-gradient-to-b from-gray-50 to-white rounded-2xl p-6 lg:p-8">
                       
-                      {/* Auto-Apply Promo Banner */}
-                      <AutoApplyPromoBanner
-                        currentDiscounts={appliedDiscountCodes}
-                        basePrice={bumperTotalPrice}
-                        onApplyPromo={handleAutoApplyPromo}
-                        onRemovePromo={handleAutoRemovePromo}
-                      />
 
                       {/* Section Header */}
                        <div className="text-center space-y-3">
