@@ -28,6 +28,7 @@ import { MOTHistorySection } from './MOTHistorySection';
 import { W2000DataPreview } from './W2000DataPreview';
 import { SendNotificationDialog } from './SendNotificationDialog';
 import { ViewAsCustomerButton } from './ViewAsCustomerButton';
+import { AddIncompleteCustomerDialog } from './AddIncompleteCustomerDialog';
 import { CustomerTagsManager } from './CustomerTagsManager';
 import { CustomerTagsDisplay } from './CustomerTagsDisplay';
 import { InlineCustomerTags } from './InlineCustomerTags';
@@ -3756,6 +3757,7 @@ Please log in and change your password after first login.`;
                   className="pl-10"
                 />
               </div>
+              <AddIncompleteCustomerDialog onCustomerAdded={fetchIncompleteCustomers} />
               <Button 
                 onClick={fetchIncompleteCustomers} 
                 variant="outline"
