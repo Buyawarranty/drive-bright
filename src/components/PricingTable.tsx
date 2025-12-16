@@ -2755,14 +2755,28 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 </span>
               </div>
               <div className="flex justify-between items-center">
+                <span className="text-gray-600">Claim Limit:</span>
+                <span className="font-bold">£{(boostAddon ? selectedClaimLimit + 1000 : selectedClaimLimit).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Excess:</span>
+                <span className="font-bold">£{voluntaryExcess}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Labour Rate:</span>
+                <span className="font-bold">£{selectedLabourRate}/hr</span>
+              </div>
+              <div className="flex justify-between items-center border-t pt-2 mt-2">
                 <span className="text-gray-600">Monthly Payment:</span>
                 <span className="font-bold">
                   £{(() => {
+                    // Calculate base price for the selected emailQuoteDuration
                     const warrantyYears = emailQuoteDuration === '12months' ? 1 : emailQuoteDuration === '24months' ? 2 : 3;
                     const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
                     const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, emailQuoteDuration);
                     const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
                     
+                    // Apply duration discount
                     let discountedPrice = adjustedBasePrice;
                     if (emailQuoteDuration === '24months') {
                       discountedPrice = adjustedBasePrice - 100;
@@ -2770,10 +2784,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       discountedPrice = adjustedBasePrice - 200;
                     }
                     
+                    // Calculate monthly from total (always 12 payments)
                     const baseMonthlyPrice = Math.round(discountedPrice / 12);
-                    const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
-const boostDisplayAdjustment = boostAddon ? 5 : 0;
-                    return Math.round(baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment);
+                    
+                    // Apply labour rate display adjustment
+                    const labourRateAdj = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
+                    
+                    // Apply boost display adjustment
+                    const boostAdj = boostAddon ? 5 : 0;
+                    
+                    return Math.round(baseMonthlyPrice + labourRateAdj + boostAdj);
                   })()}/month
                 </span>
               </div>
@@ -2781,11 +2801,13 @@ const boostDisplayAdjustment = boostAddon ? 5 : 0;
                 <span className="text-gray-600">Total Cost:</span>
                 <span className="font-bold text-green-600">
                   £{(() => {
+                    // Calculate base price for the selected emailQuoteDuration
                     const warrantyYears = emailQuoteDuration === '12months' ? 1 : emailQuoteDuration === '24months' ? 2 : 3;
                     const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
                     const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, emailQuoteDuration);
                     const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
                     
+                    // Apply duration discount
                     let discountedPrice = adjustedBasePrice;
                     if (emailQuoteDuration === '24months') {
                       discountedPrice = adjustedBasePrice - 100;
@@ -2793,11 +2815,12 @@ const boostDisplayAdjustment = boostAddon ? 5 : 0;
                       discountedPrice = adjustedBasePrice - 200;
                     }
                     
-                    const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
-                    const boostDisplayAdjustment = boostAddon ? 5 : 0;
-                    const labourRateTotalAdjustment = labourRateAdjustment * 12;
-                    const boostTotalAdjustment = boostDisplayAdjustment * 12;
-                    return discountedPrice + labourRateTotalAdjustment + boostTotalAdjustment;
+                    // Apply display adjustments to total (12 months worth)
+                    const labourRateAdj = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
+                    const boostAdj = boostAddon ? 5 : 0;
+                    const totalAdjustment = (labourRateAdj + boostAdj) * 12;
+                    
+                    return discountedPrice + totalAdjustment;
                   })()}
                 </span>
               </div>
