@@ -2527,7 +2527,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
               <div className="flex items-center gap-2 bg-green-50 rounded-lg p-3">
                 <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                <span className="text-sm font-medium text-gray-700">All major components covered</span>
+                <span className="text-sm font-medium text-gray-700">Approved fast – we like saying yes</span>
               </div>
               <div className="flex items-center gap-2 bg-green-50 rounded-lg p-3">
                 <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
