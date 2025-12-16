@@ -2440,7 +2440,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 </div>
                 <div>
                   <span className="font-bold text-green-800 text-lg">94%</span>
-                  <p className="text-sm text-gray-600">of claims approved fast</p>
+                  <p className="text-base text-gray-600">of claims approved fast</p>
                 </div>
               </div>
               
