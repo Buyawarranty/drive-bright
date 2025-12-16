@@ -2426,102 +2426,135 @@ const PricingTable: React.FC<PricingTableProps> = ({
           />
         </div>
 
-        {/* Additional Information Section - Original Design */}
+        {/* Conversion-Optimized Trust & Action Section */}
         <div id="your-cover-details" className="py-6 md:py-10 space-y-4">
-          {/* First Card: 94% Claims Section */}
-          <div className="bg-gradient-to-r from-green-50 to-white rounded-xl border border-border p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="font-bold text-lg text-foreground mb-3">94% of claims approved fast</h3>
-                
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center gap-2 text-foreground">
-                    <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                    <span>Clear cover – no hidden catches</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-foreground">
-                    <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                    <span>We look for reasons to say YES</span>
-                  </div>
+          
+          {/* Main Trust & CTA Card */}
+          <div className="bg-gradient-to-br from-green-100 via-green-50 to-white rounded-2xl border-2 border-green-200 p-6 md:p-8 shadow-lg">
+            
+            {/* Trust Signals Row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="flex items-center gap-3 bg-white rounded-lg p-4 border border-green-100">
+                <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
+                  <Check className="w-6 h-6 text-white" />
                 </div>
-
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl">🛡️</span>
-                  <span className="font-bold text-foreground">Real protection. Real peace of mind. Guaranteed.</span>
+                <div>
+                  <span className="font-bold text-green-800 text-lg">94%</span>
+                  <p className="text-sm text-gray-600">of claims approved fast</p>
                 </div>
-
-                {/* Trustpilot Badge */}
-                <div className="bg-white rounded-lg border border-border p-3 flex items-center justify-between">
+              </div>
+              
+              <div className="flex items-center gap-3 bg-white rounded-lg p-4 border border-green-100">
+                <a 
+                  href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 w-full hover:opacity-90 transition-opacity"
+                >
+                  <TrustpilotHeader className="scale-90" />
                   <div>
-                    <div className="flex items-center gap-1 text-sm font-medium">
-                      <span>⭐</span>
-                      <span>Rated Excellent on Trustpilot</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">Don't just take our word for it – see what customers say.</p>
+                    <span className="font-bold text-gray-800 text-sm">Excellent</span>
+                    <p className="text-xs text-gray-500">Thousands of UK drivers</p>
                   </div>
-                  <a 
-                    href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="hover:opacity-80 transition-opacity"
-                  >
-                    <TrustpilotHeader className="scale-75" />
-                  </a>
+                </a>
+              </div>
+              
+              <div className="flex items-center gap-3 bg-white rounded-lg p-4 border border-green-100">
+                <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <div>
+                  <span className="font-bold text-orange-600">14-Day</span>
+                  <p className="text-sm text-gray-600">Money-back guarantee</p>
                 </div>
               </div>
+            </div>
 
-              {/* 14 Day Guarantee Badge */}
-              <div className="ml-4 hidden sm:flex flex-col items-center">
-                <div className="w-24 h-24 rounded-full border-4 border-orange-200 bg-orange-50 flex flex-col items-center justify-center">
-                  <div className="text-orange-500">
-                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
+            {/* Price Summary & CTA */}
+            <div className="bg-white rounded-xl border-2 border-green-300 p-5 md:p-6">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Your Platinum Plan</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-bold text-gray-900">£{displayMonthlyPrice}</span>
+                    <span className="text-lg text-gray-600">/month</span>
+                    <span className="text-sm text-green-600 font-medium">• 0% APR</span>
                   </div>
-                  <Check className="w-4 h-4 text-orange-500" />
+                  <p className="text-sm text-gray-500 mt-1">
+                    Total: £{Math.round(displayTotalPrice)} ({paymentType === '12months' ? '12' : paymentType === '24months' ? '24' : '36'} payments)
+                  </p>
                 </div>
-                <span className="text-sm text-orange-500 font-medium mt-1 text-center">14 day money<br />back guarantee</span>
+                
+                <div className="flex flex-col gap-2 w-full md:w-auto">
+                  <Button
+                    onClick={handleSelectPlan}
+                    className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all animate-pulse-slow w-full md:w-auto"
+                  >
+                    <Lock className="w-5 h-5 mr-2" />
+                    Continue to Secure Payment
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                  <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+                    <Lock className="w-3 h-3" />
+                    <span>Secure checkout – SSL encrypted</span>
+                  </div>
+                </div>
               </div>
+              
+              {/* Urgency micro-copy */}
+              <p className="text-center text-sm text-green-700 mt-4 font-medium">
+                ⚡ You're covered in 60 seconds – no payment taken until confirmation
+              </p>
             </div>
           </div>
 
-          {/* Second Card: Crystal Clear Cover Section */}
+          {/* Crystal Clear Cover Card */}
           <div className="bg-card rounded-xl border border-border p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
-                <span className="bg-yellow-100 px-2 py-1 rounded">Your cover, made crystal clear</span>
-                <span className="text-xl">💎</span>
-              </h3>
-              <Button
-                onClick={() => {
-                  const durationSection = document.getElementById('duration-price-section');
-                  durationSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-1 text-sm font-medium"
-              >
-                <ArrowUp className="w-4 h-4" />
-                Back to Plans
-              </Button>
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-3xl">💎</span>
+              <div>
+                <h3 className="font-bold text-lg text-foreground">Crystal clear cover</h3>
+                <p className="text-sm text-muted-foreground">No jargon, no surprises – just protection you can trust</p>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 mb-4 text-foreground">
-              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-              <span>See what's included - clear terms, no jargon, no surprises.</span>
+            {/* Quick Benefits */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+              <div className="flex items-center gap-2 bg-green-50 rounded-lg p-3">
+                <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                <span className="text-sm font-medium text-gray-700">No hidden catches</span>
+              </div>
+              <div className="flex items-center gap-2 bg-green-50 rounded-lg p-3">
+                <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                <span className="text-sm font-medium text-gray-700">All major components covered</span>
+              </div>
+              <div className="flex items-center gap-2 bg-green-50 rounded-lg p-3">
+                <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                <span className="text-sm font-medium text-gray-700">Instant claims approval</span>
+              </div>
             </div>
 
-            {/* Your Platinum Plan Collapsible */}
+            {/* Collapsible Plan Details */}
             <Collapsible className="mb-3">
               <CollapsibleTrigger className="w-full">
-                <div className="flex items-center gap-2 py-2 text-left hover:opacity-80 transition-opacity">
-                  <ChevronDown className="w-4 h-4 text-orange-500 transition-transform duration-300 group-data-[state=open]:rotate-180" />
-                  <span className="font-medium text-orange-500">Your Platinum Plan</span>
+                <div className="flex items-center justify-between bg-orange-50 rounded-lg p-4 hover:bg-orange-100 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="text-left">
+                      <span className="font-bold text-orange-700">Your Platinum Plan</span>
+                      <p className="text-xs text-orange-600">View coverage highlights</p>
+                    </div>
+                  </div>
+                  <ChevronDown className="w-5 h-5 text-orange-500 transition-transform duration-300" />
                 </div>
               </CollapsibleTrigger>
               
               <CollapsibleContent>
-                <div className="ml-6 p-4 bg-orange-50 rounded-lg border border-orange-100">
+                <div className="mt-2 p-4 bg-orange-50 rounded-lg border border-orange-100">
                   <p className="text-gray-700 text-sm leading-relaxed mb-4">
                     The Platinum Plan provides comprehensive coverage for your vehicle and complete peace of mind.
                   </p>
@@ -2564,14 +2597,22 @@ const PricingTable: React.FC<PricingTableProps> = ({
             {/* Terms & Conditions Collapsible */}
             <Collapsible>
               <CollapsibleTrigger className="w-full">
-                <div className="flex items-center gap-2 py-2 text-left hover:opacity-80 transition-opacity">
-                  <ChevronDown className="w-4 h-4 text-green-600 transition-transform duration-300 group-data-[state=open]:rotate-180" />
-                  <span className="font-medium text-green-600">Terms & Conditions</span>
+                <div className="flex items-center justify-between bg-green-50 rounded-lg p-4 hover:bg-green-100 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="text-left">
+                      <span className="font-bold text-green-700">Terms & Conditions</span>
+                      <p className="text-xs text-green-600">Plain English – no legalese</p>
+                    </div>
+                  </div>
+                  <ChevronDown className="w-5 h-5 text-green-600 transition-transform duration-300" />
                 </div>
               </CollapsibleTrigger>
               
               <CollapsibleContent>
-                <div className="ml-6 p-4 bg-green-50 rounded-lg border border-green-100">
+                <div className="mt-2 p-4 bg-green-50 rounded-lg border border-green-100">
                   <p className="text-sm text-foreground mb-3">
                     Our terms are written in plain English so you know exactly what you're getting.
                   </p>
@@ -2592,6 +2633,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 </div>
               </CollapsibleContent>
             </Collapsible>
+
+            {/* Review Plan Link */}
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => {
+                  const durationSection = document.getElementById('duration-price-section');
+                  durationSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }}
+                className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
+              >
+                Want to review your plan options?
+              </button>
+            </div>
           </div>
         </div>
 
