@@ -2479,9 +2479,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <p className="text-sm text-gray-500 mb-1">Your Platinum Plan</p>
                   <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-bold text-gray-900">£{displayMonthlyPrice}/month</span>
-                    <span className="text-sm text-gray-600">(Only 12 payments)</span>
+                    <span className="text-sm text-black">(Only 12 payments)</span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-black mt-1">
                     Or pay in full: £{Math.round(displayTotalPrice)} <span className="text-green-600 font-medium">(Save 10% at checkout)</span>
                   </p>
                 </div>
@@ -2520,7 +2520,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
 
             {/* Quick Benefits */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
               <div className="flex items-center gap-2 bg-green-50 rounded-lg p-3">
                 <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
                 <span className="text-sm font-medium text-gray-700">No hidden catches</span>
@@ -2528,10 +2528,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <div className="flex items-center gap-2 bg-green-50 rounded-lg p-3">
                 <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
                 <span className="text-sm font-medium text-gray-700">Approved fast – we like saying yes</span>
-              </div>
-              <div className="flex items-center gap-2 bg-green-50 rounded-lg p-3">
-                <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                <span className="text-sm font-medium text-gray-700">Instant claims approval</span>
               </div>
             </div>
 
