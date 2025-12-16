@@ -180,16 +180,21 @@ export const AutoApplyPromoBanner: React.FC<AutoApplyPromoBannerProps> = ({
   const handleReapply = useCallback(() => {
     if (!CONFIG.ALLOW_REAPPLY) return;
 
-    // Reset state
-    setIsExpired(false);
-    setSecondsRemaining(CONFIG.COUNTDOWN_SECONDS);
-    setIsUnlocked(true);
-    timerStarted.current = true;
+    // Reset all state first
     hasTracked300.current = false;
     hasTracked60.current = false;
     hasTrackedExpiry.current = false;
 
-    // Clear and update session storage
+    // Clear session storage first
+    sessionStorage.removeItem('autoPromo5Percent');
+
+    // Reset state with fresh values
+    setIsExpired(false);
+    setSecondsRemaining(CONFIG.COUNTDOWN_SECONDS);
+    setIsUnlocked(true);
+    timerStarted.current = true;
+
+    // Save fresh state to session
     sessionStorage.setItem('autoPromo5Percent', JSON.stringify({
       unlocked: true,
       secondsRemaining: CONFIG.COUNTDOWN_SECONDS,
