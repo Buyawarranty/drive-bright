@@ -2427,7 +2427,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
         </div>
 
         {/* Conversion-Optimized Trust & Action Section */}
-        <div id="your-cover-details" className="py-6 md:py-10 space-y-4">
+        <div id="your-cover-details" className="pt-2 pb-6 md:pt-4 md:pb-10 space-y-4">
           
           {/* Main Trust & CTA Card */}
           <div className="bg-gradient-to-br from-green-100 via-green-50 to-white rounded-2xl border-2 border-green-200 p-6 md:p-8 shadow-lg">
