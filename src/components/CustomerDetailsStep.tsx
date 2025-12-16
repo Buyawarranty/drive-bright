@@ -1333,24 +1333,21 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     )}
                       {/* Payment Summary - Mobile First */}
                       <div className="border-t pt-4 mt-4 space-y-3">
-                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                          <div className="flex justify-between items-center">
-                            <span className="text-black text-xs sm:text-sm font-medium">Pay Monthly:</span>
-                            <div className="text-right">
-                              <span className="font-bold text-black text-sm sm:text-base">Total: £{discountedBumperPrice}</span>
-                              <span className="block text-xs text-orange-600 font-medium">£{Math.round(discountedBumperPrice / 12)}/month</span>
-                              <span className="block text-xs text-gray-600 font-medium">12 interest-free payments</span>
-                            </div>
-                          </div>
+                        {/* Pay Monthly Card */}
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                          <div className="font-bold text-black text-sm mb-2">Pay Monthly</div>
+                          <div className="text-2xl font-bold text-black">£{Math.round(discountedBumperPrice / 12)} <span className="text-base font-normal">per month</span></div>
+                          <div className="text-sm text-gray-600 mt-1">12 interest-free payments</div>
+                          <div className="text-sm text-gray-500 mt-1">Total: £{discountedBumperPrice}</div>
                         </div>
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                          <div className="flex justify-between items-center">
-                            <span className="text-black text-xs sm:text-sm font-medium">Pay in Full:</span>
-                            <div className="text-right">
-                              <span className="font-bold text-black text-sm sm:text-base">Total: £{discountedStripePrice}</span>
-                              <span className="block text-xs text-green-600 font-medium">Save £{Math.floor(discountedBumperPrice * 0.10)} (10% off)</span>
-                            </div>
-                          </div>
+                        
+                        {/* Pay in Full Card */}
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 relative">
+                          <span className="absolute -top-2 right-3 bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded">BEST VALUE</span>
+                          <div className="font-bold text-black text-sm mb-2">Pay in Full</div>
+                          <div className="text-2xl font-bold text-black">£{discountedStripePrice}</div>
+                          <div className="text-sm text-gray-600 mt-1">One-time payment</div>
+                          <div className="text-lg font-bold text-green-600 mt-2">Save £{Math.floor(discountedBumperPrice * 0.10)} (10% off)</div>
                         </div>
                       </div>
                     
