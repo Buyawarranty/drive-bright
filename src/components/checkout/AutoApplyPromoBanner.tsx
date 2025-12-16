@@ -262,10 +262,10 @@ export const AutoApplyPromoBanner: React.FC<AutoApplyPromoBannerProps> = ({
             </div>
             
             {/* Time label */}
-            <p className="text-xs text-gray-500 mt-1.5 text-center">
+            <p className="text-sm text-gray-700 mt-2 text-center font-medium">
               Offer ends in{' '}
               <span 
-                className="font-mono font-semibold text-gray-700"
+                className="font-mono font-bold text-gray-900 text-base"
                 aria-label={`${Math.floor(secondsRemaining / 60)} minutes and ${secondsRemaining % 60} seconds remaining`}
               >
                 {formatTime(secondsRemaining)}
