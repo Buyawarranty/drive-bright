@@ -20,6 +20,7 @@ import TrustpilotHeader from '@/components/TrustpilotHeader';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
 import { StartDatePicker } from '@/components/checkout/StartDatePicker';
+import { AutoApplyPromoBanner } from '@/components/checkout/AutoApplyPromoBanner';
 import { startOfDay, format, isToday } from 'date-fns';
 
 export interface CustomerDetailsStepProps {
@@ -556,7 +557,32 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
 
   const removePromoCode = (codeToRemove: string) => {
     setAppliedDiscountCodes(prev => prev.filter(code => code.code !== codeToRemove));
-    toast.success('Promo code removed');
+    // Only show toast for manual removals, not auto-promo expiry
+    if (codeToRemove !== '5PERCENTSAVENOW') {
+      toast.success('Promo code removed');
+    }
+  };
+
+  // Handler for auto-apply promo banner
+  const handleAutoApplyPromo = (discount: {
+    code: string;
+    type: 'percentage' | 'fixed';
+    value: number;
+    discountAmount: number;
+  }) => {
+    // Don't apply if already exists
+    if (appliedDiscountCodes.some(d => d.code === discount.code)) {
+      return;
+    }
+    // Non-stacking: remove other percentage discounts if applying auto promo
+    setAppliedDiscountCodes(prev => {
+      const filtered = prev.filter(d => d.type !== 'percentage' || d.code === discount.code);
+      return [...filtered, discount];
+    });
+  };
+
+  const handleAutoRemovePromo = (code: string) => {
+    setAppliedDiscountCodes(prev => prev.filter(d => d.code !== code));
   };
 
   const handleEmailPopupDiscountCode = (generatedCode: string) => {
@@ -1568,6 +1594,14 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
               {/* Payment Methods Section (order-3 on mobile) */}
               <div id="payment-section" className="order-3 lg:col-span-2 lg:mt-4 space-y-6 bg-gradient-to-b from-gray-50 to-white rounded-2xl p-6 lg:p-8">
                       
+                      {/* Auto-Apply Promo Banner */}
+                      <AutoApplyPromoBanner
+                        currentDiscounts={appliedDiscountCodes}
+                        basePrice={bumperTotalPrice}
+                        onApplyPromo={handleAutoApplyPromo}
+                        onRemovePromo={handleAutoRemovePromo}
+                      />
+
                       {/* Section Header */}
                        <div className="text-center space-y-3">
                           <h3 className="text-2xl font-bold text-black mb-2">
