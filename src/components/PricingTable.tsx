@@ -2648,7 +2648,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         £{displayMonthlyPrice}/Month <span className="text-base text-gray-400">– 0% APR</span>
                       </span>
                       <span className="text-sm text-gray-600">Only 12 payments</span>
-                      <span className="text-sm text-gray-900 font-medium">Pay in full: £{Math.round(displayTotalPrice * 0.9)}</span>
+                      <span className="text-sm text-gray-900 font-medium">Pay in full: £{Math.round(displayMonthlyPrice * 12 * 0.9)}</span>
                     </div>
                     <div className="absolute right-0 flex flex-col items-center">
                       <div className={`p-1.5 rounded-full bg-green-600 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-0' : 'rotate-180'}`}>
@@ -2721,7 +2721,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       Only 12 payments
                     </div>
                     <div className="text-sm text-gray-900 font-medium mt-0.5">
-                      Pay in full: £{Math.round(displayTotalPrice * 0.9)}
+                      Pay in full: £{Math.round(displayMonthlyPrice * 12 * 0.9)}
                     </div>
                   </div>
                   
