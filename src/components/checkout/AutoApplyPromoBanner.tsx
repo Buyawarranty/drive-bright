@@ -231,7 +231,7 @@ export const AutoApplyPromoBanner: React.FC<AutoApplyPromoBannerProps> = ({
             <div className="flex-1 min-w-0">
               {/* Benefit line */}
               <p className="text-base font-semibold text-gray-900">
-                5% discount applied — <span className="text-[#2BB673]">You save £{promoDiscountAmount}</span>
+                5% discount applied - <span className="text-[#2BB673]">You save £{promoDiscountAmount}</span>
               </p>
               
               {/* Action line */}
