@@ -555,14 +555,25 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
                     className={`w-full font-semibold mb-3 ${
                       selectedPaymentType === option.id 
                         ? 'bg-green-600 hover:bg-green-700 text-white border-2 border-green-600' 
-                        : 'bg-white border-2 border-orange-500 text-orange-500 hover:bg-orange-50'
+                        : 'bg-orange-500 hover:bg-orange-600 text-white border-2 border-orange-500'
                     }`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelectedPaymentType(option.id);
+                      if (selectedPaymentType === option.id) {
+                        handleContinue();
+                      } else {
+                        setSelectedPaymentType(option.id);
+                      }
                     }}
                   >
-                    {selectedPaymentType === option.id ? 'Selected' : 'Select'}
+                    {selectedPaymentType === option.id ? (
+                      <>
+                        <Check className="w-4 h-4 mr-2" />
+                        Continue to Checkout
+                      </>
+                    ) : (
+                      'Select this plan'
+                    )}
                   </Button>
                   
                   <Button 
