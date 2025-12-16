@@ -26,7 +26,7 @@ const CoverageTransparency: React.FC<CoverageTransparencyProps> = ({
   return (
     <div className="space-y-4 px-4 py-4">
       {/* First Card: 94% Claims Section */}
-      <div className="bg-gradient-to-r from-green-50 to-white rounded-xl border border-border p-6">
+      <div className="bg-gradient-to-r from-green-50 to-white rounded-xl border-2 border-border p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h3 className="font-bold text-lg text-foreground mb-3">94% of claims approved fast</h3>
@@ -85,7 +85,7 @@ const CoverageTransparency: React.FC<CoverageTransparencyProps> = ({
       </div>
 
       {/* Second Card: Crystal Clear Cover Section */}
-      <div className="bg-card rounded-xl border border-border p-6">
+      <div className="bg-card rounded-xl border-2 border-border p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
             <span className="bg-yellow-100 px-2 py-1 rounded">Your cover, made crystal clear</span>
