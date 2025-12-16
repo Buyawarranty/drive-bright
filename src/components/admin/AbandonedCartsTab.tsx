@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { FollowUpEmailDialog } from './FollowUpEmailDialog';
 import { 
   ShoppingCart, 
   Mail, 
@@ -493,6 +494,17 @@ export const AbandonedCartsTab: React.FC = () => {
                     <MessageSquare className="w-4 h-4 mr-2" />
                     Add Note
                   </Button>
+
+                  {/* Follow-up Email Button */}
+                  <FollowUpEmailDialog
+                    customerEmail={cart.email}
+                    customerName={cart.full_name}
+                    vehicleReg={cart.vehicle_reg}
+                    vehicleMake={cart.vehicle_make}
+                    vehicleModel={cart.vehicle_model}
+                    planName={cart.plan_name}
+                    totalPrice={cart.cart_metadata?.total_price}
+                  />
                   
                   {cart.contact_status === 'not_contacted' && (
                     <Button
