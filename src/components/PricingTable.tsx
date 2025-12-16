@@ -2702,7 +2702,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
                       {/* Details text underneath - only show when collapsed */}
                       {!isSummaryExpanded && (
-                        <span className="text-xs font-medium text-green-600 mt-0.5">Details</span>
+                        <span className="text-xs font-medium text-green-600 mt-1.5">Details</span>
                       )}
                     </div>
                   </button>
