@@ -233,7 +233,7 @@ export const AutoApplyPromoBanner: React.FC<AutoApplyPromoBannerProps> = ({
             </div>
             <div className="flex-1">
               <p className="text-sm font-semibold text-gray-900">
-                Your 5% discount has been applied automatically.
+                Your 5% discount has been applied automatically. You're saving £{promoDiscountAmount}.
               </p>
               <p className="text-xs text-gray-600">
                 Reserved for{' '}
