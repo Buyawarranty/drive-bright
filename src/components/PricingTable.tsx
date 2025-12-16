@@ -2509,193 +2509,91 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
           </div>
 
-          {/* Crystal Clear Cover Card - Simplified for conversion */}
-          <div className="bg-card rounded-xl border border-border p-5">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-2xl">💎</span>
-              <div>
-                <h3 className="font-bold text-lg text-foreground">Crystal-clear cover</h3>
-                <p className="text-sm text-muted-foreground">Summary available if you'd like the details.</p>
-              </div>
+          {/* Crystal Clear Cover Card - Original Design */}
+          <div className="bg-card rounded-xl border-2 border-border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
+                <span className="bg-yellow-100 px-2 py-1 rounded">Your cover, made crystal clear</span>
+                <span className="text-xl">💎</span>
+              </h3>
+              <button 
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="flex items-center gap-1 text-sm font-medium text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-secondary transition-colors"
+              >
+                <ArrowUp className="w-4 h-4" />
+                Back to Plans
+              </button>
             </div>
 
-            {/* Trust Badges - Keep these as primary reassurance */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
-              <div className="flex items-center gap-2 bg-green-50 rounded-lg p-2.5">
-                <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                <span className="text-sm font-medium text-gray-700">No hidden catches</span>
-              </div>
-              <div className="flex items-center gap-2 bg-green-50 rounded-lg p-2.5">
-                <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                <span className="text-sm font-medium text-gray-700">Easy claims</span>
-              </div>
-              <div className="flex items-center gap-2 bg-green-50 rounded-lg p-2.5">
-                <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                <span className="text-sm font-medium text-gray-700">We like saying yes</span>
-              </div>
+            <div className="flex items-center gap-2 mb-4 text-foreground">
+              <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <span>See what's included - clear terms, no jargon, no surprises.</span>
             </div>
 
-            {/* Progressive Disclosure - Neutral document links */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
-              <span>Want to review the details?</span>
-              <div className="flex items-center gap-3">
-                {/* Coverage Highlights Modal */}
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <button className="inline-flex items-center gap-1.5 text-gray-600 hover:text-gray-900 underline underline-offset-2 transition-colors">
+            {/* Your Platinum Plan Collapsible */}
+            <Collapsible className="mb-3">
+              <CollapsibleTrigger className="w-full">
+                <div className="flex items-center gap-2 py-2 text-left hover:opacity-80 transition-opacity">
+                  <ChevronDown className="w-4 h-4 text-orange-500 transition-transform duration-300 group-data-[state=open]:rotate-180" />
+                  <span className="font-medium text-orange-500">Your Platinum Plan</span>
+                </div>
+              </CollapsibleTrigger>
+              
+              <CollapsibleContent>
+                <div className="ml-6 p-4 bg-orange-50 rounded-lg border border-orange-100">
+                  <ul className="space-y-2 mb-4">
+                    {['Engine & gearbox', 'Clutch & cooling', 'Electrics', 'Braking & steering', 'Drivetrain & transmission'].map((item, index) => (
+                      <li key={index} className="flex items-center gap-2 text-sm text-foreground">
+                        <Check className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                  {platinumDocUrl && (
+                    <a
+                      href={platinumDocUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-orange-500 hover:text-orange-600 text-sm font-medium"
+                    >
                       <FileText className="w-4 h-4" />
-                      Coverage highlights
-                      <span className="text-xs text-gray-400 no-underline">(2-min read)</span>
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-lg bg-white">
-                    <DialogHeader>
-                      <DialogTitle className="flex items-center gap-2 text-foreground">
-                        <FileText className="w-5 h-5" />
-                        Coverage Highlights
-                      </DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4">
-                      <p className="text-gray-700 text-sm leading-relaxed mb-4">
-                        The Platinum Plan provides comprehensive coverage for your vehicle and complete peace of mind.
-                      </p>
-                      <ul className="space-y-2 mb-4">
-                        <li className="flex items-center gap-2 text-sm text-foreground">
-                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                          Fast and easy claims
-                        </li>
-                        <li className="flex items-center gap-2 text-sm text-foreground">
-                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                          Fault diagnostics included
-                        </li>
-                        <li className="flex items-center gap-2 text-sm text-foreground">
-                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                          Consequential damage protection
-                        </li>
-                        <li className="flex items-center gap-2 text-sm text-foreground">
-                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                          14-day money-back guarantee
-                        </li>
-                        <li className="flex items-center gap-2 text-sm text-foreground">
-                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                          Choose your own garage
-                        </li>
-                        <li className="flex items-center gap-2 text-sm text-foreground">
-                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                          All parts and labour covered
-                        </li>
-                      </ul>
-                      {platinumDocUrl && (
-                        <a 
-                          href={platinumDocUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-gray-500 hover:text-gray-700 text-sm"
-                        >
-                          <FileText className="w-4 h-4" />
-                          Download full PDF
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      )}
-                    </div>
-                    <div className="flex justify-end gap-3 pt-2 border-t">
-                      <DialogClose asChild>
-                        <Button variant="outline" size="sm">Close</Button>
-                      </DialogClose>
-                      <DialogClose asChild>
-                        <Button 
-                          size="sm" 
-                          className="bg-orange-500 hover:bg-orange-600 text-white"
-                          onClick={() => {
-                            const durationSection = document.getElementById('duration-price-section');
-                            durationSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                          }}
-                        >
-                          Continue to checkout
-                        </Button>
-                      </DialogClose>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                      View full plan (PDF)
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
 
-                <span className="text-gray-300">|</span>
-
-                {/* Terms & Conditions Modal */}
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <button className="inline-flex items-center gap-1.5 text-gray-600 hover:text-gray-900 underline underline-offset-2 transition-colors">
+            {/* Terms & Conditions Collapsible */}
+            <Collapsible>
+              <CollapsibleTrigger className="w-full">
+                <div className="flex items-center gap-2 py-2 text-left hover:opacity-80 transition-opacity">
+                  <ChevronDown className="w-4 h-4 text-green-600 transition-transform duration-300 group-data-[state=open]:rotate-180" />
+                  <span className="font-medium text-green-600">Terms & Conditions</span>
+                </div>
+              </CollapsibleTrigger>
+              
+              <CollapsibleContent>
+                <div className="ml-6 p-4 bg-green-50 rounded-lg border border-green-100">
+                  <p className="text-sm text-foreground mb-3">
+                    Our terms are written in plain English so you know exactly what you're getting.
+                  </p>
+                  {termsDocUrl && (
+                    <a
+                      href={termsDocUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-green-600 hover:text-green-700 text-sm font-medium"
+                    >
                       <FileText className="w-4 h-4" />
-                      Terms & Conditions
-                      <span className="text-xs text-gray-400 no-underline">(plain English)</span>
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-lg bg-white">
-                    <DialogHeader>
-                      <DialogTitle className="flex items-center gap-2 text-foreground">
-                        <FileText className="w-5 h-5" />
-                        Terms & Conditions
-                      </DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4">
-                      <p className="text-gray-700 text-sm leading-relaxed mb-4">
-                        Our terms are written in plain English so you know exactly what you're getting. Here are the key points:
-                      </p>
-                      <ul className="space-y-2 mb-4">
-                        <li className="flex items-center gap-2 text-sm text-foreground">
-                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                          14-day cooling-off period with full refund
-                        </li>
-                        <li className="flex items-center gap-2 text-sm text-foreground">
-                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                          Cancel anytime after 14 days (pro-rata refund)
-                        </li>
-                        <li className="flex items-center gap-2 text-sm text-foreground">
-                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                          Claims processed within 48 hours
-                        </li>
-                        <li className="flex items-center gap-2 text-sm text-foreground">
-                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                          No hidden fees or charges
-                        </li>
-                        <li className="flex items-center gap-2 text-sm text-foreground">
-                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                          FCA regulated for your protection
-                        </li>
-                      </ul>
-                      {termsDocUrl && (
-                        <a 
-                          href={termsDocUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-gray-500 hover:text-gray-700 text-sm"
-                        >
-                          <FileText className="w-4 h-4" />
-                          Download full PDF
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      )}
-                    </div>
-                    <div className="flex justify-end gap-3 pt-2 border-t">
-                      <DialogClose asChild>
-                        <Button variant="outline" size="sm">Close</Button>
-                      </DialogClose>
-                      <DialogClose asChild>
-                        <Button 
-                          size="sm" 
-                          className="bg-orange-500 hover:bg-orange-600 text-white"
-                          onClick={() => {
-                            const durationSection = document.getElementById('duration-price-section');
-                            durationSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                          }}
-                        >
-                          Continue to checkout
-                        </Button>
-                      </DialogClose>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </div>
+                      View Terms & Conditions (PDF)
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
           </div>
         </div>
 
