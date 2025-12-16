@@ -1801,9 +1801,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               <div className="text-4xl font-black text-black mb-1">
                                 £{Math.floor(discountedBumperPrice / 12)}<span className="text-lg">/month</span>
                               </div>
-                              <div className="inline-block bg-orange-100 text-orange-700 text-xs font-bold px-2 py-0.5 rounded-full mb-1">
-                                Only 12 payments
-                              </div>
                               <div className="text-sm font-bold text-gray-600">
                                 £{discountedBumperPrice} total
                               </div>
