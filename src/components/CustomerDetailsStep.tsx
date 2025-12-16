@@ -1362,7 +1362,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         {/* Pay Monthly Card */}
                         <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                           <div className="font-bold text-black text-sm mb-2">Pay Monthly</div>
-                          <div className="text-2xl font-bold text-black">£{Math.round(discountedBumperPrice / 12)} <span className="text-base font-normal">per month</span></div>
+                          <div className="text-2xl font-bold text-black">£{Math.floor(discountedBumperPrice / 12)} <span className="text-base font-normal">per month</span></div>
                           <div className="text-sm text-gray-600 mt-1">12 interest-free payments</div>
                           <div className="text-sm text-gray-500 mt-1">Total: £{discountedBumperPrice}</div>
                         </div>
@@ -1799,7 +1799,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           <div className="bg-orange-50 rounded-lg p-3 mb-3 border border-orange-100">
                             <div className="text-center">
                               <div className="text-4xl font-black text-black mb-1">
-                                £{Math.round(discountedBumperPrice / 12)}<span className="text-lg">/month</span>
+                                £{Math.floor(discountedBumperPrice / 12)}<span className="text-lg">/month</span>
                               </div>
                               <div className="inline-block bg-orange-100 text-orange-700 text-xs font-bold px-2 py-0.5 rounded-full mb-1">
                                 Only 12 payments
