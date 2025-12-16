@@ -2504,7 +2504,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
               
               {/* Urgency micro-copy */}
-              <p className="text-center text-sm text-green-700 mt-4 font-medium">
+              <p className="text-center md:text-left text-sm text-green-700 mt-4 font-medium">
                 ⚡ You're covered in 60 seconds – no payment taken until confirmation
               </p>
             </div>
