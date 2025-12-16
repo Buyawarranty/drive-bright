@@ -1527,9 +1527,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     
                     {/* Pay in full with was price */}
                     <div className="text-sm mt-2">
-                      <span className="font-bold text-black">Pay in full £{Math.round(displayedAnnualPrice * 0.9)}</span>
+                      {/* Monthly total = displayedMonthlyPrice × 12, Pay in full = 10% off that */}
+                      <span className="font-bold text-black">Pay in full £{Math.round(displayedMonthlyPrice * 12 * 0.9)}</span>
                       {savingsAmount > 0 && (
-                        <span className="text-red-500 line-through ml-1">(Was £{Math.round(displayedAnnualPrice * 0.9) + savingsAmount})</span>
+                        <span className="text-red-500 line-through ml-1">(Was £{displayedMonthlyPrice * 12})</span>
                       )}
                     </div>
                     
