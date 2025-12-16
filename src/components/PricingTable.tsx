@@ -2491,8 +2491,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     onClick={handleSelectPlan}
                     className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all animate-pulse-slow w-full md:w-auto"
                   >
-                    <Lock className="w-5 h-5 mr-2" />
-                    Continue to Secure Payment
+                    <span className="md:hidden">Checkout securely</span>
+                    <span className="hidden md:inline">Continue to secure payment</span>
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                   <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
