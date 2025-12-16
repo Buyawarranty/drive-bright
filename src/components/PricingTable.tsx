@@ -2483,7 +2483,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <span className="text-sm text-green-600 font-medium">• 0% APR</span>
                   </div>
                   <p className="text-sm text-gray-500 mt-1">
-                    Total: £{Math.round(displayTotalPrice)} ({paymentType === '12months' ? '12' : paymentType === '24months' ? '24' : '36'} payments)
+                    Total: £{Math.round(displayTotalPrice)} (12 payments)
                   </p>
                 </div>
                 
