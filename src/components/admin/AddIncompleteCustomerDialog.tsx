@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Plus, Search, Car, Loader2 } from 'lucide-react';
+import MileageSlider from '@/components/MileageSlider';
 
 interface AddIncompleteCustomerDialogProps {
   onCustomerAdded: () => void;
@@ -17,6 +18,8 @@ export const AddIncompleteCustomerDialog: React.FC<AddIncompleteCustomerDialogPr
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLookingUp, setIsLookingUp] = useState(false);
+  const [sliderMileage, setSliderMileage] = useState(0);
+  const [eligibilityError, setEligibilityError] = useState('');
   
   const [formData, setFormData] = useState({
     fullName: '',
@@ -46,6 +49,37 @@ export const AddIncompleteCustomerDialog: React.FC<AddIncompleteCustomerDialogPr
       planName: 'Platinum',
       notes: ''
     });
+    setSliderMileage(0);
+    setEligibilityError('');
+  };
+
+  const handleMileageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9,]/g, '');
+    setFormData(prev => ({ ...prev, mileage: value }));
+    
+    const numericValue = parseInt(value.replace(/,/g, ''));
+    if (!isNaN(numericValue)) {
+      setSliderMileage(numericValue);
+    }
+    
+    // Check eligibility
+    if (numericValue > 150000) {
+      setEligibilityError('Vehicle mileage exceeds 150,000 miles limit');
+    } else {
+      setEligibilityError('');
+    }
+  };
+
+  const handleSliderChange = (value: number) => {
+    setSliderMileage(value);
+    setFormData(prev => ({ ...prev, mileage: value.toLocaleString() }));
+    
+    // Check eligibility
+    if (value > 150000) {
+      setEligibilityError('Vehicle mileage exceeds 150,000 miles limit');
+    } else {
+      setEligibilityError('');
+    }
   };
 
   const handleVehicleLookup = async () => {
@@ -55,6 +89,8 @@ export const AddIncompleteCustomerDialog: React.FC<AddIncompleteCustomerDialogPr
     }
 
     setIsLookingUp(true);
+    setEligibilityError('');
+    
     try {
       const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
         body: { registrationNumber: formData.registrationPlate.replace(/\s+/g, '').toUpperCase() }
@@ -63,6 +99,16 @@ export const AddIncompleteCustomerDialog: React.FC<AddIncompleteCustomerDialogPr
       if (error) throw error;
 
       if (data?.found) {
+        // Check vehicle age
+        const vehicleYear = data.yearOfManufacture;
+        if (vehicleYear) {
+          const currentYear = new Date().getFullYear();
+          const vehicleAge = currentYear - parseInt(vehicleYear);
+          if (vehicleAge >= 15) {
+            setEligibilityError('Vehicle is 15 years or older - not eligible');
+          }
+        }
+        
         setFormData(prev => ({
           ...prev,
           vehicleMake: data.make || '',
@@ -84,15 +130,11 @@ export const AddIncompleteCustomerDialog: React.FC<AddIncompleteCustomerDialogPr
   };
 
   const handleSubmit = async () => {
-    if (!formData.email.trim()) {
-      toast.error('Email is required');
-      return;
-    }
-
+    // No required fields - allow saving with any data
     setIsLoading(true);
     try {
       const { error } = await supabase.from('abandoned_carts').insert({
-        email: formData.email.toLowerCase().trim(),
+        email: formData.email.toLowerCase().trim() || 'unknown@placeholder.com',
         full_name: formData.fullName.trim() || null,
         phone: formData.phone.trim() || null,
         vehicle_reg: formData.registrationPlate.replace(/\s+/g, '').toUpperCase() || null,
@@ -104,7 +146,7 @@ export const AddIncompleteCustomerDialog: React.FC<AddIncompleteCustomerDialogPr
         plan_name: formData.planName,
         contact_notes: formData.notes.trim() || null,
         contact_status: 'not_contacted',
-        step_abandoned: 2, // Mark as abandoned at step 2 (quote stage)
+        step_abandoned: 2,
         cart_metadata: {
           source: 'manual_admin_entry',
           created_by: 'admin',
@@ -134,7 +176,7 @@ export const AddIncompleteCustomerDialog: React.FC<AddIncompleteCustomerDialogPr
           Add Customer
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Car className="h-5 w-5" />
@@ -169,26 +211,34 @@ export const AddIncompleteCustomerDialog: React.FC<AddIncompleteCustomerDialogPr
                 )}
               </Button>
             </div>
-            
-            <Select 
-              value={formData.mileage} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, mileage: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select mileage" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0-30000">0 - 30,000 miles</SelectItem>
-                <SelectItem value="30001-60000">30,001 - 60,000 miles</SelectItem>
-                <SelectItem value="60001-90000">60,001 - 90,000 miles</SelectItem>
-                <SelectItem value="90001-120000">90,001 - 120,000 miles</SelectItem>
-                <SelectItem value="120001-150000">120,001 - 150,000 miles</SelectItem>
-              </SelectContent>
-            </Select>
 
             {formData.vehicleMake && (
               <div className="text-sm text-gray-600 bg-white p-2 rounded border">
                 <strong>Vehicle:</strong> {formData.vehicleYear} {formData.vehicleMake} {formData.vehicleModel}
+              </div>
+            )}
+            
+            {/* Mileage Input + Slider */}
+            <div className="space-y-2">
+              <Label className="text-sm text-gray-600">Mileage</Label>
+              <Input
+                placeholder="Enter mileage (e.g. 32,000)"
+                value={formData.mileage}
+                onChange={handleMileageInputChange}
+                className="w-full"
+              />
+              <MileageSlider
+                value={sliderMileage}
+                onChange={handleSliderChange}
+                min={0}
+                max={150000}
+              />
+            </div>
+
+            {/* Eligibility Error */}
+            {eligibilityError && (
+              <div className="text-sm text-red-600 bg-red-50 p-2 rounded border border-red-200">
+                ⚠️ {eligibilityError}
               </div>
             )}
           </div>
@@ -206,14 +256,13 @@ export const AddIncompleteCustomerDialog: React.FC<AddIncompleteCustomerDialogPr
             </div>
 
             <div>
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="customer@email.com"
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                required
               />
             </div>
 
