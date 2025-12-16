@@ -1363,7 +1363,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                           <div className="font-bold text-black text-sm mb-2">Pay Monthly</div>
                           <div className="text-2xl font-bold text-black">£{Math.floor(discountedBumperPrice / 12)} <span className="text-base font-normal">per month</span></div>
-                          <div className="text-sm text-gray-600 mt-1">12 interest-free payments</div>
+                          <div className="text-sm text-gray-600 mt-1">Only 12 easy payments</div>
                           <div className="text-sm text-gray-500 mt-1">Total: £{discountedBumperPrice}</div>
                         </div>
                         
@@ -1446,7 +1446,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                         const durationText = paymentType === '12months' ? '1 year' : 
                                                            paymentType === '24months' ? '2 years' : 
                                                            '3 years';
-                                        priceSubtext = `12 interest-free payments for ${durationText}' cover`;
+                                        priceSubtext = `Only 12 easy payments for ${durationText}' cover`;
                                       }
                                       
                                       return (
@@ -1814,7 +1814,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           <div className="space-y-1.5 mb-3">
                             <div className="flex items-center gap-2 text-sm">
                               <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                              <span className="text-black font-medium">12 interest-free payments</span>
+                              <span className="text-black font-medium">Only 12 easy payments</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                               <Check className="w-4 h-4 text-green-600 flex-shrink-0" />

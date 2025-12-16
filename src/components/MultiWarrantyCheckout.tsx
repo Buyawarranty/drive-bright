@@ -1057,7 +1057,7 @@ const MultiWarrantyCheckout: React.FC<MultiWarrantyCheckoutProps> = ({ items, on
                                             const durationText = paymentTypeNormalized === '12months' ? '1 year' : 
                                                                paymentTypeNormalized === '24months' ? '2 years' : 
                                                                '3 years';
-                                            priceSubtext = `12 interest-free payments for ${durationText}' cover`;
+                                            priceSubtext = `Only 12 easy payments for ${durationText}' cover`;
                                           }
                                           
                                           return (
