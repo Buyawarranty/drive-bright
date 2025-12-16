@@ -2510,7 +2510,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
 
           {/* Crystal Clear Cover Card */}
-          <div className="bg-card rounded-xl border border-border p-6">
+          <div className="bg-card rounded-xl border-2 border-border p-6">
             <div className="flex items-center gap-3 mb-4">
               <span className="text-3xl">💎</span>
               <div>
