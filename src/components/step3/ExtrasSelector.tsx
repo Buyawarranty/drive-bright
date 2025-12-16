@@ -120,7 +120,7 @@ const ExtrasSelector: React.FC<ExtrasSelectorProps> = ({
       >
         <div
           className={cn(
-            "rounded-xl border-2 transition-all overflow-hidden",
+            "rounded-xl border-[2.5px] transition-all overflow-hidden",
             isAutoIncluded
               ? "border-green-200 bg-green-50"
               : isSelected
