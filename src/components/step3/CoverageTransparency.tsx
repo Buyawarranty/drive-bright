@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, Check, FileText, ExternalLink, Shield, CheckCircle, Sparkles } from 'lucide-react';
+import { ChevronDown, Check, FileText, ExternalLink, ArrowUp } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface CoverageTransparencyProps {
@@ -15,115 +15,160 @@ const coverageItems = [
   'Drivetrain & transmission'
 ];
 
-const trustPoints = [
-  'Fast claims process',
-  'Nationwide coverage',
-  'No hidden fees'
-];
-
 const CoverageTransparency: React.FC<CoverageTransparencyProps> = ({
   platinumDocUrl,
   termsDocUrl
 }) => {
+  const scrollToPlans = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <div className="px-4 py-4 border-t border-border bg-gradient-to-b from-muted/30 to-transparent">
-      {/* Desktop: Two-column layout */}
-      <div className="lg:grid lg:grid-cols-2 lg:gap-4">
-        {/* Left Column: Header + Trust Points */}
-        <div className="mb-4 lg:mb-0">
-          {/* Header with Badge */}
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xl">💎</span>
-            <h3 className="font-bold text-lg text-foreground">Crystal clear cover</h3>
-          </div>
-          <p className="text-sm text-muted-foreground mb-3">
-            See what's included — clear terms, no jargon.
-          </p>
-          
-          {/* Trust Points */}
-          <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3 lg:mb-0">
-            {trustPoints.map((point, index) => (
-              <span key={index} className="flex items-center gap-1.5 text-sm text-foreground">
-                <CheckCircle className="w-4 h-4 text-success" />
-                {point}
-              </span>
-            ))}
-          </div>
+    <div className="space-y-4 px-4 py-4">
+      {/* First Card: 94% Claims Section */}
+      <div className="bg-gradient-to-r from-green-50 to-white rounded-xl border border-border p-6">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h3 className="font-bold text-lg text-foreground mb-3">94% of claims approved fast</h3>
+            
+            <div className="space-y-2 mb-4">
+              <div className="flex items-center gap-2 text-foreground">
+                <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                <span>Clear cover – no hidden catches</span>
+              </div>
+              <div className="flex items-center gap-2 text-foreground">
+                <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                <span>We look for reasons to say YES</span>
+              </div>
+            </div>
 
-          {/* Claims Badge - Desktop */}
-          <div className="hidden lg:flex items-center gap-2 mt-4 bg-success/10 rounded-lg px-3 py-2 border border-success/30 w-fit">
-            <Sparkles className="w-4 h-4 text-success" />
-            <span className="font-semibold text-success text-sm">94% of claims approved fast</span>
-          </div>
-        </div>
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-xl">🛡️</span>
+              <span className="font-bold text-foreground">Real protection. Real peace of mind. Guaranteed.</span>
+            </div>
 
-        {/* Right Column: Document Links */}
-        <div className="flex flex-col gap-2">
-          {/* Platinum Plan Card */}
-          <Collapsible>
-            <CollapsibleTrigger className="w-full">
-              <div className="bg-secondary rounded-lg p-3 text-left hover:bg-secondary/80 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-success" />
-                    <span className="font-medium text-sm text-foreground">What's covered?</span>
-                  </div>
-                  <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform duration-300 group-data-[state=open]:rotate-180" />
+            {/* Trustpilot Badge */}
+            <div className="bg-white rounded-lg border border-border p-3 flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-1 text-sm font-medium">
+                  <span>⭐</span>
+                  <span>Rated Excellent on Trustpilot</span>
+                </div>
+                <p className="text-sm text-muted-foreground">Don't just take our word for it – see what customers say.</p>
+              </div>
+              <div className="flex flex-col items-end">
+                <span className="text-sm font-semibold">Trustpilot</span>
+                <div className="flex gap-0.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <div key={star} className="w-5 h-5 bg-green-500 flex items-center justify-center">
+                      <span className="text-white text-xs">★</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </CollapsibleTrigger>
-            
-            <CollapsibleContent>
-              <div className="mt-2 p-3 bg-card rounded-lg border border-border">
-                <ul className="space-y-1 mb-3">
-                  {coverageItems.map((item, index) => (
-                    <li key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Check className="w-3 h-3 text-success flex-shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                {platinumDocUrl && (
-                  <a
-                    href={platinumDocUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-primary hover:text-primary/80 text-sm font-medium"
-                  >
-                    <FileText className="w-3 h-3" />
-                    View full plan (PDF)
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                )}
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
+            </div>
+          </div>
 
-          {/* Terms Link */}
-          {termsDocUrl && (
-            <a
-              href={termsDocUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-between bg-secondary rounded-lg p-3 hover:bg-secondary/80 transition-colors"
-            >
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-success" />
-                <span className="font-medium text-sm text-foreground">Terms & Conditions</span>
+          {/* 14 Day Guarantee Badge */}
+          <div className="ml-4 hidden sm:flex flex-col items-center">
+            <div className="w-24 h-24 rounded-full border-4 border-orange-200 bg-orange-50 flex flex-col items-center justify-center">
+              <div className="text-orange-500">
+                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
               </div>
-              <ExternalLink className="w-4 h-4 text-muted-foreground" />
-            </a>
-          )}
+              <Check className="w-4 h-4 text-orange-500" />
+            </div>
+            <span className="text-sm text-orange-500 font-medium mt-1 text-center">14 day money<br />back guarantee</span>
+          </div>
         </div>
       </div>
 
-      {/* Claims Badge - Mobile Only */}
-      <div className="lg:hidden mt-3 bg-success/10 rounded-lg px-3 py-2 border border-success/30">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-success" />
-          <span className="font-semibold text-success text-sm">94% of claims approved fast</span>
-          <span className="text-xs text-muted-foreground">• UK-based support</span>
+      {/* Second Card: Crystal Clear Cover Section */}
+      <div className="bg-card rounded-xl border border-border p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
+            <span className="bg-yellow-100 px-2 py-1 rounded">Your cover, made crystal clear</span>
+            <span className="text-xl">💎</span>
+          </h3>
+          <button 
+            onClick={scrollToPlans}
+            className="flex items-center gap-1 text-sm font-medium text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-secondary transition-colors"
+          >
+            <ArrowUp className="w-4 h-4" />
+            Back to Plans
+          </button>
         </div>
+
+        <div className="flex items-center gap-2 mb-4 text-foreground">
+          <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+          <span>See what's included - clear terms, no jargon, no surprises.</span>
+        </div>
+
+        {/* Your Platinum Plan Collapsible */}
+        <Collapsible className="mb-3">
+          <CollapsibleTrigger className="w-full">
+            <div className="flex items-center gap-2 py-2 text-left hover:opacity-80 transition-opacity">
+              <ChevronDown className="w-4 h-4 text-orange-500 transition-transform duration-300 group-data-[state=open]:rotate-180" />
+              <span className="font-medium text-orange-500">Your Platinum Plan</span>
+            </div>
+          </CollapsibleTrigger>
+          
+          <CollapsibleContent>
+            <div className="ml-6 p-4 bg-orange-50 rounded-lg border border-orange-100">
+              <ul className="space-y-2 mb-4">
+                {coverageItems.map((item, index) => (
+                  <li key={index} className="flex items-center gap-2 text-sm text-foreground">
+                    <Check className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              {platinumDocUrl && (
+                <a
+                  href={platinumDocUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-orange-500 hover:text-orange-600 text-sm font-medium"
+                >
+                  <FileText className="w-4 h-4" />
+                  View full plan (PDF)
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Terms & Conditions Collapsible */}
+        <Collapsible>
+          <CollapsibleTrigger className="w-full">
+            <div className="flex items-center gap-2 py-2 text-left hover:opacity-80 transition-opacity">
+              <ChevronDown className="w-4 h-4 text-green-600 transition-transform duration-300 group-data-[state=open]:rotate-180" />
+              <span className="font-medium text-green-600">Terms & Conditions</span>
+            </div>
+          </CollapsibleTrigger>
+          
+          <CollapsibleContent>
+            <div className="ml-6 p-4 bg-green-50 rounded-lg border border-green-100">
+              <p className="text-sm text-foreground mb-3">
+                Our terms are written in plain English so you know exactly what you're getting.
+              </p>
+              {termsDocUrl && (
+                <a
+                  href={termsDocUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-green-600 hover:text-green-700 text-sm font-medium"
+                >
+                  <FileText className="w-4 h-4" />
+                  View Terms & Conditions (PDF)
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
     </div>
   );
