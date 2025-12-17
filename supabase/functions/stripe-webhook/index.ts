@@ -155,8 +155,12 @@ serve(async (req) => {
 
             const claimLimit = parseInt(fullSession.metadata?.claim_limit || '1250');
             const seasonalBonusMonths = parseInt(fullSession.metadata?.seasonal_bonus_months || '0');
+            const labourRate = parseInt(fullSession.metadata?.labour_rate || '50');
+            const startDate = fullSession.metadata?.start_date || null;
             
-            logStep("Extracted add-ons, claim limit, and seasonal bonus", { protectionAddOns, claimLimit, seasonalBonusMonths });
+            logStep("Extracted add-ons, claim limit, seasonal bonus, labour rate, and start date", { 
+              protectionAddOns, claimLimit, seasonalBonusMonths, labourRate, startDate 
+            });
 
             // Call handle-successful-payment directly
             const { data: processData, error: processError } = await supabaseClient.functions.invoke('handle-successful-payment', {
@@ -169,8 +173,10 @@ serve(async (req) => {
                 vehicleData: vehicleData,
                 customerData: customerData,
                 protectionAddOns: protectionAddOns,
-                claim_limit: claimLimit,
+                claimLimit: claimLimit,
                 seasonalBonusMonths: seasonalBonusMonths,
+                labourRate: labourRate,
+                startDate: startDate,
                 metadata: fullSession.metadata || {},
                 skipEmail: false // Allow email sending
               }
