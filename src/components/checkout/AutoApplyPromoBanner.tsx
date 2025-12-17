@@ -318,15 +318,22 @@ export const AutoApplyPromoBanner: React.FC<AutoApplyPromoBannerProps> = ({
       className={`promo-banner mb-4 rounded-xl border overflow-hidden transition-all duration-500 ${
         isExpired 
           ? 'bg-gray-50 border-gray-200' 
-          : 'bg-white border-green-200 shadow-sm'
+          : 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300 shadow-md'
       }`}
       role="status"
       aria-live="polite"
     >
       {!isExpired ? (
         <div className="p-4">
+          {/* Congratulations Header */}
+          <div className="text-center mb-3">
+            <p className="text-lg font-bold text-gray-900">
+              🎉 Congratulations! You've Unlocked an Extra 5% Off!
+            </p>
+          </div>
+          
           {/* Main content - Applied state */}
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3 bg-white/60 rounded-lg p-3">
             {/* Checkmark icon */}
             <div className="flex-shrink-0 w-7 h-7 bg-[#2BB673] rounded-full flex items-center justify-center mt-0.5 animate-scale-in">
               <Check className="w-4 h-4 text-white" strokeWidth={3} />

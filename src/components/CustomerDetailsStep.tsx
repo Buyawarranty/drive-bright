@@ -1402,22 +1402,58 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     )}
                       {/* Payment Summary - Mobile First */}
                       <div className="border-t pt-4 mt-4 space-y-3">
-                        {/* Pay Monthly Card */}
-                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                          <div className="font-bold text-black text-sm mb-2">Pay Monthly</div>
-                          <div className="text-2xl font-bold text-black">£{Math.round(discountedBumperPrice / 12)} <span className="text-base font-normal">per month</span></div>
-                          <div className="text-sm text-gray-600 mt-1">Only 12 easy payments</div>
-                          <div className="text-sm text-gray-500 mt-1">Total: £{discountedBumperPrice}</div>
-                        </div>
-                        
-                        {/* Pay in Full Card */}
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 relative">
-                          <span className="absolute -top-2 right-3 bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded">BEST VALUE</span>
-                          <div className="font-bold text-black text-sm mb-2">Pay in Full</div>
-                          <div className="text-2xl font-bold text-black">£{discountedStripePrice}</div>
-                          <div className="text-sm text-gray-600 mt-1">One-time payment</div>
-                          <div className="text-lg font-bold text-green-600 mt-2">Save £{Math.floor(discountedBumperPrice * 0.10)} (10% off)</div>
-                        </div>
+                        {(() => {
+                          // Check if 5% promo is applied
+                          const has5PercentPromo = appliedDiscountCodes.some(d => d.code === '5PERCENTSAVENOW');
+                          const promoSavings = has5PercentPromo ? Math.floor(bumperTotalPrice * 0.05) : 0;
+                          const tenPercentSavings = Math.floor(discountedBumperPrice * 0.10);
+                          const originalMonthly = Math.round(bumperTotalPrice / 12);
+                          const discountedMonthly = Math.round(discountedBumperPrice / 12);
+                          
+                          return (
+                            <>
+                              {/* Pay in Full Card */}
+                              <div className="bg-green-50 border border-green-200 rounded-lg p-4 relative">
+                                <span className="absolute -top-2 right-3 bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded">BEST VALUE</span>
+                                <div className="font-bold text-black text-sm mb-2">Pay in Full</div>
+                                <div className="text-2xl font-bold text-black">£{discountedStripePrice}</div>
+                                {has5PercentPromo ? (
+                                  <>
+                                    <div className="text-sm text-gray-600 mt-1">
+                                      Save £{tenPercentSavings} (10% off) + Extra 5% Promo: -£{promoSavings}
+                                    </div>
+                                    <div className="text-lg font-bold text-green-600 mt-2">New Total: £{discountedStripePrice}</div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="text-sm text-gray-600 mt-1">One-time payment</div>
+                                    <div className="text-lg font-bold text-green-600 mt-2">Save £{tenPercentSavings} (10% off)</div>
+                                  </>
+                                )}
+                              </div>
+                              
+                              {/* Pay Monthly Card */}
+                              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                                <div className="font-bold text-black text-sm mb-2">Pay Monthly</div>
+                                {has5PercentPromo ? (
+                                  <>
+                                    <div className="text-2xl font-bold text-black">
+                                      £{originalMonthly} → £{discountedMonthly} <span className="text-base font-normal">per month</span>
+                                    </div>
+                                    <div className="text-sm text-gray-600 mt-1">Only 12 easy payments</div>
+                                    <div className="text-sm font-semibold text-green-600 mt-1">Total after discount: £{discountedBumperPrice}</div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="text-2xl font-bold text-black">£{discountedMonthly} <span className="text-base font-normal">per month</span></div>
+                                    <div className="text-sm text-gray-600 mt-1">Only 12 easy payments</div>
+                                    <div className="text-sm text-gray-500 mt-1">Total: £{discountedBumperPrice}</div>
+                                  </>
+                                )}
+                              </div>
+                            </>
+                          );
+                        })()}
                       </div>
                     
                     {/* Add-ons Section */}
@@ -1718,15 +1754,36 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
 
                           {/* Price Display - Clean & Integrated */}
                           <div className="bg-gray-50 rounded-lg p-3 mb-3 border border-gray-100">
-                            <div className="text-center">
-                              <div className="text-4xl font-black text-black mb-1">£{discountedStripePrice}</div>
-                              <div className="inline-block bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                                Save £{Math.floor(discountedBumperPrice * 0.10)} today
-                              </div>
-                              <div className="text-sm font-bold text-gray-600 mt-1">
-                                (normally £{discountedBumperPrice})
-                              </div>
-                            </div>
+                            {(() => {
+                              const has5PercentPromo = appliedDiscountCodes.some(d => d.code === '5PERCENTSAVENOW');
+                              const promoSavings = has5PercentPromo ? Math.floor(bumperTotalPrice * 0.05) : 0;
+                              const tenPercentSavings = Math.floor(discountedBumperPrice * 0.10);
+                              
+                              return (
+                                <div className="text-center">
+                                  <div className="text-4xl font-black text-black mb-1">£{discountedStripePrice}</div>
+                                  {has5PercentPromo ? (
+                                    <>
+                                      <div className="text-xs text-gray-600 mb-1">
+                                        Save £{tenPercentSavings} (10% off) + Extra 5% Promo: -£{promoSavings}
+                                      </div>
+                                      <div className="inline-block bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                                        New Total: £{discountedStripePrice}
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <div className="inline-block bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                                        Save £{tenPercentSavings} today
+                                      </div>
+                                      <div className="text-sm font-bold text-gray-600 mt-1">
+                                        (normally £{discountedBumperPrice})
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </div>
 
                           {/* Features - GREEN TICKS */}
@@ -1841,14 +1898,36 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
 
                           {/* Price Display - Clean & Integrated */}
                           <div className="bg-orange-50 rounded-lg p-3 mb-3 border border-orange-100">
-                            <div className="text-center">
-                              <div className="text-4xl font-black text-black mb-1">
-                                £{Math.round(discountedBumperPrice / 12)}<span className="text-lg">/month</span>
-                              </div>
-                              <div className="text-sm font-bold text-gray-600">
-                                £{discountedBumperPrice} total
-                              </div>
-                            </div>
+                            {(() => {
+                              const has5PercentPromo = appliedDiscountCodes.some(d => d.code === '5PERCENTSAVENOW');
+                              const originalMonthly = Math.round(bumperTotalPrice / 12);
+                              const discountedMonthly = Math.round(discountedBumperPrice / 12);
+                              
+                              return (
+                                <div className="text-center">
+                                  {has5PercentPromo ? (
+                                    <>
+                                      <div className="text-4xl font-black text-black mb-1">
+                                        <span className="text-2xl line-through text-gray-400 mr-2">£{originalMonthly}</span>
+                                        £{discountedMonthly}<span className="text-lg">/month</span>
+                                      </div>
+                                      <div className="text-sm font-bold text-green-600">
+                                        Total after discount: £{discountedBumperPrice}
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <div className="text-4xl font-black text-black mb-1">
+                                        £{discountedMonthly}<span className="text-lg">/month</span>
+                                      </div>
+                                      <div className="text-sm font-bold text-gray-600">
+                                        £{discountedBumperPrice} total
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </div>
 
                           {/* Features - GREEN TICKS */}
