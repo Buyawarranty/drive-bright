@@ -55,7 +55,8 @@ serve(async (req) => {
       protectionAddOns = {},
       claimLimit = 1250,
       seasonalBonusMonths = 0,
-      labourRate = 50
+      labourRate = 50,
+      startDate = null
     } = requestData;
 
     // Validate vehicle age (must be 15 years or newer)
@@ -184,7 +185,7 @@ serve(async (req) => {
         // Store the original warranty duration for later processing
         original_warranty_duration: warrantyDuration,
         // CRITICAL: Preserve customer's selected start date for delayed activation
-        start_date: customerData?.start_date || null,
+        start_date: startDate || customerData?.start_date || null,
         // Ensure vehicle registration is available in customer data
         vehicle_reg: customerData?.vehicle_reg || vehicleData?.regNumber || vehicleData?.registration,
         vehicle_make: customerData?.vehicle_make || vehicleData?.make,
