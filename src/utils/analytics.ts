@@ -4,6 +4,7 @@ declare global {
   interface Window {
     gtag: (...args: any[]) => void;
     fbq: (...args: any[]) => void;
+    dataLayer: any[];
   }
 }
 
@@ -175,6 +176,11 @@ export const trackPurchaseComplete = (
   // using gtag('set', 'user_data', {...}) - see ThankYou.tsx for implementation
   
   console.log('🛒 trackPurchaseComplete called:', { value, transactionId, enhancedData });
+  
+  // Initialize dataLayer if not present
+  if (typeof window !== 'undefined') {
+    window.dataLayer = window.dataLayer || [];
+  }
   
   // Push to dataLayer for GTM (Google Tag Manager) - Primary Conversion Event
   if (typeof window !== 'undefined' && window.dataLayer) {
