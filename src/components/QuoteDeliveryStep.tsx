@@ -196,18 +196,18 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   const areRequiredFieldsFilled = true; // No longer needed but keeping for compatibility
 
   return (
-    <section className="bg-[#e8f4fb] py-2 sm:py-6 min-h-screen px-2 sm:px-0">
+    <section className="bg-[#e8f4fb] py-1 sm:py-6 min-h-screen px-2 sm:px-0">
       
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-3 sm:p-12 relative">
         {/* Header with Back Button and Mobile Menu */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-2 sm:mb-6">
           <div className="flex-1">
             <button 
               type="button" 
               onClick={onBack}
-              className="flex items-center gap-2 text-sm font-medium py-2.5 px-4 rounded-lg transition-all duration-200 bg-gray-100 hover:bg-gray-200 text-gray-700"
+              className="flex items-center gap-1.5 text-xs sm:text-sm font-medium py-2 px-3 rounded-lg transition-all duration-200 bg-gray-100 hover:bg-gray-200 text-gray-700"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               Back
             </button>
           </div>
@@ -217,7 +217,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         </div>
 
         {/* Vehicle Details Section - Compact */}
-        <div className="bg-gray-100 rounded-lg p-2 sm:p-6 mb-2 sm:mb-4 border border-gray-300">
+        <div className="bg-gray-100 rounded-lg p-2.5 sm:p-6 mb-2 sm:mb-4 border border-gray-300">
           <div className="flex items-center justify-between mb-1.5 sm:mb-4">
             <div className="flex items-center gap-2 sm:gap-4">
               <Car className="w-4 h-4 sm:w-7 sm:h-7 text-orange-500" />
