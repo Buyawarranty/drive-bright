@@ -20,7 +20,7 @@ import TrustpilotHeader from '@/components/TrustpilotHeader';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
 import { StartDatePicker } from '@/components/checkout/StartDatePicker';
-import { AutoApplyPromoBanner } from '@/components/checkout/AutoApplyPromoBanner';
+
 import { startOfDay, format, isToday } from 'date-fns';
 
 export interface CustomerDetailsStepProps {
@@ -1624,13 +1624,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         </div>
                       ))}
                       
-                      {/* Unlock 5% Promo Banner */}
-                      <AutoApplyPromoBanner
-                        currentDiscounts={appliedDiscountCodes}
-                        basePrice={bumperTotalPrice}
-                        onApplyPromo={handleAutoApplyPromo}
-                        onRemovePromo={handleAutoRemovePromo}
-                      />
                       
                       {/* Add New Promo Code - only show if no promo applied yet */}
                       {appliedDiscountCodes.length === 0 && (
