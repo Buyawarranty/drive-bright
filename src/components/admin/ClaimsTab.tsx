@@ -7,12 +7,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, Download, Calendar, User, Mail, Phone, Paperclip, FileDown, FileSpreadsheet, Search, Filter, Trash2, Edit } from 'lucide-react';
+import { Eye, Download, Calendar, User, Mail, Phone, Paperclip, FileDown, FileSpreadsheet, Search, Filter, Trash2, Edit, Clock, Send, AlertTriangle, ArrowUp, ArrowDown, Minus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ClaimsSummaryCards } from './claims/ClaimsSummaryCards';
 import { ClaimsChart } from './claims/ClaimsChart';
 import { ClaimDetailDialog } from './claims/ClaimDetailDialog';
 import { ClaimAmountEditDialog } from './claims/ClaimAmountEditDialog';
+import { ClaimStatusDropdown } from './claims/ClaimStatusDropdown';
+import { ClaimEmailDialog } from './claims/ClaimEmailDialog';
+import { ClaimPriorityBadge } from './claims/ClaimPriorityBadge';
 import { exportToCSV, exportToPDF, formatClaimForExport } from './claims/exportUtils';
 
 interface ClaimSubmission {
@@ -39,6 +42,10 @@ interface ClaimSubmission {
   rejection_reason?: string;
   date_of_incident?: string;
   mileage_at_claim?: number;
+  tag_id?: string;
+  priority?: string;
+  follow_up_date?: string;
+  last_contacted_at?: string;
 }
 
 export const ClaimsTab = () => {
@@ -47,9 +54,11 @@ export const ClaimsTab = () => {
   const [loading, setLoading] = useState(true);
   const [selectedClaim, setSelectedClaim] = useState<ClaimSubmission | null>(null);
   const [editingClaim, setEditingClaim] = useState<ClaimSubmission | null>(null);
+  const [emailingClaim, setEmailingClaim] = useState<ClaimSubmission | null>(null);
   const [selectedClaimIds, setSelectedClaimIds] = useState<Set<string>>(new Set());
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [warrantyFilter, setWarrantyFilter] = useState<string>('all');
+  const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
@@ -139,7 +148,6 @@ export const ClaimsTab = () => {
       ? paidClaims.reduce((sum, c) => sum + (c.payment_amount || 0), 0) / paidClaims.length 
       : 0;
 
-    // Calculate monthly change
     const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
     const lastMonthClaims = claims.filter(c => {
@@ -161,31 +169,50 @@ export const ClaimsTab = () => {
     });
   };
 
-  const getStatusBadgeVariant = (status: string) => {
-    const variants: Record<string, any> = {
-      new: 'destructive',
-      in_progress: 'default',
-      approved: 'secondary',
-      rejected: 'destructive',
-      awaiting_info: 'outline',
-      paid: 'secondary',
-      resolved: 'secondary',
-    };
-    return variants[status] || 'outline';
+  const getDaysSinceClaim = (createdAt: string) => {
+    const claimDate = new Date(createdAt);
+    const today = new Date();
+    const diffTime = today.getTime() - claimDate.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
   };
 
-  const getStatusLabel = (status: string) => {
-    return status.replace('_', ' ').toUpperCase();
+  const getDaysColor = (days: number) => {
+    if (days <= 3) return 'text-green-600 bg-green-50';
+    if (days <= 7) return 'text-yellow-600 bg-yellow-50';
+    if (days <= 14) return 'text-orange-600 bg-orange-50';
+    return 'text-red-600 bg-red-50';
+  };
+
+  const handlePriorityChange = async (claimId: string, priority: string) => {
+    try {
+      const { error } = await supabase
+        .from('claims_submissions')
+        .update({ priority })
+        .eq('id', claimId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Priority Updated",
+        description: `Claim priority set to ${priority}`,
+      });
+      fetchClaims();
+    } catch (error) {
+      console.error('Error updating priority:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update priority",
+        variant: "destructive",
+      });
+    }
   };
 
   const filteredClaims = claims.filter(claim => {
-    // Status filter
     if (statusFilter !== 'all' && claim.status !== statusFilter) return false;
-    
-    // Warranty type filter
     if (warrantyFilter !== 'all' && claim.warranty_type !== warrantyFilter) return false;
+    if (priorityFilter !== 'all' && claim.priority !== priorityFilter) return false;
     
-    // Search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       const matchesSearch = 
@@ -195,7 +222,6 @@ export const ClaimsTab = () => {
       if (!matchesSearch) return false;
     }
     
-    // Date range filter
     if (dateFrom) {
       const claimDate = new Date(claim.created_at);
       const fromDate = new Date(dateFrom);
@@ -346,7 +372,7 @@ export const ClaimsTab = () => {
           <CardDescription>Filter and search through claims submissions</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             {/* Search */}
             <div className="lg:col-span-2">
               <div className="relative">
@@ -365,7 +391,7 @@ export const ClaimsTab = () => {
               <SelectTrigger>
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background border shadow-lg z-50">
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="new">New</SelectItem>
                 <SelectItem value="in_progress">In Progress</SelectItem>
@@ -377,16 +403,17 @@ export const ClaimsTab = () => {
               </SelectContent>
             </Select>
 
-            {/* Warranty Type Filter */}
-            <Select value={warrantyFilter} onValueChange={setWarrantyFilter}>
+            {/* Priority Filter */}
+            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by warranty" />
+                <SelectValue placeholder="Filter by priority" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Warranties</SelectItem>
-                {uniqueWarrantyTypes.map(type => (
-                  <SelectItem key={type} value={type!}>{type}</SelectItem>
-                ))}
+              <SelectContent className="bg-background border shadow-lg z-50">
+                <SelectItem value="all">All Priorities</SelectItem>
+                <SelectItem value="urgent">Urgent</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="normal">Normal</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
               </SelectContent>
             </Select>
 
@@ -408,11 +435,14 @@ export const ClaimsTab = () => {
           </div>
 
           {/* Active Filters Display */}
-          {(statusFilter !== 'all' || warrantyFilter !== 'all' || searchQuery || dateFrom || dateTo) && (
+          {(statusFilter !== 'all' || warrantyFilter !== 'all' || priorityFilter !== 'all' || searchQuery || dateFrom || dateTo) && (
             <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t">
               <span className="text-sm font-medium text-gray-600">Active Filters:</span>
               {statusFilter !== 'all' && (
-                <Badge variant="outline">Status: {getStatusLabel(statusFilter)}</Badge>
+                <Badge variant="outline">Status: {statusFilter.replace('_', ' ').toUpperCase()}</Badge>
+              )}
+              {priorityFilter !== 'all' && (
+                <Badge variant="outline">Priority: {priorityFilter}</Badge>
               )}
               {warrantyFilter !== 'all' && (
                 <Badge variant="outline">Warranty: {warrantyFilter}</Badge>
@@ -432,6 +462,7 @@ export const ClaimsTab = () => {
                 onClick={() => {
                   setStatusFilter('all');
                   setWarrantyFilter('all');
+                  setPriorityFilter('all');
                   setSearchQuery('');
                   setDateFrom('');
                   setDateTo('');
@@ -490,132 +521,183 @@ export const ClaimsTab = () => {
                         aria-label="Select all claims"
                       />
                     </TableHead>
+                    <TableHead>
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        Days
+                      </div>
+                    </TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Customer</TableHead>
                     <TableHead>Vehicle Reg</TableHead>
-                    <TableHead>Warranty</TableHead>
-                    <TableHead>Claim Reason</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Priority</TableHead>
                     <TableHead>Payment</TableHead>
                     <TableHead>Attachment</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredClaims.map((claim) => (
-                    <TableRow key={claim.id}>
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedClaimIds.has(claim.id)}
-                          onCheckedChange={(checked) => handleSelectClaim(claim.id, checked as boolean)}
-                          aria-label={`Select claim ${claim.id}`}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-gray-400" />
-                          <div>
-                            <div className="font-medium text-sm">
-                              {new Date(claim.created_at).toLocaleDateString('en-GB')}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {new Date(claim.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                  {filteredClaims.map((claim) => {
+                    const daysSinceClaim = getDaysSinceClaim(claim.created_at);
+                    return (
+                      <TableRow key={claim.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedClaimIds.has(claim.id)}
+                            onCheckedChange={(checked) => handleSelectClaim(claim.id, checked as boolean)}
+                            aria-label={`Select claim ${claim.id}`}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${getDaysColor(daysSinceClaim)}`}>
+                            <Clock className="h-3 w-3" />
+                            {daysSinceClaim}d
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-gray-400" />
+                            <div>
+                              <div className="font-medium text-sm">
+                                {new Date(claim.created_at).toLocaleDateString('en-GB')}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {new Date(claim.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-gray-400" />
-                            <span className="font-medium text-sm">{claim.name}</span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4 text-gray-400" />
+                              <span className="font-medium text-sm">{claim.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs">
+                              <Mail className="h-3 w-3 text-gray-400" />
+                              <a 
+                                href={`mailto:${claim.email}`}
+                                className="text-blue-600 hover:underline"
+                              >
+                                {claim.email}
+                              </a>
+                            </div>
+                            {claim.phone && (
+                              <div className="flex items-center gap-2 text-xs">
+                                <Phone className="h-3 w-3 text-gray-400" />
+                                <a 
+                                  href={`tel:${claim.phone}`}
+                                  className="text-blue-600 hover:underline"
+                                >
+                                  {claim.phone}
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                            {claim.vehicle_registration || '-'}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <ClaimStatusDropdown
+                            claimId={claim.id}
+                            currentTagId={claim.tag_id}
+                            currentStatus={claim.status}
+                            onUpdate={fetchClaims}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={claim.priority || 'normal'}
+                            onValueChange={(value) => handlePriorityChange(claim.id, value)}
+                          >
+                            <SelectTrigger className="w-[100px] h-7 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background border shadow-lg z-50">
+                              <SelectItem value="urgent">
+                                <div className="flex items-center gap-1 text-red-600">
+                                  <AlertTriangle className="h-3 w-3" /> Urgent
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="high">
+                                <div className="flex items-center gap-1 text-orange-600">
+                                  <ArrowUp className="h-3 w-3" /> High
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="normal">
+                                <div className="flex items-center gap-1 text-blue-600">
+                                  <Minus className="h-3 w-3" /> Normal
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="low">
+                                <div className="flex items-center gap-1 text-gray-600">
+                                  <ArrowDown className="h-3 w-3" /> Low
+                                </div>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          {claim.payment_amount && claim.payment_amount > 0 ? (
+                            <div className="flex items-center gap-1">
+                              <span className="font-semibold text-green-600">
+                                £{claim.payment_amount.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setEditingClaim(claim)}
+                                className="h-6 w-6 p-0"
+                                title="Edit amount"
+                              >
+                                <Edit className="h-3 w-3 text-blue-600" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {claim.file_url && claim.file_name ? (
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => setEditingClaim(claim)}
-                              className="h-6 w-6 p-0"
-                              title="Edit claim amount"
+                              onClick={() => downloadFile(claim.file_url!, claim.file_name!)}
+                              className="p-0 h-auto"
                             >
-                              <Edit className="h-3 w-3 text-blue-600" />
+                              <Paperclip className="h-4 w-4 text-blue-600" />
+                            </Button>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => setSelectedClaim(claim)}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setEmailingClaim(claim)}
+                              title="Send email to claims department"
+                            >
+                              <Send className="h-4 w-4 text-blue-600" />
                             </Button>
                           </div>
-                          <div className="flex items-center gap-2 text-xs">
-                            <Mail className="h-3 w-3 text-gray-400" />
-                            <a 
-                              href={`mailto:${claim.email}`}
-                              className="text-blue-600 hover:underline"
-                            >
-                              {claim.email}
-                            </a>
-                          </div>
-                          {claim.phone && (
-                            <div className="flex items-center gap-2 text-xs">
-                              <Phone className="h-3 w-3 text-gray-400" />
-                              <a 
-                                href={`tel:${claim.phone}`}
-                                className="text-blue-600 hover:underline"
-                              >
-                                {claim.phone}
-                              </a>
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-mono text-sm">
-                          {claim.vehicle_registration || '-'}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm">
-                          {claim.warranty_type || '-'}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm max-w-xs truncate block">
-                          {claim.claim_reason || '-'}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusBadgeVariant(claim.status)}>
-                          {getStatusLabel(claim.status)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {claim.payment_amount && claim.payment_amount > 0 ? (
-                          <span className="font-semibold text-green-600">
-                            £{claim.payment_amount.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {claim.file_url && claim.file_name ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => downloadFile(claim.file_url!, claim.file_name!)}
-                            className="p-0 h-auto"
-                          >
-                            <Paperclip className="h-4 w-4 text-blue-600" />
-                          </Button>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => setSelectedClaim(claim)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
@@ -640,6 +722,16 @@ export const ClaimsTab = () => {
           open={!!editingClaim}
           onOpenChange={(open) => !open && setEditingClaim(null)}
           onUpdate={fetchClaims}
+        />
+      )}
+
+      {/* Claim Email Dialog */}
+      {emailingClaim && (
+        <ClaimEmailDialog
+          claim={emailingClaim}
+          open={!!emailingClaim}
+          onOpenChange={(open) => !open && setEmailingClaim(null)}
+          onEmailSent={fetchClaims}
         />
       )}
     </div>
