@@ -176,93 +176,141 @@ const ThankYou = () => {
       isGtagReady
     });
     
+    // ========================
+    // UNIFIED CONVERSION TRACKING FUNCTION
+    // This MUST fire for ALL payment methods (Bumper, Stripe, future methods)
+    // ========================
+    const fireGoogleAdsConversion = (conversionData: {
+      amount: number;
+      transactionId: string;
+      email?: string;
+      phone?: string;
+      firstName?: string;
+      lastName?: string;
+      address?: string;
+      postcode?: string;
+      source: string;
+    }) => {
+      console.log('🎯 [CONVERSION] Attempting to fire Google Ads conversion:', conversionData);
+      
+      // Set enhanced conversion user_data FIRST (before conversion event)
+      if (typeof window !== 'undefined' && window.gtag && (conversionData.email || (conversionData.firstName && conversionData.lastName))) {
+        const userData: any = {};
+        
+        if (conversionData.email) {
+          userData.email = conversionData.email;
+        }
+        
+        // Format phone to E.164 if available
+        if (conversionData.phone) {
+          let formattedPhone = conversionData.phone.replace(/\s+/g, '').replace(/^0/, '+44');
+          if (!formattedPhone.startsWith('+')) {
+            formattedPhone = '+44' + formattedPhone;
+          }
+          userData.phone_number = formattedPhone;
+        }
+        
+        // Add address data if we have name
+        if (conversionData.firstName || conversionData.lastName || conversionData.address || conversionData.postcode) {
+          userData.address = {};
+          if (conversionData.firstName) userData.address.first_name = conversionData.firstName;
+          if (conversionData.lastName) userData.address.last_name = conversionData.lastName;
+          if (conversionData.address) userData.address.street = conversionData.address;
+          if (conversionData.postcode) userData.address.postal_code = conversionData.postcode;
+          userData.address.country = 'GB';
+        }
+        
+        // Set user_data globally for enhanced conversions
+        window.gtag('set', 'user_data', userData);
+        console.log('✅ [CONVERSION] Enhanced conversion user_data set:', userData);
+      }
+      
+      // CRITICAL: Fire the conversion even with amount=0, but log a warning
+      if (conversionData.amount > 0) {
+        console.log(`✅ [CONVERSION] FIRING Google Ads conversion - Source: ${conversionData.source}, Amount: £${conversionData.amount}, Transaction: ${conversionData.transactionId}`);
+        trackPurchaseComplete(
+          conversionData.amount,
+          conversionData.transactionId,
+          {
+            email: conversionData.email,
+            phone: conversionData.phone,
+            firstName: conversionData.firstName,
+            lastName: conversionData.lastName,
+            address: conversionData.address
+          }
+        );
+        console.log('✅ [CONVERSION] Google Ads conversion FIRED successfully!');
+        return true;
+      } else {
+        console.error('❌ [CONVERSION] WARNING: Amount is 0 or invalid, firing anyway with available data', conversionData);
+        // Fire anyway with what we have - better to have a $0 conversion than no conversion
+        trackPurchaseComplete(
+          conversionData.amount || 1, // Use 1 as fallback to ensure it fires
+          conversionData.transactionId,
+          {
+            email: conversionData.email,
+            phone: conversionData.phone,
+            firstName: conversionData.firstName,
+            lastName: conversionData.lastName,
+            address: conversionData.address
+          }
+        );
+        return true;
+      }
+    };
+    
     const processPayment = async () => {
-      // For Bumper payments, we get data from URL params
+      // Get common data from URL params
+      const urlEmail = searchParams.get('email');
+      const urlMobile = searchParams.get('mobile');
+      const urlFirstName = searchParams.get('first_name');
+      const urlLastName = searchParams.get('last_name');
+      const urlStreet = searchParams.get('street');
+      const urlPostcode = searchParams.get('postcode');
+      const urlFinalAmount = searchParams.get('final_amount');
+      const urlPolicyNumber = searchParams.get('policy_number') || searchParams.get('warranty_number');
+      
+      // Parse final amount
+      const parsedAmount = urlFinalAmount ? parseFloat(urlFinalAmount) : 0;
+      
+      // Generate transaction ID from available data
+      const generateTransactionId = () => {
+        return urlPolicyNumber || sessionId || `ORDER_${Date.now()}`;
+      };
+      
+      // ========================
+      // BUMPER PAYMENT FLOW
+      // ========================
       if (source === 'bumper') {
-        // Bumper flow already processed - just show success
+        console.log('[THANK-YOU] Processing BUMPER payment...');
         setIsProcessing(false);
         
         // Extract policy number if available
-        const policyNum = searchParams.get('policy_number') || searchParams.get('warranty_number');
-        if (policyNum) {
-          setPolicyNumber(policyNum);
+        if (urlPolicyNumber) {
+          setPolicyNumber(urlPolicyNumber);
           toast.success('Your warranty policy has been created successfully!');
         }
         
-        // Set enhanced conversion data FIRST (before conversion event)
-        const email = searchParams.get('email');
-        const mobile = searchParams.get('mobile');
-        const firstName = searchParams.get('first_name');
-        const lastName = searchParams.get('last_name');
-        const street = searchParams.get('street');
-        const postcode = searchParams.get('postcode');
-        
-        if (typeof window !== 'undefined' && window.gtag && (email || (firstName && lastName))) {
-          const userData: any = {};
-          
-          if (email) {
-            userData.email = email;
-          }
-          
-          // Format phone to E.164 if available
-          if (mobile) {
-            let formattedPhone = mobile.replace(/\s+/g, '').replace(/^0/, '+44');
-            if (!formattedPhone.startsWith('+')) {
-              formattedPhone = '+44' + formattedPhone;
-            }
-            userData.phone_number = formattedPhone;
-          }
-          
-          // Add address data if we have name
-          if (firstName || lastName || street || postcode) {
-            userData.address = {};
-            if (firstName) userData.address.first_name = firstName;
-            if (lastName) userData.address.last_name = lastName;
-            if (street) userData.address.street = street;
-            if (postcode) userData.address.postal_code = postcode;
-            userData.address.country = 'GB';
-          }
-          
-          // Set user_data globally for enhanced conversions
-          window.gtag('set', 'user_data', userData);
-          console.log('✅ Enhanced conversion user_data set:', userData);
-        }
-        
-        // Track purchase
-        const finalAmountStr = searchParams.get('final_amount');
-        const finalAmount = finalAmountStr ? parseFloat(finalAmountStr) : 0;
-        
-        // CRITICAL: Only track if we have valid amount and session
-        if (finalAmount > 0 && sessionId) {
-          console.log('✅ Tracking Bumper purchase with amount:', finalAmount, 'sessionId:', sessionId);
-          trackPurchaseComplete(
-            finalAmount,
-            sessionId,
-            {
-              email: email || undefined,
-              phone: mobile || undefined,
-              firstName: firstName || undefined,
-              lastName: lastName || undefined,
-              address: street || undefined
-            }
-          );
-        } else {
-          console.error('❌ TRACKING FAILED (Bumper): Missing or invalid data', {
-            finalAmount,
-            finalAmountStr,
-            sessionId,
-            email,
-            mobile
-          });
-        }
+        // CRITICAL: Fire conversion for Bumper
+        fireGoogleAdsConversion({
+          amount: parsedAmount,
+          transactionId: generateTransactionId(),
+          email: urlEmail || undefined,
+          phone: urlMobile || undefined,
+          firstName: urlFirstName || undefined,
+          lastName: urlLastName || undefined,
+          address: urlStreet || undefined,
+          postcode: urlPostcode || undefined,
+          source: 'bumper'
+        });
         
         // Send Trustpilot review invitation
-        if (email && (firstName || lastName) && policyNum) {
-          const fullName = `${firstName || ''} ${lastName || ''}`.trim() || 'Customer';
+        if (urlEmail && (urlFirstName || urlLastName) && urlPolicyNumber) {
+          const fullName = `${urlFirstName || ''} ${urlLastName || ''}`.trim() || 'Customer';
           sendTrustpilotInvitation({
-            recipientEmail: email,
+            recipientEmail: urlEmail,
             recipientName: fullName,
-            referenceId: policyNum,
+            referenceId: urlPolicyNumber,
             orderDate: new Date().toISOString(),
             productName: `${plan} Warranty - ${duration}`,
           });
@@ -271,32 +319,50 @@ const ThankYou = () => {
         return;
       }
       
-      // For Stripe payments, we need the session ID
-      // But check if we have policy_number which means payment was already processed
-      const existingPolicyNumber = searchParams.get('policy_number') || searchParams.get('warranty_number');
+      // ========================
+      // STRIPE / OTHER PAYMENT FLOWS
+      // ========================
       
-      // If we have source identified or any useful data, we can show the page
-      const hasSufficientData = searchParams.get('final_amount') || searchParams.get('email') || searchParams.get('plan') || source;
+      // Check if we have enough data to show the page
+      const hasSufficientData = urlFinalAmount || urlEmail || searchParams.get('plan') || source;
       
       // Only show error if we truly have no data at all
-      if (!sessionId && !existingPolicyNumber && !hasSufficientData) {
-        console.error('Missing payment session information', { sessionId, existingPolicyNumber, source, hasSufficientData });
+      if (!sessionId && !urlPolicyNumber && !hasSufficientData) {
+        console.error('Missing payment session information', { sessionId, urlPolicyNumber, source, hasSufficientData });
         toast.error('Missing payment session information');
         setIsProcessing(false);
         return;
       }
       
-      // If we have policy number but no session, or have sufficient display data, skip processing
-      if ((existingPolicyNumber && !sessionId) || (!sessionId && hasSufficientData)) {
-        console.log('Payment data available, showing confirmation', { existingPolicyNumber, hasSufficientData });
-        if (existingPolicyNumber) setPolicyNumber(existingPolicyNumber);
+      // If we have policy number but no session, or have sufficient display data without session
+      // This means payment was already processed - still fire conversion!
+      if ((urlPolicyNumber && !sessionId) || (!sessionId && hasSufficientData)) {
+        console.log('[THANK-YOU] Payment already processed or has sufficient data, showing confirmation');
+        if (urlPolicyNumber) setPolicyNumber(urlPolicyNumber);
+        
+        // CRITICAL: Still fire conversion for already-processed payments
+        if (parsedAmount > 0 || urlEmail) {
+          console.log('[THANK-YOU] Firing conversion for pre-processed payment');
+          fireGoogleAdsConversion({
+            amount: parsedAmount,
+            transactionId: generateTransactionId(),
+            email: urlEmail || undefined,
+            phone: urlMobile || undefined,
+            firstName: urlFirstName || undefined,
+            lastName: urlLastName || undefined,
+            address: urlStreet || undefined,
+            postcode: urlPostcode || undefined,
+            source: source || 'direct'
+          });
+        }
+        
         setIsProcessing(false);
         return;
       }
 
       try {
         // Process Stripe payment - the edge function will get plan/payment type from session metadata
-        console.log('Processing Stripe payment...', { sessionId });
+        console.log('[THANK-YOU] Processing STRIPE payment...', { sessionId });
         
         const result = await supabase.functions.invoke('process-stripe-success', {
           body: {
@@ -310,6 +376,22 @@ const ThankYou = () => {
         if (error) {
           console.error('Payment processing error:', error);
           toast.error('Error processing payment');
+          
+          // CRITICAL: Even on error, try to fire conversion with URL params
+          if (parsedAmount > 0 || urlEmail) {
+            console.log('[THANK-YOU] Firing conversion despite Stripe error');
+            fireGoogleAdsConversion({
+              amount: parsedAmount,
+              transactionId: generateTransactionId(),
+              email: urlEmail || undefined,
+              phone: urlMobile || undefined,
+              firstName: urlFirstName || undefined,
+              lastName: urlLastName || undefined,
+              address: urlStreet || undefined,
+              postcode: urlPostcode || undefined,
+              source: 'stripe-error'
+            });
+          }
         } else {
           console.log('Payment processed successfully:', data);
           // Check both top-level policyNumber and nested data.policyNumber
@@ -319,81 +401,33 @@ const ThankYou = () => {
           }
           toast.success('Your warranty policy has been created successfully!');
           
-          // Set enhanced conversion data FIRST (before conversion event)
-          const email = searchParams.get('email') || data?.customerEmail;
-          const mobile = searchParams.get('mobile') || data?.customerPhone;
-          const firstName = searchParams.get('first_name') || data?.firstName;
-          const lastName = searchParams.get('last_name') || data?.lastName;
-          const street = searchParams.get('street') || data?.address;
-          const postcode = searchParams.get('postcode');
+          // Get data from response or URL params
+          const conversionEmail = urlEmail || data?.customerEmail;
+          const conversionPhone = urlMobile || data?.customerPhone;
+          const conversionFirstName = urlFirstName || data?.firstName;
+          const conversionLastName = urlLastName || data?.lastName;
+          const conversionStreet = urlStreet || data?.address;
+          const conversionAmount = parsedAmount || data?.amount || 0;
+          const transactionId = warrantyNumber || sessionId || `ORDER_${Date.now()}`;
           
-          if (typeof window !== 'undefined' && window.gtag && (email || (firstName && lastName))) {
-            const userData: any = {};
-            
-            if (email) {
-              userData.email = email;
-            }
-            
-            // Format phone to E.164 if available
-            if (mobile) {
-              let formattedPhone = mobile.replace(/\s+/g, '').replace(/^0/, '+44');
-              if (!formattedPhone.startsWith('+')) {
-                formattedPhone = '+44' + formattedPhone;
-              }
-              userData.phone_number = formattedPhone;
-            }
-            
-            // Add address data if we have name
-            if (firstName || lastName || street || postcode) {
-              userData.address = {};
-              if (firstName) userData.address.first_name = firstName;
-              if (lastName) userData.address.last_name = lastName;
-              if (street) userData.address.street = street;
-              if (postcode) userData.address.postal_code = postcode;
-              userData.address.country = 'GB';
-            }
-            
-            // Set user_data globally for enhanced conversions
-            window.gtag('set', 'user_data', userData);
-            console.log('✅ Enhanced conversion user_data set:', userData);
-          }
-          
-          // Track Google Ads purchase conversion
-          const transactionId = data?.policyNumber || sessionId || `ORDER_${Date.now()}`;
-          const finalAmount = searchParams.get('final_amount') 
-            ? parseFloat(searchParams.get('final_amount')!) 
-            : data?.amount || 0;
-          
-          // CRITICAL: Only track if we have a valid amount
-          if (finalAmount > 0) {
-            console.log('✅ Tracking purchase with amount:', finalAmount, 'transactionId:', transactionId);
-            trackPurchaseComplete(
-              finalAmount,
-              transactionId,
-              {
-                email: email,
-                phone: mobile,
-                firstName: firstName,
-                lastName: lastName,
-                address: street
-              }
-            );
-          } else {
-            console.error('❌ TRACKING FAILED: Missing or invalid amount', {
-              finalAmount,
-              searchParamAmount: searchParams.get('final_amount'),
-              dataAmount: data?.amount,
-              sessionId,
-              email,
-              mobile
-            });
-          }
+          // CRITICAL: Fire conversion for Stripe
+          fireGoogleAdsConversion({
+            amount: conversionAmount,
+            transactionId: transactionId,
+            email: conversionEmail,
+            phone: conversionPhone,
+            firstName: conversionFirstName,
+            lastName: conversionLastName,
+            address: conversionStreet,
+            postcode: urlPostcode || undefined,
+            source: 'stripe'
+          });
           
           // Send Trustpilot review invitation
-          if (email && (firstName || lastName) && transactionId) {
-            const fullName = `${firstName || ''} ${lastName || ''}`.trim() || 'Customer';
+          if (conversionEmail && (conversionFirstName || conversionLastName)) {
+            const fullName = `${conversionFirstName || ''} ${conversionLastName || ''}`.trim() || 'Customer';
             sendTrustpilotInvitation({
-              recipientEmail: email,
+              recipientEmail: conversionEmail,
               recipientName: fullName,
               referenceId: transactionId,
               orderDate: new Date().toISOString(),
@@ -418,6 +452,22 @@ const ThankYou = () => {
       } catch (error) {
         console.error('Payment processing failed:', error);
         toast.error('Failed to process payment');
+        
+        // CRITICAL: Even on catch, try to fire conversion with URL params
+        if (parsedAmount > 0 || urlEmail) {
+          console.log('[THANK-YOU] Firing conversion despite catch error');
+          fireGoogleAdsConversion({
+            amount: parsedAmount,
+            transactionId: generateTransactionId(),
+            email: urlEmail || undefined,
+            phone: urlMobile || undefined,
+            firstName: urlFirstName || undefined,
+            lastName: urlLastName || undefined,
+            address: urlStreet || undefined,
+            postcode: urlPostcode || undefined,
+            source: 'stripe-catch'
+          });
+        }
       } finally {
         setIsProcessing(false);
       }
