@@ -55,7 +55,7 @@ const CAMPAIGN_SOURCES = [
   { value: 'WELCOME', label: 'New Users' },
   { value: 'EMAIL', label: 'Email Campaign' },
   { value: 'INFLUENCER', label: 'Influencer' },
-  { value: 'GENERAL', label: 'General Campaign' },
+  { value: 'SAVE', label: 'General Campaign' },
   { value: 'AFFILIATE', label: 'Affiliate' },
   { value: 'RETARGETING', label: 'Retargeting' },
 ];
@@ -351,7 +351,7 @@ export function DiscountCodesTab() {
       valid_from: new Date().toISOString().split('T')[0],
       valid_to: new Date(Date.now() + 3650 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 10 years (no end date)
       usage_limit: 1,
-      campaign_source: 'GENERAL',
+      campaign_source: 'SAVE',
       active: true,
     });
     setEditingCode(null);
