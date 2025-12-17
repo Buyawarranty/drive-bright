@@ -360,8 +360,10 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   };
 
   // Calculate pricing with discounts
+  // CRITICAL: bumperTotalPrice is the monthly×12 total from Step 3
+  // stripeTotalPrice uses Math.floor to match Step 3 TermSelector's getPayInFullPrice
   const bumperTotalPrice = updatedPricingData.totalPrice;
-  const stripeTotalPrice = Math.round(updatedPricingData.totalPrice * 0.90);
+  const stripeTotalPrice = Math.floor(bumperTotalPrice * 0.90); // Must use floor to match Step 3
 
   console.log('💰 CustomerDetailsStep - Pricing calculation:', {
     updatedPricingDataTotal: updatedPricingData.totalPrice,
@@ -428,7 +430,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   const hasValidDiscountCodes = appliedDiscountCodes.length > 0;
   const discountedPrice = hasValidDiscountCodes ? bumperTotalPrice - totalDiscountAmount : bumperTotalPrice;
   const discountedBumperPrice = Math.round(Math.max(discountedPrice, 0)); // Ensure price doesn't go negative
-  const discountedStripePrice = Math.round(discountedBumperPrice * 0.90); // 10% upfront discount on rounded bumper price for consistency
+  const discountedStripePrice = Math.floor(discountedBumperPrice * 0.90); // Use floor to match Step 3 pay-in-full calculation
 
   console.log('💸 CustomerDetailsStep - Final pricing:', {
     bumperTotalPrice,

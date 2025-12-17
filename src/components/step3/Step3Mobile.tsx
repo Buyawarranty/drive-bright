@@ -284,7 +284,13 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
       const boostCost = boostAddon ? 60 : 0;
       const labourAdjust = selectedLabourRate === 40 ? -36 : selectedLabourRate === 70 ? 48 : selectedLabourRate === 100 ? 96 : 0;
 
-      const totalPrice = discountedPrice + addOnPrice + boostCost + labourAdjust;
+      const rawTotalPrice = discountedPrice + addOnPrice + boostCost + labourAdjust;
+      
+      // CRITICAL: Calculate monthly price first, then derive total from monthly * 12
+      // This ensures Step 3 and Step 4 display identical prices
+      const monthlyPrice = Math.round(rawTotalPrice / 12);
+      const totalPrice = monthlyPrice * 12; // Normalized total for consistent display
+      
       const effectiveClaimLimit = boostAddon ? selectedClaimLimit! + 1000 : selectedClaimLimit!;
 
       // Track analytics
@@ -316,7 +322,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
         'Platinum Complete Plan',
         {
           totalPrice,
-          monthlyPrice: Math.round(totalPrice / 12),
+          monthlyPrice, // Use pre-calculated monthly price for consistency
           voluntaryExcess: voluntaryExcess!,
           selectedAddOns: {},
           protectionAddOns: selectedProtectionAddOns,
