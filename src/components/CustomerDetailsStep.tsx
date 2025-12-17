@@ -1908,8 +1908,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               setIsLoadingPayment(true);
                               trackFormSubmission('customer_details', { payment_method: 'stripe' });
                               
-                              // Track Google Ads conversion for Stripe checkout click
-                              trackStripeCheckoutClick();
+                              // Track Google Ads conversion for Stripe checkout click (pass actual value for analytics)
+                              trackStripeCheckoutClick(discountedStripePrice);
                               
                               // DIRECTLY process Stripe - no state dependency
                               console.log('💳 Processing Stripe payment directly...');
