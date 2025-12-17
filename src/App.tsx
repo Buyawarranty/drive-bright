@@ -58,6 +58,7 @@ const ContactUs = lazy(() => import("./pages/ContactUs"));
 const Complaints = lazy(() => import("./pages/Complaints"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogArticle = lazy(() => import("./pages/BlogArticle"));
+const AdminConversionFire = lazy(() => import("./pages/AdminConversionFire"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const WarrantyPlan = lazy(() => import("./pages/WarrantyPlan"));
@@ -154,6 +155,7 @@ const App = () => {
                     <Route path="/quick-reset/" element={<QuickResetTest />} />
                     <Route path="/setup-admin/" element={<SetupAdmin />} />
                     <Route path="/update-admin/" element={<UpdateAdminCredentials />} />
+                    <Route path="/admin-conversion-fire/" element={<AdminConversionFire />} />
                     <Route path="/terms/" element={<Terms />} />
                     <Route path="/cookies/" element={<CookiePolicy />} />
                     <Route path="/privacy/" element={<PrivacyPolicy />} />
