@@ -423,32 +423,37 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   }, [bumperTotalPrice]);
 
   // Calculate discounts separately for percentage vs fixed amounts
-  // Fixed amounts need different treatment for Pay in Full vs Pay Monthly
+  // CRITICAL: Fixed amounts (e.g., £50 off) are NEVER converted to percentages
+  // They are subtracted as raw £ amounts per the pricing spec
   const hasValidDiscountCodes = appliedDiscountCodes.length > 0;
   
   // Separate percentage and fixed discounts
   const percentageDiscounts = appliedDiscountCodes.filter(code => code.type === 'percentage');
   const fixedDiscounts = appliedDiscountCodes.filter(code => code.type !== 'percentage');
   
-  // Calculate percentage discount amount (applies to bumperTotalPrice)
+  // Calculate percentage discount amount for Pay Monthly (applies to bumperTotalPrice)
   const percentageDiscountAmount = percentageDiscounts.reduce((total, code) => {
     return total + Math.floor(bumperTotalPrice * (code.value / 100));
   }, 0);
   
-  // Calculate fixed discount amount
+  // Calculate fixed discount amount - ALWAYS use code.value (the raw £ amount, e.g., 50)
+  // Never use code.discountAmount which was pre-calculated against a different order amount
   const fixedDiscountAmount = fixedDiscounts.reduce((total, code) => {
-    return total + (code.discountAmount || code.value || 0);
+    return total + (code.value || 0);
   }, 0);
   
-  // PAY MONTHLY calculation:
-  // Total = bumperTotalPrice - percentageDiscount - fixedDiscount
+  // PAY MONTHLY calculation per spec:
+  // 1. monthlyTotalAfterPromo = monthlyTotal - percentageDiscount - fixedDiscount
+  // 2. monthlyDisplay = floor(monthlyTotalAfterPromo / 12)
+  // Example: 828 - 0 - 50 = 778, floor(778/12) = 64
   const bumperPriceAfterPercentage = bumperTotalPrice - percentageDiscountAmount;
   const discountedBumperPrice = Math.floor(Math.max(bumperPriceAfterPercentage - fixedDiscountAmount, 0));
   
-  // PAY IN FULL calculation:
-  // 1. Apply 10% first: floor(bumperTotalPrice * 0.90) = 745
-  // 2. Apply percentage promo on the already-10%-discounted base
-  // 3. Subtract fixed promo directly from pay-in-full price
+  // PAY IN FULL calculation per spec:
+  // 1. percentageSaving = floor(originalPrice * 0.10) = floor(827 * 0.10) = 82
+  // 2. priceAfterPercentage = originalPrice - percentageSaving = 827 - 82 = 745
+  // 3. Apply percentage promo (if any) on the already-10%-discounted base
+  // 4. finalPrice = priceAfterPercentage - fixedPromoAmount = 745 - 50 = 695
   const baseStripePrice = stripeTotalPrice; // Already has 10% off: floor(828 * 0.90) = 745
   const stripePercentageDiscount = percentageDiscounts.reduce((total, code) => {
     // For percentage promos on Pay in Full, apply to the 10%-discounted price
@@ -459,8 +464,12 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   
   // Total discount amounts for display
   const totalDiscountAmount = percentageDiscountAmount + fixedDiscountAmount;
+  
+  // Calculate monthly payment and remainder for Pay Monthly
+  const monthlyDisplay = Math.floor(discountedBumperPrice / 12);
+  const monthlyRemainder = discountedBumperPrice - (monthlyDisplay * 12);
 
-  console.log('💸 CustomerDetailsStep - Final pricing:', {
+  console.log('💸 CustomerDetailsStep - Final pricing (per spec):', {
     bumperTotalPrice,
     stripeTotalPrice,
     percentageDiscountAmount,
@@ -468,7 +477,11 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
     totalDiscountAmount,
     discountedBumperPrice,
     discountedStripePrice,
-    monthlyPayment: Math.floor(discountedBumperPrice / 12)
+    monthlyDisplay,
+    monthlyRemainder,
+    // Spec validation
+    spec_payInFull_expected: bumperTotalPrice === 827 ? 695 : 'N/A',
+    spec_payMonthly_expected: bumperTotalPrice === 828 ? 64 : 'N/A'
   });
 
   const hasSecondWarrantyDiscount = appliedDiscountCodes.some(code => code.code.startsWith('SECOND10-'));
@@ -1436,10 +1449,13 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       {/* Payment Summary - Mobile First */}
                       <div className="border-t pt-4 mt-4 space-y-3">
                         {(() => {
-                          // Calculate combined savings for Pay in Full
+                          // Calculate savings per spec
                           const originalPrice = bumperTotalPrice;
                           const finalStripePrice = discountedStripePrice;
                           const totalSavings = originalPrice - finalStripePrice;
+                          
+                          // Calculate the built-in 10% saving (always on original price)
+                          const builtIn10PercentSaving = Math.floor(originalPrice * 0.10);
                           
                           // Check if any fixed discount is applied
                           const hasFixedDiscount = fixedDiscounts.length > 0;
@@ -1449,10 +1465,11 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           const promoPercent = hasPercentagePromo && percentageDiscounts[0]?.value ? percentageDiscounts[0].value : 0;
                           const savingsPercent = 10 + promoPercent;
                           
-                          // For Pay Monthly - use Math.floor per business requirement
+                          // For Pay Monthly
                           const hasPromoCode = appliedDiscountCodes.length > 0;
                           const promoSavings = bumperTotalPrice - discountedBumperPrice;
-                          const discountedMonthly = Math.floor(discountedBumperPrice / 12);
+                          const discountedMonthlyPayment = Math.floor(discountedBumperPrice / 12);
+                          const remainder = discountedBumperPrice - (discountedMonthlyPayment * 12);
                           
                           return (
                             <>
@@ -1462,19 +1479,27 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                 <div className="font-bold text-black text-sm mb-2">Pay in Full</div>
                                 <div className="text-2xl font-bold text-black">£{finalStripePrice}</div>
                                 <div className="text-sm text-gray-600 mt-1">One-time payment</div>
-                                {hasFixedDiscount ? (
-                                  <div className="text-lg font-bold text-green-600 mt-2">Save £{totalSavings} today!</div>
-                                ) : (
-                                  <div className="text-lg font-bold text-green-600 mt-2">Save £{totalSavings} ({savingsPercent}% off)</div>
+                                {/* Per spec: Always show 10% saving as fixed label */}
+                                <div className="text-sm font-semibold text-green-600 mt-2">Save £{builtIn10PercentSaving} (10% off)</div>
+                                {/* Show fixed promo as separate line per spec */}
+                                {hasFixedDiscount && (
+                                  <div className="text-sm font-semibold text-green-600">Promo: −£{fixedDiscountAmount}</div>
+                                )}
+                                {/* Show percentage promo as combined */}
+                                {hasPercentagePromo && !hasFixedDiscount && savingsPercent > 10 && (
+                                  <div className="text-sm font-semibold text-green-600">{savingsPercent}% off combined!</div>
                                 )}
                               </div>
                               
                               {/* Pay Monthly Card */}
                               <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                                 <div className="font-bold text-black text-sm mb-2">Pay Monthly</div>
-                                <div className="text-2xl font-bold text-black">£{discountedMonthly} <span className="text-base font-normal">per month</span></div>
-                                <div className="text-sm text-gray-600 mt-1">Only 12 easy payments</div>
-                                <div className="text-sm text-gray-500 mt-1">Total: £{discountedBumperPrice}</div>
+                                <div className="text-2xl font-bold text-black">£{discountedMonthlyPayment} <span className="text-base font-normal">per month</span></div>
+                                <div className="text-sm text-gray-600 mt-1">12 payments</div>
+                                <div className="text-sm text-gray-500 mt-1">Total after promo: £{discountedBumperPrice}</div>
+                                {hasPromoCode && promoSavings > 0 && (
+                                  <div className="text-sm font-semibold text-green-600 mt-1">Save £{promoSavings} with promo!</div>
+                                )}
                                 {hasPromoCode && promoSavings > 0 && (
                                   <div className="text-sm font-semibold text-green-600 mt-1">Save £{promoSavings} with promo!</div>
                                 )}
@@ -1776,10 +1801,10 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           {/* Price Display - Clean & Integrated */}
                           <div className="bg-gray-50 rounded-lg p-3 mb-3 border border-gray-100">
                             {(() => {
-                              // Calculate total savings for Pay in Full
+                              // Calculate per spec
                               const originalPrice = bumperTotalPrice;
                               const finalStripePrice = discountedStripePrice;
-                              const totalSavings = originalPrice - finalStripePrice;
+                              const builtIn10PercentSaving = Math.floor(originalPrice * 0.10);
                               
                               // Check if any fixed discount is applied
                               const hasFixedDiscount = fixedDiscounts.length > 0;
@@ -1789,19 +1814,24 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               const promoPercent = hasPercentagePromo && percentageDiscounts[0]?.value ? percentageDiscounts[0].value : 0;
                               const savingsPercent = 10 + promoPercent;
                               
-                              // Check if any promo code is applied
-                              const hasPromoCode = appliedDiscountCodes.length > 0;
-                              
                               return (
                                 <div className="text-center">
                                   <div className="text-4xl font-black text-black mb-1">£{finalStripePrice}</div>
+                                  {/* Per spec: Show 10% saving as fixed label */}
                                   <div className="inline-block bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                                    Save £{totalSavings} today
+                                    Save £{builtIn10PercentSaving} (10% off)
                                   </div>
                                   <div className="text-sm font-bold text-gray-600 mt-1">
                                     (normally £{originalPrice})
                                   </div>
-                                  {hasPromoCode && !hasFixedDiscount && savingsPercent > 10 && (
+                                  {/* Per spec: Show fixed promo as separate line */}
+                                  {hasFixedDiscount && (
+                                    <div className="text-xs text-green-600 font-semibold mt-1">
+                                      Promo code applied: −£{fixedDiscountAmount}
+                                    </div>
+                                  )}
+                                  {/* Show percentage promo combined */}
+                                  {hasPercentagePromo && !hasFixedDiscount && savingsPercent > 10 && (
                                     <div className="text-xs text-green-600 font-semibold mt-1">
                                       {savingsPercent}% off combined!
                                     </div>
@@ -1943,34 +1973,25 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           {/* Price Display - Clean & Integrated */}
                           <div className="bg-orange-50 rounded-lg p-3 mb-3 border border-orange-100">
                             {(() => {
-                              const originalMonthly = Math.floor(bumperTotalPrice / 12);
                               const discountedMonthly = Math.floor(discountedBumperPrice / 12);
                               const hasPromoCode = appliedDiscountCodes.length > 0;
                               const promoSavings = bumperTotalPrice - discountedBumperPrice;
                               
                               return (
                                 <div className="text-center">
-                                  {hasPromoCode ? (
-                                    <>
-                                      <div className="text-4xl font-black text-black mb-1">
-                                        £{discountedMonthly}<span className="text-lg">/month</span>
-                                      </div>
-                                      <div className="text-sm font-bold text-gray-600">
-                                        £{discountedBumperPrice} total
-                                      </div>
-                                      <div className="text-xs text-green-600 font-semibold mt-1">
-                                        Save £{promoSavings} with promo!
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <div className="text-4xl font-black text-black mb-1">
-                                        £{discountedMonthly}<span className="text-lg">/month</span>
-                                      </div>
-                                      <div className="text-sm font-bold text-gray-600">
-                                        £{discountedBumperPrice} total
-                                      </div>
-                                    </>
+                                  <div className="text-4xl font-black text-black mb-1">
+                                    £{discountedMonthly}<span className="text-lg">/month</span>
+                                  </div>
+                                  <div className="text-sm font-bold text-gray-600">
+                                    12 payments
+                                  </div>
+                                  <div className="text-sm text-gray-500">
+                                    Total{hasPromoCode ? ' after promo' : ''}: £{discountedBumperPrice}
+                                  </div>
+                                  {hasPromoCode && promoSavings > 0 && (
+                                    <div className="text-xs text-green-600 font-semibold mt-1">
+                                      Save £{promoSavings} with promo!
+                                    </div>
                                   )}
                                 </div>
                               );
