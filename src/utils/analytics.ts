@@ -265,7 +265,7 @@ export const trackStripeCheckoutClick = () => {
   if (typeof window !== 'undefined' && window.gtag) {
     console.log('🎯 Tracking Stripe checkout click conversion');
     window.gtag('event', 'conversion', {
-      'send_to': 'AW-17325228149/WFAyCJiD2KUbEPWAqMVA'
+      'send_to': 'AW-17325228149'
     });
   }
 };
@@ -275,7 +275,7 @@ export const trackStripeCheckoutPageLoad = () => {
   if (typeof window !== 'undefined' && window.gtag) {
     console.log('🎯 Tracking Stripe checkout page load conversion');
     window.gtag('event', 'conversion', {
-      'send_to': 'AW-17325228149/WFAyCJiD2KUbEPWAqMVA'
+      'send_to': 'AW-17325228149'
     });
   }
 };
