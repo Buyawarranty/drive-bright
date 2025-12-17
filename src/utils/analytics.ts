@@ -262,11 +262,25 @@ export const trackBumperCheckoutClick = () => {
 
 // Track Stripe checkout button click (Complete checkout stripe conversion)
 export const trackStripeCheckoutClick = () => {
-  if (typeof window !== 'undefined' && window.gtag) {
+  if (typeof window !== 'undefined') {
     console.log('🎯 Tracking Stripe checkout click conversion');
-    window.gtag('event', 'conversion', {
-      'send_to': 'AW-17325228149'
+    
+    // Push to dataLayer for GTM trigger
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      'event': 'stripe_checkout_click',
+      'conversion_value': 1,
+      'currency': 'GBP'
     });
+    
+    // Also fire gtag conversion directly
+    if (window.gtag) {
+      window.gtag('event', 'conversion', {
+        'send_to': 'AW-17325228149',
+        'value': 1,
+        'currency': 'GBP'
+      });
+    }
   }
 };
 
