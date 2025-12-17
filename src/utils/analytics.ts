@@ -183,10 +183,15 @@ export const trackPurchaseComplete = (
   }
   
   // Push to dataLayer for GTM (Google Tag Manager) - Primary Conversion Event
+  // CRITICAL: GTM tag expects 'order_value' at top level for {{DLV - order_value}} variable
+  // Using fixed £1 value as configured in Google Ads (not actual purchase value)
   if (typeof window !== 'undefined' && window.dataLayer) {
     // Push the primary purchase conversion event for GTM
     window.dataLayer.push({
       'event': 'purchase',
+      'order_value': 1, // Fixed £1 for Google Ads (as per business requirement)
+      'transaction_id': transactionId,
+      'currency': 'GBP',
       'ecommerce': {
         'transaction_id': transactionId,
         'value': value,
@@ -202,23 +207,8 @@ export const trackPurchaseComplete = (
         }
       } : undefined
     });
-    console.log('✅ GTM dataLayer "purchase" event pushed (Primary Conversion)');
-    
-    // Also push a specific 'Purchase GTM' event for Google Ads Primary Website conversion
-    window.dataLayer.push({
-      'event': 'Purchase GTM',
-      'transaction_id': transactionId,
-      'value': value,
-      'currency': 'GBP',
-      'user_data': enhancedData ? {
-        email: enhancedData.email,
-        phone_number: enhancedData.phone,
-        first_name: enhancedData.firstName,
-        last_name: enhancedData.lastName,
-        street: enhancedData.address
-      } : undefined
-    });
-    console.log('✅ GTM dataLayer "Purchase GTM" event pushed (Google Ads Primary Website Conversion)');
+    console.log('✅ GTM dataLayer "purchase" event pushed with order_value: 1');
+    console.log('📊 DataLayer state:', window.dataLayer);
   }
   
   // Main purchase conversion with specific Google Ads conversion label (Purchase GTM Primary)
