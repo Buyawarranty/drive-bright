@@ -136,7 +136,25 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   const { user } = useAuth();
   
   // State for managing updated pricing data when add-ons are removed
-  const [updatedPricingData, setUpdatedPricingData] = useState(pricingData);
+  // Restore from localStorage if returning from payment gateway to prevent price changes
+  const [updatedPricingData, setUpdatedPricingData] = useState(() => {
+    try {
+      const returnedFromPayment = localStorage.getItem('buyawarranty_returnedFromPayment');
+      if (returnedFromPayment === 'true') {
+        const savedState = localStorage.getItem('warrantyJourneyState');
+        if (savedState) {
+          const parsed = JSON.parse(savedState);
+          if (parsed.selectedPlan?.pricingData) {
+            console.log('✅ Restored pricing data from localStorage (returned from payment):', parsed.selectedPlan.pricingData);
+            return parsed.selectedPlan.pricingData;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error restoring pricing data:', error);
+    }
+    return pricingData;
+  });
   const [isLoadingPayment, setIsLoadingPayment] = useState(false);
   const [isLoadingStripe, setIsLoadingStripe] = useState(false);
   const [isLoadingBumper, setIsLoadingBumper] = useState(false);
@@ -239,7 +257,18 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   }, []);
   
   // Recalculate pricing when initial pricingData changes (e.g., when add-ons are selected)
+  // BUT skip if user just returned from payment gateway to preserve displayed prices
   useEffect(() => {
+    const returnedFromPayment = localStorage.getItem('buyawarranty_returnedFromPayment');
+    if (returnedFromPayment === 'true') {
+      console.log('🔄 Skipping pricing reset - user returned from payment gateway');
+      // Clear the flag after a short delay so future visits work normally
+      setTimeout(() => {
+        localStorage.removeItem('buyawarranty_returnedFromPayment');
+      }, 2000);
+      return;
+    }
+    
     console.log('🔧 CustomerDetailsStep - Pricing data updated:', {
       initialPricingData: pricingData,
       currentUpdatedPricingData: updatedPricingData
