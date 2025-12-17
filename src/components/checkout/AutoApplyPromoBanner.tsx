@@ -345,37 +345,6 @@ export const AutoApplyPromoBanner: React.FC<AutoApplyPromoBannerProps> = ({
             </div>
           </div>
           
-          {/* Timer bar section */}
-          <div className="mt-4">
-            {/* Progress bar */}
-            <div 
-              className="h-2 rounded-full bg-gray-100 overflow-hidden"
-              role="progressbar"
-              aria-valuenow={progressPercent}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label={`Offer expires in ${formatTime(secondsRemaining)}`}
-            >
-              <div 
-                className="h-full rounded-full transition-all duration-1000 ease-linear"
-                style={{ 
-                  width: `${progressPercent}%`,
-                  background: `linear-gradient(90deg, #2BB673 0%, #FF9F1A 100%)`
-                }}
-              />
-            </div>
-            
-            {/* Time label */}
-            <p className="text-sm text-orange-600 mt-2 text-center font-medium">
-              Offer ends in{' '}
-              <span 
-                className="font-mono font-bold text-orange-600 text-base"
-                aria-label={`${Math.floor(secondsRemaining / 60)} minutes and ${secondsRemaining % 60} seconds remaining`}
-              >
-                {formatTime(secondsRemaining)}
-              </span>
-            </p>
-          </div>
         </div>
       ) : (
         <div className="p-4">
