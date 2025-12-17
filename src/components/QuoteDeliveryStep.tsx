@@ -196,9 +196,9 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   const areRequiredFieldsFilled = true; // No longer needed but keeping for compatibility
 
   return (
-    <section className="bg-[#e8f4fb] py-4 sm:py-6 min-h-screen px-3 sm:px-0">
+    <section className="bg-[#e8f4fb] py-2 sm:py-6 min-h-screen px-2 sm:px-0">
       
-      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-4 sm:p-12 relative">
+      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-3 sm:p-12 relative">
         {/* Header with Back Button and Mobile Menu */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex-1">
@@ -216,94 +216,90 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </div>
         </div>
 
-        {/* Vehicle Details Section */}
-        <div className="bg-gray-100 rounded-lg p-3 sm:p-6 mb-2 sm:mb-4 border border-gray-300">
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <Car className="w-6 h-6 sm:w-7 sm:h-7 text-orange-500" />
-              <h3 className="text-xl sm:text-2xl font-semibold text-gray-900">Your vehicle details</h3>
+        {/* Vehicle Details Section - Compact */}
+        <div className="bg-gray-100 rounded-lg p-2 sm:p-6 mb-2 sm:mb-4 border border-gray-300">
+          <div className="flex items-center justify-between mb-1.5 sm:mb-4">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Car className="w-4 h-4 sm:w-7 sm:h-7 text-orange-500" />
+              <h3 className="text-sm sm:text-2xl font-medium text-gray-700 sm:font-semibold sm:text-gray-900">Vehicle Info</h3>
             </div>
             <button
               onClick={onBack}
-              className="flex items-center gap-2 text-sm sm:text-base font-medium text-orange-600 hover:text-orange-700 transition-colors duration-200 py-1 px-2 rounded"
+              className="flex items-center gap-1 text-xs sm:text-base font-medium text-orange-600 hover:text-orange-700 transition-colors duration-200"
             >
-              <Edit3 className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="hidden xs:inline">Change Vehicle</span>
-              <span className="xs:hidden">Change</span>
+              <Edit3 className="w-3 h-3 sm:w-5 sm:h-5" />
+              <span>Change</span>
             </button>
           </div>
           
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
-            <div className="flex flex-col p-2 sm:p-0">
-              <span className="text-sm sm:text-base text-gray-500 font-medium">Registration</span>
-              <span className="text-base sm:text-lg font-semibold text-gray-900 break-all">{vehicleData.regNumber}</span>
+          {/* Compact two-column grid for mobile */}
+          <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 sm:grid-cols-3 sm:gap-4 text-xs sm:text-base">
+            <div className="flex items-baseline gap-1 py-0.5 sm:flex-col sm:p-0">
+              <span className="text-gray-500 font-medium">Reg:</span>
+              <span className="font-semibold text-gray-900 break-all">{vehicleData.regNumber}</span>
             </div>
             
             {vehicleData.make && (
-              <div className="flex flex-col p-2 sm:p-0">
-                <span className="text-sm sm:text-base text-gray-500 font-medium">Make</span>
-                <span className="text-base sm:text-lg font-semibold text-gray-900">{vehicleData.make}</span>
+              <div className="flex items-baseline gap-1 py-0.5 sm:flex-col sm:p-0">
+                <span className="text-gray-500 font-medium">Make:</span>
+                <span className="font-semibold text-gray-900">{vehicleData.make}</span>
               </div>
             )}
             
             {vehicleData.model && (
-              <div className="flex flex-col p-2 sm:p-0">
-                <span className="text-sm sm:text-base text-gray-500 font-medium">Model</span>
-                <span className="text-base sm:text-lg font-semibold text-gray-900">{vehicleData.model}</span>
+              <div className="flex items-baseline gap-1 py-0.5 sm:flex-col sm:p-0">
+                <span className="text-gray-500 font-medium">Model:</span>
+                <span className="font-semibold text-gray-900">{vehicleData.model}</span>
               </div>
             )}
             
             {vehicleData.year && (
-              <div className="flex flex-col p-2 sm:p-0">
-                <span className="text-sm sm:text-base text-gray-500 font-medium">Year</span>
-                <span className="text-base sm:text-lg font-semibold text-gray-900">{vehicleData.year}</span>
+              <div className="flex items-baseline gap-1 py-0.5 sm:flex-col sm:p-0">
+                <span className="text-gray-500 font-medium">Year:</span>
+                <span className="font-semibold text-gray-900">{vehicleData.year}</span>
               </div>
             )}
             
-            <div className="flex flex-col p-2 sm:p-0">
-              <span className="text-sm sm:text-base text-gray-500 font-medium">Mileage</span>
-              <span className="text-base sm:text-lg font-semibold text-gray-900">{vehicleData.mileage}</span>
+            <div className="flex items-baseline gap-1 py-0.5 sm:flex-col sm:p-0">
+              <span className="text-gray-500 font-medium">Mileage:</span>
+              <span className="font-semibold text-gray-900">{vehicleData.mileage}</span>
             </div>
             
             {vehicleData.fuelType && (
-              <div className="flex flex-col p-2 sm:p-0">
-                <span className="text-sm sm:text-base text-gray-500 font-medium">Fuel Type</span>
-                <span className="text-base sm:text-lg font-semibold text-gray-900">{vehicleData.fuelType}</span>
-              </div>
-            )}
-            
-            {vehicleData.transmission && (
-              <div className="flex flex-col p-2 sm:p-0">
-                <span className="text-sm sm:text-base text-gray-500 font-medium">Transmission</span>
-                <span className="text-base sm:text-lg font-semibold text-gray-900">{vehicleData.transmission}</span>
+              <div className="flex items-baseline gap-1 py-0.5 sm:flex-col sm:p-0">
+                <span className="text-gray-500 font-medium">Fuel:</span>
+                <span className="font-semibold text-gray-900">{vehicleData.fuelType}</span>
               </div>
             )}
           </div>
 
           {vehicleData.blocked && (
-            <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-sm sm:text-base text-red-800 font-bold mb-1">Warranty Coverage Not Available</p>
+            <div className="mt-2 sm:mt-4 p-2 sm:p-4 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-xs sm:text-base text-red-800 font-bold mb-1">Warranty Coverage Not Available</p>
               <p className="text-xs sm:text-sm text-red-700">
                 {vehicleData.blockReason || "Sorry about this - this vehicle isn't eligible due to specialist parts and a limited repair network."}
               </p>
             </div>
           )}
         </div>
+        
+        {/* Divider */}
+        <div className="border-t border-gray-200 my-2 sm:my-4"></div>
 
         {!showContactForm ? (
           <>
-            <div className="text-center mb-6 sm:mb-8">
-              <h1 className="text-xl sm:text-4xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight px-2">
+            <div className="text-center mb-3 sm:mb-8">
+              <h1 className="text-lg sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-6 leading-tight">
                 How would you like to receive your quote?
               </h1>
             </div>
 
-            <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
+            <div className="space-y-3 sm:space-y-6 mb-4 sm:mb-8">
               {/* Primary option - View my quote now (Blue) */}
               <button 
                 onClick={handleSkipClick}
                 disabled={vehicleData.blocked}
-                className={`w-full flex items-center justify-center text-white font-bold py-4 sm:py-5 px-4 sm:px-8 rounded-xl transition-all duration-200 relative shadow-lg ${
+                className={`w-full flex items-center justify-center text-white font-bold py-3 sm:py-5 px-4 sm:px-8 rounded-xl transition-all duration-200 relative shadow-lg ${
                   vehicleData.blocked ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
                 style={{ backgroundColor: vehicleData.blocked ? '#9ca3af' : '#224380' }}
@@ -318,21 +314,21 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   }
                 }}
               >
-                <Zap className="w-5 h-5 sm:w-6 sm:h-6 absolute left-4 sm:left-8" />
-                <div className="text-center px-8 sm:px-12">
-                  <div className="text-base sm:text-xl leading-tight">
+                <Zap className="w-4 h-4 sm:w-6 sm:h-6 absolute left-3 sm:left-8" />
+                <div className="text-center px-6 sm:px-12">
+                  <div className="text-sm sm:text-xl leading-tight">
                     View my quote now
                   </div>
                 </div>
-                <span className="text-xl sm:text-2xl absolute right-4 sm:right-8">→</span>
+                <span className="text-lg sm:text-2xl absolute right-3 sm:right-8">→</span>
               </button>
 
-              <div className="relative my-6">
+              <div className="relative my-3 sm:my-6">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-300"></div>
                 </div>
                 <div className="relative flex justify-center">
-                  <span className="bg-white px-4 sm:px-6 py-2 text-gray-700 text-base sm:text-lg font-semibold border border-gray-300 rounded-full">
+                  <span className="bg-white px-3 sm:px-6 py-1 sm:py-2 text-gray-700 text-sm sm:text-lg font-semibold border border-gray-300 rounded-full">
                     or
                   </span>
                 </div>
@@ -343,7 +339,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 <button 
                   onClick={handleEmailQuoteClick}
                   disabled={vehicleData.blocked}
-                  className={`w-full flex items-center justify-center text-white font-bold py-4 sm:py-5 px-4 sm:px-8 rounded-xl transition-all duration-200 relative shadow-lg ${
+                  className={`w-full flex items-center justify-center text-white font-bold py-3 sm:py-5 px-4 sm:px-8 rounded-xl transition-all duration-200 relative shadow-lg ${
                     vehicleData.blocked ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                   style={{ backgroundColor: vehicleData.blocked ? '#9ca3af' : '#eb4b00' }}
@@ -358,17 +354,17 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                     }
                   }}
                 >
-                  <Mail className="w-5 h-5 sm:w-6 sm:h-6 absolute left-4 sm:left-8" />
-                  <div className="text-center px-8 sm:px-12">
-                    <div className="text-base sm:text-xl leading-tight">
+                  <Mail className="w-4 h-4 sm:w-6 sm:h-6 absolute left-3 sm:left-8" />
+                  <div className="text-center px-6 sm:px-12">
+                    <div className="text-sm sm:text-xl leading-tight">
                       See now + Get email
                     </div>
                   </div>
-                  <span className="text-xl sm:text-2xl absolute right-4 sm:right-8">→</span>
+                  <span className="text-lg sm:text-2xl absolute right-3 sm:right-8">→</span>
                 </button>
                 
-                <p className="text-center text-xs text-gray-400 mt-1">
-                  Unsubscribe at any time
+                <p className="text-center text-xs text-orange-600 font-medium mt-1.5 sm:mt-2">
+                  📧 Get your quote + bonus tips & discounts!
                 </p>
               </div>
             </div>
