@@ -59,6 +59,15 @@ export const AutoApplyPromoBanner: React.FC<AutoApplyPromoBannerProps> = ({
   // Check if our promo is already applied
   const isPromoApplied = currentDiscounts.some(d => d.code === CONFIG.PROMO_CODE);
 
+  // Reset unlocked state if promo was removed by user
+  useEffect(() => {
+    if (isUnlocked && !isPromoApplied && !isExpired) {
+      // Promo was unlocked but no longer in currentDiscounts - user removed it
+      setIsUnlocked(false);
+      sessionStorage.removeItem('autoPromo5Percent');
+    }
+  }, [isPromoApplied, isUnlocked, isExpired]);
+
   // Check for existing state on mount
   useEffect(() => {
     const savedPromoState = sessionStorage.getItem('autoPromo5Percent');
