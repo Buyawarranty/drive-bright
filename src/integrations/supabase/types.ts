@@ -874,6 +874,86 @@ export type Database = {
           },
         ]
       }
+      claim_communications: {
+        Row: {
+          claim_id: string
+          communication_type: string
+          created_at: string
+          direction: string
+          id: string
+          message: string
+          metadata: Json | null
+          recipient_email: string | null
+          sender_email: string | null
+          sent_by: string | null
+          subject: string | null
+        }
+        Insert: {
+          claim_id: string
+          communication_type?: string
+          created_at?: string
+          direction: string
+          id?: string
+          message: string
+          metadata?: Json | null
+          recipient_email?: string | null
+          sender_email?: string | null
+          sent_by?: string | null
+          subject?: string | null
+        }
+        Update: {
+          claim_id?: string
+          communication_type?: string
+          created_at?: string
+          direction?: string
+          id?: string
+          message?: string
+          metadata?: Json | null
+          recipient_email?: string | null
+          sender_email?: string | null
+          sent_by?: string | null
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_communications_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "claims_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      claim_tags: {
+        Row: {
+          color: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          sort_order: number | null
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          sort_order?: number | null
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
       claims_submissions: {
         Row: {
           approved_at: string | null
@@ -885,17 +965,21 @@ export type Database = {
           file_name: string | null
           file_size: number | null
           file_url: string | null
+          follow_up_date: string | null
           id: string
           internal_notes: string | null
+          last_contacted_at: string | null
           message: string | null
           mileage_at_claim: number | null
           name: string
           paid_at: string | null
           payment_amount: number | null
           phone: string | null
+          priority: string | null
           rejected_at: string | null
           rejection_reason: string | null
           status: string
+          tag_id: string | null
           updated_at: string
           vehicle_registration: string | null
           warranty_type: string | null
@@ -910,17 +994,21 @@ export type Database = {
           file_name?: string | null
           file_size?: number | null
           file_url?: string | null
+          follow_up_date?: string | null
           id?: string
           internal_notes?: string | null
+          last_contacted_at?: string | null
           message?: string | null
           mileage_at_claim?: number | null
           name: string
           paid_at?: string | null
           payment_amount?: number | null
           phone?: string | null
+          priority?: string | null
           rejected_at?: string | null
           rejection_reason?: string | null
           status?: string
+          tag_id?: string | null
           updated_at?: string
           vehicle_registration?: string | null
           warranty_type?: string | null
@@ -935,22 +1023,34 @@ export type Database = {
           file_name?: string | null
           file_size?: number | null
           file_url?: string | null
+          follow_up_date?: string | null
           id?: string
           internal_notes?: string | null
+          last_contacted_at?: string | null
           message?: string | null
           mileage_at_claim?: number | null
           name?: string
           paid_at?: string | null
           payment_amount?: number | null
           phone?: string | null
+          priority?: string | null
           rejected_at?: string | null
           rejection_reason?: string | null
           status?: string
+          tag_id?: string | null
           updated_at?: string
           vehicle_registration?: string | null
           warranty_type?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "claims_submissions_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "claim_tags"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       click_fraud_protection: {
         Row: {
