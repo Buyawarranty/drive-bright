@@ -261,40 +261,26 @@ export const trackBumperCheckoutClick = () => {
 };
 
 // Track Stripe checkout button click (Begin checkout conversion)
-// Accepts actual price value for analytics accuracy
-export const trackStripeCheckoutClick = (actualValue?: number) => {
+export const trackStripeCheckoutClick = () => {
   if (typeof window !== 'undefined') {
-    const value = actualValue || 1;
-    console.log('🎯 Tracking Stripe checkout click conversion - value:', value);
+    console.log('🎯 Tracking Stripe checkout click conversion');
     
     // Push to dataLayer for GTM triggers (Google Ads + GA4 begin_checkout)
+    // Fixed £1 value per business rule
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
       'event': 'stripe_checkout_click',
-      'ecommerce': {
-        'currency': 'GBP',
-        'value': value,
-        'payment_type': 'stripe'
-      },
-      // Flat values for easy GTM variable access
-      'conversion_value': value,
+      'conversion_value': 1,
       'currency': 'GBP',
       'payment_method': 'stripe'
     });
     
-    // Also fire gtag directly as backup (uses fixed £1 for Google Ads per business rule)
+    // Also fire gtag directly as backup
     if (window.gtag) {
       window.gtag('event', 'conversion', {
         'send_to': 'AW-17325228149',
         'value': 1,
         'currency': 'GBP'
-      });
-      
-      // GA4 begin_checkout event
-      window.gtag('event', 'begin_checkout', {
-        'currency': 'GBP',
-        'value': value,
-        'payment_type': 'stripe'
       });
     }
   }
