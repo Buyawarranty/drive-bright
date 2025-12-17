@@ -222,7 +222,8 @@ export const trackPurchaseComplete = (
   }
   
   // Main purchase conversion with specific Google Ads conversion label (Purchase GTM Primary)
-  trackGoogleAdsConversion('D-BnCJRD2MUbEPWAqMVA', value, transactionId, enhancedData);
+  // Label from Google Ads: AW-17325228149/U-BnCJKD2KUbEPWAqMVA
+  trackGoogleAdsConversion('U-BnCJKD2KUbEPWAqMVA', value, transactionId, enhancedData);
   
   // Track as GA4 purchase event
   trackEvent('purchase', {
