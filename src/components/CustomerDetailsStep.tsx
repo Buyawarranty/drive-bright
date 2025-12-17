@@ -1412,7 +1412,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           const originalPrice = bumperTotalPrice;
                           const finalStripePrice = discountedStripePrice;
                           const totalSavings = originalPrice - finalStripePrice;
-                          const savingsPercent = Math.round((totalSavings / originalPrice) * 100);
+                          // Simply add percentages: 10% built-in + promo percentage
+                          const promoPercent = appliedDiscountCodes.length > 0 && appliedDiscountCodes[0]?.value ? appliedDiscountCodes[0].value : 0;
+                          const savingsPercent = 10 + promoPercent;
                           
                           // For Pay Monthly
                           const hasPromoCode = appliedDiscountCodes.length > 0;
@@ -1743,8 +1745,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               const finalStripePrice = discountedStripePrice;
                               const totalSavings = originalPrice - finalStripePrice;
                               
-                              // Calculate what percentage this represents
-                              const savingsPercent = Math.round((totalSavings / originalPrice) * 100);
+                              // Simply add percentages: 10% built-in + promo percentage
+                              const promoPercent = appliedDiscountCodes.length > 0 && appliedDiscountCodes[0]?.value ? appliedDiscountCodes[0].value : 0;
+                              const savingsPercent = 10 + promoPercent;
                               
                               // Check if any promo code is applied
                               const hasPromoCode = appliedDiscountCodes.length > 0;
@@ -1771,8 +1774,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           {/* Features - GREEN TICKS */}
                           <div className="space-y-1.5 mb-3">
                             {(() => {
-                              const totalSavings = bumperTotalPrice - discountedStripePrice;
-                              const savingsPercent = Math.round((totalSavings / bumperTotalPrice) * 100);
+                              // Simply add percentages: 10% built-in + promo percentage
+                              const promoPercent = appliedDiscountCodes.length > 0 && appliedDiscountCodes[0]?.value ? appliedDiscountCodes[0].value : 0;
+                              const savingsPercent = 10 + promoPercent;
                               const hasPromoCode = appliedDiscountCodes.length > 0;
                               
                               return (
