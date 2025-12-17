@@ -190,28 +190,36 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
 
   // Reset loading state when user returns from payment page via back button
   useEffect(() => {
-    // Always reset loading state on mount (when returning to step 4)
-    console.log('🔄 Component mounted - ensuring payment button is enabled');
+    // Always reset ALL loading states on mount (when returning to step 4)
+    console.log('🔄 Component mounted - ensuring payment buttons are enabled');
     setIsLoadingPayment(false);
+    setIsLoadingStripe(false);
+    setIsLoadingBumper(false);
 
     const handlePageShow = (event: PageTransitionEvent) => {
-      // If page is loaded from cache (back button), reset loading state
-      console.log('🔄 Pageshow event - resetting payment state', { persisted: event.persisted });
+      // If page is loaded from cache (back button), reset ALL loading states
+      console.log('🔄 Pageshow event - resetting all payment states', { persisted: event.persisted });
       setIsLoadingPayment(false);
+      setIsLoadingStripe(false);
+      setIsLoadingBumper(false);
     };
 
     const handleVisibilityChange = () => {
-      // Reset loading state when page becomes visible again
+      // Reset ALL loading states when page becomes visible again
       if (document.visibilityState === 'visible') {
-        console.log('👁️ Page visible again - resetting payment state');
+        console.log('👁️ Page visible again - resetting all payment states');
         setIsLoadingPayment(false);
+        setIsLoadingStripe(false);
+        setIsLoadingBumper(false);
       }
     };
 
     const handleFocus = () => {
-      // Reset loading state when window regains focus
-      console.log('🎯 Window focused - resetting payment state');
+      // Reset ALL loading states when window regains focus
+      console.log('🎯 Window focused - resetting all payment states');
       setIsLoadingPayment(false);
+      setIsLoadingStripe(false);
+      setIsLoadingBumper(false);
     };
 
     window.addEventListener('pageshow', handlePageShow);
