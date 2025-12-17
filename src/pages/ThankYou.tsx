@@ -64,12 +64,30 @@ const ThankYou = () => {
   const [isProcessing, setIsProcessing] = useState(true);
   const [policyNumber, setPolicyNumber] = useState<string>('');
   const [timeRemaining, setTimeRemaining] = useState<string>('');
+  const [isGtagReady, setIsGtagReady] = useState(false);
 
   // Load Google Ads gtag script on page load
   useEffect(() => {
+    // Check if gtag already exists and is ready
+    if (typeof window !== 'undefined' && window.gtag) {
+      console.log('✅ Google Ads gtag already available');
+      setIsGtagReady(true);
+      return;
+    }
+
     // Check if script already exists
     if (document.querySelector('script[src*="googletagmanager.com/gtag"]')) {
-      console.log('✅ Google Ads gtag script already loaded');
+      console.log('✅ Google Ads gtag script already loaded, waiting for initialization');
+      // Poll for gtag to be ready
+      const checkInterval = setInterval(() => {
+        if (window.gtag) {
+          console.log('✅ gtag now ready');
+          setIsGtagReady(true);
+          clearInterval(checkInterval);
+        }
+      }, 100);
+      // Clear after 5 seconds max
+      setTimeout(() => clearInterval(checkInterval), 5000);
       return;
     }
 
@@ -92,10 +110,13 @@ const ThankYou = () => {
       gtag('config', 'AW-17325228149');
       
       console.log('✅ Google Ads tracking initialized on ThankYou page');
+      setIsGtagReady(true);
     };
     
     script.onerror = () => {
       console.error('❌ Failed to load Google Ads gtag script');
+      // Still set ready to true so we don't block the page
+      setIsGtagReady(true);
     };
     
     document.head.appendChild(script);
@@ -135,6 +156,13 @@ const ThankYou = () => {
   }, []);
 
   useEffect(() => {
+    // CRITICAL: Wait for gtag to be ready before processing
+    // This prevents race condition where conversion fires before gtag is loaded
+    if (!isGtagReady) {
+      console.log('[THANK-YOU] Waiting for gtag to be ready...');
+      return;
+    }
+
     // Debug: Log all URL parameters
     console.log('[THANK-YOU] URL Parameters:', {
       plan: searchParams.get('plan'),
@@ -144,7 +172,8 @@ const ThankYou = () => {
       source: searchParams.get('source'),
       policy_number: searchParams.get('policy_number'),
       final_amount: searchParams.get('final_amount'),
-      allParams: Object.fromEntries(searchParams.entries())
+      allParams: Object.fromEntries(searchParams.entries()),
+      isGtagReady
     });
     
     const processPayment = async () => {
@@ -436,7 +465,7 @@ const ThankYou = () => {
     }, 300);
 
     return () => clearInterval(interval);
-  }, [sessionId, plan, duration, source]);
+  }, [sessionId, plan, duration, source, isGtagReady]);
 
   const handleGetSecondWarranty = () => {
     // Track CTA click
