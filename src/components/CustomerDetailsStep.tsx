@@ -360,14 +360,17 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   };
 
   // Calculate pricing with discounts
-  // CRITICAL: bumperTotalPrice is the monthly×12 total from Step 3
-  // stripeTotalPrice uses Math.floor to match Step 3 TermSelector's getPayInFullPrice
-  const bumperTotalPrice = updatedPricingData.totalPrice;
-  const stripeTotalPrice = Math.floor(bumperTotalPrice * 0.90); // Must use floor to match Step 3
+  // CRITICAL FIX: Normalize total price from monthly to ensure Step 3 and Step 4 match exactly
+  // Step 3 displays: monthly × 12 as total, and Math.floor(total × 0.9) as pay-in-full
+  // We MUST do the same calculation here to avoid £1 discrepancies
+  const monthlyPrice = updatedPricingData.monthlyPrice || Math.round(updatedPricingData.totalPrice / 12);
+  const bumperTotalPrice = monthlyPrice * 12; // Normalized total: £69 × 12 = £828, NOT raw £827
+  const stripeTotalPrice = Math.floor(bumperTotalPrice * 0.90); // Pay-in-full: Math.floor(828 × 0.9) = £745
 
   console.log('💰 CustomerDetailsStep - Pricing calculation:', {
-    updatedPricingDataTotal: updatedPricingData.totalPrice,
-    bumperTotalPrice,
+    rawTotalFromStep3: updatedPricingData.totalPrice,
+    monthlyPrice,
+    normalizedBumperTotal: bumperTotalPrice,
     stripeTotalPrice
   });
 
