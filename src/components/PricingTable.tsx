@@ -2503,7 +2503,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </p>
                   </div>
                   
-                  <div className="flex flex-col gap-2 w-full md:w-auto md:justify-center">
+                  <div className="flex flex-col gap-2 w-full md:w-auto md:justify-center md:mt-8">
                     <Button
                       onClick={handleSelectPlan}
                       className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-4 px-8 text-lg shadow-lg hover:shadow-xl transition-all animate-cta-enhanced w-full md:w-auto"
