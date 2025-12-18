@@ -126,7 +126,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
 
   // Get pricing data using the exact pricing structure from the matrix
   const getPricingForDuration = (paymentPeriod: string) => {
-    if (!pricingData) return { totalPrice: 0, monthlyPrice: 0 };
+    if (!pricingData) return { totalPrice: 0, monthlyPrice: 0, preDiscountPrice: 0, savingAmount: 0 };
     
     const { voluntaryExcess = 100, claimLimit = 1250, protectionAddOns = {}, selectedAddOns = {} } = pricingData;
     
@@ -186,17 +186,24 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
     
     const totalPrice = adjustedBasePrice + planAddOnPrice + protectionAddOnPrice;
     
-    // Apply automatic discounts for multi-year plans
-    let discountedPrice = totalPrice;
+    // Determine the fixed saving amount for multi-year plans
+    let savingAmount = 0;
     if (paymentPeriod === '24months') {
-      discountedPrice = totalPrice - 100; // £100 discount for 2-year plans
+      savingAmount = 100; // £100 discount for 2-year plans
     } else if (paymentPeriod === '36months') {
-      discountedPrice = totalPrice - 200; // £200 discount for 3-year plans
+      savingAmount = 200; // £200 discount for 3-year plans
     }
+    
+    // Apply automatic discounts for multi-year plans
+    const discountedPrice = totalPrice - savingAmount;
     
     const monthlyPrice = Math.round(discountedPrice / 12); // Always use 12 months for monthly calculation
     // Ensure total matches monthly × 12 to avoid display inconsistency (e.g., £50/month showing £597 total)
     const consistentTotal = monthlyPrice * 12;
+    
+    // Calculate pre-discount price based on the displayed total + saving
+    // This ensures: preDiscountPrice - consistentTotal = savingAmount (exactly)
+    const preDiscountPrice = consistentTotal + savingAmount;
     
     console.log('WarrantyDurationStep - Calculated pricing:', {
       paymentPeriod,
@@ -209,6 +216,8 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
       discountedPrice,
       monthlyPrice,
       consistentTotal,
+      savingAmount,
+      preDiscountPrice,
       selectedFromMatrix: `${voluntaryExcess}_${claimLimit}`,
       durationMonths,
       addOnBreakdown: {
@@ -218,7 +227,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
     });
     
     // Return consistent total (monthly × 12) to match displayed monthly price
-    return { totalPrice: consistentTotal, monthlyPrice };
+    return { totalPrice: consistentTotal, monthlyPrice, preDiscountPrice, savingAmount };
   };
 
   // Memoize pricing calculations with stable dependencies to prevent fluctuations on re-render
@@ -282,7 +291,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
       isBestValue: false,
       isStarter: true,
       savePercent: undefined,
-      originalPrice: undefined
+      originalPrice: undefined // No discount for 1-year plan
     },
     {
       id: '24months',
@@ -306,7 +315,8 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
         'Pre-existing faults are not covered'
       ],
       ...pricingData24,
-      originalPrice: pricingData24.totalPrice + 100, // Was price = Total + £100 save amount
+      // Use preDiscountPrice from calculation: ensures saving = preDiscountPrice - totalPrice = exactly £100
+      originalPrice: pricingData24.savingAmount > 0 ? pricingData24.preDiscountPrice : undefined,
       isPopular: true,
       isBestValue: false,
       isStarter: false,
@@ -336,7 +346,8 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
         'Pre-existing faults are not covered'
       ],
       ...pricingData36,
-      originalPrice: pricingData36.totalPrice + 200, // Was price = Total + £200 save amount
+      // Use preDiscountPrice from calculation: ensures saving = preDiscountPrice - totalPrice = exactly £200
+      originalPrice: pricingData36.savingAmount > 0 ? pricingData36.preDiscountPrice : undefined,
       isPopular: false,
       isBestValue: true,
       isStarter: false,
