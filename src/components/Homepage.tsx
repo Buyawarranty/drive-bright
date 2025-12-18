@@ -21,6 +21,7 @@ const AdditionalCoverSection = lazy(() => import('./homepage/AdditionalCoverSect
 const WarrantyBenefitsSection = lazy(() => import('./homepage/WarrantyBenefitsSection'));
 const CoverClaritySection = lazy(() => import('./homepage/CoverClaritySection'));
 const VehicleCoverageSection = lazy(() => import('./homepage/VehicleCoverageSection'));
+const LandingPageDirectory = lazy(() => import('./homepage/LandingPageDirectory'));
 
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -993,6 +994,13 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       <LazySection>
         <Suspense fallback={<div className="py-12 md:py-20 min-h-[400px]" />}>
           <HomepageFAQ />
+        </Suspense>
+      </LazySection>
+
+      {/* Landing Page Directory - Dynamic Brand Warranties */}
+      <LazySection>
+        <Suspense fallback={<div className="py-12 md:py-16 min-h-[300px]" />}>
+          <LandingPageDirectory />
         </Suspense>
       </LazySection>
 
