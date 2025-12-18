@@ -805,22 +805,22 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return boostAddon ? 5 : 0;
   }, [boostAddon]);
 
-  // Memoized display monthly price - exactly matches duration card calculation (Math.floor, not Math.round)
+  // Memoized display monthly price - includes base + labour + boost + recurring add-ons
   const displayMonthlyPrice = useMemo(() => {
     const durationMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
     const labourTotalAdjust = labourRateDisplayAdjustment * durationMonths;
     const boostTotalAdjust = boostDisplayAdjustment * durationMonths;
-    const totalPrice = basePlanPrice + labourTotalAdjust + boostTotalAdjust;
+    const totalPrice = basePlanPrice + labourTotalAdjust + boostTotalAdjust + recurringAddOnPrice;
     return Math.floor(totalPrice / 12);
-  }, [basePlanPrice, paymentType, labourRateDisplayAdjustment, boostDisplayAdjustment]);
+  }, [basePlanPrice, paymentType, labourRateDisplayAdjustment, boostDisplayAdjustment, recurringAddOnPrice]);
 
-  // Memoized display total price - exact total from Excel (not monthly * 12)
+  // Memoized display total price - exact total including all add-ons
   const displayTotalPrice = useMemo(() => {
     const durationMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
     const labourTotalAdjust = labourRateDisplayAdjustment * durationMonths;
     const boostTotalAdjust = boostDisplayAdjustment * durationMonths;
-    return basePlanPrice + labourTotalAdjust + boostTotalAdjust + oneTimeAddOnPrice;
-  }, [basePlanPrice, paymentType, labourRateDisplayAdjustment, boostDisplayAdjustment, oneTimeAddOnPrice]);
+    return basePlanPrice + labourTotalAdjust + boostTotalAdjust + recurringAddOnPrice + oneTimeAddOnPrice;
+  }, [basePlanPrice, paymentType, labourRateDisplayAdjustment, boostDisplayAdjustment, recurringAddOnPrice, oneTimeAddOnPrice]);
 
   // Memoized monthly price calculation - always divide total by 12 for monthly payments
   const monthlyPrice = useMemo(() => {
