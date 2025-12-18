@@ -1482,12 +1482,12 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                 {/* Consolidated savings line - combine 10% + promo into one */}
                                 {hasFixedDiscount ? (
                                   <div className="text-sm font-semibold text-green-600 mt-2">
-                                    Save £{builtIn10PercentSaving + fixedDiscountAmount} ({Math.round(((builtIn10PercentSaving + fixedDiscountAmount) / originalPrice) * 100)}% off)
+                                    Saved £{builtIn10PercentSaving + fixedDiscountAmount} ({Math.round(((builtIn10PercentSaving + fixedDiscountAmount) / originalPrice) * 100)}% off)
                                   </div>
                                 ) : hasPercentagePromo && savingsPercent > 10 ? (
-                                  <div className="text-sm font-semibold text-green-600 mt-2">Save £{builtIn10PercentSaving + percentageDiscountAmount} ({savingsPercent}% off)</div>
+                                  <div className="text-sm font-semibold text-green-600 mt-2">Saved £{builtIn10PercentSaving + percentageDiscountAmount} ({savingsPercent}% off)</div>
                                 ) : (
-                                  <div className="text-sm font-semibold text-green-600 mt-2">Save £{builtIn10PercentSaving} (10% off)</div>
+                                  <div className="text-sm font-semibold text-green-600 mt-2">Saved £{builtIn10PercentSaving} (10% off)</div>
                                 )}
                               </div>
                               
@@ -1498,7 +1498,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                 <div className="text-sm text-gray-600 mt-1">12 payments</div>
                                 <div className="text-sm text-gray-500 mt-1">Total after promo: £{discountedBumperPrice}</div>
                                 {hasPromoCode && promoSavings > 0 && (
-                                  <div className="text-sm font-semibold text-green-600 mt-1">Save £{promoSavings} with promo!</div>
+                                  <div className="text-sm font-semibold text-green-600 mt-1">Saved £{promoSavings} with promo!</div>
                                 )}
                               </div>
                             </>
@@ -1817,11 +1817,11 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                   {/* Consolidated savings line - combine 10% + promo into one */}
                                   <div className="inline-block bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                                     {hasFixedDiscount ? (
-                                      <>Save £{builtIn10PercentSaving + fixedDiscountAmount} ({Math.round(((builtIn10PercentSaving + fixedDiscountAmount) / originalPrice) * 100)}% off)</>
+                                      <>Saved £{builtIn10PercentSaving + fixedDiscountAmount} ({Math.round(((builtIn10PercentSaving + fixedDiscountAmount) / originalPrice) * 100)}% off)</>
                                     ) : hasPercentagePromo && savingsPercent > 10 ? (
-                                      <>Save £{builtIn10PercentSaving + percentageDiscountAmount} ({savingsPercent}% off)</>
+                                      <>Saved £{builtIn10PercentSaving + percentageDiscountAmount} ({savingsPercent}% off)</>
                                     ) : (
-                                      <>Save £{builtIn10PercentSaving} (10% off)</>
+                                      <>Saved £{builtIn10PercentSaving} (10% off)</>
                                     )}
                                   </div>
                                   <div className="text-sm font-bold text-gray-600 mt-1">
