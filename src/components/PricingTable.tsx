@@ -2506,11 +2506,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <div className="flex flex-col gap-2 w-full md:w-auto md:justify-center">
                     <Button
                       onClick={handleSelectPlan}
-                      className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 text-lg shadow-lg hover:shadow-xl transition-all animate-pulse-slow w-full md:w-auto"
+                      className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-4 px-8 text-lg shadow-lg hover:shadow-xl transition-all animate-cta-enhanced w-full md:w-auto"
                     >
                       <span className="md:hidden">Checkout securely</span>
                       <span className="hidden md:inline">Continue to secure payment</span>
-                      <ArrowRight className="w-5 h-5 ml-2" />
+                      <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
                     </Button>
                     <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
                       <Lock className="w-3 h-3" />
