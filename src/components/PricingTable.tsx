@@ -2490,30 +2490,32 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
             {/* Price Summary & CTA */}
             <div className="bg-white rounded-xl border-2 border-green-300 p-5 md:p-6">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Your Platinum Plan</p>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-gray-900">£{displayMonthlyPrice}/month</span>
-                    <span className="text-sm text-black">(Only 12 payments)</span>
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col md:flex-row md:items-center gap-4">
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-500 mb-1">Your Platinum Plan</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-bold text-gray-900">£{displayMonthlyPrice}/month</span>
+                      <span className="text-sm text-black">(Only 12 payments)</span>
+                    </div>
+                    <p className="text-sm text-black mt-1">
+                      Or pay in full: £{Math.round(displayTotalPrice)} <span className="text-green-600 font-medium">(Save 10% at checkout)</span>
+                    </p>
                   </div>
-                  <p className="text-sm text-black mt-1">
-                    Or pay in full: £{Math.round(displayTotalPrice)} <span className="text-green-600 font-medium">(Save 10% at checkout)</span>
-                  </p>
-                </div>
-                
-                <div className="flex flex-col gap-2 w-full md:w-auto">
-                  <Button
-                    onClick={handleSelectPlan}
-                    className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all animate-pulse-slow w-full md:w-auto"
-                  >
-                    <span className="md:hidden">Checkout securely</span>
-                    <span className="hidden md:inline">Continue to secure payment</span>
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                  <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
-                    <Lock className="w-3 h-3" />
-                    <span>Secure checkout – SSL encrypted</span>
+                  
+                  <div className="flex flex-col gap-2 w-full md:w-auto md:self-center">
+                    <Button
+                      onClick={handleSelectPlan}
+                      className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all animate-pulse-slow w-full md:w-auto"
+                    >
+                      <span className="md:hidden">Checkout securely</span>
+                      <span className="hidden md:inline">Continue to secure payment</span>
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </Button>
+                    <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+                      <Lock className="w-3 h-3" />
+                      <span>Secure checkout – SSL encrypted</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2752,8 +2754,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </div>
                   </div>
                   
-                  {/* SECTION 3: Cover & Free Years */}
-                  <div className="flex-1 flex flex-col items-center justify-center px-6 py-4">
+                  {/* SECTION 3: Cover & Free Years - Centered on desktop */}
+                  <div className="flex-1 flex flex-col items-center justify-center px-6 py-4 text-center">
                     <div className="text-sm text-gray-900">
                       {paymentType !== '12months' && (
                         <span className="text-green-600 font-bold">
