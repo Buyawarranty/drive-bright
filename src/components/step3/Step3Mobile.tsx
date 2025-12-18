@@ -185,25 +185,25 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     });
   }, [paymentType]);
 
-  // Pricing matrix
+  // BASE prices from CURRENT_PRICE_DEC_2025.xlsx at £50/hr labour rate
   const pricingTable = {
     '12months': {
-      0: { 750: 547, 1250: 587, 2000: 697 },
-      50: { 750: 517, 1250: 537, 2000: 647 },
-      100: { 750: 457, 1250: 497, 2000: 597 },
-      150: { 750: 427, 1250: 457, 2000: 567 }
+      0: { 750: 467, 1250: 497, 2000: 587 },
+      50: { 750: 437, 1250: 457, 2000: 547 },
+      100: { 750: 387, 1250: 417, 2000: 507 },
+      150: { 750: 367, 1250: 387, 2000: 477 }
     },
     '24months': {
-      0: { 750: 1057, 1250: 1097, 2000: 1207 },
-      50: { 750: 967, 1250: 1037, 2000: 1127 },
-      100: { 750: 867, 1250: 927, 2000: 1037 },
-      150: { 750: 817, 1250: 867, 2000: 967 }
+      0: { 750: 897, 1250: 937, 2000: 1027 },
+      50: { 750: 827, 1250: 877, 2000: 957 },
+      100: { 750: 737, 1250: 787, 2000: 877 },
+      150: { 750: 697, 1250: 737, 2000: 827 }
     },
     '36months': {
-      0: { 750: 1587, 1250: 1637, 2000: 1757 },
-      50: { 750: 1467, 1250: 1517, 2000: 1637 },
-      100: { 750: 1287, 1250: 1387, 2000: 1507 },
-      150: { 750: 1237, 1250: 1287, 2000: 1407 }
+      0: { 750: 1347, 1250: 1397, 2000: 1497 },
+      50: { 750: 1247, 1250: 1297, 2000: 1397 },
+      100: { 750: 1097, 1250: 1177, 2000: 1277 },
+      150: { 750: 1047, 1250: 1097, 2000: 1197 }
     }
   };
 
@@ -225,22 +225,20 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     const basePrice = getBasePrice(term, voluntaryExcess || 100, selectedClaimLimit || 1250);
     const adjustedPrice = applyPriceAdjustment(basePrice, vehiclePriceAdjustment);
 
-    // Apply discounts
-    let discountedPrice = adjustedPrice;
-    if (term === '24months') discountedPrice -= 100;
-    if (term === '36months') discountedPrice -= 200;
-
-    // Add-on prices
+    // No additional discounts - base prices from Excel are already final prices
     const durationMonths = term === '12months' ? 12 : term === '24months' ? 24 : 36;
+    
+    // Add-on prices
     const addOnPrice = calculateAddOnPrice(selectedProtectionAddOns, term, durationMonths);
 
-    // Boost addon
-    const boostCost = boostAddon ? 60 : 0;
+    // Boost addon: +£5/month for duration
+    const boostCost = boostAddon ? (5 * durationMonths) : 0;
 
-    // Labour rate adjustment
-    const labourAdjust = selectedLabourRate === 40 ? -36 : selectedLabourRate === 70 ? 48 : selectedLabourRate === 100 ? 96 : 0;
+    // Labour rate adjustment: £40=-£5/mo, £50=base, £70=+£4/mo, £100=+£8/mo for duration
+    const labourMonthlyAdjust = selectedLabourRate === 40 ? -5 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
+    const labourAdjust = labourMonthlyAdjust * durationMonths;
 
-    const totalPrice = discountedPrice + addOnPrice + boostCost + labourAdjust;
+    const totalPrice = adjustedPrice + addOnPrice + boostCost + labourAdjust;
     return Math.round(totalPrice / 12);
   }, [paymentType, voluntaryExcess, selectedClaimLimit, vehiclePriceAdjustment, selectedProtectionAddOns, boostAddon, selectedLabourRate, getBasePrice]);
 
@@ -276,15 +274,17 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
       const basePrice = getBasePrice(term, voluntaryExcess!, selectedClaimLimit!);
       const adjustedPrice = applyPriceAdjustment(basePrice, vehiclePriceAdjustment);
 
-      let discountedPrice = adjustedPrice;
-      if (term === '24months') discountedPrice -= 100;
-      if (term === '36months') discountedPrice -= 200;
-
+      // No additional discounts - base prices from Excel are already final
       const addOnPrice = calculateAddOnPrice(selectedProtectionAddOns, term, durationMonths);
-      const boostCost = boostAddon ? 60 : 0;
-      const labourAdjust = selectedLabourRate === 40 ? -36 : selectedLabourRate === 70 ? 48 : selectedLabourRate === 100 ? 96 : 0;
+      
+      // Boost addon: +£5/month for duration
+      const boostCost = boostAddon ? (5 * durationMonths) : 0;
+      
+      // Labour rate adjustment: £40=-£5/mo, £50=base, £70=+£4/mo, £100=+£8/mo
+      const labourMonthlyAdjust = selectedLabourRate === 40 ? -5 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
+      const labourAdjust = labourMonthlyAdjust * durationMonths;
 
-      const rawTotalPrice = discountedPrice + addOnPrice + boostCost + labourAdjust;
+      const rawTotalPrice = adjustedPrice + addOnPrice + boostCost + labourAdjust;
       
       // CRITICAL: Calculate monthly price first, then derive total from monthly * 12
       // This ensures Step 3 and Step 4 display identical prices
