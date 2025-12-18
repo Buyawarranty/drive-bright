@@ -1906,10 +1906,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               await processStripeCheckout();
                             }}
                             disabled={isLoadingStripe || isLoadingBumper}
-                            className="w-full font-bold py-2.5 rounded-lg shadow-lg bg-brand-orange hover:bg-brand-orange/90 text-white text-sm disabled:opacity-50 animate-cta-enhanced"
+                            className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-green-600 hover:bg-green-700 text-white text-sm disabled:opacity-50"
                           >
                             {isLoadingStripe ? 'Processing...' : 'Complete checkout'}
-                            {!isLoadingStripe && <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />}
                           </Button>
 
                           {/* Powered By */}
@@ -2119,10 +2118,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               }
                             }}
                             disabled={isLoadingStripe || isLoadingBumper}
-                            className="w-full font-bold py-2.5 rounded-lg shadow-lg bg-brand-orange hover:bg-brand-orange/90 text-white text-sm disabled:opacity-50 animate-cta-enhanced"
+                            className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-orange-500 hover:bg-orange-600 text-white text-sm disabled:opacity-50"
                           >
                             {isLoadingBumper ? 'Processing...' : 'Complete checkout'}
-                            {!isLoadingBumper && <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />}
                           </Button>
 
                           {/* Powered By */}
