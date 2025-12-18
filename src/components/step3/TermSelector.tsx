@@ -16,13 +16,15 @@ interface TermSelectorProps {
   onTermChange: (term: '12months' | '24months' | '36months') => void;
   availableDurations: ('12months' | '24months' | '36months')[];
   getPriceForTerm: (term: string) => number;
+  getTotalForTerm?: (term: string) => number; // Optional: exact total price
 }
 
 const TermSelector: React.FC<TermSelectorProps> = ({
   selectedTerm,
   onTermChange,
   availableDurations,
-  getPriceForTerm
+  getPriceForTerm,
+  getTotalForTerm: getTotalForTermProp
 }) => {
   const [showAllOptions, setShowAllOptions] = useState(false);
 
@@ -33,13 +35,17 @@ const TermSelector: React.FC<TermSelectorProps> = ({
     return 0;
   };
 
-  // Calculate total price for a term (monthly × 12)
+  // Get total price for a term - use exact total if provided, otherwise monthly × 12
   const getTotalForTerm = (termId: string): number => {
+    if (getTotalForTermProp) {
+      return getTotalForTermProp(termId);
+    }
+    // Fallback: monthly × 12
     const monthly = getPriceForTerm(termId);
     return monthly * 12;
   };
 
-  // Pay in full price = monthly × 12 (NO additional discount)
+  // Pay in full price = exact total (NO monthly × 12 rounding)
   const getPayInFullPrice = (termId: string): number => {
     return getTotalForTerm(termId);
   };
