@@ -9,6 +9,7 @@ import { ProductSchema } from '@/components/schema/ProductSchema';
 import { BreadcrumbSchema } from '@/components/schema/BreadcrumbSchema';
 import { LocalBusinessSchema } from '@/components/schema/LocalBusinessSchema';
 import { supabase } from '@/integrations/supabase/client';
+import { saveWithTimestamp } from '@/utils/localStorage';
 import NotFound from './NotFound';
 import HomepageLandingTemplate from '@/components/landing/HomepageLandingTemplate';
 
@@ -182,14 +183,27 @@ const DynamicLandingPage: React.FC = () => {
   const canonicalUrl = `https://buyawarranty.co.uk/${page.slug}/`;
 
   // Handle registration form submission - navigate to homepage step 2
+  // Uses saveWithTimestamp to match Index.tsx state restoration logic
   const handleRegistrationSubmit = (vehicleData: any) => {
-    // Save vehicle data to localStorage
-    localStorage.setItem('buyawarranty_vehicleData', JSON.stringify(vehicleData));
-    localStorage.setItem('buyawarranty_formData', JSON.stringify(vehicleData));
-    localStorage.setItem('buyawarranty_currentStep', '2');
+    console.log('🚀 Landing page registration submit:', vehicleData);
+    
+    // Save vehicle data to localStorage with timestamps (matches Index.tsx format)
+    saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
+    saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
+    saveWithTimestamp('buyawarranty_currentStep', '2');
+    
+    // Also save the warranty journey state for full compatibility
+    const journeyState = {
+      vehicleData,
+      formData: vehicleData,
+      currentStep: 2,
+      selectedPlan: null
+    };
+    saveWithTimestamp('warrantyJourneyState', JSON.stringify(journeyState));
     
     // Navigate to homepage with step 2
     navigate('/?step=2');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
