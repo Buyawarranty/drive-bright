@@ -37,6 +37,7 @@ import { BulkTagDialog } from './BulkTagDialog';
 import { CancelWarrantyDialog } from './CancelWarrantyDialog';
 import { InvoiceDialog } from './InvoiceDialog';
 import CoverageDetailsDisplay from '@/components/CoverageDetailsDisplay';
+import { CustomerClaimsSummary } from './claims/CustomerClaimsSummary';
 import AddOnProtectionDisplay from '@/components/AddOnProtectionDisplay';
 import { W2KAuditLog } from './W2KAuditLog';
 import { format } from 'date-fns';
@@ -2246,6 +2247,7 @@ export const CustomersTab = () => {
               <TableHead>Payment Method</TableHead>
               <TableHead>Vol. Excess</TableHead>
               <TableHead>Claim Limit</TableHead>
+              <TableHead>Claims Paid</TableHead>
               <TableHead>Labour Rate</TableHead>
               <TableHead>Tags</TableHead>
               <TableHead>Ref</TableHead>
@@ -2454,9 +2456,10 @@ Please log in and change your password after first login.`;
                               </Collapsible>
 
                               <Tabs defaultValue="details" className="w-full">
-                                <TabsList className="grid w-full grid-cols-7">
+                                <TabsList className="grid w-full grid-cols-8">
                                   <TabsTrigger value="details">Customer Details</TabsTrigger>
                                   <TabsTrigger value="warranty">Warranty Details</TabsTrigger>
+                                  <TabsTrigger value="claims">Claims</TabsTrigger>
                                   <TabsTrigger value="tags">Tags</TabsTrigger>
                                   <TabsTrigger value="notes">Notes</TabsTrigger>
                                   <TabsTrigger value="actions">Warranty Actions</TabsTrigger>
@@ -3198,6 +3201,18 @@ Please log in and change your password after first login.`;
                                   )}
                                 </TabsContent>
 
+                                <TabsContent value="claims">
+                                  {selectedCustomer && (
+                                    <CustomerClaimsSummary
+                                      customerId={selectedCustomer.id}
+                                      customerEmail={selectedCustomer.email}
+                                      customerName={selectedCustomer.name}
+                                      vehicleReg={selectedCustomer.registration_plate}
+                                      onClaimAdded={fetchCustomers}
+                                    />
+                                  )}
+                                </TabsContent>
+
                                 <TabsContent value="tags">
                                   {selectedCustomer && (
                                     <div className="space-y-4">
@@ -3373,6 +3388,14 @@ Please log in and change your password after first login.`;
                          <Badge variant="outline" className="bg-green-50 text-green-700">
                            £{(customer.customer_policies?.[0] as any)?.claim_limit || customer.claim_limit || 1250}
                          </Badge>
+                       </TableCell>
+                       <TableCell>
+                         <CustomerClaimsSummary
+                           customerEmail={customer.email}
+                           customerName={customer.name}
+                           vehicleReg={customer.registration_plate}
+                           compact={true}
+                         />
                        </TableCell>
                        <TableCell>
                          <Badge variant="outline" className="bg-purple-50 text-purple-700">
