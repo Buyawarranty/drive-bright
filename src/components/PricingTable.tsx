@@ -2491,7 +2491,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             {/* Price Summary & CTA */}
             <div className="bg-white rounded-xl border-2 border-green-300 p-5 md:p-6">
               <div className="flex flex-col gap-4">
-                <div className="flex flex-col md:flex-row md:items-center gap-4">
+                <div className="flex flex-col md:flex-row md:items-stretch gap-4">
                   <div className="flex-1">
                     <p className="text-sm text-gray-500 mb-1">Your Platinum Plan</p>
                     <div className="flex items-baseline gap-2">
@@ -2503,7 +2503,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </p>
                   </div>
                   
-                  <div className="flex flex-col gap-2 w-full md:w-auto md:self-center">
+                  <div className="flex flex-col gap-2 w-full md:w-auto md:justify-center">
                     <Button
                       onClick={handleSelectPlan}
                       className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 text-lg shadow-lg hover:shadow-xl transition-all animate-pulse-slow w-full md:w-auto"
