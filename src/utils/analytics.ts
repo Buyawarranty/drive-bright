@@ -186,6 +186,18 @@ export const trackPurchaseComplete = (
   // CRITICAL: GTM tag expects 'order_value' at top level for {{DLV - order_value}} variable
   // Using fixed £1 value as configured in Google Ads (not actual purchase value)
   if (typeof window !== 'undefined' && window.dataLayer) {
+    // CRITICAL: Grant consent before firing conversion to prevent GTM blocking
+    // This updates consent mode for ad_storage, ad_personalization, ad_user_data
+    if (window.gtag) {
+      window.gtag('consent', 'update', {
+        'ad_storage': 'granted',
+        'ad_user_data': 'granted',
+        'ad_personalization': 'granted',
+        'analytics_storage': 'granted'
+      });
+      console.log('✅ Consent mode updated to granted for conversion tracking');
+    }
+    
     // Push the primary purchase conversion event for GTM
     window.dataLayer.push({
       'event': 'purchase',
