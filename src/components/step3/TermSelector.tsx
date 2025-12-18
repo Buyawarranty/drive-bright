@@ -26,30 +26,29 @@ const TermSelector: React.FC<TermSelectorProps> = ({
 }) => {
   const [showAllOptions, setShowAllOptions] = useState(false);
 
-  // Calculate savings for each term
+  // Calculate savings for each term (promotional savings)
   const getSavingsForTerm = (termId: string): number => {
     if (termId === '24months') return 100;
     if (termId === '36months') return 200;
     return 0;
   };
 
-  // Calculate total price for a term (12 monthly payments)
+  // Calculate total price for a term (monthly × 12)
   const getTotalForTerm = (termId: string): number => {
     const monthly = getPriceForTerm(termId);
     return monthly * 12;
   };
 
-  // Calculate "was" price (total before savings)
-  const getWasPriceForTerm = (termId: string): number => {
-    const total = getTotalForTerm(termId);
-    const savings = getSavingsForTerm(termId);
-    return total + savings;
+  // Pay in full price = monthly × 12 (NO additional discount)
+  const getPayInFullPrice = (termId: string): number => {
+    return getTotalForTerm(termId);
   };
 
-  // Calculate pay in full price (10% discount)
-  const getPayInFullPrice = (termId: string): number => {
-    const total = getTotalForTerm(termId);
-    return Math.floor(total * 0.9);
+  // Calculate "was" price = pay in full + savings
+  const getWasPriceForTerm = (termId: string): number => {
+    const payInFull = getPayInFullPrice(termId);
+    const savings = getSavingsForTerm(termId);
+    return payInFull + savings;
   };
 
   const allTerms: TermOption[] = [
