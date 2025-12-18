@@ -2133,6 +2133,162 @@ export type Database = {
           },
         ]
       }
+      landing_pages: {
+        Row: {
+          brand_logo_url: string | null
+          brand_name: string
+          canonical_url: string | null
+          conversion_count: number | null
+          coverage_content: Json | null
+          created_at: string
+          created_by: string | null
+          faqs: Json | null
+          featured_image_url: string | null
+          features_content: Json | null
+          focus_keyword: string | null
+          h1_headline: string
+          hero_content: Json | null
+          id: string
+          include_breadcrumb_schema: boolean | null
+          include_faq_schema: boolean | null
+          include_local_business_schema: boolean | null
+          include_organization_schema: boolean | null
+          include_product_schema: boolean | null
+          include_review_schema: boolean | null
+          internal_links: Json | null
+          is_indexable: boolean | null
+          last_edited_by: string | null
+          local_business_address: Json | null
+          local_business_email: string | null
+          local_business_geo: Json | null
+          local_business_name: string | null
+          local_business_phone: string | null
+          meta_description: string
+          meta_title: string
+          nav_order: number | null
+          og_description: string | null
+          og_image_url: string | null
+          og_title: string | null
+          page_type: string | null
+          pricing_content: Json | null
+          published_at: string | null
+          robots_directive: string | null
+          scheduled_for: string | null
+          secondary_keywords: string[] | null
+          show_in_footer: boolean | null
+          show_in_main_nav: boolean | null
+          show_on_homepage: boolean | null
+          slug: string
+          status: string | null
+          supporting_images: Json | null
+          testimonials_content: Json | null
+          updated_at: string
+          view_count: number | null
+        }
+        Insert: {
+          brand_logo_url?: string | null
+          brand_name: string
+          canonical_url?: string | null
+          conversion_count?: number | null
+          coverage_content?: Json | null
+          created_at?: string
+          created_by?: string | null
+          faqs?: Json | null
+          featured_image_url?: string | null
+          features_content?: Json | null
+          focus_keyword?: string | null
+          h1_headline: string
+          hero_content?: Json | null
+          id?: string
+          include_breadcrumb_schema?: boolean | null
+          include_faq_schema?: boolean | null
+          include_local_business_schema?: boolean | null
+          include_organization_schema?: boolean | null
+          include_product_schema?: boolean | null
+          include_review_schema?: boolean | null
+          internal_links?: Json | null
+          is_indexable?: boolean | null
+          last_edited_by?: string | null
+          local_business_address?: Json | null
+          local_business_email?: string | null
+          local_business_geo?: Json | null
+          local_business_name?: string | null
+          local_business_phone?: string | null
+          meta_description: string
+          meta_title: string
+          nav_order?: number | null
+          og_description?: string | null
+          og_image_url?: string | null
+          og_title?: string | null
+          page_type?: string | null
+          pricing_content?: Json | null
+          published_at?: string | null
+          robots_directive?: string | null
+          scheduled_for?: string | null
+          secondary_keywords?: string[] | null
+          show_in_footer?: boolean | null
+          show_in_main_nav?: boolean | null
+          show_on_homepage?: boolean | null
+          slug: string
+          status?: string | null
+          supporting_images?: Json | null
+          testimonials_content?: Json | null
+          updated_at?: string
+          view_count?: number | null
+        }
+        Update: {
+          brand_logo_url?: string | null
+          brand_name?: string
+          canonical_url?: string | null
+          conversion_count?: number | null
+          coverage_content?: Json | null
+          created_at?: string
+          created_by?: string | null
+          faqs?: Json | null
+          featured_image_url?: string | null
+          features_content?: Json | null
+          focus_keyword?: string | null
+          h1_headline?: string
+          hero_content?: Json | null
+          id?: string
+          include_breadcrumb_schema?: boolean | null
+          include_faq_schema?: boolean | null
+          include_local_business_schema?: boolean | null
+          include_organization_schema?: boolean | null
+          include_product_schema?: boolean | null
+          include_review_schema?: boolean | null
+          internal_links?: Json | null
+          is_indexable?: boolean | null
+          last_edited_by?: string | null
+          local_business_address?: Json | null
+          local_business_email?: string | null
+          local_business_geo?: Json | null
+          local_business_name?: string | null
+          local_business_phone?: string | null
+          meta_description?: string
+          meta_title?: string
+          nav_order?: number | null
+          og_description?: string | null
+          og_image_url?: string | null
+          og_title?: string | null
+          page_type?: string | null
+          pricing_content?: Json | null
+          published_at?: string | null
+          robots_directive?: string | null
+          scheduled_for?: string | null
+          secondary_keywords?: string[] | null
+          show_in_footer?: boolean | null
+          show_in_main_nav?: boolean | null
+          show_on_homepage?: boolean | null
+          slug?: string
+          status?: string | null
+          supporting_images?: Json | null
+          testimonials_content?: Json | null
+          updated_at?: string
+          view_count?: number | null
+        }
+        Relationships: []
+      }
       mot_history: {
         Row: {
           co2_emissions: number | null
