@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock } from 'lucide-react';
+import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -181,6 +181,12 @@ const defaultTabs: Tab[] = [
     description: 'Create and manage blog content with AI tools'
   },
   {
+    id: 'landing-pages',
+    label: 'Landing Pages',
+    icon: Globe,
+    description: 'Create SEO-optimised landing pages from homepage template'
+  },
+  {
     id: 'testing',
     label: 'Testing',
     icon: TestTube,
@@ -201,8 +207,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
   // Filter tabs based on user role
   const getVisibleTabs = () => {
     if (userRole === 'blog_writer') {
-      // Blog writers only see the blog-writing tab
-      return defaultTabs.filter(tab => tab.id === 'blog-writing');
+      // Blog writers see blog-writing and landing-pages tabs
+      return defaultTabs.filter(tab => tab.id === 'blog-writing' || tab.id === 'landing-pages');
     }
     if (userRole === 'sales') {
       // Sales team sees only customer-facing tabs

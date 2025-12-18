@@ -79,6 +79,7 @@ const LandRoverWarranty = lazy(() => import("./pages/LandRoverWarranty"));
 const JaguarWarranty = lazy(() => import("./pages/JaguarWarranty"));
 const SkodaWarranty = lazy(() => import("./pages/SkodaWarranty"));
 const UsedCarWarrantyUK = lazy(() => import("./pages/UsedCarWarrantyUK"));
+const DynamicLandingPage = lazy(() => import("./pages/DynamicLandingPage"));
 
 // Admin and auth pages
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
@@ -185,6 +186,9 @@ const App = () => {
         <Route path="/car-extended-warranty/jaguar/" element={<JaguarWarranty />} />
                     <Route path="/car-extended-warranty/skoda/" element={<SkodaWarranty />} />
                     <Route path="/used-car-warranty-uk/" element={<UsedCarWarrantyUK />} />
+                    
+                    {/* Dynamic landing pages from admin */}
+                    <Route path="/:slug" element={<DynamicLandingPage />} />
                     
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />

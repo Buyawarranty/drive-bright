@@ -28,6 +28,7 @@ import { UserPermissionsTab } from '@/components/admin/UserPermissionsTab';
 import { DocumentMappingTab } from '@/components/admin/DocumentMappingTab';
 import { BulkPricingTab } from '@/components/admin/BulkPricingTab';
 import { BlogWritingTab } from '@/components/admin/BlogWritingTab';
+import { LandingPageBuilder } from '@/components/admin/LandingPageBuilder';
 import OrderReconciliation from '@/components/admin/OrderReconciliation';
 import { ManualPaymentProcessor } from '@/components/admin/ManualPaymentProcessor';
 import { ResendWelcomeEmail } from '@/components/admin/ResendWelcomeEmail';
@@ -158,6 +159,8 @@ const AdminDashboard = () => {
         return <DocumentMappingTab />;
       case 'blog-writing':
         return <BlogWritingTab />;
+      case 'landing-pages':
+        return <LandingPageBuilder />;
       case 'get-quote':
         return <GetQuoteTab />;
       case 'testing':

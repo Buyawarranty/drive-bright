@@ -146,8 +146,8 @@ export const LandingPageEditor = ({ pageId, onSave }: LandingPageEditorProps) =>
       setOgImageUrl(data.og_image_url || '');
       setFeaturedImageUrl(data.featured_image_url || '');
       setBrandLogoUrl(data.brand_logo_url || '');
-      setFaqs((data.faqs as FAQ[]) || []);
-      setInternalLinks((data.internal_links as InternalLink[]) || []);
+      setFaqs((data.faqs as unknown as FAQ[]) || []);
+      setInternalLinks((data.internal_links as unknown as InternalLink[]) || []);
       setShowInMainNav(data.show_in_main_nav);
       setShowInFooter(data.show_in_footer);
       setShowOnHomepage(data.show_on_homepage);
