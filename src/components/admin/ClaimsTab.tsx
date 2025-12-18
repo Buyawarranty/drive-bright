@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, Download, Calendar, User, Mail, Phone, Paperclip, FileDown, FileSpreadsheet, Search, Filter, Trash2, Edit, Clock, Send, AlertTriangle, ArrowUp, ArrowDown, Minus } from 'lucide-react';
+import { Eye, Download, Calendar, User, Mail, Phone, Paperclip, FileDown, FileSpreadsheet, Search, Filter, Trash2, Edit, Clock, Send, AlertTriangle, ArrowUp, ArrowDown, Minus, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ClaimsSummaryCards } from './claims/ClaimsSummaryCards';
 import { ClaimsChart } from './claims/ClaimsChart';
@@ -17,6 +17,7 @@ import { ClaimStatusDropdown } from './claims/ClaimStatusDropdown';
 import { ClaimEmailDialog } from './claims/ClaimEmailDialog';
 import { ClaimPriorityBadge } from './claims/ClaimPriorityBadge';
 import { exportToCSV, exportToPDF, formatClaimForExport } from './claims/exportUtils';
+import { AddClaimDialog } from './claims/AddClaimDialog';
 
 interface ClaimSubmission {
   id: string;
@@ -55,6 +56,7 @@ export const ClaimsTab = () => {
   const [selectedClaim, setSelectedClaim] = useState<ClaimSubmission | null>(null);
   const [editingClaim, setEditingClaim] = useState<ClaimSubmission | null>(null);
   const [emailingClaim, setEmailingClaim] = useState<ClaimSubmission | null>(null);
+  const [showAddClaimDialog, setShowAddClaimDialog] = useState(false);
   const [selectedClaimIds, setSelectedClaimIds] = useState<Set<string>>(new Set());
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [warrantyFilter, setWarrantyFilter] = useState<string>('all');
@@ -345,6 +347,10 @@ export const ClaimsTab = () => {
           <p className="text-gray-600 mt-2">Comprehensive claims tracking and management system</p>
         </div>
         <div className="flex gap-2">
+          <Button onClick={() => setShowAddClaimDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Claim
+          </Button>
           <Button onClick={handleExportCSV} variant="outline">
             <FileSpreadsheet className="h-4 w-4 mr-2" />
             Export CSV
@@ -734,6 +740,13 @@ export const ClaimsTab = () => {
           onEmailSent={fetchClaims}
         />
       )}
+
+      {/* Add Claim Dialog */}
+      <AddClaimDialog
+        open={showAddClaimDialog}
+        onOpenChange={setShowAddClaimDialog}
+        onClaimAdded={fetchClaims}
+      />
     </div>
   );
 };
