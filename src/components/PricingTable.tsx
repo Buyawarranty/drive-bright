@@ -1439,20 +1439,28 @@ const PricingTable: React.FC<PricingTableProps> = ({
               const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, durationId);
               const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
               
-              // Apply automatic discounts
-              let discountedPrice = adjustedBasePrice;
-              if (durationId === '24months') {
-                discountedPrice = adjustedBasePrice - 100;
-              } else if (durationId === '36months') {
-                discountedPrice = adjustedBasePrice - 200;
-              }
+              // Calculate duration months for adjustments
+              const durationMonths = durationId === '12months' ? 12 : durationId === '24months' ? 24 : 36;
               
-              // Calculate display monthly price
-              const baseMonthlyPrice = Math.round(discountedPrice / 12);
-              const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
-              const boostDisplayAdjustment = boostAddon ? 5 : 0;
-              const displayedMonthlyPrice = Math.round(baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment);
-              const displayedAnnualPrice = Math.round(discountedPrice + (labourRateAdjustment * 12) + (boostDisplayAdjustment * 12));
+              // NO automatic discounts - base prices from Excel are already final
+              // The base price already includes multi-year pricing
+              const finalBasePrice = adjustedBasePrice;
+              
+              // Labour rate adjustment: £40=-£5/mo, £50=base, £70=+£4/mo, £100=+£8/mo
+              const labourMonthlyAdjust = selectedLabourRate === 40 ? -5 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
+              const labourTotalAdjust = labourMonthlyAdjust * durationMonths;
+              
+              // Boost addon: +£5/month for duration
+              const boostTotalAdjust = boostAddon ? (5 * durationMonths) : 0;
+              
+              // Calculate total price with all adjustments
+              const totalPriceWithAdjustments = finalBasePrice + labourTotalAdjust + boostTotalAdjust;
+              
+              // Calculate display monthly price (always divide by 12 for monthly installments)
+              const displayedMonthlyPrice = Math.round(totalPriceWithAdjustments / 12);
+              const displayedAnnualPrice = displayedMonthlyPrice * 12; // Keep consistent with monthly × 12
+              
+              // Promotional savings for display (Was price = Pay in full + savings)
               const savingsAmount = durationId === '24months' ? 100 : durationId === '36months' ? 200 : 0;
               
               return (
