@@ -2506,7 +2506,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <div className="flex flex-col gap-2 w-full md:w-auto md:self-center">
                     <Button
                       onClick={handleSelectPlan}
-                      className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all animate-pulse-slow w-full md:w-auto"
+                      className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 text-lg shadow-lg hover:shadow-xl transition-all animate-pulse-slow w-full md:w-auto"
                     >
                       <span className="md:hidden">Checkout securely</span>
                       <span className="hidden md:inline">Continue to secure payment</span>
@@ -2719,7 +2719,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <Button
                     onClick={handleSelectPlan}
                     size="lg"
-                    className="w-full text-lg font-semibold py-3.5 bg-green-600 hover:bg-green-700 text-white rounded-xl animate-cta-enhanced"
+                    className="w-full text-lg font-semibold py-3.5 bg-green-600 hover:bg-green-700 text-white animate-cta-enhanced"
                   >
                     Continue to checkout
                     <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
@@ -2780,7 +2780,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <Button
                       onClick={handleSelectPlan}
                       size="lg"
-                      className="text-lg font-semibold px-8 py-3.5 bg-green-600 hover:bg-green-700 hover:shadow-lg text-white rounded-xl animate-cta-enhanced"
+                      className="text-lg font-semibold px-8 py-3.5 bg-green-600 hover:bg-green-700 hover:shadow-lg text-white animate-cta-enhanced"
                     >
                       Continue to checkout
                       <ArrowRight className="w-5 h-5 ml-2" strokeWidth={3} />
