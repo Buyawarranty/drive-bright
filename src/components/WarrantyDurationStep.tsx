@@ -139,25 +139,26 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
       selectedAddOns
     });
     
-    // Updated pricing matrix matching new database structure
+    // Use centralized pricing matrix from pricingMatrix.ts
+    // BASE prices from CURRENT_PRICE_DEC_2025.xlsx at £50/hr labour rate
     const pricingTable = {
       '12months': {
-        0: { 750: 547, 1250: 587, 2000: 697 },
-        50: { 750: 517, 1250: 537, 2000: 647 },
-        100: { 750: 457, 1250: 497, 2000: 597 },
-        150: { 750: 427, 1250: 457, 2000: 567 }
+        0: { 750: 467, 1250: 497, 2000: 587 },
+        50: { 750: 437, 1250: 457, 2000: 547 },
+        100: { 750: 387, 1250: 417, 2000: 507 },
+        150: { 750: 367, 1250: 387, 2000: 477 }
       },
       '24months': {
-        0: { 750: 1057, 1250: 1097, 2000: 1207 },
-        50: { 750: 967, 1250: 1037, 2000: 1127 },
-        100: { 750: 867, 1250: 927, 2000: 1037 },
-        150: { 750: 817, 1250: 867, 2000: 967 }
+        0: { 750: 897, 1250: 937, 2000: 1027 },
+        50: { 750: 827, 1250: 877, 2000: 957 },
+        100: { 750: 737, 1250: 787, 2000: 877 },
+        150: { 750: 697, 1250: 737, 2000: 827 }
       },
       '36months': {
-        0: { 750: 1587, 1250: 1637, 2000: 1757 },
-        50: { 750: 1467, 1250: 1517, 2000: 1637 },
-        100: { 750: 1287, 1250: 1387, 2000: 1507 },
-        150: { 750: 1237, 1250: 1287, 2000: 1407 }
+        0: { 750: 1347, 1250: 1397, 2000: 1497 },
+        50: { 750: 1247, 1250: 1297, 2000: 1397 },
+        100: { 750: 1097, 1250: 1177, 2000: 1277 },
+        150: { 750: 1047, 1250: 1097, 2000: 1197 }
       }
     };
     
@@ -186,24 +187,16 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
     
     const totalPrice = adjustedBasePrice + planAddOnPrice + protectionAddOnPrice;
     
-    // Determine the fixed saving amount for multi-year plans
-    let savingAmount = 0;
-    if (paymentPeriod === '24months') {
-      savingAmount = 100; // £100 discount for 2-year plans
-    } else if (paymentPeriod === '36months') {
-      savingAmount = 200; // £200 discount for 3-year plans
-    }
+    // No additional discounts - base prices from Excel are already final
+    // Multi-year savings are built into the base prices
+    const savingAmount = 0;
     
-    // Apply automatic discounts for multi-year plans
-    const discountedPrice = totalPrice - savingAmount;
-    
-    const monthlyPrice = Math.round(discountedPrice / 12); // Always use 12 months for monthly calculation
-    // Ensure total matches monthly × 12 to avoid display inconsistency (e.g., £50/month showing £597 total)
+    const monthlyPrice = Math.round(totalPrice / 12); // Always use 12 months for monthly calculation
+    // Ensure total matches monthly × 12 to avoid display inconsistency
     const consistentTotal = monthlyPrice * 12;
     
-    // Calculate pre-discount price based on the displayed total + saving
-    // This ensures: preDiscountPrice - consistentTotal = savingAmount (exactly)
-    const preDiscountPrice = consistentTotal + savingAmount;
+    // No pre-discount price since base prices are final
+    const preDiscountPrice = consistentTotal;
     
     console.log('WarrantyDurationStep - Calculated pricing:', {
       paymentPeriod,
@@ -213,11 +206,8 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
       planAddOnPrice,
       protectionAddOnPrice,
       totalPrice,
-      discountedPrice,
       monthlyPrice,
       consistentTotal,
-      savingAmount,
-      preDiscountPrice,
       selectedFromMatrix: `${voluntaryExcess}_${claimLimit}`,
       durationMonths,
       addOnBreakdown: {
@@ -295,7 +285,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
     },
     {
       id: '24months',
-      title: '2-Year Cover — Save £100 Today',
+      title: '2-Year Cover',
       subtitle: 'MOST POPULAR',
       description: 'Balanced Protection and Value',
       planTitle: 'Platinum Complete Plan',
@@ -315,8 +305,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
         'Pre-existing faults are not covered'
       ],
       ...pricingData24,
-      // Use preDiscountPrice from calculation: ensures saving = preDiscountPrice - totalPrice = exactly £100
-      originalPrice: pricingData24.savingAmount > 0 ? pricingData24.preDiscountPrice : undefined,
+      originalPrice: undefined, // No crossed-out price - base prices are final
       isPopular: true,
       isBestValue: false,
       isStarter: false,
@@ -324,7 +313,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
     },
     {
       id: '36months',
-      title: '3-Year Cover — Save £200 Today',
+      title: '3-Year Cover',
       subtitle: 'BEST VALUE',
       description: 'Extended cover for longer peace of mind',
       planTitle: 'Platinum Complete Plan',
@@ -346,8 +335,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
         'Pre-existing faults are not covered'
       ],
       ...pricingData36,
-      // Use preDiscountPrice from calculation: ensures saving = preDiscountPrice - totalPrice = exactly £200
-      originalPrice: pricingData36.savingAmount > 0 ? pricingData36.preDiscountPrice : undefined,
+      originalPrice: undefined, // No crossed-out price - base prices are final
       isPopular: false,
       isBestValue: true,
       isStarter: false,
