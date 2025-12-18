@@ -292,10 +292,10 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
 
       const rawTotalPrice = adjustedPrice + addOnPrice + boostCost + labourAdjust;
       
-      // CRITICAL: Calculate monthly price first, then derive total from monthly * 12
+      // CRITICAL: Use Math.floor for monthly price to match display exactly
       // This ensures Step 3 and Step 4 display identical prices
-      const monthlyPrice = Math.round(rawTotalPrice / 12);
-      const totalPrice = monthlyPrice * 12; // Normalized total for consistent display
+      const monthlyPrice = Math.floor(rawTotalPrice / 12);
+      const totalPrice = rawTotalPrice; // Pass raw total, Step 4 will normalize
       
       const effectiveClaimLimit = boostAddon ? selectedClaimLimit! + 1000 : selectedClaimLimit!;
 
