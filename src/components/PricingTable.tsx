@@ -2717,7 +2717,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <Button
                     onClick={handleSelectPlan}
                     size="lg"
-                    className="w-full text-lg font-semibold py-3.5 bg-green-600 hover:bg-green-700 text-white animate-cta-enhanced"
+                    className="w-full text-lg font-semibold py-3.5 bg-green-600 hover:bg-green-700 text-white rounded-xl animate-cta-enhanced"
                   >
                     Continue to checkout
                     <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
@@ -2778,7 +2778,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <Button
                       onClick={handleSelectPlan}
                       size="lg"
-                      className="text-lg font-semibold px-8 py-3.5 bg-green-600 hover:bg-green-700 hover:shadow-lg text-white animate-cta-enhanced"
+                      className="text-lg font-semibold px-8 py-3.5 bg-green-600 hover:bg-green-700 hover:shadow-lg text-white rounded-xl animate-cta-enhanced"
                     >
                       Continue to checkout
                       <ArrowRight className="w-5 h-5 ml-2" strokeWidth={3} />
