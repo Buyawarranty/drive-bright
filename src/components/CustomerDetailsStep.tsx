@@ -1479,15 +1479,15 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                 <div className="font-bold text-black text-sm mb-2">Pay in Full</div>
                                 <div className="text-2xl font-bold text-black">£{finalStripePrice}</div>
                                 <div className="text-sm text-gray-600 mt-1">One-time payment</div>
-                                {/* Per spec: Always show 10% saving as fixed label */}
-                                <div className="text-sm font-semibold text-green-600 mt-2">Save £{builtIn10PercentSaving} (10% off)</div>
-                                {/* Show fixed promo as separate line per spec */}
-                                {hasFixedDiscount && (
-                                  <div className="text-sm font-semibold text-green-600">Promo: −£{fixedDiscountAmount}</div>
-                                )}
-                                {/* Show percentage promo as combined */}
-                                {hasPercentagePromo && !hasFixedDiscount && savingsPercent > 10 && (
-                                  <div className="text-sm font-semibold text-green-600">{savingsPercent}% off combined!</div>
+                                {/* Consolidated savings line - combine 10% + promo into one */}
+                                {hasFixedDiscount ? (
+                                  <div className="text-sm font-semibold text-green-600 mt-2">
+                                    Save £{builtIn10PercentSaving + fixedDiscountAmount} ({Math.round(((builtIn10PercentSaving + fixedDiscountAmount) / originalPrice) * 100)}% off)
+                                  </div>
+                                ) : hasPercentagePromo && savingsPercent > 10 ? (
+                                  <div className="text-sm font-semibold text-green-600 mt-2">Save £{builtIn10PercentSaving + percentageDiscountAmount} ({savingsPercent}% off)</div>
+                                ) : (
+                                  <div className="text-sm font-semibold text-green-600 mt-2">Save £{builtIn10PercentSaving} (10% off)</div>
                                 )}
                               </div>
                               
@@ -1497,9 +1497,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                 <div className="text-2xl font-bold text-black">£{discountedMonthlyPayment} <span className="text-base font-normal">per month</span></div>
                                 <div className="text-sm text-gray-600 mt-1">12 payments</div>
                                 <div className="text-sm text-gray-500 mt-1">Total after promo: £{discountedBumperPrice}</div>
-                                {hasPromoCode && promoSavings > 0 && (
-                                  <div className="text-sm font-semibold text-green-600 mt-1">Save £{promoSavings} with promo!</div>
-                                )}
                                 {hasPromoCode && promoSavings > 0 && (
                                   <div className="text-sm font-semibold text-green-600 mt-1">Save £{promoSavings} with promo!</div>
                                 )}
@@ -1817,25 +1814,19 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               return (
                                 <div className="text-center">
                                   <div className="text-4xl font-black text-black mb-1">£{finalStripePrice}</div>
-                                  {/* Per spec: Show 10% saving as fixed label */}
+                                  {/* Consolidated savings line - combine 10% + promo into one */}
                                   <div className="inline-block bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                                    Save £{builtIn10PercentSaving} (10% off)
+                                    {hasFixedDiscount ? (
+                                      <>Save £{builtIn10PercentSaving + fixedDiscountAmount} ({Math.round(((builtIn10PercentSaving + fixedDiscountAmount) / originalPrice) * 100)}% off)</>
+                                    ) : hasPercentagePromo && savingsPercent > 10 ? (
+                                      <>Save £{builtIn10PercentSaving + percentageDiscountAmount} ({savingsPercent}% off)</>
+                                    ) : (
+                                      <>Save £{builtIn10PercentSaving} (10% off)</>
+                                    )}
                                   </div>
                                   <div className="text-sm font-bold text-gray-600 mt-1">
                                     (normally £{originalPrice})
                                   </div>
-                                  {/* Per spec: Show fixed promo as separate line */}
-                                  {hasFixedDiscount && (
-                                    <div className="text-xs text-green-600 font-semibold mt-1">
-                                      Promo code applied: −£{fixedDiscountAmount}
-                                    </div>
-                                  )}
-                                  {/* Show percentage promo combined */}
-                                  {hasPercentagePromo && !hasFixedDiscount && savingsPercent > 10 && (
-                                    <div className="text-xs text-green-600 font-semibold mt-1">
-                                      {savingsPercent}% off combined!
-                                    </div>
-                                  )}
                                 </div>
                               );
                             })()}
