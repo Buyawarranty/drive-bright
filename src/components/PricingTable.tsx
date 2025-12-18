@@ -805,18 +805,22 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return boostAddon ? 5 : 0;
   }, [boostAddon]);
 
-  // Memoized display monthly price with labour rate and boost display adjustments (excludes one-time add-ons)
+  // Memoized display monthly price - exactly matches duration card calculation (Math.floor, not Math.round)
   const displayMonthlyPrice = useMemo(() => {
-    const baseMonthly = Math.round(totalDiscountedPriceWithoutBoost / 12);
-    return Math.round(baseMonthly + labourRateDisplayAdjustment + boostDisplayAdjustment);
-  }, [totalDiscountedPriceWithoutBoost, labourRateDisplayAdjustment, boostDisplayAdjustment]);
+    const durationMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
+    const labourTotalAdjust = labourRateDisplayAdjustment * durationMonths;
+    const boostTotalAdjust = boostDisplayAdjustment * durationMonths;
+    const totalPrice = basePlanPrice + labourTotalAdjust + boostTotalAdjust;
+    return Math.floor(totalPrice / 12);
+  }, [basePlanPrice, paymentType, labourRateDisplayAdjustment, boostDisplayAdjustment]);
 
-  // Memoized display total price - use actual total with adjustments to avoid rounding errors
+  // Memoized display total price - exact total from Excel (not monthly * 12)
   const displayTotalPrice = useMemo(() => {
-    const labourRateTotalAdjustment = labourRateDisplayAdjustment * 12;
-    const boostTotalAdjustment = boostDisplayAdjustment * 12;
-    return totalDiscountedPriceWithoutBoost + labourRateTotalAdjustment + boostTotalAdjustment + oneTimeAddOnPrice;
-  }, [totalDiscountedPriceWithoutBoost, labourRateDisplayAdjustment, boostDisplayAdjustment, oneTimeAddOnPrice]);
+    const durationMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
+    const labourTotalAdjust = labourRateDisplayAdjustment * durationMonths;
+    const boostTotalAdjust = boostDisplayAdjustment * durationMonths;
+    return basePlanPrice + labourTotalAdjust + boostTotalAdjust + oneTimeAddOnPrice;
+  }, [basePlanPrice, paymentType, labourRateDisplayAdjustment, boostDisplayAdjustment, oneTimeAddOnPrice]);
 
   // Memoized monthly price calculation - always divide total by 12 for monthly payments
   const monthlyPrice = useMemo(() => {
@@ -2671,7 +2675,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         £{displayMonthlyPrice}/Month <span className="text-base text-gray-400">– 0% APR</span>
                       </span>
                       <span className="text-sm text-gray-600">Only 12 payments</span>
-                      <span className="text-sm text-gray-900 font-medium">Pay in full: £{Math.round(displayMonthlyPrice * 12 * 0.9)}</span>
+                      <span className="text-sm text-gray-900 font-medium">Pay in full: £{Math.round(displayTotalPrice)}</span>
                     </div>
                     <div className="absolute right-0 flex flex-col items-center">
                       <div className={`p-1.5 rounded-full bg-green-600 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-0' : 'rotate-180'}`}>
@@ -2744,7 +2748,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       Only 12 payments
                     </div>
                     <div className="text-sm text-gray-900 font-medium mt-0.5">
-                      Pay in full: £{Math.round(displayMonthlyPrice * 12 * 0.9)}
+                      Pay in full: £{Math.round(displayTotalPrice)}
                     </div>
                   </div>
                   
