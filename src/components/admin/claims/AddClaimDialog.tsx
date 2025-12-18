@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { PoundSterling, Car, User, Mail, FileText, Calendar, Loader2 } from 'lucide-react';
+import { PoundSterling, Car, User, Mail, FileText, Calendar, Loader2, Search } from 'lucide-react';
+import MileageSlider from '@/components/MileageSlider';
 
 interface AddClaimDialogProps {
   open: boolean;
@@ -36,6 +37,7 @@ export const AddClaimDialog: React.FC<AddClaimDialogProps> = ({
   onClaimAdded
 }) => {
   const [loading, setLoading] = useState(false);
+  const [lookupLoading, setLookupLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: customerName,
     email: customerEmail,
@@ -45,7 +47,10 @@ export const AddClaimDialog: React.FC<AddClaimDialogProps> = ({
     status: 'new',
     internalNotes: '',
     dateOfIncident: '',
-    mileageAtClaim: '',
+    mileageAtClaim: 0,
+    vehicleMake: '',
+    vehicleModel: '',
+    vehicleYear: '',
   });
 
   // Update form when props change
@@ -58,25 +63,57 @@ export const AddClaimDialog: React.FC<AddClaimDialogProps> = ({
     }));
   }, [customerEmail, customerName, vehicleReg]);
 
+  const handleVehicleLookup = async () => {
+    if (!formData.vehicleRegistration || formData.vehicleRegistration.length < 2) {
+      return;
+    }
+
+    setLookupLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
+        body: { registrationNumber: formData.vehicleRegistration.replace(/\s/g, '').toUpperCase() }
+      });
+
+      if (error) throw error;
+
+      if (data && !data.error) {
+        setFormData(prev => ({
+          ...prev,
+          vehicleMake: data.make || '',
+          vehicleModel: data.model || '',
+          vehicleYear: data.yearOfManufacture?.toString() || '',
+        }));
+        toast.success(`Found: ${data.make} ${data.model} (${data.yearOfManufacture})`);
+      } else {
+        toast.error(data?.error || 'Vehicle not found');
+      }
+    } catch (error: any) {
+      console.error('Vehicle lookup error:', error);
+      toast.error('Failed to lookup vehicle');
+    } finally {
+      setLookupLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.email || !formData.name) {
-      toast.error('Customer name and email are required');
+    if (!formData.vehicleRegistration) {
+      toast.error('Vehicle registration is required');
       return;
     }
 
     setLoading(true);
     try {
       const claimData: any = {
-        name: formData.name,
-        email: formData.email.toLowerCase(),
+        name: formData.name || 'Unknown',
+        email: formData.email?.toLowerCase() || 'unknown@unknown.com',
         vehicle_registration: formData.vehicleRegistration?.toUpperCase() || null,
         claim_reason: formData.claimReason || null,
         payment_amount: formData.paymentAmount ? parseFloat(formData.paymentAmount) : null,
         status: formData.status,
         internal_notes: formData.internalNotes || null,
-        mileage_at_claim: formData.mileageAtClaim ? parseInt(formData.mileageAtClaim) : null,
+        mileage_at_claim: formData.mileageAtClaim > 0 ? formData.mileageAtClaim : null,
       };
 
       if (formData.dateOfIncident) {
@@ -111,7 +148,10 @@ export const AddClaimDialog: React.FC<AddClaimDialogProps> = ({
         status: 'new',
         internalNotes: '',
         dateOfIncident: '',
-        mileageAtClaim: '',
+        mileageAtClaim: 0,
+        vehicleMake: '',
+        vehicleModel: '',
+        vehicleYear: '',
       });
     } catch (error: any) {
       console.error('Error adding claim:', error);
@@ -123,7 +163,7 @@ export const AddClaimDialog: React.FC<AddClaimDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-brand-orange" />
@@ -132,55 +172,74 @@ export const AddClaimDialog: React.FC<AddClaimDialogProps> = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Customer Info */}
+          {/* Vehicle Registration with Lookup - REQUIRED */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1">
+              <Car className="w-3 h-3" />
+              Vehicle Registration *
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                value={formData.vehicleRegistration}
+                onChange={(e) => setFormData({ ...formData, vehicleRegistration: e.target.value.toUpperCase() })}
+                placeholder="AB12 CDE"
+                className="flex-1"
+                required
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleVehicleLookup}
+                disabled={lookupLoading || !formData.vehicleRegistration}
+              >
+                {lookupLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Search className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+            {formData.vehicleMake && (
+              <p className="text-sm text-muted-foreground">
+                {formData.vehicleMake} {formData.vehicleModel} ({formData.vehicleYear})
+              </p>
+            )}
+          </div>
+
+          {/* Mileage Slider */}
+          <div className="space-y-2">
+            <Label>Mileage at Claim: {formData.mileageAtClaim.toLocaleString()} miles</Label>
+            <MileageSlider
+              value={formData.mileageAtClaim}
+              onChange={(value) => setFormData({ ...formData, mileageAtClaim: value })}
+              min={0}
+              max={150000}
+            />
+          </div>
+
+          {/* Customer Info - Optional */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="flex items-center gap-1">
                 <User className="w-3 h-3" />
-                Customer Name *
+                Customer Name
               </Label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="John Smith"
-                required
               />
             </div>
             <div className="space-y-2">
               <Label className="flex items-center gap-1">
                 <Mail className="w-3 h-3" />
-                Email *
+                Email
               </Label>
               <Input
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="john@example.com"
-                required
-              />
-            </div>
-          </div>
-
-          {/* Vehicle */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="flex items-center gap-1">
-                <Car className="w-3 h-3" />
-                Vehicle Registration
-              </Label>
-              <Input
-                value={formData.vehicleRegistration}
-                onChange={(e) => setFormData({ ...formData, vehicleRegistration: e.target.value.toUpperCase() })}
-                placeholder="AB12 CDE"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Mileage at Claim</Label>
-              <Input
-                type="number"
-                value={formData.mileageAtClaim}
-                onChange={(e) => setFormData({ ...formData, mileageAtClaim: e.target.value })}
-                placeholder="45000"
               />
             </div>
           </div>
