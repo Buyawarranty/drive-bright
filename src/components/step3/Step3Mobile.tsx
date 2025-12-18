@@ -221,7 +221,8 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
   }, [vehicleData, paymentType]);
 
   // Calculate display monthly price
-  const calculateMonthlyPrice = useCallback((term: string = paymentType || '24months') => {
+  // Calculate total price for a term (exact Excel price + adjustments)
+  const calculateTotalPrice = useCallback((term: string = paymentType || '24months') => {
     const basePrice = getBasePrice(term, voluntaryExcess || 100, selectedClaimLimit || 1250);
     const adjustedPrice = applyPriceAdjustment(basePrice, vehiclePriceAdjustment);
 
@@ -238,15 +239,20 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     const labourMonthlyAdjust = selectedLabourRate === 40 ? -5 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
     const labourAdjust = labourMonthlyAdjust * durationMonths;
 
-    const totalPrice = adjustedPrice + addOnPrice + boostCost + labourAdjust;
-    return Math.round(totalPrice / 12);
+    return adjustedPrice + addOnPrice + boostCost + labourAdjust;
   }, [paymentType, voluntaryExcess, selectedClaimLimit, vehiclePriceAdjustment, selectedProtectionAddOns, boostAddon, selectedLabourRate, getBasePrice]);
+
+  // Calculate monthly price (total / 12, rounded DOWN)
+  const calculateMonthlyPrice = useCallback((term: string = paymentType || '24months') => {
+    const totalPrice = calculateTotalPrice(term);
+    return Math.floor(totalPrice / 12);
+  }, [calculateTotalPrice, paymentType]);
 
   // Current monthly price
   const currentMonthlyPrice = useMemo(() => calculateMonthlyPrice(), [calculateMonthlyPrice]);
 
-  // Calculate total price for sticky footer
-  const currentTotalPrice = useMemo(() => currentMonthlyPrice * 12, [currentMonthlyPrice]);
+  // Calculate total price for sticky footer (exact total, not monthly × 12)
+  const currentTotalPrice = useMemo(() => calculateTotalPrice(), [calculateTotalPrice]);
 
   // Free year text for sticky footer
   const freeYearText = useMemo(() => {
@@ -394,6 +400,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
           onTermChange={(term) => setPaymentType(term)}
           availableDurations={availableDurations}
           getPriceForTerm={calculateMonthlyPrice}
+          getTotalForTerm={calculateTotalPrice}
         />
 
         <ExcessSelector

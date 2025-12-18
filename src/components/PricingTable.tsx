@@ -1453,12 +1453,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // Boost addon: +£5/month for duration
               const boostTotalAdjust = boostAddon ? (5 * durationMonths) : 0;
               
-              // Calculate total price with all adjustments
+              // Calculate total price with all adjustments (exact Excel price + adjustments)
               const totalPriceWithAdjustments = finalBasePrice + labourTotalAdjust + boostTotalAdjust;
               
-              // Calculate display monthly price (always divide by 12 for monthly installments)
-              const displayedMonthlyPrice = Math.round(totalPriceWithAdjustments / 12);
-              const displayedAnnualPrice = displayedMonthlyPrice * 12; // Keep consistent with monthly × 12
+              // Calculate display monthly price (always divide by 12, round DOWN)
+              const displayedMonthlyPrice = Math.floor(totalPriceWithAdjustments / 12);
+              
+              // Pay in full = exact total price (NOT monthly × 12)
+              const displayedAnnualPrice = totalPriceWithAdjustments;
               
               // Promotional savings for display (Was price = Pay in full + savings)
               const savingsAmount = durationId === '24months' ? 100 : durationId === '36months' ? 200 : 0;
@@ -1536,10 +1538,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     
                     {/* Pay in full with was price */}
                     <div className="text-sm mt-2">
-                      {/* Pay in full = monthly × 12 (no additional discount) */}
-                      <span className="font-bold text-black">Pay in full £{displayedMonthlyPrice * 12}</span>
+                      {/* Pay in full = exact total price from Excel */}
+                      <span className="font-bold text-black">Pay in full £{displayedAnnualPrice}</span>
                       {savingsAmount > 0 && (
-                        <span className="text-red-500 line-through ml-1">(Was £{displayedMonthlyPrice * 12 + savingsAmount})</span>
+                        <span className="text-red-500 line-through ml-1">(Was £{displayedAnnualPrice + savingsAmount})</span>
                       )}
                     </div>
                     
