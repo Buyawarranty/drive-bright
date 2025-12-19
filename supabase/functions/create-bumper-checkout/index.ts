@@ -56,7 +56,8 @@ serve(async (req) => {
       claimLimit = 1250,
       seasonalBonusMonths = 0,
       labourRate = 50,
-      startDate = null
+      startDate = null,
+      trackingData = {} // GCLID and Client ID for server-side conversion
     } = requestData;
 
     // Validate vehicle age (must be 15 years or newer)
@@ -217,7 +218,11 @@ serve(async (req) => {
       add_another_warranty: addAnotherWarrantyRequested || false,
       redirect_url: redirectUrl,
       status: 'pending',
-      claim_limit: claimLimit
+      claim_limit: claimLimit,
+      // Server-side conversion tracking
+      gclid: trackingData?.gclid || null,
+      client_id: trackingData?.clientId || null,
+      conversion_status: 'pending'
     };
     
     logStep("Transaction data to insert", { 

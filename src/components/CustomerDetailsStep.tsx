@@ -20,6 +20,7 @@ import TrustpilotHeader from '@/components/TrustpilotHeader';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
 import { StartDatePicker } from '@/components/checkout/StartDatePicker';
+import { getTrackingData } from '@/utils/gclidCapture';
 
 import { startOfDay, format, isToday } from 'date-fns';
 
@@ -874,7 +875,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
               lostKey: false, // Not available in frontend selection
               consequential: false // Not available in frontend selection
             },
-            seasonalBonusMonths: seasonalOfferClaimed ? 3 : 0
+            seasonalBonusMonths: seasonalOfferClaimed ? 3 : 0,
+            // Server-side conversion tracking data
+            trackingData: getTrackingData()
           }
         });
 
@@ -994,7 +997,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
         },
         discountCode: appliedDiscountCodes.map(code => code.code).join(', '),
         finalAmount: finalPrice,
-        seasonalBonusMonths: seasonalOfferClaimed ? 3 : 0
+        seasonalBonusMonths: seasonalOfferClaimed ? 3 : 0,
+        trackingData: getTrackingData()
       }
     });
 

@@ -18,6 +18,7 @@ import { batchLocalStorageWrite, safeLocalStorageRemove, parseLocalStorageJSON, 
 import PerformanceOptimizedSuspense from '@/components/PerformanceOptimizedSuspense';
 import { BackNavigationConfirmDialog } from '@/components/BackNavigationConfirmDialog';
 import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';
+import { captureGclid } from '@/utils/gclidCapture';
 
 
 // Lazy load heavy components that are not immediately visible
@@ -422,6 +423,11 @@ const Index = () => {
       return () => clearTimeout(timer);
     }
   }, [isRestoringFromUrl]);
+
+  // Capture GCLID from Google Ads on page load for server-side conversion tracking
+  useEffect(() => {
+    captureGclid();
+  }, []);
 
   // Quote restoration effect - optimized with memoization
   useEffect(() => {

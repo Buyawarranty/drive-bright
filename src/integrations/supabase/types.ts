@@ -759,10 +759,14 @@ export type Database = {
         Row: {
           add_another_warranty: boolean | null
           claim_limit: number | null
+          client_id: string | null
+          conversion_fired_at: string | null
+          conversion_status: string | null
           created_at: string
           customer_data: Json
           discount_code: string | null
           final_amount: number
+          gclid: string | null
           id: string
           payment_type: string
           plan_id: string
@@ -776,10 +780,14 @@ export type Database = {
         Insert: {
           add_another_warranty?: boolean | null
           claim_limit?: number | null
+          client_id?: string | null
+          conversion_fired_at?: string | null
+          conversion_status?: string | null
           created_at?: string
           customer_data: Json
           discount_code?: string | null
           final_amount: number
+          gclid?: string | null
           id?: string
           payment_type: string
           plan_id: string
@@ -793,10 +801,14 @@ export type Database = {
         Update: {
           add_another_warranty?: boolean | null
           claim_limit?: number | null
+          client_id?: string | null
+          conversion_fired_at?: string | null
+          conversion_status?: string | null
           created_at?: string
           customer_data?: Json
           discount_code?: string | null
           final_amount?: number
+          gclid?: string | null
           id?: string
           payment_type?: string
           plan_id?: string

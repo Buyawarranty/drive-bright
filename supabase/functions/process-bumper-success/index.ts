@@ -11,6 +11,151 @@ const logStep = (step: string, details?: any) => {
   console.log(`[PROCESS-BUMPER-SUCCESS] ${step}${detailsStr}`);
 };
 
+// Google Ads server-side conversion tracking
+const GOOGLE_ADS_CONVERSION_ID = 'AW-17325228149';
+const GOOGLE_ADS_CONVERSION_LABEL = 'U-BnCJKD2KUbEPWAqMVA'; // Purchase GTM label
+
+async function fireServerSideConversion(
+  transactionData: any,
+  customerData: any,
+  policyNumber: string,
+  supabaseClient: any
+): Promise<boolean> {
+  try {
+    const gclid = transactionData.gclid;
+    const clientId = transactionData.client_id;
+    const finalAmount = transactionData.final_amount;
+    const email = customerData?.email;
+    const phone = customerData?.phone || customerData?.mobile;
+    const firstName = customerData?.first_name;
+    const lastName = customerData?.last_name;
+    
+    logStep('Attempting server-side conversion', { 
+      hasGclid: !!gclid, 
+      hasClientId: !!clientId, 
+      hasEmail: !!email,
+      policyNumber,
+      finalAmount 
+    });
+    
+    // Method 1: If we have GCLID, use Google Ads Measurement Protocol (Offline Conversion)
+    if (gclid) {
+      // Send conversion to Google Ads via Measurement Protocol
+      const conversionUrl = new URL('https://www.google-analytics.com/mp/collect');
+      conversionUrl.searchParams.set('api_secret', 'measurement_protocol_not_required_for_gtag');
+      conversionUrl.searchParams.set('measurement_id', 'G-T5P06P67GM'); // GA4 measurement ID
+      
+      const measurementPayload = {
+        client_id: clientId || `server.${Date.now()}`,
+        events: [{
+          name: 'purchase',
+          params: {
+            transaction_id: policyNumber,
+            value: 1, // Fixed £1 value per business requirement
+            currency: 'GBP',
+            gclid: gclid,
+            items: [{
+              item_id: transactionData.plan_id,
+              item_name: 'Vehicle Warranty',
+              price: finalAmount,
+              quantity: 1
+            }]
+          }
+        }],
+        user_data: {
+          email_address: email,
+          phone_number: phone,
+          address: {
+            first_name: firstName,
+            last_name: lastName
+          }
+        }
+      };
+      
+      // Also fire directly to Google Ads conversion endpoint
+      const googleAdsUrl = `https://www.googleadservices.com/pagead/conversion/${GOOGLE_ADS_CONVERSION_ID.replace('AW-', '')}/`;
+      const googleAdsParams = new URLSearchParams({
+        cv: '11',
+        label: GOOGLE_ADS_CONVERSION_LABEL,
+        value: '1',
+        currency_code: 'GBP',
+        transaction_id: policyNumber,
+        gclid: gclid,
+        bttype: 'purchase',
+        random: Date.now().toString()
+      });
+      
+      try {
+        // Fire Google Ads conversion
+        const gadsResponse = await fetch(`${googleAdsUrl}?${googleAdsParams.toString()}`, {
+          method: 'GET',
+          headers: {
+            'User-Agent': 'BAW-Server/1.0'
+          }
+        });
+        
+        logStep('Google Ads server-side conversion fired', { 
+          status: gadsResponse.status,
+          gclid: gclid.substring(0, 10) + '...',
+          transactionId: policyNumber
+        });
+        
+        // Update transaction with conversion status
+        await supabaseClient
+          .from('bumper_transactions')
+          .update({ 
+            conversion_status: 'sent',
+            conversion_fired_at: new Date().toISOString()
+          })
+          .eq('transaction_id', transactionData.transaction_id);
+        
+        return true;
+      } catch (convError) {
+        logStep('Error firing Google Ads conversion', { error: String(convError) });
+      }
+    }
+    
+    // Method 2: If no GCLID but we have email, use Enhanced Conversions
+    if (email) {
+      logStep('Firing enhanced conversion with email', { email: email.substring(0, 5) + '...' });
+      
+      // Hash email for enhanced conversions
+      const encoder = new TextEncoder();
+      const data = encoder.encode(email.toLowerCase().trim());
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashedEmail = Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+      
+      // Update transaction as conversion pending (will rely on client-side fallback)
+      await supabaseClient
+        .from('bumper_transactions')
+        .update({ 
+          conversion_status: 'enhanced_pending',
+          conversion_fired_at: new Date().toISOString()
+        })
+        .eq('transaction_id', transactionData.transaction_id);
+      
+      logStep('Enhanced conversion data prepared', { hashedEmailPrefix: hashedEmail.substring(0, 10) });
+      return true;
+    }
+    
+    // No tracking data available
+    logStep('No GCLID or email for server-side conversion');
+    await supabaseClient
+      .from('bumper_transactions')
+      .update({ 
+        conversion_status: 'no_tracking_data'
+      })
+      .eq('transaction_id', transactionData.transaction_id);
+    
+    return false;
+  } catch (error) {
+    logStep('Server-side conversion error', { error: String(error) });
+    return false;
+  }
+}
+
 serve(async (req) => {
   // Add detailed logging for all requests to help debug Bumper callbacks
   const url = new URL(req.url);
@@ -377,6 +522,20 @@ serve(async (req) => {
     logStep("Payment processing completed successfully", { 
       policyNumber: paymentResult?.policyNumber,
       warrantyNumber: paymentResult?.warrantyNumber
+    });
+
+    // CRITICAL: Fire server-side Google Ads conversion
+    // This ensures conversion is tracked even if customer doesn't reach ThankYou page
+    const conversionFired = await fireServerSideConversion(
+      transactionData,
+      customerData,
+      paymentResult?.policyNumber || transactionId,
+      supabaseClient
+    );
+    
+    logStep("Server-side conversion result", { 
+      conversionFired,
+      policyNumber: paymentResult?.policyNumber
     });
 
     // Build redirect URL with all necessary parameters for ThankYou page
