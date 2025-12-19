@@ -21,8 +21,8 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
   isValid,
   paymentPeriod = '24months'
 }) => {
-  // BODMAS: Pay in full = monthly × 12 (calculate monthly first, then multiply)
-  const payInFull = monthlyPrice * 12;
+  // Use actual total price for pay in full (includes all add-ons)
+  const payInFull = totalPrice;
   
   // Get marketing savings from centralized pricing matrix
   const savings = getMarketingSavings(paymentPeriod as PaymentPeriod);
