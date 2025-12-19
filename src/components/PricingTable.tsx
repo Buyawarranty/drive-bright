@@ -1018,23 +1018,27 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
     setEmailQuoteSending(true);
     try {
-      const warrantyYears = emailQuoteDuration === '12months' ? 1 : emailQuoteDuration === '24months' ? 2 : 3;
-      const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
-      const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, emailQuoteDuration);
-      const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
+      // Calculate price using the same centralized logic as the display
+      let displayedMonthlyPrice: number;
       
-      // Apply automatic discounts
-      let discountedPrice = adjustedBasePrice;
-      if (emailQuoteDuration === '24months') {
-        discountedPrice = adjustedBasePrice - 100;
-      } else if (emailQuoteDuration === '36months') {
-        discountedPrice = adjustedBasePrice - 200;
+      if (emailQuoteDuration === paymentType) {
+        // Use current monthlyPrice if duration matches
+        displayedMonthlyPrice = monthlyPrice;
+      } else {
+        // Calculate for the selected duration using centralized logic
+        const warrantyYears = emailQuoteDuration === '12months' ? 1 : emailQuoteDuration === '24months' ? 2 : 3;
+        const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
+        const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, emailQuoteDuration);
+        const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
+        
+        const durationMonths = emailQuoteDuration === '12months' ? 12 : emailQuoteDuration === '24months' ? 24 : 36;
+        const labourRateTotalAdj = calculateLabourRateAdjustment(selectedLabourRate, emailQuoteDuration as PaymentPeriod);
+        const boostCost = calculateBoostAdjustment(boostAddon, emailQuoteDuration as PaymentPeriod);
+        const addOnCost = calculateAddOnPrice(selectedProtectionAddOns, emailQuoteDuration, durationMonths);
+        
+        const total = adjustedBasePrice + labourRateTotalAdj + boostCost + addOnCost;
+        displayedMonthlyPrice = Math.floor(total / 12);
       }
-      
-      const baseMonthlyPrice = Math.round(discountedPrice / 12);
-      const labourRateAdjustment = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
-      const boostDisplayAdjustment = boostAddon ? 5 : 0;
-      const displayedMonthlyPrice = Math.round(baseMonthlyPrice + labourRateAdjustment + boostDisplayAdjustment);
 
       const planName = emailQuoteDuration === '12months' ? '1-Year Cover' : 
                        emailQuoteDuration === '24months' ? '2-Year Cover' : '3-Year Cover';
@@ -2848,30 +2852,33 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <div className="text-right">
                   <span className="font-bold">
                     £{(() => {
-                      // Calculate base price for the selected emailQuoteDuration
+                      // Use the same calculation as the main pricing
+                      // If email quote duration matches current paymentType, use current monthlyPrice
+                      if (emailQuoteDuration === paymentType) {
+                        return monthlyPrice;
+                      }
+                      
+                      // Otherwise calculate for the selected duration using centralized logic
                       const warrantyYears = emailQuoteDuration === '12months' ? 1 : emailQuoteDuration === '24months' ? 2 : 3;
                       const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
                       const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, emailQuoteDuration);
                       const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
                       
-                      // Apply duration discount
-                      let discountedPrice = adjustedBasePrice;
-                      if (emailQuoteDuration === '24months') {
-                        discountedPrice = adjustedBasePrice - 100;
-                      } else if (emailQuoteDuration === '36months') {
-                        discountedPrice = adjustedBasePrice - 200;
-                      }
+                      // Calculate labour rate adjustment for this duration
+                      const durationMonths = emailQuoteDuration === '12months' ? 12 : emailQuoteDuration === '24months' ? 24 : 36;
+                      const labourRateTotalAdj = calculateLabourRateAdjustment(selectedLabourRate, emailQuoteDuration as PaymentPeriod);
                       
-                      // Calculate monthly from total (always 12 payments)
-                      const baseMonthlyPrice = Math.round(discountedPrice / 12);
+                      // Calculate boost addon cost
+                      const boostCost = calculateBoostAdjustment(boostAddon, emailQuoteDuration as PaymentPeriod);
                       
-                      // Apply labour rate display adjustment
-                      const labourRateAdj = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
+                      // Calculate add-on price including transfer cover
+                      const addOnCost = calculateAddOnPrice(selectedProtectionAddOns, emailQuoteDuration, durationMonths);
                       
-                      // Apply boost display adjustment
-                      const boostAdj = boostAddon ? 5 : 0;
+                      // Total price for this duration
+                      const total = adjustedBasePrice + labourRateTotalAdj + boostCost + addOnCost;
                       
-                      return Math.round(baseMonthlyPrice + labourRateAdj + boostAdj);
+                      // Monthly = floor(total / 12)
+                      return Math.floor(total / 12);
                     })()}/month
                   </span>
                   <div className="text-xs text-gray-500">(12 payments only)</div>
@@ -2881,26 +2888,26 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <span className="text-gray-600">Total Cost:</span>
                 <span className="font-bold text-green-600">
                   £{(() => {
-                    // Calculate base price for the selected emailQuoteDuration
+                    // Use the same calculation as the main pricing
+                    if (emailQuoteDuration === paymentType) {
+                      return monthlyPrice * 12;
+                    }
+                    
+                    // Otherwise calculate for the selected duration
                     const warrantyYears = emailQuoteDuration === '12months' ? 1 : emailQuoteDuration === '24months' ? 2 : 3;
                     const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
                     const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, emailQuoteDuration);
                     const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
                     
-                    // Apply duration discount
-                    let discountedPrice = adjustedBasePrice;
-                    if (emailQuoteDuration === '24months') {
-                      discountedPrice = adjustedBasePrice - 100;
-                    } else if (emailQuoteDuration === '36months') {
-                      discountedPrice = adjustedBasePrice - 200;
-                    }
+                    const durationMonths = emailQuoteDuration === '12months' ? 12 : emailQuoteDuration === '24months' ? 24 : 36;
+                    const labourRateTotalAdj = calculateLabourRateAdjustment(selectedLabourRate, emailQuoteDuration as PaymentPeriod);
+                    const boostCost = calculateBoostAdjustment(boostAddon, emailQuoteDuration as PaymentPeriod);
+                    const addOnCost = calculateAddOnPrice(selectedProtectionAddOns, emailQuoteDuration, durationMonths);
                     
-                    // Apply display adjustments to total (12 months worth)
-                    const labourRateAdj = selectedLabourRate === 40 ? -3 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
-                    const boostAdj = boostAddon ? 5 : 0;
-                    const totalAdjustment = (labourRateAdj + boostAdj) * 12;
+                    const total = adjustedBasePrice + labourRateTotalAdj + boostCost + addOnCost;
                     
-                    return discountedPrice + totalAdjustment;
+                    // Total = floor(total / 12) * 12
+                    return Math.floor(total / 12) * 12;
                   })()}
                 </span>
               </div>
