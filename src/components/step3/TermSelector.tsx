@@ -16,15 +16,13 @@ interface TermSelectorProps {
   onTermChange: (term: '12months' | '24months' | '36months') => void;
   availableDurations: ('12months' | '24months' | '36months')[];
   getPriceForTerm: (term: string) => number;
-  getTotalForTerm?: (term: string) => number; // Optional: exact total price
 }
 
 const TermSelector: React.FC<TermSelectorProps> = ({
   selectedTerm,
   onTermChange,
   availableDurations,
-  getPriceForTerm,
-  getTotalForTerm: getTotalForTermProp
+  getPriceForTerm
 }) => {
   const [showAllOptions, setShowAllOptions] = useState(false);
 
@@ -35,19 +33,10 @@ const TermSelector: React.FC<TermSelectorProps> = ({
     return 0;
   };
 
-  // Get total price for a term - use exact total if provided, otherwise monthly × 12
-  const getTotalForTerm = (termId: string): number => {
-    if (getTotalForTermProp) {
-      return getTotalForTermProp(termId);
-    }
-    // Fallback: monthly × 12
+  // Pay in full price = monthly × 12 (BODMAS: calculate monthly first, then multiply)
+  const getPayInFullPrice = (termId: string): number => {
     const monthly = getPriceForTerm(termId);
     return monthly * 12;
-  };
-
-  // Pay in full price = exact total (NO monthly × 12 rounding)
-  const getPayInFullPrice = (termId: string): number => {
-    return getTotalForTerm(termId);
   };
 
   // Calculate "was" price = pay in full + savings
@@ -105,9 +94,8 @@ const TermSelector: React.FC<TermSelectorProps> = ({
         {visibleTerms.map((term) => {
           const isSelected = selectedTerm === term.id;
           const savings = getSavingsForTerm(term.id);
-          const total = getTotalForTerm(term.id);
-          const wasPrice = getWasPriceForTerm(term.id);
           const payInFullPrice = getPayInFullPrice(term.id);
+          const wasPrice = payInFullPrice + savings;
           
           return (
             <button

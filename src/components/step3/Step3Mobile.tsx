@@ -383,7 +383,6 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
           onTermChange={(term) => setPaymentType(term)}
           availableDurations={availableDurations}
           getPriceForTerm={calculateMonthlyPrice}
-          getTotalForTerm={calculateTotalPrice}
         />
 
         <ExcessSelector

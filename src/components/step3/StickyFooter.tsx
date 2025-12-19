@@ -21,10 +21,13 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
   isValid,
   paymentPeriod = '24months'
 }) => {
+  // BODMAS: Pay in full = monthly × 12 (calculate monthly first, then multiply)
+  const payInFull = monthlyPrice * 12;
+  
   // Get marketing savings from centralized pricing matrix
   const savings = getMarketingSavings(paymentPeriod as PaymentPeriod);
-  // "Was" price = actual price + marketing savings (display gimmick only)
-  const wasPrice = totalPrice + savings;
+  // "Was" price = pay in full + marketing savings (display gimmick only)
+  const wasPrice = payInFull + savings;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] border-t border-gray-200 z-50">
@@ -60,7 +63,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
               {savings > 0 && (
                 <span className="line-through text-red-500">£{wasPrice}</span>
               )}
-              <span className="font-bold text-green-600">£{totalPrice}</span>
+              <span className="font-bold text-green-600">£{payInFull}</span>
               {savings > 0 && (
                 <span className="text-gray-600">(Save £{savings})</span>
               )}
@@ -137,7 +140,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
               {savings > 0 && (
                 <span className="line-through text-red-500">£{wasPrice}</span>
               )}
-              <span className="font-bold text-green-600">£{totalPrice}</span>
+              <span className="font-bold text-green-600">£{payInFull}</span>
               {savings > 0 && (
                 <span className="text-gray-500">(Save £{savings})</span>
               )}
