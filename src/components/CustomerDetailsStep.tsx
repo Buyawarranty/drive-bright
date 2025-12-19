@@ -364,7 +364,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   // CRITICAL FIX: Use Math.floor to match Step 3's display calculation exactly
   // Step 3 displays: Math.floor(total / 12) as monthly, and Math.floor(total * 0.9) as pay-in-full
   const monthlyPrice = updatedPricingData.monthlyPrice || Math.floor(updatedPricingData.totalPrice / 12);
-  const bumperTotalPrice = updatedPricingData.totalPrice; // Use exact total from Step 3
+  const bumperTotalPrice = monthlyPrice * 12; // Normalize to monthly * 12 for consistency
   const stripeTotalPrice = Math.floor(bumperTotalPrice * 0.90); // Pay-in-full: 10% discount
 
   console.log('💰 CustomerDetailsStep - Pricing calculation:', {
