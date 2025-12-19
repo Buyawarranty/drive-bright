@@ -2662,7 +2662,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         <div className="flex flex-col items-center text-center">
                           <div className="flex items-baseline gap-1">
                             <span className="text-lg font-bold text-gray-900">£{displayMonthlyPrice}/mo</span>
-                            <span className="text-xs text-gray-400">0% APR</span>
+                            <span className="text-xs text-gray-600">0% APR</span>
                           </div>
                           <div className="flex items-center gap-1 text-xs mt-0.5">
                             {savings > 0 && <span className="line-through text-red-500">£{wasPrice}</span>}
@@ -2683,7 +2683,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         {/* Details Chevron - Positioned Right */}
                         <div className="absolute right-0 flex flex-col items-center">
                           <div className={`p-1.5 rounded-full bg-green-600 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : 'rotate-0'}`}>
-                            <ChevronDown className="w-4 h-4 text-white" />
+                            <ChevronUp className="w-4 h-4 text-white" />
                           </div>
                           <span className="text-[10px] font-medium text-green-600 mt-0.5">Details</span>
                         </div>
@@ -2699,11 +2699,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
                             rel="noopener noreferrer"
                             className="hover:opacity-80 transition-opacity"
                           >
-                            <TrustpilotHeader className="h-4" />
+                            <TrustpilotHeader className="h-3 scale-70" />
                           </a>
                           {/* Year Free Badge */}
                           {paymentType !== '12months' && (
-                            <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium">
+                            <span className="text-gray-900 text-xs font-medium">
                               {paymentType === '24months' && 'Year 2 FREE 🎉'}
                               {paymentType === '36months' && 'Years 2 & 3 FREE 🎉'}
                             </span>
@@ -2745,7 +2745,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           rel="noopener noreferrer"
                           className="hover:opacity-80 transition-opacity"
                         >
-                          <TrustpilotHeader className="flex-shrink-0" />
+                          <TrustpilotHeader className="flex-shrink-0 scale-[0.7] origin-center" />
                         </a>
                         <div className="text-xs text-gray-500 mt-1.5 whitespace-nowrap">14 days to cancel</div>
                       </div>
@@ -2753,7 +2753,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       {/* SECTION 2: Price */}
                       <div className="flex-1 flex flex-col items-center justify-center px-3 lg:px-6 py-4 border-r border-gray-100 text-center min-w-0">
                         <div className="text-xl lg:text-2xl font-bold text-gray-900 whitespace-nowrap">
-                          £{displayMonthlyPrice}/Month <span className="text-sm lg:text-base font-normal text-gray-400">– 0% APR</span>
+                          £{displayMonthlyPrice}/Month <span className="text-sm lg:text-base font-normal text-gray-600">– 0% APR</span>
                         </div>
                         <div className="text-xs lg:text-sm text-gray-500 mt-0.5 whitespace-nowrap">
                           Only 12 payments
@@ -2769,7 +2769,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       {/* SECTION 3: Cover & Free Years */}
                       <div className="flex flex-col items-center justify-center px-3 lg:px-6 py-4 border-r border-gray-100 text-center min-w-fit">
                         {paymentType !== '12months' && (
-                          <span className="bg-green-100 text-green-700 px-2 lg:px-2.5 py-1 rounded-full text-xs lg:text-sm font-medium mb-1 whitespace-nowrap">
+                          <span className="text-gray-900 text-xs lg:text-sm font-medium mb-1 whitespace-nowrap">
                             {paymentType === '24months' && 'Year 2 FREE 🎉'}
                             {paymentType === '36months' && 'Years 2 & 3 FREE 🎉'}
                           </span>
