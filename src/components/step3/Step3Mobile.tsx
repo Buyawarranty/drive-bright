@@ -427,6 +427,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
         onContinue={handleContinue}
         isLoading={loading}
         isValid={isFormValid}
+        paymentPeriod={paymentType}
       />
     </div>
   );
