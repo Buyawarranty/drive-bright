@@ -2469,7 +2469,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <span className="text-sm text-black">(Only 12 payments)</span>
                     </div>
                     {(() => {
-                      const payInFull = displayMonthlyPrice * 12;
+                      const payInFull = totalPrice; // Use actual total, not monthly * 12
                       const savings = getMarketingSavings(paymentType as PaymentPeriod);
                       const wasPrice = payInFull + savings;
                       return (
@@ -2644,8 +2644,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <>
                 {/* Mobile Layout - Collapsible */}
                 {(() => {
-                  // BODMAS: Pay in full = monthly × 12
-                  const payInFull = displayMonthlyPrice * 12;
+                  // Use actual total price for pay in full
+                  const payInFull = totalPrice;
                   const savings = getMarketingSavings(paymentType as PaymentPeriod);
                   const wasPrice = payInFull + savings;
                   return (
@@ -2727,8 +2727,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
                 {/* Desktop Layout - Clean 4-Section Card with Equal Spacing */}
                 {(() => {
-                  // BODMAS: Pay in full = monthly × 12
-                  const payInFull = displayMonthlyPrice * 12;
+                  // Use actual total price for pay in full
+                  const payInFull = totalPrice;
                   const savings = getMarketingSavings(paymentType as PaymentPeriod);
                   const wasPrice = payInFull + savings;
                   return (
