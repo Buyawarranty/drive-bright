@@ -2699,7 +2699,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                             rel="noopener noreferrer"
                             className="hover:opacity-80 transition-opacity"
                           >
-                            <TrustpilotHeader className="h-3 scale-70" />
+                            <TrustpilotHeader className="h-3 scale-[0.5] origin-center" />
                           </a>
                           {/* Year Free Badge */}
                           {paymentType !== '12months' && (
