@@ -77,8 +77,8 @@ const allExtras: ExtraWithBadge[] = [
   {
     key: 'transfer',
     title: 'Transfer Cover',
-    shortDescription: 'Transfer warranty to new owner',
-    details: ['One-time transfer fee', 'Full warranty continues with new owner', 'Increases vehicle resale value'],
+    shortDescription: 'Transfer warranty to new owner (£19 total)',
+    details: ['One-time £19 fee spread across your monthly payments', 'Full warranty continues with new owner', 'Increases vehicle resale value'],
     price: 19,
     priceType: 'one-off',
     icon: '🔁'
@@ -106,11 +106,11 @@ const ExtrasSelector: React.FC<ExtrasSelectorProps> = ({
     const isSelected = selectedAddOns[extra.key] || isAutoIncluded;
     const isDetailsOpen = openDetails === extra.key;
     
-    // Calculate display price
+    // Calculate display price - all add-ons shown as monthly (split across 12 payments)
     const months = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
     const displayPrice = extra.priceType === 'monthly' 
       ? Math.round((extra.price * months) / 12)
-      : extra.price;
+      : Math.round(extra.price / 12); // One-off fees split across 12 monthly payments
 
     return (
       <Collapsible
@@ -154,7 +154,7 @@ const ExtrasSelector: React.FC<ExtrasSelectorProps> = ({
                   <p className="text-sm text-muted-foreground mt-0.5">{extra.shortDescription}</p>
                   {!isAutoIncluded && (
                     <p className="text-sm font-semibold text-foreground mt-1">
-                      +£{displayPrice}{extra.priceType === 'monthly' ? '/month' : ' one-off'}
+                      +£{displayPrice}/month
                     </p>
                   )}
                 </div>
