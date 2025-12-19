@@ -2739,7 +2739,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <div className="hidden md:flex md:items-stretch md:justify-between w-full bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                       
                       {/* SECTION 1: Trust & Reassurance */}
-                      <div className="flex flex-col items-center justify-center px-6 py-4 border-r border-gray-100">
+                      <div className="flex flex-col items-center justify-center px-3 lg:px-6 py-4 border-r border-gray-100 min-w-fit">
                         <a 
                           href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
                           target="_blank" 
@@ -2748,34 +2748,34 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         >
                           <TrustpilotHeader className="flex-shrink-0" />
                         </a>
-                        <div className="text-xs text-gray-500 mt-1.5">14 days to cancel</div>
+                        <div className="text-xs text-gray-500 mt-1.5 whitespace-nowrap">14 days to cancel</div>
                       </div>
                       
                       {/* SECTION 2: Price */}
-                      <div className="flex-1 flex flex-col items-center justify-center px-6 py-4 border-r border-gray-100 text-center">
-                        <div className="text-2xl font-bold text-gray-900">
-                          £{displayMonthlyPrice}/Month <span className="text-base font-normal text-gray-400">– 0% APR</span>
+                      <div className="flex-1 flex flex-col items-center justify-center px-3 lg:px-6 py-4 border-r border-gray-100 text-center min-w-0">
+                        <div className="text-xl lg:text-2xl font-bold text-gray-900 whitespace-nowrap">
+                          £{displayMonthlyPrice}/Month <span className="text-sm lg:text-base font-normal text-gray-400">– 0% APR</span>
                         </div>
-                        <div className="text-sm text-gray-500 mt-0.5">
+                        <div className="text-xs lg:text-sm text-gray-500 mt-0.5 whitespace-nowrap">
                           Only 12 payments
                         </div>
-                        <div className="flex items-center gap-2 text-sm mt-0.5">
+                        <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm mt-0.5 flex-wrap justify-center">
                           <span className="text-gray-500">Pay in full:</span>
                           <span className="line-through text-red-500">£{originalPrice}</span>
                           <span className="font-bold text-green-600">£{Math.round(displayTotalPrice)}</span>
-                          <span className="text-gray-600">(Save £{savings})</span>
+                          <span className="text-gray-600 whitespace-nowrap">(Save £{savings})</span>
                         </div>
                       </div>
                       
                       {/* SECTION 3: Cover & Free Years */}
-                      <div className="flex flex-col items-center justify-center px-6 py-4 border-r border-gray-100 text-center">
+                      <div className="flex flex-col items-center justify-center px-3 lg:px-6 py-4 border-r border-gray-100 text-center min-w-fit">
                         {paymentType !== '12months' && (
-                          <span className="bg-green-100 text-green-700 px-2.5 py-1 rounded-full text-sm font-medium mb-1">
+                          <span className="bg-green-100 text-green-700 px-2 lg:px-2.5 py-1 rounded-full text-xs lg:text-sm font-medium mb-1 whitespace-nowrap">
                             {paymentType === '24months' && 'Year 2 FREE 🎉'}
                             {paymentType === '36months' && 'Years 2 & 3 FREE 🎉'}
                           </span>
                         )}
-                        <span className="font-bold text-gray-900">
+                        <span className="font-bold text-gray-900 text-sm lg:text-base whitespace-nowrap">
                           {paymentType === '12months' && '1-Year Cover'}
                           {paymentType === '24months' && '2-Year Cover'}
                           {paymentType === '36months' && '3-Year Cover'}
@@ -2783,17 +2783,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
                       
                       {/* SECTION 4: CTA */}
-                      <div className="flex flex-col items-center justify-center px-6 py-4">
+                      <div className="flex flex-col items-center justify-center px-3 lg:px-6 py-4 min-w-fit">
                         <Button
                           onClick={handleSelectPlan}
                           size="lg"
-                          className="text-lg font-semibold px-8 py-3.5 bg-green-600 hover:bg-green-700 hover:shadow-lg text-white rounded-xl"
+                          className="text-base lg:text-lg font-semibold px-4 lg:px-8 py-3 lg:py-3.5 bg-green-600 hover:bg-green-700 hover:shadow-lg text-white rounded-xl whitespace-nowrap"
                         >
                           Continue to checkout
-                          <ArrowRight className="w-5 h-5 ml-2" strokeWidth={3} />
+                          <ArrowRight className="w-4 lg:w-5 h-4 lg:h-5 ml-2" strokeWidth={3} />
                         </Button>
-                        <div className="flex items-center gap-1.5 mt-2 text-xs text-gray-500">
-                          <Lock className="h-3 w-3" />
+                        <div className="flex items-center gap-1.5 mt-2 text-xs text-gray-500 whitespace-nowrap">
+                          <Lock className="h-3 w-3 flex-shrink-0" />
                           <span>Secure checkout – No hidden fees</span>
                         </div>
                       </div>
