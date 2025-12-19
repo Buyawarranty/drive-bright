@@ -3,6 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { validateVehicleEligibility, calculateVehiclePriceAdjustment, applyPriceAdjustment } from '@/lib/vehicleValidation';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
+import { 
+  BASE_PRICING_MATRIX, 
+  DURATION_MONTHS,
+  calculateLabourRateAdjustment,
+  calculateBoostAdjustment,
+  getMarketingSavings,
+  type PaymentPeriod
+} from '@/lib/pricingMatrix';
 import { trackStepCompletion, trackBeginCheckout } from '@/utils/analytics';
 import { AlertCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -185,31 +193,9 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     });
   }, [paymentType]);
 
-  // BASE prices from CURRENT_PRICE_DEC_2025.xlsx at £50/hr labour rate
-  const pricingTable = {
-    '12months': {
-      0: { 750: 467, 1250: 497, 2000: 587 },
-      50: { 750: 437, 1250: 457, 2000: 547 },
-      100: { 750: 387, 1250: 417, 2000: 507 },
-      150: { 750: 367, 1250: 387, 2000: 477 }
-    },
-    '24months': {
-      0: { 750: 897, 1250: 937, 2000: 1027 },
-      50: { 750: 827, 1250: 877, 2000: 957 },
-      100: { 750: 737, 1250: 787, 2000: 877 },
-      150: { 750: 697, 1250: 737, 2000: 827 }
-    },
-    '36months': {
-      0: { 750: 1347, 1250: 1397, 2000: 1497 },
-      50: { 750: 1247, 1250: 1297, 2000: 1397 },
-      100: { 750: 1097, 1250: 1177, 2000: 1277 },
-      150: { 750: 1047, 1250: 1097, 2000: 1197 }
-    }
-  };
-
-  // Get base price from pricing table
+  // Get base price from centralized pricing matrix (no local duplicate needed)
   const getBasePrice = useCallback((term: string, excess: number, claimLimit: number) => {
-    const periodData = pricingTable[term as keyof typeof pricingTable] || pricingTable['12months'];
+    const periodData = BASE_PRICING_MATRIX[term as PaymentPeriod] || BASE_PRICING_MATRIX['12months'];
     const excessData = periodData[excess as keyof typeof periodData] || periodData[100];
     return excessData[claimLimit as keyof typeof excessData] || excessData[1250];
   }, []);
@@ -220,29 +206,26 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     return calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
   }, [vehicleData, paymentType]);
 
-  // Calculate display monthly price
-  // Calculate total price for a term (exact Excel price + adjustments)
+  // Calculate total price for a term using centralized functions
   const calculateTotalPrice = useCallback((term: string = paymentType || '24months') => {
     const basePrice = getBasePrice(term, voluntaryExcess || 100, selectedClaimLimit || 1250);
     const adjustedPrice = applyPriceAdjustment(basePrice, vehiclePriceAdjustment);
 
-    // No additional discounts - base prices from Excel are already final prices
-    const durationMonths = term === '12months' ? 12 : term === '24months' ? 24 : 36;
+    const durationMonths = DURATION_MONTHS[term as PaymentPeriod] || 12;
     
     // Add-on prices
     const addOnPrice = calculateAddOnPrice(selectedProtectionAddOns, term, durationMonths);
 
-    // Boost addon: +£5/month for duration
-    const boostCost = boostAddon ? (5 * durationMonths) : 0;
+    // Boost addon using centralized function: +£5/month for duration
+    const boostCost = calculateBoostAdjustment(boostAddon, term as PaymentPeriod);
 
-    // Labour rate adjustment: £40=-£5/mo, £50=base, £70=+£4/mo, £100=+£8/mo for duration
-    const labourMonthlyAdjust = selectedLabourRate === 40 ? -5 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
-    const labourAdjust = labourMonthlyAdjust * durationMonths;
+    // Labour rate adjustment using centralized function
+    const labourAdjust = calculateLabourRateAdjustment(selectedLabourRate, term as PaymentPeriod);
 
     return adjustedPrice + addOnPrice + boostCost + labourAdjust;
   }, [paymentType, voluntaryExcess, selectedClaimLimit, vehiclePriceAdjustment, selectedProtectionAddOns, boostAddon, selectedLabourRate, getBasePrice]);
 
-  // Calculate monthly price (total / 12, rounded DOWN)
+  // Calculate monthly price (total / 12, ALWAYS rounded DOWN)
   const calculateMonthlyPrice = useCallback((term: string = paymentType || '24months') => {
     const totalPrice = calculateTotalPrice(term);
     return Math.floor(totalPrice / 12);

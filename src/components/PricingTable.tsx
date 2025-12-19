@@ -22,6 +22,14 @@ import { cn } from '@/lib/utils';
 import AddOnProtectionPackages from '@/components/AddOnProtectionPackages';
 import { validateVehicleEligibility, calculateVehiclePriceAdjustment, applyPriceAdjustment } from '@/lib/vehicleValidation';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
+import { 
+  BASE_PRICING_MATRIX, 
+  DURATION_MONTHS,
+  calculateLabourRateAdjustment,
+  calculateBoostAdjustment,
+  getMarketingSavings,
+  type PaymentPeriod
+} from '@/lib/pricingMatrix';
 import pandaCarWarranty from "@/assets/panda-car-warranty-transparent.png";
 import trustpilotLogo from "@/assets/trustpilot-excellent-box.webp";
 import { trackStepCompletion, trackBeginCheckout } from '@/utils/analytics';
@@ -681,32 +689,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
     }
   };
 
-  // Get pricing data using your exact pricing structure
+  // Get pricing data using centralized pricing matrix
   const getPricingData = (excess: number, claimLimit: number, paymentPeriod: string) => {
-    // BASE prices from CURRENT_PRICE_DEC_2025.xlsx at £50/hr labour rate
-    const pricingTable = {
-      '12months': {
-        0: { 750: 467, 1250: 497, 2000: 587 },
-        50: { 750: 437, 1250: 457, 2000: 547 },
-        100: { 750: 387, 1250: 417, 2000: 507 },
-        150: { 750: 367, 1250: 387, 2000: 477 }
-      },
-      '24months': {
-        0: { 750: 897, 1250: 937, 2000: 1027 },
-        50: { 750: 827, 1250: 877, 2000: 957 },
-        100: { 750: 737, 1250: 787, 2000: 877 },
-        150: { 750: 697, 1250: 737, 2000: 827 }
-      },
-      '36months': {
-        0: { 750: 1347, 1250: 1397, 2000: 1497 },
-        50: { 750: 1247, 1250: 1297, 2000: 1397 },
-        100: { 750: 1097, 1250: 1177, 2000: 1277 },
-        150: { 750: 1047, 1250: 1097, 2000: 1197 }
-      }
-    };
-    
-    const periodData = pricingTable[paymentPeriod as keyof typeof pricingTable] || pricingTable['12months'];
-    const excessData = periodData[excess as keyof typeof periodData] || periodData[0];
+    const periodData = BASE_PRICING_MATRIX[paymentPeriod as PaymentPeriod] || BASE_PRICING_MATRIX['12months'];
+    const excessData = periodData[excess as keyof typeof periodData] || periodData[100];
     return excessData[claimLimit as keyof typeof excessData] || excessData[1250];
   };
 
@@ -725,7 +711,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
       currentVehicleAdjustment
     });
     
-    // Use your exact pricing structure
+    // Use centralized pricing matrix
     const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, paymentType);
     
     console.log('Found price in exact table:', { basePrice, voluntaryExcess, selectedClaimLimit, paymentType });
@@ -747,8 +733,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
   // Memoized add-on price calculation
   const addOnPrice = useMemo(() => {
-    const durationMonths = paymentType === '12months' ? 12 : 
-                          paymentType === '24months' ? 24 : 36;
+    const durationMonths = DURATION_MONTHS[paymentType as PaymentPeriod] || 12;
     return calculateAddOnPrice(selectedProtectionAddOns, paymentType, durationMonths);
   }, [paymentType, selectedProtectionAddOns]);
 
@@ -763,69 +748,54 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return addOnPrice - oneTimeAddOnPrice;
   }, [addOnPrice, oneTimeAddOnPrice]);
   
-  // Calculate boost addon cost (£5/month for 12 months = £60)
+  // Calculate boost addon cost using centralized function (£5/month × duration)
   const boostAddonCost = useMemo(() => {
-    return boostAddon ? 60 : 0;
-  }, [boostAddon]);
+    return calculateBoostAdjustment(boostAddon, paymentType as PaymentPeriod);
+  }, [boostAddon, paymentType]);
 
-  // Memoized total price calculation - should be base price + add-ons + boost for consistency
+  // Calculate labour rate total adjustment using centralized function
+  const labourRateTotalAdjustment = useMemo(() => {
+    return calculateLabourRateAdjustment(selectedLabourRate, paymentType as PaymentPeriod);
+  }, [selectedLabourRate, paymentType]);
+
+  // Memoized total price calculation - EXACT Excel price + adjustments (no marketing discount applied)
   const totalPrice = useMemo(() => {
-    return basePlanPrice + addOnPrice + boostAddonCost;
-  }, [basePlanPrice, addOnPrice, boostAddonCost]);
+    return basePlanPrice + labourRateTotalAdjustment + boostAddonCost + addOnPrice;
+  }, [basePlanPrice, labourRateTotalAdjustment, boostAddonCost, addOnPrice]);
 
-  // Memoized discounted base price for display
-  const discountedBasePlanPrice = useMemo(() => {
-    let discountedPrice = basePlanPrice;
-    if (paymentType === '24months') {
-      discountedPrice = basePlanPrice - 100; // £100 discount for 2-year plans
-    } else if (paymentType === '36months') {
-      discountedPrice = basePlanPrice - 200; // £200 discount for 3-year plans
-    }
-    return discountedPrice;
-  }, [basePlanPrice, paymentType]);
+  // Marketing savings (display only - NOT applied to actual price)
+  const marketingSavings = useMemo(() => {
+    return getMarketingSavings(paymentType as PaymentPeriod);
+  }, [paymentType]);
 
-  // Memoized total discounted price (with add-ons and boost - for API/checkout)
-  const totalDiscountedPrice = useMemo(() => {
-    return discountedBasePlanPrice + addOnPrice + boostAddonCost;
-  }, [discountedBasePlanPrice, addOnPrice, boostAddonCost]);
+  // "Was" price for display (total + marketing savings)
+  const wasPriceForDisplay = useMemo(() => {
+    return totalPrice + marketingSavings;
+  }, [totalPrice, marketingSavings]);
 
-  // Memoized total discounted price WITHOUT boost and WITHOUT one-time add-ons (for monthly display calculations)
-  const totalDiscountedPriceWithoutBoost = useMemo(() => {
-    return discountedBasePlanPrice + recurringAddOnPrice;
-  }, [discountedBasePlanPrice, recurringAddOnPrice]);
-
-  // Memoized labour rate adjustment based on duration
-  // Labour rate £40/hr = -£5/month, £50/hr (base) = 0, £70/hr = +£4/month, £100/hr = +£8/month
+  // Memoized labour rate per-month adjustment (for display in UI)
   const labourRateDisplayAdjustment = useMemo(() => {
     return selectedLabourRate === 40 ? -5 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
   }, [selectedLabourRate]);
 
-  // Memoized boost display adjustment (display only - £5/month instead of actual £7/month)
+  // Memoized boost display adjustment (£5/month)
   const boostDisplayAdjustment = useMemo(() => {
     return boostAddon ? 5 : 0;
   }, [boostAddon]);
 
-  // Memoized display monthly price - includes base + labour + boost + recurring add-ons
+  // Memoized display monthly price - ALWAYS floor(total / 12)
   const displayMonthlyPrice = useMemo(() => {
-    const durationMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
-    const labourTotalAdjust = labourRateDisplayAdjustment * durationMonths;
-    const boostTotalAdjust = boostDisplayAdjustment * durationMonths;
-    const totalPrice = basePlanPrice + labourTotalAdjust + boostTotalAdjust + recurringAddOnPrice;
     return Math.floor(totalPrice / 12);
-  }, [basePlanPrice, paymentType, labourRateDisplayAdjustment, boostDisplayAdjustment, recurringAddOnPrice]);
+  }, [totalPrice]);
 
   // Memoized display total price - exact total including all add-ons
   const displayTotalPrice = useMemo(() => {
-    const durationMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
-    const labourTotalAdjust = labourRateDisplayAdjustment * durationMonths;
-    const boostTotalAdjust = boostDisplayAdjustment * durationMonths;
-    return basePlanPrice + labourTotalAdjust + boostTotalAdjust + recurringAddOnPrice + oneTimeAddOnPrice;
+    return totalPrice;
   }, [basePlanPrice, paymentType, labourRateDisplayAdjustment, boostDisplayAdjustment, recurringAddOnPrice, oneTimeAddOnPrice]);
 
-  // Memoized monthly price calculation - always divide total by 12 for monthly payments
+  // Memoized monthly price calculation - ALWAYS floor(total / 12)
   const monthlyPrice = useMemo(() => {
-    // Always show 12 monthly payments regardless of plan duration for display
-    return Math.round(totalPrice / 12);
+    return Math.floor(totalPrice / 12);
   }, [totalPrice]);
 
   // Get the plan that matches the selected claim limit
@@ -839,8 +809,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
   };
 
   const getMonthlyDisplayPrice = (totalPrice: number) => {
-    // Always show 12 monthly installments regardless of plan duration
-    return Math.round(totalPrice / 12);
+    // ALWAYS floor - never round
+    return Math.floor(totalPrice / 12);
   };
 
   const getPlanSavings = (plan: Plan) => {

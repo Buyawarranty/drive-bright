@@ -2,13 +2,16 @@
  * Centralized pricing matrix and utilities for warranty pricing.
  * 
  * PRICING RULES:
- * - BASE prices are from CURRENT_PRICE_DEC_2025.xlsx at £50/hr labour rate
+ * - BASE prices are from CURRENT_PRICE_DEC_2025.xlsx at £50/hr labour rate, £100 excess, £1250 claim limit
  * - Labour rate £40/hr = -£5/month for duration
  * - Labour rate £50/hr = base price (no adjustment)
  * - Labour rate £70/hr = +£4/month for duration
  * - Labour rate £100/hr = +£8/month for duration
- * - Boost claim limit (£3000) = £2000 base + £5/month for duration
+ * - Boost claim limit (+£1000) = +£5/month for duration
  * - All payments are ALWAYS 12 monthly installments
+ * - Monthly = Math.floor(total / 12) - always round DOWN
+ * - "Was" price = total + marketing savings (£100 for 2yr, £200 for 3yr) - display only
+ * - Pay in full = exact Excel total price
  */
 
 // Base pricing matrix from CURRENT_PRICE_DEC_2025.xlsx
@@ -33,6 +36,13 @@ export const BASE_PRICING_MATRIX = {
     150: { 750: 1047, 1250: 1097, 2000: 1197 }
   }
 } as const;
+
+// Marketing savings display (NOT actual discounts - just for "Was £X" display)
+export const MARKETING_SAVINGS: Record<string, number> = {
+  '12months': 0,
+  '24months': 100,
+  '36months': 200
+};
 
 // Duration in months for each payment period
 export const DURATION_MONTHS = {
@@ -108,6 +118,8 @@ export function getLabourRateMonthlyAdjustment(labourRate: number): number {
 
 /**
  * Calculate the full warranty price including all adjustments
+ * IMPORTANT: This returns the EXACT total from Excel + adjustments
+ * Monthly is always Math.floor(total / 12) - rounded DOWN
  */
 export function calculateTotalWarrantyPrice(params: {
   paymentPeriod: PaymentPeriod;
@@ -117,7 +129,7 @@ export function calculateTotalWarrantyPrice(params: {
   boostEnabled?: boolean;
   vehicleAdjustment?: number;
   addOnPrice?: number;
-}): { totalPrice: number; monthlyPrice: number } {
+}): { totalPrice: number; monthlyPrice: number; wasPrice: number; savings: number } {
   const {
     paymentPeriod,
     voluntaryExcess,
@@ -128,7 +140,7 @@ export function calculateTotalWarrantyPrice(params: {
     addOnPrice = 0
   } = params;
 
-  // 1. Get base price from matrix
+  // 1. Get base price from matrix (EXACT Excel price)
   const basePrice = getBasePrice(paymentPeriod, voluntaryExcess, claimLimit);
   
   // 2. Apply vehicle adjustments (Range Rover, van, motorbike, mileage, age)
@@ -143,14 +155,26 @@ export function calculateTotalWarrantyPrice(params: {
   // 5. Add protection add-ons
   const totalPrice = adjustedBasePrice + labourAdjustment + boostAdjustment + addOnPrice;
   
-  // 6. Calculate monthly price (always 12 installments)
-  const monthlyPrice = Math.round(totalPrice / 12);
+  // 6. Calculate monthly price (always 12 installments, FLOOR not round)
+  const monthlyPrice = Math.floor(totalPrice / 12);
   
-  // 7. Return consistent total (monthly × 12 to avoid rounding display issues)
+  // 7. Marketing savings (display only - NOT applied to actual price)
+  const savings = MARKETING_SAVINGS[paymentPeriod] || 0;
+  const wasPrice = totalPrice + savings;
+  
   return {
-    totalPrice: monthlyPrice * 12,
-    monthlyPrice
+    totalPrice,
+    monthlyPrice,
+    wasPrice,
+    savings
   };
+}
+
+/**
+ * Get marketing savings for display purposes only
+ */
+export function getMarketingSavings(paymentPeriod: PaymentPeriod): number {
+  return MARKETING_SAVINGS[paymentPeriod] || 0;
 }
 
 /**
