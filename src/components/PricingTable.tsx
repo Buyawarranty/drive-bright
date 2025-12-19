@@ -1427,14 +1427,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // Boost addon: +£5/month for duration
               const boostTotalAdjust = boostAddon ? (5 * durationMonths) : 0;
               
-              // Calculate total price with all adjustments (exact Excel price + adjustments)
-              const totalPriceWithAdjustments = finalBasePrice + labourTotalAdjust + boostTotalAdjust;
+              // Calculate add-on price for this duration
+              const durationAddOnPrice = calculateAddOnPrice(selectedProtectionAddOns, durationId, durationMonths);
+              
+              // Calculate total price with all adjustments including add-ons
+              const totalPriceWithAdjustments = finalBasePrice + labourTotalAdjust + boostTotalAdjust + durationAddOnPrice;
               
               // Calculate display monthly price (always divide by 12, round DOWN)
               const displayedMonthlyPrice = Math.floor(totalPriceWithAdjustments / 12);
               
-              // Pay in full = monthly × 12 (BODMAS: calculate monthly first, then multiply)
-              const displayedAnnualPrice = displayedMonthlyPrice * 12;
+              // Pay in full = actual total price (not monthly × 12)
+              const displayedAnnualPrice = totalPriceWithAdjustments;
               
               // Promotional savings for display (Was price = Pay in full + savings)
               const savingsAmount = durationId === '24months' ? 100 : durationId === '36months' ? 200 : 0;
