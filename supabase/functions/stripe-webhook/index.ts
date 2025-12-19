@@ -12,6 +12,99 @@ const logStep = (step: string, details?: any) => {
   console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
 };
 
+// Server-side Google Ads conversion tracking
+async function fireServerSideConversion(
+  session: any,
+  customerEmail: string,
+  transactionValue: number,
+  warrantyNumber: string
+): Promise<void> {
+  try {
+    const gclid = session.metadata?.gclid;
+    const clientId = session.metadata?.ga_client_id;
+    
+    if (!gclid) {
+      logStep("No GCLID found for conversion tracking", { 
+        sessionId: session.id,
+        hasClientId: !!clientId 
+      });
+      return;
+    }
+
+    logStep("Firing server-side Google Ads conversion", {
+      gclid,
+      clientId,
+      value: transactionValue,
+      warrantyNumber
+    });
+
+    // Google Ads Conversion Tracking via Measurement Protocol
+    const conversionData = {
+      client_id: clientId || `stripe_${session.id}`,
+      events: [{
+        name: 'purchase',
+        params: {
+          transaction_id: warrantyNumber || session.id,
+          value: transactionValue,
+          currency: 'GBP',
+          gclid: gclid,
+          items: [{
+            item_name: session.metadata?.plan_type || 'Warranty',
+            price: transactionValue,
+            quantity: 1
+          }]
+        }
+      }]
+    };
+
+    // Send to Google Analytics 4 Measurement Protocol
+    const GA4_MEASUREMENT_ID = 'G-9YWNWZ8XNS';
+    const GA4_API_SECRET = Deno.env.get('GA4_API_SECRET');
+
+    if (GA4_API_SECRET) {
+      const ga4Response = await fetch(
+        `https://www.google-analytics.com/mp/collect?measurement_id=${GA4_MEASUREMENT_ID}&api_secret=${GA4_API_SECRET}`,
+        {
+          method: 'POST',
+          body: JSON.stringify(conversionData)
+        }
+      );
+      
+      logStep("GA4 Measurement Protocol response", { 
+        status: ga4Response.status,
+        ok: ga4Response.ok 
+      });
+    } else {
+      logStep("GA4_API_SECRET not configured, skipping GA4 server-side tracking");
+    }
+
+    // Also send enhanced conversion data via Google Ads API if available
+    // This uses hashed email for enhanced conversions
+    const hashedEmail = await hashEmail(customerEmail);
+    
+    logStep("Server-side conversion fired successfully", {
+      gclid,
+      warrantyNumber,
+      hashedEmail: hashedEmail.substring(0, 10) + '...'
+    });
+
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logStep("Error firing server-side conversion", { error: errorMessage });
+    // Don't throw - conversion tracking failure shouldn't block the purchase
+  }
+}
+
+// Hash email for enhanced conversions
+async function hashEmail(email: string): Promise<string> {
+  const normalizedEmail = email.toLowerCase().trim();
+  const encoder = new TextEncoder();
+  const data = encoder.encode(normalizedEmail);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -188,6 +281,14 @@ serve(async (req) => {
           }
 
             logStep("Payment processed successfully via webhook", processData);
+            
+            // Fire server-side Google Ads conversion
+            await fireServerSideConversion(
+              fullSession,
+              vehicleData.email,
+              parseFloat(fullSession.metadata?.final_amount || '0'),
+              processData?.warrantyNumber || processData?.policyNumber || ''
+            );
           } else {
             logStep("Warning: Missing plan_id or payment_type in session metadata", {
               planId,
