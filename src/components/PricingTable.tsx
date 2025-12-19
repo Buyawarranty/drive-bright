@@ -2665,33 +2665,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
             {/* Normal State - Show pricing */}
             {!plansLoading && !plansError && displayPlans.length > 0 && paymentType && (
               <>
-                {/* Mobile Layout - Collapsible & Centralized */}
+                {/* Mobile Layout - Collapsible */}
                 {(() => {
                   const originalPrice = Math.round(displayTotalPrice / 0.9);
                   const savings = originalPrice - Math.round(displayTotalPrice);
                   return (
                     <div className="flex flex-col md:hidden gap-2 w-full">
-                      {/* Top Row - Trust & Year Free Badge */}
-                      <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-                        <a 
-                          href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="hover:opacity-80 transition-opacity"
-                        >
-                          <TrustpilotHeader className="h-4" />
-                        </a>
-                        {paymentType !== '12months' && (
-                          <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium">
-                            {paymentType === '24months' && 'Year 2 FREE 🎉'}
-                            {paymentType === '36months' && 'Years 2 & 3 FREE 🎉'}
-                          </span>
-                        )}
-                      </div>
-                      
-                      {/* Pricing Row */}
-                      <div className="flex items-center justify-between py-2">
-                        <div className="flex flex-col">
+                      {/* Collapsible Header */}
+                      <button
+                        onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+                        className="flex items-center justify-between w-full"
+                      >
+                        {/* Pricing Info */}
+                        <div className="flex flex-col items-start">
                           <div className="flex items-baseline gap-1.5">
                             <span className="text-xl font-bold text-gray-900">£{displayMonthlyPrice}/mo</span>
                             <span className="text-xs text-gray-400">0% APR</span>
@@ -2703,13 +2689,47 @@ const PricingTable: React.FC<PricingTableProps> = ({
                             <span className="text-gray-500">(Save £{savings})</span>
                           </div>
                         </div>
-                        <div className="text-right">
+                        
+                        {/* Cover Info */}
+                        <div className="text-right mr-2">
                           <span className="text-sm font-bold text-gray-900">
                             {paymentType === '12months' && '1-Year Cover'}
                             {paymentType === '24months' && '2-Year Cover'}
                             {paymentType === '36months' && '3-Year Cover'}
                           </span>
                           <div className="text-xs text-gray-500">14 days to cancel</div>
+                        </div>
+                        
+                        {/* Details Chevron */}
+                        <div className="flex flex-col items-center">
+                          <div className={`p-1.5 rounded-full bg-green-600 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : 'rotate-0'}`}>
+                            <ChevronDown className="w-5 h-5 text-white" />
+                          </div>
+                          {!isSummaryExpanded && (
+                            <span className="text-xs font-medium text-green-600 mt-1">Details</span>
+                          )}
+                        </div>
+                      </button>
+                      
+                      {/* Expandable Content */}
+                      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSummaryExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                        <div className="flex items-center justify-between py-2 border-t border-gray-100">
+                          {/* Trustpilot */}
+                          <a 
+                            href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="hover:opacity-80 transition-opacity"
+                          >
+                            <TrustpilotHeader className="h-4" />
+                          </a>
+                          {/* Year Free Badge */}
+                          {paymentType !== '12months' && (
+                            <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium">
+                              {paymentType === '24months' && 'Year 2 FREE 🎉'}
+                              {paymentType === '36months' && 'Years 2 & 3 FREE 🎉'}
+                            </span>
+                          )}
                         </div>
                       </div>
                       
