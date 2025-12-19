@@ -1433,8 +1433,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // Calculate display monthly price (always divide by 12, round DOWN)
               const displayedMonthlyPrice = Math.floor(totalPriceWithAdjustments / 12);
               
-              // Pay in full = exact total price (NOT monthly × 12)
-              const displayedAnnualPrice = totalPriceWithAdjustments;
+              // Pay in full = monthly × 12 (BODMAS: calculate monthly first, then multiply)
+              const displayedAnnualPrice = displayedMonthlyPrice * 12;
               
               // Promotional savings for display (Was price = Pay in full + savings)
               const savingsAmount = durationId === '24months' ? 100 : durationId === '36months' ? 200 : 0;
@@ -2637,8 +2637,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <>
                 {/* Mobile Layout - Collapsible */}
                 {(() => {
-                  const originalPrice = Math.round(displayTotalPrice / 0.9);
-                  const savings = originalPrice - Math.round(displayTotalPrice);
+                  // BODMAS: Pay in full = monthly × 12
+                  const payInFull = displayMonthlyPrice * 12;
+                  const savings = getMarketingSavings(paymentType as PaymentPeriod);
+                  const wasPrice = payInFull + savings;
                   return (
                     <div className="flex flex-col md:hidden gap-2 w-full">
                       {/* Collapsible Header */}
@@ -2653,9 +2655,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                             <span className="text-xs text-gray-400">0% APR</span>
                           </div>
                           <div className="flex items-center gap-1 text-xs mt-0.5">
-                            <span className="line-through text-red-500">£{originalPrice}</span>
-                            <span className="font-bold text-green-600">£{Math.round(displayTotalPrice)}</span>
-                            <span className="text-gray-500">(Save £{savings})</span>
+                            {savings > 0 && <span className="line-through text-red-500">£{wasPrice}</span>}
+                            <span className="font-bold text-green-600">£{payInFull}</span>
+                            {savings > 0 && <span className="text-gray-500">(Save £{savings})</span>}
                           </div>
                           <div className="flex items-center gap-2 text-xs mt-1">
                             <span className="font-semibold text-gray-800">
@@ -2718,9 +2720,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
                 {/* Desktop Layout - Clean 4-Section Card with Equal Spacing */}
                 {(() => {
-                  // Calculate original price (before 10% discount) and savings
-                  const originalPrice = Math.round(displayTotalPrice / 0.9);
-                  const savings = originalPrice - Math.round(displayTotalPrice);
+                  // BODMAS: Pay in full = monthly × 12
+                  const payInFull = displayMonthlyPrice * 12;
+                  const savings = getMarketingSavings(paymentType as PaymentPeriod);
+                  const wasPrice = payInFull + savings;
                   return (
                     <div className="hidden md:flex md:items-stretch md:justify-between w-full bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                       
@@ -2747,9 +2750,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         </div>
                         <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm mt-0.5 flex-wrap justify-center">
                           <span className="text-gray-500">Pay in full:</span>
-                          <span className="line-through text-red-500">£{originalPrice}</span>
-                          <span className="font-bold text-green-600">£{Math.round(displayTotalPrice)}</span>
-                          <span className="text-gray-600 whitespace-nowrap">(Save £{savings})</span>
+                          {savings > 0 && <span className="line-through text-red-500">£{wasPrice}</span>}
+                          <span className="font-bold text-green-600">£{payInFull}</span>
+                          {savings > 0 && <span className="text-gray-600 whitespace-nowrap">(Save £{savings})</span>}
                         </div>
                       </div>
                       
