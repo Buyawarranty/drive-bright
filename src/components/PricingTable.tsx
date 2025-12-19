@@ -2529,14 +2529,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
           {/* Crystal Clear Cover Card - Original Design */}
           <div className="bg-card rounded-xl border-2 border-border p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
                 <span>Your cover, made crystal clear</span>
                 <span className="text-xl">💎</span>
               </h3>
               <button 
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="flex items-center gap-1 text-sm font-medium text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-secondary transition-colors"
+                className="flex items-center gap-1 text-sm font-medium text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-secondary transition-colors w-fit"
               >
                 <ArrowUp className="w-4 h-4" />
                 Back to Plans
