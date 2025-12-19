@@ -2674,46 +2674,42 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       {/* Collapsible Header */}
                       <button
                         onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
-                        className="flex items-center justify-between w-full"
+                        className="flex items-center justify-center w-full relative"
                       >
-                        {/* Pricing Info */}
-                        <div className="flex flex-col items-start">
-                          <div className="flex items-baseline gap-1.5">
-                            <span className="text-xl font-bold text-gray-900">£{displayMonthlyPrice}/mo</span>
+                        {/* Centered Content */}
+                        <div className="flex flex-col items-center text-center">
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-lg font-bold text-gray-900">£{displayMonthlyPrice}/mo</span>
                             <span className="text-xs text-gray-400">0% APR</span>
                           </div>
-                          <div className="flex items-center gap-1.5 text-xs mt-0.5">
-                            <span className="text-gray-500">or</span>
+                          <div className="flex items-center gap-1 text-xs mt-0.5">
                             <span className="line-through text-red-500">£{originalPrice}</span>
                             <span className="font-bold text-green-600">£{Math.round(displayTotalPrice)}</span>
                             <span className="text-gray-500">(Save £{savings})</span>
                           </div>
-                        </div>
-                        
-                        {/* Cover Info */}
-                        <div className="text-right mr-2">
-                          <span className="text-sm font-bold text-gray-900">
-                            {paymentType === '12months' && '1-Year Cover'}
-                            {paymentType === '24months' && '2-Year Cover'}
-                            {paymentType === '36months' && '3-Year Cover'}
-                          </span>
-                          <div className="text-xs text-gray-500">14 days to cancel</div>
-                        </div>
-                        
-                        {/* Details Chevron */}
-                        <div className="flex flex-col items-center">
-                          <div className={`p-1.5 rounded-full bg-green-600 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : 'rotate-0'}`}>
-                            <ChevronDown className="w-5 h-5 text-white" />
+                          <div className="flex items-center gap-2 text-xs mt-1">
+                            <span className="font-semibold text-gray-800">
+                              {paymentType === '12months' && '1-Year Cover'}
+                              {paymentType === '24months' && '2-Year Cover'}
+                              {paymentType === '36months' && '3-Year Cover'}
+                            </span>
+                            <span className="text-gray-400">·</span>
+                            <span className="text-gray-500">14 days to cancel</span>
                           </div>
-                          {!isSummaryExpanded && (
-                            <span className="text-xs font-medium text-green-600 mt-1">Details</span>
-                          )}
+                        </div>
+                        
+                        {/* Details Chevron - Positioned Right */}
+                        <div className="absolute right-0 flex flex-col items-center">
+                          <div className={`p-1.5 rounded-full bg-green-600 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : 'rotate-0'}`}>
+                            <ChevronDown className="w-4 h-4 text-white" />
+                          </div>
+                          <span className="text-[10px] font-medium text-green-600 mt-0.5">Details</span>
                         </div>
                       </button>
                       
                       {/* Expandable Content */}
                       <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSummaryExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-                        <div className="flex items-center justify-between py-2 border-t border-gray-100">
+                        <div className="flex items-center justify-center gap-4 py-2 border-t border-gray-100">
                           {/* Trustpilot */}
                           <a 
                             href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
@@ -2737,12 +2733,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <Button
                         onClick={handleSelectPlan}
                         size="lg"
-                        className="w-full text-lg font-semibold py-3.5 bg-green-600 hover:bg-green-700 text-white rounded-xl"
+                        className="w-full text-base font-semibold py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl"
                       >
                         Continue to checkout
-                        <ArrowRight className="w-5 h-5 ml-2" strokeWidth={3} />
+                        <ArrowRight className="w-4 h-4 ml-2" strokeWidth={3} />
                       </Button>
-                      <div className="flex items-center justify-center gap-1.5 text-xs text-gray-500">
+                      <div className="flex items-center justify-center gap-1.5 text-[10px] text-gray-500">
                         <Lock className="h-3 w-3" />
                         <span>Secure checkout – No hidden fees</span>
                       </div>
