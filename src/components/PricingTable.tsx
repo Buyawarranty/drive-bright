@@ -1431,8 +1431,24 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // Boost addon: +£5/month for duration
               const boostTotalAdjust = boostAddon ? (5 * durationMonths) : 0;
               
-              // Calculate add-on price for this duration
-              const durationAddOnPrice = calculateAddOnPrice(selectedProtectionAddOns, durationId, durationMonths);
+              // Get auto-included add-ons for THIS card's duration (not the selected plan)
+              const thisCardAutoIncluded = getAutoIncludedAddOns(durationId);
+              
+              // For plan card display, only include add-ons that:
+              // 1. Are auto-included for THIS card's duration, OR
+              // 2. Are manually selected AND not auto-included for any duration (truly manual selections)
+              const allPossibleAutoIncluded = ['breakdown', 'motFee', 'rental', 'tyre'];
+              const cardAddOns = { ...selectedProtectionAddOns };
+              
+              // Reset auto-included add-ons for card display - each card shows its own auto-included
+              allPossibleAutoIncluded.forEach(addonKey => {
+                // Set to true only if auto-included for THIS card's duration
+                // This prevents the 1-year card from including add-ons that were auto-selected for 3-year
+                cardAddOns[addonKey] = thisCardAutoIncluded.includes(addonKey);
+              });
+              
+              // Calculate add-on price for this duration using card-specific add-ons
+              const durationAddOnPrice = calculateAddOnPrice(cardAddOns, durationId, durationMonths);
               
               // Calculate total price with all adjustments including add-ons
               const totalPriceWithAdjustments = finalBasePrice + labourTotalAdjust + boostTotalAdjust + durationAddOnPrice;
