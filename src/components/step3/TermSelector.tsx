@@ -16,13 +16,15 @@ interface TermSelectorProps {
   onTermChange: (term: '12months' | '24months' | '36months') => void;
   availableDurations: ('12months' | '24months' | '36months')[];
   getPriceForTerm: (term: string) => number;
+  getTotalForTerm: (term: string) => number;
 }
 
 const TermSelector: React.FC<TermSelectorProps> = ({
   selectedTerm,
   onTermChange,
   availableDurations,
-  getPriceForTerm
+  getPriceForTerm,
+  getTotalForTerm
 }) => {
   const [showAllOptions, setShowAllOptions] = useState(false);
 
@@ -33,10 +35,9 @@ const TermSelector: React.FC<TermSelectorProps> = ({
     return 0;
   };
 
-  // Pay in full price = monthly × 12 (BODMAS: calculate monthly first, then multiply)
+  // Pay in full price = actual total price (not monthly × 12)
   const getPayInFullPrice = (termId: string): number => {
-    const monthly = getPriceForTerm(termId);
-    return monthly * 12;
+    return getTotalForTerm(termId);
   };
 
   // Calculate "was" price = pay in full + savings
