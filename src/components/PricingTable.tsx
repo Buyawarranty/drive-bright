@@ -2468,9 +2468,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <span className="text-3xl font-bold text-gray-900">£{displayMonthlyPrice}/month</span>
                       <span className="text-sm text-black">(Only 12 payments)</span>
                     </div>
-                    <p className="text-sm text-black mt-1">
-                      Or pay in full: £{Math.round(displayTotalPrice)} <span className="text-green-600 font-medium">(Save 10% at checkout)</span>
-                    </p>
+                    {(() => {
+                      const payInFull = displayMonthlyPrice * 12;
+                      const savings = getMarketingSavings(paymentType as PaymentPeriod);
+                      const wasPrice = payInFull + savings;
+                      return (
+                        <p className="text-sm text-black mt-1">
+                          Or pay in full: {savings > 0 && <span className="line-through text-red-500">£{wasPrice}</span>} <span className="font-bold text-green-600">£{payInFull}</span> {savings > 0 && <span className="text-gray-600">(Save £{savings})</span>}
+                        </p>
+                      );
+                    })()}
                   </div>
                   
                   <div className="flex flex-col gap-2 w-full md:w-auto md:justify-center md:mt-4">
