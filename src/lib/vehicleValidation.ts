@@ -560,9 +560,9 @@ export function applyPriceAdjustment(basePrice: number, adjustment: PriceAdjustm
   
   // Handle percentage adjustments (motorbike discount)
   if (adjustment.adjustmentAmount < 0 && adjustment.adjustmentAmount > -1) {
-    return Math.round(basePrice * (1 + adjustment.adjustmentAmount));
+    return Math.floor(basePrice * (1 + adjustment.adjustmentAmount));
   }
   
-  // Handle fixed amount adjustments
-  return Math.round(basePrice + adjustment.adjustmentAmount);
+  // Handle fixed amount adjustments - use floor for consistent financial calculations
+  return Math.floor(basePrice + adjustment.adjustmentAmount);
 }
