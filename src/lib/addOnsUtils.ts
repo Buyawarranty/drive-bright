@@ -173,5 +173,5 @@ export const calculateAddOnPrice = (
   // One-time add-ons
   if (selectedAddOns.transfer && !autoIncluded.includes('transfer')) total += 19;
   
-  return Math.round(total * 100) / 100; // Round to 2 decimal places
+  return Math.floor(total); // Round down to whole number
 };
