@@ -1436,8 +1436,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // Calculate display monthly price (always divide by 12, round DOWN)
               const displayedMonthlyPrice = Math.floor(totalPriceWithAdjustments / 12);
               
-              // Pay in full = actual total price (not monthly × 12)
-              const displayedAnnualPrice = totalPriceWithAdjustments;
+              // Pay in full = monthly × 12 (what user actually pays over 12 months)
+              const displayedAnnualPrice = displayedMonthlyPrice * 12;
               
               // Promotional savings for display (Was price = Pay in full + savings)
               const savingsAmount = durationId === '24months' ? 100 : durationId === '36months' ? 200 : 0;
