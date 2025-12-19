@@ -1499,7 +1499,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                 <div className="font-bold text-black text-sm mb-2">Pay Monthly</div>
                                 <div className="text-2xl font-bold text-black">£{discountedMonthlyPayment} <span className="text-base font-normal">per month</span></div>
                                 <div className="text-sm text-gray-600 mt-1">12 payments</div>
-                                <div className="text-sm text-gray-500 mt-1">{hasPromoCode ? `Total after promo: £${discountedBumperPrice}` : `Total: £${discountedBumperPrice}`}</div>
+                                <div className="text-sm text-gray-500 mt-1">{hasPromoCode ? `Total after promo: £${discountedMonthlyPayment * 12}` : `Total: £${discountedMonthlyPayment * 12}`}</div>
                                 {hasPromoCode && promoSavings > 0 && (
                                   <div className="text-sm font-semibold text-green-600 mt-1">Saved £{promoSavings} with promo!</div>
                                 )}
@@ -1980,7 +1980,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                     12 payments
                                   </div>
                                   <div className="text-sm text-gray-500">
-                                    Total{hasPromoCode ? ' after promo' : ''}: £{discountedBumperPrice}
+                                    Total{hasPromoCode ? ' after promo' : ''}: £{discountedMonthly * 12}
                                   </div>
                                   {hasPromoCode && promoSavings > 0 && (
                                     <div className="text-xs text-green-600 font-semibold mt-1">
