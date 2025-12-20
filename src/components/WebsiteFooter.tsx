@@ -7,10 +7,37 @@ import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 const WebsiteFooter = () => {
   return (
     <div className="relative">
+      {/* CTA Section */}
+      <section className="bg-[#1e3a5f] py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+            Ready to Protect Your Vehicle?
+          </h2>
+          <p className="text-white/90 mb-6 max-w-2xl mx-auto">
+            Get an instant quote and find the perfect warranty for your vehicle today.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link 
+              to="/" 
+              className="bg-[#eb4b00] hover:bg-[#d63f00] text-white font-semibold px-8 py-3 rounded-lg transition-colors"
+            >
+              Get Your Free Quote
+            </Link>
+            <a 
+              href="tel:03302295040" 
+              className="text-white font-semibold text-lg hover:text-white/80 transition-colors flex items-center gap-2"
+            >
+              <Phone className="w-5 h-5" />
+              0330 229 5040
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Main Footer */}
       <footer className="bg-white pt-0 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8 pt-2">
+          <div className="text-center mb-8 pt-8">
             <h2 className="text-xl font-bold text-gray-900 mb-3">
               Need advice? Have any questions?
             </h2>
@@ -107,31 +134,60 @@ const WebsiteFooter = () => {
               <p className="text-gray-600 text-sm leading-relaxed mb-4">
                 Buyawarranty.co.uk - Get fast, affordable cover tailored to your car, van, SUV or motorbike. 'Buy-a-warranty' vehicle warranty plans are designed to suit your driving needs - with simple online quotes, flexible options, and reliable protection. If your vehicle is under 15 years old and has fewer than 150,000 miles, you're eligible for comprehensive warranty cover with Buyawarranty today.
               </p>
-              <div className="flex items-center">
-                <Link to="/" className="hover:opacity-80 transition-opacity">
-                  <OptimizedImage 
-                    src={buyawarrantyLogo} 
-                    alt="Buy a Warranty Logo - Comprehensive Vehicle Warranties" 
-                    className="h-8 w-auto"
-                    priority={false}
-                    width={240}
-                    height={40}
-                  />
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Legal Footer */}
-          <div className="border-t border-gray-200 pt-6">
-            <div className="text-center">
-              <p className="text-sm text-gray-600 max-w-4xl mx-auto px-4">
-                Buyawarranty.co.uk is a trading name of Buy A Warranty Limited. Established 2016. Registered in the United Kingdom under Company number: 10314863 Registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England
-              </p>
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Bottom Footer - Full Width */}
+      <div className="bg-gray-100 py-8 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Need Help Section */}
+          <div className="text-center mb-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Need help?</h3>
+            <p className="text-gray-600 mb-3">Our customer support team are here to help.</p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm">
+              <a href="tel:03302295040" className="text-[#eb4b00] hover:text-[#d63f00] font-semibold">
+                Call us: 0330 229 5040
+              </a>
+              <a href="mailto:support@buyawarranty.co.uk" className="text-[#eb4b00] hover:text-[#d63f00] font-semibold">
+                Email us: support@buyawarranty.co.uk
+              </a>
+            </div>
+          </div>
+
+          {/* Centered Logo */}
+          <div className="flex justify-center mb-6">
+            <Link to="/" className="hover:opacity-80 transition-opacity">
+              <OptimizedImage 
+                src={buyawarrantyLogo} 
+                alt="Buy a Warranty Logo - Comprehensive Vehicle Warranties" 
+                className="h-10 w-auto"
+                priority={false}
+                width={240}
+                height={40}
+              />
+            </Link>
+          </div>
+
+          {/* Navigation Links */}
+          <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600 mb-6">
+            <a href="/" className="hover:text-[#eb4b00] transition-colors">Home</a>
+            <a href="/faq/" className="hover:text-[#eb4b00] transition-colors">Frequently Asked Questions</a>
+            <a href="/contact-us/" className="hover:text-[#eb4b00] transition-colors">Contact Us</a>
+          </div>
+
+          {/* Copyright */}
+          <div className="text-center">
+            <p className="text-sm text-gray-600 max-w-4xl mx-auto">
+              © Buy a Warranty. All rights reserved.
+            </p>
+            <p className="text-xs text-gray-500 mt-2 max-w-4xl mx-auto">
+              Buyawarranty.co.uk is a trading name of Buy A Warranty Limited. Established 2016. Registered in the United Kingdom under Company number: 10314863 Registered address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT, England
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
