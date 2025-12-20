@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Check, ArrowRight, Star, Shield, Phone, Menu, Award, MessageCircle, Car, Truck, Battery, Bike } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -31,10 +31,18 @@ import MileageSlider from '@/components/MileageSlider';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 
+interface DynamicLandingPage {
+  id: string;
+  slug: string;
+  brand_name: string;
+  brand_logo_url: string | null;
+}
+
 const CarExtendedWarranty: React.FC = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [dynamicPages, setDynamicPages] = useState<DynamicLandingPage[]>([]);
 
   // Quote form state
   const [regNumber, setRegNumber] = useState('');
@@ -44,6 +52,23 @@ const CarExtendedWarranty: React.FC = () => {
   const [mileageError, setMileageError] = useState('');
   const [vehicleAgeError, setVehicleAgeError] = useState('');
   const [mileagePlaceholder, setMileagePlaceholder] = useState(isMobile ? 'Enter mileage' : 'Enter current approximate mileage');
+
+  // Fetch dynamic landing pages from database
+  useEffect(() => {
+    const fetchDynamicPages = async () => {
+      const { data, error } = await supabase
+        .from('landing_pages')
+        .select('id, slug, brand_name, brand_logo_url')
+        .eq('status', 'published')
+        .eq('is_indexable', true)
+        .order('brand_name');
+      
+      if (!error && data) {
+        setDynamicPages(data);
+      }
+    };
+    fetchDynamicPages();
+  }, []);
 
   const navigateToQuoteForm = () => {
     trackButtonClick('car_extended_warranty_get_quote');
@@ -1000,6 +1025,48 @@ const CarExtendedWarranty: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Dynamic Brand Warranty Pages - from Admin Dashboard */}
+      {dynamicPages.length > 0 && (
+        <section className="py-16 bg-gradient-to-br from-orange-50 via-white to-blue-50" aria-labelledby="brand-warranty-pages">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-6xl mx-auto">
+              <h2 id="brand-warranty-pages" className="text-3xl md:text-4xl font-bold text-center mb-4">
+                Brand-Specific Warranty Guides
+              </h2>
+              <p className="text-center text-gray-600 mb-12">
+                Explore detailed warranty information for your specific vehicle brand
+              </p>
+              
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {dynamicPages.map((page) => (
+                  <Link 
+                    key={page.id}
+                    to={`/${page.slug}`}
+                    className="p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-4 border border-gray-100 hover:border-orange-200"
+                  >
+                    {page.brand_logo_url ? (
+                      <img 
+                        src={page.brand_logo_url} 
+                        alt={`${page.brand_name} warranty`} 
+                        className="h-12 w-auto object-contain"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <Car className="h-12 w-12 text-orange-500" />
+                    )}
+                    <p className="font-semibold text-gray-800 text-center">{page.brand_name}</p>
+                    <span className="text-sm text-orange-600 font-medium">View Warranty →</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Trustpilot Badge */}
       <div className="py-8 flex justify-end max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
