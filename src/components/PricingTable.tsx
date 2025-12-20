@@ -2682,6 +2682,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         {/* Centered Content */}
                         <div className="flex flex-col items-center text-center">
                           <div className="flex items-baseline gap-1">
+                            <span className="text-base font-bold text-gray-900">Total:</span>
                             <span className="text-lg font-bold text-gray-900">£{displayMonthlyPrice}/mo</span>
                             <span className="text-xs text-gray-600">0% APR</span>
                           </div>
@@ -2774,7 +2775,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       {/* SECTION 2: Price */}
                       <div className="flex-1 flex flex-col items-center justify-center px-3 lg:px-6 py-4 border-r border-gray-100 text-center min-w-0">
                         <div className="text-xl lg:text-2xl font-bold text-gray-900 whitespace-nowrap">
-                          £{displayMonthlyPrice}/Month <span className="text-sm lg:text-base font-normal text-gray-600">– 0% APR</span>
+                          Total: £{displayMonthlyPrice}/Month <span className="text-sm lg:text-base font-normal text-gray-600">– 0% APR</span>
                         </div>
                         <div className="text-xs lg:text-sm text-gray-500 mt-0.5 whitespace-nowrap">
                           Only 12 payments
