@@ -2864,7 +2864,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <span className="font-bold">£{selectedLabourRate}/hr</span>
               </div>
               <div className="flex justify-between items-start border-t pt-2 mt-2">
-                <span className="text-gray-600">Monthly Payment:</span>
+                <span className="text-gray-600">Total Monthly Payment:</span>
                 <div className="text-right">
                   <span className="font-bold">
                     £{(() => {
