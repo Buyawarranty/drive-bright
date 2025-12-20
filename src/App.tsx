@@ -68,6 +68,7 @@ const EVWarranty = lazy(() => import("./pages/EVWarranty"));
 const MotorbikeWarranty = lazy(() => import("./pages/MotorbikeWarranty"));
 const MotorcycleWarranty = lazy(() => import("./pages/MotorcycleWarranty"));
 const CarExtendedWarranty = lazy(() => import("./pages/CarExtendedWarranty"));
+const WarrantyTypes = lazy(() => import("./pages/WarrantyTypes"));
 const HyundaiWarranty = lazy(() => import("./pages/HyundaiWarranty"));
 const BMWWarranty = lazy(() => import("./pages/BMWWarranty"));
 const AudiWarranty = lazy(() => import("./pages/AudiWarranty"));
@@ -186,6 +187,7 @@ const App = () => {
         <Route path="/car-extended-warranty/jaguar/" element={<JaguarWarranty />} />
                     <Route path="/car-extended-warranty/skoda/" element={<SkodaWarranty />} />
                     <Route path="/used-car-warranty-uk/" element={<UsedCarWarrantyUK />} />
+                    <Route path="/warranty-types/" element={<WarrantyTypes />} />
                     
                     {/* Dynamic landing pages from admin */}
                     <Route path="/:slug" element={<DynamicLandingPage />} />
