@@ -53,7 +53,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           {/* Middle Section - Pricing */}
           <div className="flex flex-col items-center gap-1 flex-1">
             <div className="flex items-baseline gap-2">
-              <span className="text-sm text-gray-500">Total:</span>
+              <span className="text-xl font-bold text-gray-900">Total:</span>
               <span className="text-2xl font-bold text-gray-900">£{monthlyPrice}/Month</span>
               <span className="text-sm text-gray-500">– 0% APR</span>
             </div>
@@ -133,7 +133,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
         <div className="flex items-center justify-between mb-3">
           <div className="flex flex-col">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-xs text-gray-500">Total:</span>
+              <span className="text-base font-bold text-gray-900">Total:</span>
               <span className="text-xl font-bold text-gray-900">£{monthlyPrice}/mo</span>
               <span className="text-xs text-gray-500">0% APR</span>
             </div>
