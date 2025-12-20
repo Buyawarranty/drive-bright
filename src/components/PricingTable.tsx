@@ -2488,7 +2488,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <div className="flex-1">
                     <p className="text-sm text-gray-500 mb-1">Your Platinum Plan</p>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-sm text-gray-500">Total:</span>
+                      <span className="text-xl font-bold text-gray-900">Total:</span>
                       <span className="text-3xl font-bold text-gray-900">£{displayMonthlyPrice}/month</span>
                       <span className="text-sm text-black">(Only 12 payments)</span>
                     </div>
