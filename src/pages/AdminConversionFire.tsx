@@ -110,7 +110,7 @@ const AdminConversionFire = () => {
     );
 
     setFired(prev => [...prev, conversion.id]);
-    toast.success(`Conversion fired for ${conversion.id} - £${conversion.amount}`);
+    toast.success(`Conversion fired for ${conversion.id} - £1 sent to Google Ads`);
   };
 
   const fireAll = () => {
@@ -143,7 +143,7 @@ const AdminConversionFire = () => {
                 <div>
                   <p className="font-semibold">{conversion.id}</p>
                   <p className="text-sm text-muted-foreground">{conversion.email}</p>
-                  <p className="text-sm">£{conversion.amount} via {conversion.source}</p>
+                  <p className="text-sm">Actual: £{conversion.amount} | <strong>Sends £1 to Google Ads</strong> via {conversion.source}</p>
                 </div>
                 <Button 
                   onClick={() => fireConversion(conversion)}
