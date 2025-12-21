@@ -8,7 +8,9 @@ const AdminConversionFire = () => {
   const [fired, setFired] = useState<string[]>([]);
   const [gtagReady, setGtagReady] = useState(false);
 
-  // Conversions that need to be fired
+  // Conversions that need to be fired - includes purchase date for reference
+  // NOTE: Google Ads gtag doesn't support backdating - conversions are recorded at firing time
+  // For true backdated conversions, use Google Ads Offline Conversion Import
   const missedConversions = [
     {
       id: 'BAW-2512-400857',
@@ -18,7 +20,8 @@ const AdminConversionFire = () => {
       firstName: 'David',
       lastName: 'Illingworth',
       address: '201 Shaftesbury Avenue',
-      source: 'stripe'
+      source: 'stripe',
+      purchaseDate: '2024-12-20'
     },
     {
       id: 'BAW-2512-400855',
@@ -28,7 +31,8 @@ const AdminConversionFire = () => {
       firstName: 'Jozie',
       lastName: 'Stephenson-Quinn',
       address: '16 Tyersal Terrace',
-      source: 'bumper'
+      source: 'bumper',
+      purchaseDate: '2024-12-18'
     },
     {
       id: 'BAW-2512-400823',
@@ -38,7 +42,8 @@ const AdminConversionFire = () => {
       firstName: 'Ian',
       lastName: 'McBride',
       address: 'B87 Albion Riverside Building',
-      source: 'stripe'
+      source: 'stripe',
+      purchaseDate: '2024-12-17'
     },
     {
       id: 'BAW-2512-400853',
@@ -48,7 +53,8 @@ const AdminConversionFire = () => {
       firstName: 'Sam',
       lastName: 'Main',
       address: '8 Burnfoot Court',
-      source: 'bumper'
+      source: 'bumper',
+      purchaseDate: '2024-12-18'
     }
   ];
 
@@ -143,6 +149,7 @@ const AdminConversionFire = () => {
                 <div>
                   <p className="font-semibold">{conversion.id}</p>
                   <p className="text-sm text-muted-foreground">{conversion.email}</p>
+                  <p className="text-sm text-blue-600 font-medium">Purchase Date: {conversion.purchaseDate}</p>
                   <p className="text-sm">Actual: £{conversion.amount} | <strong>Sends £1 to Google Ads</strong> via {conversion.source}</p>
                 </div>
                 <Button 
