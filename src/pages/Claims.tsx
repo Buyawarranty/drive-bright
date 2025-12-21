@@ -277,9 +277,9 @@ Additional Information: ${formData.additionalInfo}
       }
 
       toast({
-        title: "✓ Claim Submitted Successfully",
-        description: "Thank you! We'll contact you within 1-2 business days.",
-        className: "bg-green-500 text-white border-green-600",
+        title: "✓ Claim Submitted!",
+        description: "We'll review and respond Monday–Friday, 9 AM–5 PM. You can also call our claims line during these hours on 0330 229 5045. Thank you!",
+        className: "bg-green-600 text-white border-green-700 [&>div]:text-white",
       });
 
       // Reset form
