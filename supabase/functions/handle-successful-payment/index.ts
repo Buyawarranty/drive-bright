@@ -677,9 +677,27 @@ serve(async (req) => {
           })
           .join(', ') || 'None';
 
+        // Determine payment method for display
+        const paymentMethod = metadata?.bumper_order_id 
+          ? 'Bumper (Pay Monthly)' 
+          : stripeSessionId 
+            ? 'Stripe (Paid in Full)' 
+            : 'Other';
+        
+        // Get the sale value
+        const saleValue = customerData?.final_amount || customerData?.original_amount || 'N/A';
+        const saleValueDisplay = typeof saleValue === 'number' ? `£${saleValue.toFixed(2)}` : saleValue;
+
         const salesEmailHtml = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">New Warranty Sale</h2>
+            
+            <!-- Sale Summary Banner -->
+            <div style="margin-top: 20px; padding: 20px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border-radius: 8px; color: white;">
+              <div style="font-size: 14px; opacity: 0.9;">Sale Value</div>
+              <div style="font-size: 32px; font-weight: bold; margin: 5px 0;">${saleValueDisplay}</div>
+              <div style="font-size: 14px; opacity: 0.9;">Paid via <strong>${paymentMethod}</strong></div>
+            </div>
             
             <h3 style="color: #333; margin-top: 20px;">Customer Details</h3>
             <table style="width: 100%; border-collapse: collapse;">
@@ -730,7 +748,7 @@ serve(async (req) => {
         await resend.emails.send({
           from: 'Buy a Warranty <notifications@buyawarranty.co.uk>',
           to: ['info@buyawarranty.co.uk'],
-          subject: `New Sale: ${planName} - ${warrantyReference}`,
+          subject: `New Sale: ${planName} - ${saleValueDisplay} via ${paymentMethod} - ${warrantyReference}`,
           html: salesEmailHtml
         });
 
