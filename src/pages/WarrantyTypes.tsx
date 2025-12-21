@@ -2,13 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
-import { Car, Truck, Shield, ArrowRight, Phone, Menu, Battery, Bike, Award, ChevronRight } from 'lucide-react';
+import { Car, Truck, Shield, ArrowRight, Phone, Menu, Battery, Bike, Award, ChevronRight, Check, Star, MessageCircle } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
-import Footer from '@/components/Footer';
+import WebsiteFooter from '@/components/WebsiteFooter';
+import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
+import ukVehiclesImg from '@/assets/warranty-types-uk-vehicles.jpg';
+import carImg from '@/assets/warranty-types-car.jpg';
+import vanImg from '@/assets/warranty-types-van.jpg';
+import evImg from '@/assets/warranty-types-ev.jpg';
+import motorcycleImg from '@/assets/warranty-types-motorcycle.jpg';
 
 interface DynamicLandingPage {
   id: string;
@@ -20,35 +26,39 @@ interface DynamicLandingPage {
   page_type: string | null;
 }
 
-// Default warranty categories when no dynamic pages exist
+// Default warranty categories
 const defaultCategories = [
   {
     id: 'car-warranty',
     slug: 'car-extended-warranty',
     brand_name: 'Car Extended Warranty',
     icon: Car,
-    description: 'Comprehensive protection for all car makes and models.',
+    image: carImg,
+    description: 'Comprehensive protection for all car makes and models. From hatchbacks to luxury vehicles.',
   },
   {
     id: 'van-warranty',
     slug: 'van-warranty',
     brand_name: 'Van Warranty',
     icon: Truck,
-    description: 'Tailored cover for commercial and personal vans.',
+    image: vanImg,
+    description: 'Tailored cover for commercial and personal vans. Keep your business moving.',
   },
   {
     id: 'electric-warranty',
     slug: 'ev-warranty',
     brand_name: 'Electric Vehicle Warranty',
     icon: Battery,
-    description: 'Specialist protection for hybrid and electric vehicles.',
+    image: evImg,
+    description: 'Specialist protection for hybrid and electric vehicles including battery cover.',
   },
   {
     id: 'motorcycle-warranty',
     slug: 'motorcycle-warranty',
     brand_name: 'Motorcycle Warranty',
     icon: Bike,
-    description: 'Reliable cover for motorcycles and scooters.',
+    image: motorcycleImg,
+    description: 'Reliable cover for motorcycles and scooters of all engine sizes.',
   },
 ];
 
@@ -122,7 +132,7 @@ const WarrantyTypes: React.FC = () => {
         </script>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-gray-50">
+      <div className="min-h-screen bg-white">
         {/* Header */}
         <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -149,9 +159,9 @@ const WarrantyTypes: React.FC = () => {
                 <Link to="/claims" className="text-gray-700 hover:text-orange-500 transition-colors font-medium">
                   Claims
                 </Link>
-                <a href="tel:0300456576" className="flex items-center gap-2 text-orange-500 font-semibold">
+                <a href="tel:03302295040" className="flex items-center gap-2 text-orange-500 font-semibold">
                   <Phone className="h-4 w-4" />
-                  0300 456 576
+                  0330 229 5040
                 </a>
               </nav>
               
@@ -176,9 +186,9 @@ const WarrantyTypes: React.FC = () => {
                     <Link to="/claims" className="text-lg font-medium text-gray-700 hover:text-orange-500 py-2">
                       Claims
                     </Link>
-                    <a href="tel:0300456576" className="flex items-center gap-2 text-lg font-medium text-orange-500 py-2">
+                    <a href="tel:03302295040" className="flex items-center gap-2 text-lg font-medium text-orange-500 py-2">
                       <Phone className="h-5 w-5" />
-                      0300 456 576
+                      0330 229 5040
                     </a>
                   </nav>
                 </SheetContent>
@@ -187,61 +197,175 @@ const WarrantyTypes: React.FC = () => {
           </div>
         </header>
 
-        {/* Hero Section */}
-        <section className="py-16 md:py-24 bg-gradient-to-br from-orange-500 via-orange-400 to-orange-600 text-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="flex justify-center mb-6">
-              <Shield className="h-16 w-16 text-white/90" />
+        {/* Trustpilot Header */}
+        <div className="bg-gradient-to-r from-blue-50 via-white to-orange-50 py-2">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <TrustpilotHeader />
+          </div>
+        </div>
+
+        {/* Hero Section - Matching CarExtendedWarranty style */}
+        <section className="bg-gradient-to-br from-blue-50 via-white to-orange-50 py-12 md:py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+              {/* Left Content */}
+              <div className="space-y-6">
+                <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full text-sm font-medium">
+                  <Shield className="h-4 w-4" />
+                  Complete Vehicle Protection
+                </div>
+                
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 leading-tight">
+                  Find the Perfect <span className="text-brand-orange">Warranty</span> for Your Vehicle
+                </h1>
+                
+                <p className="text-lg md:text-xl text-gray-600 max-w-xl">
+                  Whether you drive a car, van, electric vehicle or motorcycle - we have tailored protection plans designed for your vehicle's unique needs.
+                </p>
+
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
+                    <span className="text-gray-700 font-medium">From just 80p a day • Unlimited claims</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
+                    <span className="text-gray-700 font-medium">8,000+ components covered • Fast payouts</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
+                    <span className="text-gray-700 font-medium">Use any VAT-registered garage • UK support</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                  <Button 
+                    onClick={() => navigate('/')} 
+                    size="lg"
+                    className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-8 py-6 text-lg rounded-lg shadow-lg animate-cta-enhanced"
+                  >
+                    Get Your Free Quote <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                  <Button 
+                    size="lg"
+                    variant="outline"
+                    onClick={() => window.location.href = 'tel:03302295040'}
+                    className="border-primary text-primary hover:bg-primary hover:text-white font-semibold px-8 py-6 text-lg"
+                  >
+                    <Phone className="mr-2 h-5 w-5" /> Call 0330 229 5040
+                  </Button>
+                </div>
+              </div>
+
+              {/* Right Content - Hero Image */}
+              <div className="relative hidden lg:block">
+                <div className="max-w-[30%] mx-auto">
+                  <OptimizedImage 
+                    src={ukVehiclesImg}
+                    alt="UK Vehicles - Cars, Vans, EVs covered by warranty" 
+                    className="w-full h-auto rounded-xl border-2 border-gray-200 shadow-lg"
+                    priority={true}
+                    width={307}
+                    height={172}
+                  />
+                </div>
+                {/* Vehicle Types */}
+                <div className="mt-6 flex items-center justify-center gap-6 flex-wrap">
+                  <div className="flex items-center space-x-1.5">
+                    <Car className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <span className="font-medium text-gray-700 text-base">Cars</span>
+                  </div>
+                  <div className="flex items-center space-x-1.5">
+                    <Truck className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <span className="font-medium text-gray-700 text-base">Vans</span>
+                  </div>
+                  <div className="flex items-center space-x-1.5">
+                    <Battery className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <span className="font-medium text-gray-700 text-base">EVs</span>
+                  </div>
+                  <div className="flex items-center space-x-1.5">
+                    <Bike className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <span className="font-medium text-gray-700 text-base">Motorcycles</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              Warranty Types
-            </h1>
-            <h2 className="text-xl md:text-2xl font-medium text-white/90 mb-8 max-w-3xl mx-auto">
-              Explore Our Vehicle Warranty Options
-            </h2>
-            <p className="text-lg text-white/80 max-w-2xl mx-auto mb-8">
-              Welcome to our central hub for all warranty types. Whether you drive a car, van, or specific brand, 
-              we have tailored protection plans designed for your vehicle's unique needs.
-            </p>
-            <Button 
-              onClick={() => navigate('/')} 
-              size="lg"
-              className="bg-white text-orange-500 hover:bg-gray-100 font-semibold px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all"
-            >
-              Get Your Quote <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+
+            {/* Mobile Vehicle Types */}
+            <div className="lg:hidden mt-8">
+              <div className="flex items-center justify-center gap-4 flex-wrap">
+                <div className="flex items-center space-x-1">
+                  <Car className="w-4 h-4 text-green-500 flex-shrink-0" />
+                  <span className="font-medium text-gray-700 text-sm">Cars</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Truck className="w-4 h-4 text-green-500 flex-shrink-0" />
+                  <span className="font-medium text-gray-700 text-sm">Vans</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Battery className="w-4 h-4 text-green-500 flex-shrink-0" />
+                  <span className="font-medium text-gray-700 text-sm">EVs</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <Bike className="w-4 h-4 text-green-500 flex-shrink-0" />
+                  <span className="font-medium text-gray-700 text-sm">Motorcycles</span>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* Main Categories Grid */}
-        <section className="py-16 md:py-20" aria-labelledby="main-categories">
+        {/* Main Categories Grid - With Images */}
+        <section className="py-16 md:py-20 bg-white" aria-labelledby="main-categories">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 id="main-categories" className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 Vehicle Warranty Categories
               </h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">
+              <p className="text-gray-600 max-w-2xl mx-auto text-lg">
                 Choose your vehicle type to explore our comprehensive warranty options
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {defaultCategories.map((category) => {
                 const IconComponent = category.icon;
                 return (
                   <Link 
                     key={category.id}
                     to={`/${category.slug}`}
-                    className="group p-8 bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
+                    className="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 overflow-hidden"
                   >
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                      <IconComponent className="h-10 w-10 text-orange-500" />
+                    <div className="grid md:grid-cols-[30%_1fr] items-center">
+                      {/* Image - Max 30% */}
+                      <div className="h-48 md:h-full overflow-hidden">
+                        <img 
+                          src={category.image} 
+                          alt={category.brand_name}
+                          className="w-full h-full object-cover border-r-2 border-gray-100 group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      </div>
+                      {/* Content */}
+                      <div className="p-6 md:p-8">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <IconComponent className="h-6 w-6 text-orange-500" />
+                          </div>
+                          <h3 className="text-xl md:text-2xl font-bold text-gray-900">{category.brand_name}</h3>
+                        </div>
+                        <p className="text-gray-600 mb-6">{category.description}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="inline-flex items-center text-orange-500 font-semibold group-hover:gap-2 transition-all">
+                            View Options <ChevronRight className="h-5 w-5 ml-1" />
+                          </span>
+                          <div className="flex items-center gap-1 text-green-600 text-sm">
+                            <Check className="h-4 w-4" />
+                            <span>Instant Quote</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">{category.brand_name}</h3>
-                    <p className="text-gray-600 mb-6 flex-grow">{category.description}</p>
-                    <span className="inline-flex items-center text-orange-500 font-semibold group-hover:gap-2 transition-all">
-                      View Options <ChevronRight className="h-4 w-4 ml-1" />
-                    </span>
                   </Link>
                 );
               })}
@@ -249,9 +373,47 @@ const WarrantyTypes: React.FC = () => {
           </div>
         </section>
 
+        {/* Why Choose Us Section */}
+        <section className="py-16 md:py-20 bg-gradient-to-br from-gray-50 to-white" aria-labelledby="why-choose">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 id="why-choose" className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Why Choose Buy A Warranty?
+              </h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">
+                Trusted by thousands of UK drivers with comprehensive protection and fast claims
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="bg-white rounded-xl p-8 shadow-md border border-gray-100">
+                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-6">
+                  <Shield className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Comprehensive Cover</h3>
+                <p className="text-gray-600">Protection for over 8,000 mechanical and electrical components across all vehicle types.</p>
+              </div>
+              <div className="bg-white rounded-xl p-8 shadow-md border border-gray-100">
+                <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mb-6">
+                  <Award className="h-8 w-8 text-orange-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Trusted Provider</h3>
+                <p className="text-gray-600">Rated Excellent on Trustpilot with thousands of happy customers across the UK.</p>
+              </div>
+              <div className="bg-white rounded-xl p-8 shadow-md border border-gray-100">
+                <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-6">
+                  <MessageCircle className="h-8 w-8 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">UK-Based Support</h3>
+                <p className="text-gray-600">Friendly, expert support from our UK team when you need it most.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Dynamic Brand Pages Grid */}
         {dynamicPages.length > 0 && (
-          <section className="py-16 md:py-20 bg-gradient-to-br from-gray-50 to-white" aria-labelledby="brand-warranties">
+          <section className="py-16 md:py-20 bg-white" aria-labelledby="brand-warranties">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center mb-12">
                 <h2 id="brand-warranties" className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -262,35 +424,32 @@ const WarrantyTypes: React.FC = () => {
                 </p>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                 {dynamicPages.map((page) => {
                   const IconComponent = getIconForPageType(page.page_type, page.brand_name);
                   return (
                     <Link 
                       key={page.id}
                       to={`/${page.slug}`}
-                      className="group p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
+                      className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
                     >
                       {page.brand_logo_url ? (
-                        <div className="w-20 h-20 rounded-full bg-gray-50 flex items-center justify-center mb-4 p-3 group-hover:scale-110 transition-transform">
+                        <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
                           <img 
                             src={page.brand_logo_url} 
                             alt={`${page.brand_name} logo`}
-                            className="max-h-14 max-w-14 object-contain"
+                            className="max-h-12 max-w-12 object-contain"
                             loading="lazy"
                           />
                         </div>
                       ) : (
-                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                          <IconComponent className="h-10 w-10 text-orange-500" />
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-orange-100">
+                          <IconComponent className="h-8 w-8 text-orange-500" />
                         </div>
                       )}
-                      <h3 className="text-lg font-bold text-gray-900 mb-2">{page.brand_name}</h3>
-                      <p className="text-sm text-gray-600 mb-4 flex-grow line-clamp-2">
-                        {page.meta_description || `Protect your ${page.brand_name} with a tailored warranty plan.`}
-                      </p>
-                      <span className="inline-flex items-center text-orange-500 font-semibold text-sm group-hover:gap-2 transition-all">
-                        View {page.brand_name} Warranty <ChevronRight className="h-4 w-4 ml-1" />
+                      <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">{page.brand_name}</h3>
+                      <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">
+                        View <ChevronRight className="h-3 w-3 ml-0.5" />
                       </span>
                     </Link>
                   );
@@ -300,37 +459,59 @@ const WarrantyTypes: React.FC = () => {
           </section>
         )}
 
-        {/* Why Choose Us Section */}
-        <section className="py-16 md:py-20 bg-white" aria-labelledby="why-choose">
+        {/* Coverage Table */}
+        <section className="py-16 bg-gradient-to-br from-blue-50 via-white to-orange-50" aria-labelledby="coverage-comparison">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 id="why-choose" className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Why Choose Buy A Warranty?
+            <div className="max-w-5xl mx-auto">
+              <h2 id="coverage-comparison" className="text-3xl md:text-4xl font-bold text-center mb-8">
+                What's Covered Across All Plans?
               </h2>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="text-center p-6">
-                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-                  <Shield className="h-8 w-8 text-green-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Comprehensive Cover</h3>
-                <p className="text-gray-600">Protection for over 8,000 mechanical and electrical components</p>
+              
+              <div className="overflow-x-auto mb-8">
+                <table className="w-full border-collapse bg-white rounded-lg overflow-hidden shadow-md border-2 border-gray-200">
+                  <thead>
+                    <tr className="bg-primary text-white">
+                      <th className="p-4 text-left border-2 border-gray-300">Component Category</th>
+                      <th className="p-4 text-center border-2 border-gray-300">Covered</th>
+                      <th className="p-4 text-left border-2 border-gray-300">Examples</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b-2 border-gray-200">
+                      <td className="p-4 font-semibold border-2 border-gray-200">Engine</td>
+                      <td className="p-4 text-center text-green-600 font-bold border-2 border-gray-200">✓</td>
+                      <td className="p-4 border-2 border-gray-200">Pistons, valves, timing chains, oil pumps</td>
+                    </tr>
+                    <tr className="border-b-2 border-gray-200 bg-gray-50">
+                      <td className="p-4 font-semibold border-2 border-gray-200">Gearbox</td>
+                      <td className="p-4 text-center text-green-600 font-bold border-2 border-gray-200">✓</td>
+                      <td className="p-4 border-2 border-gray-200">Gears, bearings, syncros, shafts</td>
+                    </tr>
+                    <tr className="border-b-2 border-gray-200">
+                      <td className="p-4 font-semibold border-2 border-gray-200">Electrical</td>
+                      <td className="p-4 text-center text-green-600 font-bold border-2 border-gray-200">✓</td>
+                      <td className="p-4 border-2 border-gray-200">Alternator, starter motor, ECU, sensors</td>
+                    </tr>
+                    <tr className="border-b-2 border-gray-200 bg-gray-50">
+                      <td className="p-4 font-semibold border-2 border-gray-200">Fuel System</td>
+                      <td className="p-4 text-center text-green-600 font-bold border-2 border-gray-200">✓</td>
+                      <td className="p-4 border-2 border-gray-200">Fuel pump, injectors, fuel rail</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 font-semibold border-2 border-gray-200">Cooling System</td>
+                      <td className="p-4 text-center text-green-600 font-bold border-2 border-gray-200">✓</td>
+                      <td className="p-4 border-2 border-gray-200">Water pump, thermostat, radiator</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-              <div className="text-center p-6">
-                <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-4">
-                  <Award className="h-8 w-8 text-orange-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Trusted Provider</h3>
-                <p className="text-gray-600">Rated Excellent on Trustpilot with thousands of happy customers</p>
-              </div>
-              <div className="text-center p-6">
-                <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
-                  <Phone className="h-8 w-8 text-blue-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">UK-Based Support</h3>
-                <p className="text-gray-600">Friendly, expert support from our UK team when you need it</p>
-              </div>
+
+              <p className="text-center text-gray-700">
+                <strong>See the full list:</strong>{' '}
+                <Link to="/what-is-covered/" className="text-primary underline hover:text-primary/80 font-medium">
+                  View all 8,000+ covered components
+                </Link>
+              </p>
             </div>
           </div>
         </section>
@@ -342,22 +523,22 @@ const WarrantyTypes: React.FC = () => {
               Ready to Protect Your Vehicle?
             </h2>
             <p className="text-lg text-gray-300 mb-8">
-              Get an instant quote and find the perfect warranty for your vehicle today.
+              Get an instant quote in under 60 seconds and find the perfect warranty for your vehicle.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 onClick={() => navigate('/')} 
                 size="lg"
-                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transition-all"
+                className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all animate-cta-enhanced"
               >
                 Get Your Free Quote <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <a 
-                href="tel:0300456576"
-                className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-8 py-4 text-lg rounded-full transition-all border border-white/20"
+                href="tel:03302295040"
+                className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-8 py-4 text-lg rounded-lg transition-all border border-white/20"
               >
                 <Phone className="h-5 w-5" />
-                0300 456 576
+                0330 229 5040
               </a>
             </div>
           </div>
@@ -376,16 +557,23 @@ const WarrantyTypes: React.FC = () => {
                 <OptimizedImage
                   src={trustpilotLogo}
                   alt="Trustpilot Reviews"
-                  className="h-8 w-auto"
-                  loading="lazy"
+                  className="h-10 md:h-12 w-auto"
+                  priority={false}
+                  width={200}
+                  height={50}
                 />
+                <div className="flex items-center gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-5 w-5 fill-green-500 text-green-500" />
+                  ))}
+                </div>
                 <span className="text-gray-600 font-medium">Rated Excellent</span>
               </a>
             </div>
           </div>
         </section>
 
-        <Footer />
+        <WebsiteFooter />
       </div>
     </>
   );
