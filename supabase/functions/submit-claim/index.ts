@@ -233,30 +233,32 @@ const handler = async (req: Request): Promise<Response> => {
         
         <p>Dear ${name},</p>
         
-        <p>Thank you for submitting your claim. We have received your request and our team will review it shortly.</p>
+        <p>Thank you for submitting your claim for vehicle registration: <strong>${regPlateDisplay}</strong>. We've received your request and our team will review it during our working hours.</p>
         
-        <div style="background-color: #e8f5e8; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <p style="margin: 0;"><strong>Submission ID:</strong> ${submissionData.id}</p>
-          <p style="margin: 5px 0 0 0;"><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>
+          <p style="margin: 10px 0 0 0;"><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>
         </div>
         
-        <p>Our claims team will contact you within 1-2 business days. If you have any urgent questions, please call us at <strong>0330 229 5045</strong>.</p>
+        <p><strong>We'll respond Monday–Friday, 9:00 AM–5:00 PM.</strong></p>
         
-        <p>Best regards,<br>
-        Buy a Warranty Claims Team</p>
+        <p>If you need urgent assistance during these hours, you can:</p>
+        <ul style="margin: 10px 0; padding-left: 20px;">
+          <li style="margin-bottom: 8px;"><strong>Call us:</strong> 0330 229 5045</li>
+          <li><strong>Email us:</strong> <a href="mailto:claims@buyawarranty.co.uk" style="color: #eb4b00;">claims@buyawarranty.co.uk</a></li>
+        </ul>
         
-        <hr style="margin: 30px 0;">
-        <p style="color: #666; font-size: 12px;">
-          Buy a Warranty | Claims Department<br>
-          Email: claims@buyawarranty.co.uk | Phone: 0330 229 5045
-        </p>
+        <p>Thank you for your patience – we're here to help!</p>
+        
+        <p style="margin-top: 30px;">Best regards,</p>
+        <p style="margin: 5px 0;"><strong>Buy a Warranty Claims Team</strong></p>
       </div>
     `;
 
     await resend.emails.send({
       from: "Buy a Warranty <claims@buyawarranty.co.uk>",
       to: [email],
-      subject: "Claim Submission Confirmation - " + submissionData.id,
+      subject: "Claim Submission Received",
       html: customerEmailHtml,
     });
 
