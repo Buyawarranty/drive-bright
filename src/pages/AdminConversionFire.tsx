@@ -90,6 +90,14 @@ const AdminConversionFire = () => {
 
     console.log(`🎯 Manually firing conversion for ${conversion.id}...`);
 
+    // Grant consent first
+    window.gtag('consent', 'update', {
+      'ad_storage': 'granted',
+      'ad_user_data': 'granted',
+      'ad_personalization': 'granted',
+      'analytics_storage': 'granted'
+    });
+
     // Set enhanced conversion data first
     window.gtag('set', 'user_data', {
       email: conversion.email,
@@ -102,7 +110,42 @@ const AdminConversionFire = () => {
       }
     });
 
-    // Fire the purchase conversion
+    // Push dataLayer event for GTM (simulating thank-you page context)
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      'event': 'purchase',
+      'order_value': 1,
+      'transaction_id': conversion.id,
+      'currency': 'GBP',
+      'page_location': window.location.origin + '/thank-you',
+      'ecommerce': {
+        'transaction_id': conversion.id,
+        'value': 1,
+        'currency': 'GBP'
+      }
+    });
+    console.log('✅ DataLayer purchase event pushed');
+
+    // Fire direct Google Ads conversion (bypasses GTM)
+    window.gtag('event', 'conversion', {
+      'send_to': 'AW-17325228149/U-BnCJKD2KUbEPWAqMVA',
+      'value': 1,
+      'currency': 'GBP',
+      'transaction_id': conversion.id,
+      'user_data': {
+        'email': conversion.email,
+        'phone_number': conversion.phone.replace(/^0/, '+44'),
+        'address': {
+          'first_name': conversion.firstName,
+          'last_name': conversion.lastName,
+          'street': conversion.address,
+          'country': 'GB'
+        }
+      }
+    });
+    console.log('✅ Direct gtag conversion event fired');
+
+    // Also call trackPurchaseComplete as backup
     trackPurchaseComplete(
       conversion.amount,
       conversion.id,
