@@ -2398,20 +2398,21 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   : 'border-border hover:border-success/50'
               }`}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="font-bold text-xl text-foreground">Add £1,000 Extra Cover</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">
-                    £{selectedClaimLimit.toLocaleString()} → <span className="text-emerald-600 font-semibold">£{(selectedClaimLimit + 1000).toLocaleString()} per claim</span> • +£5/mo × 12 payments
+              <div className="flex items-start justify-between w-full">
+                <div>
+                  <h4 className="text-xl font-bold text-black mb-1">Add £1,000 Extra Cover</h4>
+                  <div className="text-3xl font-bold text-black">
+                    £{(selectedClaimLimit + 1000).toLocaleString()} <span className="text-base">per claim</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    +£5/mo × 12 payments
                   </div>
                 </div>
-                {boostAddon ? (
-                  <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
-                    <Check className="w-3 h-3 text-white" />
-                  </div>
-                ) : (
-                  <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/30 bg-background flex-shrink-0" />
-                )}
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  boostAddon ? 'bg-green-500 border-green-500' : 'border-gray-300'
+                }`}>
+                  {boostAddon && <Check className="w-4 h-4 text-white" />}
+                </div>
               </div>
             </div>
           </div>
