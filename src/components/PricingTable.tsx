@@ -2385,30 +2385,67 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
           </div>
           
-          {/* Boost Add-On */}
-          <div 
-            className={`mt-4 p-6 rounded-lg transition-all duration-200 cursor-pointer bg-white ${
-              boostAddon 
-                ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30' 
-                : 'border-2 border-gray-200 hover:border-orange-300 hover:shadow-md'
-            }`}
-            onClick={() => setBoostAddon(!boostAddon)}
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h4 className="text-xl font-bold text-black">🚀 Boost Claim Limit</h4>
-                  <span className="bg-green-500 text-white px-2 py-0.5 rounded-full text-xs font-semibold">UPGRADE</span>
+          {/* Optional Add-ons Section */}
+          <div className="mt-6">
+            <h4 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wide">Optional Add-ons</h4>
+            
+            {/* Boost Claim Limit Card */}
+            <div 
+              onClick={() => setBoostAddon(!boostAddon)}
+              className={`relative p-4 rounded-xl cursor-pointer transition-all bg-muted/30 border ${
+                boostAddon 
+                  ? 'border-emerald-500 bg-emerald-50/50 shadow-sm' 
+                  : 'border-border hover:border-emerald-300 hover:bg-muted/50'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  {/* Title with icon and badge */}
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xl">🚀</span>
+                    <span className="font-semibold text-foreground">Boost Claim Limit</span>
+                    <span className="text-[10px] font-medium border border-muted-foreground/30 text-muted-foreground px-1.5 py-0.5 rounded">
+                      Add-on
+                    </span>
+                  </div>
+                  
+                  {/* Subtitle */}
+                  <p className="text-sm text-muted-foreground mb-3">Add £1,000 extra cover</p>
+                  
+                  {/* Before/After Display */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm text-muted-foreground">Current limit:</span>
+                    <span className="font-semibold text-foreground">
+                      £{selectedClaimLimit.toLocaleString()}
+                    </span>
+                    <span className="text-emerald-600">→</span>
+                    <span className="font-semibold text-emerald-600">
+                      £{(selectedClaimLimit + 1000).toLocaleString()}
+                    </span>
+                  </div>
+                  
+                  {/* +£1000 highlight */}
+                  <div className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-700 rounded-md text-sm font-medium">
+                    <Plus className="w-3 h-3" />
+                    £1,000 extra cover
+                  </div>
+                  
+                  {/* Price */}
+                  <p className="text-xs text-muted-foreground mt-2">
+                    + £5/month × 12 payments
+                  </p>
                 </div>
-                <div className="text-3xl font-bold text-black mb-1">
-                  £{selectedClaimLimit.toLocaleString()} → £{(selectedClaimLimit + 1000).toLocaleString()}
+                
+                {/* Checkbox */}
+                <div className="flex-shrink-0 mt-1">
+                  {boostAddon ? (
+                    <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
+                      <Check className="w-4 h-4 text-white" />
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6 rounded-full border-2 border-muted-foreground/30 bg-background" />
+                  )}
                 </div>
-                <p className="text-sm text-gray-600">+ £5/month x 12 payments</p>
-              </div>
-              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                boostAddon ? 'bg-green-500 border-green-500' : 'border-gray-300'
-              }`}>
-                {boostAddon && <Check className="w-4 h-4 text-white" />}
               </div>
             </div>
           </div>
