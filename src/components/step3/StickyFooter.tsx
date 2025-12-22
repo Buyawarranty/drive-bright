@@ -52,15 +52,15 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
 
           {/* Middle Section - Pricing */}
           <div className="flex flex-col items-center gap-1 flex-1">
-            <div className="flex items-baseline gap-2">
-              <span className="text-xl font-bold text-gray-900">Total:</span>
-              <span className="text-2xl font-bold text-gray-900">£{monthlyPrice}/Month</span>
-              <span className="text-sm text-gray-500">– 0% APR</span>
+            <div className="flex flex-col items-center">
+              <div className="flex items-baseline gap-2">
+                <span className="text-xl font-bold text-gray-900">Total:</span>
+                <span className="text-2xl font-bold text-gray-900">£{monthlyPrice}/month</span>
+              </div>
+              <span className="text-sm text-gray-500">(Only 12 payments)</span>
             </div>
-            <div className="flex items-center gap-3 text-sm">
-              <span className="text-gray-500">Only 12 payments</span>
-              <span className="text-gray-300">|</span>
-              <span className="text-gray-500">Pay in full:</span>
+            <div className="flex items-center gap-2 text-sm mt-1">
+              <span className="text-gray-500">Or pay in full:</span>
               {savings > 0 && (
                 <span className="line-through text-red-500">£{wasPrice}</span>
               )}
