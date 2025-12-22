@@ -2389,46 +2389,27 @@ const PricingTable: React.FC<PricingTableProps> = ({
           <div className="mt-4">
             <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Optional add-ons</h4>
             
-            {/* Boost Claim Limit Card - Compact Horizontal */}
+            {/* Add Extra Cover Card - Matches claim limit cards */}
             <div 
               onClick={() => setBoostAddon(!boostAddon)}
-              className={`relative px-4 py-3 rounded-lg cursor-pointer transition-all border ${
+              className={`relative p-4 rounded-lg cursor-pointer transition-all border-2 bg-white ${
                 boostAddon 
-                  ? 'border-emerald-500 bg-emerald-50/50' 
-                  : 'border-border bg-muted/20 hover:border-emerald-300'
+                  ? 'border-success ring-2 ring-success' 
+                  : 'border-border hover:border-success/50'
               }`}
             >
-              <div className="flex items-center justify-between gap-4">
-                {/* Left: Icon + Title + Upgrade Info */}
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <span className="text-lg flex-shrink-0">🚀</span>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-foreground whitespace-nowrap">Boost Claim Limit</span>
-                      <span className="text-[9px] font-medium border border-muted-foreground/30 text-muted-foreground px-1 py-0.5 rounded">
-                        Add-on
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-sm">
-                      <span className="font-medium text-foreground">£{selectedClaimLimit.toLocaleString()}</span>
-                      <span className="text-emerald-600">→</span>
-                      <span className="font-semibold text-emerald-600">£{(selectedClaimLimit + 1000).toLocaleString()}</span>
-                      <span className="text-emerald-600 text-xs font-medium">(+£1,000)</span>
-                    </div>
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="font-bold text-xl text-foreground">Add £1,000 Extra Cover</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">+£5/mo × 12 payments</div>
+                </div>
+                {boostAddon ? (
+                  <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                    <Check className="w-3 h-3 text-white" />
                   </div>
-                </div>
-                
-                {/* Right: Price + Checkmark */}
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">+£5/mo × 12</span>
-                  {boostAddon ? (
-                    <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
-                      <Check className="w-3 h-3 text-white" />
-                    </div>
-                  ) : (
-                    <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/30 bg-background" />
-                  )}
-                </div>
+                ) : (
+                  <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/30 bg-background flex-shrink-0" />
+                )}
               </div>
             </div>
           </div>
