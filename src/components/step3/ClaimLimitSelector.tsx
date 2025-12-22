@@ -144,7 +144,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
 
       {/* Optional Add-ons Section */}
       <div className="mt-6 mb-2">
-        <h4 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wide">Optional Add-ons</h4>
+        <h4 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wide">Optional add-ons</h4>
         
         {/* Boost Claim Limit Card */}
         <div 
