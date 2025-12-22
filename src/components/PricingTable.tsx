@@ -2392,10 +2392,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
             {/* Add Extra Cover Card - Matches claim limit cards */}
             <div 
               onClick={() => setBoostAddon(!boostAddon)}
-              className={`relative p-4 rounded-lg cursor-pointer transition-all border-2 bg-white min-h-[88px] flex items-center ${
+              className={`relative p-4 rounded-lg cursor-pointer transition-all border-2 bg-cyan-50 min-h-[88px] flex items-center ${
                 boostAddon 
-                  ? 'border-success ring-2 ring-success' 
-                  : 'border-border hover:border-success/50'
+                  ? 'border-cyan-500 ring-2 ring-cyan-400' 
+                  : 'border-cyan-200 hover:border-cyan-400'
               }`}
             >
               <div className="flex items-start justify-between w-full">
