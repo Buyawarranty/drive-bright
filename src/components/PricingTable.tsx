@@ -2400,9 +2400,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
             >
               <div className="flex items-start justify-between w-full">
                 <div>
-                  <h4 className="text-xl font-bold text-black mb-1">Add £1,000 Extra Cover</h4>
+                  <h4 className="text-xl font-bold text-black mb-1">
+                    {boostAddon ? '+£1,000 Cover Added' : 'Add £1,000 Extra Cover'}
+                  </h4>
                   <div className="text-3xl font-bold text-black">
-                    £{(selectedClaimLimit + 1000).toLocaleString()} <span className="text-base">per claim</span>
+                    {boostAddon ? 'Now ' : ''}£{(selectedClaimLimit + 1000).toLocaleString()} <span className="text-base">per claim</span>
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
                     +£5/mo × 12 payments
