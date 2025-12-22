@@ -142,9 +142,9 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
         })}
       </div>
 
-      {/* Optional add-ons Section */}
+      {/* Optional add-on Section */}
       <div className="mt-4 mb-2">
-        <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Optional add-ons</h4>
+        <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Optional add-on</h4>
         
         {/* Add Extra Cover Card - Matches claim limit cards */}
         <div 
@@ -159,24 +159,28 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
             }
           }}
           className={cn(
-            "relative p-3 rounded-lg cursor-pointer transition-all border h-[72px] flex flex-col justify-center",
+            "relative p-4 rounded-lg cursor-pointer transition-all border-2 min-h-[88px] flex items-center bg-cyan-50",
             boostAddon && selectedClaimLimit === 2000
-              ? "border-emerald-500 bg-white ring-2 ring-emerald-500"
-              : "border-border bg-white hover:border-emerald-300"
+              ? "border-cyan-500 ring-2 ring-cyan-400"
+              : "border-cyan-200 hover:border-cyan-400"
           )}
         >
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <div className="font-semibold text-foreground text-base">Add £1,000 Extra Cover</div>
-              <div className="text-xs text-muted-foreground mt-0.5">+£{boostPrice}/mo × 12 payments</div>
-            </div>
-            {boostAddon && selectedClaimLimit === 2000 ? (
-              <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
-                <Check className="w-3 h-3 text-white" />
+          <div className="flex items-start justify-between w-full">
+            <div>
+              <h4 className="text-xl font-bold text-black mb-1">Add £1,000 Extra Cover</h4>
+              <div className="text-3xl font-bold text-black">
+                £{((selectedClaimLimit || 0) + 1000).toLocaleString()} <span className="text-base">per claim</span>
               </div>
-            ) : (
-              <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/30 bg-background flex-shrink-0" />
-            )}
+              <div className="text-xs text-muted-foreground mt-1">
+                +£{boostPrice}/mo × 12 payments
+              </div>
+            </div>
+            <div className={cn(
+              "w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0",
+              boostAddon && selectedClaimLimit === 2000 ? "bg-green-500 border-green-500" : "border-gray-300"
+            )}>
+              {boostAddon && selectedClaimLimit === 2000 && <Check className="w-4 h-4 text-white" />}
+            </div>
           </div>
         </div>
       </div>
