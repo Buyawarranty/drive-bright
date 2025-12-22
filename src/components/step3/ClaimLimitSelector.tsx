@@ -1,7 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import { ChevronDown, Sparkles, Check } from 'lucide-react';
+import { ChevronDown, Check, Info, ArrowRight, Plus } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
 import confetti from 'canvas-confetti';
 
 interface ClaimLimitSelectorProps {
@@ -140,13 +142,11 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
         })}
       </div>
 
-      {/* Boost Option - Premium Redesign */}
-      <div className="relative pt-5 mb-2">
-        {/* BEST VALUE Badge - sticks out halfway */}
-        <span className="absolute -top-1 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg shadow-green-500/30">
-          BEST VALUE
-        </span>
+      {/* Optional Add-ons Section */}
+      <div className="mt-6 mb-2">
+        <h4 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wide">Optional Add-ons</h4>
         
+        {/* Boost Claim Limit Card */}
         <div 
           onClick={(e) => {
             const isCurrentlyChecked = boostAddon && selectedClaimLimit === 2000;
@@ -159,50 +159,72 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
             }
           }}
           className={cn(
-            "relative p-5 rounded-xl cursor-pointer transition-all overflow-hidden",
-            "bg-green-50",
+            "relative p-4 rounded-xl cursor-pointer transition-all",
+            "bg-muted/30 border",
             boostAddon && selectedClaimLimit === 2000
-              ? "border-2 border-green-500 shadow-lg shadow-green-500/20"
-              : "border-2 border-green-300 hover:border-green-400 hover:shadow-md"
+              ? "border-emerald-500 bg-emerald-50/50 shadow-sm"
+              : "border-border hover:border-emerald-300 hover:bg-muted/50"
           )}
         >
-          {/* Rocket icon and title */}
-          <div className="flex items-center gap-3 mb-3">
-            <div className="text-3xl animate-bounce">🚀</div>
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-bold text-foreground">Boost Claim Limit</span>
-              <Sparkles className="w-5 h-5 text-orange-500 animate-pulse" />
+          {/* Header Row */}
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1">
+              {/* Title with icon and badge */}
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xl">🚀</span>
+                <span className="font-semibold text-foreground">Boost Claim Limit</span>
+                <Badge variant="outline" className="text-[10px] font-medium border-muted-foreground/30 text-muted-foreground">
+                  Add-on
+                </Badge>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[220px] text-center">
+                      <p className="text-xs">This add-on increases your claim limit by £1,000 for just £5/month</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              
+              {/* Subtitle */}
+              <p className="text-sm text-muted-foreground mb-3">Add £1,000 extra cover</p>
+              
+              {/* Before/After Display */}
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm text-muted-foreground">Current limit:</span>
+                <span className="font-semibold text-foreground">
+                  £{selectedClaimLimit ? selectedClaimLimit.toLocaleString() : '1,250'}
+                </span>
+                <ArrowRight className="w-4 h-4 text-emerald-600" />
+                <span className="font-semibold text-emerald-600">
+                  £{selectedClaimLimit ? (selectedClaimLimit + 1000).toLocaleString() : '2,250'}
+                </span>
+              </div>
+              
+              {/* +£1000 highlight */}
+              <div className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-700 rounded-md text-sm font-medium">
+                <Plus className="w-3 h-3" />
+                £1,000 extra cover
+              </div>
+              
+              {/* Price */}
+              <p className="text-xs text-muted-foreground mt-2">
+                + £{boostPrice}/month × 12 payments
+              </p>
             </div>
             
-            {/* Checkbox indicator */}
-            <div className="ml-auto">
+            {/* Checkbox */}
+            <div className="flex-shrink-0 mt-1">
               {boostAddon && selectedClaimLimit === 2000 ? (
-                <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/50">
+                <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
                   <Check className="w-4 h-4 text-white" />
                 </div>
               ) : (
-                <div className="w-6 h-6 rounded-full border-2 border-green-400 bg-white" />
+                <div className="w-6 h-6 rounded-full border-2 border-muted-foreground/30 bg-background" />
               )}
             </div>
-          </div>
-          
-          {/* Price upgrade with glow effect */}
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-2xl font-bold text-gray-600">
-              £{selectedClaimLimit ? selectedClaimLimit.toLocaleString() : '1,250'}
-            </span>
-            <span className="text-xl text-green-600">→</span>
-            <span 
-              className="text-2xl font-bold text-green-600"
-              style={{ textShadow: '0 0 10px rgba(34, 197, 94, 0.4)' }}
-            >
-              £{selectedClaimLimit ? (selectedClaimLimit + 1000).toLocaleString() : '2,250'}
-            </span>
-          </div>
-          
-          {/* Mini comparison cue */}
-          <div className="text-sm text-gray-600 font-medium">
-            +£1,000 extra coverage for <span className="text-green-600 font-semibold">Only £5/month × 12 payments</span>
           </div>
         </div>
       </div>
