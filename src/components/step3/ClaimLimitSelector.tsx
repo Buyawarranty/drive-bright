@@ -142,11 +142,11 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
         })}
       </div>
 
-      {/* Optional Add-ons Section */}
-      <div className="mt-6 mb-2">
-        <h4 className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wide">Optional add-ons</h4>
+      {/* Optional add-ons Section */}
+      <div className="mt-4 mb-2">
+        <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Optional add-ons</h4>
         
-        {/* Boost Claim Limit Card */}
+        {/* Boost Claim Limit Card - Compact */}
         <div 
           onClick={(e) => {
             const isCurrentlyChecked = boostAddon && selectedClaimLimit === 2000;
@@ -159,70 +159,47 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
             }
           }}
           className={cn(
-            "relative p-4 rounded-xl cursor-pointer transition-all",
-            "bg-muted/30 border",
+            "relative px-4 py-3 rounded-lg cursor-pointer transition-all border",
             boostAddon && selectedClaimLimit === 2000
-              ? "border-emerald-500 bg-emerald-50/50 shadow-sm"
-              : "border-border hover:border-emerald-300 hover:bg-muted/50"
+              ? "border-emerald-500 bg-emerald-50/50"
+              : "border-border bg-muted/20 hover:border-emerald-300"
           )}
         >
-          {/* Header Row */}
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex-1">
-              {/* Title with icon and badge */}
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xl">🚀</span>
-                <span className="font-semibold text-foreground">Boost Claim Limit</span>
-                <Badge variant="outline" className="text-[10px] font-medium border-muted-foreground/30 text-muted-foreground">
-                  Add-on
-                </Badge>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Info className="w-4 h-4 text-muted-foreground hover:text-foreground cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-[220px] text-center">
-                      <p className="text-xs">This add-on increases your claim limit by £1,000 for just £5/month</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+          <div className="flex items-center justify-between gap-3">
+            {/* Left: Icon + Content */}
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <span className="text-lg flex-shrink-0">🚀</span>
+              <div className="flex-1 min-w-0">
+                {/* Title row */}
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="font-semibold text-foreground text-sm">Boost Claim Limit</span>
+                  <Badge variant="outline" className="text-[9px] font-medium border-muted-foreground/30 text-muted-foreground px-1 py-0">
+                    Add-on
+                  </Badge>
+                </div>
+                {/* Upgrade info */}
+                <div className="flex items-center gap-1.5 text-sm">
+                  <span className="font-medium text-foreground">
+                    £{selectedClaimLimit ? selectedClaimLimit.toLocaleString() : '1,250'}
+                  </span>
+                  <span className="text-emerald-600">→</span>
+                  <span className="font-semibold text-emerald-600">
+                    £{selectedClaimLimit ? (selectedClaimLimit + 1000).toLocaleString() : '2,250'}
+                  </span>
+                  <span className="text-emerald-600 text-xs">(+£1,000)</span>
+                </div>
               </div>
-              
-              {/* Subtitle */}
-              <p className="text-sm text-muted-foreground mb-3">Add £1,000 extra cover</p>
-              
-              {/* Before/After Display */}
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm text-muted-foreground">Current limit:</span>
-                <span className="font-semibold text-foreground">
-                  £{selectedClaimLimit ? selectedClaimLimit.toLocaleString() : '1,250'}
-                </span>
-                <ArrowRight className="w-4 h-4 text-emerald-600" />
-                <span className="font-semibold text-emerald-600">
-                  £{selectedClaimLimit ? (selectedClaimLimit + 1000).toLocaleString() : '2,250'}
-                </span>
-              </div>
-              
-              {/* +£1000 highlight */}
-              <div className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-700 rounded-md text-sm font-medium">
-                <Plus className="w-3 h-3" />
-                £1,000 extra cover
-              </div>
-              
-              {/* Price */}
-              <p className="text-xs text-muted-foreground mt-2">
-                + £{boostPrice}/month × 12 payments
-              </p>
             </div>
             
-            {/* Checkbox */}
-            <div className="flex-shrink-0 mt-1">
+            {/* Right: Price + Checkmark */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="text-[10px] text-muted-foreground whitespace-nowrap">+£{boostPrice}/mo × 12</span>
               {boostAddon && selectedClaimLimit === 2000 ? (
-                <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
-                  <Check className="w-4 h-4 text-white" />
+                <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
+                  <Check className="w-3 h-3 text-white" />
                 </div>
               ) : (
-                <div className="w-6 h-6 rounded-full border-2 border-muted-foreground/30 bg-background" />
+                <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/30 bg-background" />
               )}
             </div>
           </div>
