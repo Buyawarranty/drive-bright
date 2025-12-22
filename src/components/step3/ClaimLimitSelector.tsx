@@ -146,7 +146,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
       <div className="mt-4 mb-2">
         <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Optional add-ons</h4>
         
-        {/* Boost Claim Limit Card - Compact */}
+        {/* Add Extra Cover Card - Matches claim limit cards */}
         <div 
           onClick={(e) => {
             const isCurrentlyChecked = boostAddon && selectedClaimLimit === 2000;
@@ -159,49 +159,24 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
             }
           }}
           className={cn(
-            "relative px-4 py-3 rounded-lg cursor-pointer transition-all border",
+            "relative p-3 rounded-lg cursor-pointer transition-all border h-[72px] flex flex-col justify-center",
             boostAddon && selectedClaimLimit === 2000
-              ? "border-emerald-500 bg-emerald-50/50"
-              : "border-border bg-muted/20 hover:border-emerald-300"
+              ? "border-emerald-500 bg-white ring-2 ring-emerald-500"
+              : "border-border bg-white hover:border-emerald-300"
           )}
         >
-          <div className="flex items-center justify-between gap-3">
-            {/* Left: Icon + Content */}
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              <span className="text-lg flex-shrink-0">🚀</span>
-              <div className="flex-1 min-w-0">
-                {/* Title row */}
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="font-semibold text-foreground text-sm">Boost Claim Limit</span>
-                  <Badge variant="outline" className="text-[9px] font-medium border-muted-foreground/30 text-muted-foreground px-1 py-0">
-                    Add-on
-                  </Badge>
-                </div>
-                {/* Upgrade info */}
-                <div className="flex items-center gap-1.5 text-sm">
-                  <span className="font-medium text-foreground">
-                    £{selectedClaimLimit ? selectedClaimLimit.toLocaleString() : '1,250'}
-                  </span>
-                  <span className="text-emerald-600">→</span>
-                  <span className="font-semibold text-emerald-600">
-                    £{selectedClaimLimit ? (selectedClaimLimit + 1000).toLocaleString() : '2,250'}
-                  </span>
-                  <span className="text-emerald-600 text-xs">(+£1,000)</span>
-                </div>
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="font-semibold text-foreground text-base">Add £1,000 Extra Cover</div>
+              <div className="text-xs text-muted-foreground mt-0.5">+£{boostPrice}/mo × 12 payments</div>
+            </div>
+            {boostAddon && selectedClaimLimit === 2000 ? (
+              <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                <Check className="w-3 h-3 text-white" />
               </div>
-            </div>
-            
-            {/* Right: Price + Checkmark */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <span className="text-[10px] text-muted-foreground whitespace-nowrap">+£{boostPrice}/mo × 12</span>
-              {boostAddon && selectedClaimLimit === 2000 ? (
-                <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
-                  <Check className="w-3 h-3 text-white" />
-                </div>
-              ) : (
-                <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/30 bg-background" />
-              )}
-            </div>
+            ) : (
+              <div className="w-5 h-5 rounded-full border-2 border-muted-foreground/30 bg-background flex-shrink-0" />
+            )}
           </div>
         </div>
       </div>
