@@ -2387,12 +2387,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
           
           {/* Optional Add-ons Section */}
           <div className="mt-4">
-            <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Optional add-ons</h4>
+            <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Optional add-on</h4>
             
             {/* Add Extra Cover Card - Matches claim limit cards */}
             <div 
               onClick={() => setBoostAddon(!boostAddon)}
-              className={`relative p-4 rounded-lg cursor-pointer transition-all border-2 bg-white ${
+              className={`relative p-4 rounded-lg cursor-pointer transition-all border-2 bg-white min-h-[88px] flex items-center ${
                 boostAddon 
                   ? 'border-success ring-2 ring-success' 
                   : 'border-border hover:border-success/50'
