@@ -167,9 +167,11 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
         >
           <div className="flex items-start justify-between w-full">
             <div>
-              <h4 className="text-xl font-bold text-black mb-1">Add £1,000 Extra Cover</h4>
+              <h4 className="text-xl font-bold text-black mb-1">
+                {boostAddon && selectedClaimLimit === 2000 ? '+£1,000 Cover Added' : 'Add £1,000 Extra Cover'}
+              </h4>
               <div className="text-3xl font-bold text-black">
-                £{((selectedClaimLimit || 0) + 1000).toLocaleString()} <span className="text-base">per claim</span>
+                {boostAddon && selectedClaimLimit === 2000 ? 'Now ' : ''}£{((selectedClaimLimit || 0) + 1000).toLocaleString()} <span className="text-base">per claim</span>
               </div>
               <div className="text-xs text-muted-foreground mt-1">
                 +£{boostPrice}/mo × 12 payments
