@@ -2387,7 +2387,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           
           {/* Optional Add-ons Section */}
           <div className="mt-4">
-            <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Optional Add-ons</h4>
+            <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Optional add-ons</h4>
             
             {/* Boost Claim Limit Card - Compact Horizontal */}
             <div 
