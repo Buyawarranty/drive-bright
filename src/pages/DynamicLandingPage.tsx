@@ -81,7 +81,7 @@ interface LandingPageData {
 }
 
 const DynamicLandingPage: React.FC = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug, brand } = useParams<{ slug?: string; brand?: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [page, setPage] = useState<LandingPageData | null>(null);
@@ -90,7 +90,15 @@ const DynamicLandingPage: React.FC = () => {
 
   useEffect(() => {
     const loadPage = async () => {
-      if (!slug) {
+      // Build the full slug - handle both /car-extended-warranty/:brand and /:slug patterns
+      let fullSlug = '';
+      if (brand) {
+        fullSlug = `car-extended-warranty/${brand}`;
+      } else if (slug) {
+        fullSlug = slug;
+      }
+      
+      if (!fullSlug) {
         setNotFound(true);
         setLoading(false);
         return;
@@ -111,9 +119,9 @@ const DynamicLandingPage: React.FC = () => {
       ];
 
       // Clean slug for comparison
-      const cleanSlug = slug.replace(/\/$/, '');
+      const cleanSlug = fullSlug.replace(/\/$/, '');
       
-      if (knownRoutes.includes(cleanSlug) || cleanSlug.startsWith('car-extended-warranty/')) {
+      if (knownRoutes.includes(cleanSlug)) {
         setNotFound(true);
         setLoading(false);
         return;
