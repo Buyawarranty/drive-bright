@@ -77,12 +77,12 @@ const WebsiteFooter = () => {
                 <li><a href="/customer-dashboard/" className="hover:text-[#eb4b00] transition-colors font-semibold">Customer Login</a></li>
                 <li><a href="/make-a-claim/" className="hover:text-[#eb4b00] transition-colors">Make a Claim</a></li>
                 <li><a href="/contact-us/" className="hover:text-[#eb4b00] transition-colors">Contact Us</a></li>
-                <li><a href="/warranty-types/" className="hover:text-[#eb4b00] transition-colors">Warranty Types</a></li>
                 <li><a href="/buy-a-used-car-warranty-reliable-warranties/" className="hover:text-[#eb4b00] transition-colors">Car Warranty</a></li>
                 <li><a href="/van-warranty/" className="hover:text-[#eb4b00] transition-colors">Van Warranty</a></li>
                 <li><a href="/ev-warranty/" className="hover:text-[#eb4b00] transition-colors">EV Warranty</a></li>
                 <li><a href="/motorcycle-warranty/" className="hover:text-[#eb4b00] transition-colors">Motorbike Warranty</a></li>
                 <li><a href="/car-extended-warranty/" className="hover:text-[#eb4b00] transition-colors">Extended Warranty</a></li>
+                <li><a href="/warranty-types/" className="hover:text-[#eb4b00] transition-colors">Warranty Types</a></li>
               </ul>
             </div>
 
