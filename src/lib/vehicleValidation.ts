@@ -319,9 +319,9 @@ function getVehicleCategory(vehicleData: VehicleData): string {
     return 'motorbike';
   }
   
-  // Check for Range Rover and Jaguar (highest price adjustment)
-  if ((make === 'land rover' && model.includes('range rover')) || make.startsWith('jaguar')) {
-    console.log('🚗 Detected: Range Rover / Jaguar');
+  // Check for Range Rover, Jaguar, and Porsche (highest price adjustment)
+  if ((make === 'land rover' && model.includes('range rover')) || make.startsWith('jaguar') || make === 'porsche') {
+    console.log('🚗 Detected: Range Rover / Jaguar / Porsche');
     return 'range_rover';
   }
   
@@ -398,7 +398,7 @@ export function calculateVehiclePriceAdjustment(
       adjustmentType = 'range_rover_premium';
       breakdown.push({
         baseAdjustment: adjustmentAmount,
-        adjustmentReason: `Range Rover premium: +£${adjustmentAmount} for ${warrantyDurationYears} year warranty`
+        adjustmentReason: `Premium vehicle (Range Rover/Jaguar/Porsche): +£${adjustmentAmount} for ${warrantyDurationYears} year warranty`
       });
       break;
       
