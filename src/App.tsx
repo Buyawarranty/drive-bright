@@ -73,7 +73,6 @@ const MotorcycleWarranty = lazy(() => import("./pages/MotorcycleWarranty"));
 const CarExtendedWarranty = lazy(() => import("./pages/CarExtendedWarranty"));
 const WarrantyTypes = lazy(() => import("./pages/WarrantyTypes"));
 const HyundaiWarranty = lazy(() => import("./pages/HyundaiWarranty"));
-const BMWWarranty = lazy(() => import("./pages/BMWWarranty"));
 const AudiWarranty = lazy(() => import("./pages/AudiWarranty"));
 const MercedesWarranty = lazy(() => import("./pages/MercedesWarranty"));
 const VolkswagenWarranty = lazy(() => import("./pages/VolkswagenWarranty"));
@@ -180,7 +179,6 @@ const App = () => {
                     <Route path="/motorcycle-warranty/" element={<MotorcycleWarranty />} />
                     <Route path="/car-extended-warranty/" element={<CarExtendedWarranty />} />
                     <Route path="/car-extended-warranty/hyundai/" element={<HyundaiWarranty />} />
-                    <Route path="/car-extended-warranty/bmw/" element={<BMWWarranty />} />
         <Route path="/car-extended-warranty/audi/" element={<AudiWarranty />} />
         <Route path="/car-extended-warranty/mercedes-benz/" element={<MercedesWarranty />} />
         <Route path="/car-extended-warranty/volkswagen/" element={<VolkswagenWarranty />} />
@@ -192,7 +190,8 @@ const App = () => {
                     <Route path="/used-car-warranty-uk/" element={<UsedCarWarrantyUK />} />
                     <Route path="/warranty-types/" element={<WarrantyTypes />} />
                     
-                    {/* Dynamic landing pages from admin */}
+                    {/* Dynamic landing pages from admin - supports nested paths */}
+                    <Route path="/car-extended-warranty/:brand" element={<DynamicLandingPage />} />
                     <Route path="/:slug" element={<DynamicLandingPage />} />
                     
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
