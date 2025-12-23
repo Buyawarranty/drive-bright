@@ -30,17 +30,20 @@ const ConditionalSeasonalBanner = () => {
   return <SeasonalOfferBanner />;
 };
 
-// Component to conditionally hide footer during checkout steps
+// Component to conditionally hide footer during checkout steps and admin pages
 const ConditionalFooter = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const step = searchParams.get('step');
   
+  // Hide footer on admin routes
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  
   // Check if step starts with 2, 3, 4, 5, or 6 (handles cases like "3.", "3", "4" etc.)
   // Also check for any step that begins with these numbers
   const isCheckoutStep = step && /^[2-6]/.test(step);
   
-  if (isCheckoutStep) return null;
+  if (isCheckoutStep || isAdminRoute) return null;
   return <WebsiteFooter />;
 };
 
