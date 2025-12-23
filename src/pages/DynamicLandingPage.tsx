@@ -90,10 +90,10 @@ const DynamicLandingPage: React.FC = () => {
 
   useEffect(() => {
     const loadPage = async () => {
-      // Build the full slug - handle both /car-extended-warranty/:brand and /:slug patterns
+      // Build the full slug - handle both /warranty-types/:brand and /:slug patterns
       let fullSlug = '';
       if (brand) {
-        fullSlug = `car-extended-warranty/${brand}`;
+        fullSlug = `warranty-types/${brand}`;
       } else if (slug) {
         fullSlug = slug;
       }

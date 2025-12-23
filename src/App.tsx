@@ -190,8 +190,8 @@ const App = () => {
                     <Route path="/used-car-warranty-uk/" element={<UsedCarWarrantyUK />} />
                     <Route path="/warranty-types/" element={<WarrantyTypes />} />
                     
-                    {/* Dynamic landing pages from admin - supports nested paths */}
-                    <Route path="/car-extended-warranty/:brand" element={<DynamicLandingPage />} />
+                    {/* Dynamic landing pages from admin - supports nested paths under warranty-types */}
+                    <Route path="/warranty-types/:brand" element={<DynamicLandingPage />} />
                     <Route path="/:slug" element={<DynamicLandingPage />} />
                     
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
