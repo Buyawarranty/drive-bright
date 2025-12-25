@@ -53,6 +53,7 @@ const AdminDashboard = () => {
   const [hasAdminAccess, setHasAdminAccess] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [userPermissions, setUserPermissions] = useState<Record<string, boolean> | null>(null);
   const navigate = useNavigate();
   const { session, loading: authLoading } = useAuth();
 
@@ -99,11 +100,33 @@ const AdminDashboard = () => {
       console.log('✅ Access granted for role:', data.role);
       setUserRole(data.role);
       setHasAdminAccess(true);
+      
+      // Fetch user permissions from admin_users table
+      const { data: adminUserData, error: adminUserError } = await supabase
+        .from('admin_users')
+        .select('permissions')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+      
+      if (adminUserData?.permissions) {
+        console.log('📋 User permissions loaded:', adminUserData.permissions);
+        setUserPermissions(adminUserData.permissions as Record<string, boolean>);
+      }
+      
       setIsCheckingRole(false);
       
       // Set default tab for blog writers
       if (data.role === 'blog_writer') {
         setActiveTab('blog-writing');
+      } else if (data.role === 'sales') {
+        setActiveTab('customers');
+      } else if (!['admin'].includes(data.role) && adminUserData?.permissions) {
+        // For users with custom permissions, set first allowed tab
+        const perms = adminUserData.permissions as Record<string, boolean>;
+        const firstAllowedTab = Object.keys(perms).find(key => key.startsWith('tab_') && perms[key]);
+        if (firstAllowedTab) {
+          setActiveTab(firstAllowedTab.replace('tab_', ''));
+        }
       }
     } catch (error) {
       console.error('💥 Error checking admin access:', error);
@@ -437,7 +460,7 @@ const AdminDashboard = () => {
       </header>
       
       <div className="flex-1 flex flex-col lg:flex-row">
-        <AdminSidebar activeTab={activeTab} onTabChange={setActiveTab} userRole={userRole} />
+        <AdminSidebar activeTab={activeTab} onTabChange={setActiveTab} userRole={userRole} userPermissions={userPermissions} />
         
         <div className="flex-1 lg:ml-64 overflow-hidden">
           <main className="p-4 lg:p-6 overflow-y-auto h-[calc(100vh-80px)]">
