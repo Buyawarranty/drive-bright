@@ -28,6 +28,7 @@ interface AdminSidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   userRole?: string | null;
+  userPermissions?: Record<string, boolean> | null;
 }
 
 interface SortableTabProps {
@@ -200,22 +201,42 @@ const defaultTabs: Tab[] = [
   }
 ];
 
-export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChange, userRole }) => {
+export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChange, userRole, userPermissions }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [tabs, setTabs] = useState<Tab[]>(defaultTabs);
 
-  // Filter tabs based on user role
+  // Filter tabs based on user role and permissions
   const getVisibleTabs = () => {
+    // Admins see all tabs
+    if (userRole === 'admin') {
+      return defaultTabs;
+    }
+    
     if (userRole === 'blog_writer') {
       // Blog writers see blog-writing and landing-pages tabs
       return defaultTabs.filter(tab => tab.id === 'blog-writing' || tab.id === 'landing-pages');
     }
+    
     if (userRole === 'sales') {
       // Sales team sees only customer-facing tabs
       const salesTabIds = ['customers', 'abandoned-carts', 'contact', 'claims', 'get-quote'];
       return defaultTabs.filter(tab => salesTabIds.includes(tab.id));
     }
-    // All other roles see all tabs
+    
+    // For member, viewer, guest - check tab permissions
+    if (userPermissions && Object.keys(userPermissions).length > 0) {
+      const allowedTabs = defaultTabs.filter(tab => {
+        const permKey = `tab_${tab.id}`;
+        // Always show account settings
+        if (tab.id === 'account') return true;
+        return userPermissions[permKey] === true;
+      });
+      
+      // If no tabs are permitted, show at least account settings
+      return allowedTabs.length > 0 ? allowedTabs : defaultTabs.filter(tab => tab.id === 'account');
+    }
+    
+    // Fallback: show all tabs for legacy users without permissions set
     return defaultTabs;
   };
 
@@ -256,7 +277,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     } else {
       setTabs(visibleTabs);
     }
-  }, [userRole]);
+  }, [userRole, userPermissions]);
 
   // Save order to localStorage whenever it changes
   const saveOrder = (newTabs: Tab[]) => {
