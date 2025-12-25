@@ -411,53 +411,90 @@ const WarrantyTypes: React.FC = () => {
           </div>
         </section>
 
-        {/* Dynamic Brand Pages Grid */}
-        {dynamicPages.length > 0 && (
-          <section className="py-16 md:py-20 bg-white" aria-labelledby="brand-warranties">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-12">
-                <h2 id="brand-warranties" className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                  Brand-Specific Warranties
-                </h2>
-                <p className="text-gray-600 max-w-2xl mx-auto">
-                  Tailored warranty plans for specific vehicle brands with expert coverage
-                </p>
-              </div>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                {dynamicPages.map((page) => {
-                  const IconComponent = getIconForPageType(page.page_type, page.brand_name);
-                  return (
-                    <Link 
-                      key={page.id}
-                      to={`/${page.slug}`}
-                      className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
-                    >
-                      {page.brand_logo_url ? (
-                        <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
-                          <img 
-                            src={page.brand_logo_url} 
-                            alt={`${page.brand_name} logo`}
-                            className="max-h-12 max-w-12 object-contain"
-                            loading="lazy"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-orange-100">
-                          <IconComponent className="h-8 w-8 text-orange-500" />
-                        </div>
-                      )}
-                      <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">{page.brand_name}</h3>
-                      <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">
-                        View <ChevronRight className="h-3 w-3 ml-0.5" />
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
+        {/* Brand-Specific Warranties Section - Always show with BMW & Mercedes */}
+        <section className="py-16 md:py-20 bg-white" aria-labelledby="brand-warranties">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 id="brand-warranties" className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Brand-Specific Warranties
+              </h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">
+                Tailored warranty plans for specific vehicle brands with expert coverage
+              </p>
             </div>
-          </section>
-        )}
+            
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+              {/* BMW Brand Card */}
+              <Link 
+                to="/warranty-types/bmw"
+                className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
+              >
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/BMW.svg/800px-BMW.svg.png" 
+                    alt="BMW logo"
+                    className="max-h-12 max-w-12 object-contain"
+                    loading="lazy"
+                  />
+                </div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">BMW</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">
+                  View <ChevronRight className="h-3 w-3 ml-0.5" />
+                </span>
+              </Link>
+
+              {/* Mercedes Brand Card */}
+              <Link 
+                to="/warranty-types/mercedes"
+                className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
+              >
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Mercedes-Logo.svg/800px-Mercedes-Logo.svg.png" 
+                    alt="Mercedes-Benz logo"
+                    className="max-h-12 max-w-12 object-contain"
+                    loading="lazy"
+                  />
+                </div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Mercedes-Benz</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">
+                  View <ChevronRight className="h-3 w-3 ml-0.5" />
+                </span>
+              </Link>
+
+              {/* Dynamic Pages from Database */}
+              {dynamicPages.map((page) => {
+                const IconComponent = getIconForPageType(page.page_type, page.brand_name);
+                return (
+                  <Link 
+                    key={page.id}
+                    to={`/${page.slug}`}
+                    className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
+                  >
+                    {page.brand_logo_url ? (
+                      <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
+                        <img 
+                          src={page.brand_logo_url} 
+                          alt={`${page.brand_name} logo`}
+                          className="max-h-12 max-w-12 object-contain"
+                          loading="lazy"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-orange-100">
+                        <IconComponent className="h-8 w-8 text-orange-500" />
+                      </div>
+                    )}
+                    <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">{page.brand_name}</h3>
+                    <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">
+                      View <ChevronRight className="h-3 w-3 ml-0.5" />
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
 
         {/* Coverage Table */}
         <section className="py-16 bg-gradient-to-br from-blue-50 via-white to-orange-50" aria-labelledby="coverage-comparison">
