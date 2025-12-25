@@ -1,28 +1,9 @@
 import React from 'react';
 import BrandLandingPage from '@/components/BrandLandingPage';
 
-interface VehicleData {
-  regNumber: string;
-  mileage: string;
-  make?: string;
-  model?: string;
-  fuelType?: string;
-  transmission?: string;
-  year?: string;
-  vehicleType?: string;
-  blocked?: boolean;
-  blockReason?: string;
-  manufactureDate?: string;
-}
-
-interface MercedesWarrantyLandingProps {
-  onRegistrationSubmit: (vehicleData: VehicleData) => void;
-}
-
-const MercedesWarrantyLanding: React.FC<MercedesWarrantyLandingProps> = ({ onRegistrationSubmit }) => {
+const MercedesWarrantyLanding: React.FC = () => {
   return (
     <BrandLandingPage
-      onRegistrationSubmit={onRegistrationSubmit}
       brandName="Mercedes-Benz"
       brandLogo="https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Mercedes-Logo.svg/800px-Mercedes-Logo.svg.png"
       h1Override="Mercedes-Benz Extended Warranty"
