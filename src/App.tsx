@@ -191,8 +191,8 @@ const App = () => {
                     <Route path="/car-extended-warranty/skoda/" element={<SkodaWarranty />} />
                     <Route path="/used-car-warranty-uk/" element={<UsedCarWarrantyUK />} />
                     <Route path="/warranty-types/" element={<WarrantyTypes />} />
-                    <Route path="/warranty-types/bmw" element={<BMWWarrantyLanding onRegistrationSubmit={() => {}} />} />
-                    <Route path="/warranty-types/mercedes" element={<MercedesWarrantyLanding onRegistrationSubmit={() => {}} />} />
+                    <Route path="/warranty-types/bmw" element={<BMWWarrantyLanding />} />
+                    <Route path="/warranty-types/mercedes" element={<MercedesWarrantyLanding />} />
                     
                     {/* Dynamic landing pages from admin - supports nested paths under warranty-types */}
                     <Route path="/warranty-types/:brand" element={<DynamicLandingPage />} />

@@ -11,7 +11,7 @@ import { LocalBusinessSchema } from '@/components/schema/LocalBusinessSchema';
 import { supabase } from '@/integrations/supabase/client';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import NotFound from './NotFound';
-import HomepageLandingTemplate from '@/components/landing/HomepageLandingTemplate';
+import BrandLandingPage from '@/components/BrandLandingPage';
 
 interface LandingPageData {
   id: string;
@@ -284,21 +284,14 @@ const DynamicLandingPage: React.FC = () => {
         />
       )}
 
-      {/* Homepage-style landing template with all functionality */}
-      <HomepageLandingTemplate
+      {/* Full homepage clone with brand-specific customization */}
+      <BrandLandingPage
         brandName={page.brand_name}
-        h1Headline={page.h1_headline}
-        heroContent={page.hero_content}
-        featuresContent={page.features_content}
-        coverageContent={page.coverage_content}
-        pricingContent={page.pricing_content}
-        testimonialsContent={page.testimonials_content}
-        faqs={page.faqs}
-        internalLinks={page.internal_links}
-        featuredImageUrl={page.featured_image_url}
-        brandLogoUrl={page.brand_logo_url}
-        supportingImages={page.supporting_images}
-        onRegistrationSubmit={handleRegistrationSubmit}
+        h1Override={page.h1_headline}
+        brandLogo={page.brand_logo_url || undefined}
+        metaTitle={page.meta_title}
+        metaDescription={page.meta_description}
+        canonicalUrl={canonicalUrl}
       />
     </>
   );

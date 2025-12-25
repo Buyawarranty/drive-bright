@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Check, ArrowRight, Star, Shield, Clock, Zap, Car, Truck, Battery, Bike, Menu, X, Phone, FileCheck, MessageCircle } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import WebsiteFooter from './WebsiteFooter';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { VoucherBanner } from './VoucherBanner';
@@ -29,6 +29,7 @@ import { supabase } from '@/integrations/supabase/client';
 import MileageSlider from './MileageSlider';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
+import { saveWithTimestamp } from '@/utils/localStorage';
 
 interface VehicleData {
   regNumber: string;
@@ -45,7 +46,7 @@ interface VehicleData {
 }
 
 interface BrandLandingPageProps {
-  onRegistrationSubmit: (vehicleData: VehicleData) => void;
+  onRegistrationSubmit?: (vehicleData: VehicleData) => void;
   brandName: string;
   brandLogo?: string;
   h1Override?: string;
@@ -65,6 +66,7 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
   metaDescription,
   canonicalUrl
 }) => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [regNumber, setRegNumber] = useState('');
@@ -392,9 +394,10 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
       
       trackQuoteRequest(undefined, undefined, undefined);
 
-      console.log('✅ Vehicle lookup complete, calling onRegistrationSubmit with:', vehicleData);
+      console.log('✅ Vehicle lookup complete, navigating to checkout:', vehicleData);
       
-      onRegistrationSubmit(vehicleData);
+      // Save vehicle data to localStorage and navigate to checkout flow
+      handleNavigateToCheckout(vehicleData);
       
     } catch (error: any) {
       console.error('Error looking up vehicle:', error);
@@ -410,10 +413,39 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
         mileage: mileage.replace(/,/g, ''),
       };
       
-      onRegistrationSubmit(vehicleData);
+      // Save vehicle data to localStorage and navigate to checkout flow
+      handleNavigateToCheckout(vehicleData);
     } finally {
       setIsLookingUp(false);
     }
+  };
+
+  // Handle navigation to checkout flow - same as DynamicLandingPage
+  const handleNavigateToCheckout = (vehicleData: VehicleData) => {
+    console.log('🚀 Brand landing page registration submit:', vehicleData);
+    
+    // Save vehicle data to localStorage with timestamps (matches Index.tsx format)
+    saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
+    saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
+    saveWithTimestamp('buyawarranty_currentStep', '2');
+    
+    // Also save the warranty journey state for full compatibility
+    const journeyState = {
+      vehicleData,
+      formData: vehicleData,
+      currentStep: 2,
+      selectedPlan: null
+    };
+    saveWithTimestamp('warrantyJourneyState', JSON.stringify(journeyState));
+    
+    // Call optional callback if provided
+    if (onRegistrationSubmit) {
+      onRegistrationSubmit(vehicleData);
+    }
+    
+    // Navigate to homepage with step 2
+    navigate('/?step=2');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const eligibilityError = mileageError || vehicleAgeError;

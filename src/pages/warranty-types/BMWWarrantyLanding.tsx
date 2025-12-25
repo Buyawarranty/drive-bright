@@ -1,28 +1,9 @@
 import React from 'react';
 import BrandLandingPage from '@/components/BrandLandingPage';
 
-interface VehicleData {
-  regNumber: string;
-  mileage: string;
-  make?: string;
-  model?: string;
-  fuelType?: string;
-  transmission?: string;
-  year?: string;
-  vehicleType?: string;
-  blocked?: boolean;
-  blockReason?: string;
-  manufactureDate?: string;
-}
-
-interface BMWWarrantyLandingProps {
-  onRegistrationSubmit: (vehicleData: VehicleData) => void;
-}
-
-const BMWWarrantyLanding: React.FC<BMWWarrantyLandingProps> = ({ onRegistrationSubmit }) => {
+const BMWWarrantyLanding: React.FC = () => {
   return (
     <BrandLandingPage
-      onRegistrationSubmit={onRegistrationSubmit}
       brandName="BMW"
       brandLogo="https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/BMW.svg/800px-BMW.svg.png"
       h1Override="BMW Extended Warranty"
