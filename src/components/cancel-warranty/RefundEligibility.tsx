@@ -7,7 +7,7 @@ const RefundEligibility: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-10">
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-            Refund Eligibility
+            Refund eligibility
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Clear and fair terms – here's exactly what to expect
@@ -49,7 +49,7 @@ const RefundEligibility: React.FC = () => {
             <div className="bg-blue-500 px-6 py-4">
               <div className="flex items-center gap-3">
                 <Banknote className="w-6 h-6 text-white" />
-                <h3 className="text-lg font-bold text-white">After 14 Days – Pay in Full</h3>
+                <h3 className="text-lg font-bold text-white">After 14 days – Paid in full</h3>
               </div>
             </div>
             <div className="p-6 space-y-4">
@@ -87,7 +87,7 @@ const RefundEligibility: React.FC = () => {
             <div className="bg-purple-500 px-6 py-4">
               <div className="flex items-center gap-3">
                 <CreditCard className="w-6 h-6 text-white" />
-                <h3 className="text-lg font-bold text-white">After 14 Days – Pay Monthly</h3>
+                <h3 className="text-lg font-bold text-white">After 14 days – Paid monthly</h3>
               </div>
             </div>
             <div className="p-6 space-y-4">

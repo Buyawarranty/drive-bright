@@ -106,13 +106,13 @@ const CancelWarranty = () => {
         <section className="bg-gradient-to-b from-gray-50 to-white py-16 px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              If your plans have changed, we're here to help
+              If your plans have changed, we're here to help 🤝
             </h1>
             <p className="text-xl text-gray-600 mb-8">
               Cancelling your warranty is quick and fair – we'll guide you step by step.
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
-              <Button variant="outline" className="h-12 px-6" onClick={() => document.getElementById('alternatives')?.scrollIntoView({ behavior: 'smooth' })}>
+              <Button className="h-12 px-6 bg-orange-500 hover:bg-orange-600 text-white" onClick={() => document.getElementById('alternatives')?.scrollIntoView({ behavior: 'smooth' })}>
                 See Money-Saving Options
               </Button>
               <Button className="h-12 px-6 bg-gray-800 hover:bg-gray-900" onClick={() => document.getElementById('form-section')?.scrollIntoView({ behavior: 'smooth' })}>
