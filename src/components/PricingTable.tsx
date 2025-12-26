@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
@@ -2389,31 +2390,50 @@ const PricingTable: React.FC<PricingTableProps> = ({
           <div className="mt-4">
             <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Optional add-on</h4>
             
-            {/* Add Extra Cover Card - Matches claim limit cards */}
+            {/* Add Extra Cover Card - with Toggle Switch */}
             <div 
               onClick={() => setBoostAddon(!boostAddon)}
-              className={`relative p-4 rounded-lg cursor-pointer transition-all border-2 bg-cyan-50 min-h-[88px] flex items-center ${
-                boostAddon 
-                  ? 'border-cyan-500 ring-2 ring-cyan-400' 
-                  : 'border-cyan-200 hover:border-cyan-400'
-              }`}
+              className={cn(
+                "relative p-4 rounded-lg cursor-pointer transition-all border-2 min-h-[88px] flex items-center",
+                boostAddon
+                  ? "bg-green-50 border-green-500 ring-2 ring-green-400"
+                  : "bg-cyan-50 border-cyan-200 hover:border-cyan-400"
+              )}
             >
               <div className="flex items-start justify-between w-full">
-                <div>
-                  <h4 className="text-xl font-bold text-black mb-1">
-                    {boostAddon ? '+£1,000 Cover Added' : 'Add £1,000 Extra Cover'}
-                  </h4>
-                  <div className="text-3xl font-bold text-black">
-                    {boostAddon ? 'Now ' : ''}£{(selectedClaimLimit + 1000).toLocaleString()} <span className="text-base">per claim</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    +£5/mo × 12 payments
-                  </div>
+                <div className="flex-1">
+                  {boostAddon ? (
+                    <>
+                      <h4 className="text-lg font-bold text-green-700 mb-1">
+                        ✅ Upgrade Added!
+                      </h4>
+                      <div className="text-base font-semibold text-green-800">
+                        Your cover is now £{(selectedClaimLimit + 1000).toLocaleString()} per claim 🚀
+                      </div>
+                      <div className="text-xs text-green-600 mt-1">
+                        Just £5/mo × 12 payments
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <h4 className="text-lg font-bold text-foreground mb-1">
+                        🚀 Boost your cover by £1,000
+                      </h4>
+                      <div className="text-base font-semibold text-foreground">
+                        Upgrade to £{(selectedClaimLimit + 1000).toLocaleString()} per claim
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Just £5/mo × 12 payments
+                      </div>
+                    </>
+                  )}
                 </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                  boostAddon ? 'bg-green-500 border-green-500' : 'border-gray-300'
-                }`}>
-                  {boostAddon && <Check className="w-4 h-4 text-white" />}
+                <div className="flex-shrink-0 ml-4" onClick={(e) => e.stopPropagation()}>
+                  <Switch 
+                    checked={boostAddon}
+                    onCheckedChange={(checked) => setBoostAddon(checked)}
+                    className="data-[state=checked]:bg-green-500"
+                  />
                 </div>
               </div>
             </div>
