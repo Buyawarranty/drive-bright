@@ -66,31 +66,31 @@ const StayOfferCard: React.FC<StayOfferCardProps> = ({ onStaySuccess }) => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-green-500 rounded-2xl p-6 shadow-lg">
+    <div className="bg-success/10 border-2 border-success rounded-2xl p-6 shadow-lg">
       <div className="text-center mb-6">
-        <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Gift className="w-8 h-8 text-white" />
+        <div className="w-16 h-16 bg-success rounded-full flex items-center justify-center mx-auto mb-4">
+          <Gift className="w-8 h-8 text-success-foreground" />
         </div>
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">
+        <h3 className="text-2xl font-bold text-foreground mb-2">
           Wait! Before You Go...
         </h3>
-        <p className="text-lg text-gray-700">
-          Get <span className="font-bold text-green-600">3 months FREE</span> if you decide to stay!
+        <p className="text-lg text-muted-foreground">
+          Get <span className="font-bold text-success">3 months FREE</span> if you decide to stay!
         </p>
       </div>
 
       <div className="space-y-3 mb-6">
-        <div className="flex items-center gap-3 bg-white rounded-lg p-3">
-          <Check className="w-5 h-5 text-green-500" />
-          <span className="text-gray-700">No extra cost – just extra protection</span>
+        <div className="flex items-center gap-3 bg-card rounded-lg p-3">
+          <Check className="w-5 h-5 text-success" />
+          <span className="text-foreground">No extra cost – just extra protection</span>
         </div>
-        <div className="flex items-center gap-3 bg-white rounded-lg p-3">
-          <Check className="w-5 h-5 text-green-500" />
-          <span className="text-gray-700">Added to your current policy immediately</span>
+        <div className="flex items-center gap-3 bg-card rounded-lg p-3">
+          <Check className="w-5 h-5 text-success" />
+          <span className="text-foreground">Added to your current policy immediately</span>
         </div>
-        <div className="flex items-center gap-3 bg-white rounded-lg p-3">
-          <Check className="w-5 h-5 text-green-500" />
-          <span className="text-gray-700">Stay protected for longer</span>
+        <div className="flex items-center gap-3 bg-card rounded-lg p-3">
+          <Check className="w-5 h-5 text-success" />
+          <span className="text-foreground">Stay protected for longer</span>
         </div>
       </div>
 
@@ -100,26 +100,26 @@ const StayOfferCard: React.FC<StayOfferCardProps> = ({ onStaySuccess }) => {
           placeholder="🚗 Your Registration Plate"
           value={stayRegPlate}
           onChange={(e) => setStayRegPlate(e.target.value)}
-          className="h-12 border-green-300 focus:border-green-500 focus:ring-green-500 bg-white"
+          className="h-12 border-success/50 focus:border-success focus:ring-success bg-card"
         />
         <Input
           type="email"
           placeholder="📧 Your Email Address"
           value={stayEmail}
           onChange={(e) => setStayEmail(e.target.value)}
-          className="h-12 border-green-300 focus:border-green-500 focus:ring-green-500 bg-white"
+          className="h-12 border-success/50 focus:border-success focus:ring-success bg-card"
         />
       </div>
       
       <Button 
         onClick={handleStayWithUs}
         disabled={isStaying}
-        className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-bold text-lg"
+        className="w-full h-12 bg-success hover:bg-success/90 text-success-foreground font-bold text-lg"
       >
         {isStaying ? 'Processing...' : "🎁 Yes, I'll Stay – Add 3 Months Free"}
       </Button>
 
-      <p className="text-center text-sm text-green-700 mt-4">
+      <p className="text-center text-sm text-success mt-4">
         No strings attached. We just want to keep you happy.
       </p>
 

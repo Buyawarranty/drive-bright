@@ -126,20 +126,20 @@ const CancellationForm: React.FC<CancellationFormProps> = ({ onSuccess }) => {
   ];
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-      <div className="bg-gradient-to-r from-gray-700 to-gray-800 px-6 py-4">
+    <div className="bg-card rounded-2xl shadow-lg border border-border overflow-hidden">
+      <div className="bg-foreground px-6 py-4">
         <div className="flex items-center gap-3">
-          <Send className="w-6 h-6 text-white" />
-          <h3 className="text-xl font-bold text-white">Cancellation Request Form</h3>
+          <Send className="w-6 h-6 text-background" />
+          <h3 className="text-xl font-bold text-background">Cancellation Request Form</h3>
         </div>
-        <p className="text-gray-300 text-sm mt-1">We'll confirm your request within 2 working days</p>
+        <p className="text-background/70 text-sm mt-1">We'll confirm your request within 2 working days</p>
       </div>
 
       <form onSubmit={handleSubmit} className="p-6 space-y-5">
         {/* Registration Plate */}
         <div>
-          <Label htmlFor="registrationPlate" className="text-gray-700 font-medium flex items-center gap-2">
-            🚗 Registration Plate <span className="text-red-500">*</span>
+          <Label htmlFor="registrationPlate" className="text-foreground font-medium flex items-center gap-2">
+            🚗 Registration Plate <span className="text-destructive">*</span>
           </Label>
           <Input
             id="registrationPlate"
@@ -147,15 +147,15 @@ const CancellationForm: React.FC<CancellationFormProps> = ({ onSuccess }) => {
             value={formData.registrationPlate}
             onChange={handleInputChange}
             placeholder="e.g., AB12 CDE"
-            className={`mt-1.5 h-11 ${errors.registrationPlate ? 'border-red-500' : ''}`}
+            className={`mt-1.5 h-11 ${errors.registrationPlate ? 'border-destructive' : ''}`}
           />
-          {errors.registrationPlate && <p className="mt-1 text-sm text-red-600">{errors.registrationPlate}</p>}
+          {errors.registrationPlate && <p className="mt-1 text-sm text-destructive">{errors.registrationPlate}</p>}
         </div>
 
         {/* Full Name */}
         <div>
-          <Label htmlFor="fullName" className="text-gray-700 font-medium flex items-center gap-2">
-            👤 Full Name <span className="text-red-500">*</span>
+          <Label htmlFor="fullName" className="text-foreground font-medium flex items-center gap-2">
+            👤 Full Name <span className="text-destructive">*</span>
           </Label>
           <Input
             id="fullName"
@@ -163,15 +163,15 @@ const CancellationForm: React.FC<CancellationFormProps> = ({ onSuccess }) => {
             value={formData.fullName}
             onChange={handleInputChange}
             placeholder="Your full name"
-            className={`mt-1.5 h-11 ${errors.fullName ? 'border-red-500' : ''}`}
+            className={`mt-1.5 h-11 ${errors.fullName ? 'border-destructive' : ''}`}
           />
-          {errors.fullName && <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>}
+          {errors.fullName && <p className="mt-1 text-sm text-destructive">{errors.fullName}</p>}
         </div>
 
         {/* Email */}
         <div>
-          <Label htmlFor="email" className="text-gray-700 font-medium flex items-center gap-2">
-            📧 Email Address <span className="text-red-500">*</span>
+          <Label htmlFor="email" className="text-foreground font-medium flex items-center gap-2">
+            📧 Email Address <span className="text-destructive">*</span>
           </Label>
           <Input
             id="email"
@@ -180,21 +180,21 @@ const CancellationForm: React.FC<CancellationFormProps> = ({ onSuccess }) => {
             value={formData.email}
             onChange={handleInputChange}
             placeholder="your@email.com"
-            className={`mt-1.5 h-11 ${errors.email ? 'border-red-500' : ''}`}
+            className={`mt-1.5 h-11 ${errors.email ? 'border-destructive' : ''}`}
           />
-          {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+          {errors.email && <p className="mt-1 text-sm text-destructive">{errors.email}</p>}
         </div>
 
         {/* Reason */}
         <div>
-          <Label htmlFor="reason" className="text-gray-700 font-medium flex items-center gap-2">
-            ❓ Reason for Cancellation <span className="text-red-500">*</span>
+          <Label htmlFor="reason" className="text-foreground font-medium flex items-center gap-2">
+            ❓ Reason for Cancellation <span className="text-destructive">*</span>
           </Label>
           <Select onValueChange={handleReasonChange} value={formData.reason}>
-            <SelectTrigger className={`mt-1.5 h-11 ${errors.reason ? 'border-red-500' : ''}`}>
+            <SelectTrigger className={`mt-1.5 h-11 ${errors.reason ? 'border-destructive' : ''}`}>
               <SelectValue placeholder="Select a reason" />
             </SelectTrigger>
-            <SelectContent className="bg-white">
+            <SelectContent className="bg-card">
               {cancellationReasons.map((reason) => (
                 <SelectItem key={reason.value} value={reason.value}>
                   {reason.label}
@@ -202,16 +202,16 @@ const CancellationForm: React.FC<CancellationFormProps> = ({ onSuccess }) => {
               ))}
             </SelectContent>
           </Select>
-          {errors.reason && <p className="mt-1 text-sm text-red-600">{errors.reason}</p>}
+          {errors.reason && <p className="mt-1 text-sm text-destructive">{errors.reason}</p>}
         </div>
 
         {/* Feedback */}
-        <div className="bg-gray-50 rounded-lg p-4">
-          <Label htmlFor="feedback" className="text-gray-900 font-bold flex items-center gap-2 mb-2">
+        <div className="bg-secondary rounded-lg p-4">
+          <Label htmlFor="feedback" className="text-foreground font-bold flex items-center gap-2 mb-2">
             <MessageSquare className="w-4 h-4" />
             Share your feedback (optional)
           </Label>
-          <p className="text-sm text-gray-600 mb-3">
+          <p className="text-sm text-muted-foreground mb-3">
             Your honest feedback helps us improve – and it won't affect your refund.
           </p>
           <Textarea
@@ -221,16 +221,16 @@ const CancellationForm: React.FC<CancellationFormProps> = ({ onSuccess }) => {
             onChange={handleInputChange}
             placeholder="What could we have done better?"
             rows={3}
-            className="bg-white"
+            className="bg-card"
           />
         </div>
 
         {/* Exceptional Circumstances */}
-        <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-          <Label htmlFor="exceptionalCircumstances" className="text-blue-900 font-bold mb-2 block">
+        <div className="bg-primary/10 rounded-lg p-4 border border-primary/30">
+          <Label htmlFor="exceptionalCircumstances" className="text-foreground font-bold mb-2 block">
             💬 Exceptional circumstances?
           </Label>
-          <p className="text-sm text-blue-700 mb-3">
+          <p className="text-sm text-muted-foreground mb-3">
             Life can be unpredictable. If you believe your situation deserves special consideration, please share details and we'll review your case.
           </p>
           <Textarea
@@ -240,7 +240,7 @@ const CancellationForm: React.FC<CancellationFormProps> = ({ onSuccess }) => {
             onChange={handleInputChange}
             placeholder="Tell us about any exceptional circumstances (optional)"
             rows={2}
-            className="bg-white"
+            className="bg-card"
           />
         </div>
 
@@ -248,12 +248,12 @@ const CancellationForm: React.FC<CancellationFormProps> = ({ onSuccess }) => {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-12 bg-gray-700 hover:bg-gray-800 text-white font-semibold text-lg"
+          className="w-full h-12 bg-foreground hover:bg-foreground/90 text-background font-semibold text-lg"
         >
           {isSubmitting ? 'Submitting...' : 'Submit Cancellation Request'}
         </Button>
 
-        <p className="text-center text-sm text-gray-500">
+        <p className="text-center text-sm text-muted-foreground">
           We'll review your request and respond within 2 working days.
         </p>
       </form>
