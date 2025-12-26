@@ -103,19 +103,19 @@ const CancelWarranty = () => {
 
       <div className="min-h-screen bg-white">
         {/* Hero Section */}
-        <section className="bg-gradient-to-b from-gray-50 to-white py-16 px-4">
+        <section className="bg-gradient-to-b from-secondary to-background py-16 px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+            <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
               If your plans have changed, we're here to help 🤝
             </h1>
-            <p className="text-xl text-gray-600 mb-8">
+            <p className="text-xl text-muted-foreground mb-8">
               Cancelling your warranty is quick and fair – we'll guide you step by step.
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
-              <Button className="h-12 px-6 bg-orange-500 hover:bg-orange-600 text-white" onClick={() => document.getElementById('alternatives')?.scrollIntoView({ behavior: 'smooth' })}>
+              <Button className="h-12 px-6 bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => document.getElementById('alternatives')?.scrollIntoView({ behavior: 'smooth' })}>
                 See Money-Saving Options
               </Button>
-              <Button className="h-12 px-6 bg-gray-800 hover:bg-gray-900" onClick={() => document.getElementById('form-section')?.scrollIntoView({ behavior: 'smooth' })}>
+              <Button className="h-12 px-6 bg-foreground hover:bg-foreground/90 text-background" onClick={() => document.getElementById('form-section')?.scrollIntoView({ behavior: 'smooth' })}>
                 Start Cancellation
               </Button>
             </div>
@@ -129,11 +129,11 @@ const CancelWarranty = () => {
         <RefundEligibility />
 
         {/* Calculator & Form Section */}
-        <section id="form-section" className="py-12 px-4 bg-gray-50">
+        <section id="form-section" className="py-12 px-4 bg-secondary">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-10">
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Ready to Cancel?</h2>
-              <p className="text-lg text-gray-600">Use our calculator to estimate your refund, then submit your request</p>
+              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">Ready to Cancel?</h2>
+              <p className="text-lg text-muted-foreground">Use our calculator to estimate your refund, then submit your request</p>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2 space-y-8">
@@ -147,14 +147,14 @@ const CancelWarranty = () => {
 
         {/* Need Help */}
         <section className="py-12 px-4">
-          <div className="max-w-4xl mx-auto bg-white rounded-xl border-2 border-gray-200 p-8 text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Need Help?</h2>
-            <p className="text-gray-600 mb-6">Our friendly team is here to assist you with any questions.</p>
+          <div className="max-w-4xl mx-auto bg-card rounded-xl border-2 border-border p-8 text-center">
+            <h2 className="text-2xl font-bold text-foreground mb-4">Need Help?</h2>
+            <p className="text-muted-foreground mb-6">Our friendly team is here to assist you with any questions.</p>
             <div className="flex flex-wrap gap-4 justify-center">
-              <a href="mailto:support@buyawarranty.co.uk" className="flex items-center gap-2 px-6 py-3 bg-orange-100 text-orange-700 rounded-lg font-medium hover:bg-orange-200">
+              <a href="mailto:support@buyawarranty.co.uk" className="flex items-center gap-2 px-6 py-3 bg-primary/10 text-primary rounded-lg font-medium hover:bg-primary/20">
                 <Mail className="w-5 h-5" /> support@buyawarranty.co.uk
               </a>
-              <a href="tel:03302295045" className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200">
+              <a href="tel:03302295045" className="flex items-center gap-2 px-6 py-3 bg-secondary text-foreground rounded-lg font-medium hover:bg-secondary/80">
                 <Phone className="w-5 h-5" /> 0330 229 5045
               </a>
             </div>
