@@ -4,6 +4,7 @@ import { ChevronDown, Check, Info, ArrowRight, Plus } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import confetti from 'canvas-confetti';
 
 interface ClaimLimitSelectorProps {
@@ -69,6 +70,15 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
   };
 
   const displayedLimit = getDisplayedLimit();
+  const isBoostActive = boostAddon && selectedClaimLimit === 2000;
+
+  const handleBoostToggle = (checked: boolean, event?: React.MouseEvent) => {
+    if (checked && event) {
+      triggerBoostSpark(event);
+      onClaimLimitChange(2000);
+    }
+    onBoostChange(checked);
+  };
 
   return (
     <div className="px-4 py-4 border-t border-border">
@@ -76,7 +86,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
         <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold">
           3
         </div>
-        <h3 className="font-semibold text-lg text-foreground">Choose Your Claim Limit</h3>
+        <h3 className="font-semibold text-lg text-foreground">Set your claim limit - cover up to your car's full value 🚗</h3>
       </div>
 
       {/* Claim Limit Cards */}
@@ -146,42 +156,56 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
       <div className="mt-4 mb-2">
         <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Optional add-on</h4>
         
-        {/* Add Extra Cover Card - Matches claim limit cards */}
+        {/* Add Extra Cover Card - with Toggle Switch */}
         <div 
           onClick={(e) => {
-            const isCurrentlyChecked = boostAddon && selectedClaimLimit === 2000;
-            if (!isCurrentlyChecked) {
-              triggerBoostSpark(e);
-              onClaimLimitChange(2000);
-              onBoostChange(true);
+            if (!isBoostActive) {
+              handleBoostToggle(true, e);
             } else {
-              onBoostChange(false);
+              handleBoostToggle(false);
             }
           }}
           className={cn(
-            "relative p-4 rounded-lg cursor-pointer transition-all border-2 min-h-[88px] flex items-center bg-cyan-50",
-            boostAddon && selectedClaimLimit === 2000
-              ? "border-cyan-500 ring-2 ring-cyan-400"
-              : "border-cyan-200 hover:border-cyan-400"
+            "relative p-4 rounded-lg cursor-pointer transition-all border-2 min-h-[88px] flex items-center",
+            isBoostActive
+              ? "bg-green-50 border-green-500 ring-2 ring-green-400"
+              : "bg-cyan-50 border-cyan-200 hover:border-cyan-400"
           )}
         >
           <div className="flex items-start justify-between w-full">
-            <div>
-              <h4 className="text-xl font-bold text-black mb-1">
-                {boostAddon && selectedClaimLimit === 2000 ? '+£1,000 Cover Added' : 'Add £1,000 Extra Cover'}
-              </h4>
-              <div className="text-3xl font-bold text-black">
-                {boostAddon && selectedClaimLimit === 2000 ? 'Now ' : ''}£{((selectedClaimLimit || 0) + 1000).toLocaleString()} <span className="text-base">per claim</span>
-              </div>
-              <div className="text-xs text-muted-foreground mt-1">
-                +£{boostPrice}/mo × 12 payments
-              </div>
+            <div className="flex-1">
+              {isBoostActive ? (
+                <>
+                  <h4 className="text-lg font-bold text-green-700 mb-1">
+                    ✅ Upgrade Added!
+                  </h4>
+                  <div className="text-base font-semibold text-green-800">
+                    Your cover is now £3,000 per claim 🚀
+                  </div>
+                  <div className="text-xs text-green-600 mt-1">
+                    Just £{boostPrice}/mo × 12 payments
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h4 className="text-lg font-bold text-foreground mb-1">
+                    🚀 Boost your cover by £1,000
+                  </h4>
+                  <div className="text-base font-semibold text-foreground">
+                    Upgrade to £3,000 per claim
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Just £{boostPrice}/mo × 12 payments
+                  </div>
+                </>
+              )}
             </div>
-            <div className={cn(
-              "w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0",
-              boostAddon && selectedClaimLimit === 2000 ? "bg-green-500 border-green-500" : "border-gray-300"
-            )}>
-              {boostAddon && selectedClaimLimit === 2000 && <Check className="w-4 h-4 text-white" />}
+            <div className="flex-shrink-0 ml-4" onClick={(e) => e.stopPropagation()}>
+              <Switch 
+                checked={isBoostActive}
+                onCheckedChange={(checked) => handleBoostToggle(checked)}
+                className="data-[state=checked]:bg-green-500"
+              />
             </div>
           </div>
         </div>
