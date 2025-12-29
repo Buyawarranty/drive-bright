@@ -1749,171 +1749,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-8">
                         
-                        {/* OPTION A: Pay in Full (Stripe) */}
-                        <div 
-                          onClick={() => setPaymentMethod('stripe')}
-                          className={`relative rounded-xl p-5 cursor-pointer transition-all duration-300 border-2 w-full ${
-                            paymentMethod === 'stripe' 
-                              ? 'bg-white border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.4)]' 
-                              : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-md'
-                          }`}
-                        >
-                          {/* Best Value Badge - GREEN */}
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-md uppercase">
-                            BEST VALUE
-                          </div>
-
-                          {/* Radio Button and Limited Time Badge */}
-                          <div className="flex items-start justify-between mb-3">
-                            <RadioGroupItem 
-                              value="stripe" 
-                              id="stripe-option" 
-                              className="border-2 border-gray-400 w-6 h-6 mt-0.5 data-[state=checked]:border-green-600 data-[state=checked]:border-[3px]"
-                            />
-                            {/* Limited Time Badge - GREY */}
-                            <div className="bg-gray-200 text-gray-700 text-xs font-bold px-2 py-0.5 rounded uppercase">
-                              LIMITED TIME
-                            </div>
-                          </div>
-
-                          {/* Wallet Icon */}
-                          <div className="flex justify-center mb-3">
-                            <div className="bg-green-100 p-3 rounded-full">
-                              <CreditCard className="w-6 h-6 text-green-600" />
-                            </div>
-                          </div>
-
-                          {/* Heading */}
-                          <Label htmlFor="stripe-option" className="block text-center cursor-pointer mb-2">
-                            <h4 className="text-lg font-bold text-black mb-1">Pay in Full</h4>
-                            <p className="text-xs font-bold text-gray-700">One-time payment today</p>
-                          </Label>
-
-                          {/* Price Display - Clean & Integrated */}
-                          <div className="bg-gray-50 rounded-lg p-3 mb-3 border border-gray-100">
-                            {(() => {
-                              // Calculate per spec
-                              const originalPrice = bumperTotalPrice;
-                              const finalStripePrice = discountedStripePrice;
-                              const builtIn10PercentSaving = Math.floor(originalPrice * 0.10);
-                              
-                              // Check if any fixed discount is applied
-                              const hasFixedDiscount = fixedDiscounts.length > 0;
-                              const hasPercentagePromo = percentageDiscounts.length > 0;
-                              
-                              // For percentage promos: 10% built-in + promo percentage
-                              const promoPercent = hasPercentagePromo && percentageDiscounts[0]?.value ? percentageDiscounts[0].value : 0;
-                              const savingsPercent = 10 + promoPercent;
-                              
-                              return (
-                                <div className="text-center">
-                                  <div className="text-4xl font-black text-black mb-1">£{finalStripePrice}</div>
-                                  {/* Consolidated savings line - combine 10% + promo into one */}
-                                  <div className="inline-block bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                                    {hasFixedDiscount ? (
-                                      <>Saved £{builtIn10PercentSaving + fixedDiscountAmount} ({Math.round(((builtIn10PercentSaving + fixedDiscountAmount) / originalPrice) * 100)}% off)</>
-                                    ) : hasPercentagePromo && savingsPercent > 10 ? (
-                                      <>Saved £{builtIn10PercentSaving + percentageDiscountAmount} ({savingsPercent}% off)</>
-                                    ) : (
-                                      <>Saved £{builtIn10PercentSaving} (10% off)</>
-                                    )}
-                                  </div>
-                                  <div className="text-sm font-bold text-gray-600 mt-1">
-                                    (normally £{originalPrice})
-                                  </div>
-                                </div>
-                              );
-                            })()}
-                          </div>
-
-                          {/* Features - GREEN TICKS */}
-                          <div className="space-y-1.5 mb-3">
-                            {(() => {
-                              // Check if any fixed discount is applied
-                              const hasFixedDiscount = fixedDiscounts.length > 0;
-                              const hasPercentagePromo = percentageDiscounts.length > 0;
-                              
-                              // For percentage promos: 10% built-in + promo percentage
-                              const promoPercent = hasPercentagePromo && percentageDiscounts[0]?.value ? percentageDiscounts[0].value : 0;
-                              const savingsPercent = 10 + promoPercent;
-                              const hasPromoCode = appliedDiscountCodes.length > 0;
-                              
-                              return (
-                                <div className="flex items-center gap-2 text-sm">
-                                  <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                                  <span className="text-black font-medium">
-                                    {hasFixedDiscount 
-                                      ? `10% off + £${fixedDiscountAmount} promo` 
-                                      : (hasPromoCode && savingsPercent > 10 
-                                        ? `${savingsPercent}% off combined` 
-                                        : 'Instant 10% discount')}
-                                  </span>
-                                </div>
-                              );
-                            })()}
-                            <div className="flex items-center gap-2 text-sm">
-                              <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                              <span className="text-black font-medium">Immediate cover</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                              <span className="text-black font-medium">No monthly payments</span>
-                            </div>
-                          </div>
-
-                          {/* CTA inside box - DEDICATED STRIPE HANDLER */}
-                          <Button
-                            type="button"
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              
-                              // Prevent double-clicks and prevent if other payment is processing
-                              if (isLoadingStripe || isLoadingBumper) {
-                                console.log('⚠️ Payment already in progress, ignoring click');
-                                return;
-                              }
-                              
-                              console.log('🟢 STRIPE BUTTON CLICKED - Processing STRIPE payment directly');
-                              
-                              setShowValidation(true);
-                              
-                              if (!validateForm()) {
-                                console.log('❌ Form validation failed');
-                                const formSection = document.getElementById('customer-form-section');
-                                if (formSection) {
-                                  formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                }
-                                toast.error('Please fill in all required fields');
-                                return;
-                              }
-                              
-                              // Use dedicated Stripe loading state
-                              setIsLoadingStripe(true);
-                              setIsLoadingPayment(true);
-                              trackFormSubmission('customer_details', { payment_method: 'stripe' });
-                              
-                              // Track Google Ads conversion for Stripe checkout click
-                              trackStripeCheckoutClick();
-                              
-                              // DIRECTLY process Stripe - no state dependency
-                              console.log('💳 Processing Stripe payment directly...');
-                              await processStripeCheckout();
-                            }}
-                            disabled={isLoadingStripe || isLoadingBumper}
-                            className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-green-600 hover:bg-green-700 text-white text-sm disabled:opacity-50"
-                          >
-                            {isLoadingStripe ? 'Processing...' : 'Complete checkout'}
-                          </Button>
-
-                          {/* Powered By */}
-                          <div className="text-center pt-2 border-t mt-3">
-                            <span className="text-xs text-black block mb-1">Powered by</span>
-                            <img src={stripeLogo} alt="Stripe" className="h-5 mx-auto" />
-                          </div>
-                        </div>
-
-                        {/* OPTION B: Pay Monthly (Bumper) */}
+                        {/* OPTION A: Pay Monthly (Bumper) - Show first */}
                         <div 
                           onClick={() => setPaymentMethod('bumper')}
                           className={`relative rounded-xl p-5 cursor-pointer transition-all duration-300 border-2 w-full ${
@@ -1951,27 +1787,25 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
 
                           {/* Heading */}
                           <Label htmlFor="bumper-option" className="block text-center cursor-pointer mb-2">
-                            <h4 className="text-lg font-bold text-black mb-1">Spread the Cost</h4>
+                            <h4 className="text-lg font-bold text-black mb-1">Pay Monthly</h4>
                             <p className="text-xs font-bold text-gray-700">Interest-free monthly instalments</p>
                           </Label>
 
-                          {/* Price Display - Clean & Integrated */}
+                          {/* Price Display - New format */}
                           <div className="bg-orange-50 rounded-lg p-3 mb-3 border border-orange-100">
                             {(() => {
                               const discountedMonthly = Math.floor(discountedBumperPrice / 12);
+                              const monthlyTotal = discountedMonthly * 12;
                               const hasPromoCode = appliedDiscountCodes.length > 0;
                               const promoSavings = bumperTotalPrice - discountedBumperPrice;
                               
                               return (
                                 <div className="text-center">
-                                  <div className="text-4xl font-black text-black mb-1">
-                                    £{discountedMonthly}<span className="text-lg">/month</span>
+                                  <div className="text-lg font-bold text-black mb-1">
+                                    Pay Monthly: £{monthlyTotal}
                                   </div>
-                                  <div className="text-sm font-bold text-gray-600">
-                                    12 payments
-                                  </div>
-                                  <div className="text-sm text-gray-500">
-                                    Total{hasPromoCode ? ' after promo' : ''}: £{discountedMonthly * 12}
+                                  <div className="text-sm text-gray-700">
+                                    (<span className="font-bold text-black">£{discountedMonthly}/month</span> – 0% APR, 12 payments)
                                   </div>
                                   {hasPromoCode && promoSavings > 0 && (
                                     <div className="text-xs text-green-600 font-semibold mt-1">
@@ -2098,15 +1932,17 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                   localStorage.setItem('buyawarranty_currentStep', '4');
                                   localStorage.setItem('buyawarranty_customerData', JSON.stringify(customerData));
                                   localStorage.setItem('buyawarranty_returnedFromPayment', 'true');
+                                  sessionStorage.setItem('paymentInProgress', 'true');
                                   
                                   window.location.href = checkoutData.url;
                                 } else {
+                                  console.error('No Bumper checkout URL received');
                                   toast.error('Payment setup failed. Please try again.');
                                   setIsLoadingBumper(false);
                                   setIsLoadingPayment(false);
                                 }
                               } catch (error) {
-                                console.error('Error processing Bumper payment:', error);
+                                console.error('Bumper checkout exception:', error);
                                 toast.error('Payment processing failed. Please try again.');
                                 setIsLoadingBumper(false);
                                 setIsLoadingPayment(false);
@@ -2122,6 +1958,152 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           <div className="text-center pt-2 border-t mt-3">
                             <span className="text-xs text-black block mb-1">Powered by</span>
                             <img src={bumperLogo} alt="Bumper" className="h-5 mx-auto" />
+                          </div>
+                        </div>
+
+                        {/* OPTION B: Pay in Full (Stripe) */}
+                        <div 
+                          onClick={() => setPaymentMethod('stripe')}
+                          className={`relative rounded-xl p-5 cursor-pointer transition-all duration-300 border-2 w-full ${
+                            paymentMethod === 'stripe' 
+                              ? 'bg-white border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.4)]' 
+                              : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-md'
+                          }`}
+                        >
+                          {/* Best Value Badge - GREEN */}
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-md uppercase">
+                            BEST VALUE
+                          </div>
+
+                          {/* Radio Button and Limited Time Badge */}
+                          <div className="flex items-start justify-between mb-3">
+                            <RadioGroupItem 
+                              value="stripe" 
+                              id="stripe-option" 
+                              className="border-2 border-gray-400 w-6 h-6 mt-0.5 data-[state=checked]:border-green-600 data-[state=checked]:border-[3px]"
+                            />
+                            {/* Limited Time Badge - GREY */}
+                            <div className="bg-gray-200 text-gray-700 text-xs font-bold px-2 py-0.5 rounded uppercase">
+                              LIMITED TIME
+                            </div>
+                          </div>
+
+                          {/* Wallet Icon */}
+                          <div className="flex justify-center mb-3">
+                            <div className="bg-green-100 p-3 rounded-full">
+                              <CreditCard className="w-6 h-6 text-green-600" />
+                            </div>
+                          </div>
+
+                          {/* Heading */}
+                          <Label htmlFor="stripe-option" className="block text-center cursor-pointer mb-2">
+                            <h4 className="text-lg font-bold text-black mb-1">Pay in Full</h4>
+                            <p className="text-xs font-bold text-gray-700">One-time payment today</p>
+                          </Label>
+
+                          {/* Price Display - New format */}
+                          <div className="bg-gray-50 rounded-lg p-3 mb-3 border border-gray-100">
+                            {(() => {
+                              const originalPrice = bumperTotalPrice;
+                              const finalStripePrice = discountedStripePrice;
+                              
+                              return (
+                                <div className="text-center">
+                                  <div className="text-lg font-bold text-black mb-1">
+                                    Pay in Full: £{finalStripePrice}
+                                  </div>
+                                  <div className="text-sm text-gray-700">
+                                    (Original £{originalPrice} → £{finalStripePrice} with extra 10% off)
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                          </div>
+
+                          {/* Features - GREEN TICKS */}
+                          <div className="space-y-1.5 mb-3">
+                            {(() => {
+                              // Check if any fixed discount is applied
+                              const hasFixedDiscount = fixedDiscounts.length > 0;
+                              const hasPercentagePromo = percentageDiscounts.length > 0;
+                              
+                              // For percentage promos: 10% built-in + promo percentage
+                              const promoPercent = hasPercentagePromo && percentageDiscounts[0]?.value ? percentageDiscounts[0].value : 0;
+                              const savingsPercent = 10 + promoPercent;
+                              const hasPromoCode = appliedDiscountCodes.length > 0;
+                              
+                              return (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                                  <span className="text-black font-medium">
+                                    {hasFixedDiscount 
+                                      ? `10% off + £${fixedDiscountAmount} promo` 
+                                      : (hasPromoCode && savingsPercent > 10 
+                                        ? `${savingsPercent}% off combined` 
+                                        : 'Instant 10% discount')}
+                                  </span>
+                                </div>
+                              );
+                            })()}
+                            <div className="flex items-center gap-2 text-sm">
+                              <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                              <span className="text-black font-medium">Immediate cover</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                              <span className="text-black font-medium">No monthly payments</span>
+                            </div>
+                          </div>
+
+                          {/* CTA inside box - DEDICATED STRIPE HANDLER */}
+                          <Button
+                            type="button"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              
+                              // Prevent double-clicks and prevent if other payment is processing
+                              if (isLoadingStripe || isLoadingBumper) {
+                                console.log('⚠️ Payment already in progress, ignoring click');
+                                return;
+                              }
+                              
+                              console.log('🟢 STRIPE BUTTON CLICKED - Processing STRIPE payment directly');
+                              
+                              setShowValidation(true);
+                              
+                              if (!validateForm()) {
+                                console.log('❌ Form validation failed');
+                                const formSection = document.getElementById('customer-form-section');
+                                if (formSection) {
+                                  formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                }
+                                toast.error('Please fill in all required fields');
+                                return;
+                              }
+                              
+                              // Use dedicated Stripe loading state
+                              setIsLoadingStripe(true);
+                              setIsLoadingPayment(true);
+                              trackFormSubmission('customer_details', { payment_method: 'stripe' });
+                              
+                              // Track Google Ads conversion for Stripe checkout click
+                              trackStripeCheckoutClick();
+                              
+                              // DIRECTLY process Stripe - no state dependency
+                              console.log('💳 Processing Stripe payment directly...');
+                              await processStripeCheckout();
+                            }}
+                            disabled={isLoadingStripe || isLoadingBumper}
+                            className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-green-600 hover:bg-green-700 text-white text-sm disabled:opacity-50"
+                          >
+                            {isLoadingStripe ? 'Processing...' : 'Complete checkout'}
+                          </Button>
+
+                          {/* Powered By */}
+                          <div className="text-center pt-2 border-t mt-3">
+                            <span className="text-xs text-black block mb-1">Powered by</span>
+                            <img src={stripeLogo} alt="Stripe" className="h-5 mx-auto" />
                           </div>
                         </div>
                       </div>
