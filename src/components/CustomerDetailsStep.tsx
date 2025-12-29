@@ -1802,10 +1802,10 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               return (
                                 <div className="text-center">
                                   <div className="text-lg font-bold text-black mb-1">
-                                    Pay Monthly: £{monthlyTotal}
+                                    Total: £{monthlyTotal} at £{discountedMonthly}/month
                                   </div>
-                                  <div className="text-sm text-gray-700">
-                                    (<span className="font-bold text-black">£{discountedMonthly}/month</span> – 0% APR, 12 payments)
+                                  <div className="text-sm font-bold text-gray-700">
+                                    (0% APR, 12 payments)
                                   </div>
                                   {hasPromoCode && promoSavings > 0 && (
                                     <div className="text-xs text-green-600 font-semibold mt-1">
@@ -2012,8 +2012,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                   <div className="text-lg font-bold text-black mb-1">
                                     Pay in Full: £{finalStripePrice}
                                   </div>
-                                  <div className="text-sm text-gray-700">
-                                    (Original £{originalPrice} → £{finalStripePrice} with extra 10% off)
+                                  <div className="text-sm font-bold text-gray-700">
+                                    (£{originalPrice} → £{finalStripePrice} with extra 10% off)
                                   </div>
                                 </div>
                               );
