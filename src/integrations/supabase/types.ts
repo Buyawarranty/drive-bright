@@ -2301,6 +2301,124 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_activities: {
+        Row: {
+          activity_type: string
+          created_at: string
+          description: string | null
+          id: string
+          lead_id: string
+          outcome: string | null
+          performed_by: string | null
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          lead_id: string
+          outcome?: string | null
+          performed_by?: string | null
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          lead_id?: string
+          outcome?: string | null
+          performed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "sales_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_activities_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_tag_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          id: string
+          lead_id: string
+          tag_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          lead_id: string
+          tag_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          lead_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_tag_assignments_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_tag_assignments_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "sales_leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "lead_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_tags: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+        }
+        Relationships: []
+      }
       mot_history: {
         Row: {
           co2_emissions: number | null
@@ -2665,6 +2783,185 @@ export type Database = {
           },
         ]
       }
+      round_robin_state: {
+        Row: {
+          id: string
+          last_assigned_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          last_assigned_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          last_assigned_user_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "round_robin_state_last_assigned_user_id_fkey"
+            columns: ["last_assigned_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_badges: {
+        Row: {
+          color: string | null
+          created_at: string
+          criteria_type: string
+          criteria_value: number
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          criteria_type: string
+          criteria_value: number
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          criteria_type?: string
+          criteria_value?: number
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      sales_leads: {
+        Row: {
+          abandoned_cart_id: string | null
+          assigned_at: string | null
+          assigned_to: string | null
+          cart_value: number | null
+          converted_at: string | null
+          created_at: string
+          email: string
+          first_name: string | null
+          follow_up_status: string | null
+          id: string
+          last_activity_date: string | null
+          last_contacted_at: string | null
+          last_name: string | null
+          lead_source: Database["public"]["Enums"]["lead_source"] | null
+          lost_at: string | null
+          lost_reason: string | null
+          mileage: string | null
+          next_action_date: string | null
+          next_action_type: string | null
+          notes: string | null
+          phone: string | null
+          plan_interest: string | null
+          priority: Database["public"]["Enums"]["lead_priority"] | null
+          priority_score: number | null
+          quote_amount: number | null
+          status: Database["public"]["Enums"]["lead_status"] | null
+          updated_at: string
+          vehicle_make: string | null
+          vehicle_model: string | null
+          vehicle_reg: string | null
+          vehicle_type: string | null
+          vehicle_year: string | null
+        }
+        Insert: {
+          abandoned_cart_id?: string | null
+          assigned_at?: string | null
+          assigned_to?: string | null
+          cart_value?: number | null
+          converted_at?: string | null
+          created_at?: string
+          email: string
+          first_name?: string | null
+          follow_up_status?: string | null
+          id?: string
+          last_activity_date?: string | null
+          last_contacted_at?: string | null
+          last_name?: string | null
+          lead_source?: Database["public"]["Enums"]["lead_source"] | null
+          lost_at?: string | null
+          lost_reason?: string | null
+          mileage?: string | null
+          next_action_date?: string | null
+          next_action_type?: string | null
+          notes?: string | null
+          phone?: string | null
+          plan_interest?: string | null
+          priority?: Database["public"]["Enums"]["lead_priority"] | null
+          priority_score?: number | null
+          quote_amount?: number | null
+          status?: Database["public"]["Enums"]["lead_status"] | null
+          updated_at?: string
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_reg?: string | null
+          vehicle_type?: string | null
+          vehicle_year?: string | null
+        }
+        Update: {
+          abandoned_cart_id?: string | null
+          assigned_at?: string | null
+          assigned_to?: string | null
+          cart_value?: number | null
+          converted_at?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          follow_up_status?: string | null
+          id?: string
+          last_activity_date?: string | null
+          last_contacted_at?: string | null
+          last_name?: string | null
+          lead_source?: Database["public"]["Enums"]["lead_source"] | null
+          lost_at?: string | null
+          lost_reason?: string | null
+          mileage?: string | null
+          next_action_date?: string | null
+          next_action_type?: string | null
+          notes?: string | null
+          phone?: string | null
+          plan_interest?: string | null
+          priority?: Database["public"]["Enums"]["lead_priority"] | null
+          priority_score?: number | null
+          quote_amount?: number | null
+          status?: Database["public"]["Enums"]["lead_status"] | null
+          updated_at?: string
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_reg?: string | null
+          vehicle_type?: string | null
+          vehicle_year?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_leads_abandoned_cart_id_fkey"
+            columns: ["abandoned_cart_id"]
+            isOneToOne: false
+            referencedRelation: "abandoned_carts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_leads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales_targets: {
         Row: {
           achieved_amount: number
@@ -2703,6 +3000,71 @@ export type Database = {
           {
             foreignKeyName: "sales_targets_admin_user_id_fkey"
             columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      salesperson_stats: {
+        Row: {
+          avg_response_time_hours: number | null
+          conversion_rate: number | null
+          created_at: string
+          id: string
+          leads_assigned: number | null
+          leads_contacted: number | null
+          leads_converted: number | null
+          leads_lost: number | null
+          period_end: string
+          period_start: string
+          total_calls: number | null
+          total_emails: number | null
+          total_meetings: number | null
+          total_revenue: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_response_time_hours?: number | null
+          conversion_rate?: number | null
+          created_at?: string
+          id?: string
+          leads_assigned?: number | null
+          leads_contacted?: number | null
+          leads_converted?: number | null
+          leads_lost?: number | null
+          period_end: string
+          period_start: string
+          total_calls?: number | null
+          total_emails?: number | null
+          total_meetings?: number | null
+          total_revenue?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_response_time_hours?: number | null
+          conversion_rate?: number | null
+          created_at?: string
+          id?: string
+          leads_assigned?: number | null
+          leads_contacted?: number | null
+          leads_converted?: number | null
+          leads_lost?: number | null
+          period_end?: string
+          period_start?: string
+          total_calls?: number | null
+          total_emails?: number | null
+          total_meetings?: number | null
+          total_revenue?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salesperson_stats_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "admin_users"
             referencedColumns: ["id"]
@@ -3068,6 +3430,42 @@ export type Database = {
           },
         ]
       }
+      user_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "sales_badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -3380,6 +3778,14 @@ export type Database = {
     }
     Functions: {
       auto_expire_discount_codes: { Args: never; Returns: number }
+      calculate_lead_priority_score: {
+        Args: {
+          p_cart_value: number
+          p_has_quote?: boolean
+          p_last_activity_date: string
+        }
+        Returns: number
+      }
       calculate_policy_end_date: {
         Args: { payment_type: string; start_date: string }
         Returns: string
@@ -3398,6 +3804,7 @@ export type Database = {
         Returns: string
       }
       generate_warranty_number: { Args: never; Returns: string }
+      get_next_sales_user: { Args: never; Returns: string }
       get_next_warranty_serial: { Args: never; Returns: number }
       has_admin_permission: {
         Args: { permission_key: string; user_id: string }
@@ -3440,6 +3847,24 @@ export type Database = {
     }
     Enums: {
       interaction_type: "call" | "email" | "chat" | "in_person"
+      lead_priority: "low" | "medium" | "high" | "urgent"
+      lead_source:
+        | "website"
+        | "referral"
+        | "social_ad"
+        | "google_ad"
+        | "phone"
+        | "email"
+        | "partner"
+        | "other"
+      lead_status:
+        | "new"
+        | "contacted"
+        | "follow_up"
+        | "quote_sent"
+        | "negotiating"
+        | "converted"
+        | "lost"
       note_purpose:
         | "claim_query"
         | "sales_enquiry"
@@ -3585,6 +4010,26 @@ export const Constants = {
   public: {
     Enums: {
       interaction_type: ["call", "email", "chat", "in_person"],
+      lead_priority: ["low", "medium", "high", "urgent"],
+      lead_source: [
+        "website",
+        "referral",
+        "social_ad",
+        "google_ad",
+        "phone",
+        "email",
+        "partner",
+        "other",
+      ],
+      lead_status: [
+        "new",
+        "contacted",
+        "follow_up",
+        "quote_sent",
+        "negotiating",
+        "converted",
+        "lost",
+      ],
       note_purpose: [
         "claim_query",
         "sales_enquiry",
