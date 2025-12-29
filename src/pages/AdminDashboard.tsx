@@ -46,6 +46,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
+import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
+import { useAdminNotifications } from '@/hooks/useAdminNotifications';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('customers');
@@ -56,6 +58,9 @@ const AdminDashboard = () => {
   const [userPermissions, setUserPermissions] = useState<Record<string, boolean> | null>(null);
   const navigate = useNavigate();
   const { session, loading: authLoading } = useAuth();
+  
+  // Admin notifications
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useAdminNotifications();
 
   useEffect(() => {
     checkAdminAccess();
@@ -323,6 +328,13 @@ const AdminDashboard = () => {
 
             {/* Desktop CTA Buttons - Show on desktop */}
             <div className="hidden lg:flex items-center space-x-3">
+              <AdminNotificationBell
+                notifications={notifications}
+                unreadCount={unreadCount}
+                onMarkAsRead={markAsRead}
+                onMarkAllAsRead={markAllAsRead}
+                onNavigateToTab={setActiveTab}
+              />
               <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer">
                 <Button 
                   variant="outline" 
@@ -342,16 +354,24 @@ const AdminDashboard = () => {
             </div>
 
             {/* Mobile Menu Button */}
-            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="lg:hidden p-2"
-                >
-                  <Menu className="h-8 w-8" />
-                </Button>
-              </SheetTrigger>
+            <div className="lg:hidden flex items-center space-x-2">
+              <AdminNotificationBell
+                notifications={notifications}
+                unreadCount={unreadCount}
+                onMarkAsRead={markAsRead}
+                onMarkAllAsRead={markAllAsRead}
+                onNavigateToTab={setActiveTab}
+              />
+              <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-2"
+                  >
+                    <Menu className="h-8 w-8" />
+                  </Button>
+                </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
                 <div className="flex flex-col h-full">
                   {/* Header with logo */}
@@ -441,6 +461,7 @@ const AdminDashboard = () => {
                 </div>
               </SheetContent>
             </Sheet>
+            </div>
           </div>
           
           {/* Second line - Admin-specific navigation */}
