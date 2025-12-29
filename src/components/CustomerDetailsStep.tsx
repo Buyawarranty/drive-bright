@@ -1474,35 +1474,26 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           const discountedMonthlyPayment = Math.floor(discountedBumperPrice / 12);
                           const remainder = discountedBumperPrice - (discountedMonthlyPayment * 12);
                           
+                          const monthlyTotal = discountedMonthlyPayment * 12;
+                          
                           return (
                             <>
-                              {/* Pay in Full Card */}
-                              <div className="bg-green-50 border border-green-200 rounded-lg p-4 relative">
-                                <span className="absolute -top-2 right-3 bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded">BEST VALUE</span>
-                                <div className="font-bold text-black text-sm mb-2">Pay in Full</div>
-                                <div className="text-2xl font-bold text-black">£{finalStripePrice}</div>
-                                <div className="text-sm text-gray-600 mt-1">One-time payment</div>
-                                {/* Consolidated savings line - combine 10% + promo into one */}
-                                {hasFixedDiscount ? (
-                                  <div className="text-sm font-semibold text-green-600 mt-2">
-                                    Saved £{builtIn10PercentSaving + fixedDiscountAmount} ({Math.round(((builtIn10PercentSaving + fixedDiscountAmount) / originalPrice) * 100)}% off)
-                                  </div>
-                                ) : hasPercentagePromo && savingsPercent > 10 ? (
-                                  <div className="text-sm font-semibold text-green-600 mt-2">Saved £{builtIn10PercentSaving + percentageDiscountAmount} ({savingsPercent}% off)</div>
-                                ) : (
-                                  <div className="text-sm font-semibold text-green-600 mt-2">Saved £{builtIn10PercentSaving} (10% off)</div>
-                                )}
-                              </div>
-                              
-                              {/* Pay Monthly Card */}
+                              {/* Pay Monthly Card - Show first */}
                               <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                                <div className="font-bold text-black text-sm mb-2">Pay Monthly</div>
-                                <div className="text-2xl font-bold text-black">£{discountedMonthlyPayment} <span className="text-base font-normal">per month</span></div>
-                                <div className="text-sm text-gray-600 mt-1">12 payments</div>
-                                <div className="text-sm text-gray-500 mt-1">{hasPromoCode ? `Total after promo: £${discountedMonthlyPayment * 12}` : `Total: £${discountedMonthlyPayment * 12}`}</div>
+                                <div className="font-bold text-black text-base">
+                                  Pay Monthly: £{monthlyTotal} <span className="text-sm font-normal text-gray-600">(£{discountedMonthlyPayment}/month – 0% APR, 12 payments)</span>
+                                </div>
                                 {hasPromoCode && promoSavings > 0 && (
                                   <div className="text-sm font-semibold text-green-600 mt-1">Saved £{promoSavings} with promo!</div>
                                 )}
+                              </div>
+                              
+                              {/* Pay in Full Card */}
+                              <div className="bg-green-50 border border-green-200 rounded-lg p-4 relative">
+                                <span className="absolute -top-2 right-3 bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded">BEST VALUE</span>
+                                <div className="font-bold text-black text-base mt-1">
+                                  Pay in Full: £{finalStripePrice} <span className="text-sm font-normal text-gray-600">(Original £{originalPrice} → £{finalStripePrice} with extra 10% off)</span>
+                                </div>
                               </div>
                             </>
                           );
