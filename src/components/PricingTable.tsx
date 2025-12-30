@@ -1536,7 +1536,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     
                     {/* Total price with was price */}
                     <div className="text-sm mt-2">
-                      <span className="font-bold text-black">Total: £{displayedAnnualPrice}</span>
+                      <span className="font-bold text-black">
+                        {(durationId === '24months' || durationId === '36months') ? 'Pay in full ' : 'Total: '}
+                        £{displayedAnnualPrice}
+                      </span>
                       {savingsAmount > 0 && (
                         <span className="text-red-500 line-through ml-1">(Was £{displayedAnnualPrice + savingsAmount})</span>
                       )}
@@ -1546,6 +1549,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     {savingsAmount > 0 && (
                       <div className="flex items-center gap-1 mt-1">
                         <span className="text-sm font-bold text-green-600">Save £{savingsAmount} Today 🔥</span>
+                      </div>
+                    )}
+                    
+                    {/* Extra benefits for 2-year and 3-year */}
+                    {(durationId === '24months' || durationId === '36months') && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className="text-sm font-medium text-gray-700">🎁 Includes extra benefits</span>
                       </div>
                     )}
                   </div>
