@@ -109,54 +109,21 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
       </div>
 
       {/* Mobile Layout */}
-      <div className="md:hidden px-4 py-3">
-        {/* Top Row - Trust & Pricing Summary */}
-        <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
-          {/* Trust Signal */}
-          <div className="flex items-center gap-1">
-            <div className="flex">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-3 h-3 fill-[#00b67a] text-[#00b67a]" />
-              ))}
-            </div>
-            <span className="text-xs text-gray-500 ml-1">14 days to cancel</span>
-          </div>
-          {/* Year 2 Free Badge */}
-          {paymentPeriod === '24months' && (
-            <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium">
-              Year 2 FREE 🎉
-            </span>
-          )}
+      <div className="md:hidden px-5 py-4">
+        {/* Plan Title */}
+        <div className="text-center mb-3">
+          <h3 className="text-lg font-bold text-gray-900">Platinum Plan</h3>
+          <p className="text-base text-gray-700 mt-1">
+            <span className="font-semibold">£{monthlyPrice}/month</span>
+            <span className="text-gray-500"> for 12 months</span>
+          </p>
+          <p className="text-sm text-gray-600 mt-1">
+            Or pay <span className="font-semibold text-green-600">£{payInFull}</span> upfront
+            {savings > 0 && <span className="text-gray-500"> (Save £{savings})</span>}
+          </p>
         </div>
 
-        {/* Middle Row - Pricing */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex flex-col">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-base font-bold text-gray-900">Total:</span>
-              <span className="text-xl font-bold text-gray-900">£{monthlyPrice}/mo</span>
-              <span className="text-xs text-gray-500">0% APR</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-xs mt-0.5">
-              <span className="text-gray-500">or</span>
-              {savings > 0 && (
-                <span className="line-through text-red-500">£{wasPrice}</span>
-              )}
-              <span className="font-bold text-green-600">£{payInFull}</span>
-              {savings > 0 && (
-                <span className="text-gray-500">(Save £{savings})</span>
-              )}
-            </div>
-          </div>
-          <div className="text-right">
-            <span className="text-sm font-medium text-gray-700">
-              {paymentPeriod === '12months' ? '1-Year' : paymentPeriod === '24months' ? '2-Year' : '3-Year'} Cover
-            </span>
-            <div className="text-xs text-gray-500">12 payments</div>
-          </div>
-        </div>
-
-        {/* Bottom Row - CTA */}
+        {/* CTA Button */}
         <Button
           onClick={onContinue}
           disabled={isLoading || !isValid}
@@ -166,15 +133,16 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             'Loading...'
           ) : (
             <>
-              Continue to Checkout
+              Secure Checkout
               <ArrowRight className="w-5 h-5" strokeWidth={2.5} />
             </>
           )}
         </Button>
-        <div className="flex items-center justify-center gap-1.5 text-xs text-gray-500 mt-2">
-          <Lock className="w-3 h-3" />
-          <span>Secure checkout – No hidden fees</span>
-        </div>
+        
+        {/* Trust Text */}
+        <p className="text-center text-xs text-gray-500 mt-3">
+          SSL encrypted – Safe & fast
+        </p>
       </div>
     </div>
   );
