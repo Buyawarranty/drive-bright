@@ -1590,7 +1590,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                                 <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                               )}
                               <span className="text-sm text-gray-700">
-                                {featureText}{isExtra && ' (Extra)'}
+                                {featureText}{isExtra && ' (Bonus benefit)'}
                               </span>
                             </div>
                           );
