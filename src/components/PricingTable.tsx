@@ -1536,7 +1536,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     
                     {/* Total price with was price */}
                     <div className="text-sm mt-2">
-                      <span className="font-bold text-black">£{displayedAnnualPrice}</span>
+                      <span className="font-bold text-black">Total: £{displayedAnnualPrice}</span>
                       {savingsAmount > 0 && (
                         <span className="text-red-500 line-through ml-1">(Was £{displayedAnnualPrice + savingsAmount})</span>
                       )}
