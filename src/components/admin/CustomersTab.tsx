@@ -133,6 +133,8 @@ interface Customer {
   warranty_expiry?: string;
   policy_number?: string;
   policy_status?: string;
+  policy_start_date?: string;
+  warranties_2000_scheduled_for?: string;
   welcome_email_status?: 'sent' | 'not_sent';
   activation_email_status?: 'sent' | 'not_sent';
   assigned_to?: string;
@@ -541,6 +543,7 @@ export const CustomersTab = () => {
             email_sent_status,
             warranties_2000_status,
             warranties_2000_sent_at,
+            warranties_2000_scheduled_for,
             mot_fee,
             tyre_cover,
             wear_tear,
@@ -707,6 +710,8 @@ export const CustomersTab = () => {
         warranty_reference_number: customer.warranty_reference_number || null,
         policy_number: customer.customer_policies?.[0]?.policy_number || null,
         policy_status: customer.customer_policies?.[0]?.status || null,
+        policy_start_date: customer.customer_policies?.[0]?.policy_start_date || null,
+        warranties_2000_scheduled_for: customer.customer_policies?.[0]?.warranties_2000_scheduled_for || null,
         last_login: customer.last_login || null
       })) || [];
       
@@ -2245,6 +2250,7 @@ export const CustomersTab = () => {
               <TableHead>Address</TableHead>
               <TableHead>WarType</TableHead>
               <TableHead>Dur.</TableHead>
+              <TableHead>Start Date</TableHead>
               <TableHead>Expiry Date</TableHead>
               <TableHead>Payment Method</TableHead>
               <TableHead>Vol. Excess</TableHead>
@@ -3353,6 +3359,33 @@ Please log in and change your password after first login.`;
                       <Badge variant="outline" className="font-mono">
                         {getWarrantyDurationInMonths(customer.payment_type || '')} months
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {(() => {
+                        const startDate = customer.policy_start_date || customer.customer_policies?.[0]?.policy_start_date || customer.signup_date;
+                        const scheduledFor = customer.warranties_2000_scheduled_for;
+                        const w2000Status = customer.customer_policies?.[0]?.warranties_2000_status;
+                        const isFutureActivation = startDate && new Date(startDate) > new Date();
+                        const isScheduled = w2000Status === 'scheduled' && scheduledFor;
+                        
+                        if (startDate) {
+                          return (
+                            <div className={`text-sm px-2 py-1 rounded ${
+                              isFutureActivation || isScheduled
+                                ? 'bg-amber-100 text-amber-800 font-semibold border border-amber-300'
+                                : ''
+                            }`}>
+                              {format(new Date(startDate), 'dd/MM/yyyy')}
+                              {(isFutureActivation || isScheduled) && (
+                                <div className="text-xs text-amber-600 mt-0.5">
+                                  ⏳ Scheduled
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+                        return <span className="text-gray-400">N/A</span>;
+                      })()}
                     </TableCell>
                     <TableCell className="text-center">
                       {customer.customer_policies?.[0]?.policy_start_date || customer.signup_date ? (
