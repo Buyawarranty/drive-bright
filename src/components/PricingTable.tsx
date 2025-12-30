@@ -2390,24 +2390,35 @@ const PricingTable: React.FC<PricingTableProps> = ({
           <div className="mt-4">
             <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Optional add-on</h4>
             
-            {/* Add Extra Cover Card - with Improved Toggle Switch */}
+            {/* Add Extra Cover Card - Fully Tappable with Improved Toggle */}
             <div 
               onClick={() => setBoostAddon(!boostAddon)}
               className={cn(
-                "relative p-4 rounded-xl cursor-pointer transition-all duration-300 border-2",
+                "relative p-4 rounded-xl cursor-pointer border-2 overflow-hidden",
+                "transition-all duration-300 ease-out transform",
                 boostAddon
-                  ? "bg-green-50 border-green-500 shadow-[0_0_12px_rgba(34,197,94,0.3)]"
-                  : "bg-orange-50 border-orange-200 hover:border-orange-400 hover:shadow-md"
+                  ? "bg-gradient-to-br from-green-50 to-green-100 border-green-500 shadow-[0_0_16px_rgba(34,197,94,0.35)] scale-[1.01]"
+                  : "bg-gradient-to-br from-orange-50 to-orange-100/50 border-orange-200 hover:border-orange-400 hover:shadow-lg hover:scale-[1.005]"
               )}
             >
-              <div className="flex items-center gap-4">
+              {/* Animated background pulse when active */}
+              {boostAddon && (
+                <div className="absolute inset-0 bg-green-400/10 animate-pulse pointer-events-none" />
+              )}
+              
+              <div className="relative flex items-center gap-4">
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   {boostAddon ? (
                     <>
-                      <h4 className="text-lg font-bold text-green-700 mb-0.5">
-                        ✅ Upgrade Added!
-                      </h4>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                          <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                        </div>
+                        <h4 className="text-lg font-bold text-green-700">
+                          Upgrade Added!
+                        </h4>
+                      </div>
                       <div className="text-base font-semibold text-green-800">
                         Your cover is now £{(selectedClaimLimit + 1000).toLocaleString()} per claim 🚀
                       </div>
@@ -2430,69 +2441,50 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   )}
                 </div>
                 
-                {/* Improved Toggle Switch - 44px minimum touch target */}
-                <div 
-                  className="flex-shrink-0" 
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={boostAddon}
-                    aria-label={boostAddon ? "Disable boost add-on" : "Enable boost add-on"}
-                    onClick={() => setBoostAddon(!boostAddon)}
+                {/* Improved Toggle Switch */}
+                <div className="flex-shrink-0">
+                  <div
                     className={cn(
-                      "relative inline-flex items-center rounded-full transition-all duration-300 ease-in-out focus:outline-none focus:ring-4",
-                      "w-[72px] h-[44px]", // Large touch target
+                      "relative inline-flex items-center justify-between rounded-full transition-all duration-300 ease-out",
+                      "w-[68px] h-[36px] px-1",
                       boostAddon 
-                        ? "bg-green-500 focus:ring-green-200 shadow-[0_0_12px_rgba(34,197,94,0.4)]" 
-                        : "bg-gray-300 focus:ring-gray-200"
+                        ? "bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.5)]" 
+                        : "bg-gray-300"
                     )}
                   >
-                    {/* Toggle Knob */}
-                    <span
-                      className={cn(
-                        "inline-flex items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 ease-in-out",
-                        "w-[36px] h-[36px]", // Large knob
-                        boostAddon ? "translate-x-[32px]" : "translate-x-[4px]"
-                      )}
-                    >
-                      {boostAddon ? (
-                        <Check className="w-5 h-5 text-green-500" strokeWidth={3} />
-                      ) : (
-                        <Plus className="w-5 h-5 text-gray-400" strokeWidth={2} />
-                      )}
-                    </span>
-                    
-                    {/* State Labels inside toggle */}
+                    {/* ON/OFF Labels */}
                     <span className={cn(
-                      "absolute text-[10px] font-bold uppercase tracking-wide transition-opacity duration-200",
-                      boostAddon 
-                        ? "left-2.5 text-white opacity-100" 
-                        : "left-2.5 text-white opacity-0"
+                      "text-[11px] font-bold uppercase pl-1.5 transition-all duration-200",
+                      boostAddon ? "text-white" : "text-transparent"
                     )}>
                       ON
                     </span>
                     <span className={cn(
-                      "absolute text-[10px] font-bold uppercase tracking-wide transition-opacity duration-200",
-                      boostAddon 
-                        ? "right-2.5 text-gray-500 opacity-0" 
-                        : "right-2.5 text-gray-500 opacity-100"
+                      "text-[11px] font-bold uppercase pr-1.5 transition-all duration-200",
+                      boostAddon ? "text-transparent" : "text-gray-500"
                     )}>
                       OFF
                     </span>
-                  </button>
+                    
+                    {/* Toggle Knob */}
+                    <span
+                      className={cn(
+                        "absolute inline-flex items-center justify-center rounded-full bg-white shadow-md",
+                        "w-[28px] h-[28px] top-1",
+                        "transition-all duration-300 ease-out",
+                        boostAddon 
+                          ? "left-[36px] shadow-lg" 
+                          : "left-1"
+                      )}
+                    >
+                      {boostAddon ? (
+                        <Check className="w-4 h-4 text-green-500" strokeWidth={3} />
+                      ) : (
+                        <Plus className="w-4 h-4 text-gray-400" strokeWidth={2} />
+                      )}
+                    </span>
+                  </div>
                 </div>
-              </div>
-              
-              {/* Status indicator text below */}
-              <div className={cn(
-                "mt-3 pt-3 border-t text-center text-sm font-semibold transition-all duration-300",
-                boostAddon 
-                  ? "border-green-200 text-green-700" 
-                  : "border-orange-200 text-orange-700"
-              )}>
-                {boostAddon ? "🎉 Boost Enabled" : "Tap to enable boost"}
               </div>
             </div>
           </div>
