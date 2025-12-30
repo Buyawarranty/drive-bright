@@ -1752,66 +1752,45 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         {/* OPTION A: Pay Monthly (Bumper) - Show first */}
                         <div 
                           onClick={() => setPaymentMethod('bumper')}
-                          className={`relative rounded-xl p-5 cursor-pointer transition-all duration-300 border-2 w-full ${
+                          className={`relative rounded-xl cursor-pointer transition-all duration-300 w-full ${
                             paymentMethod === 'bumper' 
-                              ? 'bg-white border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.4)]' 
-                              : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-md'
+                              ? 'shadow-[0_0_15px_rgba(249,115,22,0.4)]' 
+                              : 'hover:shadow-md'
                           }`}
+                          style={{
+                            backgroundColor: '#FFF4E6',
+                            border: '1px solid #F5CBA7',
+                            padding: '16px'
+                          }}
                         >
-                          {/* 0% APR Badge - ORANGE */}
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-md uppercase">
-                            0% APR
-                          </div>
-
-                          {/* Radio Button and No Fees Badge */}
+                          {/* Radio Button */}
                           <div className="flex items-start justify-between mb-3">
                             <RadioGroupItem 
                               value="bumper" 
                               id="bumper-option" 
                               className="border-2 border-gray-400 w-6 h-6 mt-0.5"
                             />
-                            {/* No Fees Badge - GREY */}
-                            <div className="bg-gray-200 text-gray-700 text-xs font-bold px-2 py-0.5 rounded uppercase">
-                              NO FEES
-                            </div>
                           </div>
 
-                          {/* Calendar Icon */}
-                          <div className="flex justify-center mb-3">
-                            <div className="bg-orange-100 p-3 rounded-full">
-                              <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
-                            </div>
-                          </div>
-
-                          {/* Heading */}
-                          <Label htmlFor="bumper-option" className="block text-center cursor-pointer mb-2">
-                            <h4 className="text-lg font-bold text-black mb-1">Pay Monthly</h4>
-                            <p className="text-xs font-bold text-gray-700">Interest-free monthly instalments</p>
+                          {/* Main Heading */}
+                          <Label htmlFor="bumper-option" className="block cursor-pointer mb-2">
+                            <h4 style={{ fontSize: '18px', fontWeight: 'bold', color: '#333' }}>Pay Monthly</h4>
                           </Label>
 
-                          {/* Price Display - New format */}
-                          <div className="bg-orange-50 rounded-lg p-3 mb-3 border border-orange-100">
+                          {/* Price Display */}
+                          <div className="mb-3">
                             {(() => {
                               const discountedMonthly = Math.floor(discountedBumperPrice / 12);
                               const monthlyTotal = discountedMonthly * 12;
-                              const hasPromoCode = appliedDiscountCodes.length > 0;
-                              const promoSavings = bumperTotalPrice - discountedBumperPrice;
                               
                               return (
-                                <div className="text-center">
-                                  <div className="text-lg font-bold text-black mb-1">
-                                    Total: £{monthlyTotal} at £{discountedMonthly}/month
+                                <div>
+                                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#000' }}>
+                                    £{discountedMonthly}/month
                                   </div>
-                                  <div className="text-sm font-bold text-gray-700">
-                                    (0% APR, 12 payments)
+                                  <div style={{ fontSize: '14px', color: '#666' }}>
+                                    (12 months – Total £{monthlyTotal} – 0% APR)
                                   </div>
-                                  {hasPromoCode && promoSavings > 0 && (
-                                    <div className="text-xs text-green-600 font-semibold mt-1">
-                                      Save £{promoSavings} with promo!
-                                    </div>
-                                  )}
                                 </div>
                               );
                             })()}
@@ -1898,52 +1877,68 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                       motRepair: false,
                                       motFee: updatedPricingData.protectionAddOns?.motFee || false,
                                       lostKey: false,
-                                      consequential: false
-                                    },
-                                    seasonalBonusMonths: seasonalOfferClaimed ? 3 : 0
+                                      consequential: updatedPricingData.protectionAddOns?.consequential || false,
+                                    }
                                   }
                                 });
 
+                                console.log('🏦 Bumper response:', { checkoutData, checkoutError });
+
                                 if (checkoutError) {
-                                  console.error('Bumper checkout error:', checkoutError);
-                                  toast.error('Payment processing failed. Please try again.');
+                                  console.error('🏦 Bumper checkout error:', checkoutError);
+                                  
+                                  // Check for Bumper-specific error (monthly not available)
+                                  const errorMessage = checkoutError?.message || '';
+                                  if (errorMessage.includes('is not available for Bumper') || 
+                                      errorMessage.includes('Monthly payments are not available') ||
+                                      errorMessage.includes('Bumper payments are not available')) {
+                                    console.log('🔄 Bumper not available, falling back to Stripe...');
+                                    toast.error('Monthly payments are currently unavailable. Please pay in full instead.', {
+                                      duration: 8000,
+                                      action: {
+                                        label: 'Continue with Card Payment',
+                                        onClick: () => {
+                                          setPaymentMethod('stripe');
+                                          toast.dismiss();
+                                        }
+                                      }
+                                    });
+                                    setIsLoadingBumper(false);
+                                    setIsLoadingPayment(false);
+                                    return;
+                                  }
+                                  
+                                  toast.error('Unable to process checkout. Please try again.');
                                   setIsLoadingBumper(false);
                                   setIsLoadingPayment(false);
                                   return;
                                 }
 
-                                if (checkoutData?.fallbackToStripe) {
-                                  toast.error('Monthly payments temporarily unavailable. Please use Pay in Full option.');
-                                  setIsLoadingBumper(false);
-                                  setIsLoadingPayment(false);
-                                  return;
-                                } else if (checkoutData?.url) {
-                                  console.log('🌐 Redirecting to Bumper checkout:', checkoutData.url);
-                                  
-                                  const currentState = {
-                                    step: 4,
+                                if (checkoutData?.redirectUrl) {
+                                  console.log('🏦 Redirecting to Bumper:', checkoutData.redirectUrl);
+                                  // Save journey state before redirect
+                                  const journeyState = {
+                                    formData: pricingData,
                                     vehicleData,
-                                    selectedPlan: { id: planId, paymentType, name: planName, pricingData: updatedPricingData },
-                                    formData: customerData,
+                                    customerData,
+                                    planId,
+                                    paymentType,
+                                    appliedDiscountCodes,
+                                    protectionAddOns: updatedPricingData.protectionAddOns,
                                     timestamp: Date.now()
                                   };
+                                  localStorage.setItem('warranty_journey_state', JSON.stringify(journeyState));
                                   
-                                  localStorage.setItem('warrantyJourneyState', JSON.stringify(currentState));
-                                  localStorage.setItem('buyawarranty_currentStep', '4');
-                                  localStorage.setItem('buyawarranty_customerData', JSON.stringify(customerData));
-                                  localStorage.setItem('buyawarranty_returnedFromPayment', 'true');
-                                  sessionStorage.setItem('paymentInProgress', 'true');
-                                  
-                                  window.location.href = checkoutData.url;
+                                  window.location.href = checkoutData.redirectUrl;
                                 } else {
-                                  console.error('No Bumper checkout URL received');
-                                  toast.error('Payment setup failed. Please try again.');
+                                  console.error('🏦 No redirect URL in Bumper response');
+                                  toast.error('Unable to process checkout. Please try again.');
                                   setIsLoadingBumper(false);
                                   setIsLoadingPayment(false);
                                 }
                               } catch (error) {
-                                console.error('Bumper checkout exception:', error);
-                                toast.error('Payment processing failed. Please try again.');
+                                console.error('🏦 Bumper checkout exception:', error);
+                                toast.error('Unable to process checkout. Please try again.');
                                 setIsLoadingBumper(false);
                                 setIsLoadingPayment(false);
                               }
@@ -1964,56 +1959,60 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         {/* OPTION B: Pay in Full (Stripe) */}
                         <div 
                           onClick={() => setPaymentMethod('stripe')}
-                          className={`relative rounded-xl p-5 cursor-pointer transition-all duration-300 border-2 w-full ${
+                          className={`relative rounded-xl cursor-pointer transition-all duration-300 w-full ${
                             paymentMethod === 'stripe' 
-                              ? 'bg-white border-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.4)]' 
-                              : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-md'
+                              ? 'shadow-[0_0_15px_rgba(39,174,96,0.4)]' 
+                              : 'hover:shadow-md'
                           }`}
+                          style={{
+                            backgroundColor: '#E8F8F5',
+                            border: '1px solid #A9DFBF',
+                            padding: '16px'
+                          }}
                         >
-                          {/* Best Value Badge - GREEN */}
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-md uppercase">
+                          {/* Best Value Badge */}
+                          <div 
+                            className="absolute -top-3 left-4"
+                            style={{
+                              backgroundColor: '#27AE60',
+                              color: '#FFF',
+                              fontSize: '12px',
+                              fontWeight: 'bold',
+                              borderRadius: '4px',
+                              padding: '4px 8px'
+                            }}
+                          >
                             BEST VALUE
                           </div>
 
-                          {/* Radio Button and Limited Time Badge */}
-                          <div className="flex items-start justify-between mb-3">
+                          {/* Radio Button */}
+                          <div className="flex items-start justify-between mb-3 mt-2">
                             <RadioGroupItem 
                               value="stripe" 
                               id="stripe-option" 
                               className="border-2 border-gray-400 w-6 h-6 mt-0.5 data-[state=checked]:border-green-600 data-[state=checked]:border-[3px]"
                             />
-                            {/* Limited Time Badge - GREY */}
-                            <div className="bg-gray-200 text-gray-700 text-xs font-bold px-2 py-0.5 rounded uppercase">
-                              LIMITED TIME
-                            </div>
                           </div>
 
-                          {/* Wallet Icon */}
-                          <div className="flex justify-center mb-3">
-                            <div className="bg-green-100 p-3 rounded-full">
-                              <CreditCard className="w-6 h-6 text-green-600" />
-                            </div>
-                          </div>
-
-                          {/* Heading */}
-                          <Label htmlFor="stripe-option" className="block text-center cursor-pointer mb-2">
-                            <h4 className="text-lg font-bold text-black mb-1">Pay in Full</h4>
-                            <p className="text-xs font-bold text-gray-700">One-time payment today</p>
+                          {/* Main Heading */}
+                          <Label htmlFor="stripe-option" className="block cursor-pointer mb-2">
+                            <h4 style={{ fontSize: '18px', fontWeight: 'bold', color: '#333' }}>Pay in Full</h4>
                           </Label>
 
-                          {/* Price Display - New format */}
-                          <div className="bg-gray-50 rounded-lg p-3 mb-3 border border-gray-100">
+                          {/* Price Display */}
+                          <div className="mb-3">
                             {(() => {
                               const originalPrice = bumperTotalPrice;
                               const finalStripePrice = discountedStripePrice;
+                              const savings = originalPrice - finalStripePrice;
                               
                               return (
-                                <div className="text-center">
-                                  <div className="text-lg font-bold text-black mb-1">
-                                    Pay in Full: £{finalStripePrice}
+                                <div>
+                                  <div style={{ fontSize: '26px', fontWeight: 'bold', color: '#000' }}>
+                                    £{finalStripePrice}
                                   </div>
-                                  <div className="text-sm font-bold text-gray-700">
-                                    (£{originalPrice} → £{finalStripePrice} with extra 10% off)
+                                  <div style={{ fontSize: '14px', color: '#27AE60' }}>
+                                    Save 10% (£{savings} off original £{originalPrice})
                                   </div>
                                 </div>
                               );
