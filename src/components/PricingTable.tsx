@@ -2572,9 +2572,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       const payInFull = displayMonthlyPrice * 12; // monthly × 12
                       const savings = getMarketingSavings(paymentType as PaymentPeriod);
                       const wasPrice = payInFull + savings;
+                      const coverLabel = paymentType === '12months' ? '1-Year Cover' : paymentType === '24months' ? '2-Year Cover' : '3-Year Cover';
                       return (
                         <p className="text-sm text-black mt-1">
-                          Or pay in full: {savings > 0 && <span className="line-through text-red-500">£{wasPrice}</span>} <span className="font-bold text-green-600">£{payInFull}</span> {savings > 0 && <span className="text-gray-600">(Save £{savings})</span>}
+                          {savings > 0 && <span className="line-through text-red-500">£{wasPrice}</span>} <span className="font-bold text-green-600">£{payInFull}</span> {savings > 0 && <span className="text-gray-600">(Save £{savings})</span>} <span className="text-gray-700">– {coverLabel}</span>
                         </p>
                       );
                     })()}
@@ -2857,10 +2858,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           Only 12 payments
                         </div>
                         <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm mt-0.5 flex-wrap justify-center">
-                          <span className="text-gray-500">Pay in full:</span>
                           {savings > 0 && <span className="line-through text-red-500">£{wasPrice}</span>}
                           <span className="font-bold text-green-600">£{payInFull}</span>
                           {savings > 0 && <span className="text-gray-600 whitespace-nowrap">(Save £{savings})</span>}
+                          <span className="text-gray-700">– {paymentType === '12months' ? '1-Year' : paymentType === '24months' ? '2-Year' : '3-Year'} Cover</span>
                         </div>
                       </div>
                       

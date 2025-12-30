@@ -521,17 +521,20 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
                     £{option.monthlyPrice} <span className="text-gray-600">× 12 payments only</span>
                   </div>
                   
-                  {/* Or pay in full */}
+                  {/* Pay in full price */}
                   <div className="text-base text-gray-700">
-                    or pay in full <span className="font-bold text-gray-900">£{option.totalPrice}</span>
+                    <span className="font-bold text-gray-900">£{option.totalPrice}</span>
+                    {option.originalPrice && (
+                      <>
+                        <span className="mx-1 line-through text-red-500">(Was £{option.originalPrice})</span>
+                      </>
+                    )}
                   </div>
                   
-                  {/* Was price (strikethrough) · Save amount */}
+                  {/* Save amount badge */}
                   {option.originalPrice && (
-                    <div className="text-sm text-gray-600">
-                      <span className="line-through">Was £{option.originalPrice}</span>
-                      <span className="mx-1">·</span>
-                      <span className="text-green-600 font-bold">Save £{option.originalPrice - option.totalPrice} Today</span>
+                    <div className="text-sm text-green-600 font-bold">
+                      Save £{option.originalPrice - option.totalPrice} Today 🔥
                     </div>
                   )}
                   
