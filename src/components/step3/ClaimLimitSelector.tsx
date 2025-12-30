@@ -156,7 +156,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
       <div className="mt-4 mb-2">
         <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Optional add-on</h4>
         
-        {/* Add Extra Cover Card - with Toggle Switch */}
+        {/* Add Extra Cover Card - with Improved Toggle Switch */}
         <div 
           onClick={(e) => {
             if (!isBoostActive) {
@@ -166,17 +166,18 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
             }
           }}
           className={cn(
-            "relative p-4 rounded-lg cursor-pointer transition-all border-2 min-h-[88px] flex items-center",
+            "relative p-4 rounded-xl cursor-pointer transition-all duration-300 border-2",
             isBoostActive
-              ? "bg-green-50 border-green-500 ring-2 ring-green-400"
-              : "bg-orange-50 border-orange-200 hover:border-orange-400"
+              ? "bg-green-50 border-green-500 shadow-[0_0_12px_rgba(34,197,94,0.3)]"
+              : "bg-orange-50 border-orange-200 hover:border-orange-400 hover:shadow-md"
           )}
         >
-          <div className="flex items-start justify-between w-full">
-            <div className="flex-1">
+          <div className="flex items-center gap-4">
+            {/* Content */}
+            <div className="flex-1 min-w-0">
               {isBoostActive ? (
                 <>
-                  <h4 className="text-lg font-bold text-green-700 mb-1">
+                  <h4 className="text-lg font-bold text-green-700 mb-0.5">
                     ✅ Upgrade Added!
                   </h4>
                   <div className="text-base font-semibold text-green-800">
@@ -188,7 +189,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
                 </>
               ) : (
                 <>
-                  <h4 className="text-lg font-bold text-foreground mb-1">
+                  <h4 className="text-lg font-bold text-foreground mb-0.5">
                     🚀 Boost your cover by £1,000
                   </h4>
                   <div className="text-base font-semibold text-foreground">
@@ -200,13 +201,70 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
                 </>
               )}
             </div>
-            <div className="flex-shrink-0 ml-4" onClick={(e) => e.stopPropagation()}>
-              <Switch 
-                checked={isBoostActive}
-                onCheckedChange={(checked) => handleBoostToggle(checked)}
-                className="data-[state=checked]:bg-green-500"
-              />
+            
+            {/* Improved Toggle Switch - 44px minimum touch target */}
+            <div 
+              className="flex-shrink-0" 
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                role="switch"
+                aria-checked={isBoostActive}
+                aria-label={isBoostActive ? "Disable boost add-on" : "Enable boost add-on"}
+                onClick={() => handleBoostToggle(!isBoostActive)}
+                className={cn(
+                  "relative inline-flex items-center rounded-full transition-all duration-300 ease-in-out focus:outline-none focus:ring-4",
+                  "w-[72px] h-[44px]", // Large touch target
+                  isBoostActive 
+                    ? "bg-green-500 focus:ring-green-200 shadow-[0_0_12px_rgba(34,197,94,0.4)]" 
+                    : "bg-gray-300 focus:ring-gray-200"
+                )}
+              >
+                {/* Toggle Knob */}
+                <span
+                  className={cn(
+                    "inline-flex items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 ease-in-out",
+                    "w-[36px] h-[36px]", // Large knob
+                    isBoostActive ? "translate-x-[32px]" : "translate-x-[4px]"
+                  )}
+                >
+                  {isBoostActive ? (
+                    <Check className="w-5 h-5 text-green-500" strokeWidth={3} />
+                  ) : (
+                    <Plus className="w-5 h-5 text-gray-400" strokeWidth={2} />
+                  )}
+                </span>
+                
+                {/* State Labels inside toggle */}
+                <span className={cn(
+                  "absolute text-[10px] font-bold uppercase tracking-wide transition-opacity duration-200",
+                  isBoostActive 
+                    ? "left-2.5 text-white opacity-100" 
+                    : "left-2.5 text-white opacity-0"
+                )}>
+                  ON
+                </span>
+                <span className={cn(
+                  "absolute text-[10px] font-bold uppercase tracking-wide transition-opacity duration-200",
+                  isBoostActive 
+                    ? "right-2.5 text-gray-500 opacity-0" 
+                    : "right-2.5 text-gray-500 opacity-100"
+                )}>
+                  OFF
+                </span>
+              </button>
             </div>
+          </div>
+          
+          {/* Status indicator text below */}
+          <div className={cn(
+            "mt-3 pt-3 border-t text-center text-sm font-semibold transition-all duration-300",
+            isBoostActive 
+              ? "border-green-200 text-green-700" 
+              : "border-orange-200 text-orange-700"
+          )}>
+            {isBoostActive ? "🎉 Boost Enabled" : "Tap to enable boost"}
           </div>
         </div>
       </div>
