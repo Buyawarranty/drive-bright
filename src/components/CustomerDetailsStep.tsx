@@ -1800,14 +1800,14 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               
                               return (
                                 <div>
-                                  <div style={{ fontSize: '16px', color: '#666' }}>
+                                  <div style={{ fontSize: '16px', color: '#666', fontWeight: 'bold' }}>
                                     Total: £{monthlyTotal}
                                   </div>
                                   <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#000' }}>
                                     £{discountedMonthly}/month
                                   </div>
                                   <div style={{ fontSize: '14px', color: '#666' }}>
-                                    (0% APR, 12 payments)
+                                    Only 12 payments
                                   </div>
                                 </div>
                               );
@@ -1818,7 +1818,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center gap-2" style={{ fontSize: '14px', color: '#333' }}>
                               <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                              <span>Only 12 easy payments</span>
+                              <span>Soft search only</span>
                             </div>
                             <div className="flex items-center gap-2" style={{ fontSize: '14px', color: '#333' }}>
                               <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
@@ -1826,7 +1826,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             </div>
                             <div className="flex items-center gap-2" style={{ fontSize: '14px', color: '#333' }}>
                               <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                              <span>0% interest, no hidden fees</span>
+                              <span>No hidden fees</span>
                             </div>
                           </div>
 
@@ -1962,9 +1962,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               }
                             }}
                             disabled={isLoadingStripe || isLoadingBumper}
-                            className="w-full rounded-lg transition-colors shadow-lg text-white disabled:opacity-50"
+                            className="w-full rounded-lg transition-colors shadow-lg text-white disabled:opacity-50 bg-orange-500 hover:bg-orange-600"
                             style={{
-                              backgroundColor: '#F39C12',
                               fontSize: '16px',
                               fontWeight: 'bold',
                               padding: '12px'
@@ -2031,11 +2030,10 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               
                               return (
                                 <div>
-                                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#000' }}>
-                                    £{finalStripePrice}
-                                  </div>
-                                  <div style={{ fontSize: '14px', color: '#27AE60' }}>
-                                    (£{originalPrice} → £{finalStripePrice} with extra 10% off)
+                                  <div style={{ fontWeight: 'bold' }}>
+                                    <span style={{ fontSize: '16px', color: '#E53E3E', textDecoration: 'line-through' }}>£{originalPrice}</span>
+                                    <span style={{ fontSize: '14px', color: '#27AE60', marginLeft: '8px' }}>now</span>
+                                    <span style={{ fontSize: '28px', color: '#000', marginLeft: '8px' }}>£{finalStripePrice}</span>
                                   </div>
                                 </div>
                               );
