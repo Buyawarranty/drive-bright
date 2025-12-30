@@ -2438,7 +2438,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         Your cover is now £{(selectedClaimLimit + 1000).toLocaleString()} per claim 🚀
                       </div>
                       <div className="text-xs text-green-600 mt-1">
-                        Just £5/mo × 12 payments
+                        Just £{paymentType === '36months' ? 15 : paymentType === '24months' ? 10 : 5}/month × 12 payments
                       </div>
                     </>
                   ) : (
@@ -2450,7 +2450,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         Upgrade to £{(selectedClaimLimit + 1000).toLocaleString()} per claim
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
-                        Just £5/mo × 12 payments
+                        Just £{paymentType === '36months' ? 15 : paymentType === '24months' ? 10 : 5}/month × 12 payments
                       </div>
                     </>
                   )}
