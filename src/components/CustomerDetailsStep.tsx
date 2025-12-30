@@ -1752,7 +1752,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         {/* OPTION A: Pay Monthly (Bumper) - Show first */}
                         <div 
                           onClick={() => setPaymentMethod('bumper')}
-                          className={`relative rounded-xl cursor-pointer transition-all duration-300 w-full ${
+                          className={`relative rounded-xl cursor-pointer transition-all duration-300 w-full flex flex-col ${
                             paymentMethod === 'bumper' 
                               ? 'shadow-[0_0_15px_rgba(243,156,18,0.4)]' 
                               : 'hover:shadow-md'
@@ -1792,8 +1792,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             <h4 style={{ fontSize: '20px', fontWeight: 'bold', color: '#333' }}>Pay Monthly</h4>
                           </Label>
 
-                          {/* Price Display */}
-                          <div className="mb-4">
+                          {/* Price Display - Fixed height for alignment */}
+                          <div className="mb-4 min-h-[72px]">
                             {(() => {
                               const discountedMonthly = Math.floor(discountedBumperPrice / 12);
                               const monthlyTotal = discountedMonthly * 12;
@@ -1814,8 +1814,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             })()}
                           </div>
 
-                          {/* Features - GREEN TICKS */}
-                          <div className="space-y-2 mb-4">
+                          {/* Features - GREEN TICKS - Fixed height for alignment */}
+                          <div className="space-y-2 mb-4 min-h-[84px] flex-grow">
                             <div className="flex items-center gap-2" style={{ fontSize: '14px', color: '#333' }}>
                               <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
                               <span>Soft search only</span>
@@ -1830,7 +1830,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             </div>
                           </div>
 
-                          {/* CTA inside box - DEDICATED BUMPER HANDLER */}
+                          {/* CTA Container - mt-auto pushes to bottom */}
+                          <div className="mt-auto">
                           <Button
                             type="button"
                             onClick={async (e) => {
@@ -1971,6 +1972,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           >
                             {isLoadingBumper ? 'Processing...' : 'Complete checkout'}
                           </Button>
+                          </div>
 
                           {/* Powered By */}
                           <div className="text-center pt-3 border-t mt-4">
@@ -1982,7 +1984,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         {/* OPTION B: Pay in Full (Stripe) */}
                         <div 
                           onClick={() => setPaymentMethod('stripe')}
-                          className={`relative rounded-xl cursor-pointer transition-all duration-300 w-full ${
+                          className={`relative rounded-xl cursor-pointer transition-all duration-300 w-full flex flex-col ${
                             paymentMethod === 'stripe' 
                               ? 'shadow-[0_0_15px_rgba(39,174,96,0.4)]' 
                               : 'hover:shadow-md'
@@ -2022,8 +2024,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             <h4 style={{ fontSize: '20px', fontWeight: 'bold', color: '#333' }}>Pay in Full</h4>
                           </Label>
 
-                          {/* Price Display */}
-                          <div className="mb-4">
+                          {/* Price Display - Fixed height for alignment */}
+                          <div className="mb-4 min-h-[72px]">
                             {(() => {
                               const originalPrice = bumperTotalPrice;
                               const finalStripePrice = discountedStripePrice;
@@ -2032,7 +2034,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                 <div>
                                   <div style={{ fontWeight: 'bold' }}>
                                     <span style={{ fontSize: '16px', color: '#E53E3E', textDecoration: 'line-through' }}>£{originalPrice}</span>
-                                    <span style={{ fontSize: '14px', color: '#27AE60', marginLeft: '8px' }}>now</span>
+                                    <span style={{ fontSize: '14px', color: '#000', marginLeft: '8px' }}>Now</span>
                                     <span style={{ fontSize: '28px', color: '#000', marginLeft: '8px' }}>£{finalStripePrice}</span>
                                   </div>
                                 </div>
@@ -2040,8 +2042,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             })()}
                           </div>
 
-                          {/* Features - GREEN TICKS */}
-                          <div className="space-y-2 mb-4">
+                          {/* Features - GREEN TICKS - Fixed height for alignment */}
+                          <div className="space-y-2 mb-4 min-h-[84px] flex-grow">
                             {(() => {
                               // Check if any fixed discount is applied
                               const hasFixedDiscount = fixedDiscounts.length > 0;
@@ -2075,7 +2077,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             </div>
                           </div>
 
-                          {/* CTA inside box - DEDICATED STRIPE HANDLER */}
+                          {/* CTA Container - mt-auto pushes to bottom */}
+                          <div className="mt-auto">
                           <Button
                             type="button"
                             onClick={async (e) => {
@@ -2125,6 +2128,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           >
                             {isLoadingStripe ? 'Processing...' : 'Complete checkout'}
                           </Button>
+                          </div>
 
                           {/* Powered By */}
                           <div className="text-center pt-3 border-t mt-4">
