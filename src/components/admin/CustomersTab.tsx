@@ -2247,6 +2247,7 @@ export const CustomersTab = () => {
               <TableHead>Payment Method</TableHead>
               <TableHead>Vol. Excess</TableHead>
               <TableHead>Claim Limit</TableHead>
+              <TableHead>Claims Made</TableHead>
               <TableHead>Claims Paid</TableHead>
               <TableHead>Labour Rate</TableHead>
               <TableHead>Tags</TableHead>
@@ -3394,7 +3395,14 @@ Please log in and change your password after first login.`;
                            customerEmail={customer.email}
                            customerName={customer.name}
                            vehicleReg={customer.registration_plate}
-                           compact={true}
+                           showOnly="claimsMade"
+                         />
+                       </TableCell>
+                       <TableCell>
+                         <CustomerClaimsSummary
+                           customerEmail={customer.email}
+                           vehicleReg={customer.registration_plate}
+                           showOnly="claimsPaid"
                          />
                        </TableCell>
                        <TableCell>
