@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe } from 'lucide-react';
+import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -85,6 +85,12 @@ const SortableTab: React.FC<SortableTabProps> = ({ tab, isActive, onClick }) => 
 };
 
 const defaultTabs: Tab[] = [
+  {
+    id: 'new-leads',
+    label: 'New Leads',
+    icon: Target,
+    description: 'Manage sales pipeline and lead assignments'
+  },
   {
     id: 'get-quote',
     label: 'Send a Quote',
@@ -219,7 +225,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     
     if (userRole === 'sales') {
       // Sales team sees only customer-facing tabs
-      const salesTabIds = ['customers', 'abandoned-carts', 'contact', 'claims', 'get-quote'];
+      const salesTabIds = ['new-leads', 'customers', 'abandoned-carts', 'contact', 'claims', 'get-quote'];
       return defaultTabs.filter(tab => salesTabIds.includes(tab.id));
     }
     
