@@ -1754,17 +1754,32 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           onClick={() => setPaymentMethod('bumper')}
                           className={`relative rounded-xl cursor-pointer transition-all duration-300 w-full ${
                             paymentMethod === 'bumper' 
-                              ? 'shadow-[0_0_15px_rgba(249,115,22,0.4)]' 
+                              ? 'shadow-[0_0_15px_rgba(243,156,18,0.4)]' 
                               : 'hover:shadow-md'
                           }`}
                           style={{
-                            backgroundColor: '#FFF4E6',
-                            border: '1px solid #F5CBA7',
-                            padding: '16px'
+                            backgroundColor: '#FFFFFF',
+                            border: '2px solid #F39C12',
+                            padding: '20px'
                           }}
                         >
+                          {/* 0% APR Badge */}
+                          <div 
+                            className="absolute -top-3 left-4"
+                            style={{
+                              backgroundColor: '#F39C12',
+                              color: '#FFF',
+                              fontSize: '12px',
+                              fontWeight: 'bold',
+                              borderRadius: '12px',
+                              padding: '4px 12px'
+                            }}
+                          >
+                            0% APR
+                          </div>
+
                           {/* Radio Button */}
-                          <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-start justify-between mb-3 mt-2">
                             <RadioGroupItem 
                               value="bumper" 
                               id="bumper-option" 
@@ -1773,23 +1788,26 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           </div>
 
                           {/* Main Heading */}
-                          <Label htmlFor="bumper-option" className="block cursor-pointer mb-2">
-                            <h4 style={{ fontSize: '18px', fontWeight: 'bold', color: '#333' }}>Pay Monthly</h4>
+                          <Label htmlFor="bumper-option" className="block cursor-pointer mb-3">
+                            <h4 style={{ fontSize: '20px', fontWeight: 'bold', color: '#333' }}>Pay Monthly</h4>
                           </Label>
 
                           {/* Price Display */}
-                          <div className="mb-3">
+                          <div className="mb-4">
                             {(() => {
                               const discountedMonthly = Math.floor(discountedBumperPrice / 12);
                               const monthlyTotal = discountedMonthly * 12;
                               
                               return (
                                 <div>
+                                  <div style={{ fontSize: '16px', color: '#666' }}>
+                                    Total: £{monthlyTotal}
+                                  </div>
                                   <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#000' }}>
                                     £{discountedMonthly}/month
                                   </div>
                                   <div style={{ fontSize: '14px', color: '#666' }}>
-                                    (12 months – Total £{monthlyTotal} – 0% APR)
+                                    (0% APR, 12 payments)
                                   </div>
                                 </div>
                               );
@@ -1797,18 +1815,18 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           </div>
 
                           {/* Features - GREEN TICKS */}
-                          <div className="space-y-1.5 mb-3">
-                            <div className="flex items-center gap-2 text-sm">
+                          <div className="space-y-2 mb-4">
+                            <div className="flex items-center gap-2" style={{ fontSize: '14px', color: '#333' }}>
                               <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                              <span className="text-black font-medium">Only 12 easy payments</span>
+                              <span>Only 12 easy payments</span>
                             </div>
-                            <div className="flex items-center gap-2 text-sm">
+                            <div className="flex items-center gap-2" style={{ fontSize: '14px', color: '#333' }}>
                               <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                              <span className="text-black font-medium">No impact on credit score</span>
+                              <span>No impact on credit score</span>
                             </div>
-                            <div className="flex items-center gap-2 text-sm">
+                            <div className="flex items-center gap-2" style={{ fontSize: '14px', color: '#333' }}>
                               <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                              <span className="text-black font-medium">0% interest, no hidden fees</span>
+                              <span>0% interest, no hidden fees</span>
                             </div>
                           </div>
 
@@ -1944,14 +1962,20 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               }
                             }}
                             disabled={isLoadingStripe || isLoadingBumper}
-                            className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-orange-500 hover:bg-orange-600 text-white text-sm disabled:opacity-50"
+                            className="w-full rounded-lg transition-colors shadow-lg text-white disabled:opacity-50"
+                            style={{
+                              backgroundColor: '#F39C12',
+                              fontSize: '16px',
+                              fontWeight: 'bold',
+                              padding: '12px'
+                            }}
                           >
                             {isLoadingBumper ? 'Processing...' : 'Complete checkout'}
                           </Button>
 
                           {/* Powered By */}
-                          <div className="text-center pt-2 border-t mt-3">
-                            <span className="text-xs text-black block mb-1">Powered by</span>
+                          <div className="text-center pt-3 border-t mt-4">
+                            <span className="text-xs text-gray-500 block mb-1">Powered by</span>
                             <img src={bumperLogo} alt="Bumper" className="h-5 mx-auto" />
                           </div>
                         </div>
@@ -1965,9 +1989,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               : 'hover:shadow-md'
                           }`}
                           style={{
-                            backgroundColor: '#E8F8F5',
-                            border: '1px solid #A9DFBF',
-                            padding: '16px'
+                            backgroundColor: '#FFFFFF',
+                            border: '2px solid #27AE60',
+                            padding: '20px'
                           }}
                         >
                           {/* Best Value Badge */}
@@ -1978,8 +2002,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               color: '#FFF',
                               fontSize: '12px',
                               fontWeight: 'bold',
-                              borderRadius: '4px',
-                              padding: '4px 8px'
+                              borderRadius: '12px',
+                              padding: '4px 12px'
                             }}
                           >
                             BEST VALUE
@@ -1995,24 +2019,23 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           </div>
 
                           {/* Main Heading */}
-                          <Label htmlFor="stripe-option" className="block cursor-pointer mb-2">
-                            <h4 style={{ fontSize: '18px', fontWeight: 'bold', color: '#333' }}>Pay in Full</h4>
+                          <Label htmlFor="stripe-option" className="block cursor-pointer mb-3">
+                            <h4 style={{ fontSize: '20px', fontWeight: 'bold', color: '#333' }}>Pay in Full</h4>
                           </Label>
 
                           {/* Price Display */}
-                          <div className="mb-3">
+                          <div className="mb-4">
                             {(() => {
                               const originalPrice = bumperTotalPrice;
                               const finalStripePrice = discountedStripePrice;
-                              const savings = originalPrice - finalStripePrice;
                               
                               return (
                                 <div>
-                                  <div style={{ fontSize: '26px', fontWeight: 'bold', color: '#000' }}>
+                                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#000' }}>
                                     £{finalStripePrice}
                                   </div>
                                   <div style={{ fontSize: '14px', color: '#27AE60' }}>
-                                    Save 10% (£{savings} off original £{originalPrice})
+                                    (£{originalPrice} → £{finalStripePrice} with extra 10% off)
                                   </div>
                                 </div>
                               );
@@ -2020,7 +2043,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                           </div>
 
                           {/* Features - GREEN TICKS */}
-                          <div className="space-y-1.5 mb-3">
+                          <div className="space-y-2 mb-4">
                             {(() => {
                               // Check if any fixed discount is applied
                               const hasFixedDiscount = fixedDiscounts.length > 0;
@@ -2032,9 +2055,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               const hasPromoCode = appliedDiscountCodes.length > 0;
                               
                               return (
-                                <div className="flex items-center gap-2 text-sm">
+                                <div className="flex items-center gap-2" style={{ fontSize: '14px', color: '#333' }}>
                                   <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                                  <span className="text-black font-medium">
+                                  <span>
                                     {hasFixedDiscount 
                                       ? `10% off + £${fixedDiscountAmount} promo` 
                                       : (hasPromoCode && savingsPercent > 10 
@@ -2044,13 +2067,13 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                 </div>
                               );
                             })()}
-                            <div className="flex items-center gap-2 text-sm">
+                            <div className="flex items-center gap-2" style={{ fontSize: '14px', color: '#333' }}>
                               <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                              <span className="text-black font-medium">Immediate cover</span>
+                              <span>Immediate cover</span>
                             </div>
-                            <div className="flex items-center gap-2 text-sm">
+                            <div className="flex items-center gap-2" style={{ fontSize: '14px', color: '#333' }}>
                               <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                              <span className="text-black font-medium">No monthly payments</span>
+                              <span>No monthly payments</span>
                             </div>
                           </div>
 
@@ -2094,14 +2117,20 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               await processStripeCheckout();
                             }}
                             disabled={isLoadingStripe || isLoadingBumper}
-                            className="w-full font-bold py-2.5 rounded-lg transition-colors shadow-lg bg-green-600 hover:bg-green-700 text-white text-sm disabled:opacity-50"
+                            className="w-full rounded-lg transition-colors shadow-lg text-white disabled:opacity-50 hover:opacity-90"
+                            style={{
+                              backgroundColor: '#27AE60',
+                              fontSize: '16px',
+                              fontWeight: 'bold',
+                              padding: '12px'
+                            }}
                           >
                             {isLoadingStripe ? 'Processing...' : 'Complete checkout'}
                           </Button>
 
                           {/* Powered By */}
-                          <div className="text-center pt-2 border-t mt-3">
-                            <span className="text-xs text-black block mb-1">Powered by</span>
+                          <div className="text-center pt-3 border-t mt-4">
+                            <span className="text-xs text-gray-500 block mb-1">Powered by</span>
                             <img src={stripeLogo} alt="Stripe" className="h-5 mx-auto" />
                           </div>
                         </div>
