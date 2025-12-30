@@ -195,7 +195,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
                     Your cover is now £3,000 per claim 🚀
                   </div>
                   <div className="text-xs text-green-600 mt-1">
-                    Just £{boostPrice}/mo × 12 payments
+                    Just £{boostPrice}/month × 12 payments
                   </div>
                 </>
               ) : (
@@ -207,7 +207,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
                     Upgrade to £3,000 per claim
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    Just £{boostPrice}/mo × 12 payments
+                    Just £{boostPrice}/month × 12 payments
                   </div>
                 </>
               )}
