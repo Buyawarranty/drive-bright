@@ -24,6 +24,7 @@ interface CustomerClaimsSummaryProps {
   vehicleReg?: string;
   onClaimAdded?: () => void;
   compact?: boolean;
+  showOnly?: 'claimsMade' | 'claimsPaid'; // For separate column display
 }
 
 export const CustomerClaimsSummary: React.FC<CustomerClaimsSummaryProps> = ({
@@ -32,7 +33,8 @@ export const CustomerClaimsSummary: React.FC<CustomerClaimsSummaryProps> = ({
   customerName,
   vehicleReg,
   onClaimAdded,
-  compact = false
+  compact = false,
+  showOnly
 }) => {
   const [claims, setClaims] = useState<Claim[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,7 +108,43 @@ export const CustomerClaimsSummary: React.FC<CustomerClaimsSummaryProps> = ({
     );
   }
 
-  // Compact view for table columns
+  // Single metric view for separate columns
+  if (showOnly === 'claimsMade') {
+    return (
+      <div className="flex flex-col gap-1">
+        <Badge variant="outline" className="font-mono">
+          {totalClaims} claim{totalClaims !== 1 ? 's' : ''}
+        </Badge>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 text-xs px-2"
+          onClick={() => setShowAddDialog(true)}
+        >
+          <Plus className="w-3 h-3 mr-1" />
+          Add Claim
+        </Button>
+        <AddClaimDialog
+          open={showAddDialog}
+          onOpenChange={setShowAddDialog}
+          customerEmail={customerEmail}
+          customerName={customerName}
+          vehicleReg={vehicleReg}
+          onClaimAdded={handleClaimAdded}
+        />
+      </div>
+    );
+  }
+
+  if (showOnly === 'claimsPaid') {
+    return (
+      <Badge className="bg-green-100 text-green-700 font-mono">
+        £{totalPaid.toLocaleString()}
+      </Badge>
+    );
+  }
+
+  // Compact view for table columns (legacy - shows both)
   if (compact) {
     return (
       <div className="flex flex-col gap-1">
