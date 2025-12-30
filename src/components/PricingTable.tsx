@@ -2397,7 +2397,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 "relative p-4 rounded-lg cursor-pointer transition-all border-2 min-h-[88px] flex items-center",
                 boostAddon
                   ? "bg-green-50 border-green-500 ring-2 ring-green-400"
-                  : "bg-cyan-50 border-cyan-200 hover:border-cyan-400"
+                  : "bg-orange-50 border-orange-200 hover:border-orange-400"
               )}
             >
               <div className="flex items-start justify-between w-full">
