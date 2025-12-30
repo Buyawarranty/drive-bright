@@ -53,10 +53,10 @@ export const DURATION_MONTHS = {
 
 // Labour rate adjustment per month (relative to £50/hr base)
 export const LABOUR_RATE_MONTHLY_ADJUSTMENT: Record<number, number> = {
-  40: -5,  // £5 less per month
   50: 0,   // Base rate, no adjustment
   70: 4,   // £4 more per month
-  100: 8   // £8 more per month
+  100: 8,  // £8 more per month
+  200: 24  // £24 more per month (for main dealers and specialists)
 };
 
 // Boost claim limit adds £5/month
