@@ -776,7 +776,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
   // Memoized labour rate per-month adjustment (for display in UI)
   const labourRateDisplayAdjustment = useMemo(() => {
-    return selectedLabourRate === 40 ? -5 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
+    return selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
   }, [selectedLabourRate]);
 
   // Memoized boost display adjustment (£5/month)
@@ -920,12 +920,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
       
       // Calculate labour rate display adjustment (annual)
       let labourRateAdjust = 0;
-      if (selectedLabourRate === 40) {
-        labourRateAdjust = -3 * 12; // -£36 annually
-      } else if (selectedLabourRate === 70) {
+      if (selectedLabourRate === 70) {
         labourRateAdjust = 4 * 12; // +£48 annually
       } else if (selectedLabourRate === 100) {
         labourRateAdjust = 8 * 12; // +£96 annually
+      } else if (selectedLabourRate === 200) {
+        labourRateAdjust = 24 * 12; // +£288 annually
       }
       // £50/hr is the default with no adjustment
       
@@ -2087,23 +2087,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <button
-              onClick={() => setSelectedLabourRate(40)}
-              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                selectedLabourRate === 40
-                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
-              }`}
-            >
-              <span className="absolute -top-3 right-4 bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">BEST VALUE</span>
-              <div className="mb-2">
-                <span className="text-2xl font-bold text-foreground">£40 </span>
-                <span className="text-sm font-medium text-foreground">per hour</span>
-              </div>
-              <p className="text-xl font-bold text-black">Local Garages</p>
-              <p className="text-xs text-muted-foreground mt-1">Affordable option for smaller garages.</p>
-            </button>
-            
-            <button
               onClick={() => setSelectedLabourRate(50)}
               className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
                 selectedLabourRate === 50
@@ -2111,13 +2094,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
               }`}
             >
-              <span className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">MOST POPULAR</span>
+              <span className="absolute -top-3 right-4 bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">BEST VALUE</span>
               <div className="mb-2">
                 <span className="text-2xl font-bold text-foreground">£50 </span>
                 <span className="text-sm font-medium text-foreground">per hour</span>
               </div>
-              <p className="text-xl font-bold text-black">Independent Garages</p>
-              <p className="text-xs text-muted-foreground mt-1">Ideal for your trusted local garage.</p>
+              <p className="text-xl font-bold text-black">Local Garages</p>
+              <p className="text-xs text-muted-foreground mt-1">Affordable option for smaller garages.</p>
             </button>
             
             <button
@@ -2128,12 +2111,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
               }`}
             >
+              <span className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">MOST POPULAR</span>
               <div className="mb-2">
                 <span className="text-2xl font-bold text-foreground">£70 </span>
                 <span className="text-sm font-medium text-foreground">per hour</span>
               </div>
-              <p className="text-xl font-bold text-black">Approved Garages</p>
-              <p className="text-xs text-muted-foreground mt-1">Covers most garages nationwide.</p>
+              <p className="text-xl font-bold text-black">Independent Garages</p>
+              <p className="text-xs text-muted-foreground mt-1">Ideal for your trusted local garage.</p>
             </button>
             
             <button
@@ -2146,6 +2130,22 @@ const PricingTable: React.FC<PricingTableProps> = ({
             >
               <div className="mb-2">
                 <span className="text-2xl font-bold text-foreground">£100 </span>
+                <span className="text-sm font-medium text-foreground">per hour</span>
+              </div>
+              <p className="text-xl font-bold text-black">Approved Garages</p>
+              <p className="text-xs text-muted-foreground mt-1">Covers most garages nationwide.</p>
+            </button>
+            
+            <button
+              onClick={() => setSelectedLabourRate(200)}
+              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                selectedLabourRate === 200
+                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
+                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
+              }`}
+            >
+              <div className="mb-2">
+                <span className="text-2xl font-bold text-foreground">£200 </span>
                 <span className="text-sm font-medium text-foreground">per hour</span>
               </div>
               <p className="text-xl font-bold text-black">Expert Garages</p>
