@@ -1665,7 +1665,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               
               {/* Parts & components button - top right on desktop */}
               <CollapsibleTrigger asChild>
-                <button className="hidden md:flex w-full max-w-md mx-auto items-center justify-center gap-2 bg-black hover:bg-gray-800 rounded-lg px-6 py-3 transition-colors group cursor-pointer">
+                <button className="hidden md:flex w-full max-w-xs mx-auto items-center justify-center gap-2 bg-black hover:bg-gray-800 rounded-lg px-6 py-3 transition-colors group cursor-pointer">
                   <Wrench className="w-5 h-5 text-white" />
                   <span className="text-base font-medium text-white whitespace-nowrap">View parts list</span>
                   <ChevronDown className="w-5 h-5 text-white transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
