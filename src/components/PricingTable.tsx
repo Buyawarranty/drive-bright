@@ -1376,7 +1376,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   'Total cover up to vehicle value',
                   'Labour costs included',
                   'Fault diagnostics',
-                  'Vehicle recovery claim-back',
+                  { text: 'Vehicle recovery', isExtra: true },
                   'Consequential damage cover',
                   'Fast claims process',
                   'Choose your own garage',
@@ -1396,9 +1396,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   'Total cover up to vehicle value',
                   'Labour costs included',
                   'Fault diagnostics',
-                  'Vehicle recovery claim-back',
-                  'Europe repair cover',
-                  'Vehicle rental cover',
+                  { text: 'Vehicle recovery', isExtra: true },
+                  { text: 'Europe repair cover', isExtra: true },
+                  { text: 'Vehicle rental cover', isExtra: true },
                   'Consequential damage cover',
                   'Fast claims process',
                   'Choose your own garage',
@@ -1577,15 +1577,21 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <CollapsibleContent className="mb-4">
                       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
                         {duration.features.map((feature, idx) => {
-                          const isExclusion = feature.toLowerCase().includes('pre-existing faults');
+                          const featureText = typeof feature === 'string' ? feature : feature.text;
+                          const isExtra = typeof feature === 'object' && feature.isExtra;
+                          const isExclusion = featureText.toLowerCase().includes('pre-existing faults');
                           return (
                             <div key={idx} className="flex items-start gap-2">
                               {isExclusion ? (
                                 <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                              ) : isExtra ? (
+                                <span className="text-base mt-0 flex-shrink-0">⭐</span>
                               ) : (
                                 <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                               )}
-                              <span className="text-sm text-gray-700">{feature}</span>
+                              <span className="text-sm text-gray-700">
+                                {featureText}{isExtra && ' (Extra)'}
+                              </span>
                             </div>
                           );
                         })}
