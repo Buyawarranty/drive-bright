@@ -1642,7 +1642,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <div className="flex items-center gap-2 sm:gap-3 cursor-pointer group">
                   <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-black flex-shrink-0" />
                   <h2 className="text-lg sm:text-xl font-semibold text-black">
-                    Instant all-in-one cover
+                    Comprehensive Cover
                   </h2>
                   <ChevronDown className="w-5 h-5 sm:w-8 sm:h-8 text-black transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
                 </div>
@@ -1650,10 +1650,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
               
               {/* Parts & components button - top right on desktop */}
               <CollapsibleTrigger asChild>
-                <button className="hidden md:inline-flex items-center gap-3 bg-brand-orange hover:bg-brand-orange/90 rounded-lg px-6 py-4 shadow-md transition-colors group cursor-pointer">
-                  <Info className="w-5 h-5 text-white" />
-                  <span className="text-lg font-medium text-white whitespace-nowrap">Parts & components list</span>
-                  <ChevronDown className="w-5 h-5 text-white transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                <button className="hidden md:inline-flex items-center gap-2 border border-gray-300 hover:border-gray-400 hover:bg-gray-50 rounded-lg px-4 py-2 transition-colors group cursor-pointer">
+                  <Info className="w-4 h-4 text-gray-600" />
+                  <span className="text-sm font-medium text-black whitespace-nowrap">View parts list</span>
+                  <ChevronDown className="w-4 h-4 text-gray-600 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
                 </button>
               </CollapsibleTrigger>
             </div>
@@ -1684,10 +1684,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
             {/* Mobile-only Parts & components button */}
             <CollapsibleTrigger asChild>
               <button className="md:hidden w-full flex justify-center items-center py-2 mb-6 group cursor-pointer">
-                <div className="inline-flex items-center gap-3 bg-brand-orange hover:bg-brand-orange/90 rounded-lg px-7 py-4 shadow-md transition-colors">
-                  <Info className="w-5 h-5 text-white" />
-                  <span className="text-lg font-medium text-white whitespace-nowrap">Parts & components list</span>
-                  <ChevronDown className="w-5 h-5 text-white transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
+                <div className="inline-flex items-center gap-2 border border-gray-300 hover:border-gray-400 hover:bg-gray-50 rounded-lg px-4 py-2 transition-colors">
+                  <Info className="w-4 h-4 text-gray-600" />
+                  <span className="text-sm font-medium text-black whitespace-nowrap">View parts list</span>
+                  <ChevronDown className="w-4 h-4 text-gray-600 transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
                 </div>
               </button>
             </CollapsibleTrigger>
