@@ -1806,7 +1806,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                   <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#000' }}>
                                     £{discountedMonthly}/month
                                   </div>
-                                  <div style={{ fontSize: '14px', color: '#666' }}>
+                                  <div style={{ fontSize: '14px', color: '#666', fontWeight: 'bold' }}>
                                     Only 12 payments
                                   </div>
                                 </div>
@@ -2038,7 +2038,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                     <span style={{ fontSize: '14px', color: '#000', marginLeft: '8px' }}>Now</span>
                                     <span style={{ fontSize: '28px', color: '#000', marginLeft: '8px' }}>£{finalStripePrice}</span>
                                   </div>
-                                  <div style={{ fontSize: '14px', color: '#666', marginTop: '2px' }}>
+                                  <div style={{ fontSize: '14px', color: '#666', marginTop: '2px', fontWeight: 'bold' }}>
                                     You save £{savingsAmount}
                                   </div>
                                 </div>
