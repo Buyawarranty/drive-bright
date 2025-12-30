@@ -187,9 +187,7 @@ export const StartDatePicker: React.FC<StartDatePickerProps> = ({
       {/* Helper Text */}
       {!hideHelperText && (
         <p className="text-xs text-gray-500 leading-relaxed">
-          Start your warranty today or schedule it for any date up to 365 days ahead.
-          <br />
-          <span className="text-green-600 font-medium">✔ Instant confirmation! 🔔</span>
+          Pay today, coverage starts on your chosen date.
         </p>
       )}
     </div>
