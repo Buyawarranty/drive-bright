@@ -330,9 +330,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
 
       {/* Sidebar */}
       <div className={`
-        fixed left-0 top-0 h-full w-64 bg-white shadow-lg border-r z-50 transform transition-transform duration-300 ease-in-out
+        fixed left-0 top-[104px] h-[calc(100vh-104px)] w-64 bg-white shadow-lg border-r z-40 transform transition-transform duration-300 ease-in-out overflow-hidden
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-        lg:translate-x-0 lg:z-10
+        lg:translate-x-0
       `}>
         <div className="p-4 lg:p-6 border-b">
           <h2 className="text-lg lg:text-xl font-bold text-gray-800">Admin Panel</h2>
@@ -344,7 +344,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <nav className="mt-6 overflow-y-auto h-[calc(100vh-160px)] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+          <nav className="mt-4 overflow-y-auto h-[calc(100%-100px)] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-4">
             <SortableContext
               items={tabs.map(tab => tab.id)}
               strategy={verticalListSortingStrategy}
