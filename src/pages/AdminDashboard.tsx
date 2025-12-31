@@ -64,21 +64,19 @@ const AdminDashboard = () => {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useAdminNotifications();
 
   useEffect(() => {
-    checkAdminAccess();
+    // Only run check when auth is done loading
+    if (!authLoading) {
+      checkAdminAccess();
+    }
   }, [session, authLoading]);
 
   const checkAdminAccess = async () => {
     console.log('🔍 checkAdminAccess called - authLoading:', authLoading, 'session:', !!session);
     
-    // Wait for auth to finish loading
-    if (authLoading) {
-      console.log('⏳ Auth still loading, waiting...');
-      return;
-    }
-
     // If no session after auth loading is complete, redirect to auth
     if (!session?.user) {
       console.log('❌ No session found, redirecting to auth');
+      setIsCheckingRole(false);
       navigate('/auth', { replace: true });
       return;
     }
@@ -99,6 +97,7 @@ const AdminDashboard = () => {
       if (error || !data || !['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales'].includes(data.role)) {
         console.error('❌ Access denied - not an admin user', error, data);
         console.log('🏠 User has no admin role, redirecting to homepage');
+        setIsCheckingRole(false);
         navigate('/', { replace: true });
         return;
       }
@@ -136,6 +135,7 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       console.error('💥 Error checking admin access:', error);
+      setIsCheckingRole(false);
       navigate('/', { replace: true });
     }
   };
