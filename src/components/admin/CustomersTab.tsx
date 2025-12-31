@@ -2262,6 +2262,7 @@ export const CustomersTab = () => {
               <TableHead>WarType</TableHead>
               <TableHead>Dur.</TableHead>
               <TableHead>Start Date</TableHead>
+              <TableHead className="bg-amber-50">Future Activation</TableHead>
               <TableHead>Expiry Date</TableHead>
               <TableHead>Payment Method</TableHead>
               <TableHead>Vol. Excess</TableHead>
@@ -2281,7 +2282,7 @@ export const CustomersTab = () => {
           <TableBody>
             {filteredCustomers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={20} className="text-center py-8">
+                <TableCell colSpan={29} className="text-center py-8">
                   <div className="space-y-4">
                     <AlertCircle className="h-12 w-12 text-gray-400 mx-auto" />
                     <div>
@@ -3396,6 +3397,42 @@ Please log in and change your password after first login.`;
                           );
                         }
                         return <span className="text-gray-400">N/A</span>;
+                      })()}
+                    </TableCell>
+                    {/* Future Activation Column */}
+                    <TableCell className="text-center">
+                      {(() => {
+                        const startDate = customer.policy_start_date || customer.customer_policies?.[0]?.policy_start_date || customer.signup_date;
+                        const scheduledFor = customer.warranties_2000_scheduled_for;
+                        const w2000Status = customer.customer_policies?.[0]?.warranties_2000_status;
+                        const isFutureActivation = startDate && new Date(startDate) > new Date();
+                        const isScheduled = w2000Status === 'scheduled' && scheduledFor;
+                        
+                        if (isFutureActivation || isScheduled) {
+                          const activationDate = scheduledFor || startDate;
+                          const daysUntil = activationDate ? Math.ceil((new Date(activationDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0;
+                          
+                          return (
+                            <div className="bg-amber-100 border-2 border-amber-400 rounded-lg px-3 py-2 inline-block shadow-sm">
+                              <div className="flex items-center gap-1.5 text-amber-900 font-bold text-xs uppercase tracking-wide">
+                                <Clock className="h-3.5 w-3.5" />
+                                Future Activation
+                              </div>
+                              <div className="text-amber-800 font-semibold text-sm mt-1">
+                                {format(new Date(activationDate), 'dd MMM yyyy')}
+                              </div>
+                              <div className="text-amber-600 text-xs mt-0.5">
+                                {daysUntil > 0 ? `${daysUntil} day${daysUntil !== 1 ? 's' : ''} until activation` : 'Activates today'}
+                              </div>
+                              <div className="mt-1.5 flex items-center gap-1 text-xs text-amber-700">
+                                <AlertCircle className="h-3 w-3" />
+                                <span>Do not activate early</span>
+                              </div>
+                            </div>
+                          );
+                        }
+                        
+                        return <span className="text-gray-400 text-xs">—</span>;
                       })()}
                     </TableCell>
                     <TableCell className="text-center">
