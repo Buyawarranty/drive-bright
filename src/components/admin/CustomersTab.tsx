@@ -803,6 +803,7 @@ export const CustomersTab = () => {
       setDeletedLoading(true);
       console.log('🔍 Fetching deleted customers...');
       
+      // First fetch deleted customers
       const { data: customersData, error: customersError } = await supabase
         .from('customers')
         .select(`
@@ -831,12 +832,6 @@ export const CustomersTab = () => {
             user_id,
             customer_id,
             email
-          ),
-          admin_users!deleted_by(
-            id,
-            first_name,
-            last_name,
-            email
           )
         `)
         .eq('is_deleted', true)
@@ -847,13 +842,29 @@ export const CustomersTab = () => {
         throw customersError;
       }
 
-      const processedData = customersData?.map((customer: any) => ({
-        ...customer,
-        warranty_expiry: customer.customer_policies?.[0]?.policy_end_date || null,
-        warranty_reference_number: customer.warranty_reference_number || null,
-        policy_number: customer.customer_policies?.[0]?.policy_number || null,
-        policy_status: customer.customer_policies?.[0]?.status || null
-      })) || [];
+      // Fetch admin users separately to match deleted_by
+      const { data: adminUsersData } = await supabase
+        .from('admin_users')
+        .select('id, user_id, first_name, last_name, email');
+
+      // Create a map of user_id to admin user info
+      const adminUserMap = new Map(
+        (adminUsersData || []).map(admin => [admin.user_id, admin])
+      );
+
+      const processedData = customersData?.map((customer: any) => {
+        // Look up the admin user who deleted this customer
+        const deletedByAdmin = customer.deleted_by ? adminUserMap.get(customer.deleted_by) : null;
+        
+        return {
+          ...customer,
+          warranty_expiry: customer.customer_policies?.[0]?.policy_end_date || null,
+          warranty_reference_number: customer.warranty_reference_number || null,
+          policy_number: customer.customer_policies?.[0]?.policy_number || null,
+          policy_status: customer.customer_policies?.[0]?.status || null,
+          admin_users: deletedByAdmin || null
+        };
+      }) || [];
 
       console.log('✅ Found deleted customers:', processedData.length);
       setDeletedCustomers(processedData);
