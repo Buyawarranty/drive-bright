@@ -2016,27 +2016,27 @@ export const CustomersTab = () => {
 
       <Tabs defaultValue="complete" className="w-full">
         <div className="flex items-center gap-2">
-          <TabsList className="grid flex-1 grid-cols-2 bg-transparent gap-2">
+          <TabsList className="flex flex-1 bg-transparent gap-2">
             <TabsTrigger 
               value="complete" 
-              className="bg-blue-50 text-blue-700 border border-blue-200 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-900 data-[state=active]:border-blue-400 data-[state=active]:border-2 data-[state=active]:shadow-sm cursor-pointer"
+              className="flex-1 bg-blue-50 text-blue-700 border border-blue-200 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-900 data-[state=active]:border-blue-400 data-[state=active]:border-2 data-[state=active]:shadow-sm cursor-pointer"
             >
               Active Orders
             </TabsTrigger>
             <TabsTrigger 
               value="incomplete" 
-              className="bg-red-50 text-red-700 border border-red-200 data-[state=active]:bg-red-100 data-[state=active]:text-red-900 data-[state=active]:border-red-400 data-[state=active]:border-2 data-[state=active]:shadow-sm cursor-pointer"
+              className="flex-1 bg-red-50 text-red-700 border border-red-200 data-[state=active]:bg-red-100 data-[state=active]:text-red-900 data-[state=active]:border-red-400 data-[state=active]:border-2 data-[state=active]:shadow-sm cursor-pointer"
             >
               Incomplete Customers
             </TabsTrigger>
+            <TabsTrigger 
+              value="deleted"
+              className="h-9 px-3 bg-amber-50 text-amber-700 border border-amber-200 rounded-md text-xs data-[state=active]:bg-amber-100 data-[state=active]:text-amber-900 data-[state=active]:border-amber-400 data-[state=active]:border-2 data-[state=active]:shadow-sm cursor-pointer flex items-center gap-1"
+            >
+              <Archive className="h-3.5 w-3.5" />
+              Archive
+            </TabsTrigger>
           </TabsList>
-          <TabsTrigger 
-            value="deleted"
-            className="h-9 px-3 bg-amber-50 text-amber-700 border border-amber-200 rounded-md text-xs data-[state=active]:bg-amber-100 data-[state=active]:text-amber-900 data-[state=active]:border-amber-400 data-[state=active]:border-2 data-[state=active]:shadow-sm cursor-pointer flex items-center gap-1"
-          >
-            <Archive className="h-3.5 w-3.5" />
-            Archive
-          </TabsTrigger>
         </div>
 
         <TabsContent value="complete" className="space-y-4">
