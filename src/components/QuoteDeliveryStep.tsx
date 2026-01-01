@@ -214,9 +214,9 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
         <div className="text-center mb-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            ✨ 3 quick details for your quote
+            ✨ Three quick details for your best price
           </h1>
-          <p className="text-gray-700 mt-1">See your best price in a few seconds</p>
+          <p className="text-gray-700 mt-1">See your quote in a few seconds</p>
         </div>
 
         {/* Vehicle Card */}
