@@ -216,11 +216,11 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </div>
         </div>
 
-        {/* Vehicle Details Section - Orange Gradient */}
-        <div className="rounded-xl overflow-hidden mb-2 sm:mb-4" style={{ background: 'linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%)' }}>
-          <div className="p-3 sm:p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              {/* Left: Reg Plate */}
+        {/* Vehicle Details Section - Orange Gradient Header + Labelled Grid */}
+        <div className="rounded-xl overflow-hidden mb-2 sm:mb-4">
+          {/* Orange Header */}
+          <div className="p-3 sm:p-4" style={{ background: 'linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%)' }}>
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="bg-green-500 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-bold text-sm sm:text-lg tracking-wide shadow-md">
                   {vehicleData.regNumber}
@@ -233,32 +233,62 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 </button>
               </div>
               
-              {/* Center: Vehicle Name */}
-              <div className="text-center flex-1">
-                <h3 className="text-white font-bold text-lg sm:text-2xl tracking-wide">
-                  {vehicleData.make?.toUpperCase()} {vehicleData.model?.toUpperCase()}, {vehicleData.year}
-                </h3>
-              </div>
+              <h3 className="text-white font-bold text-base sm:text-xl tracking-wide">
+                {vehicleData.make?.toUpperCase()} {vehicleData.model?.toUpperCase()}, {vehicleData.year}
+              </h3>
               
-              {/* Right: Vehicle Specs */}
-              <div className="flex items-center justify-center sm:justify-end gap-4 sm:gap-6 text-white/90 text-xs sm:text-sm">
+              <div className="hidden sm:flex items-center gap-6 text-white/90 text-sm">
                 {vehicleData.fuelType && (
                   <div className="text-center">
-                    <div className="text-white/70 text-[10px] sm:text-xs uppercase tracking-wide">Fuel Type</div>
+                    <div className="text-white/70 text-xs uppercase tracking-wide">Fuel Type</div>
                     <div className="font-semibold">{vehicleData.fuelType}</div>
                   </div>
                 )}
                 {vehicleData.transmission && (
                   <div className="text-center">
-                    <div className="text-white/70 text-[10px] sm:text-xs uppercase tracking-wide">Transmission</div>
+                    <div className="text-white/70 text-xs uppercase tracking-wide">Transmission</div>
                     <div className="font-semibold">{vehicleData.transmission}</div>
                   </div>
                 )}
-                <div className="text-center">
-                  <div className="text-white/70 text-[10px] sm:text-xs uppercase tracking-wide">Mileage</div>
-                  <div className="font-semibold">{vehicleData.mileage}</div>
-                </div>
               </div>
+            </div>
+          </div>
+          
+          {/* Labelled Vehicle Details Grid */}
+          <div className="bg-gray-50 p-3 sm:p-5 border border-gray-200 border-t-0 rounded-b-xl">
+            <div className="grid grid-cols-3 gap-3 sm:gap-6 text-xs sm:text-sm">
+              <div>
+                <span className="text-gray-500 font-medium">Reg:</span>
+                <div className="font-bold text-gray-900 mt-0.5">{vehicleData.regNumber}</div>
+              </div>
+              {vehicleData.make && (
+                <div>
+                  <span className="text-gray-500 font-medium">Make:</span>
+                  <div className="font-bold text-gray-900 mt-0.5">{vehicleData.make.toUpperCase()}</div>
+                </div>
+              )}
+              {vehicleData.model && (
+                <div>
+                  <span className="text-gray-500 font-medium">Model:</span>
+                  <div className="font-bold text-gray-900 mt-0.5">{vehicleData.model.toUpperCase()}</div>
+                </div>
+              )}
+              {vehicleData.year && (
+                <div>
+                  <span className="text-gray-500 font-medium">Year:</span>
+                  <div className="font-bold text-gray-900 mt-0.5">{vehicleData.year}</div>
+                </div>
+              )}
+              <div>
+                <span className="text-gray-500 font-medium">Mileage:</span>
+                <div className="font-bold text-gray-900 mt-0.5">{vehicleData.mileage}</div>
+              </div>
+              {vehicleData.fuelType && (
+                <div>
+                  <span className="text-gray-500 font-medium">Fuel:</span>
+                  <div className="font-bold text-gray-900 mt-0.5">{vehicleData.fuelType}</div>
+                </div>
+              )}
             </div>
           </div>
           
