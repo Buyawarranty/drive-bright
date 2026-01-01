@@ -10,6 +10,7 @@ export interface Lead {
   id: string;
   first_name: string | null;
   last_name: string | null;
+  full_name: string | null;
   email: string;
   phone: string | null;
   lead_source: LeadSource;
@@ -145,6 +146,7 @@ export const useLeads = () => {
           id: `cart_${cart.id}`,
           first_name: cart.full_name?.split(' ')[0] || null,
           last_name: cart.full_name?.split(' ').slice(1).join(' ') || null,
+          full_name: cart.full_name || null,
           email: cart.email,
           phone: cart.phone,
           lead_source: 'website' as LeadSource,
@@ -186,6 +188,9 @@ export const useLeads = () => {
       // Merge sales leads with abandoned carts
       const salesLeadsWithFlags = (salesLeadsData || []).map((lead: any) => ({
         ...lead,
+        full_name: lead.first_name || lead.last_name 
+          ? `${lead.first_name || ''} ${lead.last_name || ''}`.trim() 
+          : null,
         plan_name: lead.plan_interest,
         payment_type: null,
         step_abandoned: null,
