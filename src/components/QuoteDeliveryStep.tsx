@@ -195,34 +195,6 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
   return (
     <section className="bg-white min-h-screen">
-      {/* Progress Indicator */}
-      <div className="bg-gray-50 border-b border-gray-200">
-        <div className="max-w-2xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold">
-                <Check className="w-4 h-4" />
-              </div>
-              <span className="text-gray-600 hidden sm:inline">Vehicle</span>
-            </div>
-            <div className="flex-1 h-1 bg-green-500 mx-2 sm:mx-4 rounded" />
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">
-                2
-              </div>
-              <span className="text-gray-900 font-medium hidden sm:inline">Your details</span>
-            </div>
-            <div className="flex-1 h-1 bg-gray-200 mx-2 sm:mx-4 rounded" />
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-xs font-bold">
-                3
-              </div>
-              <span className="text-gray-500 hidden sm:inline">Your quote</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="max-w-xl mx-auto px-4 py-6 sm:py-10">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
