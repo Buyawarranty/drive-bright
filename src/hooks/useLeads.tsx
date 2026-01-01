@@ -39,6 +39,12 @@ export interface Lead {
   abandoned_cart_id: string | null;
   created_at: string;
   updated_at: string;
+  // New columns for merged abandoned cart data
+  plan_name: string | null;
+  payment_type: string | null;
+  step_abandoned: number | null;
+  contact_status: string | null;
+  is_from_abandoned_cart: boolean;
   // Joined data
   assigned_user?: {
     id: string;
@@ -90,6 +96,7 @@ export const useLeads = () => {
     try {
       setLoading(true);
       
+      // Fetch sales_leads
       let query = supabase
         .from('sales_leads')
         .select(`
@@ -104,13 +111,98 @@ export const useLeads = () => {
         query = query.in('priority', ['high', 'urgent']);
       }
 
-      const { data, error } = await query;
+      const { data: salesLeadsData, error: salesError } = await query;
+      if (salesError) throw salesError;
 
-      if (error) throw error;
+      // Fetch abandoned carts that are NOT already linked to a sales lead
+      const { data: abandonedCartsData, error: cartsError } = await supabase
+        .from('abandoned_carts')
+        .select('*')
+        .eq('is_converted', false)
+        .order('created_at', { ascending: false });
 
-      // Fetch tags for each lead
+      if (cartsError) throw cartsError;
+
+      // Get IDs of abandoned carts already linked to sales_leads
+      const linkedCartIds = new Set(
+        (salesLeadsData || [])
+          .filter((lead: any) => lead.abandoned_cart_id)
+          .map((lead: any) => lead.abandoned_cart_id)
+      );
+
+      // Get emails already in sales_leads to avoid duplicates
+      const existingEmails = new Set(
+        (salesLeadsData || []).map((lead: any) => lead.email?.toLowerCase())
+      );
+
+      // Convert abandoned carts to lead format (only those not already linked)
+      const cartsAsLeads = (abandonedCartsData || [])
+        .filter((cart: any) => 
+          !linkedCartIds.has(cart.id) && 
+          !existingEmails.has(cart.email?.toLowerCase())
+        )
+        .map((cart: any) => ({
+          id: `cart_${cart.id}`,
+          first_name: cart.full_name?.split(' ')[0] || null,
+          last_name: cart.full_name?.split(' ').slice(1).join(' ') || null,
+          email: cart.email,
+          phone: cart.phone,
+          lead_source: 'website' as LeadSource,
+          status: cart.contact_status === 'contacted' ? 'contacted' as LeadStatus : 'new' as LeadStatus,
+          priority: 'medium' as LeadPriority,
+          priority_score: 0,
+          plan_interest: cart.plan_name,
+          cart_value: null,
+          quote_amount: null,
+          vehicle_reg: cart.vehicle_reg,
+          vehicle_make: cart.vehicle_make,
+          vehicle_model: cart.vehicle_model,
+          vehicle_year: cart.vehicle_year,
+          vehicle_type: cart.vehicle_type,
+          mileage: cart.mileage,
+          assigned_to: cart.contacted_by,
+          assigned_at: cart.last_contacted_at,
+          next_action_type: null,
+          next_action_date: null,
+          follow_up_status: 'none',
+          last_activity_date: cart.updated_at,
+          last_contacted_at: cart.last_contacted_at,
+          notes: cart.contact_notes,
+          converted_at: null,
+          lost_at: null,
+          lost_reason: null,
+          abandoned_cart_id: cart.id,
+          created_at: cart.created_at,
+          updated_at: cart.updated_at,
+          plan_name: cart.plan_name,
+          payment_type: cart.payment_type,
+          step_abandoned: cart.step_abandoned,
+          contact_status: cart.contact_status,
+          is_from_abandoned_cart: true,
+          assigned_user: null,
+          tags: []
+        }));
+
+      // Merge sales leads with abandoned carts
+      const salesLeadsWithFlags = (salesLeadsData || []).map((lead: any) => ({
+        ...lead,
+        plan_name: lead.plan_interest,
+        payment_type: null,
+        step_abandoned: null,
+        contact_status: null,
+        is_from_abandoned_cart: false
+      }));
+
+      // Combine and sort by created_at
+      const allLeads = [...salesLeadsWithFlags, ...cartsAsLeads]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      // Fetch tags for sales leads only
       const leadsWithTags = await Promise.all(
-        (data || []).map(async (lead: any) => {
+        allLeads.map(async (lead: any) => {
+          if (lead.is_from_abandoned_cart) {
+            return lead;
+          }
           const { data: tagData } = await supabase
             .from('lead_tag_assignments')
             .select('tag_id, lead_tags(id, name, color, description)')
