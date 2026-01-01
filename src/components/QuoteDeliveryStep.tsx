@@ -137,7 +137,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       
       const { data: existingLead } = await supabase
         .from('sales_leads')
-        .select('id')
+        .select('id, first_name, phone')
         .eq('email', email.trim().toLowerCase())
         .maybeSingle();
       
@@ -166,11 +166,20 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             last_activity_date: new Date().toISOString()
           });
       } else {
+        // Update existing lead with latest details
         await supabase
           .from('sales_leads')
           .update({ 
+            first_name: firstName.trim() || existingLead.first_name,
+            phone: phone || existingLead.phone,
+            vehicle_reg: vehicleData?.regNumber || null,
+            vehicle_make: vehicleData?.make || null,
+            vehicle_model: vehicleData?.model || null,
+            vehicle_year: vehicleData?.year || null,
+            vehicle_type: vehicleData?.vehicleType || 'car',
+            mileage: vehicleData?.mileage || null,
             last_activity_date: new Date().toISOString(),
-            notes: `Quote re-requested. Vehicle: ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber})`
+            notes: `Quote re-requested. Vehicle: ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber}).`
           })
           .eq('id', existingLead.id);
       }
