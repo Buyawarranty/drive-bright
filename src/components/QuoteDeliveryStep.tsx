@@ -351,7 +351,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               </p>
             ) : (
               <p className="text-gray-500 text-xs mt-1.5">
-                ✨ Add your phone to unlock exclusive discounts.
+                Unlock exclusive discounts and expert advice
               </p>
             )}
           </div>
