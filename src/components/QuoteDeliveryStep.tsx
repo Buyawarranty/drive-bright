@@ -289,9 +289,12 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         {!showContactForm ? (
           <>
             <div className="text-center mb-3 sm:mb-8">
-              <h1 className="text-lg sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-6 leading-tight">
-                How would you like to receive your quote?
+              <h1 className="text-lg sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4 leading-tight">
+                Great, your {vehicleData.make} {vehicleData.model} details are confirmed!
               </h1>
+              <p className="text-sm sm:text-lg text-gray-600">
+                Now let's get your instant warranty quote.
+              </p>
             </div>
 
             <div className="space-y-3 sm:space-y-6 mb-4 sm:mb-8">
