@@ -472,34 +472,10 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 <MileageQuickSelect
                   value={mileageSelection}
                   onChange={handleMileageSelection}
+                  onAutoSubmit={handleGetQuote}
                   error={eligibilityError}
+                  isLoading={isLookingUp}
                 />
-
-                {/* Get Quote Button */}
-                <div className="space-y-2 mt-2">
-                  <Button 
-                    onClick={handleGetQuote}
-                    className={`w-full max-w-56 px-3 sm:px-6 md:px-12 h-[48px] sm:h-[60px] md:h-[66px] text-sm sm:text-lg md:text-xl font-bold rounded-lg transition-all min-w-0 ${
-                      isLookingUp || eligibilityError
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-brand-orange hover:bg-brand-orange/90 text-white animate-cta-enhanced'
-                    }`}
-                    disabled={isLookingUp || !!eligibilityError}
-                  >
-                    {isLookingUp ? (
-                      <>
-                        <span className="hidden sm:inline">Looking up vehicle...</span>
-                        <span className="sm:hidden">Looking up...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="hidden sm:inline">Get my instant quote</span>
-                        <span className="sm:hidden">Get my instant quote</span>
-                        <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
-                      </>
-                    )}
-                  </Button>
-                </div>
               </div>
             </div>
 

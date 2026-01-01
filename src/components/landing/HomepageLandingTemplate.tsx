@@ -303,30 +303,12 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
                       <MileageQuickSelect
                         value={mileageSelection}
                         onChange={handleMileageSelection}
+                        onAutoSubmit={handleRegSubmit}
                         error={mileageError}
+                        isLoading={isLookingUp}
                       />
                     </div>
                   )}
-
-                  {/* CTA Button */}
-                  <Button
-                    onClick={handleRegSubmit}
-                    disabled={isLookingUp || !!mileageError || !!vehicleAgeError}
-                    className="w-full py-4 text-lg font-bold bg-primary hover:bg-primary/90 text-white rounded-lg transition-all animate-pulse"
-                    size="lg"
-                  >
-                    {isLookingUp ? (
-                      <>
-                        <span className="animate-spin mr-2">⏳</span>
-                        Looking up your vehicle...
-                      </>
-                    ) : (
-                      <>
-                        {ctaText}
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </>
-                    )}
-                  </Button>
 
                   {/* Trust Text */}
                   <p className="text-center text-sm text-gray-500">

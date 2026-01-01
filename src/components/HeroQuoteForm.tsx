@@ -227,31 +227,12 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
               <MileageQuickSelect
                 value={mileageSelection}
                 onChange={handleMileageSelection}
+                onAutoSubmit={handleGetQuote}
                 error={mileageError || vehicleAgeError}
+                isLoading={isLookingUp}
               />
-
-              {/* Get Quote Button */}
-              <div className="space-y-2 mt-2">
-                <Button 
-                  onClick={handleGetQuote}
-                  className={`w-full px-12 h-[66px] text-xl font-bold rounded-lg transition-all ${
-                    isLookingUp || mileageError || vehicleAgeError
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-brand-orange hover:bg-brand-orange/90 text-white animate-cta-enhanced'
-                  }`}
-                  disabled={isLookingUp || !!mileageError || !!vehicleAgeError}
-                >
-                  {isLookingUp ? 'Looking up vehicle...' : (
-                    <>
-                      Get my instant quote
-                      <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
-                    </>
-                  )}
-                </Button>
-              </div>
             </div>
           </div>
-
           {/* Right Content - Hero Image */}
           <div className="relative">
             <OptimizedImage 
