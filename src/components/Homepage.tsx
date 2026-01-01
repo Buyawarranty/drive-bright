@@ -476,7 +476,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 {/* Guidance text based on state */}
                 {mileageSelection && regNumber.replace(/\s/g, '').length < 5 ? (
                   <p className="text-sm text-brand-orange font-semibold text-left animate-fade-in">
-                    👆 Enter your registration above to continue
+                    Enter your registration above to continue
                   </p>
                 ) : regNumber.replace(/\s/g, '').length >= 5 && !mileageSelection ? (
                   <p className="text-sm text-brand-orange font-semibold text-left animate-fade-in">
