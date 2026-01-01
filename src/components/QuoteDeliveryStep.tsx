@@ -352,28 +352,98 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 </div>
                 
                 <button 
-                  onClick={() => {
-                    if (email.trim()) {
-                      onNext({ email, phone, firstName: '', lastName: '', sendQuoteEmail: true });
+                  onClick={async () => {
+                    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
+                      return;
                     }
+                    
+                    setSendingEmail(true);
+                    
+                    try {
+                      // Send quote email
+                      console.log('QUOTE EMAIL: Sending quote email with data:', {
+                        email: email.trim(),
+                        vehicleData,
+                        currentUrl: window.location.href,
+                        origin: window.location.origin
+                      });
+
+                      const { data: emailResponse, error: emailError } = await supabase.functions.invoke('send-quote-email', {
+                        body: {
+                          email: email.trim(),
+                          firstName: 'Valued Customer',
+                          lastName: '',
+                          vehicleData: {
+                            regNumber: vehicleData.regNumber,
+                            make: vehicleData.make,
+                            model: vehicleData.model,
+                            year: vehicleData.year,
+                            mileage: vehicleData.mileage,
+                            vehicleType: vehicleData.vehicleType || 'car',
+                            fuelType: vehicleData.fuelType,
+                            transmission: vehicleData.transmission
+                          },
+                          isInitialQuote: true
+                        }
+                      });
+
+                      if (emailError) {
+                        console.error('QUOTE EMAIL: Error sending quote email:', emailError);
+                      } else {
+                        console.log('QUOTE EMAIL: Quote email sent successfully:', emailResponse);
+                      }
+
+                      // Track abandoned cart
+                      await supabase.functions.invoke('track-abandoned-cart', {
+                        body: {
+                          full_name: email.trim(),
+                          email: email.trim(),
+                          phone: phone || '',
+                          vehicle_reg: vehicleData?.regNumber,
+                          vehicle_make: vehicleData?.make,
+                          vehicle_model: vehicleData?.model,
+                          vehicle_year: vehicleData?.year,
+                          mileage: vehicleData?.mileage,
+                          step_abandoned: 2
+                        }
+                      });
+                    } catch (error) {
+                      console.error('Error in quote flow:', error);
+                    }
+                    
+                    setSendingEmail(false);
+                    
+                    // Trigger confetti
+                    confetti({
+                      particleCount: 100,
+                      spread: 70,
+                      origin: { y: 0.6 }
+                    });
+                    
+                    // Proceed to next step
+                    setTimeout(() => {
+                      onNext({ email: email.trim(), phone, firstName: '', lastName: '', sendQuoteEmail: true });
+                    }, 300);
                   }}
-                  disabled={vehicleData.blocked || !email.trim()}
+                  disabled={vehicleData.blocked || !email.trim() || !/\S+@\S+\.\S+/.test(email) || sendingEmail}
                   className={`w-full flex items-center justify-center text-white font-bold py-3 sm:py-5 px-4 sm:px-8 rounded-xl transition-all duration-200 shadow-lg ${
-                    vehicleData.blocked || !email.trim() ? 'opacity-50 cursor-not-allowed' : ''
+                    vehicleData.blocked || !email.trim() || !/\S+@\S+\.\S+/.test(email) || sendingEmail ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
-                  style={{ backgroundColor: vehicleData.blocked || !email.trim() ? '#9ca3af' : '#f97316' }}
+                  style={{ backgroundColor: vehicleData.blocked || !email.trim() || sendingEmail ? '#9ca3af' : '#f97316' }}
                   onMouseEnter={(e) => {
-                    if (!vehicleData.blocked && email.trim()) {
+                    if (!vehicleData.blocked && email.trim() && !sendingEmail) {
                       e.currentTarget.style.backgroundColor = '#ea580c';
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (!vehicleData.blocked && email.trim()) {
+                    if (!vehicleData.blocked && email.trim() && !sendingEmail) {
                       e.currentTarget.style.backgroundColor = '#f97316';
                     }
                   }}
                 >
-                  <span className="text-base sm:text-xl">Get My Quote</span>
+                  <span className="text-base sm:text-xl">
+                    {sendingEmail ? 'Sending...' : 'Get My Quote'}
+                  </span>
                 </button>
                 
                 <p className="text-center text-xs sm:text-sm text-gray-500 flex items-center justify-center gap-1.5">
