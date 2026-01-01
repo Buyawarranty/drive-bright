@@ -24,6 +24,7 @@ interface QuoteDeliveryStepProps {
 }
 
 const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNext, onBack, onSkip }) => {
+  const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
@@ -32,16 +33,17 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   const [phoneError, setPhoneError] = useState('');
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
+  const isValidFirstName = firstName.trim().length >= 2;
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const isValidPhone = /^(?:(?:\+44\s?|0)7\d{9}|(?:\+44\s?|0)[1-9]\d{8,9})$/.test(phone.replace(/\s/g, ''));
-  const isFormValid = isValidEmail && isValidPhone;
+  const isFormValid = isValidFirstName && isValidEmail && isValidPhone;
 
   const handleSkipClick = async () => {
     try {
       if (email.trim()) {
         await supabase.functions.invoke('track-abandoned-cart', {
           body: {
-            full_name: email.trim(),
+            full_name: firstName.trim() || email.trim(),
             email: email.trim(),
             phone: phone || '',
             vehicle_reg: vehicleData?.regNumber,
@@ -143,6 +145,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         await supabase
           .from('sales_leads')
           .insert({
+            first_name: firstName.trim() || null,
             email: email.trim().toLowerCase(),
             phone: phone || null,
             lead_source: 'website',
@@ -187,7 +190,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
     onNext({ 
       email: email.trim(), 
       phone: phone, 
-      firstName: 'Valued Customer', 
+      firstName: firstName.trim() || 'Valued Customer', 
       lastName: '',
       sendQuoteEmail: true
     });
@@ -263,48 +266,75 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
         {/* Form */}
         <div className="space-y-4 mb-6">
-          {/* Email Input */}
+          {/* First Name Input */}
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              What should we call you?
+            </label>
             <div className="relative">
-              <Mail className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 ${email && isValidEmail ? 'text-gray-700' : 'text-gray-500'}`} />
               <input
-                type="email"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (emailError) setEmailError('');
-                }}
-                data-ga4-event="step2_email_input"
-                className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
-                  emailError || (email && !isValidEmail) ? 'border-red-500' : email && isValidEmail ? 'border-green-600 text-gray-900 font-semibold' : 'border-gray-400 text-gray-900'
+                type="text"
+                placeholder="e.g. John"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                autoComplete="given-name"
+                data-ga4-event="step2_firstname_input"
+                className={`w-full px-4 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
+                  firstName && isValidFirstName ? 'border-green-600 text-gray-900 font-semibold' : 'border-gray-400 text-gray-900'
                 }`}
               />
-              {email && isValidEmail && (
+              {firstName && isValidFirstName && (
                 <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
                   <Check className="w-4 h-4 text-green-600" strokeWidth={2.5} />
                 </div>
               )}
             </div>
-            {emailError && (
-              <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
-                <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
-                {emailError}
-              </p>
-            )}
-            {!emailError && email && !isValidEmail && (
-              <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
-                <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
-                Please enter a valid email address
-              </p>
-            )}
           </div>
+
+          {/* Email Input - Progressive Disclosure */}
+          {isValidFirstName && (
+            <div className="animate-fade-in">
+              <div className="relative">
+                <Mail className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 ${email && isValidEmail ? 'text-gray-700' : 'text-gray-500'}`} />
+                <input
+                  type="email"
+                  placeholder="Email address"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (emailError) setEmailError('');
+                  }}
+                  data-ga4-event="step2_email_input"
+                  className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
+                    emailError || (email && !isValidEmail) ? 'border-red-500' : email && isValidEmail ? 'border-green-600 text-gray-900 font-semibold' : 'border-gray-400 text-gray-900'
+                  }`}
+                />
+                {email && isValidEmail && (
+                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
+                    <Check className="w-4 h-4 text-green-600" strokeWidth={2.5} />
+                  </div>
+                )}
+              </div>
+              {emailError && (
+                <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
+                  <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
+                  {emailError}
+                </p>
+              )}
+              {!emailError && email && !isValidEmail && (
+                <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
+                  <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
+                  Please enter a valid email address
+                </p>
+              )}
+            </div>
+          )}
           
           {/* Phone Input - Progressive Disclosure */}
-          {isValidEmail && (
+          {isValidFirstName && isValidEmail && (
             <div className="animate-fade-in">
               <p className="text-sm text-gray-600 mb-2">
-                ✨ Great! Add your phone to unlock exclusive discounts and expert advice.
+                ✨ Great {firstName.trim()}! Add your phone to unlock exclusive discounts and expert advice.
               </p>
               <div className="relative">
                 <Phone className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 ${phone && isValidPhone ? 'text-gray-700' : 'text-gray-500'}`} />
