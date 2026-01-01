@@ -250,8 +250,14 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </p>
           {/* Quick Benefits */}
           <div className="flex items-center justify-center gap-6 text-sm text-gray-600">
-            <span>⚡ Instant quote</span>
-            <span>⛔ No obligation</span>
+            <span className="flex items-center gap-1.5">
+              <Zap className="w-4 h-4 text-brand-orange" />
+              Instant quote
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Ban className="w-4 h-4 text-brand-orange" />
+              No obligation
+            </span>
           </div>
         </div>
 
@@ -354,34 +360,42 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         </div>
 
         {/* Spacer for sticky footer */}
-        <div className="h-24"></div>
+        <div className="h-32"></div>
       </div>
 
-      {/* Minimal Sticky Footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gray-900 text-white py-3 px-4 z-50">
-        <div className="max-w-xl mx-auto flex items-center justify-between text-xs">
-          <div className="flex items-center gap-1.5">
-            <Lock className="w-3.5 h-3.5 text-green-400" />
-            <span>100% Secure | FCA Registered</span>
+      {/* Branded Help Footer */}
+      <div className="fixed bottom-0 left-0 right-0 bg-gray-100 border-t border-gray-200 py-4 px-4 z-50">
+        <div className="max-w-xl mx-auto">
+          <p className="text-center text-gray-700 font-medium text-sm mb-3">
+            Need advice? Have any questions?
+          </p>
+          <div className="flex items-center justify-center gap-4 sm:gap-6">
+            <a 
+              href="tel:03302295040"
+              className="flex items-center gap-1.5 text-gray-700 text-sm hover:text-brand-orange transition-colors"
+            >
+              <Phone className="w-4 h-4 text-brand-orange" />
+              <span>0330 229 5040</span>
+            </a>
+            <a 
+              href="https://wa.me/447960109395" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-gray-700 text-sm hover:text-green-600 transition-colors"
+            >
+              <MessageCircle className="w-4 h-4 text-green-600" />
+              <span>WhatsApp</span>
+            </a>
+            <a 
+              href="https://uk.trustpilot.com/review/warrantywise.co.uk" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-gray-700 text-sm hover:text-green-600 transition-colors"
+            >
+              <Star className="w-4 h-4 text-green-600 fill-green-600" />
+              <span>Trustpilot</span>
+            </a>
           </div>
-          <a 
-            href="https://wa.me/447960109395" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 hover:text-green-400 transition-colors"
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-            <span>Chat</span>
-          </a>
-          <a 
-            href="https://uk.trustpilot.com/review/warrantywise.co.uk" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 hover:text-green-400 transition-colors"
-          >
-            <span className="text-green-400">★★★★★</span>
-            <span>Trustpilot</span>
-          </a>
         </div>
       </div>
 
