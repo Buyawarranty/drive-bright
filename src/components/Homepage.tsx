@@ -495,6 +495,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   onAutoSubmit={handleGetQuote}
                   error={eligibilityError}
                   isLoading={isLookingUp}
+                  isRegValid={regNumber.replace(/\s/g, '').length >= 5}
                 />
               </div>
             </div>

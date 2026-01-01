@@ -7,6 +7,7 @@ interface MileageQuickSelectProps {
   onAutoSubmit?: () => void;
   error?: string;
   isLoading?: boolean;
+  isRegValid?: boolean; // New prop to check if reg is valid
 }
 
 const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({ 
@@ -14,7 +15,8 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
   onChange, 
   onAutoSubmit,
   error,
-  isLoading = false 
+  isLoading = false,
+  isRegValid = false
 }) => {
   const [showLoadingMessage, setShowLoadingMessage] = useState(false);
   const isUnder120k = value === 'under120k';
@@ -23,7 +25,8 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
   const handleSelect = (selection: string) => {
     onChange(selection);
     
-    if (onAutoSubmit) {
+    // Only auto-submit if reg is valid
+    if (onAutoSubmit && isRegValid) {
       setShowLoadingMessage(true);
       setTimeout(() => {
         onAutoSubmit();
@@ -31,8 +34,8 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
     }
   };
 
-  // Show loading message state
-  if (showLoadingMessage || isLoading) {
+  // Show loading message state - only when reg is valid and we're submitting
+  if ((showLoadingMessage && isRegValid) || isLoading) {
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-center gap-3 py-6 px-4 rounded-xl bg-gradient-to-r from-brand-orange/10 to-brand-orange/5 border-2 border-brand-orange/30">
