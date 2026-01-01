@@ -2573,14 +2573,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
 
             {/* Price Summary & CTA */}
-            <div className="bg-white rounded-xl border-2 border-green-300 p-5 md:p-6">
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col md:flex-row md:items-stretch gap-4">
+            <div className="bg-white rounded-xl border-2 border-green-300 p-4 md:p-6">
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col md:flex-row md:items-stretch gap-3">
                   <div className="flex-1">
                     <p className="text-sm text-gray-500 mb-1">Your Platinum Plan</p>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-xl font-bold text-gray-900">Total:</span>
-                      <span className="text-3xl font-bold text-gray-900">£{displayMonthlyPrice}/month</span>
+                    <div className="flex flex-col">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-xl font-bold text-gray-900">Total:</span>
+                        <span className="text-3xl font-bold text-gray-900">£{displayMonthlyPrice}/month</span>
+                      </div>
                       <span className="text-sm text-black">(Only 12 payments)</span>
                     </div>
                     {(() => {
@@ -2614,7 +2616,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
               
               {/* Urgency micro-copy */}
-              <p className="text-center md:text-left text-sm text-green-700 mt-4 font-medium">
+              <p className="text-center md:text-left text-sm text-green-700 mt-3 font-medium">
                 ⚡ You're covered in 60 seconds – no payment taken until confirmation
               </p>
             </div>
