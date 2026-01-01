@@ -474,22 +474,15 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 </div>
                 
                 {/* Guidance text based on state */}
-                {mileageSelection && regNumber.replace(/\s/g, '').length < 5 && (
-                  <p className="text-sm text-brand-orange font-medium text-left animate-pulse">
+                {mileageSelection && regNumber.replace(/\s/g, '').length < 5 ? (
+                  <p className="text-sm text-brand-orange font-semibold text-left animate-fade-in">
                     👆 Enter your registration above to continue
                   </p>
-                )}
-                {!mileageSelection && regNumber.replace(/\s/g, '').length < 5 && (
-                  <p className="text-xs sm:text-sm text-black text-left mt-0.5">
-                    Protection for vehicles up to 150,000 miles and 15 years.
-                  </p>
-                )}
-                {regNumber.replace(/\s/g, '').length >= 5 && !mileageSelection && (
-                  <p className="text-sm text-brand-orange font-medium text-left animate-pulse">
+                ) : regNumber.replace(/\s/g, '').length >= 5 && !mileageSelection ? (
+                  <p className="text-sm text-brand-orange font-semibold text-left animate-fade-in">
                     👇 Now select your mileage below
                   </p>
-                )}
-                {regNumber.replace(/\s/g, '').length >= 5 && mileageSelection && (
+                ) : (
                   <p className="text-xs sm:text-sm text-black text-left mt-0.5">
                     Protection for vehicles up to 150,000 miles and 15 years.
                   </p>
