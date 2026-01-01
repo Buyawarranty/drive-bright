@@ -266,7 +266,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           {/* Email Input */}
           <div>
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+              <Mail className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 ${email && isValidEmail ? 'text-gray-700' : 'text-gray-500'}`} />
               <input
                 type="email"
                 placeholder="Email address"
@@ -276,8 +276,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   if (emailError) setEmailError('');
                 }}
                 data-ga4-event="step2_email_input"
-                className={`w-full pl-12 pr-12 py-4 text-base text-gray-900 placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
-                  emailError ? 'border-red-500' : email && isValidEmail ? 'border-green-600' : 'border-gray-400'
+                className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
+                  emailError ? 'border-red-500' : email && isValidEmail ? 'border-green-600 text-gray-900 font-semibold' : 'border-gray-400 text-gray-900'
                 }`}
               />
               {email && isValidEmail && (
@@ -301,7 +301,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 ✨ Great! Add your phone to unlock exclusive discounts and expert advice.
               </p>
               <div className="relative">
-                <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+                <Phone className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 ${phone && isValidPhone ? 'text-gray-700' : 'text-gray-500'}`} />
                 <input
                   type="tel"
                   placeholder="UK mobile number"
@@ -311,8 +311,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                     if (phoneError) setPhoneError('');
                   }}
                   data-ga4-event="step2_phone_input"
-                  className={`w-full pl-12 pr-12 py-4 text-base text-gray-900 placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
-                    phoneError ? 'border-red-500' : phone && isValidPhone ? 'border-green-600' : 'border-gray-400'
+                  className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
+                    phoneError ? 'border-red-500' : phone && isValidPhone ? 'border-green-600 text-gray-900 font-semibold' : 'border-gray-400 text-gray-900'
                   }`}
                 />
                 {phone && isValidPhone && (
