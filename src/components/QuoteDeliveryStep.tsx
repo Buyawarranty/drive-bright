@@ -214,7 +214,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
         <div className="text-center mb-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            🎉 Your warranty quote is ready!
+            ✨ 3 quick details and you're done!
           </h1>
           <p className="text-gray-500 mt-1">See your best price in a few seconds</p>
         </div>
@@ -319,44 +319,42 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             )}
           </div>
           
-          {/* Phone Input - Progressive Disclosure */}
-          {isValidFirstName && isValidEmail && (
-            <div className="animate-fade-in">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Your mobile number
-              </label>
-              <div className="relative">
-                <Phone className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 ${phone && isValidPhone ? 'text-gray-700' : 'text-gray-500'}`} />
-                <input
-                  type="tel"
-                  placeholder="UK mobile number"
-                  value={phone}
-                  onChange={(e) => {
-                    setPhone(e.target.value);
-                    if (phoneError) setPhoneError('');
-                  }}
-                  data-ga4-event="step2_phone_input"
-                  className={`w-full pl-12 pr-12 py-3 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
-                    phoneError || (phone && !isValidPhone) ? 'border-red-500 text-gray-700 font-bold' : phone && isValidPhone ? 'border-green-600 text-gray-700 font-bold' : 'border-gray-400 text-gray-700 font-bold'
-                  }`}
-                />
-                {phone && isValidPhone && (
-                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
-                    <Check className="w-4 h-4 text-green-600" strokeWidth={2.5} />
-                  </div>
-                )}
-              </div>
-              {(phoneError || (phone && !isValidPhone)) ? (
-                <p className="text-red-500 text-xs mt-1.5">
-                  {phoneError || 'Please enter a valid UK phone number'}
-                </p>
-              ) : (
-                <p className="text-gray-500 text-xs mt-1.5">
-                  ✨ Add your phone to unlock exclusive discounts.
-                </p>
+          {/* Phone Input - Always visible */}
+          <div>
+            <label className="block text-lg font-semibold text-gray-800 mb-2">
+              Your mobile number
+            </label>
+            <div className="relative">
+              <Phone className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 ${phone && isValidPhone ? 'text-gray-700' : 'text-gray-500'}`} />
+              <input
+                type="tel"
+                placeholder="UK mobile number"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  if (phoneError) setPhoneError('');
+                }}
+                data-ga4-event="step2_phone_input"
+                className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
+                  phoneError || (phone && !isValidPhone) ? 'border-red-500 text-gray-700 font-bold' : phone && isValidPhone ? 'border-green-600 text-gray-700 font-bold' : 'border-gray-400 text-gray-700 font-bold'
+                }`}
+              />
+              {phone && isValidPhone && (
+                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-green-600" strokeWidth={2.5} />
+                </div>
               )}
             </div>
-          )}
+            {(phoneError || (phone && !isValidPhone)) ? (
+              <p className="text-red-500 text-xs mt-1.5">
+                {phoneError || 'Please enter a valid UK phone number'}
+              </p>
+            ) : (
+              <p className="text-gray-500 text-xs mt-1.5">
+                ✨ Add your phone to unlock exclusive discounts.
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Primary CTA */}
