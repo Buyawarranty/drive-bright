@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Zap, ArrowRight, Ban, BellOff } from 'lucide-react';
+import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Zap, ArrowRight, Ban, BellOff, MessageCircle, Star } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
 import MobileNavigation from '@/components/MobileNavigation';
@@ -355,6 +355,36 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </div>
         </div>
 
+        {/* Spacer for sticky footer */}
+        <div className="h-20"></div>
+      </div>
+
+      {/* Sticky Bottom Bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 px-4 z-50">
+        <div className="max-w-xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-1 text-gray-600 text-xs">
+            <Lock className="w-4 h-4 text-green-600" />
+            <span>Secure checkout</span>
+          </div>
+          <a 
+            href="https://wa.me/447960109395" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-gray-600 text-xs hover:text-green-600 transition-colors"
+          >
+            <MessageCircle className="w-4 h-4 text-green-500" />
+            <span>Need help?</span>
+          </a>
+          <a 
+            href="https://uk.trustpilot.com/review/warrantywise.co.uk" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-gray-600 text-xs hover:text-primary transition-colors"
+          >
+            <Star className="w-4 h-4 text-green-500 fill-green-500" />
+            <span>Trustpilot</span>
+          </a>
+        </div>
       </div>
 
       {/* Success Popup */}
