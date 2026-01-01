@@ -338,7 +338,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           onClick={handleSubmit}
           disabled={vehicleData.blocked || sendingEmail}
           data-ga4-event="step2_show_price_click"
-          className={`w-full flex items-center justify-center gap-2 text-white font-bold py-4 px-8 rounded-xl transition-all duration-200 shadow-lg text-lg ${
+          className={`w-full flex items-center justify-center gap-2 text-white font-bold py-5 px-8 rounded-xl shadow-lg text-lg ${
             vehicleData.blocked || sendingEmail 
               ? 'bg-gray-300 cursor-not-allowed' 
               : 'bg-brand-orange hover:bg-orange-600 active:scale-[0.98] animate-cta-enhanced'
@@ -348,9 +348,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             'Sending...'
           ) : (
             <>
-              <Zap className="w-5 h-5" />
               Show my price now
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-6 h-6" strokeWidth={3} />
             </>
           )}
         </button>
