@@ -292,48 +292,52 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             </div>
           </div>
 
-          {/* Email Input - Progressive Disclosure */}
-          {isValidFirstName && (
-            <div className="animate-fade-in">
-              <div className="relative">
-                <Mail className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 ${email && isValidEmail ? 'text-gray-700' : 'text-gray-500'}`} />
-                <input
-                  type="email"
-                  placeholder="Email address"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (emailError) setEmailError('');
-                  }}
-                  data-ga4-event="step2_email_input"
-                  className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
-                    emailError || (email && !isValidEmail) ? 'border-red-500' : email && isValidEmail ? 'border-green-600 text-gray-900 font-semibold' : 'border-gray-400 text-gray-900'
-                  }`}
-                />
-                {email && isValidEmail && (
-                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
-                    <Check className="w-4 h-4 text-green-600" strokeWidth={2.5} />
-                  </div>
-                )}
-              </div>
-              {emailError && (
-                <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
-                  <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
-                  {emailError}
-                </p>
-              )}
-              {!emailError && email && !isValidEmail && (
-                <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
-                  <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
-                  Please enter a valid email address
-                </p>
+          {/* Email Input - Shown by default */}
+          <div>
+            <label className="block text-lg font-semibold text-gray-800 mb-2">
+              Your email address
+            </label>
+            <div className="relative">
+              <Mail className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 ${email && isValidEmail ? 'text-gray-700' : 'text-gray-500'}`} />
+              <input
+                type="email"
+                placeholder="e.g. john@example.com"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailError) setEmailError('');
+                }}
+                data-ga4-event="step2_email_input"
+                className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
+                  emailError || (email && !isValidEmail) ? 'border-red-500' : email && isValidEmail ? 'border-green-600 text-gray-900 font-semibold' : 'border-gray-400 text-gray-900'
+                }`}
+              />
+              {email && isValidEmail && (
+                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-green-600" strokeWidth={2.5} />
+                </div>
               )}
             </div>
-          )}
+            {emailError && (
+              <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
+                <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
+                {emailError}
+              </p>
+            )}
+            {!emailError && email && !isValidEmail && (
+              <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
+                <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
+                Please enter a valid email address
+              </p>
+            )}
+          </div>
           
           {/* Phone Input - Progressive Disclosure */}
           {isValidFirstName && isValidEmail && (
             <div className="animate-fade-in">
+              <label className="block text-lg font-semibold text-gray-800 mb-2">
+                Your mobile number
+              </label>
               <p className="text-sm text-gray-900 font-medium mb-2">
                 ✨ Great {firstName.trim()}! Add your phone to unlock exclusive discounts and expert advice.
               </p>
