@@ -210,19 +210,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   return (
     <section className="bg-white min-h-screen">
       <div className="max-w-xl mx-auto px-4 py-6 sm:py-10">
-        {/* Header */}
-        <div className="flex justify-start items-center mb-4">
-          <button 
-            type="button" 
-            onClick={onBack}
-            className="flex items-center gap-1.5 text-sm font-medium py-2 px-3 rounded-lg transition-all bg-gray-100 hover:bg-gray-200 text-gray-700"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </button>
-        </div>
-
         {/* Main Heading */}
+
         <div className="text-center mb-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             🎉 Your warranty quote is ready!
@@ -391,22 +380,35 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           )}
         </button>
 
+        {/* Quick Benefits - Below CTA */}
+        <div className="flex items-center justify-center gap-6 text-sm text-gray-600 mt-4">
+          <span className="flex items-center gap-1.5">
+            <Zap className="w-4 h-4 text-brand-orange" />
+            Instant quote
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Ban className="w-4 h-4 text-brand-orange" />
+            No obligation
+          </span>
+        </div>
+
         {/* Trust Line */}
-        <div className="text-center mt-4 text-gray-500 text-sm">
-          <p className="flex items-center justify-center gap-1 mb-2">
+        <div className="text-center mt-3 text-gray-500 text-sm">
+          <p className="flex items-center justify-center gap-1">
             <span>🔒 We never share your details. 100% privacy guaranteed</span>
           </p>
-          {/* Quick Benefits */}
-          <div className="flex items-center justify-center gap-6 text-sm text-gray-600">
-            <span className="flex items-center gap-1.5">
-              <Zap className="w-4 h-4 text-brand-orange" />
-              Instant quote
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Ban className="w-4 h-4 text-brand-orange" />
-              No obligation
-            </span>
-          </div>
+        </div>
+
+        {/* Back Button - At Bottom */}
+        <div className="flex justify-center mt-6">
+          <button 
+            type="button" 
+            onClick={onBack}
+            className="flex items-center gap-1.5 text-sm font-medium py-2 px-3 rounded-lg transition-all bg-gray-100 hover:bg-gray-200 text-gray-700"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </button>
         </div>
 
         {/* Spacer for sticky footer */}
