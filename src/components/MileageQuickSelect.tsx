@@ -62,7 +62,7 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
           onClick={() => handleSelect('under120k')}
           className={`relative flex-1 py-4 sm:py-5 px-4 sm:px-6 rounded-xl border-2 font-bold text-sm sm:text-base transition-all duration-200 transform ${
             isUnder120k
-              ? 'border-brand-orange bg-brand-orange text-white shadow-[0_0_20px_rgba(249,115,22,0.5)] scale-[1.02]'
+              ? 'border-brand-orange bg-brand-orange text-white scale-[1.02]'
               : 'border-gray-300 bg-white text-gray-600 hover:border-brand-orange hover:bg-brand-orange hover:text-white hover:scale-[1.02]'
           }`}
         >
@@ -82,7 +82,7 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
           onClick={() => handleSelect('over120k')}
           className={`relative flex-1 py-4 sm:py-5 px-4 sm:px-6 rounded-xl border-2 font-bold text-sm sm:text-base transition-all duration-200 transform ${
             isOver120k
-              ? 'border-brand-orange bg-brand-orange text-white shadow-[0_0_20px_rgba(249,115,22,0.5)] scale-[1.02]'
+              ? 'border-brand-orange bg-brand-orange text-white scale-[1.02]'
               : 'border-gray-300 bg-white text-gray-600 hover:border-brand-orange hover:bg-brand-orange hover:text-white hover:scale-[1.02]'
           }`}
         >
