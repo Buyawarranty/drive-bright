@@ -401,7 +401,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         </div>
 
         {/* Back Button - At Bottom */}
-        <div className="flex justify-center mt-6">
+        <div className="flex justify-start mt-6">
           <button 
             type="button" 
             onClick={onBack}
