@@ -160,15 +160,19 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     }
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    // Use the override mileage if provided (from auto-submit), otherwise use state
+    const effectiveMileage = mileageOverride || mileage;
+    const effectiveMileageSelection = mileageOverride ? (mileageOverride === '100000' ? 'under120k' : 'over120k') : mileageSelection;
+    
     console.log('🔘 GET QUOTE BUTTON CLICKED');
-    console.log('📋 Form values:', { regNumber, mileage });
+    console.log('📋 Form values:', { regNumber, mileage: effectiveMileage, mileageSelection: effectiveMileageSelection });
     
     // Track main CTA button click
     trackButtonClick('get_quote_main', {
       has_reg_number: !!regNumber.trim(),
-      has_mileage: !!mileage.trim(),
-      mileage_value: mileage
+      has_mileage: !!effectiveMileage.trim(),
+      mileage_value: effectiveMileage
     });
     
     // Check if registration number is entered
@@ -182,7 +186,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     }
     
     // Check if mileage is selected
-    if (!mileageSelection) {
+    if (!effectiveMileageSelection) {
       toast({
         title: "Mileage Required", 
         description: "Please select your approximate mileage to continue.",
@@ -192,7 +196,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     }
     
     // Check if mileage is zero
-    const numericMileage = parseInt(mileage.replace(/,/g, ''));
+    const numericMileage = parseInt(effectiveMileage.replace(/,/g, ''));
     if (numericMileage === 0) {
       toast({
         title: "Mileage Required",
@@ -307,7 +311,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       // Prepare vehicle data
       const vehicleData: VehicleData = {
         regNumber: regNumber,
-        mileage: mileage.replace(/,/g, ''), // Remove commas for storage
+        mileage: effectiveMileage.replace(/,/g, ''), // Remove commas for storage
       };
 
       // Add DVLA data if found
