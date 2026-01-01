@@ -334,9 +334,9 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
         {/* Trust Line */}
         <div className="text-center mt-4 text-gray-500 text-sm">
-          <p className="flex items-center justify-center gap-2">
+          <p className="flex items-center justify-center gap-1">
             <Lock className="w-4 h-4" />
-            We never share your details. 100% privacy guaranteed
+            <span>We never share your details. 100% privacy guaranteed</span>
           </p>
           {/* Trust Badges */}
           <div className="grid grid-cols-3 gap-4 mt-4">
