@@ -281,34 +281,39 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             )}
           </div>
           
-          {/* Phone Input */}
-          <div>
-            <div className="relative">
-              <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
-              <input
-                type="tel"
-                placeholder="UK mobile number"
-                value={phone}
-                onChange={(e) => {
-                  setPhone(e.target.value);
-                  if (phoneError) setPhoneError('');
-                }}
-                data-ga4-event="step2_phone_input"
-                className={`w-full pl-12 pr-12 py-4 text-base text-gray-900 placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${
-                  phoneError ? 'border-red-500 bg-red-50/30' : phone && isValidPhone ? 'border-green-500 bg-green-50/30' : 'border-gray-400'
-                }`}
-              />
-              {phone && isValidPhone && (
-                <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-green-500" />
+          {/* Phone Input - Progressive Disclosure */}
+          {isValidEmail && (
+            <div className="animate-fade-in">
+              <p className="text-sm text-gray-600 mb-2">
+                ✨ Great! Add your phone for discounts and personalised advice.
+              </p>
+              <div className="relative">
+                <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+                <input
+                  type="tel"
+                  placeholder="UK mobile number"
+                  value={phone}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    if (phoneError) setPhoneError('');
+                  }}
+                  data-ga4-event="step2_phone_input"
+                  className={`w-full pl-12 pr-12 py-4 text-base text-gray-900 placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${
+                    phoneError ? 'border-red-500 bg-red-50/30' : phone && isValidPhone ? 'border-green-500 bg-green-50/30' : 'border-gray-400'
+                  }`}
+                />
+                {phone && isValidPhone && (
+                  <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-green-500" />
+                )}
+              </div>
+              {phoneError && (
+                <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
+                  <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
+                  {phoneError}
+                </p>
               )}
             </div>
-            {phoneError && (
-              <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
-                <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
-                {phoneError}
-              </p>
-            )}
-          </div>
+          )}
         </div>
 
         {/* Primary CTA */}
@@ -335,8 +340,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         {/* Trust Line */}
         <div className="text-center mt-4 text-gray-500 text-sm">
           <p className="flex items-center justify-center gap-1">
-            <Lock className="w-4 h-4" />
-            <span>We never share your details. 100% privacy guaranteed</span>
+            <span>🔒 We never share your details. 100% privacy guaranteed</span>
           </p>
           {/* Trust Badges */}
           <div className="grid grid-cols-3 gap-4 mt-4">
