@@ -72,8 +72,8 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
           }`}>
             {isUnder120k && <span className="w-2.5 h-2.5 bg-white rounded-full" />}
           </span>
-          <span className={`text-sm sm:text-base transition-colors ${
-            isUnder120k ? 'text-gray-900 font-medium' : 'text-gray-700 group-hover:text-gray-900'
+          <span className={`text-sm sm:text-base font-bold transition-colors ${
+            isUnder120k ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'
           }`}>
             Under 120,000 miles
           </span>
@@ -90,8 +90,8 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
           }`}>
             {isOver120k && <span className="w-2.5 h-2.5 bg-white rounded-full" />}
           </span>
-          <span className={`text-sm sm:text-base transition-colors ${
-            isOver120k ? 'text-gray-900 font-medium' : 'text-gray-700 group-hover:text-gray-900'
+          <span className={`text-sm sm:text-base font-bold transition-colors ${
+            isOver120k ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'
           }`}>
             Over 120,000 miles
           </span>
