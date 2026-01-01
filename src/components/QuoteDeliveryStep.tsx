@@ -270,13 +270,13 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   if (emailError) setEmailError('');
                 }}
                 data-ga4-event="step2_email_input"
-                className={`w-full pl-12 pr-12 py-4 text-base text-gray-900 placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${
-                  emailError ? 'border-red-500 bg-red-50/30' : email && isValidEmail ? 'border-green-500 bg-green-50/30' : 'border-gray-400'
+                className={`w-full pl-12 pr-12 py-4 text-base text-gray-900 placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
+                  emailError ? 'border-red-500' : email && isValidEmail ? 'border-green-600' : 'border-gray-400'
                 }`}
               />
               {email && isValidEmail && (
-                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full border-2 border-[#5CB97A] flex items-center justify-center">
-                  <Check className="w-4 h-4 text-[#5CB97A]" strokeWidth={2.5} />
+                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
+                  <Check className="w-4 h-4 text-green-600" strokeWidth={2.5} />
                 </div>
               )}
             </div>
@@ -305,13 +305,13 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                     if (phoneError) setPhoneError('');
                   }}
                   data-ga4-event="step2_phone_input"
-                  className={`w-full pl-12 pr-12 py-4 text-base text-gray-900 placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${
-                    phoneError ? 'border-red-500 bg-red-50/30' : phone && isValidPhone ? 'border-green-500 bg-green-50/30' : 'border-gray-400'
+                  className={`w-full pl-12 pr-12 py-4 text-base text-gray-900 placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
+                    phoneError ? 'border-red-500' : phone && isValidPhone ? 'border-green-600' : 'border-gray-400'
                   }`}
                 />
                 {phone && isValidPhone && (
-                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full border-2 border-[#5CB97A] flex items-center justify-center">
-                    <Check className="w-4 h-4 text-[#5CB97A]" strokeWidth={2.5} />
+                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
+                    <Check className="w-4 h-4 text-green-600" strokeWidth={2.5} />
                   </div>
                 )}
               </div>
