@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ArrowRight, Zap, Mail, Car, Edit3, Check, Lock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Zap, Mail, Car, Edit3, Check, Lock, Phone, CheckCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
 import MobileNavigation from '@/components/MobileNavigation';
@@ -326,22 +326,29 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                     placeholder="Email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                    className={`w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-3 sm:py-4 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all ${
+                      email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'border-green-500' : 'border-gray-300'
+                    }`}
                   />
+                  {email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && (
+                    <CheckCircle className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
+                  )}
                 </div>
                 
                 <div className="relative">
-                  <div className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 flex items-center gap-1 text-gray-400 text-xs sm:text-sm">
-                    <span>🇬🇧</span>
-                    <span>+44</span>
-                  </div>
+                  <Phone className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                   <input
                     type="tel"
                     placeholder="Phone number"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full pl-16 sm:pl-20 pr-4 py-3 sm:py-4 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                    className={`w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-3 sm:py-4 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all ${
+                      phone && phone.length >= 10 ? 'border-green-500' : 'border-gray-300'
+                    }`}
                   />
+                  {phone && phone.length >= 10 && (
+                    <CheckCircle className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
+                  )}
                 </div>
                 
                 <button 
