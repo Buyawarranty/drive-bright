@@ -399,7 +399,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         </div>
 
         {/* Back Button - At Bottom */}
-        <div className="flex justify-start mt-6">
+        <div className="flex justify-start mt-10">
           <button 
             type="button" 
             onClick={onBack}
@@ -415,7 +415,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       </div>
 
       {/* Branded Help Footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t-4 border-green-600 py-4 px-4 z-50">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t-[3px] border-green-600 py-4 px-4 z-50">
         <div className="max-w-xl mx-auto">
           <p className="text-center text-gray-800 font-semibold text-sm mb-3">
             Need advice? We're here to help.
