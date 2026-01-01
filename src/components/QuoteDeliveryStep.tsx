@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Shield, Clock, Zap, ArrowRight } from 'lucide-react';
+import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Zap, ArrowRight, Ban, BellOff } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
 import MobileNavigation from '@/components/MobileNavigation';
@@ -362,9 +362,26 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         </button>
 
         {/* Trust Line */}
-        <div className="flex items-center justify-center gap-2 mt-4 text-gray-500 text-sm">
-          <Lock className="w-4 h-4" />
-          <span>We never share your details. 100% privacy guaranteed</span>
+        <div className="text-center mt-4 text-gray-500 text-sm">
+          <p className="flex items-center justify-center gap-2">
+            <Lock className="w-4 h-4" />
+            We never share your details. 100% privacy guaranteed
+          </p>
+          {/* Trust Badges */}
+          <div className="grid grid-cols-3 gap-4 mt-4">
+            <div className="flex flex-col items-center gap-1">
+              <Zap className="w-5 h-5 text-primary" />
+              <span className="text-xs text-gray-600">Instant quote</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <Ban className="w-5 h-5 text-primary" />
+              <span className="text-xs text-gray-600">No obligation</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <BellOff className="w-5 h-5 text-primary" />
+              <span className="text-xs text-gray-600">No spam</span>
+            </div>
+          </div>
         </div>
 
         {/* Divider */}
@@ -376,34 +393,6 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             <span className="bg-white px-4 text-gray-500 text-sm">
               or
             </span>
-          </div>
-        </div>
-
-        {/* Skip Link */}
-        <button 
-          onClick={handleSkipClick}
-          disabled={vehicleData.blocked}
-          data-ga4-event="step2_skip_click"
-          className="w-full text-center text-gray-600 hover:text-primary font-medium py-3 transition-colors underline-offset-2 hover:underline"
-        >
-          View my quote now without email →
-        </button>
-
-        {/* Trust Badges */}
-        <div className="mt-8 pt-6 border-t border-gray-100">
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="flex flex-col items-center gap-2">
-              <Shield className="w-6 h-6 text-primary" />
-              <span className="text-xs text-gray-600">Trusted by 50,000+ drivers</span>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <Clock className="w-6 h-6 text-primary" />
-              <span className="text-xs text-gray-600">Instant quote in 60 seconds</span>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <CheckCircle className="w-6 h-6 text-primary" />
-              <span className="text-xs text-gray-600">No obligation</span>
-            </div>
           </div>
         </div>
       </div>
