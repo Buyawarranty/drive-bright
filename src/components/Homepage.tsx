@@ -652,7 +652,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       </LazySection>
 
       {/* Step 1 - Enter Your Reg Plate */}
-      <section className="pt-6 md:pt-8 pb-10 md:pb-12 bg-white">
+      <section className="pt-6 md:pt-8 pb-10 md:pb-12 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-6 md:gap-10 items-center">
             {/* Left - Content */}
@@ -734,7 +734,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       </section>
 
       {/* Step 2 - Choose Your Plan */}
-      <section className="py-6 md:py-10 bg-brand-gray-bg">
+      <section className="py-6 md:py-10 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-6 md:gap-10 items-center">
             {/* Left - Panda with plan badges */}
@@ -798,7 +798,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       </section>
 
       {/* Step 3 - Drive With Confidence */}
-      <section className="py-6 md:py-10 bg-white">
+      <section className="py-6 md:py-10 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-6 md:gap-10 items-center">
             {/* Left - Content */}
@@ -909,7 +909,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
 
       {/* Coverage Showcase Section */}
-      <section className="py-6 md:py-8 bg-brand-gray-bg text-center">
+      <section className="py-6 md:py-8 bg-white text-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* CTA Button */}
