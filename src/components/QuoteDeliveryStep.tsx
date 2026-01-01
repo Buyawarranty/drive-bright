@@ -334,7 +334,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           {/* Phone Input - Progressive Disclosure */}
           {isValidFirstName && isValidEmail && (
             <div className="animate-fade-in">
-              <p className="text-sm text-gray-600 mb-2">
+              <p className="text-sm text-gray-900 font-medium mb-2">
                 ✨ Great {firstName.trim()}! Add your phone to unlock exclusive discounts and expert advice.
               </p>
               <div className="relative">
