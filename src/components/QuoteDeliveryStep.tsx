@@ -277,7 +277,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 }}
                 data-ga4-event="step2_email_input"
                 className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
-                  emailError ? 'border-red-500' : email && isValidEmail ? 'border-green-600 text-gray-900 font-semibold' : 'border-gray-400 text-gray-900'
+                  emailError || (email && !isValidEmail) ? 'border-red-500' : email && isValidEmail ? 'border-green-600 text-gray-900 font-semibold' : 'border-gray-400 text-gray-900'
                 }`}
               />
               {email && isValidEmail && (
@@ -290,6 +290,12 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
                 <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
                 {emailError}
+              </p>
+            )}
+            {!emailError && email && !isValidEmail && (
+              <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
+                <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
+                Please enter a valid email address
               </p>
             )}
           </div>
@@ -312,7 +318,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   }}
                   data-ga4-event="step2_phone_input"
                   className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
-                    phoneError ? 'border-red-500' : phone && isValidPhone ? 'border-green-600 text-gray-900 font-semibold' : 'border-gray-400 text-gray-900'
+                    phoneError || (phone && !isValidPhone) ? 'border-red-500' : phone && isValidPhone ? 'border-green-600 text-gray-900 font-semibold' : 'border-gray-400 text-gray-900'
                   }`}
                 />
                 {phone && isValidPhone && (
@@ -325,6 +331,12 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
                   <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
                   {phoneError}
+                </p>
+              )}
+              {!phoneError && phone && !isValidPhone && (
+                <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
+                  <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
+                  Please enter a valid UK phone number
                 </p>
               )}
             </div>
