@@ -281,7 +281,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 autoComplete="given-name"
                 data-ga4-event="step2_firstname_input"
                 className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
-                  firstName && isValidFirstName ? 'border-green-600 text-gray-900 font-semibold' : 'border-gray-400 text-gray-900'
+                  firstName && isValidFirstName ? 'border-green-600 text-gray-700 font-bold' : 'border-gray-400 text-gray-700 font-bold'
                 }`}
               />
               {firstName && isValidFirstName && (
@@ -309,7 +309,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 }}
                 data-ga4-event="step2_email_input"
                 className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
-                  emailError || (email && !isValidEmail) ? 'border-red-500' : email && isValidEmail ? 'border-green-600 text-gray-900 font-semibold' : 'border-gray-400 text-gray-900'
+                  emailError || (email && !isValidEmail) ? 'border-red-500 text-gray-700 font-bold' : email && isValidEmail ? 'border-green-600 text-gray-700 font-bold' : 'border-gray-400 text-gray-700 font-bold'
                 }`}
               />
               {email && isValidEmail && (
@@ -353,7 +353,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   }}
                   data-ga4-event="step2_phone_input"
                   className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
-                    phoneError || (phone && !isValidPhone) ? 'border-red-500' : phone && isValidPhone ? 'border-green-600 text-gray-900 font-semibold' : 'border-gray-400 text-gray-900'
+                    phoneError || (phone && !isValidPhone) ? 'border-red-500 text-gray-700 font-bold' : phone && isValidPhone ? 'border-green-600 text-gray-700 font-bold' : 'border-gray-400 text-gray-700 font-bold'
                   }`}
                 />
                 {phone && isValidPhone && (
