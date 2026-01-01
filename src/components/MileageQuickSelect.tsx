@@ -55,55 +55,51 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
   return (
     <div className="space-y-3">
       {/* Headline */}
-      <p className="text-base sm:text-lg font-bold text-gray-900">
+      <p className="text-base sm:text-lg font-semibold text-gray-800">
         What's your approximate mileage?
       </p>
       
-      {/* Quick Select Buttons */}
-      <div className="flex gap-3 sm:gap-4">
-        <button
-          type="button"
+      {/* Radio Options */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
+        <label
+          className="flex items-center gap-3 cursor-pointer group"
           onClick={() => handleSelect('under120k')}
-          className={`relative overflow-visible flex-1 py-4 sm:py-5 px-4 sm:px-6 rounded-xl border-2 font-bold text-sm sm:text-base transition-all duration-200 transform ${
-            isUnder120k
-              ? 'border-brand-orange bg-brand-orange text-white scale-[1.02]'
-              : 'border-gray-300 bg-white text-gray-600 hover:border-brand-orange hover:bg-brand-orange hover:text-white hover:scale-[1.02]'
-          }`}
         >
-          {isUnder120k && (
-            <span className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-md z-10">
-              <Check className="w-4 h-4 text-white" strokeWidth={3} />
-            </span>
-          )}
-          <span className="flex items-center justify-center gap-2">
+          <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+            isUnder120k 
+              ? 'border-brand-orange bg-brand-orange' 
+              : 'border-gray-400 group-hover:border-brand-orange'
+          }`}>
+            {isUnder120k && <span className="w-2.5 h-2.5 bg-white rounded-full" />}
+          </span>
+          <span className={`text-sm sm:text-base transition-colors ${
+            isUnder120k ? 'text-gray-900 font-medium' : 'text-gray-700 group-hover:text-gray-900'
+          }`}>
             Under 120,000 miles
-            <ChevronRight className={`w-5 h-5 ${isUnder120k ? 'text-white' : 'text-gray-400'}`} />
           </span>
-        </button>
+        </label>
         
-        <button
-          type="button"
+        <label
+          className="flex items-center gap-3 cursor-pointer group"
           onClick={() => handleSelect('over120k')}
-          className={`relative overflow-visible flex-1 py-4 sm:py-5 px-4 sm:px-6 rounded-xl border-2 font-bold text-sm sm:text-base transition-all duration-200 transform ${
-            isOver120k
-              ? 'border-brand-orange bg-brand-orange text-white scale-[1.02]'
-              : 'border-gray-300 bg-white text-gray-600 hover:border-brand-orange hover:bg-brand-orange hover:text-white hover:scale-[1.02]'
-          }`}
         >
-          {isOver120k && (
-            <span className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-md z-10">
-              <Check className="w-4 h-4 text-white" strokeWidth={3} />
-            </span>
-          )}
-          <span className="flex items-center justify-center gap-2">
-            Over 120,000 miles
-            <ChevronRight className={`w-5 h-5 ${isOver120k ? 'text-white' : 'text-gray-400'}`} />
+          <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+            isOver120k 
+              ? 'border-brand-orange bg-brand-orange' 
+              : 'border-gray-400 group-hover:border-brand-orange'
+          }`}>
+            {isOver120k && <span className="w-2.5 h-2.5 bg-white rounded-full" />}
           </span>
-        </button>
+          <span className={`text-sm sm:text-base transition-colors ${
+            isOver120k ? 'text-gray-900 font-medium' : 'text-gray-700 group-hover:text-gray-900'
+          }`}>
+            Over 120,000 miles
+          </span>
+        </label>
       </div>
       
       {/* Microcopy */}
-      <p className="text-sm sm:text-base text-gray-500 text-left">
+      <p className="text-sm text-gray-500">
         Don't worry, we'll confirm your exact mileage later.
       </p>
 
