@@ -216,67 +216,56 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </div>
         </div>
 
-        {/* Vehicle Details Section - Compact */}
-        <div className="bg-gray-100 rounded-lg p-2.5 sm:p-6 mb-2 sm:mb-4 border border-gray-300">
-          <div className="flex items-center justify-between mb-1.5 sm:mb-4">
-            <div className="flex items-center gap-2 sm:gap-4">
-              <Car className="w-4 h-4 sm:w-7 sm:h-7 text-orange-500" />
-              <h3 className="text-sm sm:text-2xl font-medium text-gray-700 sm:font-semibold sm:text-gray-900">Vehicle Info</h3>
+        {/* Vehicle Details Section - Orange Gradient */}
+        <div className="rounded-xl overflow-hidden mb-2 sm:mb-4" style={{ background: 'linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%)' }}>
+          <div className="p-3 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              {/* Left: Reg Plate */}
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="bg-green-500 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-bold text-sm sm:text-lg tracking-wide shadow-md">
+                  {vehicleData.regNumber}
+                </div>
+                <button
+                  onClick={onBack}
+                  className="text-white/80 hover:text-white text-xs sm:text-sm underline transition-colors"
+                >
+                  Edit vehicle details
+                </button>
+              </div>
+              
+              {/* Center: Vehicle Name */}
+              <div className="text-center flex-1">
+                <h3 className="text-white font-bold text-lg sm:text-2xl tracking-wide">
+                  {vehicleData.make?.toUpperCase()} {vehicleData.model?.toUpperCase()}, {vehicleData.year}
+                </h3>
+              </div>
+              
+              {/* Right: Vehicle Specs */}
+              <div className="flex items-center justify-center sm:justify-end gap-4 sm:gap-6 text-white/90 text-xs sm:text-sm">
+                {vehicleData.fuelType && (
+                  <div className="text-center">
+                    <div className="text-white/70 text-[10px] sm:text-xs uppercase tracking-wide">Fuel Type</div>
+                    <div className="font-semibold">{vehicleData.fuelType}</div>
+                  </div>
+                )}
+                {vehicleData.transmission && (
+                  <div className="text-center">
+                    <div className="text-white/70 text-[10px] sm:text-xs uppercase tracking-wide">Transmission</div>
+                    <div className="font-semibold">{vehicleData.transmission}</div>
+                  </div>
+                )}
+                <div className="text-center">
+                  <div className="text-white/70 text-[10px] sm:text-xs uppercase tracking-wide">Mileage</div>
+                  <div className="font-semibold">{vehicleData.mileage}</div>
+                </div>
+              </div>
             </div>
-            <button
-              onClick={onBack}
-              className="flex items-center gap-1 text-xs sm:text-base font-medium text-orange-600 hover:text-orange-700 transition-colors duration-200"
-            >
-              <Edit3 className="w-3 h-3 sm:w-5 sm:h-5" />
-              <span>Change</span>
-            </button>
           </div>
           
-          {/* Compact two-column grid for mobile */}
-          <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 sm:grid-cols-3 sm:gap-4 text-xs sm:text-base">
-            <div className="flex items-baseline gap-1 py-0.5 sm:flex-col sm:p-0">
-              <span className="text-gray-500 font-medium">Reg:</span>
-              <span className="font-semibold text-gray-900 break-all">{vehicleData.regNumber}</span>
-            </div>
-            
-            {vehicleData.make && (
-              <div className="flex items-baseline gap-1 py-0.5 sm:flex-col sm:p-0">
-                <span className="text-gray-500 font-medium">Make:</span>
-                <span className="font-semibold text-gray-900">{vehicleData.make}</span>
-              </div>
-            )}
-            
-            {vehicleData.model && (
-              <div className="flex items-baseline gap-1 py-0.5 sm:flex-col sm:p-0">
-                <span className="text-gray-500 font-medium">Model:</span>
-                <span className="font-semibold text-gray-900">{vehicleData.model}</span>
-              </div>
-            )}
-            
-            {vehicleData.year && (
-              <div className="flex items-baseline gap-1 py-0.5 sm:flex-col sm:p-0">
-                <span className="text-gray-500 font-medium">Year:</span>
-                <span className="font-semibold text-gray-900">{vehicleData.year}</span>
-              </div>
-            )}
-            
-            <div className="flex items-baseline gap-1 py-0.5 sm:flex-col sm:p-0">
-              <span className="text-gray-500 font-medium">Mileage:</span>
-              <span className="font-semibold text-gray-900">{vehicleData.mileage}</span>
-            </div>
-            
-            {vehicleData.fuelType && (
-              <div className="flex items-baseline gap-1 py-0.5 sm:flex-col sm:p-0">
-                <span className="text-gray-500 font-medium">Fuel:</span>
-                <span className="font-semibold text-gray-900">{vehicleData.fuelType}</span>
-              </div>
-            )}
-          </div>
-
           {vehicleData.blocked && (
-            <div className="mt-2 sm:mt-4 p-2 sm:p-4 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-xs sm:text-base text-red-800 font-bold mb-1">Warranty Coverage Not Available</p>
-              <p className="text-xs sm:text-sm text-red-700">
+            <div className="bg-red-600 px-3 sm:px-6 py-2 sm:py-3">
+              <p className="text-white font-bold text-xs sm:text-base mb-0.5">Warranty Coverage Not Available</p>
+              <p className="text-red-100 text-xs sm:text-sm">
                 {vehicleData.blockReason || "Sorry about this - this vehicle isn't eligible due to specialist parts and a limited repair network."}
               </p>
             </div>
