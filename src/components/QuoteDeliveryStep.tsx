@@ -272,7 +272,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         {/* Main Content */}
         <div className="text-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            Your <span className="text-primary">{vehicleData.make} {vehicleData.model}</span> quote is ready!
+            🎉 Your warranty quote is ready!
           </h1>
           <p className="text-gray-600">
             Enter your email and phone to get your quote instantly.
