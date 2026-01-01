@@ -446,27 +446,54 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
 
               {/* Registration Input */}
               <div className="space-y-2 sm:space-y-3 w-full max-w-56 mx-auto lg:mx-0">
-                <div className="flex items-stretch rounded-lg overflow-hidden shadow-lg border-2 border-black w-full">
-                  {/* UK Section with flag */}
-                  <div className="bg-blue-600 text-white font-bold px-2 sm:px-3 md:px-4 py-2 sm:py-4 flex items-center justify-center min-w-[45px] sm:min-w-[70px] md:min-w-[80px] h-[48px] sm:h-[60px] md:h-[66px]">
-                    <div className="flex flex-col items-center">
-                      <div className="text-xs sm:text-base md:text-lg leading-tight mb-1">🇬🇧</div>
-                      <div className="text-xs sm:text-sm md:text-base font-bold leading-none">UK</div>
+                <div className="relative">
+                  <div className="flex items-stretch rounded-lg overflow-hidden shadow-lg border-2 border-black w-full">
+                    {/* UK Section with flag */}
+                    <div className="bg-blue-600 text-white font-bold px-2 sm:px-3 md:px-4 py-2 sm:py-4 flex items-center justify-center min-w-[45px] sm:min-w-[70px] md:min-w-[80px] h-[48px] sm:h-[60px] md:h-[66px]">
+                      <div className="flex flex-col items-center">
+                        <div className="text-xs sm:text-base md:text-lg leading-tight mb-1">🇬🇧</div>
+                        <div className="text-xs sm:text-sm md:text-base font-bold leading-none">UK</div>
+                      </div>
                     </div>
+                    {/* Registration Input */}
+                    <input
+                      type="text"
+                      value={regNumber}
+                      onChange={handleRegChange}
+                      placeholder="Enter reg"
+                      className="bg-yellow-400 border-none outline-none text-lg sm:text-2xl md:text-3xl text-black flex-1 font-black placeholder:text-black/70 px-2 sm:px-3 md:px-4 py-2 sm:py-4 uppercase tracking-wider h-[48px] sm:h-[60px] md:h-[66px] min-w-0"
+                      maxLength={8}
+                    />
                   </div>
-                  {/* Registration Input */}
-                  <input
-                    type="text"
-                    value={regNumber}
-                    onChange={handleRegChange}
-                    placeholder="Enter reg"
-                    className="bg-yellow-400 border-none outline-none text-lg sm:text-2xl md:text-3xl text-black flex-1 font-black placeholder:text-black/70 px-2 sm:px-3 md:px-4 py-2 sm:py-4 uppercase tracking-wider h-[48px] sm:h-[60px] md:h-[66px] min-w-0"
-                    maxLength={8}
-                  />
+                  {/* Green tick when reg is valid (at least 5 chars) */}
+                  {regNumber.replace(/\s/g, '').length >= 5 && (
+                    <span className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-md z-10">
+                      <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                    </span>
+                  )}
                 </div>
-                <p className="text-xs sm:text-sm text-black text-left mt-0.5">
-                  Protection for vehicles up to 150,000 miles and 15 years.
-                </p>
+                
+                {/* Guidance text based on state */}
+                {mileageSelection && regNumber.replace(/\s/g, '').length < 5 && (
+                  <p className="text-sm text-brand-orange font-medium text-left animate-pulse">
+                    👆 Enter your registration above to continue
+                  </p>
+                )}
+                {!mileageSelection && regNumber.replace(/\s/g, '').length < 5 && (
+                  <p className="text-xs sm:text-sm text-black text-left mt-0.5">
+                    Protection for vehicles up to 150,000 miles and 15 years.
+                  </p>
+                )}
+                {regNumber.replace(/\s/g, '').length >= 5 && !mileageSelection && (
+                  <p className="text-sm text-brand-orange font-medium text-left animate-pulse">
+                    👇 Now select your mileage below
+                  </p>
+                )}
+                {regNumber.replace(/\s/g, '').length >= 5 && mileageSelection && (
+                  <p className="text-xs sm:text-sm text-black text-left mt-0.5">
+                    Protection for vehicles up to 150,000 miles and 15 years.
+                  </p>
+                )}
 
                 {/* Mileage Quick Select */}
                 <MileageQuickSelect
