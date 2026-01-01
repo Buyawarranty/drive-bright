@@ -193,16 +193,9 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
     });
   };
 
-  // Format mileage for display
-  const formatMileage = (mileage: string) => {
-    const num = parseInt(mileage);
-    if (isNaN(num)) return mileage;
-    return num.toLocaleString();
-  };
-
   return (
     <section className="bg-white min-h-screen">
-      {/* Progress Indicator - Step 2 of 4 */}
+      {/* Progress Indicator */}
       <div className="bg-gray-50 border-b border-gray-200">
         <div className="max-w-2xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between text-sm">
@@ -221,17 +214,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             </div>
             <div className="flex-1 h-1 bg-gray-200 mx-2 sm:mx-4 rounded" />
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center text-xs font-bold">
-                <Lock className="w-3 h-3" />
+              <div className="w-6 h-6 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-xs font-bold">
+                3
               </div>
-              <span className="text-gray-400 hidden sm:inline">Your quote</span>
-            </div>
-            <div className="flex-1 h-1 bg-gray-200 mx-2 sm:mx-4 rounded" />
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center text-xs font-bold">
-                <Lock className="w-3 h-3" />
-              </div>
-              <span className="text-gray-400 hidden sm:inline">Checkout</span>
+              <span className="text-gray-500 hidden sm:inline">Your quote</span>
             </div>
           </div>
         </div>
@@ -251,7 +237,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           <MobileNavigation />
         </div>
 
-        {/* Vehicle Card with MOT Mileage */}
+        {/* Vehicle Card */}
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 sm:p-4 mb-6">
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
             <div className="bg-[#FFD700] text-black px-2.5 sm:px-3 py-1 sm:py-1.5 rounded font-bold text-xs sm:text-sm tracking-wide border-2 border-black">
@@ -261,8 +247,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               <p className="font-semibold text-gray-900 text-sm sm:text-base">
                 {vehicleData.make} {vehicleData.model}
               </p>
-              <p className="text-xs sm:text-sm text-gray-500">
-                {vehicleData.year} • {vehicleData.fuelType}
+              <p className="text-xs sm:text-sm text-gray-500 truncate">
+                {vehicleData.year} • {parseInt(vehicleData.mileage) <= 120000 ? 'Under 120k miles' : 'Over 120k miles'} • {vehicleData.fuelType}
               </p>
             </div>
             <button
@@ -271,27 +257,6 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             >
               Edit
             </button>
-          </div>
-          
-          {/* Mileage from MOT */}
-          <div className="mt-3 pt-3 border-t border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-700">
-                  <span className="font-medium">Approximate mileage:</span> {formatMileage(vehicleData.mileage)} miles
-                  <span className="text-gray-500 text-xs ml-1">(from last MOT)</span>
-                </p>
-              </div>
-              <button
-                onClick={onBack}
-                className="text-primary text-xs font-medium hover:underline"
-              >
-                Change mileage →
-              </button>
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Don't worry, we'll confirm your exact mileage later.
-            </p>
           </div>
         </div>
 
@@ -307,15 +272,15 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         {/* Main Content */}
         <div className="text-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            Your warranty quote is ready!
+            🎉 Your warranty quote is ready!
           </h1>
           <p className="text-gray-600">
-            Enter your email and phone to unlock your best price instantly.
+            Enter your email and phone to get your quote instantly.
           </p>
         </div>
 
         {/* Form */}
-        <div className="space-y-4 mb-4">
+        <div className="space-y-4 mb-6">
           {/* Email Input */}
           <div>
             <div className="relative">
@@ -372,11 +337,6 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 {phoneError}
               </p>
             )}
-            {/* Phone incentive */}
-            <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-1">
-              <Zap className="w-3 h-3 text-primary" />
-              Add your phone for massive savings and priority support.
-            </p>
           </div>
         </div>
 
@@ -419,20 +379,15 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </div>
         </div>
 
-        {/* Skip Link - Subtle text link with consequence */}
-        <div className="text-center">
-          <button 
-            onClick={handleSkipClick}
-            disabled={vehicleData.blocked}
-            data-ga4-event="step2_skip_click"
-            className="text-sm text-gray-500 hover:text-primary transition-colors underline"
-          >
-            View quote without email
-          </button>
-          <p className="text-xs text-gray-400 mt-1">
-            (Quote won't be saved for later)
-          </p>
-        </div>
+        {/* Skip Link */}
+        <button 
+          onClick={handleSkipClick}
+          disabled={vehicleData.blocked}
+          data-ga4-event="step2_skip_click"
+          className="w-full text-center text-gray-600 hover:text-primary font-medium py-3 transition-colors underline-offset-2 hover:underline"
+        >
+          View my quote now without email →
+        </button>
 
         {/* Trust Badges */}
         <div className="mt-8 pt-6 border-t border-gray-100">
