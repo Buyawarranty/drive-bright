@@ -4,10 +4,10 @@ import { Check, Zap, ChevronRight } from 'lucide-react';
 interface MileageQuickSelectProps {
   value: string;
   onChange: (value: string) => void;
-  onAutoSubmit?: () => void;
+  onAutoSubmit?: (mileageValue: string) => void; // Now passes the mileage value
   error?: string;
   isLoading?: boolean;
-  isRegValid?: boolean; // New prop to check if reg is valid
+  isRegValid?: boolean;
 }
 
 const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({ 
@@ -28,8 +28,10 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
     // Only auto-submit if reg is valid
     if (onAutoSubmit && isRegValid) {
       setShowLoadingMessage(true);
+      // Pass the selection value directly to avoid state timing issues
+      const mileageValue = selection === 'under120k' ? '100000' : '130000';
       setTimeout(() => {
-        onAutoSubmit();
+        onAutoSubmit(mileageValue);
       }, 800);
     }
   };

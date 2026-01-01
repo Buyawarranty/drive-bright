@@ -56,7 +56,11 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
     }
   };
 
-  const handleGetQuote = async () => {
+  const handleGetQuote = async (mileageOverride?: string) => {
+    // Use the override mileage if provided (from auto-submit), otherwise use state
+    const effectiveMileage = mileageOverride || mileage;
+    const effectiveMileageSelection = mileageOverride ? (mileageOverride === '100000' ? 'under120k' : 'over120k') : mileageSelection;
+    
     trackButtonClick('get_quote_hero');
     trackQuoteRequest();
 
@@ -69,7 +73,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
       return;
     }
 
-    if (!mileageSelection) {
+    if (!effectiveMileageSelection) {
       toast({
         title: "Mileage Required",
         description: "Please select your approximate mileage to continue.",
@@ -78,7 +82,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
       return;
     }
 
-    const mileageNum = parseInt(mileage, 10);
+    const mileageNum = parseInt(effectiveMileage, 10);
     if (mileageNum > 150000) {
       toast({
         title: "Mileage Too High",
@@ -100,7 +104,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
         console.error('DVLA lookup error:', error);
         const vehicleData: VehicleData = {
           regNumber: regNumber.toUpperCase(),
-          mileage: mileage,
+          mileage: effectiveMileage,
         };
         onRegistrationSubmit(vehicleData);
         return;
@@ -109,7 +113,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
       if (!data || !data.make) {
         const vehicleData: VehicleData = {
           regNumber: regNumber.toUpperCase(),
-          mileage: mileage,
+          mileage: effectiveMileage,
         };
         onRegistrationSubmit(vehicleData);
         return;
@@ -150,7 +154,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
 
       const vehicleData: VehicleData = {
         regNumber: regNumber.toUpperCase(),
-        mileage: mileage,
+        mileage: effectiveMileage,
         make: data.make,
         model: data.model,
         fuelType: data.fuelType,
@@ -166,7 +170,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
       console.error('Error looking up vehicle:', error);
       const vehicleData: VehicleData = {
         regNumber: regNumber.toUpperCase(),
-        mileage: mileage,
+        mileage: effectiveMileage,
       };
       onRegistrationSubmit(vehicleData);
     } finally {
