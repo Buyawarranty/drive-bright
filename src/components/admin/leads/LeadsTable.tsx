@@ -9,7 +9,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { Textarea } from '@/components/ui/textarea';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, 
-  Tag, User, Clock, AlertTriangle, Copy, FileText, StickyNote
+  Tag, User, Clock, AlertTriangle, Copy, FileText, StickyNote,
+  CheckCircle, CreditCard
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow, isPast, differenceInHours, differenceInDays, isToday } from 'date-fns';
@@ -76,8 +77,11 @@ const getUrgencySLA = (lead: Lead): { label: string; color: string; priority: nu
   return { label: 'Low', color: 'bg-gray-100 text-gray-600', priority: 4 };
 };
 
-// Get row background based on SLA urgency
+// Get row background based on SLA urgency and payment status
 const getRowUrgencyClass = (lead: Lead): string => {
+  // Paid leads get a green highlight
+  if (lead.is_paid) return 'bg-green-50 hover:bg-green-100/70';
+  
   const sla = getUrgencySLA(lead);
   if (sla.priority === 0) return 'bg-red-50 hover:bg-red-100/70'; // Overdue
   if (sla.priority === 1) return 'bg-amber-50 hover:bg-amber-100/70'; // Due today
@@ -143,6 +147,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
           <TableRow className="bg-muted/30">
             <TableHead className="sticky left-0 bg-muted/30 z-10 w-[100px]">Next Action</TableHead>
             <TableHead className="w-[100px]">Status</TableHead>
+            <TableHead className="w-[90px]">Payment</TableHead>
             <TableHead className="w-[90px]">Urgency</TableHead>
             <TableHead className="sticky left-[100px] bg-muted/30 z-10 w-[160px]">Phone</TableHead>
             <TableHead className="w-[120px]">Name</TableHead>
@@ -260,6 +265,41 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                         <SelectItem value="lost">Lost</SelectItem>
                       </SelectContent>
                     </Select>
+                  </TableCell>
+
+                  {/* Payment Status */}
+                  <TableCell>
+                    {lead.is_paid ? (
+                      <div className="space-y-0.5">
+                        <Badge className="bg-green-500 text-white text-[10px] flex items-center gap-1 w-fit">
+                          <CheckCircle className="h-3 w-3" />
+                          PAID
+                        </Badge>
+                        <div className="text-[10px] text-muted-foreground">
+                          £{lead.payment_amount?.toFixed(2) || 'N/A'}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground capitalize">
+                          {lead.payment_method || '—'}
+                        </div>
+                        {lead.step_two_completed_at && lead.payment_date && (
+                          <div className="text-[9px] text-green-600 font-medium">
+                            {(() => {
+                              const step2 = new Date(lead.step_two_completed_at);
+                              const paid = new Date(lead.payment_date);
+                              const diffMs = paid.getTime() - step2.getTime();
+                              const diffMins = Math.round(diffMs / 60000);
+                              const diffHours = Math.round(diffMs / 3600000);
+                              const diffDays = Math.round(diffMs / 86400000);
+                              if (diffMins < 60) return `${diffMins}m to pay`;
+                              if (diffHours < 24) return `${diffHours}h to pay`;
+                              return `${diffDays}d to pay`;
+                            })()}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    )}
                   </TableCell>
 
                   {/* Urgency SLA */}

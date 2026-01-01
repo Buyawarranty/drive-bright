@@ -2854,6 +2854,7 @@ export type Database = {
           first_name: string | null
           follow_up_status: string | null
           id: string
+          is_paid: boolean | null
           last_activity_date: string | null
           last_contacted_at: string | null
           last_name: string | null
@@ -2864,12 +2865,16 @@ export type Database = {
           next_action_date: string | null
           next_action_type: string | null
           notes: string | null
+          payment_amount: number | null
+          payment_date: string | null
+          payment_method: string | null
           phone: string | null
           plan_interest: string | null
           priority: Database["public"]["Enums"]["lead_priority"] | null
           priority_score: number | null
           quote_amount: number | null
           status: Database["public"]["Enums"]["lead_status"] | null
+          step_two_completed_at: string | null
           updated_at: string
           vehicle_make: string | null
           vehicle_model: string | null
@@ -2888,6 +2893,7 @@ export type Database = {
           first_name?: string | null
           follow_up_status?: string | null
           id?: string
+          is_paid?: boolean | null
           last_activity_date?: string | null
           last_contacted_at?: string | null
           last_name?: string | null
@@ -2898,12 +2904,16 @@ export type Database = {
           next_action_date?: string | null
           next_action_type?: string | null
           notes?: string | null
+          payment_amount?: number | null
+          payment_date?: string | null
+          payment_method?: string | null
           phone?: string | null
           plan_interest?: string | null
           priority?: Database["public"]["Enums"]["lead_priority"] | null
           priority_score?: number | null
           quote_amount?: number | null
           status?: Database["public"]["Enums"]["lead_status"] | null
+          step_two_completed_at?: string | null
           updated_at?: string
           vehicle_make?: string | null
           vehicle_model?: string | null
@@ -2922,6 +2932,7 @@ export type Database = {
           first_name?: string | null
           follow_up_status?: string | null
           id?: string
+          is_paid?: boolean | null
           last_activity_date?: string | null
           last_contacted_at?: string | null
           last_name?: string | null
@@ -2932,12 +2943,16 @@ export type Database = {
           next_action_date?: string | null
           next_action_type?: string | null
           notes?: string | null
+          payment_amount?: number | null
+          payment_date?: string | null
+          payment_method?: string | null
           phone?: string | null
           plan_interest?: string | null
           priority?: Database["public"]["Enums"]["lead_priority"] | null
           priority_score?: number | null
           quote_amount?: number | null
           status?: Database["public"]["Enums"]["lead_status"] | null
+          step_two_completed_at?: string | null
           updated_at?: string
           vehicle_make?: string | null
           vehicle_model?: string | null

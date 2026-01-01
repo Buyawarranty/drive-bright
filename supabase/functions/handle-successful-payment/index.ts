@@ -448,6 +448,34 @@ serve(async (req) => {
         logStep("Error updating abandoned cart status", cartError);
       }
       
+      // Update sales_leads with payment information
+      try {
+        const paymentAmount = parseFloat(metadata?.final_amount) || customerData?.final_amount || null;
+        const paymentMethod = metadata?.bumper_order_id ? 'bumper' : 'stripe';
+        
+        const { error: leadUpdateError } = await supabaseClient
+          .from('sales_leads')
+          .update({ 
+            is_paid: true,
+            payment_amount: paymentAmount,
+            payment_method: paymentMethod,
+            payment_date: new Date().toISOString(),
+            status: 'converted',
+            converted_at: new Date().toISOString(),
+            last_activity_date: new Date().toISOString(),
+            notes: `PAID - ${paymentMethod.toUpperCase()} - £${paymentAmount?.toFixed(2) || 'N/A'}`
+          })
+          .eq('email', userEmail.toLowerCase());
+        
+        if (leadUpdateError) {
+          logStep("Warning: Failed to update sales lead with payment info", leadUpdateError);
+        } else {
+          logStep("Successfully updated sales lead with payment info", { userEmail, paymentAmount, paymentMethod });
+        }
+      } catch (leadError) {
+        logStep("Error updating sales lead status", leadError);
+      }
+      
       // Use the same final addon data that was calculated earlier
       const finalAddOnsData = finalAddOnsForCustomer;
       
