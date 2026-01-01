@@ -275,7 +275,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             Your <span className="text-primary">{vehicleData.make} {vehicleData.model}</span> quote is ready!
           </h1>
           <p className="text-gray-600">
-            Just add your email and phone so we can send your personalised quote instantly.
+            Enter your email and phone to get your quote instantly.
           </p>
         </div>
 
