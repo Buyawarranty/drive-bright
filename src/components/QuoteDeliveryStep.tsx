@@ -416,7 +416,9 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       </div>
 
       {/* Branded Help Footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-4 px-4 z-50">
+      <div className="fixed bottom-0 left-0 right-0 bg-white py-4 px-4 z-50">
+        {/* Thick orange divider line at the top */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-brand-orange"></div>
         <div className="max-w-xl mx-auto">
           <p className="text-center text-gray-800 font-semibold text-sm mb-3">
             Need advice? We're here to help.
