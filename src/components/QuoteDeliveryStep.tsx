@@ -261,22 +261,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </div>
         )}
 
-        {/* Subheadline and Benefits */}
         <div className="mb-6">
-          <p className="text-gray-600 mb-3 text-left">
+          <p className="text-gray-600 text-left">
             Add a couple of quick details to see your best price.
           </p>
-          {/* Quick Benefits */}
-          <div className="flex items-center justify-center gap-6 text-sm text-gray-600">
-            <span className="flex items-center gap-1.5">
-              <Zap className="w-4 h-4 text-brand-orange" />
-              Instant quote
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Ban className="w-4 h-4 text-brand-orange" />
-              No obligation
-            </span>
-          </div>
         </div>
 
         {/* Form */}
@@ -410,9 +398,20 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
         {/* Trust Line */}
         <div className="text-center mt-4 text-gray-500 text-sm">
-          <p className="flex items-center justify-center gap-1">
+          <p className="flex items-center justify-center gap-1 mb-2">
             <span>🔒 We never share your details. 100% privacy guaranteed</span>
           </p>
+          {/* Quick Benefits */}
+          <div className="flex items-center justify-center gap-6 text-sm text-gray-600">
+            <span className="flex items-center gap-1.5">
+              <Zap className="w-4 h-4 text-brand-orange" />
+              Instant quote
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Ban className="w-4 h-4 text-brand-orange" />
+              No obligation
+            </span>
+          </div>
         </div>
 
         {/* Spacer for sticky footer */}
