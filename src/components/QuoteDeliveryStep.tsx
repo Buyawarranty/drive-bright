@@ -238,22 +238,22 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         </div>
 
         {/* Vehicle Card */}
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6">
-          <div className="flex items-center gap-3">
-            <div className="bg-[#FFD700] text-black px-3 py-1.5 rounded font-bold text-sm tracking-wide border-2 border-black">
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 sm:p-4 mb-6">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
+            <div className="bg-[#FFD700] text-black px-2.5 sm:px-3 py-1 sm:py-1.5 rounded font-bold text-xs sm:text-sm tracking-wide border-2 border-black">
               {vehicleData.regNumber}
             </div>
-            <div className="flex-1">
-              <p className="font-semibold text-gray-900">
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-gray-900 text-sm sm:text-base">
                 {vehicleData.make} {vehicleData.model}
               </p>
-              <p className="text-sm text-gray-500">
-                {vehicleData.year} • {parseInt(vehicleData.mileage) <= 120000 ? 'Under 120,000 miles' : 'Over 120,000 miles'} • {vehicleData.fuelType}
+              <p className="text-xs sm:text-sm text-gray-500 truncate">
+                {vehicleData.year} • {parseInt(vehicleData.mileage) <= 120000 ? 'Under 120k miles' : 'Over 120k miles'} • {vehicleData.fuelType}
               </p>
             </div>
             <button
               onClick={onBack}
-              className="text-primary text-sm font-medium hover:underline"
+              className="text-primary text-xs sm:text-sm font-medium hover:underline flex-shrink-0"
             >
               Edit
             </button>
