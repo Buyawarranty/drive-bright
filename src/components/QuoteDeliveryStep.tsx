@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Zap, ArrowRight, Ban, BellOff, MessageCircle, Star } from 'lucide-react';
+import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Zap, ArrowRight, Ban, BellOff, MessageCircle, Star, User } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
 import MobileNavigation from '@/components/MobileNavigation';
@@ -249,7 +249,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             🎉 Your warranty quote is ready!
           </h1>
           <p className="text-gray-600 mb-3">
-            Enter your email and phone to get your quote instantly.
+            We only need 3 quick details to show your price.
           </p>
           {/* Quick Benefits */}
           <div className="flex items-center justify-center gap-6 text-sm text-gray-600">
@@ -272,6 +272,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               Your first name
             </label>
             <div className="relative">
+              <User className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 ${firstName && isValidFirstName ? 'text-gray-700' : 'text-gray-500'}`} />
               <input
                 type="text"
                 placeholder="e.g. John"
@@ -279,7 +280,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 onChange={(e) => setFirstName(e.target.value)}
                 autoComplete="given-name"
                 data-ga4-event="step2_firstname_input"
-                className={`w-full px-4 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
+                className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
                   firstName && isValidFirstName ? 'border-green-600 text-gray-900 font-semibold' : 'border-gray-400 text-gray-900'
                 }`}
               />
