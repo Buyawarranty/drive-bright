@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ArrowRight, Zap, Mail, Car, Edit3, Check, Lock, Phone, CheckCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Zap, Mail, Car, Edit3, Check, Lock, Phone, CheckCircle, X } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
 import MobileNavigation from '@/components/MobileNavigation';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface QuoteDeliveryStepProps {
   vehicleData: {
@@ -41,6 +42,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
     phone: false
   });
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   const handleSkipClick = async () => {
     // Track abandoned cart only if we have a valid email
@@ -420,10 +422,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                       origin: { y: 0.6 }
                     });
                     
-                    // Proceed to next step
-                    setTimeout(() => {
-                      onNext({ email: email.trim(), phone, firstName: '', lastName: '', sendQuoteEmail: true });
-                    }, 300);
+                    // Show success popup instead of proceeding to next step
+                    setShowSuccessPopup(true);
                   }}
                   disabled={vehicleData.blocked || !email.trim() || !/\S+@\S+\.\S+/.test(email) || sendingEmail}
                   className={`w-full flex items-center justify-center text-white font-bold py-3 sm:py-5 px-4 sm:px-8 rounded-xl transition-all duration-200 shadow-lg ${
@@ -595,6 +595,34 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </>
         )}
       </div>
+
+      {/* Success Popup */}
+      <Dialog open={showSuccessPopup} onOpenChange={setShowSuccessPopup}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="text-center">
+            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+              <CheckCircle className="w-10 h-10 text-green-500" />
+            </div>
+            <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-900 text-center">
+              Quote Sent Successfully!
+            </DialogTitle>
+            <DialogDescription className="text-center text-gray-600 mt-2">
+              Thank you for your interest! Our team will contact you soon with the best warranty offers for your {vehicleData.make} {vehicleData.model}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-6">
+            <button
+              onClick={() => setShowSuccessPopup(false)}
+              className="w-full py-3 px-4 rounded-lg font-semibold text-white transition-all duration-200"
+              style={{ backgroundColor: '#f97316' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ea580c'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f97316'}
+            >
+              Got it, thanks!
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
