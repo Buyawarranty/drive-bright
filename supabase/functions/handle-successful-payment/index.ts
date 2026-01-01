@@ -448,29 +448,51 @@ serve(async (req) => {
         logStep("Error updating abandoned cart status", cartError);
       }
       
-      // Update sales_leads with payment information
+      // Update sales_leads with payment information and vehicle details
       try {
         const paymentAmount = parseFloat(metadata?.final_amount) || customerData?.final_amount || null;
         const paymentMethod = metadata?.bumper_order_id ? 'bumper' : 'stripe';
         
+        // Build update object with payment info and vehicle details
+        const leadUpdateData: Record<string, any> = { 
+          is_paid: true,
+          payment_amount: paymentAmount,
+          payment_method: paymentMethod,
+          payment_date: new Date().toISOString(),
+          status: 'converted',
+          converted_at: new Date().toISOString(),
+          last_activity_date: new Date().toISOString(),
+          notes: `PAID - ${paymentMethod.toUpperCase()} - £${paymentAmount?.toFixed(2) || 'N/A'}`
+        };
+        
+        // Also update vehicle details from vehicleData or metadata
+        const vData = vehicleData || metadata?.vehicleData || {};
+        if (vData.regNumber || vData.registration || vData.reg) {
+          leadUpdateData.vehicle_reg = vData.regNumber || vData.registration || vData.reg;
+        }
+        if (vData.make) leadUpdateData.vehicle_make = vData.make;
+        if (vData.model) leadUpdateData.vehicle_model = vData.model;
+        if (vData.year) leadUpdateData.vehicle_year = vData.year;
+        if (vData.vehicleType || vData.vehicle_type) leadUpdateData.vehicle_type = vData.vehicleType || vData.vehicle_type;
+        if (vData.mileage) leadUpdateData.mileage = vData.mileage;
+        
+        // Update first_name if available
+        const firstName = customerData?.firstName || customerData?.first_name || metadata?.first_name;
+        if (firstName) leadUpdateData.first_name = firstName;
+        
+        // Update phone if available
+        const phone = customerData?.phone || metadata?.phone;
+        if (phone) leadUpdateData.phone = phone;
+        
         const { error: leadUpdateError } = await supabaseClient
           .from('sales_leads')
-          .update({ 
-            is_paid: true,
-            payment_amount: paymentAmount,
-            payment_method: paymentMethod,
-            payment_date: new Date().toISOString(),
-            status: 'converted',
-            converted_at: new Date().toISOString(),
-            last_activity_date: new Date().toISOString(),
-            notes: `PAID - ${paymentMethod.toUpperCase()} - £${paymentAmount?.toFixed(2) || 'N/A'}`
-          })
+          .update(leadUpdateData)
           .eq('email', userEmail.toLowerCase());
         
         if (leadUpdateError) {
           logStep("Warning: Failed to update sales lead with payment info", leadUpdateError);
         } else {
-          logStep("Successfully updated sales lead with payment info", { userEmail, paymentAmount, paymentMethod });
+          logStep("Successfully updated sales lead with payment info and vehicle details", { userEmail, paymentAmount, paymentMethod, vehicleReg: leadUpdateData.vehicle_reg });
         }
       } catch (leadError) {
         logStep("Error updating sales lead status", leadError);
