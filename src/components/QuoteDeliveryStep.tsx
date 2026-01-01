@@ -284,7 +284,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           {/* Email Input */}
           <div>
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
               <input
                 type="email"
                 placeholder="Email address"
@@ -294,8 +294,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   if (emailError) setEmailError('');
                 }}
                 data-ga4-event="step2_email_input"
-                className={`w-full pl-12 pr-12 py-4 text-base border-2 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${
-                  emailError ? 'border-red-500 bg-red-50/30' : email && isValidEmail ? 'border-green-500 bg-green-50/30' : 'border-gray-200'
+                className={`w-full pl-12 pr-12 py-4 text-base text-gray-900 placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${
+                  emailError ? 'border-red-500 bg-red-50/30' : email && isValidEmail ? 'border-green-500 bg-green-50/30' : 'border-gray-400'
                 }`}
               />
               {email && isValidEmail && (
@@ -313,18 +313,18 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           {/* Phone Input */}
           <div>
             <div className="relative">
-              <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
               <input
                 type="tel"
-                placeholder="UK phone number (e.g. 07123 456789)"
+                placeholder="UK mobile number (e.g. 07123 456789)"
                 value={phone}
                 onChange={(e) => {
                   setPhone(e.target.value);
                   if (phoneError) setPhoneError('');
                 }}
                 data-ga4-event="step2_phone_input"
-                className={`w-full pl-12 pr-12 py-4 text-base border-2 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${
-                  phoneError ? 'border-red-500 bg-red-50/30' : phone && isValidPhone ? 'border-green-500 bg-green-50/30' : 'border-gray-200'
+                className={`w-full pl-12 pr-12 py-4 text-base text-gray-900 placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${
+                  phoneError ? 'border-red-500 bg-red-50/30' : phone && isValidPhone ? 'border-green-500 bg-green-50/30' : 'border-gray-400'
                 }`}
               />
               {phone && isValidPhone && (
@@ -393,21 +393,15 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         <div className="mt-8 pt-6 border-t border-gray-100">
           <div className="grid grid-cols-3 gap-4 text-center">
             <div className="flex flex-col items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-green-600" />
-              </div>
+              <Shield className="w-6 h-6 text-primary" />
               <span className="text-xs text-gray-600">Trusted by 50,000+ drivers</span>
             </div>
             <div className="flex flex-col items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-primary" />
-              </div>
+              <Clock className="w-6 h-6 text-primary" />
               <span className="text-xs text-gray-600">Instant quote in 60 seconds</span>
             </div>
             <div className="flex flex-col items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-green-600" />
-              </div>
+              <CheckCircle className="w-6 h-6 text-primary" />
               <span className="text-xs text-gray-600">No obligation</span>
             </div>
           </div>
