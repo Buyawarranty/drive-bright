@@ -211,7 +211,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
     <section className="bg-white min-h-screen">
       <div className="max-w-xl mx-auto px-4 py-6 sm:py-10">
         {/* Header */}
-        <div className="flex justify-start items-center mb-6">
+        <div className="flex justify-start items-center mb-4">
           <button 
             type="button" 
             onClick={onBack}
@@ -220,6 +220,13 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             <ArrowLeft className="w-4 h-4" />
             Back
           </button>
+        </div>
+
+        {/* Main Heading */}
+        <div className="text-center mb-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            🎉 Your warranty quote is ready!
+          </h1>
         </div>
 
         {/* Vehicle Card */}
@@ -254,11 +261,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </div>
         )}
 
-        {/* Main Content */}
+        {/* Subheadline and Benefits */}
         <div className="text-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            🎉 Your warranty quote is ready!
-          </h1>
           <p className="text-gray-600 mb-3">
             Add a couple of quick details to see your best price.
           </p>
