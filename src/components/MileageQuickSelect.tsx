@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, Zap } from 'lucide-react';
+import { Check, Zap, ChevronRight } from 'lucide-react';
 
 interface MileageQuickSelectProps {
   value: string;
@@ -52,7 +52,7 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
         What's your approximate mileage?
       </p>
       
-      {/* Quick Select Buttons - White fill, solid orange on hover and selected */}
+      {/* Quick Select Buttons */}
       <div className="flex gap-3 sm:gap-4">
         <button
           type="button"
@@ -60,7 +60,7 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
           className={`relative flex-1 py-4 sm:py-5 px-4 sm:px-6 rounded-xl border-2 font-bold text-sm sm:text-base transition-all duration-200 transform ${
             isUnder120k
               ? 'border-brand-orange bg-brand-orange text-white shadow-[0_0_20px_rgba(249,115,22,0.5)] scale-[1.02]'
-              : 'border-brand-orange/60 bg-white text-gray-700 hover:border-brand-orange hover:bg-brand-orange hover:text-white hover:shadow-[0_0_15px_rgba(249,115,22,0.3)] hover:scale-[1.02]'
+              : 'border-gray-300 bg-white text-gray-600 hover:border-brand-orange hover:bg-brand-orange hover:text-white hover:scale-[1.02]'
           }`}
         >
           {isUnder120k && (
@@ -68,8 +68,9 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
               <Check className="w-3 h-3 text-white" strokeWidth={3} />
             </span>
           )}
-          <span className="flex items-center justify-center">
+          <span className="flex items-center justify-center gap-2">
             Under 120,000 miles
+            <ChevronRight className={`w-5 h-5 ${isUnder120k ? 'text-white' : 'text-gray-400'}`} />
           </span>
         </button>
         
@@ -79,7 +80,7 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
           className={`relative flex-1 py-4 sm:py-5 px-4 sm:px-6 rounded-xl border-2 font-bold text-sm sm:text-base transition-all duration-200 transform ${
             isOver120k
               ? 'border-brand-orange bg-brand-orange text-white shadow-[0_0_20px_rgba(249,115,22,0.5)] scale-[1.02]'
-              : 'border-brand-orange/60 bg-white text-gray-700 hover:border-brand-orange hover:bg-brand-orange hover:text-white hover:shadow-[0_0_15px_rgba(249,115,22,0.3)] hover:scale-[1.02]'
+              : 'border-gray-300 bg-white text-gray-600 hover:border-brand-orange hover:bg-brand-orange hover:text-white hover:scale-[1.02]'
           }`}
         >
           {isOver120k && (
@@ -87,8 +88,9 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
               <Check className="w-3 h-3 text-white" strokeWidth={3} />
             </span>
           )}
-          <span className="flex items-center justify-center">
+          <span className="flex items-center justify-center gap-2">
             Over 120,000 miles
+            <ChevronRight className={`w-5 h-5 ${isOver120k ? 'text-white' : 'text-gray-400'}`} />
           </span>
         </button>
       </div>
