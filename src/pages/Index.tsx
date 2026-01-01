@@ -19,6 +19,7 @@ import PerformanceOptimizedSuspense from '@/components/PerformanceOptimizedSuspe
 import { BackNavigationConfirmDialog } from '@/components/BackNavigationConfirmDialog';
 import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';
 import { captureGclid } from '@/utils/gclidCapture';
+import { CarDrivingLoader } from '@/components/ui/car-driving-loader';
 
 
 // Lazy load heavy components that are not immediately visible
@@ -1030,9 +1031,7 @@ const Index = () => {
               ) : (
                 <div className="min-h-[60vh] flex items-center justify-center bg-white rounded-lg shadow-md">
                   <div className="text-center p-8">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading your quote...</p>
-                    <p className="text-xs text-gray-400 mt-2">Restoring vehicle data...</p>
+                    <CarDrivingLoader text="Loading your quote..." />
                   </div>
                 </div>
               )}

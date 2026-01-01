@@ -236,6 +236,69 @@ export default {
 						transform: 'translateY(110vh) rotate(360deg)',
 						opacity: '0.6'
 					}
+				},
+				'cloud-move': {
+					'0%': {
+						transform: 'translateX(300px)',
+						opacity: '0'
+					},
+					'10%': {
+						opacity: '0.8'
+					},
+					'90%': {
+						opacity: '0.8'
+					},
+					'100%': {
+						transform: 'translateX(-50px)',
+						opacity: '0'
+					}
+				},
+				'road-lines': {
+					'0%': {
+						transform: 'translateX(0)'
+					},
+					'100%': {
+						transform: 'translateX(-64px)'
+					}
+				},
+				'car-bounce': {
+					'0%, 100%': {
+						transform: 'translateX(-50%) translateY(0)'
+					},
+					'50%': {
+						transform: 'translateX(-50%) translateY(-2px)'
+					}
+				},
+				'wheel-spin': {
+					'0%': {
+						transform: 'rotate(0deg)'
+					},
+					'100%': {
+						transform: 'rotate(360deg)'
+					}
+				},
+				'speed-line': {
+					'0%': {
+						transform: 'translateX(0)',
+						opacity: '0'
+					},
+					'50%': {
+						opacity: '0.5'
+					},
+					'100%': {
+						transform: 'translateX(-40px)',
+						opacity: '0'
+					}
+				},
+				'exhaust': {
+					'0%': {
+						transform: 'translateX(0) scale(1)',
+						opacity: '0.4'
+					},
+					'100%': {
+						transform: 'translateX(-20px) scale(1.5)',
+						opacity: '0'
+					}
 				}
 			},
 			animation: {
@@ -256,7 +319,13 @@ export default {
 				'float': 'float 2s ease-in-out infinite',
 				'bounce-slow': 'bounce-slow 3s ease-in-out infinite',
 				'gentle-bounce': 'gentle-bounce 4s ease-in-out infinite',
-				'fall': 'fall 8s linear infinite'
+				'fall': 'fall 8s linear infinite',
+				'cloud-move': 'cloud-move 8s linear infinite',
+				'road-lines': 'road-lines 1s linear infinite',
+				'car-bounce': 'car-bounce 0.3s ease-in-out infinite',
+				'wheel-spin': 'wheel-spin 0.3s linear infinite',
+				'speed-line': 'speed-line 0.4s linear infinite',
+				'exhaust': 'exhaust 0.8s ease-out infinite'
 			}
 		}
 	},
