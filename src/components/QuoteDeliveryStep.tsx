@@ -350,8 +350,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 {phoneError || 'Please enter a valid UK phone number'}
               </p>
             ) : (
-              <p className="text-gray-500 text-xs mt-1.5">
-                Unlock exclusive discounts and expert advice
+              <p className="text-gray-500 mt-1.5">
+                <span className="text-sm font-medium">Unlock exclusive discounts</span> <span className="text-xs">and get expert advice</span>
               </p>
             )}
           </div>
