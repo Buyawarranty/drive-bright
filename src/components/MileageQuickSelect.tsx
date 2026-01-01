@@ -52,7 +52,7 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
         What's your approximate mileage?
       </p>
       
-      {/* Quick Select Buttons - More Prominent */}
+      {/* Quick Select Buttons - Light grey with orange border, solid orange when selected */}
       <div className="flex gap-3 sm:gap-4">
         <button
           type="button"
@@ -60,7 +60,7 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
           className={`flex-1 py-4 sm:py-5 px-4 sm:px-6 rounded-xl border-2 font-bold text-sm sm:text-base transition-all duration-200 transform ${
             isUnder120k
               ? 'border-brand-orange bg-brand-orange text-white shadow-[0_0_20px_rgba(249,115,22,0.5)] scale-[1.02]'
-              : 'border-gray-300 bg-white text-gray-700 hover:border-brand-orange hover:bg-brand-orange/5 hover:text-brand-orange hover:shadow-[0_0_15px_rgba(249,115,22,0.3)] hover:scale-[1.02]'
+              : 'border-brand-orange/60 bg-gray-100 text-gray-700 hover:border-brand-orange hover:bg-brand-orange/10 hover:text-brand-orange hover:shadow-[0_0_15px_rgba(249,115,22,0.3)] hover:scale-[1.02]'
           }`}
         >
           <span className="flex items-center justify-center gap-2">
@@ -75,7 +75,7 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
           className={`flex-1 py-4 sm:py-5 px-4 sm:px-6 rounded-xl border-2 font-bold text-sm sm:text-base transition-all duration-200 transform ${
             isOver120k
               ? 'border-brand-orange bg-brand-orange text-white shadow-[0_0_20px_rgba(249,115,22,0.5)] scale-[1.02]'
-              : 'border-gray-300 bg-white text-gray-700 hover:border-brand-orange hover:bg-brand-orange/5 hover:text-brand-orange hover:shadow-[0_0_15px_rgba(249,115,22,0.3)] hover:scale-[1.02]'
+              : 'border-brand-orange/60 bg-gray-100 text-gray-700 hover:border-brand-orange hover:bg-brand-orange/10 hover:text-brand-orange hover:shadow-[0_0_15px_rgba(249,115,22,0.3)] hover:scale-[1.02]'
           }`}
         >
           <span className="flex items-center justify-center gap-2">
@@ -85,8 +85,8 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
         </button>
       </div>
       
-      {/* Microcopy */}
-      <p className="text-xs sm:text-sm text-gray-500 text-left">
+      {/* Microcopy - larger size */}
+      <p className="text-sm sm:text-base text-gray-500 text-left">
         Don't worry, we'll confirm your exact mileage later.
       </p>
       

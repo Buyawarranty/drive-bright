@@ -182,8 +182,9 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
           <div className="space-y-4 flex flex-col justify-center">
             {/* Main Headline */}
             <div className="space-y-2 mb-4">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 leading-tight">
-                We{"'"}ve got you covered <span className="text-brand-orange">in 60 seconds!</span>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight">
+                <span className="text-gray-900">Affordable warranty you can trust </span>
+                <span className="text-brand-orange">– in 60 seconds!</span>
               </h2>
             </div>
 
