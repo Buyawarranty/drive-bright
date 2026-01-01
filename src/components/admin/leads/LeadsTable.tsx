@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, 
   Tag, User, Clock, AlertTriangle, Copy, FileText, StickyNote,
-  CheckCircle, CreditCard
+  CheckCircle, CreditCard, ChevronDown, ChevronUp, Send
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow, isPast, differenceInHours, differenceInDays, isToday } from 'date-fns';
@@ -147,6 +147,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
           <TableRow className="bg-muted/30">
             <TableHead className="sticky left-0 bg-muted/30 z-10 w-[100px] min-w-[100px]">Next Action</TableHead>
             <TableHead className="w-[100px]">Status</TableHead>
+            <TableHead className="w-[120px]">Actions</TableHead>
             <TableHead className="w-[90px]">Payment</TableHead>
             <TableHead className="w-[90px]">Urgency</TableHead>
             <TableHead className="w-[160px]">Phone</TableHead>
@@ -159,7 +160,6 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
             <TableHead className="w-[120px]">Assigned To</TableHead>
             <TableHead className="w-[100px]">Last Activity</TableHead>
             <TableHead className="w-[100px]">Date Created</TableHead>
-            <TableHead className="w-[90px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -265,6 +265,70 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                         <SelectItem value="lost">Lost</SelectItem>
                       </SelectContent>
                     </Select>
+                  </TableCell>
+
+                  {/* Quick Actions - Moved to 3rd column */}
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-0.5">
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => setExpandedLead(expandedLead === lead.id ? null : lead.id)}
+                        title={expandedLead === lead.id ? "Collapse" : "Expand details"}
+                      >
+                        {expandedLead === lead.id ? (
+                          <ChevronUp className="h-3.5 w-3.5" />
+                        ) : (
+                          <ChevronDown className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-50"
+                        onClick={() => {
+                          if (lead.phone) {
+                            window.open(`tel:${lead.phone}`);
+                            if (!lead.is_from_abandoned_cart) {
+                              onLogActivity(lead.id, 'call', 'Made phone call');
+                            }
+                          } else {
+                            toast.error('No phone number');
+                          }
+                        }}
+                        title="Call"
+                      >
+                        <Phone className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => {
+                          setExpandedLead(lead.id);
+                          setEditingNotes(lead.id);
+                          setNotesValue(lead.notes || '');
+                        }}
+                        title="Add note"
+                      >
+                        <StickyNote className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="h-7 w-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                        onClick={() => {
+                          window.open(`mailto:${lead.email}?subject=Your Warranty Quote`);
+                          if (!lead.is_from_abandoned_cart) {
+                            onLogActivity(lead.id, 'email', 'Sent quote email');
+                          }
+                        }}
+                        title="Email quote"
+                      >
+                        <Send className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </TableCell>
 
                   {/* Payment Status */}
@@ -568,57 +632,6 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                     >
                       <div>{format(new Date(lead.created_at), 'dd MMM yy')}</div>
                       <div className="opacity-70">{format(new Date(lead.created_at), 'HH:mm')}</div>
-                    </div>
-                  </TableCell>
-
-                  {/* Quick Actions */}
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center gap-0.5">
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-50"
-                        onClick={() => {
-                          if (lead.phone) {
-                            window.open(`tel:${lead.phone}`);
-                            if (!lead.is_from_abandoned_cart) {
-                              onLogActivity(lead.id, 'call', 'Made phone call');
-                            }
-                          } else {
-                            toast.error('No phone number');
-                          }
-                        }}
-                        title="Call"
-                      >
-                        <Phone className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => {
-                          setExpandedLead(lead.id);
-                          setEditingNotes(lead.id);
-                          setNotesValue(lead.notes || '');
-                        }}
-                        title="Add note"
-                      >
-                        <StickyNote className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        className="h-7 w-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                        onClick={() => {
-                          window.open(`mailto:${lead.email}?subject=Your Warranty Quote`);
-                          if (!lead.is_from_abandoned_cart) {
-                            onLogActivity(lead.id, 'email', 'Sent quote email');
-                          }
-                        }}
-                        title="Send quote"
-                      >
-                        <FileText className="h-3.5 w-3.5" />
-                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>

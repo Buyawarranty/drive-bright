@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useLeads } from '@/hooks/useLeads';
+import { useLeads, Lead } from '@/hooks/useLeads';
 import { LeadsTable } from './LeadsTable';
 import { LeadsFilters } from './LeadsFilters';
 import { SalespersonDashboard } from './SalespersonDashboard';
 import { ManagerDashboard } from './ManagerDashboard';
+import { ManualOrderEntry } from '../ManualOrderEntry';
 import { Users, UserCircle, LayoutDashboard } from 'lucide-react';
 
 export const NewLeadsTab: React.FC = () => {
@@ -74,23 +75,28 @@ export const NewLeadsTab: React.FC = () => {
           <p className="text-muted-foreground">Manage and track your sales pipeline</p>
         </div>
         
-        {/* View Toggle */}
-        <Tabs value={activeView} onValueChange={(v) => setActiveView(v as any)}>
-          <TabsList>
-            <TabsTrigger value="leads" className="flex items-center gap-2">
-              <LayoutDashboard className="h-4 w-4" />
-              All Leads
-            </TabsTrigger>
-            <TabsTrigger value="my-dashboard" className="flex items-center gap-2">
-              <UserCircle className="h-4 w-4" />
-              My Dashboard
-            </TabsTrigger>
-            <TabsTrigger value="team-dashboard" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Team View
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex items-center gap-3">
+          {/* Add Manual Order Button */}
+          <ManualOrderEntry />
+          
+          {/* View Toggle */}
+          <Tabs value={activeView} onValueChange={(v) => setActiveView(v as any)}>
+            <TabsList>
+              <TabsTrigger value="leads" className="flex items-center gap-2">
+                <LayoutDashboard className="h-4 w-4" />
+                All Leads
+              </TabsTrigger>
+              <TabsTrigger value="my-dashboard" className="flex items-center gap-2">
+                <UserCircle className="h-4 w-4" />
+                My Dashboard
+              </TabsTrigger>
+              <TabsTrigger value="team-dashboard" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Team View
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
       </div>
 
       {/* Content based on view */}
