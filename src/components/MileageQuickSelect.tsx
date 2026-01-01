@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, Zap, ChevronRight, ArrowRight } from 'lucide-react';
+import { Check, Zap, ChevronRight, ArrowRight, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface MileageQuickSelectProps {
@@ -125,9 +125,10 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
       
       {/* Error Message */}
       {error && (
-        <p className="text-sm text-destructive font-medium text-left">
-          {error}
-        </p>
+        <div className="flex items-center gap-2 text-red-600 font-medium text-left bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <span className="text-sm">{error}</span>
+        </div>
       )}
     </div>
   );
