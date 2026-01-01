@@ -145,11 +145,11 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/30">
-            <TableHead className="sticky left-0 bg-muted/30 z-10 w-[100px]">Next Action</TableHead>
+            <TableHead className="sticky left-0 bg-muted/30 z-10 w-[100px] min-w-[100px]">Next Action</TableHead>
             <TableHead className="w-[100px]">Status</TableHead>
             <TableHead className="w-[90px]">Payment</TableHead>
             <TableHead className="w-[90px]">Urgency</TableHead>
-            <TableHead className="sticky left-[100px] bg-muted/30 z-10 w-[160px]">Phone</TableHead>
+            <TableHead className="w-[160px]">Phone</TableHead>
             <TableHead className="w-[120px]">Name</TableHead>
             <TableHead className="w-[180px]">Email</TableHead>
             <TableHead className="w-[120px]">Plan</TableHead>
@@ -309,8 +309,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                     </Badge>
                   </TableCell>
 
-                  {/* Phone - Sticky */}
-                  <TableCell className="sticky left-[100px] bg-inherit z-10" onClick={(e) => e.stopPropagation()}>
+                  {/* Phone */}
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     {lead.phone ? (
                       <div className="flex items-center gap-0.5">
                         <span 
