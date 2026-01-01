@@ -227,6 +227,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             🎉 Your warranty quote is ready!
           </h1>
+          <p className="text-gray-500 mt-1">See your best price in a few seconds</p>
         </div>
 
         {/* Vehicle Card */}
@@ -260,12 +261,6 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             </p>
           </div>
         )}
-
-        <div className="mb-6">
-          <p className="text-gray-600 text-left">
-            Add a couple of quick details to see your best price.
-          </p>
-        </div>
 
         {/* Form */}
         <div className="space-y-4 mb-6">
