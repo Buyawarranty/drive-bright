@@ -267,9 +267,9 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         {/* Form */}
         <div className="space-y-4 mb-6">
           {/* First Name Input */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              What should we call you?
+          <div className="pt-2">
+            <label className="block text-lg font-semibold text-gray-800 mb-2">
+              Your first name
             </label>
             <div className="relative">
               <input
@@ -378,10 +378,10 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           onClick={handleSubmit}
           disabled={vehicleData.blocked || sendingEmail}
           data-ga4-event="step2_show_price_click"
-          className={`w-full flex items-center justify-center gap-2 text-white font-bold py-5 px-8 rounded-xl shadow-lg text-lg ${
+          className={`w-full flex items-center justify-center gap-2 text-white font-bold py-5 px-8 rounded-xl shadow-lg text-lg transition-colors ${
             vehicleData.blocked || sendingEmail 
               ? 'bg-gray-300 cursor-not-allowed' 
-              : 'bg-brand-orange hover:bg-orange-600 active:scale-[0.98] animate-cta-enhanced'
+              : 'bg-brand-orange hover:bg-orange-700 active:scale-[0.98] animate-cta-enhanced'
           }`}
         >
           {sendingEmail ? (
