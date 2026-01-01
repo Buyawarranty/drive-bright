@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ArrowRight, Zap, Mail, Car, Edit3, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Zap, Mail, Car, Edit3, Check, Lock } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
 import MobileNavigation from '@/components/MobileNavigation';
@@ -316,8 +316,77 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               </p>
             </div>
 
-            <div className="space-y-3 sm:space-y-6 mb-4 sm:mb-8">
-              {/* Primary option - View my quote now (Blue) */}
+            <div className="space-y-4 sm:space-y-6 mb-4 sm:mb-8">
+              {/* Primary option - Email & Phone fields with Get My Quote */}
+              <div className="space-y-3 sm:space-y-4">
+                <div className="relative">
+                  <Mail className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+                  <input
+                    type="email"
+                    placeholder="Email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                  />
+                </div>
+                
+                <div className="relative">
+                  <div className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 flex items-center gap-1 text-gray-400 text-xs sm:text-sm">
+                    <span>🇬🇧</span>
+                    <span>+44</span>
+                  </div>
+                  <input
+                    type="tel"
+                    placeholder="Phone number"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full pl-16 sm:pl-20 pr-4 py-3 sm:py-4 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
+                  />
+                </div>
+                
+                <button 
+                  onClick={() => {
+                    if (email.trim()) {
+                      onNext({ email, phone, firstName: '', lastName: '', sendQuoteEmail: true });
+                    }
+                  }}
+                  disabled={vehicleData.blocked || !email.trim()}
+                  className={`w-full flex items-center justify-center text-white font-bold py-3 sm:py-5 px-4 sm:px-8 rounded-xl transition-all duration-200 shadow-lg ${
+                    vehicleData.blocked || !email.trim() ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                  style={{ backgroundColor: vehicleData.blocked || !email.trim() ? '#9ca3af' : '#f97316' }}
+                  onMouseEnter={(e) => {
+                    if (!vehicleData.blocked && email.trim()) {
+                      e.currentTarget.style.backgroundColor = '#ea580c';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!vehicleData.blocked && email.trim()) {
+                      e.currentTarget.style.backgroundColor = '#f97316';
+                    }
+                  }}
+                >
+                  <span className="text-base sm:text-xl">Get My Quote</span>
+                </button>
+                
+                <p className="text-center text-xs sm:text-sm text-gray-500 flex items-center justify-center gap-1.5">
+                  <Lock className="w-3 h-3 sm:w-4 sm:h-4" />
+                  Your information is safe & secure
+                </p>
+              </div>
+
+              <div className="relative my-3 sm:my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="bg-white px-3 sm:px-6 py-1 sm:py-2 text-gray-700 text-sm sm:text-lg font-semibold border border-gray-300 rounded-full">
+                    or
+                  </span>
+                </div>
+              </div>
+
+              {/* Secondary option - View my quote now (Blue) */}
               <button 
                 onClick={handleSkipClick}
                 disabled={vehicleData.blocked}
@@ -344,51 +413,6 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 </div>
                 <span className="text-lg sm:text-2xl absolute right-3 sm:right-8">→</span>
               </button>
-
-              <div className="relative my-3 sm:my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
-                </div>
-                <div className="relative flex justify-center">
-                  <span className="bg-white px-3 sm:px-6 py-1 sm:py-2 text-gray-700 text-sm sm:text-lg font-semibold border border-gray-300 rounded-full">
-                    or
-                  </span>
-                </div>
-              </div>
-
-              {/* Secondary option - See now + Get email (Orange) */}
-              <div>
-                <button 
-                  onClick={handleEmailQuoteClick}
-                  disabled={vehicleData.blocked}
-                  className={`w-full flex items-center justify-center text-white font-bold py-3 sm:py-5 px-4 sm:px-8 rounded-xl transition-all duration-200 relative shadow-lg ${
-                    vehicleData.blocked ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                  style={{ backgroundColor: vehicleData.blocked ? '#9ca3af' : '#eb4b00' }}
-                  onMouseEnter={(e) => {
-                    if (!vehicleData.blocked) {
-                      e.currentTarget.style.backgroundColor = '#d43f00';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!vehicleData.blocked) {
-                      e.currentTarget.style.backgroundColor = '#eb4b00';
-                    }
-                  }}
-                >
-                  <Mail className="w-4 h-4 sm:w-6 sm:h-6 absolute left-3 sm:left-8" />
-                  <div className="text-center px-6 sm:px-12">
-                    <div className="text-sm sm:text-xl leading-tight">
-                      See now + Get email
-                    </div>
-                  </div>
-                  <span className="text-lg sm:text-2xl absolute right-3 sm:right-8">→</span>
-                </button>
-                
-                <p className="text-center text-xs text-orange-600 font-medium mt-1.5 sm:mt-2">
-                  📧 Get your quote + bonus tips & discounts!
-                </p>
-              </div>
             </div>
 
           </>
