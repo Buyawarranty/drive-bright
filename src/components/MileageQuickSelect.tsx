@@ -59,39 +59,47 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
         What's your approximate mileage?
       </p>
       
-      {/* Radio Options */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-6">
+      {/* Card-Style Radio Options */}
+      <div className="flex flex-col sm:flex-row gap-3">
         <label
-          className="flex items-center gap-3 cursor-pointer group"
+          className={`relative flex-1 flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+            isUnder120k 
+              ? 'border-green-500 bg-green-50' 
+              : 'border-gray-300 bg-white hover:border-gray-400'
+          }`}
           onClick={() => handleSelect('under120k')}
         >
-          <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+          <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
             isUnder120k 
-              ? 'border-brand-orange bg-brand-orange' 
-              : 'border-gray-400 group-hover:border-brand-orange'
+              ? 'border-green-500 bg-green-500' 
+              : 'border-gray-400'
           }`}>
-            {isUnder120k && <span className="w-2.5 h-2.5 bg-white rounded-full" />}
+            {isUnder120k && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
           </span>
-          <span className={`text-sm sm:text-base font-bold transition-colors ${
-            isUnder120k ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'
+          <span className={`text-sm sm:text-base font-bold ${
+            isUnder120k ? 'text-gray-900' : 'text-gray-700'
           }`}>
             Under 120,000 miles
           </span>
         </label>
         
         <label
-          className="flex items-center gap-3 cursor-pointer group"
+          className={`relative flex-1 flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+            isOver120k 
+              ? 'border-green-500 bg-green-50' 
+              : 'border-gray-300 bg-white hover:border-gray-400'
+          }`}
           onClick={() => handleSelect('over120k')}
         >
-          <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+          <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
             isOver120k 
-              ? 'border-brand-orange bg-brand-orange' 
-              : 'border-gray-400 group-hover:border-brand-orange'
+              ? 'border-green-500 bg-green-500' 
+              : 'border-gray-400'
           }`}>
-            {isOver120k && <span className="w-2.5 h-2.5 bg-white rounded-full" />}
+            {isOver120k && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
           </span>
-          <span className={`text-sm sm:text-base font-bold transition-colors ${
-            isOver120k ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'
+          <span className={`text-sm sm:text-base font-bold ${
+            isOver120k ? 'text-gray-900' : 'text-gray-700'
           }`}>
             Over 120,000 miles
           </span>
