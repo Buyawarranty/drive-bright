@@ -344,12 +344,9 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           {/* Phone Input - Progressive Disclosure */}
           {isValidFirstName && isValidEmail && (
             <div className="animate-fade-in">
-              <label className="block text-lg font-semibold text-gray-800 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Your mobile number
               </label>
-              <p className="text-sm text-gray-900 font-medium mb-2">
-                ✨ Great {firstName.trim()}! Add your phone to unlock exclusive discounts and expert advice.
-              </p>
               <div className="relative">
                 <Phone className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 ${phone && isValidPhone ? 'text-gray-700' : 'text-gray-500'}`} />
                 <input
@@ -361,7 +358,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                     if (phoneError) setPhoneError('');
                   }}
                   data-ga4-event="step2_phone_input"
-                  className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
+                  className={`w-full pl-12 pr-12 py-3 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-2 focus:ring-green-600/20 focus:border-green-600 transition-all bg-white ${
                     phoneError || (phone && !isValidPhone) ? 'border-red-500 text-gray-700 font-bold' : phone && isValidPhone ? 'border-green-600 text-gray-700 font-bold' : 'border-gray-400 text-gray-700 font-bold'
                   }`}
                 />
@@ -371,16 +368,13 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   </div>
                 )}
               </div>
-              {phoneError && (
-                <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
-                  <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
-                  {phoneError}
+              {(phoneError || (phone && !isValidPhone)) ? (
+                <p className="text-red-500 text-xs mt-1.5">
+                  {phoneError || 'Please enter a valid UK phone number'}
                 </p>
-              )}
-              {!phoneError && phone && !isValidPhone && (
-                <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
-                  <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
-                  Please enter a valid UK phone number
+              ) : (
+                <p className="text-gray-500 text-xs mt-1.5">
+                  ✨ Add your phone to unlock exclusive discounts.
                 </p>
               )}
             </div>
@@ -420,36 +414,36 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       </div>
 
       {/* Branded Help Footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gray-100 border-t border-gray-200 py-4 px-4 z-50">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-4 px-4 z-50">
         <div className="max-w-xl mx-auto">
-          <p className="text-center text-gray-700 font-medium text-sm mb-3">
-            Need advice? Have any questions?
+          <p className="text-center text-gray-800 font-semibold text-sm mb-3">
+            Need advice? We're here to help.
           </p>
-          <div className="flex items-center justify-center gap-4 sm:gap-6">
+          <div className="flex items-center justify-center gap-6 sm:gap-8">
             <a 
               href="tel:03302295040"
-              className="flex items-center gap-1.5 text-gray-700 text-sm hover:text-brand-orange transition-colors"
+              className="flex items-center gap-2 text-gray-700 text-sm font-medium hover:text-brand-orange transition-colors"
             >
-              <Phone className="w-4 h-4 text-brand-orange" />
+              <Phone className="w-5 h-5 text-brand-orange" />
               <span>0330 229 5040</span>
             </a>
             <a 
               href="https://wa.me/447960109395" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-gray-700 text-sm hover:text-green-600 transition-colors"
+              className="flex items-center gap-2 text-gray-700 text-sm font-medium hover:text-green-600 transition-colors"
             >
-              <MessageCircle className="w-4 h-4 text-green-600" />
+              <MessageCircle className="w-5 h-5 text-green-600" />
               <span>WhatsApp</span>
             </a>
             <a 
-              href="https://uk.trustpilot.com/review/warrantywise.co.uk" 
+              href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-gray-700 text-sm hover:text-green-600 transition-colors"
+              className="flex items-center gap-2 text-gray-700 text-sm font-medium hover:text-green-600 transition-colors"
             >
-              <Star className="w-4 h-4 text-green-600 fill-green-600" />
-              <span>Trustpilot</span>
+              <Star className="w-5 h-5 text-green-600 fill-green-600" />
+              <span className="text-green-600 font-semibold">Trustpilot</span>
             </a>
           </div>
         </div>
