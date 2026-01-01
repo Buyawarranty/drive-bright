@@ -2097,7 +2097,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
           
           <p className="text-sm text-muted-foreground mb-4">
-            Select the hourly labour rate that matches your preferred garage type
+            Pick the hourly rate that works best for your repair needs.
           </p>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
