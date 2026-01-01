@@ -197,7 +197,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
     <section className="bg-white min-h-screen">
       <div className="max-w-xl mx-auto px-4 py-6 sm:py-10">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-start items-center mb-6">
           <button 
             type="button" 
             onClick={onBack}
@@ -206,7 +206,6 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             <ArrowLeft className="w-4 h-4" />
             Back
           </button>
-          <MobileNavigation />
         </div>
 
         {/* Vehicle Card */}
@@ -356,17 +355,6 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </div>
         </div>
 
-        {/* Divider */}
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
-          </div>
-          <div className="relative flex justify-center">
-            <span className="bg-white px-4 text-gray-500 text-sm">
-              or
-            </span>
-          </div>
-        </div>
       </div>
 
       {/* Success Popup */}
