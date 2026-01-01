@@ -398,7 +398,9 @@ export type Database = {
       }
       admin_users: {
         Row: {
+          column_masking: Json | null
           created_at: string
+          department: string | null
           email: string
           first_name: string | null
           id: string
@@ -408,12 +410,16 @@ export type Database = {
           last_login: string | null
           last_name: string | null
           permissions: Json
+          policy_id: string | null
+          require_2fa: boolean | null
           role: Database["public"]["Enums"]["user_role"]
           updated_at: string
           user_id: string | null
         }
         Insert: {
+          column_masking?: Json | null
           created_at?: string
+          department?: string | null
           email: string
           first_name?: string | null
           id?: string
@@ -423,12 +429,16 @@ export type Database = {
           last_login?: string | null
           last_name?: string | null
           permissions?: Json
+          policy_id?: string | null
+          require_2fa?: boolean | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
           user_id?: string | null
         }
         Update: {
+          column_masking?: Json | null
           created_at?: string
+          department?: string | null
           email?: string
           first_name?: string | null
           id?: string
@@ -438,11 +448,21 @@ export type Database = {
           last_login?: string | null
           last_name?: string | null
           permissions?: Json
+          policy_id?: string | null
+          require_2fa?: boolean | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "admin_users_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "permission_policies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       blocked_ips: {
         Row: {
@@ -2607,6 +2627,72 @@ export type Database = {
           },
         ]
       }
+      permission_policies: {
+        Row: {
+          action_permissions: Json
+          approval_required_for_export: boolean | null
+          column_masking: Json
+          created_at: string
+          created_by: string | null
+          department: string | null
+          description: string | null
+          elevated_until: string | null
+          export_rate_limit_per_hour: number | null
+          id: string
+          is_template: boolean | null
+          name: string
+          require_2fa: boolean | null
+          require_sso: boolean | null
+          scope_region: string | null
+          scope_team: string | null
+          session_timeout_minutes: number | null
+          tabs_permissions: Json
+          updated_at: string
+        }
+        Insert: {
+          action_permissions?: Json
+          approval_required_for_export?: boolean | null
+          column_masking?: Json
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          description?: string | null
+          elevated_until?: string | null
+          export_rate_limit_per_hour?: number | null
+          id?: string
+          is_template?: boolean | null
+          name: string
+          require_2fa?: boolean | null
+          require_sso?: boolean | null
+          scope_region?: string | null
+          scope_team?: string | null
+          session_timeout_minutes?: number | null
+          tabs_permissions?: Json
+          updated_at?: string
+        }
+        Update: {
+          action_permissions?: Json
+          approval_required_for_export?: boolean | null
+          column_masking?: Json
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          description?: string | null
+          elevated_until?: string | null
+          export_rate_limit_per_hour?: number | null
+          id?: string
+          is_template?: boolean | null
+          name?: string
+          require_2fa?: boolean | null
+          require_sso?: boolean | null
+          scope_region?: string | null
+          scope_team?: string | null
+          session_timeout_minutes?: number | null
+          tabs_permissions?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       plan_document_mapping: {
         Row: {
           created_at: string
@@ -3819,10 +3905,19 @@ export type Database = {
         Returns: string
       }
       generate_warranty_number: { Args: never; Returns: string }
+      get_column_mask: {
+        Args: { p_column: string; p_user_id: string }
+        Returns: string
+      }
       get_next_sales_user: { Args: never; Returns: string }
       get_next_warranty_serial: { Args: never; Returns: number }
+      get_user_permissions: { Args: { p_user_id: string }; Returns: Json }
       has_admin_permission: {
         Args: { permission_key: string; user_id: string }
+        Returns: boolean
+      }
+      has_tab_permission: {
+        Args: { p_action?: string; p_tab: string; p_user_id: string }
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
@@ -3861,6 +3956,7 @@ export type Database = {
       verify_warranty_selection: { Args: { audit_id: string }; Returns: Json }
     }
     Enums: {
+      action_scope: "none" | "own" | "team" | "department" | "global"
       interaction_type: "call" | "email" | "chat" | "in_person"
       lead_priority: "low" | "medium" | "high" | "urgent"
       lead_source:
@@ -3880,6 +3976,7 @@ export type Database = {
         | "negotiating"
         | "converted"
         | "lost"
+      mask_level: "none" | "partial" | "full"
       note_purpose:
         | "claim_query"
         | "sales_enquiry"
@@ -4024,6 +4121,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      action_scope: ["none", "own", "team", "department", "global"],
       interaction_type: ["call", "email", "chat", "in_person"],
       lead_priority: ["low", "medium", "high", "urgent"],
       lead_source: [
@@ -4045,6 +4143,7 @@ export const Constants = {
         "converted",
         "lost",
       ],
+      mask_level: ["none", "partial", "full"],
       note_purpose: [
         "claim_query",
         "sales_enquiry",
