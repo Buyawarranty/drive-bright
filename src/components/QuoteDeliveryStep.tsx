@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Shield, Clock, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Shield, Clock, Zap, ArrowRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
 import MobileNavigation from '@/components/MobileNavigation';
@@ -26,10 +26,11 @@ interface QuoteDeliveryStepProps {
 const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNext, onBack, onSkip }) => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [smsConsent, setSmsConsent] = useState(false);
-  const [whatsappConsent, setWhatsappConsent] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const isValidPhone = /^(?:(?:\+44\s?|0)7\d{9}|(?:\+44\s?|0)[1-9]\d{8,9})$/.test(phone.replace(/\s/g, ''));
@@ -68,6 +69,23 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   };
 
   const handleSubmit = async () => {
+    setHasAttemptedSubmit(true);
+    setEmailError('');
+    setPhoneError('');
+    
+    // Validate and show errors
+    if (!email.trim()) {
+      setEmailError('Please enter your email address');
+    } else if (!isValidEmail) {
+      setEmailError('Please enter a valid email address');
+    }
+    
+    if (!phone.trim()) {
+      setPhoneError('Please enter your phone number');
+    } else if (!isValidPhone) {
+      setPhoneError('Please enter a valid UK phone number');
+    }
+    
     if (!isFormValid) return;
     
     setSendingEmail(true);
@@ -108,11 +126,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           vehicle_model: vehicleData?.model,
           vehicle_year: vehicleData?.year,
           mileage: vehicleData?.mileage,
-          step_abandoned: 2,
-          cart_metadata: {
-            sms_consent: smsConsent,
-            whatsapp_consent: whatsappConsent
-          }
+          step_abandoned: 2
         }
       });
 
@@ -145,7 +159,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             assigned_at: nextUserId ? new Date().toISOString() : null,
             next_action_type: 'call',
             next_action_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-            notes: `Quote requested via website. Vehicle: ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber}). SMS consent: ${smsConsent}, WhatsApp consent: ${whatsappConsent}`,
+            notes: `Quote requested via website. Vehicle: ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber}).`,
             last_activity_date: new Date().toISOString()
           });
       } else {
@@ -261,108 +275,84 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         {/* Form */}
         <div className="space-y-4 mb-6">
           {/* Email Input */}
-          <div className="relative">
-            <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="email"
-              placeholder="Email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              data-ga4-event="step2_email_input"
-              className={`w-full pl-12 pr-12 py-4 text-base border-2 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${
-                email && isValidEmail ? 'border-green-500 bg-green-50/30' : 'border-gray-200'
-              }`}
-            />
-            {email && isValidEmail && (
-              <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-green-500" />
+          <div>
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="email"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailError) setEmailError('');
+                }}
+                data-ga4-event="step2_email_input"
+                className={`w-full pl-12 pr-12 py-4 text-base border-2 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${
+                  emailError ? 'border-red-500 bg-red-50/30' : email && isValidEmail ? 'border-green-500 bg-green-50/30' : 'border-gray-200'
+                }`}
+              />
+              {email && isValidEmail && (
+                <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-green-500" />
+              )}
+            </div>
+            {emailError && (
+              <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
+                <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
+                {emailError}
+              </p>
             )}
           </div>
           
           {/* Phone Input */}
-          <div className="relative">
-            <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="tel"
-              placeholder="UK phone number (e.g. 07123 456789)"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              data-ga4-event="step2_phone_input"
-              className={`w-full pl-12 pr-12 py-4 text-base border-2 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${
-                phone && isValidPhone ? 'border-green-500 bg-green-50/30' : 'border-gray-200'
-              }`}
-            />
-            {phone && isValidPhone && (
-              <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-green-500" />
-            )}
-            {phone && !isValidPhone && phone.length > 5 && (
-              <p className="text-red-500 text-sm mt-1">Please enter a valid UK phone number</p>
-            )}
-          </div>
-
-          {/* Consent Checkboxes */}
-          <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-            <p className="text-sm font-medium text-gray-700 mb-2">Get your quote faster via:</p>
-            
-            <label className="flex items-start gap-3 cursor-pointer group">
-              <div className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                smsConsent ? 'bg-primary border-primary' : 'border-gray-300 group-hover:border-primary'
-              }`}>
-                {smsConsent && <Check className="w-3 h-3 text-white" />}
-              </div>
+          <div>
+            <div className="relative">
+              <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
-                type="checkbox"
-                checked={smsConsent}
-                onChange={(e) => setSmsConsent(e.target.checked)}
-                className="sr-only"
-                data-ga4-event="step2_sms_consent"
+                type="tel"
+                placeholder="UK phone number (e.g. 07123 456789)"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  if (phoneError) setPhoneError('');
+                }}
+                data-ga4-event="step2_phone_input"
+                className={`w-full pl-12 pr-12 py-4 text-base border-2 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${
+                  phoneError ? 'border-red-500 bg-red-50/30' : phone && isValidPhone ? 'border-green-500 bg-green-50/30' : 'border-gray-200'
+                }`}
               />
-              <div>
-                <span className="text-sm text-gray-700 flex items-center gap-1.5">
-                  <MessageSquare className="w-4 h-4 text-green-600" />
-                  SMS updates
-                </span>
-                <span className="text-xs text-gray-500">Quick quote updates via text</span>
-              </div>
-            </label>
-
-            <label className="flex items-start gap-3 cursor-pointer group">
-              <div className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                whatsappConsent ? 'bg-green-500 border-green-500' : 'border-gray-300 group-hover:border-green-500'
-              }`}>
-                {whatsappConsent && <Check className="w-3 h-3 text-white" />}
-              </div>
-              <input
-                type="checkbox"
-                checked={whatsappConsent}
-                onChange={(e) => setWhatsappConsent(e.target.checked)}
-                className="sr-only"
-                data-ga4-event="step2_whatsapp_consent"
-              />
-              <div>
-                <span className="text-sm text-gray-700 flex items-center gap-1.5">
-                  <svg className="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                  </svg>
-                  WhatsApp messages
-                </span>
-                <span className="text-xs text-gray-500">Chat directly with our team</span>
-              </div>
-            </label>
+              {phone && isValidPhone && (
+                <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-green-500" />
+              )}
+            </div>
+            {phoneError && (
+              <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
+                <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
+                {phoneError}
+              </p>
+            )}
           </div>
         </div>
 
         {/* Primary CTA */}
         <button 
           onClick={handleSubmit}
-          disabled={vehicleData.blocked || !isFormValid || sendingEmail}
+          disabled={vehicleData.blocked || sendingEmail}
           data-ga4-event="step2_show_price_click"
-          className={`w-full flex items-center justify-center text-white font-bold py-4 px-8 rounded-xl transition-all duration-200 shadow-lg text-lg ${
-            !isFormValid || vehicleData.blocked || sendingEmail 
+          className={`w-full flex items-center justify-center gap-2 text-white font-bold py-4 px-8 rounded-xl transition-all duration-200 shadow-lg text-lg ${
+            vehicleData.blocked || sendingEmail 
               ? 'bg-gray-300 cursor-not-allowed' 
-              : 'bg-primary hover:bg-primary/90 active:scale-[0.98]'
+              : 'bg-brand-orange hover:bg-orange-600 active:scale-[0.98] animate-cta-enhanced'
           }`}
         >
-          {sendingEmail ? 'Sending...' : 'Show my price now'}
+          {sendingEmail ? (
+            'Sending...'
+          ) : (
+            <>
+              <Zap className="w-5 h-5" />
+              Show my price now
+              <ArrowRight className="w-5 h-5" />
+            </>
+          )}
         </button>
 
         {/* Trust Line */}
