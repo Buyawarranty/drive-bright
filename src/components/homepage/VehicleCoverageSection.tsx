@@ -4,7 +4,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 
 const VehicleCoverageSection: React.FC = () => {
   return (
-    <section className="pt-2 md:pt-4 pb-6 md:pb-8 bg-gray-50">
+    <section className="pt-2 md:pt-4 pb-6 md:pb-8 bg-white">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-8">

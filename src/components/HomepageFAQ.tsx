@@ -121,7 +121,7 @@ const HomepageFAQ = () => {
   );
 
   return (
-    <section className="pt-16 sm:pt-20 pb-8 bg-gray-50">
+    <section className="pt-16 sm:pt-20 pb-8 bg-white">
       <div className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
