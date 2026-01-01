@@ -87,13 +87,15 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Date</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Phone</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Reg Plate</TableHead>
+            <TableHead>Mileage</TableHead>
+            <TableHead>Plan</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Assigned To</TableHead>
-            <TableHead>Value</TableHead>
             <TableHead>Next Action</TableHead>
             <TableHead>Last Activity</TableHead>
             <TableHead>Tag</TableHead>
@@ -105,15 +107,30 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
               <TableRow 
                 className={cn(
                   "cursor-pointer hover:bg-muted/50",
-                  isOverdue(lead) && "bg-red-50"
+                  isOverdue(lead) && "bg-red-50",
+                  lead.is_from_abandoned_cart && "bg-amber-50/50"
                 )}
                 onClick={() => setExpandedLead(expandedLead === lead.id ? null : lead.id)}
               >
+                {/* Date */}
+                <TableCell>
+                  <div className="text-sm">
+                    {format(new Date(lead.created_at), 'dd/MM/yyyy')}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {format(new Date(lead.created_at), 'HH:mm')}
+                  </div>
+                </TableCell>
                 {/* Name */}
                 <TableCell>
                   <div className="flex items-center gap-2">
                     {isOverdue(lead) && <AlertTriangle className="h-4 w-4 text-red-500" />}
                     <div className="font-medium">{getFullName(lead)}</div>
+                    {lead.is_from_abandoned_cart && (
+                      <Badge variant="outline" className="text-xs bg-amber-100 text-amber-800 border-amber-300">
+                        Cart
+                      </Badge>
+                    )}
                   </div>
                 </TableCell>
                 {/* Phone */}
@@ -125,7 +142,9 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                       className="h-7 px-2 text-xs"
                       onClick={() => {
                         window.open(`tel:${lead.phone}`);
-                        onLogActivity(lead.id, 'call', 'Made phone call');
+                        if (!lead.is_from_abandoned_cart) {
+                          onLogActivity(lead.id, 'call', 'Made phone call');
+                        }
                       }}
                     >
                       <Phone className="h-3 w-3 mr-1" />
@@ -143,7 +162,9 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                     className="h-7 px-2 text-xs max-w-[180px] truncate"
                     onClick={() => {
                       window.open(`mailto:${lead.email}`);
-                      onLogActivity(lead.id, 'email', 'Sent email');
+                      if (!lead.is_from_abandoned_cart) {
+                        onLogActivity(lead.id, 'email', 'Sent email');
+                      }
                     }}
                   >
                     <Mail className="h-3 w-3 mr-1 flex-shrink-0" />
@@ -160,11 +181,37 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                     <span className="text-muted-foreground text-xs">—</span>
                   )}
                 </TableCell>
+                {/* Mileage */}
+                <TableCell>
+                  {lead.mileage ? (
+                    <span className="text-sm">{lead.mileage}</span>
+                  ) : (
+                    <span className="text-muted-foreground text-xs">—</span>
+                  )}
+                </TableCell>
+                {/* Plan Details */}
+                <TableCell>
+                  {lead.plan_name || lead.plan_interest ? (
+                    <div className="text-sm">
+                      <div className="font-medium">{lead.plan_name || lead.plan_interest}</div>
+                      {lead.payment_type && (
+                        <div className="text-xs text-muted-foreground capitalize">{lead.payment_type}</div>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground text-xs">—</span>
+                  )}
+                </TableCell>
                 {/* Status */}
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   <Select
                     value={lead.status}
-                    onValueChange={(value) => onUpdateStatus(lead.id, value as LeadStatus)}
+                    onValueChange={(value) => {
+                      if (!lead.is_from_abandoned_cart) {
+                        onUpdateStatus(lead.id, value as LeadStatus);
+                      }
+                    }}
+                    disabled={lead.is_from_abandoned_cart}
                   >
                     <SelectTrigger className={cn("w-[120px] h-7", statusColors[lead.status])}>
                       <SelectValue />
@@ -185,12 +232,15 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                   <Select
                     value={lead.assigned_to || 'unassigned'}
                     onValueChange={(value) => {
-                      if (value === 'auto') {
-                        onAutoAssign(lead.id);
-                      } else {
-                        onAssign(lead.id, value === 'unassigned' ? null : value);
+                      if (!lead.is_from_abandoned_cart) {
+                        if (value === 'auto') {
+                          onAutoAssign(lead.id);
+                        } else {
+                          onAssign(lead.id, value === 'unassigned' ? null : value);
+                        }
                       }
                     }}
+                    disabled={lead.is_from_abandoned_cart}
                   >
                     <SelectTrigger className="w-[130px] h-7">
                       <SelectValue placeholder="Unassigned">
@@ -210,16 +260,6 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                       ))}
                     </SelectContent>
                   </Select>
-                </TableCell>
-                {/* Value */}
-                <TableCell>
-                  {lead.cart_value || lead.quote_amount ? (
-                    <span className="font-medium text-sm">
-                      £{(lead.cart_value || lead.quote_amount || 0).toLocaleString()}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground text-xs">—</span>
-                  )}
                 </TableCell>
                 {/* Next Action */}
                 <TableCell onClick={(e) => e.stopPropagation()}>
@@ -337,7 +377,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
               {/* Expanded row */}
               {expandedLead === lead.id && (
                 <TableRow>
-                  <TableCell colSpan={10} className="bg-muted/30">
+                  <TableCell colSpan={12} className="bg-muted/30">
                     <div className="grid grid-cols-3 gap-4 p-4">
                       {/* Contact Details */}
                       <div>
