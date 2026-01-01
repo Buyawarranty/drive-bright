@@ -25,7 +25,7 @@ const LandingPageDirectory = lazy(() => import('./homepage/LandingPageDirectory'
 
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import MileageSlider from './MileageSlider';
+import MileageQuickSelect from './MileageQuickSelect';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
 
@@ -52,7 +52,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const isMobile = useIsMobile();
   const [regNumber, setRegNumber] = useState('');
   const [mileage, setMileage] = useState('');
-  const [sliderMileage, setSliderMileage] = useState(0);
+  const [mileageSelection, setMileageSelection] = useState<string>(''); // 'under120k' or 'over120k'
   const [showMileageField, setShowMileageField] = useState(false);
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [mileageError, setMileageError] = useState('');
@@ -62,7 +62,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const [showSecondWarrantyDiscount, setShowSecondWarrantyDiscount] = useState(false);
   const [discountCode, setDiscountCode] = useState('');
   const [showEmailPopup, setShowEmailPopup] = useState(false);
-  const [mileagePlaceholder, setMileagePlaceholder] = useState('Enter current approximate mileage');
+  
 
   useEffect(() => {
     // Check if user is returning from a successful purchase
@@ -133,44 +133,14 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
     }
   };
 
-  const handleMileageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^\d,]/g, '');
-    setMileage(value);
-    
-    // Update slider to match text input
-    const numericValue = parseInt(value.replace(/,/g, ''));
-    if (!isNaN(numericValue)) {
-      setSliderMileage(numericValue);
-    }
-    
-    // Validate mileage
-    if (value && numericValue > 150000) {
-      setMileageError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
-    } else {
+  const handleMileageSelection = (selection: string) => {
+    setMileageSelection(selection);
+    // Set a representative mileage value for the selection
+    if (selection === 'under120k') {
+      setMileage('100000'); // Representative value under 120k
       setMileageError('');
-    }
-  };
-
-  const handleMileageFocus = () => {
-    setMileage('');
-    setSliderMileage(0);
-    setMileagePlaceholder('Enter mileage (e.g. 32,000)');
-  };
-
-  const handleMileageBlur = () => {
-    if (!mileage || mileage === '0') {
-      setMileagePlaceholder('Enter current approximate mileage');
-    }
-  };
-
-  const handleSliderChange = (value: number) => {
-    setSliderMileage(value);
-    setMileage(value.toLocaleString());
-    
-    // Validate mileage
-    if (value > 150000) {
-      setMileageError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
-    } else {
+    } else if (selection === 'over120k') {
+      setMileage('130000'); // Representative value over 120k
       setMileageError('');
     }
   };
@@ -211,11 +181,11 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       return;
     }
     
-    // Check if mileage is entered
-    if (!mileage.trim()) {
+    // Check if mileage is selected
+    if (!mileageSelection) {
       toast({
         title: "Mileage Required", 
-        description: "Please enter your vehicle's mileage to continue.",
+        description: "Please select your approximate mileage to continue.",
         variant: "destructive",
       });
       return;
@@ -385,7 +355,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   };
 
   const eligibilityError = mileageError || vehicleAgeError;
-  const isFormValid = regNumber.trim() && mileage.trim() && !eligibilityError;
+  const isFormValid = regNumber.trim() && mileageSelection && !eligibilityError;
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
@@ -498,43 +468,12 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   Protection for vehicles up to 150,000 miles and 15 years.
                 </p>
 
-                {/* Mileage Options - Always Visible */}
-                <div className="space-y-2">
-                  {/* Text Input Option */}
-                  <div>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      value={mileage}
-                      onChange={handleMileageChange}
-                      onFocus={handleMileageFocus}
-                      onBlur={handleMileageBlur}
-                      placeholder={mileagePlaceholder}
-                      className={`w-full max-w-56 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-sm sm:text-lg border-2 rounded-lg focus:outline-none min-w-0 placeholder:text-gray-500 ${
-                        eligibilityError ? 'border-destructive focus:border-destructive' : 'border-gray-400 focus:border-orange-500'
-                      }`}
-                    />
-                  </div>
-
-
-                  {/* Slider Option */}
-                  <div>
-                    <MileageSlider
-                      value={sliderMileage}
-                      onChange={handleSliderChange}
-                      min={0}
-                      max={150000}
-                    />
-                  </div>
-
-                  {/* Error Message (single) */}
-                  {eligibilityError && (
-                    <p className="text-sm text-destructive font-medium text-left w-full">
-                      {eligibilityError}
-                    </p>
-                  )}
-                </div>
+                {/* Mileage Quick Select */}
+                <MileageQuickSelect
+                  value={mileageSelection}
+                  onChange={handleMileageSelection}
+                  error={eligibilityError}
+                />
 
                 {/* Get Quote Button */}
                 <div className="space-y-2 mt-2">

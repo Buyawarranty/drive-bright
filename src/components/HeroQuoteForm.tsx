@@ -5,7 +5,7 @@ import { OptimizedImage } from '@/components/OptimizedImage';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import MileageSlider from './MileageSlider';
+import MileageQuickSelect from './MileageQuickSelect';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
 
 interface VehicleData {
@@ -29,8 +29,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
   const { toast } = useToast();
   const [regNumber, setRegNumber] = useState('');
   const [mileage, setMileage] = useState('');
-  const [sliderMileage, setSliderMileage] = useState(0);
-  const [mileagePlaceholder, setMileagePlaceholder] = useState('Enter mileage');
+  const [mileageSelection, setMileageSelection] = useState<string>(''); // 'under120k' or 'over120k'
   const [mileageError, setMileageError] = useState('');
   const [vehicleAgeError, setVehicleAgeError] = useState('');
   const [isLookingUp, setIsLookingUp] = useState(false);
@@ -45,44 +44,14 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
     setRegNumber(formatted);
   };
 
-  const handleMileageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, '');
-    const numValue = parseInt(value, 10);
-    
-    if (value === '') {
-      setMileage('');
-      setSliderMileage(0);
+  const handleMileageSelection = (selection: string) => {
+    setMileageSelection(selection);
+    // Set a representative mileage value for the selection
+    if (selection === 'under120k') {
+      setMileage('100000'); // Representative value under 120k
       setMileageError('');
-      return;
-    }
-
-    if (numValue > 150000) {
-      setMileageError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
-      setMileage(value);
-      setSliderMileage(150000);
-      return;
-    }
-
-    setMileage(value);
-    setSliderMileage(numValue);
-    setMileageError('');
-  };
-
-  const handleMileageFocus = () => {
-    setMileagePlaceholder('e.g. 45000');
-  };
-
-  const handleMileageBlur = () => {
-    setMileagePlaceholder('Enter mileage');
-  };
-
-  const handleSliderChange = (value: number) => {
-    setSliderMileage(value);
-    setMileage(value.toString());
-    
-    if (value > 150000) {
-      setMileageError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
-    } else {
+    } else if (selection === 'over120k') {
+      setMileage('130000'); // Representative value over 120k
       setMileageError('');
     }
   };
@@ -100,10 +69,10 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
       return;
     }
 
-    if (!mileage.trim()) {
+    if (!mileageSelection) {
       toast({
-        title: "Mileage required",
-        description: "Please enter or slide to select your vehicle's mileage.",
+        title: "Mileage Required",
+        description: "Please select your approximate mileage to continue.",
         variant: "destructive",
       });
       return;
@@ -254,41 +223,12 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                 Protection for vehicles up to 150,000 miles and 15 years.
               </p>
 
-              {/* Mileage Options */}
-              <div className="space-y-2">
-                <div>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={mileage}
-                    onChange={handleMileageChange}
-                    onFocus={handleMileageFocus}
-                    onBlur={handleMileageBlur}
-                    placeholder={mileagePlaceholder}
-                    className={`w-full px-4 py-3 text-lg border-2 rounded-lg focus:outline-none ${
-                      mileageError || vehicleAgeError ? 'border-destructive focus:border-destructive' : 'border-gray-300 focus:border-orange-500'
-                    }`}
-                  />
-                </div>
-
-                {/* Slider Option */}
-                <div>
-                  <MileageSlider
-                    value={sliderMileage}
-                    onChange={handleSliderChange}
-                    min={0}
-                    max={150000}
-                  />
-                </div>
-
-                {/* Error Message (single) */}
-                {(mileageError || vehicleAgeError) && (
-                  <p className="text-sm text-destructive font-medium text-left">
-                    {mileageError || vehicleAgeError}
-                  </p>
-                )}
-              </div>
+              {/* Mileage Quick Select */}
+              <MileageQuickSelect
+                value={mileageSelection}
+                onChange={handleMileageSelection}
+                error={mileageError || vehicleAgeError}
+              />
 
               {/* Get Quote Button */}
               <div className="space-y-2 mt-2">

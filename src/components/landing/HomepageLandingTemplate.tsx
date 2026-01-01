@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Check, ArrowRight, Star, Shield, Clock, Zap, ChevronDown, ChevronUp, Phone } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
-import MileageSlider from '@/components/MileageSlider';
+import MileageQuickSelect from '@/components/MileageQuickSelect';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { trackButtonClick, trackQuoteRequest } from '@/utils/analytics';
@@ -81,7 +81,7 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
   const isMobile = useIsMobile();
   const [regNumber, setRegNumber] = useState('');
   const [mileage, setMileage] = useState('');
-  const [sliderMileage, setSliderMileage] = useState(0);
+  const [mileageSelection, setMileageSelection] = useState<string>(''); // 'under120k' or 'over120k'
   const [showMileageField, setShowMileageField] = useState(false);
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [mileageError, setMileageError] = useState('');
@@ -129,18 +129,12 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
       return;
     }
 
-    const effectiveMileage = mileage || sliderMileage.toString();
-    
-    if (!effectiveMileage || effectiveMileage === '0') {
+    if (!mileage) {
       toast({
         title: "Mileage required",
-        description: "Please enter your vehicle's current mileage",
+        description: "Please select your approximate mileage",
         variant: "destructive"
       });
-      return;
-    }
-
-    if (!validateMileage(effectiveMileage)) {
       return;
     }
 
@@ -170,7 +164,7 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
 
       const vehicleData: VehicleData = {
         regNumber: regNumber.toUpperCase().replace(/\s/g, ''),
-        mileage: effectiveMileage.replace(/,/g, ''),
+        mileage: mileage.replace(/,/g, ''),
         make: vehicleInfo?.make || '',
         model: vehicleInfo?.model || '',
         fuelType: vehicleInfo?.fuelType || '',
@@ -189,7 +183,7 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
       // Continue with basic data if lookup fails
       const vehicleData: VehicleData = {
         regNumber: regNumber.toUpperCase().replace(/\s/g, ''),
-        mileage: effectiveMileage.replace(/,/g, ''),
+        mileage: mileage.replace(/,/g, ''),
         vehicleType: 'car'
       };
       onRegistrationSubmit(vehicleData);
@@ -198,19 +192,16 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
     }
   };
 
-  const handleMileageChange = (value: string) => {
-    const numericValue = value.replace(/[^0-9]/g, '');
-    setMileage(numericValue);
-    if (numericValue) {
-      setSliderMileage(parseInt(numericValue, 10) || 0);
-      validateMileage(numericValue);
+  const handleMileageSelection = (selection: string) => {
+    setMileageSelection(selection);
+    // Set a representative mileage value for the selection
+    if (selection === 'under120k') {
+      setMileage('100000'); // Representative value under 120k
+      setMileageError('');
+    } else if (selection === 'over120k') {
+      setMileage('130000'); // Representative value over 120k
+      setMileageError('');
     }
-  };
-
-  const handleSliderChange = (value: number) => {
-    setSliderMileage(value);
-    setMileage(value.toString());
-    validateMileage(value.toString());
   };
 
   const toggleFaq = (index: number) => {
@@ -306,33 +297,13 @@ const HomepageLandingTemplate: React.FC<HomepageLandingTemplateProps> = ({
                     )}
                   </div>
 
-                  {/* Mileage Field - Shows after reg entered */}
+                  {/* Mileage Quick Select - Shows after reg entered */}
                   {showMileageField && (
-                    <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Current Mileage
-                        </label>
-                        <input
-                          type="text"
-                          value={mileage}
-                          onChange={(e) => handleMileageChange(e.target.value)}
-                          placeholder="e.g. 45000"
-                          className={`w-full px-4 py-3 text-lg border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-all ${
-                            mileageError ? 'border-red-500 bg-red-50' : 'border-gray-300 focus:border-primary'
-                          }`}
-                        />
-                        {mileageError && (
-                          <p className="mt-2 text-sm text-red-600">{mileageError}</p>
-                        )}
-                      </div>
-
-                      {/* Mileage Slider */}
-                      <MileageSlider
-                        value={sliderMileage}
-                        onChange={handleSliderChange}
-                        min={0}
-                        max={150000}
+                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                      <MileageQuickSelect
+                        value={mileageSelection}
+                        onChange={handleMileageSelection}
+                        error={mileageError}
                       />
                     </div>
                   )}
