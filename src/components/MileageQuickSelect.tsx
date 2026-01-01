@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Check, Zap, ChevronRight } from 'lucide-react';
+import { Check, Zap, ChevronRight, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface MileageQuickSelectProps {
   value: string;
   onChange: (value: string) => void;
-  onAutoSubmit?: (mileageValue: string) => void; // Now passes the mileage value
+  onAutoSubmit?: (mileageValue: string) => void;
   error?: string;
   isLoading?: boolean;
   isRegValid?: boolean;
@@ -21,23 +22,24 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
   const [showLoadingMessage, setShowLoadingMessage] = useState(false);
   const isUnder120k = value === 'under120k';
   const isOver120k = value === 'over120k';
+  const hasSelection = isUnder120k || isOver120k;
   
   const handleSelect = (selection: string) => {
     onChange(selection);
-    
-    // Only auto-submit if reg is valid
-    if (onAutoSubmit && isRegValid) {
+  };
+
+  const handleGetQuote = () => {
+    if (onAutoSubmit && hasSelection) {
       setShowLoadingMessage(true);
-      // Pass the selection value directly to avoid state timing issues
-      const mileageValue = selection === 'under120k' ? '100000' : '130000';
+      const mileageValue = value === 'under120k' ? '100000' : '130000';
       setTimeout(() => {
         onAutoSubmit(mileageValue);
       }, 800);
     }
   };
 
-  // Show loading message state - only when reg is valid and we're submitting
-  if ((showLoadingMessage && isRegValid) || isLoading) {
+  // Show loading message state
+  if (showLoadingMessage || isLoading) {
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-center gap-3 py-6 px-4 rounded-xl bg-gradient-to-r from-brand-orange/10 to-brand-orange/5 border-2 border-brand-orange/30">
@@ -100,10 +102,22 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
         </button>
       </div>
       
-      {/* Microcopy - larger size */}
+      {/* Microcopy */}
       <p className="text-sm sm:text-base text-gray-500 text-left">
         Don't worry, we'll confirm your exact mileage later.
       </p>
+
+      {/* Get Quote CTA Button */}
+      <Button
+        onClick={handleGetQuote}
+        disabled={!isRegValid || !hasSelection}
+        className="w-full bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-4 sm:py-5 text-base sm:text-lg rounded-xl shadow-lg transition-all duration-200 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+      >
+        <span className="flex items-center justify-center gap-2">
+          Get my instant quote
+          <ArrowRight className="w-5 h-5" />
+        </span>
+      </Button>
       
       {/* Error Message */}
       {error && (
