@@ -270,7 +270,9 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 }`}
               />
               {email && isValidEmail && (
-                <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-green-500" />
+                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full border-2 border-[#5CB97A] flex items-center justify-center">
+                  <Check className="w-4 h-4 text-[#5CB97A]" strokeWidth={2.5} />
+                </div>
               )}
             </div>
             {emailError && (
@@ -303,7 +305,9 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   }`}
                 />
                 {phone && isValidPhone && (
-                  <CheckCircle className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-green-500" />
+                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full border-2 border-[#5CB97A] flex items-center justify-center">
+                    <Check className="w-4 h-4 text-[#5CB97A]" strokeWidth={2.5} />
+                  </div>
                 )}
               </div>
               {phoneError && (
