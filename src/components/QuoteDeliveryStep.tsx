@@ -183,7 +183,14 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       origin: { y: 0.6 }
     });
     
-    setShowSuccessPopup(true);
+    // Proceed to step 3 with the collected data
+    onNext({ 
+      email: email.trim(), 
+      phone: phone, 
+      firstName: 'Valued Customer', 
+      lastName: '',
+      sendQuoteEmail: true
+    });
   };
 
   return (
@@ -233,7 +240,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         {/* Vehicle Card */}
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6">
           <div className="flex items-center gap-3">
-            <div className="bg-green-500 text-white px-3 py-1.5 rounded-lg font-bold text-sm tracking-wide">
+            <div className="bg-[#FFD700] text-black px-3 py-1.5 rounded font-bold text-sm tracking-wide border-2 border-black">
               {vehicleData.regNumber}
             </div>
             <div className="flex-1">
@@ -241,7 +248,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 {vehicleData.make} {vehicleData.model}
               </p>
               <p className="text-sm text-gray-500">
-                {vehicleData.year} • {vehicleData.mileage} miles • {vehicleData.fuelType}
+                {vehicleData.year} • {parseInt(vehicleData.mileage) <= 120000 ? 'Under 120,000 miles' : 'Over 120,000 miles'} • {vehicleData.fuelType}
               </p>
             </div>
             <button
@@ -265,7 +272,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         {/* Main Content */}
         <div className="text-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            Your <span className="text-primary">{vehicleData.make} {vehicleData.model}</span> is ready for its quote!
+            Your <span className="text-primary">{vehicleData.make} {vehicleData.model}</span> quote is ready!
           </h1>
           <p className="text-gray-600">
             Just add your email and phone so we can send your personalised quote instantly.
