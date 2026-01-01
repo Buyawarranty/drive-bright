@@ -40,6 +40,12 @@ export interface Lead {
   abandoned_cart_id: string | null;
   created_at: string;
   updated_at: string;
+  // Payment tracking fields
+  is_paid: boolean;
+  payment_amount: number | null;
+  payment_method: string | null;
+  payment_date: string | null;
+  step_two_completed_at: string | null;
   // New columns for merged abandoned cart data
   plan_name: string | null;
   payment_type: string | null;
@@ -181,6 +187,11 @@ export const useLeads = () => {
           step_abandoned: cart.step_abandoned,
           contact_status: cart.contact_status,
           is_from_abandoned_cart: true,
+          is_paid: false,
+          payment_amount: null,
+          payment_method: null,
+          payment_date: null,
+          step_two_completed_at: null,
           assigned_user: null,
           tags: []
         }));
