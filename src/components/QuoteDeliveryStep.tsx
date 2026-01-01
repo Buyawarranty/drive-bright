@@ -262,8 +262,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         )}
 
         {/* Subheadline and Benefits */}
-        <div className="text-center mb-6">
-          <p className="text-gray-600 mb-3">
+        <div className="mb-6">
+          <p className="text-gray-600 mb-3 text-left">
             Add a couple of quick details to see your best price.
           </p>
           {/* Quick Benefits */}
