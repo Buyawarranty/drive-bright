@@ -62,15 +62,15 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
         <button
           type="button"
           onClick={() => handleSelect('under120k')}
-          className={`relative flex-1 py-4 sm:py-5 px-4 sm:px-6 rounded-xl border-2 font-bold text-sm sm:text-base transition-all duration-200 transform ${
+          className={`relative overflow-visible flex-1 py-4 sm:py-5 px-4 sm:px-6 rounded-xl border-2 font-bold text-sm sm:text-base transition-all duration-200 transform ${
             isUnder120k
               ? 'border-brand-orange bg-brand-orange text-white scale-[1.02]'
               : 'border-gray-300 bg-white text-gray-600 hover:border-brand-orange hover:bg-brand-orange hover:text-white hover:scale-[1.02]'
           }`}
         >
           {isUnder120k && (
-            <span className="absolute top-2 right-2 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-              <Check className="w-3 h-3 text-white" strokeWidth={3} />
+            <span className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-md z-10">
+              <Check className="w-4 h-4 text-white" strokeWidth={3} />
             </span>
           )}
           <span className="flex items-center justify-center gap-2">
@@ -82,15 +82,15 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
         <button
           type="button"
           onClick={() => handleSelect('over120k')}
-          className={`relative flex-1 py-4 sm:py-5 px-4 sm:px-6 rounded-xl border-2 font-bold text-sm sm:text-base transition-all duration-200 transform ${
+          className={`relative overflow-visible flex-1 py-4 sm:py-5 px-4 sm:px-6 rounded-xl border-2 font-bold text-sm sm:text-base transition-all duration-200 transform ${
             isOver120k
               ? 'border-brand-orange bg-brand-orange text-white scale-[1.02]'
               : 'border-gray-300 bg-white text-gray-600 hover:border-brand-orange hover:bg-brand-orange hover:text-white hover:scale-[1.02]'
           }`}
         >
           {isOver120k && (
-            <span className="absolute top-2 right-2 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-              <Check className="w-3 h-3 text-white" strokeWidth={3} />
+            <span className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-md z-10">
+              <Check className="w-4 h-4 text-white" strokeWidth={3} />
             </span>
           )}
           <span className="flex items-center justify-center gap-2">
