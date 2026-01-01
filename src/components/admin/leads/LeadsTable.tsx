@@ -12,8 +12,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, 
   Tag, MoreVertical, User, Clock, AlertTriangle,
-  CheckCircle, XCircle, ChevronDown
+  CheckCircle, XCircle, ChevronDown, Copy
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { format, formatDistanceToNow, isPast } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -136,40 +137,98 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                 {/* Phone */}
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   {lead.phone ? (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-7 px-2 text-xs"
-                      onClick={() => {
-                        window.open(`tel:${lead.phone}`);
-                        if (!lead.is_from_abandoned_cart) {
-                          onLogActivity(lead.id, 'call', 'Made phone call');
-                        }
-                      }}
-                    >
-                      <Phone className="h-3 w-3 mr-1" />
-                      {lead.phone}
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <span 
+                        className="text-sm font-medium cursor-pointer hover:text-primary select-all"
+                        onClick={() => {
+                          navigator.clipboard.writeText(lead.phone || '');
+                          toast.success('Phone copied');
+                        }}
+                      >
+                        {lead.phone}
+                      </span>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => {
+                          navigator.clipboard.writeText(lead.phone || '');
+                          toast.success('Phone copied');
+                        }}
+                        title="Copy phone"
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => {
+                          window.open(`tel:${lead.phone}`);
+                          if (!lead.is_from_abandoned_cart) {
+                            onLogActivity(lead.id, 'call', 'Made phone call');
+                          }
+                        }}
+                        title="Call"
+                      >
+                        <Phone className="h-3 w-3" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => {
+                          window.open(`https://wa.me/${lead.phone?.replace(/\D/g, '')}`);
+                        }}
+                        title="WhatsApp"
+                      >
+                        <MessageSquare className="h-3 w-3" />
+                      </Button>
+                    </div>
                   ) : (
                     <span className="text-muted-foreground text-xs">—</span>
                   )}
                 </TableCell>
                 {/* Email */}
                 <TableCell onClick={(e) => e.stopPropagation()}>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-7 px-2 text-xs max-w-[180px] truncate"
-                    onClick={() => {
-                      window.open(`mailto:${lead.email}`);
-                      if (!lead.is_from_abandoned_cart) {
-                        onLogActivity(lead.id, 'email', 'Sent email');
-                      }
-                    }}
-                  >
-                    <Mail className="h-3 w-3 mr-1 flex-shrink-0" />
-                    <span className="truncate">{lead.email}</span>
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <span 
+                      className="text-sm cursor-pointer hover:text-primary select-all truncate max-w-[150px]"
+                      onClick={() => {
+                        navigator.clipboard.writeText(lead.email);
+                        toast.success('Email copied');
+                      }}
+                      title={lead.email}
+                    >
+                      {lead.email}
+                    </span>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      className="h-6 w-6 flex-shrink-0"
+                      onClick={() => {
+                        navigator.clipboard.writeText(lead.email);
+                        toast.success('Email copied');
+                      }}
+                      title="Copy email"
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      className="h-6 w-6 flex-shrink-0"
+                      onClick={() => {
+                        window.open(`mailto:${lead.email}`);
+                        if (!lead.is_from_abandoned_cart) {
+                          onLogActivity(lead.id, 'email', 'Sent email');
+                        }
+                      }}
+                      title="Send email"
+                    >
+                      <Mail className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </TableCell>
                 {/* Reg Plate */}
                 <TableCell>
