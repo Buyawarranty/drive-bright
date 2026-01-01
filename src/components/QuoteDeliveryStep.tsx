@@ -341,21 +341,24 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   <Phone className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                   <input
                     type="tel"
-                    placeholder="Phone number"
+                    placeholder="UK Phone number (e.g. 07123456789)"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className={`w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-3 sm:py-4 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all ${
-                      phone && phone.length >= 10 ? 'border-green-500' : 'border-gray-300'
+                      phone && /^(?:(?:\+44\s?|0)7\d{9}|(?:\+44\s?|0)[1-9]\d{8,9})$/.test(phone.replace(/\s/g, '')) ? 'border-green-500' : 'border-gray-300'
                     }`}
                   />
-                  {phone && phone.length >= 10 && (
+                  {phone && /^(?:(?:\+44\s?|0)7\d{9}|(?:\+44\s?|0)[1-9]\d{8,9})$/.test(phone.replace(/\s/g, '')) && (
                     <CheckCircle className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
                   )}
                 </div>
                 
                 <button 
                   onClick={async () => {
-                    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
+                    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+                    const isValidPhone = /^(?:(?:\+44\s?|0)7\d{9}|(?:\+44\s?|0)[1-9]\d{8,9})$/.test(phone.replace(/\s/g, ''));
+                    
+                    if (!isValidEmail || !isValidPhone) {
                       return;
                     }
                     
@@ -425,18 +428,22 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                     // Show success popup instead of proceeding to next step
                     setShowSuccessPopup(true);
                   }}
-                  disabled={vehicleData.blocked || !email.trim() || !/\S+@\S+\.\S+/.test(email) || sendingEmail}
+                  disabled={vehicleData.blocked || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) || !/^(?:(?:\+44\s?|0)7\d{9}|(?:\+44\s?|0)[1-9]\d{8,9})$/.test(phone.replace(/\s/g, '')) || sendingEmail}
                   className={`w-full flex items-center justify-center text-white font-bold py-3 sm:py-5 px-4 sm:px-8 rounded-xl transition-all duration-200 shadow-lg ${
-                    vehicleData.blocked || !email.trim() || !/\S+@\S+\.\S+/.test(email) || sendingEmail ? 'opacity-50 cursor-not-allowed' : ''
+                    vehicleData.blocked || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) || !/^(?:(?:\+44\s?|0)7\d{9}|(?:\+44\s?|0)[1-9]\d{8,9})$/.test(phone.replace(/\s/g, '')) || sendingEmail ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
-                  style={{ backgroundColor: vehicleData.blocked || !email.trim() || sendingEmail ? '#9ca3af' : '#f97316' }}
+                  style={{ backgroundColor: vehicleData.blocked || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) || !/^(?:(?:\+44\s?|0)7\d{9}|(?:\+44\s?|0)[1-9]\d{8,9})$/.test(phone.replace(/\s/g, '')) || sendingEmail ? '#9ca3af' : '#f97316' }}
                   onMouseEnter={(e) => {
-                    if (!vehicleData.blocked && email.trim() && !sendingEmail) {
+                    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+                    const isValidPhone = /^(?:(?:\+44\s?|0)7\d{9}|(?:\+44\s?|0)[1-9]\d{8,9})$/.test(phone.replace(/\s/g, ''));
+                    if (!vehicleData.blocked && isValidEmail && isValidPhone && !sendingEmail) {
                       e.currentTarget.style.backgroundColor = '#ea580c';
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (!vehicleData.blocked && email.trim() && !sendingEmail) {
+                    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+                    const isValidPhone = /^(?:(?:\+44\s?|0)7\d{9}|(?:\+44\s?|0)[1-9]\d{8,9})$/.test(phone.replace(/\s/g, ''));
+                    if (!vehicleData.blocked && isValidEmail && isValidPhone && !sendingEmail) {
                       e.currentTarget.style.backgroundColor = '#f97316';
                     }
                   }}
