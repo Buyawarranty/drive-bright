@@ -1289,7 +1289,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 Choose your cover duration
               </h2>
             </div>
-            <span className="text-sm text-gray-600 font-bold text-center w-full sm:w-auto sm:text-base sm:self-center">0% APR · All Parts included at No Extra Cost</span>
+            <span className="text-sm text-gray-600 font-bold text-center w-full sm:w-auto sm:text-base sm:self-center">All parts included at no extra cost</span>
           </div>
 
           {validationErrors.paymentType && (
