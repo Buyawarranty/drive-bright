@@ -231,6 +231,7 @@ export const HeroQuoteForm: React.FC<HeroQuoteFormProps> = ({ onRegistrationSubm
                 onAutoSubmit={handleGetQuote}
                 error={mileageError || vehicleAgeError}
                 isLoading={isLookingUp}
+                isRegValid={regNumber.replace(/\s/g, '').length >= 5}
               />
             </div>
           </div>
