@@ -249,7 +249,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             🎉 Your warranty quote is ready!
           </h1>
           <p className="text-gray-600 mb-3">
-            We only need 3 quick details to show your price.
+            Add a couple of quick details to see your best price.
           </p>
           {/* Quick Benefits */}
           <div className="flex items-center justify-center gap-6 text-sm text-gray-600">
