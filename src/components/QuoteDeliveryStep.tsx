@@ -412,6 +412,57 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                           step_abandoned: 2
                         }
                       });
+
+                      // Create lead in sales_leads table for CRM
+                      const { data: nextUserId } = await supabase.rpc('get_next_sales_user');
+                      
+                      // Check if lead already exists for this email
+                      const { data: existingLead } = await supabase
+                        .from('sales_leads')
+                        .select('id')
+                        .eq('email', email.trim().toLowerCase())
+                        .maybeSingle();
+                      
+                      if (!existingLead) {
+                        const { error: leadError } = await supabase
+                          .from('sales_leads')
+                          .insert({
+                            email: email.trim().toLowerCase(),
+                            phone: phone || null,
+                            lead_source: 'website',
+                            status: 'new',
+                            priority: 'medium',
+                            plan_interest: 'Quote Requested',
+                            vehicle_reg: vehicleData?.regNumber || null,
+                            vehicle_make: vehicleData?.make || null,
+                            vehicle_model: vehicleData?.model || null,
+                            vehicle_year: vehicleData?.year || null,
+                            vehicle_type: vehicleData?.vehicleType || 'car',
+                            mileage: vehicleData?.mileage || null,
+                            assigned_to: nextUserId || null,
+                            assigned_at: nextUserId ? new Date().toISOString() : null,
+                            next_action_type: 'call',
+                            next_action_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
+                            notes: `Quote requested via website. Vehicle: ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber})`,
+                            last_activity_date: new Date().toISOString()
+                          });
+                        
+                        if (leadError) {
+                          console.error('Error creating lead:', leadError);
+                        } else {
+                          console.log('Lead created successfully for:', email.trim());
+                        }
+                      } else {
+                        // Update existing lead's last activity
+                        await supabase
+                          .from('sales_leads')
+                          .update({ 
+                            last_activity_date: new Date().toISOString(),
+                            notes: `Quote re-requested. Vehicle: ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber})`
+                          })
+                          .eq('id', existingLead.id);
+                        console.log('Updated existing lead for:', email.trim());
+                      }
                     } catch (error) {
                       console.error('Error in quote flow:', error);
                     }
