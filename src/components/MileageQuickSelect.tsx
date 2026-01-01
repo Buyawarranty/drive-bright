@@ -1,51 +1,85 @@
-import React from 'react';
-import { Check } from 'lucide-react';
+import React, { useState } from 'react';
+import { Check, Zap } from 'lucide-react';
 
 interface MileageQuickSelectProps {
   value: string;
   onChange: (value: string) => void;
+  onAutoSubmit?: () => void;
   error?: string;
+  isLoading?: boolean;
 }
 
-const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({ value, onChange, error }) => {
+const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({ 
+  value, 
+  onChange, 
+  onAutoSubmit,
+  error,
+  isLoading = false 
+}) => {
+  const [showLoadingMessage, setShowLoadingMessage] = useState(false);
   const isUnder120k = value === 'under120k';
   const isOver120k = value === 'over120k';
+  
+  const handleSelect = (selection: string) => {
+    onChange(selection);
+    
+    if (onAutoSubmit) {
+      setShowLoadingMessage(true);
+      setTimeout(() => {
+        onAutoSubmit();
+      }, 800);
+    }
+  };
+
+  // Show loading message state
+  if (showLoadingMessage || isLoading) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center justify-center gap-3 py-6 px-4 rounded-xl bg-gradient-to-r from-brand-orange/10 to-brand-orange/5 border-2 border-brand-orange/30">
+          <Zap className="w-5 h-5 text-brand-orange animate-pulse" />
+          <span className="text-base sm:text-lg font-semibold text-brand-orange">
+            Preparing your instant price…
+          </span>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-3">
       {/* Headline */}
-      <p className="text-sm sm:text-base font-semibold text-gray-800">
+      <p className="text-base sm:text-lg font-bold text-gray-900">
         What's your approximate mileage?
       </p>
       
-      {/* Quick Select Buttons */}
-      <div className="flex gap-3">
+      {/* Quick Select Buttons - More Prominent */}
+      <div className="flex gap-3 sm:gap-4">
         <button
           type="button"
-          onClick={() => onChange('under120k')}
-          className={`flex-1 py-3 px-4 rounded-lg border-2 font-semibold text-sm sm:text-base transition-all ${
+          onClick={() => handleSelect('under120k')}
+          className={`flex-1 py-4 sm:py-5 px-4 sm:px-6 rounded-xl border-2 font-bold text-sm sm:text-base transition-all duration-200 transform ${
             isUnder120k
-              ? 'border-brand-orange bg-brand-orange/10 text-brand-orange shadow-[0_0_10px_rgba(249,115,22,0.4)]'
-              : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+              ? 'border-brand-orange bg-brand-orange text-white shadow-[0_0_20px_rgba(249,115,22,0.5)] scale-[1.02]'
+              : 'border-gray-300 bg-white text-gray-700 hover:border-brand-orange hover:bg-brand-orange/5 hover:text-brand-orange hover:shadow-[0_0_15px_rgba(249,115,22,0.3)] hover:scale-[1.02]'
           }`}
         >
           <span className="flex items-center justify-center gap-2">
-            {isUnder120k && <Check className="w-4 h-4" />}
+            {isUnder120k && <Check className="w-5 h-5" strokeWidth={3} />}
             Under 120,000 miles
           </span>
         </button>
         
         <button
           type="button"
-          onClick={() => onChange('over120k')}
-          className={`flex-1 py-3 px-4 rounded-lg border-2 font-semibold text-sm sm:text-base transition-all ${
+          onClick={() => handleSelect('over120k')}
+          className={`flex-1 py-4 sm:py-5 px-4 sm:px-6 rounded-xl border-2 font-bold text-sm sm:text-base transition-all duration-200 transform ${
             isOver120k
-              ? 'border-brand-orange bg-brand-orange/10 text-brand-orange shadow-[0_0_10px_rgba(249,115,22,0.4)]'
-              : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+              ? 'border-brand-orange bg-brand-orange text-white shadow-[0_0_20px_rgba(249,115,22,0.5)] scale-[1.02]'
+              : 'border-gray-300 bg-white text-gray-700 hover:border-brand-orange hover:bg-brand-orange/5 hover:text-brand-orange hover:shadow-[0_0_15px_rgba(249,115,22,0.3)] hover:scale-[1.02]'
           }`}
         >
           <span className="flex items-center justify-center gap-2">
-            {isOver120k && <Check className="w-4 h-4" />}
+            {isOver120k && <Check className="w-5 h-5" strokeWidth={3} />}
             Over 120,000 miles
           </span>
         </button>
