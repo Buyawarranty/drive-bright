@@ -245,9 +245,14 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
             🎉 Your warranty quote is ready!
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 mb-3">
             Enter your email and phone to get your quote instantly.
           </p>
+          {/* Quick Benefits */}
+          <div className="flex items-center justify-center gap-6 text-sm text-gray-600">
+            <span>⚡ Instant quote</span>
+            <span>⛔ No obligation</span>
+          </div>
         </div>
 
         {/* Form */}
@@ -287,7 +292,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           {isValidEmail && (
             <div className="animate-fade-in">
               <p className="text-sm text-gray-600 mb-2">
-                ✨ Great! Add your phone for discounts and personalised advice.
+                ✨ Great! Add your phone to unlock exclusive discounts and expert advice.
               </p>
               <div className="relative">
                 <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
@@ -346,50 +351,35 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           <p className="flex items-center justify-center gap-1">
             <span>🔒 We never share your details. 100% privacy guaranteed</span>
           </p>
-          {/* Trust Badges */}
-          <div className="grid grid-cols-3 gap-4 mt-4">
-            <div className="flex flex-col items-center gap-1">
-              <Zap className="w-5 h-5 text-primary" />
-              <span className="text-xs text-gray-600">Instant quote</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <Ban className="w-5 h-5 text-primary" />
-              <span className="text-xs text-gray-600">No obligation</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <BellOff className="w-5 h-5 text-primary" />
-              <span className="text-xs text-gray-600">No spam</span>
-            </div>
-          </div>
         </div>
 
         {/* Spacer for sticky footer */}
-        <div className="h-20"></div>
+        <div className="h-24"></div>
       </div>
 
-      {/* Sticky Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 px-4 z-50">
-        <div className="max-w-xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-1 text-gray-600 text-xs">
-            <Lock className="w-4 h-4 text-green-600" />
-            <span>Secure checkout</span>
+      {/* Minimal Sticky Footer */}
+      <div className="fixed bottom-0 left-0 right-0 bg-gray-900 text-white py-3 px-4 z-50">
+        <div className="max-w-xl mx-auto flex items-center justify-between text-xs">
+          <div className="flex items-center gap-1.5">
+            <Lock className="w-3.5 h-3.5 text-green-400" />
+            <span>100% Secure | FCA Registered</span>
           </div>
           <a 
             href="https://wa.me/447960109395" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-gray-600 text-xs hover:text-green-600 transition-colors"
+            className="flex items-center gap-1.5 hover:text-green-400 transition-colors"
           >
-            <MessageCircle className="w-4 h-4 text-green-500" />
-            <span>Need help?</span>
+            <MessageCircle className="w-3.5 h-3.5" />
+            <span>Chat</span>
           </a>
           <a 
             href="https://uk.trustpilot.com/review/warrantywise.co.uk" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-gray-600 text-xs hover:text-primary transition-colors"
+            className="flex items-center gap-1 hover:text-green-400 transition-colors"
           >
-            <Star className="w-4 h-4 text-green-500 fill-green-500" />
+            <span className="text-green-400">★★★★★</span>
             <span>Trustpilot</span>
           </a>
         </div>
