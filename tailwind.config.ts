@@ -115,6 +115,14 @@ export default {
 						transform: 'scale(1.02)'
 					}
 				},
+				'breathing-subtle': {
+					'0%, 100%': {
+						transform: 'scale(1)'
+					},
+					'50%': {
+						transform: 'scale(1.005)'
+					}
+				},
 				'fade-in': {
 					'0%': {
 						opacity: '0',
@@ -305,7 +313,7 @@ export default {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'breathing': 'breathing 2.8s ease-in-out infinite',
-				'cta-enhanced': 'breathing 10s ease-in-out infinite',
+				'cta-enhanced': 'breathing-subtle 10s ease-in-out infinite',
 				'fade-in': 'fade-in 0.5s ease-out forwards',
 				'spin-slow': 'spin 3s linear infinite',
 				'car-drive': 'car-drive 3s ease-in-out infinite',
