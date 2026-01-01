@@ -87,17 +87,16 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[200px]">Name</TableHead>
-            <TableHead>Contact</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Phone</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Reg Plate</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Priority</TableHead>
             <TableHead>Assigned To</TableHead>
-            <TableHead>Interest</TableHead>
             <TableHead>Value</TableHead>
-            <TableHead>Tags</TableHead>
             <TableHead>Next Action</TableHead>
             <TableHead>Last Activity</TableHead>
-            <TableHead className="w-[100px]">Actions</TableHead>
+            <TableHead>Tag</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -110,68 +109,64 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                 )}
                 onClick={() => setExpandedLead(expandedLead === lead.id ? null : lead.id)}
               >
+                {/* Name */}
                 <TableCell>
                   <div className="flex items-center gap-2">
                     {isOverdue(lead) && <AlertTriangle className="h-4 w-4 text-red-500" />}
-                    <div>
-                      <div className="font-medium">{getFullName(lead)}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {lead.vehicle_reg && `${lead.vehicle_reg} • `}
-                        {lead.lead_source}
-                      </div>
-                    </div>
+                    <div className="font-medium">{getFullName(lead)}</div>
                   </div>
                 </TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    {lead.phone && (
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-7 w-7"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          window.open(`tel:${lead.phone}`);
-                          onLogActivity(lead.id, 'call', 'Made phone call');
-                        }}
-                      >
-                        <Phone className="h-3.5 w-3.5" />
-                      </Button>
-                    )}
+                {/* Phone */}
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  {lead.phone ? (
                     <Button 
                       variant="ghost" 
-                      size="icon" 
-                      className="h-7 w-7"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.open(`mailto:${lead.email}`);
-                        onLogActivity(lead.id, 'email', 'Sent email');
+                      size="sm" 
+                      className="h-7 px-2 text-xs"
+                      onClick={() => {
+                        window.open(`tel:${lead.phone}`);
+                        onLogActivity(lead.id, 'call', 'Made phone call');
                       }}
                     >
-                      <Mail className="h-3.5 w-3.5" />
+                      <Phone className="h-3 w-3 mr-1" />
+                      {lead.phone}
                     </Button>
-                    {lead.phone && (
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-7 w-7"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          window.open(`https://wa.me/${lead.phone.replace(/\D/g, '')}`);
-                          onLogActivity(lead.id, 'sms', 'Sent WhatsApp message');
-                        }}
-                      >
-                        <MessageSquare className="h-3.5 w-3.5" />
-                      </Button>
-                    )}
-                  </div>
+                  ) : (
+                    <span className="text-muted-foreground text-xs">—</span>
+                  )}
                 </TableCell>
+                {/* Email */}
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 px-2 text-xs max-w-[180px] truncate"
+                    onClick={() => {
+                      window.open(`mailto:${lead.email}`);
+                      onLogActivity(lead.id, 'email', 'Sent email');
+                    }}
+                  >
+                    <Mail className="h-3 w-3 mr-1 flex-shrink-0" />
+                    <span className="truncate">{lead.email}</span>
+                  </Button>
+                </TableCell>
+                {/* Reg Plate */}
+                <TableCell>
+                  {lead.vehicle_reg ? (
+                    <Badge variant="outline" className="font-mono text-xs">
+                      {lead.vehicle_reg}
+                    </Badge>
+                  ) : (
+                    <span className="text-muted-foreground text-xs">—</span>
+                  )}
+                </TableCell>
+                {/* Status */}
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   <Select
                     value={lead.status}
                     onValueChange={(value) => onUpdateStatus(lead.id, value as LeadStatus)}
                   >
-                    <SelectTrigger className={cn("w-[130px] h-7", statusColors[lead.status])}>
+                    <SelectTrigger className={cn("w-[120px] h-7", statusColors[lead.status])}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -185,22 +180,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                     </SelectContent>
                   </Select>
                 </TableCell>
-                <TableCell onClick={(e) => e.stopPropagation()}>
-                  <Select
-                    value={lead.priority}
-                    onValueChange={(value) => onUpdatePriority(lead.id, value as LeadPriority)}
-                  >
-                    <SelectTrigger className={cn("w-[100px] h-7", priorityColors[lead.priority])}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                      <SelectItem value="urgent">Urgent</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </TableCell>
+                {/* Assigned To */}
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   <Select
                     value={lead.assigned_to || 'unassigned'}
@@ -212,7 +192,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                       }
                     }}
                   >
-                    <SelectTrigger className="w-[140px] h-7">
+                    <SelectTrigger className="w-[130px] h-7">
                       <SelectValue placeholder="Unassigned">
                         {lead.assigned_user 
                           ? `${lead.assigned_user.first_name || ''} ${lead.assigned_user.last_name || ''}`.trim() || lead.assigned_user.email
@@ -231,68 +211,17 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                     </SelectContent>
                   </Select>
                 </TableCell>
-                <TableCell>
-                  <div className="text-sm">
-                    {lead.plan_interest || '-'}
-                    {lead.vehicle_make && (
-                      <div className="text-xs text-muted-foreground">
-                        {lead.vehicle_make} {lead.vehicle_model}
-                      </div>
-                    )}
-                  </div>
-                </TableCell>
+                {/* Value */}
                 <TableCell>
                   {lead.cart_value || lead.quote_amount ? (
-                    <span className="font-medium">
+                    <span className="font-medium text-sm">
                       £{(lead.cart_value || lead.quote_amount || 0).toLocaleString()}
                     </span>
-                  ) : '-'}
+                  ) : (
+                    <span className="text-muted-foreground text-xs">—</span>
+                  )}
                 </TableCell>
-                <TableCell onClick={(e) => e.stopPropagation()}>
-                  <div className="flex flex-wrap gap-1 max-w-[150px]">
-                    {lead.tags?.slice(0, 2).map((tag) => (
-                      <Badge 
-                        key={tag.id} 
-                        style={{ backgroundColor: tag.color, color: 'white' }}
-                        className="text-xs cursor-pointer"
-                        onClick={() => onRemoveTag(lead.id, tag.id)}
-                      >
-                        {tag.name}
-                      </Badge>
-                    ))}
-                    {(lead.tags?.length || 0) > 2 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{(lead.tags?.length || 0) - 2}
-                      </Badge>
-                    )}
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-5 w-5">
-                          <Tag className="h-3 w-3" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-48 p-2">
-                        <div className="space-y-1">
-                          {tags.map((tag) => (
-                            <Button
-                              key={tag.id}
-                              variant="ghost"
-                              size="sm"
-                              className="w-full justify-start text-xs"
-                              onClick={() => onAddTag(lead.id, tag.id)}
-                            >
-                              <div 
-                                className="w-3 h-3 rounded-full mr-2" 
-                                style={{ backgroundColor: tag.color }} 
-                              />
-                              {tag.name}
-                            </Button>
-                          ))}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </TableCell>
+                {/* Next Action */}
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   {lead.next_action_date ? (
                     <div className={cn(
@@ -351,28 +280,56 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                     </Popover>
                   )}
                 </TableCell>
+                {/* Last Activity */}
                 <TableCell>
                   <div className="text-xs text-muted-foreground">
                     {formatDistanceToNow(new Date(lead.last_activity_date), { addSuffix: true })}
                   </div>
                 </TableCell>
+                {/* Tag */}
                 <TableCell onClick={(e) => e.stopPropagation()}>
-                  <div className="flex gap-1">
-                    {lead.status === 'new' && (
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-7 w-7 text-green-600"
-                        onClick={() => onMarkContacted(lead.id)}
-                        title="Mark as contacted"
+                  <div className="flex flex-wrap gap-1 max-w-[120px]">
+                    {lead.tags?.slice(0, 2).map((tag) => (
+                      <Badge 
+                        key={tag.id} 
+                        style={{ backgroundColor: tag.color, color: 'white' }}
+                        className="text-xs cursor-pointer"
+                        onClick={() => onRemoveTag(lead.id, tag.id)}
                       >
-                        <CheckCircle className="h-4 w-4" />
-                      </Button>
+                        {tag.name}
+                      </Badge>
+                    ))}
+                    {(lead.tags?.length || 0) > 2 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{(lead.tags?.length || 0) - 2}
+                      </Badge>
                     )}
-                    <ChevronDown className={cn(
-                      "h-4 w-4 transition-transform",
-                      expandedLead === lead.id && "rotate-180"
-                    )} />
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-5 w-5">
+                          <Tag className="h-3 w-3" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-48 p-2">
+                        <div className="space-y-1">
+                          {tags.map((tag) => (
+                            <Button
+                              key={tag.id}
+                              variant="ghost"
+                              size="sm"
+                              className="w-full justify-start text-xs"
+                              onClick={() => onAddTag(lead.id, tag.id)}
+                            >
+                              <div 
+                                className="w-3 h-3 rounded-full mr-2" 
+                                style={{ backgroundColor: tag.color }} 
+                              />
+                              {tag.name}
+                            </Button>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </TableCell>
               </TableRow>
@@ -380,7 +337,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
               {/* Expanded row */}
               {expandedLead === lead.id && (
                 <TableRow>
-                  <TableCell colSpan={11} className="bg-muted/30">
+                  <TableCell colSpan={10} className="bg-muted/30">
                     <div className="grid grid-cols-3 gap-4 p-4">
                       {/* Contact Details */}
                       <div>
