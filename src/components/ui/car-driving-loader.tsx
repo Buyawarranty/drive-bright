@@ -114,9 +114,13 @@ export const CarDrivingLoader = ({ text = "Loading your quote..." }: { text?: st
       </div>
       
       {/* Loading text */}
-      <div className="text-center">
-        <p className="text-gray-700 font-medium">{text}</p>
-        <p className="text-xs text-gray-400 mt-1">Driving to get your best deal...</p>
+      <div className="text-center px-4">
+        <p className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
+          Finding your best warranty quote…
+        </p>
+        <p className="text-sm sm:text-base text-gray-500">
+          Give us a few seconds – we're securing the right cover for your vehicle.
+        </p>
       </div>
     </div>
   );
