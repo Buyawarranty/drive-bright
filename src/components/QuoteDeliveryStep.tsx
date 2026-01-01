@@ -365,7 +365,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           className={`w-full flex items-center justify-center gap-2 text-white font-bold py-5 px-8 rounded-xl shadow-lg text-lg transition-colors ${
             vehicleData.blocked || sendingEmail 
               ? 'bg-gray-300 cursor-not-allowed' 
-              : 'bg-brand-orange hover:bg-orange-700 active:scale-[0.98] animate-cta-enhanced'
+              : 'bg-brand-orange hover:bg-black active:scale-[0.98] animate-cta-enhanced'
           }`}
         >
           {sendingEmail ? (
