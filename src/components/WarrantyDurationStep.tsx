@@ -534,7 +534,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
                   {/* Save amount badge */}
                   {option.originalPrice && (
                     <div className="text-sm text-green-600 font-bold">
-                      Save £{option.originalPrice - option.totalPrice} Today 🔥
+                      Save £{option.originalPrice - option.totalPrice} Today
                     </div>
                   )}
                   
