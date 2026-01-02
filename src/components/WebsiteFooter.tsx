@@ -136,13 +136,9 @@ const WebsiteFooter = () => {
               </p>
             </div>
           </div>
-        </div>
-      </footer>
 
-      {/* Bottom Footer - Full Width */}
-      <div className="bg-gray-100 py-6 w-full">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
+          {/* Copyright & Company Details */}
+          <div className="text-center pt-8 border-t border-gray-200 mt-8">
             <p className="text-sm text-gray-600 max-w-4xl mx-auto">
               © Buy a Warranty. All rights reserved.
             </p>
@@ -151,7 +147,7 @@ const WebsiteFooter = () => {
             </p>
           </div>
         </div>
-      </div>
+      </footer>
     </div>
   );
 };
