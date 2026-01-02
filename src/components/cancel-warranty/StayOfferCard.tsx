@@ -114,7 +114,7 @@ const StayOfferCard: React.FC<StayOfferCardProps> = ({ onStaySuccess }) => {
       <Button 
         onClick={handleStayWithUs}
         disabled={isStaying}
-        className="w-full h-12 bg-success hover:bg-success/90 text-success-foreground font-bold text-lg"
+        className="w-full h-14 bg-success hover:bg-success/90 text-success-foreground font-bold text-lg px-6"
       >
         {isStaying ? 'Processing...' : "🎁 Yes, I'll Stay – Add 3 Months Free"}
       </Button>
