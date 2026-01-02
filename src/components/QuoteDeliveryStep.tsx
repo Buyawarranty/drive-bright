@@ -428,8 +428,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               <span>0330 229 5040</span>
             </a>
             <a 
-              href="https://wa.me/447960109395" 
-              target="_blank" 
+              href="https://wa.me/message/SPQPJ6O3UBF5B1" 
+              target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-gray-700 text-sm font-medium hover:text-green-600 transition-colors"
             >
