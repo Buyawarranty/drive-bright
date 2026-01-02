@@ -97,6 +97,11 @@ export const StartDatePicker: React.FC<StartDatePickerProps> = ({
   // Expanded State
   return (
     <div className={cn("space-y-3", className)}>
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+        <p className="text-sm text-amber-800">
+          <span className="font-semibold">Note:</span> You can choose when your cover starts, but payment is processed today — whether paying monthly or in full.
+        </p>
+      </div>
       <p className="text-sm text-gray-600">
         Your cover will start on <span className="font-medium text-gray-900">{format(value || today, 'd MMM yyyy')}</span>. Your plan is confirmed and billed today.
       </p>
