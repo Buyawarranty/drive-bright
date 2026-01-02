@@ -1283,45 +1283,55 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     <Label htmlFor="mileage" className="text-sm font-medium text-gray-700">What's your vehicle's approximate mileage? *</Label>
                     <p className="text-xs text-gray-500 mt-0.5">Required for your warranty policy</p>
                     
-                    {/* Quick Select Mileage Buttons */}
-                    <div className="flex flex-wrap gap-2 mt-2 mb-2">
-                      {[20000, 40000, 60000, 80000, 100000, 120000].map((miles) => (
-                        <button
-                          key={miles}
-                          type="button"
-                          onClick={() => {
-                            handleInputChange('mileage', miles.toString());
-                            setValidatedFields(prev => ({ ...prev, mileage: true }));
-                          }}
-                          className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-all ${
-                            customerData.mileage === miles.toString()
-                              ? 'bg-orange-500 text-white border-orange-500'
-                              : 'bg-white text-gray-700 border-gray-300 hover:border-orange-400 hover:bg-orange-50'
+                    <div className="flex gap-2 mt-2">
+                      {/* Manual Input */}
+                      <div className="relative flex-1">
+                        <Input
+                          id="mileage"
+                          type="number"
+                          placeholder="Type mileage"
+                          value={customerData.mileage || ''}
+                          onChange={(e) => handleInputChange('mileage', e.target.value)}
+                          onBlur={() => handleFieldBlur('mileage')}
+                          required
+                          className={`transition-all duration-300 ${
+                            showValidation && fieldErrors.mileage 
+                              ? 'border-red-500 focus:border-red-500' 
+                              : 'focus:ring-2 focus:ring-orange-200'
                           }`}
-                        >
-                          {miles.toLocaleString()}
-                        </button>
-                      ))}
-                    </div>
-                    
-                    <div className="relative">
-                      <Input
-                        id="mileage"
-                        type="number"
-                        placeholder="Or type exact mileage"
-                        value={customerData.mileage || ''}
-                        onChange={(e) => handleInputChange('mileage', e.target.value)}
-                        onBlur={() => handleFieldBlur('mileage')}
-                        required
-                        className={`mt-1 transition-all duration-300 ${
-                          showValidation && fieldErrors.mileage 
-                            ? 'border-red-500 focus:border-red-500' 
-                            : 'focus:ring-2 focus:ring-orange-200'
-                        }`}
-                      />
-                      {validatedFields.mileage && (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
-                      )}
+                        />
+                        {validatedFields.mileage && (
+                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                        )}
+                      </div>
+                      
+                      {/* Quick Select Dropdown */}
+                      <select
+                        value=""
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            handleInputChange('mileage', e.target.value);
+                            setValidatedFields(prev => ({ ...prev, mileage: true }));
+                          }
+                        }}
+                        className="h-10 px-3 py-2 rounded-md border border-gray-200 bg-[#F5F5F5] text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 cursor-pointer"
+                      >
+                        <option value="">Quick select</option>
+                        <option value="10000">10,000</option>
+                        <option value="20000">20,000</option>
+                        <option value="30000">30,000</option>
+                        <option value="40000">40,000</option>
+                        <option value="50000">50,000</option>
+                        <option value="60000">60,000</option>
+                        <option value="70000">70,000</option>
+                        <option value="80000">80,000</option>
+                        <option value="90000">90,000</option>
+                        <option value="100000">100,000</option>
+                        <option value="110000">110,000</option>
+                        <option value="120000">120,000</option>
+                        <option value="130000">130,000</option>
+                        <option value="140000">140,000</option>
+                      </select>
                     </div>
                     {fieldErrors.mileage && (
                       <p className="text-red-500 text-xs mt-1" role="alert" aria-live="polite">{fieldErrors.mileage}</p>
