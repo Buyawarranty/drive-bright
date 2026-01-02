@@ -520,11 +520,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
       } else if (field === 'mileage') {
         const mileageNum = parseInt(value, 10);
         isValid = !isNaN(mileageNum) && mileageNum > 0 && mileageNum < 500000;
-      } else if (field === 'date_of_birth') {
-        const dob = new Date(value);
-        const today = new Date();
-        const age = today.getFullYear() - dob.getFullYear();
-        isValid = !isNaN(dob.getTime()) && age >= 17 && age <= 100;
       } else {
         isValid = value.trim().length > 0;
       }
@@ -595,19 +590,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
         errorMessage = 'Please enter a valid mileage.';
       } else if (mileageNum >= 500000) {
         errorMessage = 'Please enter a valid mileage under 500,000.';
-      }
-    } else if (field === 'date_of_birth') {
-      if (!value.trim()) {
-        errorMessage = 'Please enter your date of birth.';
-      } else {
-        const dob = new Date(value);
-        const today = new Date();
-        const age = today.getFullYear() - dob.getFullYear();
-        if (age < 17) {
-          errorMessage = 'You must be at least 17 years old.';
-        } else if (age > 100) {
-          errorMessage = 'Please enter a valid date of birth.';
-        }
       }
     }
     
@@ -782,19 +764,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
       errors.mileage = 'Please enter a valid mileage under 500,000.';
     }
 
-    // Date of birth validation
-    if (!customerData.date_of_birth) {
-      errors.date_of_birth = 'Please enter your date of birth.';
-    } else {
-      const dob = new Date(customerData.date_of_birth);
-      const today = new Date();
-      const age = today.getFullYear() - dob.getFullYear();
-      if (age < 17) {
-        errors.date_of_birth = 'You must be at least 17 years old.';
-      } else if (age > 100) {
-        errors.date_of_birth = 'Please enter a valid date of birth.';
-      }
-    }
 
     // Start date validation
     if (!startDate) {
@@ -1278,33 +1247,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     )}
                   </div>
 
-                  {/* Date of Birth */}
-                  <div>
-                    <Label htmlFor="date_of_birth" className="text-sm font-medium text-gray-700">Date of Birth *</Label>
-                    <div className="relative">
-                      <Input
-                        id="date_of_birth"
-                        type="date"
-                        value={customerData.date_of_birth}
-                        onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
-                        onBlur={() => handleFieldBlur('date_of_birth')}
-                        required
-                        max={new Date(new Date().setFullYear(new Date().getFullYear() - 17)).toISOString().split('T')[0]}
-                        min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]}
-                        className={`mt-1 transition-all duration-300 ${
-                          showValidation && fieldErrors.date_of_birth 
-                            ? 'border-red-500 focus:border-red-500' 
-                            : 'focus:ring-2 focus:ring-orange-200'
-                        }`}
-                      />
-                      {validatedFields.date_of_birth && (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
-                      )}
-                    </div>
-                    {fieldErrors.date_of_birth && (
-                      <p className="text-red-500 text-xs mt-1" role="alert" aria-live="polite">{fieldErrors.date_of_birth}</p>
-                    )}
-                  </div>
 
                   {/* Vehicle Mileage */}
                   <div>
