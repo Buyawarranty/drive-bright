@@ -1546,29 +1546,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       <span className="text-black text-xs sm:text-sm flex-shrink-0">Registration:</span>
                       <span className="font-semibold text-black text-xs sm:text-sm text-right">{vehicleData.regNumber}</span>
                     </div>
-                    {startDate && (
-                      <div className="flex justify-between items-center gap-2 bg-green-50 rounded-lg px-2 py-1.5 -mx-2">
-                        <span className="text-green-700 text-xs sm:text-sm flex-shrink-0 font-medium">Start Date:</span>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-green-700 text-xs sm:text-sm text-right">
-                            {isToday(startDate) ? `Today (${format(startDate, 'd MMM yyyy')})` : format(startDate, 'd MMM yyyy')}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const startDateSection = document.getElementById('start-date-section');
-                              if (startDateSection) {
-                                startDateSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                              }
-                            }}
-                            className="p-1 hover:bg-green-100 rounded transition-colors"
-                            aria-label="Edit start date"
-                          >
-                            <Edit className="w-3.5 h-3.5 text-green-600" />
-                          </button>
-                        </div>
-                      </div>
-                    )}
                       {/* Payment Summary - Mobile First */}
                       <div className="border-t pt-4 mt-4 space-y-3">
                         {(() => {
