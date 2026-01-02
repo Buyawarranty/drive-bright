@@ -42,6 +42,19 @@ const statusColors: Record<LeadStatus, string> = {
   lost: 'bg-gray-100 text-gray-800'
 };
 
+// Format UK phone number for display (e.g., 07788 230 043)
+const formatUKPhone = (phone: string): string => {
+  const cleaned = phone.replace(/\s/g, '');
+  if (cleaned.startsWith('07') && cleaned.length === 11) {
+    return `${cleaned.slice(0, 5)} ${cleaned.slice(5, 8)} ${cleaned.slice(8)}`;
+  }
+  if (cleaned.startsWith('+44') && cleaned.length >= 12) {
+    const withoutCode = cleaned.slice(3);
+    return `+44 ${withoutCode.slice(0, 4)} ${withoutCode.slice(4, 7)} ${withoutCode.slice(7)}`;
+  }
+  return phone;
+};
+
 // Get urgency SLA based on next action date and lead age
 const getUrgencySLA = (lead: Lead): { label: string; color: string; priority: number } => {
   // If there's a next action date, use that
@@ -398,14 +411,14 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                     {lead.phone ? (
                       <div className="flex items-center gap-0.5">
                         <span 
-                          className="text-xs font-medium cursor-pointer hover:text-primary select-all truncate max-w-[90px]"
+                          className="text-xs font-medium cursor-pointer hover:text-primary select-all truncate max-w-[100px]"
                           onClick={() => {
                             navigator.clipboard.writeText(lead.phone || '');
                             toast.success('Phone copied');
                           }}
                           title={lead.phone}
                         >
-                          {lead.phone}
+                          {formatUKPhone(lead.phone)}
                         </span>
                         <div className="flex items-center">
                           <Button 
