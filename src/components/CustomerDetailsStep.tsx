@@ -2153,12 +2153,13 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               
                               return (
                                 <div>
-                                  <div style={{ fontWeight: 'bold' }}>
-                                    <span style={{ fontSize: '16px', color: '#E53E3E', textDecoration: 'line-through' }}>£{originalPrice}</span>
-                                    <span style={{ fontSize: '14px', color: '#000', marginLeft: '8px' }}>Now</span>
-                                    <span style={{ fontSize: '28px', color: '#000', marginLeft: '8px' }}>£{finalStripePrice}</span>
+                                  <div style={{ fontSize: '16px', color: '#666', fontWeight: 'bold' }}>
+                                    Was: <span style={{ textDecoration: 'line-through' }}>£{originalPrice}</span>
                                   </div>
-                                  <div style={{ fontSize: '14px', color: '#666', marginTop: '2px', fontWeight: 'bold' }}>
+                                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#000' }}>
+                                    £{finalStripePrice}
+                                  </div>
+                                  <div style={{ fontSize: '14px', color: '#27AE60', fontWeight: 'bold' }}>
                                     You save £{savingsAmount}
                                   </div>
                                 </div>
