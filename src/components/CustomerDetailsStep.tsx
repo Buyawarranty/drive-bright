@@ -2321,7 +2321,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       {/* Customer Support */}
                       <div className="text-center">
                         <p className="text-sm text-black">
-                          Need help? <a href="tel:03302295040" className="text-orange-600 hover:text-orange-700 font-semibold underline">Call us on 0330 229 5040</a>
+                          Need help? <a href="tel:03302295040" className="text-orange-600 hover:text-orange-700 font-semibold underline">Call us on 0330 229 5040</a> or <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer" className="text-green-600 hover:text-green-700 font-semibold underline">WhatsApp us</a>
                         </p>
                       </div>
                     </div>
