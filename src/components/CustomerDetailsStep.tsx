@@ -1284,14 +1284,19 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     <p className="text-xs text-gray-500 mt-0.5">Required for your warranty policy</p>
                     
                     <div className="flex gap-2 mt-2">
-                      {/* Manual Input */}
+                      {/* Manual Input with formatting */}
                       <div className="relative flex-1">
                         <Input
                           id="mileage"
-                          type="number"
-                          placeholder="Type mileage"
-                          value={customerData.mileage || ''}
-                          onChange={(e) => handleInputChange('mileage', e.target.value)}
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="e.g. 52,000"
+                          value={customerData.mileage ? Number(customerData.mileage).toLocaleString('en-GB') : ''}
+                          onChange={(e) => {
+                            // Remove commas and non-numeric characters for storage
+                            const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                            handleInputChange('mileage', rawValue);
+                          }}
                           onBlur={() => handleFieldBlur('mileage')}
                           required
                           className={`transition-all duration-300 ${
@@ -1305,7 +1310,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         )}
                       </div>
                       
-                      {/* Quick Select Dropdown */}
+                      {/* Quick Select Dropdown - 2000 increments */}
                       <select
                         value=""
                         onChange={(e) => {
@@ -1317,25 +1322,24 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         className="h-10 px-3 py-2 rounded-md border border-gray-200 bg-[#F5F5F5] text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 cursor-pointer"
                       >
                         <option value="">Quick select</option>
-                        <option value="10000">10,000</option>
-                        <option value="20000">20,000</option>
-                        <option value="30000">30,000</option>
-                        <option value="40000">40,000</option>
-                        <option value="50000">50,000</option>
-                        <option value="60000">60,000</option>
-                        <option value="70000">70,000</option>
-                        <option value="80000">80,000</option>
-                        <option value="90000">90,000</option>
-                        <option value="100000">100,000</option>
-                        <option value="110000">110,000</option>
-                        <option value="120000">120,000</option>
-                        <option value="130000">130,000</option>
-                        <option value="140000">140,000</option>
+                        {Array.from({ length: 70 }, (_, i) => {
+                          const value = (i + 1) * 2000;
+                          return (
+                            <option key={value} value={value}>
+                              {value.toLocaleString('en-GB')}
+                            </option>
+                          );
+                        })}
                       </select>
                     </div>
-                    {fieldErrors.mileage && (
+                    {/* Inline validation message */}
+                    {customerData.mileage && (Number(customerData.mileage) < 1000 || Number(customerData.mileage) > 150000) ? (
+                      <p className="text-red-500 text-xs mt-1" role="alert" aria-live="polite">
+                        Enter mileage between 1,000 and 150,000
+                      </p>
+                    ) : fieldErrors.mileage ? (
                       <p className="text-red-500 text-xs mt-1" role="alert" aria-live="polite">{fieldErrors.mileage}</p>
-                    )}
+                    ) : null}
                   </div>
 
                   {/* Address Section */}
