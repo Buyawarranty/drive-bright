@@ -150,8 +150,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
             <TableHead className="w-[120px]">Actions</TableHead>
             <TableHead className="w-[90px]">Payment</TableHead>
             <TableHead className="w-[90px]">Urgency</TableHead>
-            <TableHead className="w-[160px]">Phone</TableHead>
             <TableHead className="w-[120px]">Name</TableHead>
+            <TableHead className="w-[160px]">Phone</TableHead>
             <TableHead className="w-[60px]">Step</TableHead>
             <TableHead className="w-[180px]">Email</TableHead>
             <TableHead className="w-[120px]">Plan</TableHead>
@@ -374,6 +374,25 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                     </Badge>
                   </TableCell>
 
+                  {/* Name */}
+                  <TableCell>
+                    <div className="flex items-center gap-1.5">
+                      {isOverdue(lead) && <AlertTriangle className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />}
+                      {displayName ? (
+                        <span className="font-medium text-sm truncate max-w-[100px]" title={displayName}>
+                          {displayName}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
+                      {lead.is_from_abandoned_cart && (
+                        <Badge variant="outline" className="text-[10px] px-1 py-0 bg-amber-100 text-amber-800 border-amber-300 flex-shrink-0">
+                          Cart
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
+
                   {/* Phone */}
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     {lead.phone ? (
@@ -431,25 +450,6 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                     ) : (
                       <span className="text-muted-foreground text-xs">—</span>
                     )}
-                  </TableCell>
-
-                  {/* Name */}
-                  <TableCell>
-                    <div className="flex items-center gap-1.5">
-                      {isOverdue(lead) && <AlertTriangle className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />}
-                      {displayName ? (
-                        <span className="font-medium text-sm truncate max-w-[100px]" title={displayName}>
-                          {displayName}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">—</span>
-                      )}
-                      {lead.is_from_abandoned_cart && (
-                        <Badge variant="outline" className="text-[10px] px-1 py-0 bg-amber-100 text-amber-800 border-amber-300 flex-shrink-0">
-                          Cart
-                        </Badge>
-                      )}
-                    </div>
                   </TableCell>
 
                   {/* Step Reached */}
