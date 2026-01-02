@@ -214,10 +214,15 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
         <div className="text-center mb-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            <span className="inline-flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full text-lg font-bold mr-2">3</span>
+            <span className="inline-flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full mr-2">
+              <Rocket className="w-4 h-4" />
+            </span>
             Three quick details for your best price
           </h1>
-          <p className="text-gray-700 mt-1">See your quote in a few seconds</p>
+          <p className="text-gray-700 mt-1 flex items-center justify-center gap-2">
+            <Zap className="w-4 h-4 text-brand-orange" />
+            See your quote in a few seconds
+          </p>
         </div>
 
         {/* Vehicle Card */}
