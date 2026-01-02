@@ -297,7 +297,7 @@ const CancelWarranty = () => {
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
                 <p className="font-semibold text-gray-900">14 day Cooling-off refunds</p>
-                <p className="text-green-600 font-bold">Within 5 working days</p>
+                <p className="text-green-600 font-bold">Within 7 working days</p>
               </div>
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-center">
                 <p className="font-semibold text-gray-900">After 14 days refunds</p>
