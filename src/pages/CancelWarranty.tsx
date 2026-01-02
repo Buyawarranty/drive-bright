@@ -13,21 +13,27 @@ const CancelWarranty = () => {
   const { toast } = useToast();
   const [isSuccess, setIsSuccess] = useState(false);
   const [isStaySuccess, setIsStaySuccess] = useState(false);
-  const [submittedData, setSubmittedData] = useState<{ registrationPlate: string; fullName: string } | null>(null);
+  const [submittedData, setSubmittedData] = useState<{ registrationPlate: string } | null>(null);
   const [isCancellingRequest, setIsCancellingRequest] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isStaying, setIsStaying] = useState(false);
+  const [showStayForm, setShowStayForm] = useState(false);
 
-  // Form state
+  // Stay form state (separate from cancellation form)
+  const [stayFormData, setStayFormData] = useState({
+    registrationPlate: '',
+    email: ''
+  });
+
+  // Cancellation form state
   const [formData, setFormData] = useState({
     registrationPlate: '',
-    fullName: '',
     email: '',
     reason: '',
     exceptionalCircumstances: ''
   });
 
-  const handleFormSuccess = (data: { registrationPlate: string; fullName: string }) => {
+  const handleFormSuccess = (data: { registrationPlate: string }) => {
     setSubmittedData(data);
     setIsSuccess(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -46,7 +52,7 @@ const CancelWarranty = () => {
       await supabase.functions.invoke('submit-cancellation', {
         body: {
           registrationPlate: submittedData.registrationPlate,
-          fullName: submittedData.fullName,
+          fullName: 'Customer',
           reason: 'CANCELLATION_WITHDRAWN',
           feedback: 'Customer has changed their mind and wishes to keep their warranty.'
         }
@@ -63,7 +69,7 @@ const CancelWarranty = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.registrationPlate || !formData.fullName || !formData.email || !formData.reason) {
+    if (!formData.registrationPlate || !formData.email || !formData.reason) {
       toast({ title: "Missing Information", description: "Please fill in all required fields.", variant: "destructive" });
       return;
     }
@@ -79,7 +85,7 @@ const CancelWarranty = () => {
       const response = await supabase.functions.invoke('submit-cancellation', {
         body: {
           registrationPlate: formData.registrationPlate,
-          fullName: formData.fullName,
+          fullName: 'Customer',
           email: formData.email,
           reason: formData.reason,
           feedback: formData.exceptionalCircumstances || ''
@@ -87,7 +93,7 @@ const CancelWarranty = () => {
       });
 
       if (response.error) throw new Error(response.error.message);
-      handleFormSuccess({ registrationPlate: formData.registrationPlate, fullName: formData.fullName });
+      handleFormSuccess({ registrationPlate: formData.registrationPlate });
     } catch (error) {
       console.error('Cancellation submission error:', error);
       toast({ title: "Submission Failed", description: "Please try again or contact support.", variant: "destructive" });
@@ -97,8 +103,13 @@ const CancelWarranty = () => {
   };
 
   const handleStayWithUs = async () => {
-    if (!formData.email || !formData.registrationPlate) {
-      toast({ title: "Missing Information", description: "Please enter your email and registration plate above.", variant: "destructive" });
+    if (!stayFormData.email || !stayFormData.registrationPlate) {
+      toast({ title: "Missing Information", description: "Please enter your email and registration plate.", variant: "destructive" });
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(stayFormData.email)) {
+      toast({ title: "Invalid Email", description: "Please enter a valid email address.", variant: "destructive" });
       return;
     }
 
@@ -107,10 +118,10 @@ const CancelWarranty = () => {
     try {
       await supabase.functions.invoke('submit-cancellation', {
         body: {
-          registrationPlate: formData.registrationPlate,
-          fullName: formData.email,
+          registrationPlate: stayFormData.registrationPlate,
+          fullName: stayFormData.email,
           reason: 'CUSTOMER_STAYING',
-          feedback: `Customer has decided to STAY and keep their warranty. They accepted the 3 months FREE offer. Email: ${formData.email}, Registration: ${formData.registrationPlate}.`
+          feedback: `Customer has decided to STAY and keep their warranty. They accepted the 3 months FREE offer. Email: ${stayFormData.email}, Registration: ${stayFormData.registrationPlate}.`
         }
       });
       handleStaySuccess();
@@ -349,19 +360,54 @@ const CancelWarranty = () => {
             </div>
 
             <p className="text-gray-700 text-center mb-4">
-              Please reach out via <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer" className="text-green-600 font-semibold hover:underline">WhatsApp</a>, call us on <a href="tel:03302295040" className="text-green-600 font-semibold hover:underline">0330 229 5040</a>, or use the form below to see what we can do for you.
+              Please reach out via <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer" className="text-green-600 font-semibold hover:underline">WhatsApp</a>, call us on <a href="tel:03302295040" className="text-green-600 font-semibold hover:underline">0330 229 5040</a>, or click the button below to stay with us.
             </p>
             
-            <Button 
-              onClick={handleStayWithUs}
-              disabled={isStaying || !formData.email || !formData.registrationPlate}
-              className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-bold gap-2"
-            >
-              {isStaying ? 'Processing...' : 'Keep My Cover'}
-            </Button>
-            <p className="text-sm text-gray-600 text-center mt-2">
-              Enter your email and registration below first, then click to keep your cover.
-            </p>
+            {!showStayForm ? (
+              <Button 
+                onClick={() => setShowStayForm(true)}
+                className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-bold gap-2"
+              >
+                Keep My Cover
+              </Button>
+            ) : (
+              <div className="space-y-3 bg-white border border-green-200 rounded-lg p-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Registration Plate *</label>
+                  <Input
+                    type="text"
+                    placeholder="e.g. AB12 CDE"
+                    value={stayFormData.registrationPlate}
+                    onChange={(e) => setStayFormData({ ...stayFormData, registrationPlate: e.target.value.toUpperCase() })}
+                    className="h-12 border-gray-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                  <Input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={stayFormData.email}
+                    onChange={(e) => setStayFormData({ ...stayFormData, email: e.target.value })}
+                    className="h-12 border-gray-300"
+                  />
+                </div>
+                <Button 
+                  onClick={handleStayWithUs}
+                  disabled={isStaying || !stayFormData.email || !stayFormData.registrationPlate}
+                  className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-bold gap-2"
+                >
+                  {isStaying ? 'Processing...' : 'Confirm & Keep My Cover'}
+                </Button>
+                <button 
+                  type="button"
+                  onClick={() => setShowStayForm(false)}
+                  className="w-full text-sm text-gray-500 hover:text-gray-700"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
           </section>
 
           {/* Cancellation Form */}
@@ -376,16 +422,6 @@ const CancelWarranty = () => {
                   placeholder="e.g. AB12 CDE"
                   value={formData.registrationPlate}
                   onChange={(e) => setFormData({ ...formData, registrationPlate: e.target.value.toUpperCase() })}
-                  className="h-12 border-gray-300"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                <Input
-                  type="text"
-                  placeholder="Your full name"
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                   className="h-12 border-gray-300"
                 />
               </div>
