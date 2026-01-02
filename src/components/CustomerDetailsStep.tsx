@@ -159,7 +159,18 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   });
   
   const [updatedPricingData, setUpdatedPricingData] = useState(() => {
-    // Use originalPricingData as starting point
+    // CRITICAL FIX: Use saved originalPricingData from localStorage if available
+    // This prevents price drift when navigating back from Stripe/Bumper
+    try {
+      const savedOriginalPrice = localStorage.getItem('buyawarranty_originalPricingData');
+      if (savedOriginalPrice) {
+        const parsed = JSON.parse(savedOriginalPrice);
+        console.log('✅ Initializing updatedPricingData from saved original:', parsed);
+        return parsed;
+      }
+    } catch (error) {
+      console.error('❌ Error restoring pricing data for updatedPricingData:', error);
+    }
     return pricingData;
   });
   const [isLoadingPayment, setIsLoadingPayment] = useState(false);
