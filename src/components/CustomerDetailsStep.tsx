@@ -1278,6 +1278,34 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     )}
                   </div>
 
+                  {/* Date of Birth */}
+                  <div>
+                    <Label htmlFor="date_of_birth" className="text-sm font-medium text-gray-700">Date of Birth *</Label>
+                    <div className="relative">
+                      <Input
+                        id="date_of_birth"
+                        type="date"
+                        value={customerData.date_of_birth}
+                        onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
+                        onBlur={() => handleFieldBlur('date_of_birth')}
+                        required
+                        max={new Date(new Date().setFullYear(new Date().getFullYear() - 17)).toISOString().split('T')[0]}
+                        min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]}
+                        className={`mt-1 transition-all duration-300 ${
+                          showValidation && fieldErrors.date_of_birth 
+                            ? 'border-red-500 focus:border-red-500' 
+                            : 'focus:ring-2 focus:ring-orange-200'
+                        }`}
+                      />
+                      {validatedFields.date_of_birth && (
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                      )}
+                    </div>
+                    {fieldErrors.date_of_birth && (
+                      <p className="text-red-500 text-xs mt-1" role="alert" aria-live="polite">{fieldErrors.date_of_birth}</p>
+                    )}
+                  </div>
+
                   {/* Vehicle Mileage */}
                   <div>
                     <Label htmlFor="mileage" className="text-sm font-medium text-gray-700">What's your vehicle's approximate mileage? *</Label>
@@ -1389,7 +1417,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="postcode" className="text-sm font-medium text-gray-700">Postcode *</Label>
-                        <div className="relative">
                           <PostcodeAutocomplete
                             value={customerData.postcode}
                             onChange={(value) => handleInputChange('postcode', value)}
@@ -1411,11 +1438,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                 : ''
                             }`}
                             error={fieldErrors.postcode}
+                            showCheckmark={validatedFields.postcode}
                           />
-                          {validatedFields.postcode && (
-                            <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600 z-10" />
-                          )}
-                        </div>
                       </div>
                       <div>
                         <Label htmlFor="city" className="text-sm font-medium text-gray-700">City/Town *</Label>

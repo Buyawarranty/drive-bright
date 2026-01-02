@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { MapPin, ChevronDown } from 'lucide-react';
+import { MapPin, ChevronDown, Check } from 'lucide-react';
 
 interface Address {
   formatted_address: string;
@@ -28,6 +28,7 @@ interface PostcodeAutocompleteProps {
   className?: string;
   error?: string;
   onBlur?: () => void;
+  showCheckmark?: boolean;
 }
 
 export const PostcodeAutocomplete: React.FC<PostcodeAutocompleteProps> = ({
@@ -38,7 +39,8 @@ export const PostcodeAutocomplete: React.FC<PostcodeAutocompleteProps> = ({
   required = false,
   className = "",
   error,
-  onBlur
+  onBlur,
+  showCheckmark = false
 }) => {
   const [suggestions, setSuggestions] = useState<Address[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -180,6 +182,8 @@ export const PostcodeAutocomplete: React.FC<PostcodeAutocompleteProps> = ({
         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
           {isLoading ? (
             <div className="animate-spin h-4 w-4 border-2 border-orange-500 border-t-transparent rounded-full"></div>
+          ) : showCheckmark ? (
+            <Check className="h-5 w-5 text-green-600" />
           ) : (
             <MapPin className="h-4 w-4 text-gray-400" />
           )}
