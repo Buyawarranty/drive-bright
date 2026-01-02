@@ -214,7 +214,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
         <div className="text-center mb-4">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            ✨ Three quick details for your best price
+            <span className="inline-flex items-center justify-center w-8 h-8 bg-primary text-white rounded-full text-lg font-bold mr-2">3</span>
+            Three quick details for your best price
           </h1>
           <p className="text-gray-700 mt-1">See your quote in a few seconds</p>
         </div>
@@ -267,7 +268,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 onChange={(e) => setFirstName(e.target.value)}
                 autoComplete="given-name"
                 data-ga4-event="step2_firstname_input"
-                className="w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-white border-gray-300 text-gray-700 font-bold"
+                className="w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 border-gray-300 text-gray-700 font-bold"
               />
               {firstName && isValidFirstName && (
                 <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
@@ -293,7 +294,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   if (emailError) setEmailError('');
                 }}
                 data-ga4-event="step2_email_input"
-                className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-white text-gray-700 font-bold ${
+                className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   emailError || (email && !isValidEmail) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
@@ -333,7 +334,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                   if (phoneError) setPhoneError('');
                 }}
                 data-ga4-event="step2_phone_input"
-                className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-white text-gray-700 font-bold ${
+                className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
                   phoneError || (phone && !isValidPhone) ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
