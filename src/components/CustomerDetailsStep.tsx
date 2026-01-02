@@ -1481,7 +1481,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               {/* Pay Monthly Card - Show first */}
                               <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                                 <div className="text-base">
-                                  Pay Monthly: £{monthlyTotal} - <span className="font-bold text-black">£{discountedMonthlyPayment}/month</span> <span className="text-sm font-normal text-gray-600">– 0% APR, 12 payments</span>
+                                  <span className="font-bold">Pay Monthly:</span> £{monthlyTotal} - <span className="font-bold text-black">£{discountedMonthlyPayment}/month</span> <span className="text-sm font-normal text-gray-600">– 0% APR, 12 payments</span>
                                 </div>
                                 {hasPromoCode && promoSavings > 0 && (
                                   <div className="text-sm font-semibold text-green-600 mt-1">Saved £{promoSavings} with promo!</div>
