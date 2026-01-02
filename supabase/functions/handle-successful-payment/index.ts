@@ -306,7 +306,7 @@ serve(async (req) => {
       vehicle_year: vehicleData?.year || metadata?.vehicle_year || '',
       vehicle_fuel_type: vehicleData?.fuelType || metadata?.vehicle_fuel_type || '',
       vehicle_transmission: vehicleData?.transmission || metadata?.vehicle_transmission || '',
-      mileage: vehicleData?.mileage || metadata?.vehicle_mileage || '',
+      mileage: vehicleData?.mileage || '', // Only use Step 4 mileage (passed via vehicleData)
       status: 'Active',
       discount_code: customerData?.discount_code || null,
       discount_amount: customerData?.discount_amount || 0,
