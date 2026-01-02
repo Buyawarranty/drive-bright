@@ -152,6 +152,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
             <TableHead className="w-[90px]">Urgency</TableHead>
             <TableHead className="w-[160px]">Phone</TableHead>
             <TableHead className="w-[120px]">Name</TableHead>
+            <TableHead className="w-[60px]">Step</TableHead>
             <TableHead className="w-[180px]">Email</TableHead>
             <TableHead className="w-[120px]">Plan</TableHead>
             <TableHead className="w-[90px]">Reg Plate</TableHead>
@@ -451,6 +452,27 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                     </div>
                   </TableCell>
 
+                  {/* Step Reached */}
+                  <TableCell>
+                    {lead.step_abandoned ? (
+                      <Badge 
+                        variant="outline" 
+                        className={cn(
+                          "text-xs font-medium",
+                          lead.step_abandoned === 1 && "bg-red-50 text-red-700 border-red-200",
+                          lead.step_abandoned === 2 && "bg-orange-50 text-orange-700 border-orange-200",
+                          lead.step_abandoned === 3 && "bg-yellow-50 text-yellow-700 border-yellow-200",
+                          lead.step_abandoned === 4 && "bg-blue-50 text-blue-700 border-blue-200"
+                        )}
+                        title={`Dropped off at Step ${lead.step_abandoned}`}
+                      >
+                        Step {lead.step_abandoned}
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    )}
+                  </TableCell>
+
                   {/* Email */}
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-0.5">
@@ -639,7 +661,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                 {/* Expanded row */}
                 {expandedLead === lead.id && (
                   <TableRow>
-                    <TableCell colSpan={14} className="bg-muted/30">
+                    <TableCell colSpan={15} className="bg-muted/30">
                       <div className="grid grid-cols-3 gap-4 p-4">
                         {/* Contact Details */}
                         <div>
