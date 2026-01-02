@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, Phone, Clock, Pause, ArrowRightLeft, TrendingDown, CheckCircle, AlertCircle, Gift, MessageCircle } from 'lucide-react';
+import { Mail, Phone, Clock, Pause, ArrowRightLeft, TrendingDown, CheckCircle, AlertCircle, Gift, MessageCircle, Heart, Car, Wrench, ArrowDown } from 'lucide-react';
 
 const CancelWarranty = () => {
   const { toast } = useToast();
@@ -323,33 +323,41 @@ const CancelWarranty = () => {
           <section className="bg-green-50 border-2 border-green-500 rounded-xl p-6">
             <div className="text-center mb-4">
               <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Gift className="w-6 h-6 text-white" />
+                <Heart className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Stay with us and get <span className="text-green-600">3 MONTHS FREE</span> cover – plus extra peace of mind.</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-3">We'd love to keep you as a valued customer!</h2>
+              <p className="text-gray-700">
+                If you decide to stay with us, we can offer great incentives such as three months of extended cover, vehicle rental benefits, and recovery assistance.
+              </p>
             </div>
             
             <div className="bg-white rounded-lg p-4 mb-4 border border-green-200">
-              <p className="font-semibold text-gray-900 mb-2">Supporting Benefits</p>
-              <ul className="text-gray-700 space-y-2">
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  Free Breakdown Recovery included
-                </li>
-                <li className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  Courtesy Vehicle Rental during repairs
-                </li>
-              </ul>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Gift className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <span className="text-sm font-medium">3 Months Extended Cover</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Car className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <span className="text-sm font-medium">Vehicle Rental Benefits</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Wrench className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <span className="text-sm font-medium">Recovery Assistance</span>
+                </div>
+              </div>
             </div>
+
+            <p className="text-gray-700 text-center mb-4">
+              Please reach out via <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer" className="text-green-600 font-semibold hover:underline">WhatsApp</a>, call us on <a href="tel:03302295040" className="text-green-600 font-semibold hover:underline">0330 229 5040</a>, or use the form below to see what we can do for you.
+            </p>
             
             <Button 
-              onClick={handleStayWithUs}
-              disabled={isStaying || !formData.email || !formData.registrationPlate}
-              className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-bold"
+              onClick={() => document.getElementById('form-section')?.scrollIntoView({ behavior: 'smooth' })}
+              className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-bold gap-2"
             >
-              {isStaying ? 'Processing...' : "Yes, I'll Stay – Add 3 Months Free"}
+              Contact Us to Stay <ArrowDown className="w-4 h-4" />
             </Button>
-            <p className="text-center text-xs text-gray-500 mt-2">Enter your details below first, then click to stay</p>
           </section>
 
           {/* Cancellation Form */}
