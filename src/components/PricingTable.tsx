@@ -1548,7 +1548,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     {/* Savings line */}
                     {savingsAmount > 0 && (
                       <div className="flex items-center gap-1 mt-1">
-                        <span className="text-sm font-bold text-green-600">Save £{savingsAmount} Today 🔥</span>
+                        <span className="text-sm font-bold text-green-600">Save £{savingsAmount} Today</span>
                       </div>
                     )}
                     
