@@ -140,44 +140,8 @@ const WebsiteFooter = () => {
       </footer>
 
       {/* Bottom Footer - Full Width */}
-      <div className="bg-gray-100 py-8 w-full">
+      <div className="bg-gray-100 py-6 w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Need Help Section */}
-          <div className="text-center mb-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Need help?</h3>
-            <p className="text-gray-600 mb-3">Our customer support team are here to help.</p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm">
-              <a href="tel:03302295040" className="text-[#eb4b00] hover:text-[#d63f00] font-semibold">
-                Call us: 0330 229 5040
-              </a>
-              <a href="mailto:support@buyawarranty.co.uk" className="text-[#eb4b00] hover:text-[#d63f00] font-semibold">
-                Email us: support@buyawarranty.co.uk
-              </a>
-            </div>
-          </div>
-
-          {/* Centered Logo */}
-          <div className="flex justify-center mb-6">
-            <Link to="/" className="hover:opacity-80 transition-opacity">
-              <OptimizedImage 
-                src={buyawarrantyLogo} 
-                alt="Buy a Warranty Logo - Comprehensive Vehicle Warranties" 
-                className="h-10 w-auto"
-                priority={false}
-                width={240}
-                height={40}
-              />
-            </Link>
-          </div>
-
-          {/* Navigation Links */}
-          <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600 mb-6">
-            <a href="/" className="hover:text-[#eb4b00] transition-colors">Home</a>
-            <a href="/faq/" className="hover:text-[#eb4b00] transition-colors">Frequently Asked Questions</a>
-            <a href="/contact-us/" className="hover:text-[#eb4b00] transition-colors">Contact Us</a>
-          </div>
-
-          {/* Copyright */}
           <div className="text-center">
             <p className="text-sm text-gray-600 max-w-4xl mx-auto">
               © Buy a Warranty. All rights reserved.
