@@ -890,7 +890,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
             planId,
             vehicleData: {
               ...vehicleData,
-              mileage: customerData.mileage || vehicleData.mileage // Use Step 4 mileage if provided
+              mileage: customerData.mileage // Only use Step 4 mileage - required field
             },
             paymentType,
             voluntaryExcess: updatedPricingData.voluntaryExcess,
@@ -1016,7 +1016,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
         planId,
         vehicleData: {
           ...vehicleData,
-          mileage: customerData.mileage || vehicleData.mileage // Use Step 4 mileage if provided
+          mileage: customerData.mileage // Only use Step 4 mileage - required field
         },
         paymentType,
         voluntaryExcess: updatedPricingData.voluntaryExcess,
