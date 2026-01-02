@@ -325,9 +325,23 @@ const CancelWarranty = () => {
               <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Gift className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Before you go...</h2>
-              <p className="text-gray-700">Stay with us and get <strong className="text-green-600">3 months FREE cover</strong></p>
+              <h2 className="text-xl font-bold text-gray-900">Stay with us and get <span className="text-green-600">3 MONTHS FREE</span> cover – plus extra peace of mind.</h2>
             </div>
+            
+            <div className="bg-white rounded-lg p-4 mb-4 border border-green-200">
+              <p className="font-semibold text-gray-900 mb-2">Supporting Benefits</p>
+              <ul className="text-gray-700 space-y-2">
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                  Free Breakdown Recovery included
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                  Courtesy Vehicle Rental during repairs
+                </li>
+              </ul>
+            </div>
+            
             <Button 
               onClick={handleStayWithUs}
               disabled={isStaying || !formData.email || !formData.registrationPlate}
@@ -374,7 +388,7 @@ const CancelWarranty = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Reason for Cancellation *</label>
-                <Select value={formData.reason} onValueChange={(value) => setFormData({ ...formData, reason: value })}>
+                <Select value={formData.reason} onValueChange={(value) => setFormData({ ...formData, reason: value, exceptionalCircumstances: '' })}>
                   <SelectTrigger className="h-12 border-gray-300">
                     <SelectValue placeholder="Select a reason" />
                   </SelectTrigger>
@@ -383,25 +397,35 @@ const CancelWarranty = () => {
                     <SelectItem value="financial-reasons">Financial reasons</SelectItem>
                     <SelectItem value="found-alternative">Found alternative cover</SelectItem>
                     <SelectItem value="no-longer-needed">No longer need cover</SelectItem>
+                    <SelectItem value="exceptional-circumstances">Exceptional circumstances</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Exceptional Circumstances (Optional)</label>
-                <Textarea
-                  placeholder="If you have any exceptional circumstances, please describe them here..."
-                  value={formData.exceptionalCircumstances}
-                  onChange={(e) => setFormData({ ...formData, exceptionalCircumstances: e.target.value })}
-                  className="border-gray-300 min-h-[100px]"
-                />
-              </div>
+              {(formData.reason === 'other' || formData.reason === 'exceptional-circumstances') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {formData.reason === 'exceptional-circumstances' 
+                      ? 'Please describe your exceptional circumstances *' 
+                      : 'Please tell us your reason *'}
+                  </label>
+                  <Textarea
+                    placeholder={formData.reason === 'exceptional-circumstances' 
+                      ? "Please describe your exceptional circumstances here..." 
+                      : "Please let us know your reason for cancelling..."}
+                    value={formData.exceptionalCircumstances}
+                    onChange={(e) => setFormData({ ...formData, exceptionalCircumstances: e.target.value })}
+                    className="border-gray-300 min-h-[100px]"
+                    required
+                  />
+                </div>
+              )}
               <Button 
                 type="submit" 
                 disabled={isSubmitting}
                 className="w-full h-14 bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg"
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Cancellation Request'}
+                {isSubmitting ? 'Submitting...' : 'Continue to Cancel'}
               </Button>
             </form>
           </section>
