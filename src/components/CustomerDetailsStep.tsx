@@ -1933,8 +1933,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                   return;
                                 }
 
-                                if (checkoutData?.redirectUrl) {
-                                  console.log('🏦 Redirecting to Bumper:', checkoutData.redirectUrl);
+                                if (checkoutData?.url) {
+                                  console.log('🏦 Redirecting to Bumper:', checkoutData.url);
                                   // Save journey state before redirect
                                   const journeyState = {
                                     formData: pricingData,
@@ -1948,9 +1948,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                   };
                                   localStorage.setItem('warranty_journey_state', JSON.stringify(journeyState));
                                   
-                                  window.location.href = checkoutData.redirectUrl;
+                                  window.location.href = checkoutData.url;
                                 } else {
-                                  console.error('🏦 No redirect URL in Bumper response');
+                                  console.error('🏦 No redirect URL in Bumper response:', checkoutData);
                                   toast.error('Unable to process checkout. Please try again.');
                                   setIsLoadingBumper(false);
                                   setIsLoadingPayment(false);
