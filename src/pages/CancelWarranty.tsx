@@ -236,7 +236,7 @@ const CancelWarranty = () => {
                   <ul className="text-gray-600 space-y-1">
                     <li>• If no claim submitted: pro-rata refund for unused full months, minus £40 fair usage fee</li>
                     <li>• Minimum of 2 months' equivalent warranty payment retained</li>
-                    <li>• If any claim submitted: no refund applies</li>
+                    <li>• If a claim has been submitted (accepted, pending, or rejected), no refund applies</li>
                   </ul>
                 </div>
                 
