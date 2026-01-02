@@ -41,20 +41,58 @@ const CancellationForm: React.FC<CancellationFormProps> = ({ onSuccess }) => {
     }
   };
 
+  const validateRegistrationPlate = (plate: string): boolean => {
+    // Remove spaces and convert to uppercase for validation
+    const cleanPlate = plate.replace(/\s/g, '').toUpperCase();
+    
+    // UK registration plate formats:
+    // Current format (2001+): AB12 CDE (2 letters, 2 numbers, 3 letters)
+    // Prefix format (1983-2001): A123 BCD (1 letter, 1-3 numbers, 3 letters)
+    // Suffix format (1963-1983): ABC 123A (3 letters, 1-3 numbers, 1 letter)
+    // Dateless format: Various combinations
+    
+    const currentFormat = /^[A-Z]{2}[0-9]{2}[A-Z]{3}$/;
+    const prefixFormat = /^[A-Z][0-9]{1,3}[A-Z]{3}$/;
+    const suffixFormat = /^[A-Z]{3}[0-9]{1,3}[A-Z]$/;
+    const datelessFormat1 = /^[A-Z]{1,3}[0-9]{1,4}$/;
+    const datelessFormat2 = /^[0-9]{1,4}[A-Z]{1,3}$/;
+    
+    return (
+      currentFormat.test(cleanPlate) ||
+      prefixFormat.test(cleanPlate) ||
+      suffixFormat.test(cleanPlate) ||
+      datelessFormat1.test(cleanPlate) ||
+      datelessFormat2.test(cleanPlate)
+    );
+  };
+
+  const validateEmail = (email: string): boolean => {
+    // More comprehensive email validation
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+    return emailRegex.test(email.trim());
+  };
+
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
     
     if (!formData.registrationPlate.trim()) {
       newErrors.registrationPlate = 'Registration plate is required';
+    } else if (!validateRegistrationPlate(formData.registrationPlate)) {
+      newErrors.registrationPlate = 'Please enter a valid UK registration plate (e.g., AB12 CDE)';
     }
+    
     if (!formData.fullName.trim()) {
       newErrors.fullName = 'Full name is required';
+    } else if (formData.fullName.trim().length < 2) {
+      newErrors.fullName = 'Please enter your full name';
     }
+    
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    } else if (!validateEmail(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
     }
+    
     if (!formData.reason) {
       newErrors.reason = 'Please select a reason';
     }
