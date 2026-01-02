@@ -1282,11 +1282,33 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                   <div>
                     <Label htmlFor="mileage" className="text-sm font-medium text-gray-700">What's your vehicle's approximate mileage? *</Label>
                     <p className="text-xs text-gray-500 mt-0.5">Required for your warranty policy</p>
+                    
+                    {/* Quick Select Mileage Buttons */}
+                    <div className="flex flex-wrap gap-2 mt-2 mb-2">
+                      {[20000, 40000, 60000, 80000, 100000, 120000].map((miles) => (
+                        <button
+                          key={miles}
+                          type="button"
+                          onClick={() => {
+                            handleInputChange('mileage', miles.toString());
+                            setValidatedFields(prev => ({ ...prev, mileage: true }));
+                          }}
+                          className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-all ${
+                            customerData.mileage === miles.toString()
+                              ? 'bg-orange-500 text-white border-orange-500'
+                              : 'bg-white text-gray-700 border-gray-300 hover:border-orange-400 hover:bg-orange-50'
+                          }`}
+                        >
+                          {miles.toLocaleString()}
+                        </button>
+                      ))}
+                    </div>
+                    
                     <div className="relative">
                       <Input
                         id="mileage"
                         type="number"
-                        placeholder="e.g., 45000"
+                        placeholder="Or type exact mileage"
                         value={customerData.mileage || ''}
                         onChange={(e) => handleInputChange('mileage', e.target.value)}
                         onBlur={() => handleFieldBlur('mileage')}
@@ -1303,35 +1325,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     </div>
                     {fieldErrors.mileage && (
                       <p className="text-red-500 text-xs mt-1" role="alert" aria-live="polite">{fieldErrors.mileage}</p>
-                    )}
-                  </div>
-
-                  {/* Date of Birth */}
-                  <div>
-                    <Label htmlFor="date_of_birth" className="text-sm font-medium text-gray-700">Date of Birth *</Label>
-                    <p className="text-xs text-gray-500 mt-0.5">Required for identity verification and regulatory compliance</p>
-                    <div className="relative">
-                      <Input
-                        id="date_of_birth"
-                        type="date"
-                        value={customerData.date_of_birth || ''}
-                        onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
-                        onBlur={() => handleFieldBlur('date_of_birth')}
-                        max={new Date(new Date().setFullYear(new Date().getFullYear() - 17)).toISOString().split('T')[0]}
-                        min="1920-01-01"
-                        required
-                        className={`mt-1 transition-all duration-300 ${
-                          showValidation && fieldErrors.date_of_birth 
-                            ? 'border-red-500 focus:border-red-500' 
-                            : 'focus:ring-2 focus:ring-orange-200'
-                        }`}
-                      />
-                      {validatedFields.date_of_birth && (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
-                      )}
-                    </div>
-                    {fieldErrors.date_of_birth && (
-                      <p className="text-red-500 text-xs mt-1" role="alert" aria-live="polite">{fieldErrors.date_of_birth}</p>
                     )}
                   </div>
 
