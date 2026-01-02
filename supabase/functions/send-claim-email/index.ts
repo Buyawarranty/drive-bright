@@ -37,7 +37,7 @@ serve(async (req: Request) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Buy a Warranty <claims@buyawarranty.co.uk>",
+        from: "BuyaWarranty Team <claims@buyawarranty.co.uk>",
         to: [to],
         subject: subject,
         text: body,

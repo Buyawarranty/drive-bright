@@ -121,7 +121,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       try {
         const { data, error } = await resend.emails.send({
-          from: "Buy A Warranty <info@buyawarranty.co.uk>",
+          from: "BuyaWarranty Team <info@buyawarranty.co.uk>",
           to: [customer.email],
           subject: "Your car's warranty is almost ready – just one more step!",
           html: htmlContent,

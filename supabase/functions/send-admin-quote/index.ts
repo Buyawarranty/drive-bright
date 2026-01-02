@@ -103,7 +103,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     const emailResponse = await resend.emails.send({
-      from: "Buy A Warranty <quotes@buyawarranty.co.uk>",
+      from: "BuyaWarranty Team <quotes@buyawarranty.co.uk>",
       to: [to],
       subject: subject,
       html: finalHtml,

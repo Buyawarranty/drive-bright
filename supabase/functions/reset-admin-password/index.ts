@@ -180,9 +180,9 @@ Kind regards,
 Buy A Warranty IT Administration Team`;
 
     const emailResponse = await resend.emails.send({
-      from: "Buy A Warranty <support@buyawarranty.co.uk>",
+      from: "BuyaWarranty Team <support@buyawarranty.co.uk>",
       to: [email],
-      subject: "🔐 Admin Password Reset - Buy A Warranty",
+      subject: "🔐 Admin Password Reset - BuyaWarranty",
       html: emailHtml,
       text: textVersion,
       headers: {

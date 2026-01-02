@@ -94,7 +94,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Check environment variables at startup
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
     // Use verified domain email address
-    const resendFrom = 'Buy A Warranty <info@buyawarranty.co.uk>';
+    const resendFrom = 'BuyaWarranty Team <info@buyawarranty.co.uk>';
     
     console.log(JSON.stringify({ 
       evt: "env.check", 

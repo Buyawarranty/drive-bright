@@ -229,7 +229,7 @@ serve(async (req) => {
 
     // Prepare email payload
     const emailPayload: any = {
-      from: "Buy A Warranty <support@buyawarranty.co.uk>",
+      from: "BuyaWarranty Team <support@buyawarranty.co.uk>",
       to: [recipientEmail],
       subject: subject,
       html: htmlContent,

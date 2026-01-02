@@ -201,7 +201,7 @@ serve(async (req) => {
 
     // Get environment variables for email
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    const resendFrom = 'Buy A Warranty <noreply@buyawarranty.co.uk>';
+    const resendFrom = 'BuyaWarranty Team <noreply@buyawarranty.co.uk>';
     
     if (!resendApiKey) {
       throw new Error('RESEND_API_KEY not configured');

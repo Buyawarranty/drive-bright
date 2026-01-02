@@ -133,7 +133,7 @@ const handler = async (req: Request): Promise<Response> => {
       `;
 
       const emailResponse = await resend.emails.send({
-        from: 'Buy a Warranty <noreply@buyawarranty.co.uk>',
+        from: 'BuyaWarranty Team <noreply@buyawarranty.co.uk>',
         to: ['support@buyawarranty.co.uk'],
         subject: `New Contact Form Submission from ${body.name}`,
         html: emailContent,
@@ -158,9 +158,9 @@ const handler = async (req: Request): Promise<Response> => {
       `;
 
       const confirmationResponse = await resend.emails.send({
-        from: 'Buy a Warranty <support@buyawarranty.co.uk>',
+        from: 'BuyaWarranty Team <support@buyawarranty.co.uk>',
         to: [body.email],
-        subject: 'Thank you for contacting Buy a Warranty',
+        subject: 'Thank you for contacting BuyaWarranty',
         html: confirmationEmailContent,
       });
 

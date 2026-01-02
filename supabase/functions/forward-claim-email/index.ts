@@ -87,7 +87,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'support@buyawarranty.co.uk',
+        from: 'BuyaWarranty Team <support@buyawarranty.co.uk>',
         to: ['claims@buyawarranty.co.uk', 'info@buyawarranty.co.uk'],
         subject: `[FORWARDED] Claim: ${regPlateDisplay}`,
         html: emailHtml,

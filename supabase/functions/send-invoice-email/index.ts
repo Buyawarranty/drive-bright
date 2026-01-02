@@ -166,9 +166,9 @@ const handler = async (req: Request): Promise<Response> => {
         "Authorization": `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Buy A Warranty <invoices@buyawarranty.co.uk>",
+        from: "BuyaWarranty Team <invoices@buyawarranty.co.uk>",
         to: [recipientEmail],
-        subject: subject || `Invoice from Buy A Warranty`,
+        subject: subject || `Invoice from BuyaWarranty`,
         html: emailHtml,
         attachments: attachments.map(att => ({
           filename: att.filename,
