@@ -287,7 +287,7 @@ const CancelWarranty = () => {
               </div>
             </div>
             <p className="text-sm text-gray-600 mt-4">
-              Interested? <a href="mailto:support@buyawarranty.co.uk" className="text-orange-600 hover:underline font-medium">Contact us</a> to discuss these options.
+              Interested? <button onClick={() => document.getElementById('stay-section')?.scrollIntoView({ behavior: 'smooth' })} className="text-orange-600 hover:underline font-medium">Contact us</button> to discuss these options.
             </p>
           </section>
 
@@ -331,7 +331,7 @@ const CancelWarranty = () => {
           </section>
 
           {/* Stay Offer */}
-          <section className="bg-green-50 border-2 border-green-500 rounded-xl p-6">
+          <section id="stay-section" className="bg-green-50 border-2 border-green-500 rounded-xl p-6">
             <div className="text-center mb-4">
               <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Heart className="w-6 h-6 text-white" />
