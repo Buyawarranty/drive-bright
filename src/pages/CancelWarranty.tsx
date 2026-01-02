@@ -353,16 +353,21 @@ const CancelWarranty = () => {
             </p>
             
             <Button 
-              onClick={() => document.getElementById('form-section')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={handleStayWithUs}
+              disabled={isStaying || !formData.email || !formData.registrationPlate}
               className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-bold gap-2"
             >
-              Contact Us to Stay <ArrowDown className="w-4 h-4" />
+              {isStaying ? 'Processing...' : 'Keep My Cover'}
             </Button>
+            <p className="text-sm text-gray-600 text-center mt-2">
+              Enter your email and registration below first, then click to keep your cover.
+            </p>
           </section>
 
           {/* Cancellation Form */}
           <section id="form-section" className="border-2 border-gray-200 rounded-xl p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Submit Cancellation Request</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Cancel my warranty</h2>
+            <p className="text-gray-600 mb-4">We're sorry to see you go. Please confirm your details to cancel your warranty.</p>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Registration Plate *</label>
@@ -433,7 +438,7 @@ const CancelWarranty = () => {
                 disabled={isSubmitting}
                 className="w-full h-14 bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg"
               >
-                {isSubmitting ? 'Submitting...' : 'Continue to Cancel'}
+                {isSubmitting ? 'Submitting...' : 'Cancel my warranty'}
               </Button>
             </form>
           </section>
