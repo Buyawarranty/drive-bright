@@ -1,11 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Phone, MessageCircle, Star, X, HelpCircle } from 'lucide-react';
 
 const HelpFAB: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Show FAB after scrolling past 150px (roughly past the back button area)
+      if (window.scrollY > 150) {
+        setIsVisible(true);
+      }
+      // Once visible, it stays visible - don't hide it when scrolling back up
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-6 right-4 z-50 md:hidden">
+    <div className="fixed bottom-6 right-4 z-50 md:hidden animate-fade-in">
       {/* Expanded Options */}
       {isExpanded && (
         <>
