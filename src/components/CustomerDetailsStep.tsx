@@ -112,6 +112,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
       city: '',
       postcode: '',
       date_of_birth: '',
+      mileage: '',
       marketing_opt_in: false,
       privacy_policy_accepted: false,
       terms_conditions_accepted: false,
@@ -516,6 +517,14 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
         isValid = phoneRegex.test(value);
       } else if (field === 'postcode') {
         isValid = postcodeRegex.test(value);
+      } else if (field === 'mileage') {
+        const mileageNum = parseInt(value, 10);
+        isValid = !isNaN(mileageNum) && mileageNum > 0 && mileageNum < 500000;
+      } else if (field === 'date_of_birth') {
+        const dob = new Date(value);
+        const today = new Date();
+        const age = today.getFullYear() - dob.getFullYear();
+        isValid = !isNaN(dob.getTime()) && age >= 17 && age <= 100;
       } else {
         isValid = value.trim().length > 0;
       }
@@ -577,6 +586,28 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
         errorMessage = 'Enter your postcode.';
       } else if (!postcodeRegex.test(value)) {
         errorMessage = 'Enter a valid UK postcode.';
+      }
+    } else if (field === 'mileage') {
+      const mileageNum = parseInt(value, 10);
+      if (!value.trim()) {
+        errorMessage = 'Please enter your vehicle mileage.';
+      } else if (isNaN(mileageNum) || mileageNum <= 0) {
+        errorMessage = 'Please enter a valid mileage.';
+      } else if (mileageNum >= 500000) {
+        errorMessage = 'Please enter a valid mileage under 500,000.';
+      }
+    } else if (field === 'date_of_birth') {
+      if (!value.trim()) {
+        errorMessage = 'Please enter your date of birth.';
+      } else {
+        const dob = new Date(value);
+        const today = new Date();
+        const age = today.getFullYear() - dob.getFullYear();
+        if (age < 17) {
+          errorMessage = 'You must be at least 17 years old.';
+        } else if (age > 100) {
+          errorMessage = 'Please enter a valid date of birth.';
+        }
       }
     }
     
@@ -740,6 +771,31 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
       errors.postcode = 'Enter a valid UK postcode.';
     }
 
+    // Mileage validation
+    const mileageStr = customerData.mileage || '';
+    const mileageNum = parseInt(mileageStr, 10);
+    if (!mileageStr.trim()) {
+      errors.mileage = 'Please enter your vehicle mileage.';
+    } else if (isNaN(mileageNum) || mileageNum <= 0) {
+      errors.mileage = 'Please enter a valid mileage.';
+    } else if (mileageNum >= 500000) {
+      errors.mileage = 'Please enter a valid mileage under 500,000.';
+    }
+
+    // Date of birth validation
+    if (!customerData.date_of_birth) {
+      errors.date_of_birth = 'Please enter your date of birth.';
+    } else {
+      const dob = new Date(customerData.date_of_birth);
+      const today = new Date();
+      const age = today.getFullYear() - dob.getFullYear();
+      if (age < 17) {
+        errors.date_of_birth = 'You must be at least 17 years old.';
+      } else if (age > 100) {
+        errors.date_of_birth = 'Please enter a valid date of birth.';
+      }
+    }
+
     // Start date validation
     if (!startDate) {
       setStartDateError('Please select a valid start date within the next 30 days.');
@@ -850,7 +906,10 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
         const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-bumper-checkout', {
           body: {
             planId,
-            vehicleData,
+            vehicleData: {
+              ...vehicleData,
+              mileage: customerData.mileage || vehicleData.mileage // Use Step 4 mileage if provided
+            },
             paymentType,
             voluntaryExcess: updatedPricingData.voluntaryExcess,
             claimLimit: updatedPricingData.claimLimit || 1250,
@@ -858,7 +917,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
             customerData: {
               ...customerData,
               final_amount: finalPrice,
-              start_date: startDate?.toISOString()
+              start_date: startDate?.toISOString(),
+              date_of_birth: customerData.date_of_birth
             },
             discountCode: appliedDiscountCodes.map(code => code.code).join(', '),
             finalAmount: finalPrice,
@@ -973,7 +1033,10 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
     const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-stripe-checkout', {
       body: {
         planId,
-        vehicleData,
+        vehicleData: {
+          ...vehicleData,
+          mileage: customerData.mileage || vehicleData.mileage // Use Step 4 mileage if provided
+        },
         paymentType,
         voluntaryExcess: updatedPricingData.voluntaryExcess,
         claimLimit: updatedPricingData.claimLimit || 1250,
@@ -981,7 +1044,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
         customerData: {
           ...customerData,
           final_amount: finalPrice,
-          start_date: startDate?.toISOString()
+          start_date: startDate?.toISOString(),
+          date_of_birth: customerData.date_of_birth
         },
         protectionAddOns: {
           tyre: updatedPricingData.protectionAddOns?.tyre || false,
@@ -1214,6 +1278,63 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     )}
                   </div>
 
+                  {/* Vehicle Mileage */}
+                  <div>
+                    <Label htmlFor="mileage" className="text-sm font-medium text-gray-700">What's your vehicle's approximate mileage? *</Label>
+                    <p className="text-xs text-gray-500 mt-0.5">Required for your warranty policy</p>
+                    <div className="relative">
+                      <Input
+                        id="mileage"
+                        type="number"
+                        placeholder="e.g., 45000"
+                        value={customerData.mileage || ''}
+                        onChange={(e) => handleInputChange('mileage', e.target.value)}
+                        onBlur={() => handleFieldBlur('mileage')}
+                        required
+                        className={`mt-1 transition-all duration-300 ${
+                          showValidation && fieldErrors.mileage 
+                            ? 'border-red-500 focus:border-red-500' 
+                            : 'focus:ring-2 focus:ring-orange-200'
+                        }`}
+                      />
+                      {validatedFields.mileage && (
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                      )}
+                    </div>
+                    {fieldErrors.mileage && (
+                      <p className="text-red-500 text-xs mt-1" role="alert" aria-live="polite">{fieldErrors.mileage}</p>
+                    )}
+                  </div>
+
+                  {/* Date of Birth */}
+                  <div>
+                    <Label htmlFor="date_of_birth" className="text-sm font-medium text-gray-700">Date of Birth *</Label>
+                    <p className="text-xs text-gray-500 mt-0.5">Required for identity verification and regulatory compliance</p>
+                    <div className="relative">
+                      <Input
+                        id="date_of_birth"
+                        type="date"
+                        value={customerData.date_of_birth || ''}
+                        onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
+                        onBlur={() => handleFieldBlur('date_of_birth')}
+                        max={new Date(new Date().setFullYear(new Date().getFullYear() - 17)).toISOString().split('T')[0]}
+                        min="1920-01-01"
+                        required
+                        className={`mt-1 transition-all duration-300 ${
+                          showValidation && fieldErrors.date_of_birth 
+                            ? 'border-red-500 focus:border-red-500' 
+                            : 'focus:ring-2 focus:ring-orange-200'
+                        }`}
+                      />
+                      {validatedFields.date_of_birth && (
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                      )}
+                    </div>
+                    {fieldErrors.date_of_birth && (
+                      <p className="text-red-500 text-xs mt-1" role="alert" aria-live="polite">{fieldErrors.date_of_birth}</p>
+                    )}
+                  </div>
+
                   {/* Address Section */}
                   <div className="space-y-4">
                     <div className="border-b border-gray-200 pb-2 pt-2">
@@ -1404,10 +1525,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       <span className="text-black text-xs sm:text-sm flex-shrink-0">Vehicle:</span>
                       <span className="font-semibold text-black text-xs sm:text-sm uppercase text-right truncate">{vehicleData.make} {vehicleData.model}</span>
                     </div>
-                     <div className="flex justify-between items-center gap-2">
-                       <span className="text-black text-xs sm:text-sm flex-shrink-0">Mileage:</span>
-                       <span className="font-semibold text-black text-xs sm:text-sm text-right">{parseInt(vehicleData.mileage || '0').toLocaleString()} miles</span>
-                     </div>
                      <div className="flex justify-between items-center gap-2">
                        <span className="text-black text-xs sm:text-sm flex-shrink-0">Claim Limit:</span>
                        <span className="font-semibold text-black text-xs sm:text-sm text-right">£{(pricingData.claimLimit || 2000).toLocaleString()}</span>
