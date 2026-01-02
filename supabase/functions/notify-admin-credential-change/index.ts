@@ -150,7 +150,7 @@ serve(async (req) => {
 
     logStep('Sending notification email');
     const emailResponse = await resend.emails.send({
-      from: 'BuyAWarranty Admin <support@buyawarranty.co.uk>',
+      from: 'BuyaWarranty Team <support@buyawarranty.co.uk>',
       to: ['info@buyawarranty.co.uk'],
       subject: emailSubject,
       html: emailHtml,

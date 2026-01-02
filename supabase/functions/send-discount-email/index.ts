@@ -37,7 +37,7 @@ const handler = async (req: Request): Promise<Response> => {
     const resend = new Resend(resendApiKey);
 
     const emailResponse = await resend.emails.send({
-      from: "BuyaWarranty <noreply@buyawarranty.co.uk>",
+      from: "BuyaWarranty Team <noreply@buyawarranty.co.uk>",
       to: [email],
       subject: `Your £${discountAmount} Discount Code - ${discountCode}`,
       html: `

@@ -80,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: "Buy-A-Warranty <onboarding@resend.dev>",
+      from: "BuyaWarranty Team <noreply@buyawarranty.co.uk>",
       to: [friendEmail],
       subject: "I Just Got My Vehicle Covered – Thought You Might Like This 🚗✨",
       html: `

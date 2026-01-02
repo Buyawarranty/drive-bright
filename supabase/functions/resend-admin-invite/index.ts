@@ -73,9 +73,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send invitation email
     const emailResult = await resend.emails.send({
-      from: "Buy A Warranty Admin <support@buyawarranty.co.uk>",
+      from: "BuyaWarranty Team <support@buyawarranty.co.uk>",
       to: [email],
-      subject: "Admin Account Invitation Resent - Buy A Warranty",
+      subject: "Admin Account Invitation Resent - BuyaWarranty",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
           <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
