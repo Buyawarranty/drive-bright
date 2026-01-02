@@ -937,12 +937,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
         </Suspense>
       </LazySection>
 
-      {/* Landing Page Directory - Dynamic Brand Warranties */}
-      <LazySection>
-        <Suspense fallback={<div className="py-12 md:py-16 min-h-[300px]" />}>
-          <LandingPageDirectory />
-        </Suspense>
-      </LazySection>
 
       {/* Mobile Floating Action Buttons */}
       {isMobile && (
