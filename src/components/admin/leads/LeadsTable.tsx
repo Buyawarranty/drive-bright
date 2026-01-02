@@ -55,6 +55,18 @@ const formatUKPhone = (phone: string): string => {
   return phone;
 };
 
+// Format mileage tier for display based on Step 1 selection
+const formatMileageTier = (mileage: string): string => {
+  const numericMileage = parseInt(mileage.replace(/,/g, ''), 10);
+  if (isNaN(numericMileage)) return mileage;
+  
+  // 100000 = "Under 120,000 miles" selection, 130000 = "Over 120,000 miles" selection
+  if (numericMileage >= 120000) {
+    return 'Over 120k';
+  }
+  return 'Up to 120k';
+};
+
 // Get urgency SLA based on next action date and lead age
 const getUrgencySLA = (lead: Lead): { label: string; color: string; priority: number } => {
   // If there's a next action date, use that
@@ -558,7 +570,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                   {/* Mileage - Right aligned */}
                   <TableCell className="text-right">
                     {lead.mileage ? (
-                      <span className="text-xs font-mono">{lead.mileage.replace(/,/g, '')}</span>
+                      <span className="text-xs font-medium">{formatMileageTier(lead.mileage)}</span>
                     ) : (
                       <span className="text-muted-foreground text-xs">—</span>
                     )}
