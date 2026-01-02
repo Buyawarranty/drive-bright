@@ -391,7 +391,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </span>
           <span className="flex items-center gap-1.5">
             <Car className="w-4 h-4 text-brand-orange" />
-            Tailored to your car
+            Tailored to your vehicle
           </span>
           <span className="flex items-center gap-1.5">
             <Zap className="w-4 h-4 text-brand-orange" />
