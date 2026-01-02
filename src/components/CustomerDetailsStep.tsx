@@ -1131,7 +1131,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
             <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 max-w-full">
               {/* Left Column - Personal Details Form (order-2 on mobile, order-2 on desktop = right side) */}
               <div id="customer-form-section" className="w-full min-w-0 order-2 lg:order-2">
-                <div className="bg-gray-100 rounded-lg p-4 sm:p-6">
+                <div className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200">
                 {/* Heading with Security Badge */}
                 <div className="mb-6">
                   <div className="flex items-start gap-2 mb-2">
