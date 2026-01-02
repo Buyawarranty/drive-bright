@@ -3,6 +3,7 @@ import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Zap, ArrowRight, Ban,
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
 import MobileNavigation from '@/components/MobileNavigation';
+import HelpFAB from '@/components/HelpFAB';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface QuoteDeliveryStepProps {
@@ -418,12 +419,15 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </button>
         </div>
 
-        {/* Spacer for sticky footer */}
-        <div className="h-20"></div>
+        {/* Spacer for sticky footer on desktop */}
+        <div className="hidden md:block h-20"></div>
       </div>
 
-      {/* Branded Help Footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t-[3px] border-green-600/50 py-4 px-4 z-50">
+      {/* Mobile: Floating Action Button */}
+      <HelpFAB />
+
+      {/* Desktop: Branded Help Footer (hidden on mobile) */}
+      <div className="hidden md:block fixed bottom-0 left-0 right-0 bg-white border-t-[3px] border-green-600/50 py-4 px-4 z-50">
         <div className="max-w-xl mx-auto">
           <p className="text-center text-gray-800 font-semibold text-sm mb-3">
             Need advice? We're here to help.
