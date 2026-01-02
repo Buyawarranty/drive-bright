@@ -1322,8 +1322,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                         className="h-10 px-3 py-2 rounded-md border border-gray-200 bg-[#F5F5F5] text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 cursor-pointer"
                       >
                         <option value="">Quick select</option>
-                        {Array.from({ length: 70 }, (_, i) => {
-                          const value = (i + 1) * 2000;
+                        {Array.from({ length: 131 }, (_, i) => {
+                          const value = 10000 + (i * 1000);
                           return (
                             <option key={value} value={value}>
                               {value.toLocaleString('en-GB')}
