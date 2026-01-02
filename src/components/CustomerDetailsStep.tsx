@@ -1427,8 +1427,8 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                     </div>
                   </div>
 
-                  {/* Desktop Only: Continue to Payment CTA */}
-                  <div className="hidden lg:block pt-6">
+                  {/* Desktop Only: Continue to Payment CTA - hidden on mobile/tablet */}
+                  <div className="hidden xl:block pt-6">
                     <Button
                       type="button"
                       onClick={() => {
