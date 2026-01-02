@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Zap, ArrowRight, Ban, BellOff, MessageCircle, Star, User } from 'lucide-react';
+import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Zap, ArrowRight, Ban, BellOff, MessageCircle, Star, User, Car, Rocket } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
 import MobileNavigation from '@/components/MobileNavigation';
@@ -380,11 +380,15 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         {/* Quick Benefits - Below CTA */}
         <div className="flex items-center justify-center gap-6 text-sm text-gray-600 mt-4">
           <span className="flex items-center gap-1.5">
-            <Zap className="w-4 h-4 text-brand-orange" />
+            <Rocket className="w-4 h-4 text-brand-orange" />
             Instant quote
           </span>
           <span className="flex items-center gap-1.5">
-            <Ban className="w-4 h-4 text-brand-orange" />
+            <Car className="w-4 h-4 text-brand-orange" />
+            Tailored to your car
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Zap className="w-4 h-4 text-brand-orange" />
             No obligation
           </span>
         </div>
