@@ -103,7 +103,7 @@ export const StartDatePicker: React.FC<StartDatePickerProps> = ({
         </p>
       </div>
       <p className="text-sm text-gray-600">
-        Your cover will start on <span className="font-medium text-gray-900">{format(value || today, 'd MMM yyyy')}</span>. Your plan is confirmed and <span className="font-bold text-black">billed today</span>.
+        Your cover will <span className="font-bold text-black">start on</span> <span className="font-medium text-gray-900">{format(value || today, 'd MMM yyyy')}</span>. Your plan is confirmed and <span className="font-bold text-black">billed today</span>.
       </p>
       <p className="text-sm font-semibold text-gray-900">Choose Start Date</p>
       
