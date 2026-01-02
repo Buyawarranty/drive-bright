@@ -1,215 +1,32 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Calculator, CheckCircle2, XCircle, AlertCircle, HelpCircle } from 'lucide-react';
-
-interface CalculatorInputs {
-  policyStartDate: string;
-  termMonths: number;
-  monthlyPrice: number;
-  paymentType: 'pay_in_full' | 'pay_monthly' | '';
-  claimSubmitted: 'yes' | 'no' | '';
-}
-
-interface RefundResult {
-  eligible: boolean;
-  refundAmount: number;
-  timeline: string;
-  message: string;
-  type: 'cooling_off' | 'pro_rata' | 'finance' | 'no_refund';
-  details?: string;
-}
+import { CheckCircle2 } from 'lucide-react';
 
 const RefundCalculator: React.FC = () => {
-  const [inputs, setInputs] = useState<CalculatorInputs>({
-    policyStartDate: '',
-    termMonths: 12,
-    monthlyPrice: 0,
-    paymentType: '',
-    claimSubmitted: ''
-  });
+  const [claimSubmitted, setClaimSubmitted] = useState<'yes' | 'no' | ''>('');
   const [showResult, setShowResult] = useState(false);
-
-  const calculateRefund = useMemo((): RefundResult | null => {
-    if (!inputs.policyStartDate || !inputs.paymentType || !inputs.claimSubmitted || inputs.monthlyPrice <= 0) {
-      return null;
-    }
-
-    const policyStart = new Date(inputs.policyStartDate);
-    const today = new Date();
-    const daysSinceStart = Math.floor((today.getTime() - policyStart.getTime()) / (1000 * 60 * 60 * 24));
-    const monthsUsed = Math.max(0, Math.ceil(daysSinceStart / 30));
-    const withinCoolingOff = daysSinceStart <= 14;
-
-    // Rule 1: Claim submitted = no refund
-    if (inputs.claimSubmitted === 'yes') {
-      return {
-        eligible: false,
-        refundAmount: 0,
-        timeline: '',
-        message: "A claim has been submitted, so refunds do not apply.",
-        type: 'no_refund',
-        details: "Your warranty remains active and valid for the rest of the term. If your situation is exceptional, please share details in the cancellation form and we'll request a discretionary review."
-      };
-    }
-
-    // Rule 2: Within cooling-off period
-    if (withinCoolingOff) {
-      const totalPremium = inputs.termMonths * inputs.monthlyPrice;
-      return {
-        eligible: true,
-        refundAmount: totalPremium,
-        timeline: 'within 5 working days',
-        message: "You're within the 14-day cooling-off period with no claim on record.",
-        type: 'cooling_off',
-        details: "You're eligible for a full refund. We'll process this within 5 working days."
-      };
-    }
-
-    // Rule 3: After 14 days - pay in full
-    if (inputs.paymentType === 'pay_in_full') {
-      const unusedFullMonths = Math.max(0, inputs.termMonths - monthsUsed);
-      const gross = unusedFullMonths * inputs.monthlyPrice;
-      const fee = 40;
-      const minimumRetained = 2 * inputs.monthlyPrice;
-      const refund = Math.max(0, gross - fee - minimumRetained);
-      
-      return {
-        eligible: refund > 0,
-        refundAmount: Math.round(refund * 100) / 100,
-        timeline: 'within 7 working days',
-        message: "You're eligible for a pro-rata refund of unused full months.",
-        type: 'pro_rata',
-        details: `A £40 fair usage fee applies. We retain a minimum of two months' equivalent payment (£${(minimumRetained).toFixed(2)}). Your estimated refund is £${refund.toFixed(2)}. We'll process this within 7 working days.`
-      };
-    }
-
-    // Rule 4: After 14 days - pay monthly (finance)
-    if (inputs.paymentType === 'pay_monthly') {
-      const fee = 40;
-      const minimumDue = (2 * inputs.monthlyPrice) + fee;
-      const totalPaid = monthsUsed * inputs.monthlyPrice;
-      const contractValue = inputs.termMonths * inputs.monthlyPrice;
-      const eligibleBalance = Math.max(0, contractValue - totalPaid - minimumDue);
-      
-      return {
-        eligible: eligibleBalance > 0,
-        refundAmount: Math.round(eligibleBalance * 100) / 100,
-        timeline: 'typically 7 working days after provider confirmation',
-        message: "We'll help you process any eligible pro-rata refund via your finance provider.",
-        type: 'finance',
-        details: `A minimum of two months' equivalent payment plus a £40 fee applies. Your estimated refund is £${eligibleBalance.toFixed(2)}. We'll guide you step by step.`
-      };
-    }
-
-    return null;
-  }, [inputs]);
 
   const handleCalculate = () => {
     setShowResult(true);
   };
 
-  const isFormComplete = inputs.policyStartDate && inputs.paymentType && inputs.claimSubmitted && inputs.monthlyPrice > 0;
-
   return (
     <div className="bg-card rounded-2xl shadow-lg border border-border overflow-hidden">
-      <div className="bg-primary px-6 py-4">
-        <div className="flex items-center gap-3">
-          <Calculator className="w-6 h-6 text-primary-foreground" />
-          <h3 className="text-xl font-bold text-primary-foreground">Refund Calculator</h3>
-        </div>
-        <p className="text-primary-foreground/80 text-sm mt-1">Get an instant estimate of your potential refund</p>
-      </div>
-
       <div className="p-6 space-y-6">
-        {/* Policy Start Date */}
-        <div>
-          <Label htmlFor="policyStartDate" className="text-foreground font-medium flex items-center gap-2">
-            📅 When did your policy start?
-          </Label>
-          <Input
-            id="policyStartDate"
-            type="date"
-            value={inputs.policyStartDate}
-            onChange={(e) => setInputs({ ...inputs, policyStartDate: e.target.value })}
-            className="mt-2 h-11"
-            max={new Date().toISOString().split('T')[0]}
-          />
-        </div>
-
-        {/* Monthly Price */}
-        <div>
-          <Label htmlFor="monthlyPrice" className="text-foreground font-medium flex items-center gap-2">
-            💷 What is your monthly price?
-          </Label>
-          <div className="relative mt-2">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">£</span>
-            <Input
-              id="monthlyPrice"
-              type="number"
-              min="0"
-              step="0.01"
-              value={inputs.monthlyPrice || ''}
-              onChange={(e) => setInputs({ ...inputs, monthlyPrice: parseFloat(e.target.value) || 0 })}
-              className="h-11 pl-8"
-              placeholder="e.g., 35.00"
-            />
-          </div>
-        </div>
-
-        {/* Term Length */}
-        <div>
-          <Label className="text-foreground font-medium flex items-center gap-2">
-            📆 Policy term length
-          </Label>
-          <RadioGroup
-            value={inputs.termMonths.toString()}
-            onValueChange={(value) => setInputs({ ...inputs, termMonths: parseInt(value) })}
-            className="flex gap-4 mt-2"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="12" id="term-12" />
-              <Label htmlFor="term-12" className="text-muted-foreground cursor-pointer">12 months</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="24" id="term-24" />
-              <Label htmlFor="term-24" className="text-muted-foreground cursor-pointer">24 months</Label>
-            </div>
-          </RadioGroup>
-        </div>
-
-        {/* Payment Type */}
-        <div>
-          <Label className="text-foreground font-medium flex items-center gap-2">
-            💳 How did you pay?
-          </Label>
-          <RadioGroup
-            value={inputs.paymentType}
-            onValueChange={(value: 'pay_in_full' | 'pay_monthly') => setInputs({ ...inputs, paymentType: value })}
-            className="mt-2 space-y-2"
-          >
-            <div className="flex items-center space-x-3 p-3 border border-border rounded-lg hover:bg-secondary cursor-pointer">
-              <RadioGroupItem value="pay_in_full" id="pay-full" />
-              <Label htmlFor="pay-full" className="text-muted-foreground cursor-pointer flex-1">Paid in full (one-time payment)</Label>
-            </div>
-            <div className="flex items-center space-x-3 p-3 border border-border rounded-lg hover:bg-secondary cursor-pointer">
-              <RadioGroupItem value="pay_monthly" id="pay-monthly" />
-              <Label htmlFor="pay-monthly" className="text-muted-foreground cursor-pointer flex-1">Pay monthly (finance)</Label>
-            </div>
-          </RadioGroup>
-        </div>
-
         {/* Claim Submitted */}
         <div>
-          <Label className="text-foreground font-medium flex items-center gap-2">
+          <Label className="text-foreground font-medium flex items-center gap-2 text-lg">
             📋 Have you submitted any claims?
           </Label>
           <RadioGroup
-            value={inputs.claimSubmitted}
-            onValueChange={(value: 'yes' | 'no') => setInputs({ ...inputs, claimSubmitted: value })}
-            className="flex gap-4 mt-2"
+            value={claimSubmitted}
+            onValueChange={(value: 'yes' | 'no') => {
+              setClaimSubmitted(value);
+              setShowResult(false);
+            }}
+            className="flex gap-4 mt-3"
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="no" id="claim-no" />
@@ -225,61 +42,51 @@ const RefundCalculator: React.FC = () => {
         {/* Calculate Button */}
         <Button
           onClick={handleCalculate}
-          disabled={!isFormComplete}
+          disabled={!claimSubmitted}
           className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-lg"
         >
           Calculate My Refund
         </Button>
 
-        {/* Result Display */}
-        {showResult && calculateRefund && (
+        {/* Result Display - Only shows when claim was submitted */}
+        {showResult && claimSubmitted === 'yes' && (
           <div 
             role="region" 
             aria-live="polite"
-            className={`mt-6 p-6 rounded-xl border-2 ${
-              calculateRefund.eligible 
-                ? 'bg-success/10 border-success' 
-                : 'bg-secondary border-muted-foreground/30'
-            }`}
+            className="mt-6 p-6 rounded-xl border-2 bg-secondary border-muted-foreground/30"
+          >
+            <p className="text-foreground font-medium">
+              A claim has been submitted, so refunds do not apply.
+            </p>
+            
+            {/* Green success box */}
+            <div className="mt-4 p-4 rounded-lg bg-success/20 border border-success">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                <p className="text-success font-medium">
+                  Your warranty remains active and valid for the rest of the term. If your situation is exceptional, please share details in the cancellation form and we'll request a discretionary review.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Result Display - No claims */}
+        {showResult && claimSubmitted === 'no' && (
+          <div 
+            role="region" 
+            aria-live="polite"
+            className="mt-6 p-6 rounded-xl border-2 bg-success/10 border-success"
           >
             <div className="flex items-start gap-3">
-              {calculateRefund.eligible ? (
-                <CheckCircle2 className="w-6 h-6 text-success flex-shrink-0 mt-0.5" />
-              ) : calculateRefund.type === 'no_refund' ? (
-                <XCircle className="w-6 h-6 text-muted-foreground flex-shrink-0 mt-0.5" />
-              ) : (
-                <AlertCircle className="w-6 h-6 text-muted-foreground flex-shrink-0 mt-0.5" />
-              )}
-              <div className="flex-1">
-                <h4 className={`font-bold text-lg ${calculateRefund.eligible ? 'text-success' : 'text-foreground'}`}>
-                  {calculateRefund.message}
-                </h4>
-                {calculateRefund.eligible && (
-                  <div className="mt-3 bg-card rounded-lg p-4 border border-border">
-                    <div className="text-3xl font-bold text-success">
-                      £{calculateRefund.refundAmount.toFixed(2)}
-                    </div>
-                    <div className="text-sm text-muted-foreground mt-1">
-                      Estimated refund • Processed {calculateRefund.timeline}
-                    </div>
-                  </div>
-                )}
-                {calculateRefund.details && (
-                  <p className={`mt-3 ${calculateRefund.eligible ? 'text-success' : 'text-muted-foreground'}`}>
-                    {calculateRefund.details}
-                  </p>
-                )}
-                {calculateRefund.type === 'finance' && (
-                  <div className="mt-3 p-3 bg-primary/10 border border-primary/30 rounded-lg">
-                    <div className="flex items-center gap-2 text-foreground">
-                      <HelpCircle className="w-4 h-4" />
-                      <span className="font-medium text-sm">Important note about finance</span>
-                    </div>
-                    <p className="text-muted-foreground text-sm mt-1">
-                      Cancelling your warranty does not cancel your finance agreement. Don't worry – we will guide you and process everything with your finance provider to make it quick and hassle-free.
-                    </p>
-                  </div>
-                )}
+              <CheckCircle2 className="w-6 h-6 text-success flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-success font-bold text-lg">
+                  Good news! You may be eligible for a refund.
+                </p>
+                <p className="text-success mt-2">
+                  Please complete the cancellation form below and our team will calculate your exact refund amount based on your policy details.
+                </p>
               </div>
             </div>
           </div>
