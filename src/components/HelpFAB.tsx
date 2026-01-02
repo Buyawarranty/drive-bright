@@ -74,7 +74,7 @@ const HelpFAB: React.FC = () => {
         className={`w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 ${
           isExpanded 
             ? 'bg-gray-800 rotate-0' 
-            : 'bg-brand-orange hover:bg-brand-orange/90'
+            : 'bg-gray-600 hover:bg-gray-700'
         }`}
         aria-label={isExpanded ? 'Close help menu' : 'Need help?'}
       >
