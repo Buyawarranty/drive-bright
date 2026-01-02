@@ -138,23 +138,28 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   const { user } = useAuth();
   
   // State for managing updated pricing data when add-ons are removed
-  // Restore from localStorage if returning from payment gateway to prevent price changes
-  const [updatedPricingData, setUpdatedPricingData] = useState(() => {
+  // CRITICAL FIX: Store the ORIGINAL pricingData from props to prevent price drift on back/forward navigation
+  // We use a ref to track the original price and never let derived calculations leak into saved state
+  const [originalPricingData] = useState(() => {
+    // On first mount, capture the original pricingData from props as source of truth
+    // This prevents the price from decreasing on back/forward navigation
     try {
-      const returnedFromPayment = localStorage.getItem('buyawarranty_returnedFromPayment');
-      if (returnedFromPayment === 'true') {
-        const savedState = localStorage.getItem('warrantyJourneyState');
-        if (savedState) {
-          const parsed = JSON.parse(savedState);
-          if (parsed.selectedPlan?.pricingData) {
-            console.log('✅ Restored pricing data from localStorage (returned from payment):', parsed.selectedPlan.pricingData);
-            return parsed.selectedPlan.pricingData;
-          }
-        }
+      const savedOriginalPrice = localStorage.getItem('buyawarranty_originalPricingData');
+      if (savedOriginalPrice) {
+        const parsed = JSON.parse(savedOriginalPrice);
+        console.log('✅ Using original pricing data from localStorage:', parsed);
+        return parsed;
       }
     } catch (error) {
-      console.error('❌ Error restoring pricing data:', error);
+      console.error('❌ Error restoring original pricing data:', error);
     }
+    // Save the original pricingData to localStorage for future back/forward navigations
+    localStorage.setItem('buyawarranty_originalPricingData', JSON.stringify(pricingData));
+    return pricingData;
+  });
+  
+  const [updatedPricingData, setUpdatedPricingData] = useState(() => {
+    // Use originalPricingData as starting point
     return pricingData;
   });
   const [isLoadingPayment, setIsLoadingPayment] = useState(false);
@@ -259,23 +264,20 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   }, []);
   
   // Recalculate pricing when initial pricingData changes (e.g., when add-ons are selected)
-  // BUT skip if user just returned from payment gateway to preserve displayed prices
+  // BUT skip if we already have original pricing saved (to prevent price drift)
   useEffect(() => {
-    const returnedFromPayment = localStorage.getItem('buyawarranty_returnedFromPayment');
-    if (returnedFromPayment === 'true') {
-      console.log('🔄 Skipping pricing reset - user returned from payment gateway');
-      // Clear the flag after a short delay so future visits work normally
-      setTimeout(() => {
-        localStorage.removeItem('buyawarranty_returnedFromPayment');
-      }, 2000);
+    const savedOriginalPrice = localStorage.getItem('buyawarranty_originalPricingData');
+    if (savedOriginalPrice) {
+      console.log('🔄 Skipping pricing reset - original price already saved');
       return;
     }
     
-    console.log('🔧 CustomerDetailsStep - Pricing data updated:', {
+    console.log('🔧 CustomerDetailsStep - Pricing data updated from props:', {
       initialPricingData: pricingData,
       currentUpdatedPricingData: updatedPricingData
     });
     setUpdatedPricingData(pricingData);
+    localStorage.setItem('buyawarranty_originalPricingData', JSON.stringify(pricingData));
   }, [pricingData]);
 
   // Track abandoned cart when email is filled in (with debounce)
@@ -364,7 +366,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
   // Calculate pricing with discounts
   // CRITICAL FIX: Use Math.floor to match Step 3's display calculation exactly
   // Step 3 displays: Math.floor(total / 12) as monthly, and Math.floor(total * 0.9) as pay-in-full
-  const monthlyPrice = updatedPricingData.monthlyPrice || Math.floor(updatedPricingData.totalPrice / 12);
+  const monthlyPrice = (updatedPricingData as any).monthlyPrice || Math.floor(updatedPricingData.totalPrice / 12);
   const bumperTotalPrice = monthlyPrice * 12; // Normalize to monthly * 12 for consistency
   const stripeTotalPrice = Math.floor(bumperTotalPrice * 0.90); // Pay-in-full: 10% discount
 
@@ -950,11 +952,11 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
           console.log('🌐 Redirecting to Bumper checkout:', checkoutData.url);
           
           // CRITICAL: Save step 4 state to localStorage BEFORE redirecting to Bumper
-          // This ensures browser back button returns to step 4 with saved data
+          // Use originalPricingData to prevent price drift on back/forward navigation
           const currentState = {
             step: 4,
             vehicleData,
-            selectedPlan: { id: planId, paymentType, name: planName, pricingData: updatedPricingData },
+            selectedPlan: { id: planId, paymentType, name: planName, pricingData: originalPricingData },
             formData: customerData,
             timestamp: Date.now()
           };
@@ -962,7 +964,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
           localStorage.setItem('warrantyJourneyState', JSON.stringify(currentState));
           localStorage.setItem('buyawarranty_currentStep', '4');
           localStorage.setItem('buyawarranty_customerData', JSON.stringify(customerData));
-          localStorage.setItem('buyawarranty_returnedFromPayment', 'true');
           
           console.log('✅ Saved step 4 state before Bumper redirect');
           
@@ -1048,11 +1049,11 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
       console.log('🌐 Redirecting to Stripe checkout:', checkoutData.url);
       
       // CRITICAL: Save step 4 state to localStorage BEFORE redirecting to Stripe
-      // This ensures browser back button returns to step 4 with saved data
+      // Use originalPricingData to prevent price drift on back/forward navigation
       const currentState = {
         step: 4,
         vehicleData,
-        selectedPlan: { id: planId, paymentType, name: planName, pricingData: updatedPricingData },
+        selectedPlan: { id: planId, paymentType, name: planName, pricingData: originalPricingData },
         formData: customerData,
         timestamp: Date.now()
       };
@@ -1060,7 +1061,6 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
       localStorage.setItem('warrantyJourneyState', JSON.stringify(currentState));
       localStorage.setItem('buyawarranty_currentStep', '4');
       localStorage.setItem('buyawarranty_customerData', JSON.stringify(customerData));
-      localStorage.setItem('buyawarranty_returnedFromPayment', 'true');
       
       console.log('✅ Saved step 4 state before Stripe redirect');
       
@@ -1084,7 +1084,13 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
         {/* Header with Back Button, Logo and Mobile Menu */}
         <div className="flex justify-between items-center mb-4 sm:mb-6 relative">
           <Button
-            onClick={onBack}
+            onClick={() => {
+              // Clear original pricing data when intentionally going back to Step 3
+              // This allows fresh pricing to be set when returning to Step 4
+              localStorage.removeItem('buyawarranty_originalPricingData');
+              localStorage.removeItem('buyawarranty_returnedFromPayment');
+              onBack();
+            }}
             className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 border-0 flex-shrink-0"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -1963,7 +1969,7 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                                       motRepair: false,
                                       motFee: updatedPricingData.protectionAddOns?.motFee || false,
                                       lostKey: false,
-                                      consequential: updatedPricingData.protectionAddOns?.consequential || false,
+                                      consequential: (updatedPricingData.protectionAddOns as any)?.consequential || false,
                                     }
                                   }
                                 });
