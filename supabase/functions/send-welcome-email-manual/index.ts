@@ -246,14 +246,14 @@ const handler = async (req: Request): Promise<Response> => {
         return btoa(binary);
       };
 
-      // Load Terms and Conditions PDF v2.4
-      const termsResponse = await fetch('https://buyawarranty.co.uk/documents/Terms-and-Conditions-Your-Extended-Warranty-Guide-v2.4.pdf');
+      // Load Terms and Conditions PDF v2.3
+      const termsResponse = await fetch('https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/Terms-and-Conditions-v2.3.pdf');
       if (termsResponse.ok) {
         const termsBuffer = await termsResponse.arrayBuffer();
         const termsBase64 = arrayBufferToBase64(termsBuffer);
         
         attachments.push({
-          filename: 'Terms-and-Conditions-v2.4.pdf',
+          filename: 'Terms-and-Conditions-v2.3.pdf',
           content: termsBase64,
           type: 'application/pdf',
           disposition: 'attachment'
@@ -519,9 +519,9 @@ const handler = async (req: Request): Promise<Response> => {
       paymentMethod = 'Bumper';
     }
 
-    // Use the new v2.4 and v2.7 PDFs for all warranty types
+    // Use the new v2.3 and v2.7 PDFs for all warranty types
     const policyDocumentUrl = 'https://buyawarranty.co.uk/documents/Platinum-Warranty-Plan_v2.7.pdf';
-    const termsUrl = 'https://buyawarranty.co.uk/documents/Terms-and-Conditions-Your-Extended-Warranty-Guide-v2.4.pdf';
+    const termsUrl = 'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/Terms-and-Conditions-v2.3.pdf';
 
     // Define login URL for customer portal
     const loginUrl = 'https://buyawarranty.co.uk/auth';
