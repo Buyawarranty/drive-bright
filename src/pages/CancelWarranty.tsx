@@ -152,8 +152,8 @@ const CancelWarranty = () => {
               <div className="mt-4 text-left bg-white rounded-lg p-4 border border-green-200">
                 <p className="text-sm text-gray-600 mb-2"><strong>Refund Timeline:</strong></p>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Cooling-off refunds: within 5 working days</li>
-                  <li>• Pro-rata refunds: within 14 working days</li>
+                  <li>• 14 day Cooling-off refunds: within 5 working days</li>
+                  <li>• After 14 days refunds: within 14 working days</li>
                 </ul>
               </div>
             </div>
@@ -285,11 +285,11 @@ const CancelWarranty = () => {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Refund Timeline</h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                <p className="font-semibold text-gray-900">Cooling-off refunds</p>
+                <p className="font-semibold text-gray-900">14 day Cooling-off refunds</p>
                 <p className="text-green-600 font-bold">Within 5 working days</p>
               </div>
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-center">
-                <p className="font-semibold text-gray-900">Pro-rata refunds</p>
+                <p className="font-semibold text-gray-900">After 14 days refunds</p>
                 <p className="text-orange-600 font-bold">Within 14 working days</p>
               </div>
             </div>
