@@ -159,3 +159,9 @@ verify_jwt = true
 
 [functions.handle-access-request]
 verify_jwt = false
+
+[functions.invite-admin-user]
+verify_jwt = true
+
+[functions.resend-admin-invite]
+verify_jwt = true
