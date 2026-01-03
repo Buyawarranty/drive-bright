@@ -109,7 +109,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Create invitation link
-    const invitationLink = `https://pricing.buyawarranty.co.uk/auth`;
+    const invitationLink = `https://pricing.buyawarranty.co.uk/admin-dashboard`;
 
     // Send invitation email
     const emailResult = await resend.emails.send({
