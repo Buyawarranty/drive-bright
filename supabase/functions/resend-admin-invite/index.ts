@@ -52,21 +52,61 @@ const handler = async (req: Request): Promise<Response> => {
     // Generate new temporary password
     const tempPassword = generateRandomPassword();
 
-    // Update user password in Supabase Auth
-    const { data: authUsers, error: listError } = await supabaseClient.auth.admin.listUsers();
-    if (listError) throw listError;
-
-    const authUser = authUsers.users.find(u => u.email === email);
-    if (!authUser) {
-      throw new Error('User not found in auth system');
+    // Try to find existing auth user (with pagination support)
+    let authUser = null;
+    let page = 1;
+    const perPage = 1000;
+    
+    while (!authUser) {
+      const { data: authUsers, error: listError } = await supabaseClient.auth.admin.listUsers({
+        page,
+        perPage
+      });
+      
+      if (listError) throw listError;
+      
+      authUser = authUsers.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+      
+      // If we found the user or there are no more pages, break
+      if (authUser || authUsers.users.length < perPage) break;
+      page++;
     }
 
-    const { error: passwordError } = await supabaseClient.auth.admin.updateUserById(
-      authUser.id,
-      { password: tempPassword }
-    );
+    // If user doesn't exist in auth, create them
+    if (!authUser) {
+      console.log('User not found in auth system, creating new auth user...');
+      const { data: newUser, error: createError } = await supabaseClient.auth.admin.createUser({
+        email: email,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: {
+          first_name: adminUser.first_name || '',
+          last_name: adminUser.last_name || '',
+          role: adminUser.role || 'sales'
+        }
+      });
 
-    if (passwordError) throw passwordError;
+      if (createError) throw createError;
+      
+      authUser = newUser.user;
+      
+      // Update admin_users with the new user_id
+      await supabaseClient
+        .from('admin_users')
+        .update({ user_id: authUser.id })
+        .eq('id', userId);
+        
+      console.log('Created new auth user:', authUser.id);
+    } else {
+      // User exists, update their password
+      const { error: passwordError } = await supabaseClient.auth.admin.updateUserById(
+        authUser.id,
+        { password: tempPassword }
+      );
+
+      if (passwordError) throw passwordError;
+      console.log('Updated password for existing user:', authUser.id);
+    }
 
     // Create invitation link
     const invitationLink = `https://pricing.buyawarranty.co.uk/auth`;
