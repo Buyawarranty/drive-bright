@@ -3615,6 +3615,56 @@ export type Database = {
           },
         ]
       }
+      user_presence: {
+        Row: {
+          admin_user_id: string | null
+          created_at: string
+          current_tab: string | null
+          device_info: Json | null
+          id: string
+          last_activity_at: string
+          last_seen_at: string
+          session_started_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_user_id?: string | null
+          created_at?: string
+          current_tab?: string | null
+          device_info?: Json | null
+          id?: string
+          last_activity_at?: string
+          last_seen_at?: string
+          session_started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_user_id?: string | null
+          created_at?: string
+          current_tab?: string | null
+          device_info?: Json | null
+          id?: string
+          last_activity_at?: string
+          last_seen_at?: string
+          session_started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_presence_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -3993,6 +4043,7 @@ export type Database = {
       }
       make_user_admin: { Args: { user_email: string }; Returns: undefined }
       restore_customer: { Args: { customer_uuid: string }; Returns: undefined }
+      set_user_offline: { Args: never; Returns: undefined }
       soft_delete_customer: {
         Args: { admin_uuid: string; customer_uuid: string }
         Returns: undefined
@@ -4000,6 +4051,10 @@ export type Database = {
       update_campaign_analytics: {
         Args: { p_campaign_id: string }
         Returns: undefined
+      }
+      update_user_presence: {
+        Args: { p_current_tab?: string; p_status?: string }
+        Returns: string
       }
       verify_warranty_selection: { Args: { audit_id: string }; Returns: Json }
     }

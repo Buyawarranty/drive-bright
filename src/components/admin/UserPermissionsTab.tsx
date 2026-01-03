@@ -12,6 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings } from 'lucide-react';
 import { AccessRequestsPanel } from './AccessRequestsPanel';
+import { TeamActivityPanel } from './TeamActivityPanel';
 
 interface AdminUser {
   id: string;
@@ -426,6 +427,9 @@ export const UserPermissionsTab = () => {
 
   return (
     <div className="space-y-6">
+      {/* Team Activity Panel */}
+      <TeamActivityPanel />
+      
       {/* Access Requests Panel */}
       <AccessRequestsPanel />
       
