@@ -86,7 +86,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
         <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold">
           3
         </div>
-        <h3 className="font-semibold text-lg text-foreground">Set your claim limit - cover up to your car's full value 🚗</h3>
+        <h3 className="font-semibold text-lg text-foreground">Set your claim limit - cover up to your car's <span className="font-bold">full value</span> 🚗</h3>
       </div>
 
       {/* Claim Limit Cards */}
