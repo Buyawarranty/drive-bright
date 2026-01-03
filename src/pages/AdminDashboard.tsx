@@ -49,6 +49,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
 import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
 import { useAdminNotifications } from '@/hooks/useAdminNotifications';
+import { useUserPresence } from '@/hooks/useUserPresence';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('customers');
@@ -62,6 +63,9 @@ const AdminDashboard = () => {
   
   // Admin notifications
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useAdminNotifications();
+  
+  // Track user presence with current tab
+  useUserPresence({ currentTab: activeTab });
 
   useEffect(() => {
     // Only run check when auth is done loading
