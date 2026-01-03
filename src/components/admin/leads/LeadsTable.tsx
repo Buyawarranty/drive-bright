@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Textarea } from '@/components/ui/textarea';
+import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, 
   Tag, User, Clock, AlertTriangle, Copy, FileText, StickyNote,
@@ -132,9 +132,6 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
-  const [editingNotes, setEditingNotes] = useState<string | null>(null);
-  const [notesValue, setNotesValue] = useState('');
-
   const getDisplayName = (lead: Lead) => {
     // Only show name if we have first_name or last_name (from step 4 or manual entry)
     if (lead.first_name || lead.last_name) {
@@ -331,11 +328,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                         variant="ghost" 
                         size="icon"
                         className="h-7 w-7"
-                        onClick={() => {
-                          setExpandedLead(lead.id);
-                          setEditingNotes(lead.id);
-                          setNotesValue(lead.notes || '');
-                        }}
+                        onClick={() => setExpandedLead(lead.id)}
                         title="Add note"
                       >
                         <StickyNote className="h-3.5 w-3.5" />
@@ -683,76 +676,15 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                   </TableCell>
                 </TableRow>
                 
-                {/* Expanded row */}
+                {/* Expanded row with new LeadDetailsPanel */}
                 {expandedLead === lead.id && (
                   <TableRow>
-                    <TableCell colSpan={15} className="bg-muted/30">
-                      <div className="grid grid-cols-3 gap-4 p-4">
-                        {/* Contact Details */}
-                        <div>
-                          <h4 className="font-medium mb-2">Contact Details</h4>
-                          <div className="text-sm space-y-1">
-                            <div><strong>Email:</strong> {lead.email}</div>
-                            <div><strong>Phone:</strong> {lead.phone || '—'}</div>
-                            <div><strong>Source:</strong> {lead.lead_source}</div>
-                            <div><strong>Created:</strong> {format(new Date(lead.created_at), 'PPp')}</div>
-                          </div>
-                        </div>
-                        
-                        {/* Vehicle Details */}
-                        <div>
-                          <h4 className="font-medium mb-2">Vehicle Details</h4>
-                          <div className="text-sm space-y-1">
-                            <div><strong>Reg:</strong> {lead.vehicle_reg || '—'}</div>
-                            <div><strong>Vehicle:</strong> {lead.vehicle_make} {lead.vehicle_model} ({lead.vehicle_year})</div>
-                            <div><strong>Mileage:</strong> {lead.mileage || '—'}</div>
-                            <div><strong>Type:</strong> {lead.vehicle_type || 'Standard'}</div>
-                          </div>
-                        </div>
-                        
-                        {/* Notes */}
-                        <div>
-                          <h4 className="font-medium mb-2">Notes</h4>
-                          {editingNotes === lead.id ? (
-                            <div className="space-y-2">
-                              <Textarea
-                                value={notesValue}
-                                onChange={(e) => setNotesValue(e.target.value)}
-                                className="text-sm"
-                                rows={3}
-                              />
-                              <div className="flex gap-2">
-                                <Button 
-                                  size="sm"
-                                  onClick={() => {
-                                    onUpdateNotes(lead.id, notesValue);
-                                    setEditingNotes(null);
-                                  }}
-                                >
-                                  Save
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline"
-                                  onClick={() => setEditingNotes(null)}
-                                >
-                                  Cancel
-                                </Button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div 
-                              className="text-sm text-muted-foreground cursor-pointer p-2 rounded border hover:bg-muted"
-                              onClick={() => {
-                                setEditingNotes(lead.id);
-                                setNotesValue(lead.notes || '');
-                              }}
-                            >
-                              {lead.notes || 'Click to add notes...'}
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                    <TableCell colSpan={16} className="p-0 bg-muted/20">
+                      <LeadDetailsPanel
+                        lead={lead}
+                        onUpdateNotes={onUpdateNotes}
+                        onLogActivity={onLogActivity}
+                      />
                     </TableCell>
                   </TableRow>
                 )}
