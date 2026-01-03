@@ -170,7 +170,7 @@ const PasswordReset = () => {
           .eq('user_id', session.user.id)
           .maybeSingle();
 
-        if (roleData?.role === 'admin') {
+        if (roleData && ['admin', 'member', 'viewer', 'guest', 'sales'].includes(roleData.role)) {
           navigate('/admin-dashboard', { replace: true });
         } else {
           navigate('/customer-dashboard', { replace: true });

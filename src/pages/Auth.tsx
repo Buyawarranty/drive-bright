@@ -124,7 +124,7 @@ const Auth = () => {
           });
 
           // If user has admin role, redirect to admin dashboard
-          if (!error && roleData && ['admin', 'member', 'viewer', 'guest'].includes(roleData.role)) {
+          if (!error && roleData && ['admin', 'member', 'viewer', 'guest', 'sales'].includes(roleData.role)) {
             console.log("Auth page: Admin user detected, redirecting to admin dashboard");
             navigate('/admin-dashboard', { replace: true });
           } else {
