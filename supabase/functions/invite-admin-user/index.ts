@@ -67,8 +67,11 @@ serve(async (req: Request) => {
       if (createUserError.message.includes('already been registered')) {
         console.log('User already exists, fetching existing user...');
         
-        // Get the existing user by email
-        const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers();
+        // Get the existing user by email using per_page limit
+        const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers({
+          page: 1,
+          perPage: 1000
+        });
         
         if (listError) {
           console.error('Error listing users:', listError);
@@ -78,9 +81,12 @@ serve(async (req: Request) => {
           });
         }
         
+        console.log('Total users found:', existingUsers?.users?.length);
+        
         const existingUser = existingUsers.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
         
         if (!existingUser) {
+          console.error('User not found in list for email:', email);
           return new Response(JSON.stringify({ error: 'User exists but could not be found' }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -89,6 +95,7 @@ serve(async (req: Request) => {
         
         userId = existingUser.id;
         isExistingUser = true;
+        console.log('Found existing user with ID:', userId);
         
         // Update user password so they can login with the temp password
         const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
@@ -103,10 +110,15 @@ serve(async (req: Request) => {
         
         if (updateError) {
           console.error('Error updating existing user:', updateError);
+          return new Response(JSON.stringify({ error: 'Failed to update user: ' + updateError.message }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
         }
         
-        console.log('Using existing user:', userId);
+        console.log('Successfully updated existing user:', userId);
       } else {
+        console.error('User creation failed:', createUserError.message);
         return new Response(JSON.stringify({ error: createUserError.message }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -114,7 +126,9 @@ serve(async (req: Request) => {
       }
     } else if (newUser?.user) {
       userId = newUser.user.id;
+      console.log('Created new user:', userId);
     } else {
+      console.error('Failed to create user - no user returned');
       return new Response(JSON.stringify({ error: 'Failed to create user' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
