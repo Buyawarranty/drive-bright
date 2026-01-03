@@ -48,16 +48,22 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Check for existing pending request from this email
-    const { data: existingRequest } = await supabaseClient
+    console.log("Checking for existing pending request for:", body.email.toLowerCase());
+    const { data: existingRequest, error: existingError } = await supabaseClient
       .from("access_requests")
       .select("id, status")
       .eq("email", body.email.toLowerCase())
       .eq("status", "pending")
-      .single();
+      .maybeSingle();
+
+    if (existingError) {
+      console.error("Error checking existing request:", existingError);
+    }
 
     if (existingRequest) {
+      console.log("Found existing pending request:", existingRequest.id);
       return new Response(
-        JSON.stringify({ error: "You already have a pending access request" }),
+        JSON.stringify({ error: "You already have a pending access request. Please wait for admin approval." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
