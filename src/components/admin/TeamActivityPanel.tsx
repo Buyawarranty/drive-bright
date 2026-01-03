@@ -4,8 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Users, Circle, Clock, Monitor } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { Users, Circle, Clock, Monitor, History, ChevronDown, ChevronUp } from 'lucide-react';
+import { formatDistanceToNow, format } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface TeamMember {
   id: string;
@@ -21,6 +23,20 @@ interface TeamMember {
     last_name: string | null;
     email: string;
     role: string;
+  } | null;
+}
+
+interface ActivityLog {
+  id: string;
+  user_id: string;
+  admin_user_id: string | null;
+  activity_type: string;
+  current_tab: string | null;
+  created_at: string;
+  admin_user: {
+    first_name: string | null;
+    last_name: string | null;
+    email: string;
   } | null;
 }
 
@@ -43,7 +59,9 @@ const TAB_LABELS: Record<string, string> = {
 
 export const TeamActivityPanel = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
 
   const fetchTeamPresence = async () => {
     try {
@@ -69,11 +87,34 @@ export const TeamActivityPanel = () => {
     }
   };
 
+  const fetchActivityLogs = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_activity_log')
+        .select(`
+          *,
+          admin_user:admin_users!user_activity_log_admin_user_id_fkey (
+            first_name,
+            last_name,
+            email
+          )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setActivityLogs((data as ActivityLog[]) || []);
+    } catch (error) {
+      console.error('Error fetching activity logs:', error);
+    }
+  };
+
   useEffect(() => {
     fetchTeamPresence();
+    fetchActivityLogs();
 
     // Subscribe to realtime updates
-    const channel = supabase
+    const presenceChannel = supabase
       .channel('team-presence')
       .on(
         'postgres_changes',
@@ -88,11 +129,30 @@ export const TeamActivityPanel = () => {
       )
       .subscribe();
 
+    const activityChannel = supabase
+      .channel('activity-logs')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'user_activity_log'
+        },
+        () => {
+          fetchActivityLogs();
+        }
+      )
+      .subscribe();
+
     // Refresh every 30 seconds as backup
-    const interval = setInterval(fetchTeamPresence, 30000);
+    const interval = setInterval(() => {
+      fetchTeamPresence();
+      fetchActivityLogs();
+    }, 30000);
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(presenceChannel);
+      supabase.removeChannel(activityChannel);
       clearInterval(interval);
     };
   }, []);
@@ -103,6 +163,16 @@ export const TeamActivityPanel = () => {
       case 'away': return 'bg-yellow-500';
       case 'busy': return 'bg-red-500';
       default: return 'bg-gray-400';
+    }
+  };
+
+  const getActivityIcon = (activityType: string) => {
+    switch (activityType) {
+      case 'online': return <Circle className="h-2.5 w-2.5 fill-green-500 text-green-500" />;
+      case 'away': return <Circle className="h-2.5 w-2.5 fill-yellow-500 text-yellow-500" />;
+      case 'busy': return <Circle className="h-2.5 w-2.5 fill-red-500 text-red-500" />;
+      case 'offline': return <Circle className="h-2.5 w-2.5 fill-gray-400 text-gray-400" />;
+      default: return <Circle className="h-2.5 w-2.5 fill-gray-400 text-gray-400" />;
     }
   };
 
@@ -127,6 +197,14 @@ export const TeamActivityPanel = () => {
       return `${firstName[0]}${lastName[0]}`.toUpperCase();
     }
     return email.substring(0, 2).toUpperCase();
+  };
+
+  const getUserName = (log: ActivityLog) => {
+    if (log.admin_user) {
+      const name = `${log.admin_user.first_name || ''} ${log.admin_user.last_name || ''}`.trim();
+      return name || log.admin_user.email;
+    }
+    return 'Unknown User';
   };
 
   const onlineCount = teamMembers.filter(m => m.status === 'online').length;
@@ -170,7 +248,8 @@ export const TeamActivityPanel = () => {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        {/* Current Status */}
         {teamMembers.length === 0 ? (
           <div className="text-sm text-muted-foreground text-center py-4">
             No team activity recorded yet
@@ -267,6 +346,53 @@ export const TeamActivityPanel = () => {
               })}
             </TooltipProvider>
           </div>
+        )}
+
+        {/* Activity History */}
+        {activityLogs.length > 0 && (
+          <Collapsible open={showHistory} onOpenChange={setShowHistory}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="w-full justify-between">
+                <span className="flex items-center gap-2">
+                  <History className="h-4 w-4" />
+                  Activity History
+                </span>
+                {showHistory ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-3">
+              <div className="border rounded-lg divide-y max-h-64 overflow-y-auto">
+                {activityLogs.map((log) => (
+                  <div key={log.id} className="flex items-center gap-3 p-2.5 text-sm">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      {getActivityIcon(log.activity_type)}
+                      <span className="font-medium truncate">{getUserName(log)}</span>
+                      <span className="text-muted-foreground">
+                        went <span className="capitalize">{log.activity_type}</span>
+                      </span>
+                      {log.current_tab && (
+                        <span className="text-muted-foreground hidden sm:inline">
+                          on {TAB_LABELS[log.current_tab] || log.current_tab}
+                        </span>
+                      )}
+                    </div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {format(new Date(log.created_at), 'PPpp')}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                ))}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         )}
       </CardContent>
     </Card>
