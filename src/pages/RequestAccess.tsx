@@ -8,13 +8,22 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Shield, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { z } from 'zod';
+
+const ROLE_OPTIONS = [
+  { value: 'sales', label: 'Sales', description: 'Access to leads, customers, and quotes' },
+  { value: 'support', label: 'Support', description: 'Access to claims and customer support' },
+  { value: 'accounts', label: 'Accounts', description: 'Access to financial and billing data' },
+  { value: 'marketing', label: 'Marketing', description: 'Access to campaigns and analytics' },
+];
 
 const requestSchema = z.object({
   fullName: z.string().min(2, 'Full name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
   phone: z.string().optional(),
   company: z.string().optional(),
+  requestedRole: z.string().min(1, 'Please select a role'),
   reason: z.string().min(10, 'Please provide a reason (at least 10 characters)')
 });
 
@@ -25,6 +34,7 @@ const RequestAccess = () => {
     email: '',
     phone: '',
     company: '',
+    requestedRole: '',
     reason: ''
   });
   const [loading, setLoading] = useState(false);
@@ -149,6 +159,31 @@ const RequestAccess = () => {
                 onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
                 placeholder="Your company or team name"
               />
+            </div>
+
+            <div>
+              <Label htmlFor="requestedRole">Requested Role *</Label>
+              <Select
+                value={formData.requestedRole}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, requestedRole: value }))}
+              >
+                <SelectTrigger className={errors.requestedRole ? 'border-red-500' : ''}>
+                  <SelectValue placeholder="Select the role you're requesting" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ROLE_OPTIONS.map((role) => (
+                    <SelectItem key={role.value} value={role.value}>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{role.label}</span>
+                        <span className="text-xs text-muted-foreground">{role.description}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.requestedRole && (
+                <p className="text-sm text-red-500 mt-1">{errors.requestedRole}</p>
+              )}
             </div>
 
             <div>

@@ -12,8 +12,16 @@ interface AccessRequestBody {
   email: string;
   phone?: string;
   company?: string;
+  requestedRole: string;
   reason: string;
 }
+
+const ROLE_LABELS: Record<string, string> = {
+  sales: 'Sales',
+  support: 'Support',
+  accounts: 'Accounts',
+  marketing: 'Marketing',
+};
 
 const handler = async (req: Request): Promise<Response> => {
   console.log("Handle access request function called");
@@ -32,7 +40,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Request body:", { ...body, email: body.email.substring(0, 5) + "***" });
 
     // Validate required fields
-    if (!body.fullName || !body.email || !body.reason) {
+    if (!body.fullName || !body.email || !body.reason || !body.requestedRole) {
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -80,7 +88,7 @@ const handler = async (req: Request): Promise<Response> => {
         phone: body.phone || null,
         company: body.company || null,
         reason: body.reason,
-        requested_role: "sales",
+        requested_role: body.requestedRole,
         status: "pending"
       })
       .select()
@@ -102,7 +110,7 @@ const handler = async (req: Request): Promise<Response> => {
         await resend.emails.send({
           from: "BuyaWarranty Team <noreply@buyawarranty.co.uk>",
           to: ["info@buyawarranty.co.uk"],
-          subject: `New Access Request from ${body.fullName}`,
+          subject: `New Access Request from ${body.fullName} (${ROLE_LABELS[body.requestedRole] || body.requestedRole})`,
           html: `
             <h2>New Admin Access Request</h2>
             <p>A new access request has been submitted:</p>
@@ -111,10 +119,11 @@ const handler = async (req: Request): Promise<Response> => {
               <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Email:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${body.email}</td></tr>
               <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Phone:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${body.phone || "Not provided"}</td></tr>
               <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Company:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${body.company || "Not provided"}</td></tr>
+              <tr><td style="padding: 8px; border: 1px solid #ddd; background-color: #fef3c7;"><strong>Requested Role:</strong></td><td style="padding: 8px; border: 1px solid #ddd; background-color: #fef3c7;"><strong>${ROLE_LABELS[body.requestedRole] || body.requestedRole}</strong></td></tr>
               <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>Reason:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">${body.reason}</td></tr>
             </table>
             <p style="margin-top: 20px;">
-              <a href="https://buyawarranty.co.uk/admin/" style="background-color: #f97316; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
+              <a href="https://pricing.buyawarranty.co.uk/admin-dashboard" style="background-color: #f97316; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
                 Review in Admin Dashboard
               </a>
             </p>
