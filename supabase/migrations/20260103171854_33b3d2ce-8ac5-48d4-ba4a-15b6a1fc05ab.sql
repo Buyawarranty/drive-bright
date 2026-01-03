@@ -1,0 +1,1 @@
+DELETE FROM access_requests WHERE email = 'prajwalchauhan26@gmail.com' AND status = 'pending';
