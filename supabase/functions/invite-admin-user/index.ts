@@ -18,7 +18,8 @@ interface InviteUserRequest {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer';
+  password?: string;
+  role: 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales';
   permissions: Record<string, boolean>;
 }
 
@@ -28,11 +29,11 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { email, firstName, lastName, role, permissions }: InviteUserRequest = await req.json();
+    const { email, firstName, lastName, password, role, permissions }: InviteUserRequest = await req.json();
 
-    // Generate invitation token and password
+    // Generate invitation token and password (use provided password or generate one)
     const invitationToken = crypto.randomUUID();
-    const tempPassword = await generatePassword();
+    const tempPassword = password && password.trim().length >= 6 ? password.trim() : await generatePassword();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
     // Get the inviter info

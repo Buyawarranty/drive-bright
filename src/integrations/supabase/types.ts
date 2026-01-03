@@ -3668,6 +3668,53 @@ export type Database = {
           },
         ]
       }
+      user_daily_online_time: {
+        Row: {
+          admin_user_id: string | null
+          created_at: string
+          date: string
+          first_online_at: string | null
+          id: string
+          last_online_at: string | null
+          session_count: number
+          total_online_seconds: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_user_id?: string | null
+          created_at?: string
+          date: string
+          first_online_at?: string | null
+          id?: string
+          last_online_at?: string | null
+          session_count?: number
+          total_online_seconds?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_user_id?: string | null
+          created_at?: string
+          date?: string
+          first_online_at?: string | null
+          id?: string
+          last_online_at?: string | null
+          session_count?: number
+          total_online_seconds?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_daily_online_time_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_presence: {
         Row: {
           admin_user_id: string | null

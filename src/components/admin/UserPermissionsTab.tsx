@@ -67,6 +67,8 @@ export const UserPermissionsTab = () => {
     email: '',
     firstName: '',
     lastName: '',
+    username: '',
+    password: '',
     role: 'member' as 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales',
     permissions: {} as Record<string, boolean>
   });
@@ -115,7 +117,7 @@ export const UserPermissionsTab = () => {
 
       if (error) throw error;
 
-      toast.success(`User invited successfully! Temporary password: ${data.tempPassword}`, {
+      toast.success(`User invited successfully! Password: ${data.tempPassword}`, {
         duration: 10000
       });
       
@@ -124,6 +126,8 @@ export const UserPermissionsTab = () => {
         email: '',
         firstName: '',
         lastName: '',
+        username: '',
+        password: '',
         role: 'member',
         permissions: {}
       });
@@ -472,13 +476,29 @@ export const UserPermissionsTab = () => {
               </div>
               
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email (Login Username)</Label>
                 <Input
                   id="email"
                   type="email"
                   value={inviteData.email}
                   onChange={(e) => setInviteData(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="user@example.com"
                 />
+                <p className="text-xs text-muted-foreground mt-1">This email will be used as the login username</p>
+              </div>
+              
+              <div>
+                <Label htmlFor="password">Initial Password</Label>
+                <Input
+                  id="password"
+                  type="text"
+                  value={inviteData.password}
+                  onChange={(e) => setInviteData(prev => ({ ...prev, password: e.target.value }))}
+                  placeholder="Leave empty to auto-generate"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Set a custom password or leave empty to auto-generate a secure one
+                </p>
               </div>
 
               <div>

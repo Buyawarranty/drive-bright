@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Users, Circle, Clock, Monitor, History, ChevronDown, ChevronUp } from 'lucide-react';
-import { formatDistanceToNow, format } from 'date-fns';
+import { Users, Circle, Clock, Monitor, History, ChevronDown, ChevronUp, Search, CalendarDays } from 'lucide-react';
+import { formatDistanceToNow, format, startOfDay, endOfDay, subDays } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface TeamMember {
   id: string;
@@ -40,6 +42,22 @@ interface ActivityLog {
   } | null;
 }
 
+interface DailyOnlineTime {
+  id: string;
+  user_id: string;
+  admin_user_id: string | null;
+  date: string;
+  total_online_seconds: number;
+  first_online_at: string | null;
+  last_online_at: string | null;
+  session_count: number;
+  admin_user: {
+    first_name: string | null;
+    last_name: string | null;
+    email: string;
+  } | null;
+}
+
 const TAB_LABELS: Record<string, string> = {
   'get-quote': 'Send a Quote',
   'customers': 'Customers',
@@ -57,11 +75,24 @@ const TAB_LABELS: Record<string, string> = {
   'account': 'Account Settings',
 };
 
+const formatDuration = (seconds: number): string => {
+  if (seconds < 60) return `${seconds}s`;
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  return `${minutes}m`;
+};
+
 export const TeamActivityPanel = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
+  const [dailyTimes, setDailyTimes] = useState<DailyOnlineTime[]>([]);
   const [loading, setLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
+  const [searchDate, setSearchDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [activityTab, setActivityTab] = useState<'current' | 'daily'>('current');
 
   const fetchTeamPresence = async () => {
     try {
@@ -109,9 +140,32 @@ export const TeamActivityPanel = () => {
     }
   };
 
+  const fetchDailyOnlineTime = async (dateStr: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_daily_online_time')
+        .select(`
+          *,
+          admin_user:admin_users!user_daily_online_time_admin_user_id_fkey (
+            first_name,
+            last_name,
+            email
+          )
+        `)
+        .eq('date', dateStr)
+        .order('total_online_seconds', { ascending: false });
+
+      if (error) throw error;
+      setDailyTimes((data as DailyOnlineTime[]) || []);
+    } catch (error) {
+      console.error('Error fetching daily online time:', error);
+    }
+  };
+
   useEffect(() => {
     fetchTeamPresence();
     fetchActivityLogs();
+    fetchDailyOnlineTime(searchDate);
 
     // Subscribe to realtime updates
     const presenceChannel = supabase
@@ -157,6 +211,10 @@ export const TeamActivityPanel = () => {
     };
   }, []);
 
+  useEffect(() => {
+    fetchDailyOnlineTime(searchDate);
+  }, [searchDate]);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'online': return 'bg-green-500';
@@ -181,7 +239,6 @@ export const TeamActivityPanel = () => {
     if (status === 'away') return 'Away';
     if (status === 'busy') return 'Busy';
     
-    // For offline, show time since last seen
     const lastSeenDate = new Date(lastSeen);
     const now = new Date();
     const diffMinutes = Math.floor((now.getTime() - lastSeenDate.getTime()) / (1000 * 60));
@@ -199,7 +256,7 @@ export const TeamActivityPanel = () => {
     return email.substring(0, 2).toUpperCase();
   };
 
-  const getUserName = (log: ActivityLog) => {
+  const getUserName = (log: ActivityLog | DailyOnlineTime) => {
     if (log.admin_user) {
       const name = `${log.admin_user.first_name || ''} ${log.admin_user.last_name || ''}`.trim();
       return name || log.admin_user.email;
@@ -276,7 +333,6 @@ export const TeamActivityPanel = () => {
                         : 'bg-muted/30'
                     }`}
                   >
-                    {/* Avatar with status indicator */}
                     <div className="relative">
                       <Avatar className="h-10 w-10">
                         <AvatarFallback className="text-sm font-medium">
@@ -288,7 +344,6 @@ export const TeamActivityPanel = () => {
                       />
                     </div>
 
-                    {/* User info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-sm truncate">{name}</span>
@@ -326,7 +381,6 @@ export const TeamActivityPanel = () => {
                       </div>
                     </div>
 
-                    {/* Status indicator text */}
                     <div className="text-right">
                       <Badge 
                         variant={member.status === 'online' ? 'default' : 'secondary'}
@@ -348,19 +402,21 @@ export const TeamActivityPanel = () => {
           </div>
         )}
 
-        {/* Activity History */}
-        {activityLogs.length > 0 && (
-          <Collapsible open={showHistory} onOpenChange={setShowHistory}>
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="w-full justify-between">
-                <span className="flex items-center gap-2">
-                  <History className="h-4 w-4" />
-                  Activity History
-                </span>
-                {showHistory ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-3">
+        {/* Activity Tabs */}
+        <Tabs value={activityTab} onValueChange={(v) => setActivityTab(v as 'current' | 'daily')} className="mt-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="current" className="flex items-center gap-2">
+              <History className="h-4 w-4" />
+              Recent Activity
+            </TabsTrigger>
+            <TabsTrigger value="daily" className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4" />
+              Daily Online Time
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="current" className="mt-3">
+            {activityLogs.length > 0 && (
               <div className="border rounded-lg divide-y max-h-64 overflow-y-auto">
                 {activityLogs.map((log) => (
                   <div key={log.id} className="flex items-center gap-3 p-2.5 text-sm">
@@ -391,9 +447,80 @@ export const TeamActivityPanel = () => {
                   </div>
                 ))}
               </div>
-            </CollapsibleContent>
-          </Collapsible>
-        )}
+            )}
+          </TabsContent>
+          
+          <TabsContent value="daily" className="mt-3 space-y-3">
+            {/* Date Search */}
+            <div className="flex items-center gap-2">
+              <Input
+                type="date"
+                value={searchDate}
+                onChange={(e) => setSearchDate(e.target.value)}
+                className="w-auto"
+              />
+              <div className="flex gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSearchDate(format(new Date(), 'yyyy-MM-dd'))}
+                >
+                  Today
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSearchDate(format(subDays(new Date(), 1), 'yyyy-MM-dd'))}
+                >
+                  Yesterday
+                </Button>
+              </div>
+            </div>
+            
+            {/* Daily Time Summary */}
+            {dailyTimes.length === 0 ? (
+              <div className="text-sm text-muted-foreground text-center py-4 border rounded-lg">
+                No activity recorded for {format(new Date(searchDate), 'MMMM d, yyyy')}
+              </div>
+            ) : (
+              <div className="border rounded-lg divide-y">
+                {dailyTimes.map((record) => (
+                  <div key={record.id} className="flex items-center justify-between p-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="text-xs">
+                          {getInitials(
+                            record.admin_user?.first_name || null,
+                            record.admin_user?.last_name || null,
+                            record.admin_user?.email || ''
+                          )}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium text-sm">{getUserName(record)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {record.session_count} session{record.session_count !== 1 ? 's' : ''}
+                          {record.first_online_at && (
+                            <> • First online: {format(new Date(record.first_online_at), 'HH:mm')}</>
+                          )}
+                          {record.last_online_at && (
+                            <> • Last seen: {format(new Date(record.last_online_at), 'HH:mm')}</>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <Badge variant="secondary" className="font-mono">
+                        <Clock className="h-3 w-3 mr-1" />
+                        {formatDuration(record.total_online_seconds)}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );
