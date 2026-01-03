@@ -14,7 +14,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, Copy, FileText, User } from 'lucide-react';
+import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, Copy, FileText, User, Sparkles } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
@@ -40,6 +40,7 @@ import CoverageDetailsDisplay from '@/components/CoverageDetailsDisplay';
 import { CustomerClaimsSummary } from './claims/CustomerClaimsSummary';
 import AddOnProtectionDisplay from '@/components/AddOnProtectionDisplay';
 import { W2KAuditLog } from './W2KAuditLog';
+import { WarrantyUpgradeDialog } from './WarrantyUpgradeDialog';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
@@ -157,6 +158,10 @@ interface Customer {
   mot_repair?: boolean;
   lost_key?: boolean;
   consequential?: boolean;
+  // Manual upgrade tracking fields
+  manual_upgrade_at?: string;
+  manual_upgrade_by?: string;
+  manual_upgrade_notes?: string;
   admin_users?: {
     id: string;
     email: string;
@@ -302,6 +307,8 @@ export const CustomersTab = () => {
     } | null;
     customerName?: string;
   }>({ isOpen: false, policy: null });
+  const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
+  const [upgradeCustomer, setUpgradeCustomer] = useState<Customer | null>(null);
 
   useEffect(() => {
     fetchCustomers();
@@ -646,7 +653,10 @@ export const CustomersTab = () => {
           brevo_contact_id: null,
           review_email_sent_at: null,
           seasonal_bonus_months: 0,
-          labour_rate: 70
+          labour_rate: 70,
+          manual_upgrade_at: null,
+          manual_upgrade_by: null,
+          manual_upgrade_notes: null
         }));
         
         directData = [...directData, ...orphanedAsCustomers];
@@ -3073,7 +3083,31 @@ Please log in and change your password after first login.`;
                                             customer={editingCustomer}
                                             policy={editingCustomer.customer_policies[0]}
                                           />
+                                          <Button
+                                            onClick={() => {
+                                              setUpgradeCustomer(editingCustomer);
+                                              setUpgradeDialogOpen(true);
+                                            }}
+                                            variant="outline"
+                                            className="flex items-center gap-2 border-amber-300 hover:bg-amber-50 hover:border-amber-400"
+                                          >
+                                            <Sparkles className="h-4 w-4 text-amber-500" />
+                                            <span className="text-amber-600">Manual Upgrade</span>
+                                          </Button>
                                         </div>
+                                        
+                                        {/* Show manual upgrade badge if upgraded */}
+                                        {editingCustomer.manual_upgrade_at && (
+                                          <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2">
+                                            <Sparkles className="h-4 w-4 text-amber-500" />
+                                            <span className="text-sm text-amber-700">
+                                              <strong>Manually Upgraded</strong> on {format(new Date(editingCustomer.manual_upgrade_at), 'dd/MM/yyyy HH:mm')}
+                                              {editingCustomer.manual_upgrade_notes && (
+                                                <span className="block text-xs text-amber-600 mt-0.5">{editingCustomer.manual_upgrade_notes}</span>
+                                              )}
+                                            </span>
+                                          </div>
+                                        )}
                                       </div>
                                       
                                       {editingCustomer.customer_policies.map((policy: any, index: number) => (
@@ -3458,14 +3492,24 @@ Please log in and change your password after first login.`;
                        </div>
                      </TableCell>
                       <TableCell>
-                        <Badge variant="secondary" className="bg-blue-50 text-blue-700">
-                          £{customer.voluntary_excess || 0}
-                        </Badge>
+                        <div className="flex items-center gap-1">
+                          <Badge variant="secondary" className="bg-blue-50 text-blue-700">
+                            £{customer.voluntary_excess || 0}
+                          </Badge>
+                          {customer.manual_upgrade_at && (
+                            <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
+                          )}
+                        </div>
                       </TableCell>
                        <TableCell>
-                         <Badge variant="outline" className="bg-green-50 text-green-700">
-                           £{(customer.customer_policies?.[0] as any)?.claim_limit || customer.claim_limit || 1250}
-                         </Badge>
+                         <div className="flex items-center gap-1">
+                           <Badge variant="outline" className="bg-green-50 text-green-700">
+                             £{(customer.customer_policies?.[0] as any)?.claim_limit || customer.claim_limit || 1250}
+                           </Badge>
+                           {customer.manual_upgrade_at && (
+                             <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
+                           )}
+                         </div>
                        </TableCell>
                        <TableCell>
                          <CustomerClaimsSummary
@@ -3483,9 +3527,14 @@ Please log in and change your password after first login.`;
                          />
                        </TableCell>
                        <TableCell>
-                         <Badge variant="outline" className="bg-purple-50 text-purple-700">
-                           £{customer.labour_rate || 70}/hr
-                         </Badge>
+                         <div className="flex items-center gap-1">
+                           <Badge variant="outline" className="bg-purple-50 text-purple-700">
+                             £{customer.labour_rate || 70}/hr
+                           </Badge>
+                           {customer.manual_upgrade_at && (
+                             <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
+                           )}
+                         </div>
                        </TableCell>
                        <TableCell>
                          <CustomerTagsDisplay customerId={customer.id} maxVisible={2} />
@@ -3825,6 +3874,25 @@ Please log in and change your password after first login.`;
         customerName={cancelWarrantyDialog.customerName}
         onSuccess={fetchCustomers}
       />
+
+      {/* Manual Warranty Upgrade Dialog */}
+      {upgradeCustomer && (
+        <WarrantyUpgradeDialog
+          open={upgradeDialogOpen}
+          onOpenChange={setUpgradeDialogOpen}
+          customerId={upgradeCustomer.id}
+          customerEmail={upgradeCustomer.email}
+          customerName={upgradeCustomer.name}
+          registrationPlate={upgradeCustomer.registration_plate || ''}
+          currentClaimLimit={upgradeCustomer.claim_limit || 1250}
+          currentLabourRate={upgradeCustomer.labour_rate || 70}
+          currentExcess={upgradeCustomer.voluntary_excess || 100}
+          onUpgradeComplete={() => {
+            fetchCustomers();
+            setUpgradeCustomer(null);
+          }}
+        />
+      )}
     </div>
   );
 };
