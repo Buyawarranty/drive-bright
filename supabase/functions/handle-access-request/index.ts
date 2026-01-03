@@ -80,6 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Insert access request
+    console.log("Attempting to insert access request...");
     const { data: request, error: insertError } = await supabaseClient
       .from("access_requests")
       .insert({
@@ -88,7 +89,7 @@ const handler = async (req: Request): Promise<Response> => {
         phone: body.phone || null,
         company: body.company || null,
         reason: body.reason,
-        requested_role: body.requestedRole,
+        requested_role: body.requestedRole || 'sales',
         status: "pending"
       })
       .select()
@@ -96,8 +97,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (insertError) {
       console.error("Error inserting access request:", insertError);
-      throw new Error("Failed to submit access request");
+      return new Response(
+        JSON.stringify({ error: insertError.message || "Failed to submit access request" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+    
+    console.log("Access request inserted successfully:", request?.id);
 
     console.log("Access request created:", request.id);
 
