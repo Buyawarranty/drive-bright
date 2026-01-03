@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings } from 'lucide-react';
+import { AccessRequestsPanel } from './AccessRequestsPanel';
 
 interface AdminUser {
   id: string;
@@ -425,6 +426,9 @@ export const UserPermissionsTab = () => {
 
   return (
     <div className="space-y-6">
+      {/* Access Requests Panel */}
+      <AccessRequestsPanel />
+      
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-foreground">User Permissions</h2>

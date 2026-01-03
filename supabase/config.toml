@@ -156,3 +156,6 @@ verify_jwt = false
 
 [functions.send-invoice-email]
 verify_jwt = true
+
+[functions.handle-access-request]
+verify_jwt = false

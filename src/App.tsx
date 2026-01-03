@@ -97,6 +97,7 @@ const QuickResetTest = lazy(() => import("./pages/QuickResetTest"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const SetupAdmin = lazy(() => import("./pages/SetupAdmin"));
 const UpdateAdminCredentials = lazy(() => import("./pages/UpdateAdminCredentials"));
+const RequestAccess = lazy(() => import("./pages/RequestAccess"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -161,6 +162,7 @@ const App = () => {
                     <Route path="/quick-reset/" element={<QuickResetTest />} />
                     <Route path="/setup-admin/" element={<SetupAdmin />} />
                     <Route path="/update-admin/" element={<UpdateAdminCredentials />} />
+                    <Route path="/request-access/" element={<RequestAccess />} />
                     <Route path="/admin-conversion-fire/" element={<AdminConversionFire />} />
                     <Route path="/terms/" element={<Terms />} />
                     <Route path="/cookies/" element={<CookiePolicy />} />

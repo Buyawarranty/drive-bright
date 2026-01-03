@@ -224,8 +224,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     }
     
     if (userRole === 'sales') {
-      // Sales team sees only customer-facing tabs
-      const salesTabIds = ['new-leads', 'customers', 'abandoned-carts', 'contact', 'claims', 'get-quote'];
+      // Sales team sees leads, customers, abandoned carts, discount codes, and send quote
+      const salesTabIds = ['new-leads', 'customers', 'abandoned-carts', 'discount-codes', 'get-quote'];
       return defaultTabs.filter(tab => salesTabIds.includes(tab.id));
     }
     
