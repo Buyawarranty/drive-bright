@@ -97,7 +97,7 @@ const AdminLoginDebug = () => {
       });
 
       // Navigate to admin dashboard
-      if (roleData && ['admin', 'member', 'viewer', 'guest'].includes(roleData.role)) {
+      if (roleData && ['admin', 'member', 'viewer', 'guest', 'sales'].includes(roleData.role)) {
         console.log('Navigating to admin dashboard...');
         navigate('/admin-dashboard', { replace: true });
       }
