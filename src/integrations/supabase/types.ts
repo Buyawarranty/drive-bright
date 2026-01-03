@@ -3597,6 +3597,41 @@ export type Database = {
           },
         ]
       }
+      user_activity_log: {
+        Row: {
+          activity_type: string
+          admin_user_id: string | null
+          created_at: string
+          current_tab: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          admin_user_id?: string | null
+          created_at?: string
+          current_tab?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          admin_user_id?: string | null
+          created_at?: string
+          current_tab?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_activity_log_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_badges: {
         Row: {
           badge_id: string
