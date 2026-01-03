@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 const SetupAdmin = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('info@buyawarranty.co.uk');
-  const [password, setPassword] = useState('PasswordLogin123-');
+  const [password, setPassword] = useState('Login123-');
   const { toast } = useToast();
   const navigate = useNavigate();
 
