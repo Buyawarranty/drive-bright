@@ -47,7 +47,10 @@ serve(async (req: Request) => {
       });
     }
 
-    // Create user in auth.users
+    // Try to create user in auth.users
+    let userId: string;
+    let isExistingUser = false;
+    
     const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
       email,
       password: tempPassword,
@@ -60,29 +63,84 @@ serve(async (req: Request) => {
     });
 
     if (createUserError) {
-      return new Response(JSON.stringify({ error: createUserError.message }), {
+      // Check if the error is because user already exists
+      if (createUserError.message.includes('already been registered')) {
+        console.log('User already exists, fetching existing user...');
+        
+        // Get the existing user by email
+        const { data: existingUsers, error: listError } = await supabase.auth.admin.listUsers();
+        
+        if (listError) {
+          console.error('Error listing users:', listError);
+          return new Response(JSON.stringify({ error: 'Failed to find existing user' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        
+        const existingUser = existingUsers.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+        
+        if (!existingUser) {
+          return new Response(JSON.stringify({ error: 'User exists but could not be found' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        
+        userId = existingUser.id;
+        isExistingUser = true;
+        
+        // Update user password so they can login with the temp password
+        const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
+          password: tempPassword,
+          user_metadata: {
+            ...existingUser.user_metadata,
+            first_name: firstName,
+            last_name: lastName,
+            invited_by: user.id
+          }
+        });
+        
+        if (updateError) {
+          console.error('Error updating existing user:', updateError);
+        }
+        
+        console.log('Using existing user:', userId);
+      } else {
+        return new Response(JSON.stringify({ error: createUserError.message }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+    } else if (newUser?.user) {
+      userId = newUser.user.id;
+    } else {
+      return new Response(JSON.stringify({ error: 'Failed to create user' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // Add user to admin_users table
+    // Add user to admin_users table (upsert to handle existing admin users)
     const { error: adminUserError } = await supabase
       .from('admin_users')
-      .insert({
-        user_id: newUser.user.id,
+      .upsert({
+        user_id: userId,
         email,
         first_name: firstName,
         last_name: lastName,
         role,
         permissions,
-        invited_by: user.id
-      });
+        invited_by: user.id,
+        is_active: true
+      }, { onConflict: 'user_id' });
 
     if (adminUserError) {
       console.error('Error creating admin user:', adminUserError);
-      // Cleanup: delete the auth user if admin_users insertion fails
-      await supabase.auth.admin.deleteUser(newUser.user.id);
+      // Only cleanup if we created a new user
+      if (!isExistingUser) {
+        await supabase.auth.admin.deleteUser(userId);
+      }
       
       return new Response(JSON.stringify({ error: adminUserError.message }), {
         status: 400,
@@ -94,9 +152,9 @@ serve(async (req: Request) => {
     const { error: roleError } = await supabase
       .from('user_roles')
       .upsert({
-        user_id: newUser.user.id,
+        user_id: userId,
         role
-      });
+      }, { onConflict: 'user_id,role' });
 
     if (roleError) {
       console.error('Error creating user role:', roleError);
