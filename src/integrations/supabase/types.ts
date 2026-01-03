@@ -1371,6 +1371,9 @@ export type Database = {
           is_deleted: boolean | null
           last_login: string | null
           lost_key: boolean | null
+          manual_upgrade_at: string | null
+          manual_upgrade_by: string | null
+          manual_upgrade_notes: string | null
           mot_fee: boolean | null
           mot_repair: boolean | null
           payment_amount: number | null
@@ -1421,6 +1424,9 @@ export type Database = {
           is_deleted?: boolean | null
           last_login?: string | null
           lost_key?: boolean | null
+          manual_upgrade_at?: string | null
+          manual_upgrade_by?: string | null
+          manual_upgrade_notes?: string | null
           mot_fee?: boolean | null
           mot_repair?: boolean | null
           payment_amount?: number | null
@@ -1471,6 +1477,9 @@ export type Database = {
           is_deleted?: boolean | null
           last_login?: string | null
           lost_key?: boolean | null
+          manual_upgrade_at?: string | null
+          manual_upgrade_by?: string | null
+          manual_upgrade_notes?: string | null
           mot_fee?: boolean | null
           mot_repair?: boolean | null
           payment_amount?: number | null
@@ -1641,6 +1650,9 @@ export type Database = {
           last_login: string | null
           last_name: string | null
           lost_key: boolean | null
+          manual_upgrade_at: string | null
+          manual_upgrade_by: string | null
+          manual_upgrade_notes: string | null
           mileage: string | null
           mot_fee: boolean | null
           mot_repair: boolean | null
@@ -1700,6 +1712,9 @@ export type Database = {
           last_login?: string | null
           last_name?: string | null
           lost_key?: boolean | null
+          manual_upgrade_at?: string | null
+          manual_upgrade_by?: string | null
+          manual_upgrade_notes?: string | null
           mileage?: string | null
           mot_fee?: boolean | null
           mot_repair?: boolean | null
@@ -1759,6 +1774,9 @@ export type Database = {
           last_login?: string | null
           last_name?: string | null
           lost_key?: boolean | null
+          manual_upgrade_at?: string | null
+          manual_upgrade_by?: string | null
+          manual_upgrade_notes?: string | null
           mileage?: string | null
           mot_fee?: boolean | null
           mot_repair?: boolean | null
