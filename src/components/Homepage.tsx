@@ -499,11 +499,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   <p className="text-sm text-brand-orange font-semibold text-left animate-fade-in">
                     👇 Now select your mileage below
                   </p>
-                ) : (
-                  <p className="text-xs sm:text-sm text-black text-left mt-0.5">
-                    Protection for vehicles up to 150,000 miles and 15 years.
-                  </p>
-                )}
+                ) : null}
 
                 {/* Mileage Quick Select */}
                 <MileageQuickSelect
