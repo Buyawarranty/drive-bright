@@ -41,6 +41,7 @@ import { CustomerClaimsSummary } from './claims/CustomerClaimsSummary';
 import AddOnProtectionDisplay from '@/components/AddOnProtectionDisplay';
 import { W2KAuditLog } from './W2KAuditLog';
 import { WarrantyUpgradeDialog } from './WarrantyUpgradeDialog';
+import { InlineWarrantyUpgrade } from './InlineWarrantyUpgrade';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
@@ -3493,9 +3494,15 @@ Please log in and change your password after first login.`;
                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
-                          <Badge variant="secondary" className="bg-blue-50 text-blue-700">
-                            £{customer.voluntary_excess || 0}
-                          </Badge>
+                          <InlineWarrantyUpgrade
+                            customerId={customer.id}
+                            customerEmail={customer.email}
+                            customerName={customer.name}
+                            registrationPlate={customer.registration_plate}
+                            field="excess"
+                            currentValue={customer.voluntary_excess || 100}
+                            onUpdate={fetchCustomers}
+                          />
                           {customer.manual_upgrade_at && (
                             <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
                           )}
@@ -3503,9 +3510,15 @@ Please log in and change your password after first login.`;
                       </TableCell>
                        <TableCell>
                          <div className="flex items-center gap-1">
-                           <Badge variant="outline" className="bg-green-50 text-green-700">
-                             £{(customer.customer_policies?.[0] as any)?.claim_limit || customer.claim_limit || 1250}
-                           </Badge>
+                           <InlineWarrantyUpgrade
+                             customerId={customer.id}
+                             customerEmail={customer.email}
+                             customerName={customer.name}
+                             registrationPlate={customer.registration_plate}
+                             field="claim_limit"
+                             currentValue={(customer.customer_policies?.[0] as any)?.claim_limit || customer.claim_limit || 1250}
+                             onUpdate={fetchCustomers}
+                           />
                            {customer.manual_upgrade_at && (
                              <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
                            )}
@@ -3528,9 +3541,15 @@ Please log in and change your password after first login.`;
                        </TableCell>
                        <TableCell>
                          <div className="flex items-center gap-1">
-                           <Badge variant="outline" className="bg-purple-50 text-purple-700">
-                             £{customer.labour_rate || 70}/hr
-                           </Badge>
+                           <InlineWarrantyUpgrade
+                             customerId={customer.id}
+                             customerEmail={customer.email}
+                             customerName={customer.name}
+                             registrationPlate={customer.registration_plate}
+                             field="labour_rate"
+                             currentValue={customer.labour_rate || 70}
+                             onUpdate={fetchCustomers}
+                           />
                            {customer.manual_upgrade_at && (
                              <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
                            )}
