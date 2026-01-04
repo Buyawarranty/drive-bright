@@ -461,6 +461,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     </div>
                     {/* Registration Input */}
                     <input
+                      id="reg-input-field"
                       type="text"
                       value={regNumber}
                       onChange={handleRegChange}
@@ -477,11 +478,23 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   )}
                 </div>
                 
-                {/* Guidance text based on state */}
+                {/* Guidance text based on state - also highlight reg input when showing error */}
                 {mileageSelection && regNumber.replace(/\s/g, '').length < 5 ? (
-                  <p className="text-sm text-red-500 font-semibold text-left animate-fade-in">
-                    Enter your registration above to continue
-                  </p>
+                  <>
+                    <p className="text-sm text-red-500 font-semibold text-left animate-fade-in">
+                      ☝️ Enter your registration above to continue
+                    </p>
+                    <style>{`
+                      #reg-input-field {
+                        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.5) !important;
+                        animation: pulse-red 1.5s ease-in-out infinite;
+                      }
+                      @keyframes pulse-red {
+                        0%, 100% { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.5); }
+                        50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.3); }
+                      }
+                    `}</style>
+                  </>
                 ) : regNumber.replace(/\s/g, '').length >= 5 && !mileageSelection ? (
                   <p className="text-sm text-brand-orange font-semibold text-left animate-fade-in">
                     👇 Now select your mileage below
