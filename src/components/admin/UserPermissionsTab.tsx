@@ -518,19 +518,17 @@ export const UserPermissionsTab = () => {
                 </Select>
                 <p className="text-xs text-muted-foreground mt-1">
                   {inviteData.role === 'admin' && 'Admins have access to all tabs automatically'}
-                  {inviteData.role === 'member' && 'Select which tabs this member can access below'}
-                  {inviteData.role === 'blog_writer' && 'Blog writers only see Blog Writing and Landing Pages'}
-                  {inviteData.role === 'sales' && 'Sales team sees Customers, Carts, Claims, Contact, and Quotes'}
+                  {inviteData.role !== 'admin' && 'Select which tabs this user can access below'}
                 </p>
               </div>
 
-              {/* Show tab permissions for member, viewer, guest roles */}
-              {!['admin', 'blog_writer', 'sales'].includes(inviteData.role) && (
+              {/* Show tab permissions for all non-admin roles */}
+              {inviteData.role !== 'admin' && (
                 renderTabPermissionsSection(inviteData.permissions, false)
               )}
 
               {/* Legacy permissions section */}
-              {inviteData.role !== 'admin' && inviteData.role !== 'blog_writer' && inviteData.role !== 'sales' && Object.keys(groupedPermissions).length > 0 && (
+              {inviteData.role !== 'admin' && Object.keys(groupedPermissions).length > 0 && (
                 <div className="space-y-4">
                   <Label className="text-base font-semibold">Additional Permissions</Label>
                   {Object.entries(groupedPermissions).map(([category, categoryPermissions]) => (
