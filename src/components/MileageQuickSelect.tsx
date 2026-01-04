@@ -107,8 +107,8 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
       </div>
       
       {/* Eligibility note */}
-      <p className="text-sm text-gray-500">
-        Protection for vehicles up to <span className="font-bold">150,000 miles</span> and <span className="font-bold">15 years</span>.
+      <p className="text-sm text-gray-500 text-center">
+        Vehicles up to <span className="font-bold">150,000 miles</span> and <span className="font-bold">15 years old</span>.
       </p>
 
       {/* Get Quote CTA Button */}
