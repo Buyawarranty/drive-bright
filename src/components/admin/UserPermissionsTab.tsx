@@ -16,6 +16,7 @@ import { TeamActivityPanel } from './TeamActivityPanel';
 
 interface AdminUser {
   id: string;
+  user_id: string | null;
   email: string;
   first_name: string;
   last_name: string;
@@ -158,17 +159,12 @@ export const UserPermissionsTab = () => {
 
       if (error) throw error;
       
-      // Also update user_roles table for role changes
-      if (editingUser.role) {
-        const validRoles = ['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'customer'] as const;
-        const roleValue = validRoles.includes(editingUser.role as any) 
-          ? editingUser.role as typeof validRoles[number]
-          : 'guest';
-          
+      // Also update user_roles table for role changes using the correct user_id
+      if (editingUser.user_id) {
         const { error: roleError } = await supabase
           .from('user_roles')
           .update({ role: roleValue })
-          .eq('user_id', editingUser.id);
+          .eq('user_id', editingUser.user_id);
 
         if (roleError) {
           console.warn('Could not update user_roles:', roleError);
@@ -610,8 +606,8 @@ export const UserPermissionsTab = () => {
                 </Select>
               </div>
 
-              {/* Show tab permissions for member, viewer, guest roles */}
-              {!['admin', 'blog_writer', 'sales'].includes(editingUser.role) && (
+              {/* Show tab permissions for all non-admin roles */}
+              {editingUser.role !== 'admin' && (
                 renderTabPermissionsSection(editingUser.permissions, true)
               )}
 
