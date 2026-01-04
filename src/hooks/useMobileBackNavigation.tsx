@@ -114,7 +114,42 @@ export const useMobileBackNavigation = ({
       return;
     }
     
-    // If trying to go back from step > 1, navigate to previous step (like internal back button)
+    // If trying to go back from step 2 to step 1 (homepage), use pushState to allow proper navigation
+    if (previousStep === 1) {
+      console.log('📱 Navigating back to homepage (step 1)');
+      
+      // Track step change
+      trackEvent('journey_step_changed', {
+        journey_id: journeyId,
+        from_step: currentStep,
+        to_step: 1,
+        direction: 'back',
+        trigger: 'mobile_back_button'
+      });
+      
+      // Restore state for step 1 if handler provided
+      if (restoreStateFromStep) {
+        restoreStateFromStep(1);
+      }
+      
+      // Update URL to step 1 (homepage)
+      const step1Url = `${window.location.pathname}?step=1`;
+      window.history.replaceState({ step: 1 }, '', step1Url);
+      
+      // Update current step
+      onStepChange(1);
+      
+      // Reset our history stack
+      historyStackRef.current = [1];
+      
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      isHandlingBackRef.current = false;
+      return;
+    }
+    
+    // If trying to go back from step > 2, navigate to previous step
     if (previousStep >= 1) {
       console.log('📱 Navigating to previous step:', previousStep);
       
