@@ -1320,9 +1320,15 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                       </select>
                     </div>
                     {/* Inline validation message */}
-                    {customerData.mileage && (Number(customerData.mileage) < 1000 || Number(customerData.mileage) > 150000) ? (
+                    {customerData.mileage && Number(customerData.mileage) > 150000 ? (
+                      <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-2">
+                        <p className="text-red-600 text-sm font-medium" role="alert" aria-live="polite">
+                          Sorry, we only cover vehicles under 150,000 miles. Please contact us if you have any questions.
+                        </p>
+                      </div>
+                    ) : customerData.mileage && Number(customerData.mileage) < 1000 ? (
                       <p className="text-red-500 text-xs mt-1" role="alert" aria-live="polite">
-                        Enter mileage between 1,000 and 150,000
+                        Please enter a valid mileage (minimum 1,000 miles)
                       </p>
                     ) : fieldErrors.mileage ? (
                       <p className="text-red-500 text-xs mt-1" role="alert" aria-live="polite">{fieldErrors.mileage}</p>

@@ -84,25 +84,28 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
         </label>
         
         <label
-          className={`relative flex-1 flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+          className={`relative flex-1 flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
             isOver120k 
               ? 'border-brand-orange bg-brand-orange/10' 
               : 'border-gray-300 bg-white hover:border-gray-400'
           }`}
           onClick={() => handleSelect('over120k')}
         >
-          <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-            isOver120k 
-              ? 'border-brand-orange bg-brand-orange' 
-              : 'border-gray-400'
-          }`}>
-            {isOver120k && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
-          </span>
-          <span className={`text-sm sm:text-base font-bold ${
-            isOver120k ? 'text-gray-900' : 'text-gray-700'
-          }`}>
-            Over 120,000 miles
-          </span>
+          <div className="flex items-center gap-3">
+            <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+              isOver120k 
+                ? 'border-brand-orange bg-brand-orange' 
+                : 'border-gray-400'
+            }`}>
+              {isOver120k && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+            </span>
+            <span className={`text-sm sm:text-base font-bold ${
+              isOver120k ? 'text-gray-900' : 'text-gray-700'
+            }`}>
+              Over 120,000 miles
+            </span>
+          </div>
+          <span className="text-xs text-gray-400 ml-8 mt-1">(Up to 150,000 miles)</span>
         </label>
       </div>
       
