@@ -167,10 +167,15 @@ const PasswordReset = () => {
         const { data: roleData } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
+          .eq('user_id', session.user.id);
 
-        if (roleData && ['admin', 'member', 'viewer', 'guest', 'sales'].includes(roleData.role)) {
+        // Define admin roles that should go to admin dashboard
+        const adminRoles = ['admin', 'member', 'viewer', 'guest', 'sales', 'blog_writer'];
+        
+        // Check if user has ANY admin role
+        const hasAdminRole = roleData && roleData.some(r => adminRoles.includes(r.role));
+
+        if (hasAdminRole) {
           navigate('/admin-dashboard', { replace: true });
         } else {
           navigate('/customer-dashboard', { replace: true });

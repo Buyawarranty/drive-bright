@@ -92,13 +92,17 @@ const AdminDashboard = () => {
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
+        .eq('user_id', session.user.id);
 
       console.log('📊 Role query result:', { data, error });
 
-      // Allow all admin role types: admin, member, viewer, guest, blog_writer, sales
-      if (error || !data || !['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales'].includes(data.role)) {
+      // Define admin roles
+      const adminRoles = ['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales'];
+      
+      // Check if user has ANY admin role
+      const userAdminRoles = data?.filter(r => adminRoles.includes(r.role)) || [];
+      
+      if (error || userAdminRoles.length === 0) {
         console.error('❌ Access denied - not an admin user', error, data);
         console.log('🏠 User has no admin role, redirecting to homepage');
         setIsCheckingRole(false);
@@ -106,8 +110,12 @@ const AdminDashboard = () => {
         return;
       }
 
-      console.log('✅ Access granted for role:', data.role);
-      setUserRole(data.role);
+      // Use the highest priority role (admin > member > viewer > guest > sales > blog_writer)
+      const rolePriority = ['admin', 'member', 'viewer', 'guest', 'sales', 'blog_writer'];
+      const primaryRole = rolePriority.find(role => userAdminRoles.some(r => r.role === role)) || userAdminRoles[0].role;
+      
+      console.log('✅ Access granted for roles:', userAdminRoles.map(r => r.role), 'Primary:', primaryRole);
+      setUserRole(primaryRole);
       setHasAdminAccess(true);
       
       // Fetch user permissions from admin_users table
@@ -125,11 +133,11 @@ const AdminDashboard = () => {
       setIsCheckingRole(false);
       
       // Set default tab for blog writers
-      if (data.role === 'blog_writer') {
+      if (primaryRole === 'blog_writer') {
         setActiveTab('blog-writing');
-      } else if (data.role === 'sales') {
+      } else if (primaryRole === 'sales') {
         setActiveTab('customers');
-      } else if (!['admin'].includes(data.role) && adminUserData?.permissions) {
+      } else if (!['admin'].includes(primaryRole) && adminUserData?.permissions) {
         // For users with custom permissions, set first allowed tab
         const perms = adminUserData.permissions as Record<string, boolean>;
         const firstAllowedTab = Object.keys(perms).find(key => key.startsWith('tab_') && perms[key]);

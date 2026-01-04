@@ -162,10 +162,13 @@ const CustomerDashboard = () => {
           const { data } = await supabase
             .from('user_roles')
             .select('role')
-            .eq('user_id', user.id)
-            .maybeSingle();
+            .eq('user_id', user.id);
           
-          if (data && ['admin', 'member', 'viewer', 'guest'].includes(data.role)) {
+          // Define admin roles
+          const adminRoles = ['admin', 'member', 'viewer', 'guest', 'sales', 'blog_writer'];
+          const hasAdminRole = data && data.some(r => adminRoles.includes(r.role));
+          
+          if (hasAdminRole) {
             setIsAdmin(true);
           }
         } catch (error) {

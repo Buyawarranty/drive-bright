@@ -111,21 +111,25 @@ const Auth = () => {
         if (event === 'SIGNED_IN' && session) {
           console.log('Auth page: User signed in, checking role and navigating');
           
-          // Check user role and navigate
+          // Check user role and navigate - fetch ALL roles for the user
           const { data: roleData, error } = await supabase
             .from('user_roles')
             .select('role')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
+            .eq('user_id', session.user.id);
 
           toast({
             title: "Success",
             description: "You have been signed in successfully!",
           });
 
-          // If user has admin role, redirect to admin dashboard
-          if (!error && roleData && ['admin', 'member', 'viewer', 'guest', 'sales'].includes(roleData.role)) {
-            console.log("Auth page: Admin user detected, redirecting to admin dashboard");
+          // Define admin roles that should go to admin dashboard
+          const adminRoles = ['admin', 'member', 'viewer', 'guest', 'sales', 'blog_writer'];
+          
+          // Check if user has ANY admin role
+          const hasAdminRole = !error && roleData && roleData.some(r => adminRoles.includes(r.role));
+          
+          if (hasAdminRole) {
+            console.log("Auth page: Admin user detected with roles:", roleData?.map(r => r.role), "redirecting to admin dashboard");
             navigate('/admin-dashboard', { replace: true });
           } else {
             console.log("Auth page: Regular user detected, redirecting to customer dashboard");

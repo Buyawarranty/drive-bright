@@ -82,22 +82,26 @@ const AdminLoginDebug = () => {
 
       console.log('Login test successful:', data.user?.email);
       
-      // Check user role
+      // Check user role - fetch ALL roles
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', data.session.user.id)
-        .maybeSingle();
+        .eq('user_id', data.session.user.id);
 
       console.log('Role check result:', { roleData, roleError });
 
+      // Define admin roles
+      const adminRoles = ['admin', 'member', 'viewer', 'guest', 'sales', 'blog_writer'];
+      const userRoles = roleData?.map(r => r.role) || [];
+      const hasAdminRole = userRoles.some(role => adminRoles.includes(role));
+
       toast({
         title: "Login Successful",
-        description: `Logged in as ${data.user?.email} with role: ${roleData?.role || 'no role'}`,
+        description: `Logged in as ${data.user?.email} with roles: ${userRoles.join(', ') || 'no role'}`,
       });
 
-      // Navigate to admin dashboard
-      if (roleData && ['admin', 'member', 'viewer', 'guest', 'sales'].includes(roleData.role)) {
+      // Navigate to admin dashboard if user has any admin role
+      if (hasAdminRole) {
         console.log('Navigating to admin dashboard...');
         navigate('/admin-dashboard', { replace: true });
       }
@@ -123,14 +127,14 @@ const AdminLoginDebug = () => {
         const { data: roleData, error } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
+          .eq('user_id', session.user.id);
         
-        console.log('Current user role:', { roleData, error });
+        console.log('Current user roles:', { roleData, error });
+        const userRoles = roleData?.map(r => r.role) || [];
         
         toast({
           title: "Current User",
-          description: `Logged in as: ${session.user.email}, Role: ${roleData?.role || 'no role'}`,
+          description: `Logged in as: ${session.user.email}, Roles: ${userRoles.join(', ') || 'no role'}`,
         });
       } else {
         toast({
