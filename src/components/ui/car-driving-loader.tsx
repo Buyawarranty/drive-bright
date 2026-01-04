@@ -39,33 +39,48 @@ export const CarDrivingLoader = ({ text = "Loading your quote..." }: { text?: st
         {/* Car - side view */}
         <div className="absolute bottom-7 left-1/2 -translate-x-1/2 animate-[car-bounce_0.3s_ease-in-out_infinite]">
           <svg width="64" height="40" viewBox="0 0 64 40" className="drop-shadow-lg">
-            {/* Car body - main */}
+            {/* Car body - main chassis */}
             <path 
-              d="M8 24 L12 24 L14 16 L26 12 L48 12 L54 16 L56 24 L56 28 L8 28 L8 24" 
+              d="M4 24 L4 28 L60 28 L60 24 L56 18 L52 18 L52 24 L12 24 L12 18 L8 18 L4 24" 
               fill="#ea580c" 
               className="drop-shadow-sm"
             />
-            {/* Car body - roof */}
+            {/* Car body - upper with proper sedan shape: sloped hood at front (right), trunk at back (left) */}
             <path 
-              d="M18 12 L26 6 L44 6 L48 12" 
-              fill="#f97316" 
+              d="M10 18 L16 18 L20 10 L44 10 L52 18 L56 18 L56 20 L52 20 L48 14 L20 14 L16 20 L10 20 L10 18" 
+              fill="#ea580c"
             />
-            {/* Windshield */}
+            {/* Hood/bonnet - sloping down at front (right side) */}
             <path 
-              d="M26 7 L28 12 L20 12 L26 7" 
+              d="M48 14 L52 18 L56 18 L56 16 L52 12 L48 14" 
+              fill="#f97316"
+            />
+            {/* Trunk at back (left side) - flatter */}
+            <path 
+              d="M16 18 L20 14 L16 14 L12 18 L16 18" 
+              fill="#f97316"
+            />
+            {/* Roof */}
+            <path 
+              d="M20 10 L24 6 L40 6 L44 10" 
+              fill="#f97316"
+            />
+            {/* Front windshield (right side) - angled towards front */}
+            <path 
+              d="M40 6.5 L44 10 L44 14 L40 10 L40 6.5" 
               fill="#bfdbfe" 
               opacity="0.9"
             />
-            {/* Rear window */}
+            {/* Rear windshield (left side) */}
             <path 
-              d="M44 7 L42 12 L48 12 L44 7" 
+              d="M24 6.5 L20 10 L20 14 L24 10 L24 6.5" 
               fill="#bfdbfe" 
               opacity="0.9"
             />
             {/* Side windows */}
-            <rect x="30" y="7" width="10" height="5" rx="1" fill="#bfdbfe" opacity="0.9" />
+            <rect x="26" y="7" width="12" height="5" rx="1" fill="#bfdbfe" opacity="0.9" />
             
-            {/* Front wheel */}
+            {/* Front wheel (right side) */}
             <g className="origin-center animate-[wheel-spin_0.3s_linear_infinite]" style={{ transformOrigin: '48px 28px' }}>
               <circle cx="48" cy="28" r="6" fill="#1f2937" />
               <circle cx="48" cy="28" r="4" fill="#4b5563" />
@@ -75,7 +90,7 @@ export const CarDrivingLoader = ({ text = "Loading your quote..." }: { text?: st
               <line x1="44" y1="28" x2="52" y2="28" stroke="#6b7280" strokeWidth="1" />
             </g>
             
-            {/* Rear wheel */}
+            {/* Rear wheel (left side) */}
             <g className="origin-center animate-[wheel-spin_0.3s_linear_infinite]" style={{ transformOrigin: '16px 28px' }}>
               <circle cx="16" cy="28" r="6" fill="#1f2937" />
               <circle cx="16" cy="28" r="4" fill="#4b5563" />
@@ -85,24 +100,32 @@ export const CarDrivingLoader = ({ text = "Loading your quote..." }: { text?: st
               <line x1="12" y1="28" x2="20" y2="28" stroke="#6b7280" strokeWidth="1" />
             </g>
             
-            {/* Headlight */}
-            <ellipse cx="55" cy="20" rx="2" ry="3" fill="#fef3c7" className="animate-pulse" />
+            {/* Headlights at front (right side) */}
+            <ellipse cx="58" cy="20" rx="2" ry="2.5" fill="#fef3c7" className="animate-pulse" />
+            <ellipse cx="58" cy="24" rx="1.5" ry="1.5" fill="#fef3c7" opacity="0.8" />
             
-            {/* Taillight */}
-            <rect x="8" y="18" width="2" height="4" rx="1" fill="#ef4444" className="animate-pulse" />
+            {/* Taillights at back (left side) */}
+            <rect x="4" y="19" width="2" height="3" rx="1" fill="#ef4444" className="animate-pulse" />
+            <rect x="4" y="23" width="2" height="2" rx="0.5" fill="#ef4444" opacity="0.7" />
+            
+            {/* Front grille (right side) */}
+            <rect x="56" y="21" width="2" height="4" rx="0.5" fill="#1f2937" />
             
             {/* Door handle */}
-            <rect x="32" y="16" width="4" height="1" rx="0.5" fill="#c2410c" />
+            <rect x="30" y="16" width="4" height="1" rx="0.5" fill="#c2410c" />
             
-            {/* Exhaust smoke */}
+            {/* Side mirror (front/right) */}
+            <rect x="46" y="12" width="2" height="2" rx="0.5" fill="#c2410c" />
+            
+            {/* Exhaust smoke at back (left side) */}
             <g className="animate-[exhaust_0.8s_ease-out_infinite]">
-              <circle cx="6" cy="26" r="2" fill="#9ca3af" opacity="0.4" />
+              <circle cx="2" cy="26" r="2" fill="#9ca3af" opacity="0.4" />
             </g>
             <g className="animate-[exhaust_0.8s_ease-out_infinite_0.2s]">
-              <circle cx="2" cy="24" r="1.5" fill="#9ca3af" opacity="0.3" />
+              <circle cx="-2" cy="24" r="1.5" fill="#9ca3af" opacity="0.3" />
             </g>
             <g className="animate-[exhaust_0.8s_ease-out_infinite_0.4s]">
-              <circle cx="-1" cy="22" r="1" fill="#9ca3af" opacity="0.2" />
+              <circle cx="-5" cy="22" r="1" fill="#9ca3af" opacity="0.2" />
             </g>
           </svg>
         </div>
