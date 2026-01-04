@@ -76,36 +76,63 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Check if we've sent a step 4 email recently
-    // First email: within last 3 days for same vehicle
-    // After 3 days: can send again if they still haven't purchased
-    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
-    
-    const { data: recentEmails, error: checkError } = await supabase
+    // Check how many step 4 emails we've already sent to this user for this vehicle
+    const { data: allEmails, error: checkError } = await supabase
       .from('triggered_emails_log')
       .select('*')
       .eq('email', emailRequest.email)
       .eq('vehicle_reg', emailRequest.vehicleReg)
       .eq('trigger_type', 'step4_instant')
-      .gte('created_at', threeDaysAgo)
-      .limit(1);
+      .order('created_at', { ascending: false });
 
     if (checkError) {
       console.error('Error checking recent emails:', checkError);
     }
 
-    if (recentEmails && recentEmails.length > 0) {
-      console.log(`⏭️ Already sent step 4 email to ${emailRequest.email} for ${emailRequest.vehicleReg} in last 3 days`);
+    const emailCount = allEmails?.length || 0;
+    const mostRecentEmail = allEmails?.[0];
+    
+    // Determine timing rules based on email count:
+    // - 0 emails sent: send immediately (first visit to step 4)
+    // - 1 email sent: can send again after 3 days
+    // - 2 emails sent: can send again after 7 days (4 more days after the 3-day email)
+    // - 3+ emails sent: no more emails
+    
+    if (emailCount >= 3) {
+      console.log(`⏭️ Already sent 3 step 4 emails to ${emailRequest.email} - no more emails`);
       return new Response(JSON.stringify({ 
         success: true, 
-        message: "Email already sent within 3 days" 
+        message: "Maximum emails reached" 
       }), {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
     
-    console.log(`✅ No purchase found and no recent email - proceeding to send to ${emailRequest.email}`);
+    if (mostRecentEmail) {
+      const lastEmailDate = new Date(mostRecentEmail.created_at);
+      const now = new Date();
+      const daysSinceLastEmail = (now.getTime() - lastEmailDate.getTime()) / (1000 * 60 * 60 * 24);
+      
+      // After first email, wait 3 days; after second email, wait 4 more days (7 days total from first)
+      const requiredDays = emailCount === 1 ? 3 : 4;
+      
+      if (daysSinceLastEmail < requiredDays) {
+        console.log(`⏭️ Only ${daysSinceLastEmail.toFixed(1)} days since last email (need ${requiredDays}) - skipping`);
+        return new Response(JSON.stringify({ 
+          success: true, 
+          message: `Email already sent, waiting ${requiredDays} days between emails` 
+        }), {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+    }
+    
+    // Determine if this is a reminder email (show promo code on 2nd and 3rd emails)
+    const isReminderEmail = emailCount > 0;
+    
+    console.log(`✅ Sending email #${emailCount + 1} to ${emailRequest.email} (isReminder: ${isReminderEmail})`);
 
     // Build the restore URL that takes them directly back to step 4
     const baseUrl = 'https://buyawarranty.co.uk';
@@ -135,6 +162,22 @@ const handler = async (req: Request): Promise<Response> => {
     const vehicleInfo = `${emailRequest.vehicleMake || ''} ${emailRequest.vehicleModel || ''}`.trim() || 'your vehicle';
     const vehicleReg = emailRequest.vehicleReg.toUpperCase();
     
+    // Generate promo code section HTML (only for reminder emails)
+    const promoCodeSection = isReminderEmail ? `
+      <!-- Promo Code Section -->
+      <div style="background-color: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center;">
+        <p style="color: #856404; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">
+          Complete your purchase now and save 10%!
+        </p>
+        <p style="color: #856404; font-size: 14px; margin: 0 0 12px 0;">
+          Use this code at checkout:
+        </p>
+        <div style="background-color: #ffc107; color: #000; font-size: 24px; font-weight: bold; padding: 12px 24px; border-radius: 4px; display: inline-block; letter-spacing: 2px;">
+          SAVE10PERCENT
+        </div>
+      </div>
+    ` : '';
+
     // Generate email HTML
     const htmlContent = `
 <!DOCTYPE html>
@@ -152,17 +195,25 @@ const handler = async (req: Request): Promise<Response> => {
     
     <!-- Content -->
     <div style="padding: 0 48px;">
-      <h1 style="color: #1a1a1a; font-size: 24px; font-weight: 700; line-height: 1.3; margin: 16px 0;">Complete Your Warranty Purchase</h1>
+      <h1 style="color: #1a1a1a; font-size: 24px; font-weight: 700; line-height: 1.3; margin: 16px 0;">${isReminderEmail ? "Don't Forget Your Warranty!" : "Complete Your Warranty Purchase"}</h1>
       
       <p style="color: #484848; font-size: 16px; line-height: 24px; margin: 16px 0;">Hi ${firstName},</p>
       
       <p style="color: #484848; font-size: 16px; line-height: 24px; margin: 16px 0;">
-        You're just a few steps away from protecting your <strong>${vehicleInfo}</strong> (${vehicleReg}) with our ${emailRequest.planName || 'warranty plan'}.
+        ${isReminderEmail 
+          ? `We noticed you haven't completed your warranty purchase for your <strong>${vehicleInfo}</strong> (${vehicleReg}). Your quote is still waiting for you!`
+          : `You're just a few steps away from protecting your <strong>${vehicleInfo}</strong> (${vehicleReg}) with our ${emailRequest.planName || 'warranty plan'}.`
+        }
       </p>
       
       <p style="color: #484848; font-size: 16px; line-height: 24px; margin: 16px 0;">
-        Your quote is ready and waiting – complete your purchase now to get instant cover.
+        ${isReminderEmail
+          ? "Complete your purchase today and get instant cover for unexpected repair bills."
+          : "Your quote is ready and waiting – complete your purchase now to get instant cover."
+        }
       </p>
+
+      ${promoCodeSection}
 
       <!-- Vehicle Summary -->
       <div style="background-color: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 20px; margin: 24px 0;">
