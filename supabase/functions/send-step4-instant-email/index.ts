@@ -53,14 +53,41 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Check if we've already sent a step 4 email to this user for this vehicle in the last 24 hours
+    // Check if customer has already made a purchase
+    const { data: existingCustomer, error: customerError } = await supabase
+      .from('customers')
+      .select('id, email, registration_plate')
+      .eq('email', emailRequest.email)
+      .limit(1);
+
+    if (customerError) {
+      console.error('Error checking existing customer:', customerError);
+    }
+
+    // If customer exists (has purchased), don't send the email
+    if (existingCustomer && existingCustomer.length > 0) {
+      console.log(`⏭️ Customer ${emailRequest.email} has already purchased - skipping email`);
+      return new Response(JSON.stringify({ 
+        success: true, 
+        message: "Customer has already purchased" 
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Check if we've sent a step 4 email recently
+    // First email: within last 3 days for same vehicle
+    // After 3 days: can send again if they still haven't purchased
+    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+    
     const { data: recentEmails, error: checkError } = await supabase
       .from('triggered_emails_log')
       .select('*')
       .eq('email', emailRequest.email)
       .eq('vehicle_reg', emailRequest.vehicleReg)
       .eq('trigger_type', 'step4_instant')
-      .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+      .gte('created_at', threeDaysAgo)
       .limit(1);
 
     if (checkError) {
@@ -68,15 +95,17 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (recentEmails && recentEmails.length > 0) {
-      console.log(`⏭️ Already sent step 4 email to ${emailRequest.email} for ${emailRequest.vehicleReg} in last 24h`);
+      console.log(`⏭️ Already sent step 4 email to ${emailRequest.email} for ${emailRequest.vehicleReg} in last 3 days`);
       return new Response(JSON.stringify({ 
         success: true, 
-        message: "Email already sent within 24 hours" 
+        message: "Email already sent within 3 days" 
       }), {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
+    
+    console.log(`✅ No purchase found and no recent email - proceeding to send to ${emailRequest.email}`);
 
     // Build the restore URL that takes them directly back to step 4
     const baseUrl = 'https://buyawarranty.co.uk';
