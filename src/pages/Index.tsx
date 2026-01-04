@@ -861,8 +861,37 @@ const Index = () => {
     saveStateToLocalStorage(4);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
-    // Note: Abandoned cart tracking for step 4 is handled in CustomerDetailsStep
-    // once the user enters their email in the checkout form
+    // Send instant email when customer reaches step 4 (they already provided email in step 2)
+    if (vehicleData?.email && vehicleData?.regNumber) {
+      console.log('📧 Sending step 4 instant email to:', vehicleData.email);
+      supabase.functions.invoke('send-step4-instant-email', {
+        body: {
+          email: vehicleData.email,
+          firstName: vehicleData.firstName || '',
+          lastName: vehicleData.lastName || '',
+          phone: vehicleData.phone || '',
+          vehicleReg: vehicleData.regNumber,
+          vehicleMake: vehicleData.make || '',
+          vehicleModel: vehicleData.model || '',
+          vehicleYear: vehicleData.year || '',
+          vehicleType: vehicleData.vehicleType || 'car',
+          mileage: vehicleData.mileage || '',
+          fuelType: vehicleData.fuelType || '',
+          transmission: vehicleData.transmission || '',
+          planName: planName || '',
+          paymentType: paymentType,
+          totalPrice: pricingData?.totalPrice,
+          monthlyPrice: pricingData?.monthlyPrice
+        }
+      }).then(() => {
+        console.log('✅ Step 4 instant email sent successfully');
+      }).catch((error) => {
+        console.error('❌ Error sending step 4 instant email:', error);
+      });
+      
+      // Also track abandoned cart for step 4
+      trackAbandonedCart(vehicleData as VehicleData, 4, planName, paymentType);
+    }
   };
 
 
