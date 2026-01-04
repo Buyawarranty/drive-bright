@@ -36,97 +36,84 @@ export const CarDrivingLoader = ({ text = "Loading your quote..." }: { text?: st
           </div>
         </div>
         
-        {/* Car - side view - proper saloon/sedan shape */}
+        {/* Car - Modern SUV/Jeep shape */}
         <div className="absolute bottom-7 left-1/2 -translate-x-1/2 animate-[car-bounce_0.3s_ease-in-out_infinite]">
-          <svg width="72" height="36" viewBox="0 0 72 36" className="drop-shadow-lg">
-            {/* Car body - unified saloon shape, all orange */}
+          <svg width="72" height="38" viewBox="0 0 72 38" className="drop-shadow-lg">
+            {/* SUV Body - solid orange, boxy modern shape */}
             <path 
-              d="M6 22 L6 26 L66 26 L66 22 L62 18 L58 18 L58 22 L14 22 L14 18 L10 18 L6 22" 
-              fill="#ea580c"
-            />
-            {/* Upper body - smooth saloon roofline */}
-            <path 
-              d="M14 18 L18 18 L22 10 L50 10 L56 18 L58 18 L58 18 L14 18" 
-              fill="#ea580c"
-            />
-            {/* Roof - gentle curve */}
-            <path 
-              d="M22 10 L26 6 L46 6 L50 10 L22 10" 
-              fill="#ea580c"
-            />
-            {/* Hood (front/right) - sleek slope */}
-            <path 
-              d="M50 10 L56 18 L62 18 L62 16 L58 12 L50 10" 
-              fill="#ea580c"
-            />
-            {/* Trunk (rear/left) - classic saloon boot */}
-            <path 
-              d="M18 18 L22 10 L18 12 L14 18 L18 18" 
+              d="M8 28 L8 16 L14 16 L18 8 L54 8 L58 16 L64 16 L64 28 L8 28" 
               fill="#ea580c"
             />
             
-            {/* Front windshield */}
+            {/* Wheel wells (cutouts) */}
+            <path d="M12 28 L12 24 C12 21 15 18 20 18 C25 18 28 21 28 24 L28 28" fill="#374151" />
+            <path d="M44 28 L44 24 C44 21 47 18 52 18 C57 18 60 21 60 24 L60 28" fill="#374151" />
+            
+            {/* Front windshield - angled */}
             <path 
-              d="M46 6.5 L50 10 L50 12 L46 8 L46 6.5" 
+              d="M50 8 L54 8 L58 16 L54 16 L50 8" 
               fill="#bfdbfe" 
               opacity="0.9"
             />
             {/* Rear windshield */}
             <path 
-              d="M26 6.5 L22 10 L22 12 L26 8 L26 6.5" 
+              d="M18 8 L22 8 L18 16 L14 16 L18 8" 
               fill="#bfdbfe" 
               opacity="0.9"
             />
             {/* Side windows */}
-            <rect x="28" y="7" width="16" height="4" rx="1" fill="#bfdbfe" opacity="0.9" />
+            <rect x="24" y="9" width="24" height="6" rx="1" fill="#bfdbfe" opacity="0.9" />
             {/* Window pillar */}
-            <rect x="35" y="7" width="1" height="4" fill="#ea580c" />
+            <rect x="35" y="9" width="2" height="6" fill="#ea580c" />
             
-            {/* Front wheel (right side) */}
-            <g className="origin-center animate-[wheel-spin_0.3s_linear_infinite]" style={{ transformOrigin: '54px 26px' }}>
-              <circle cx="54" cy="26" r="6" fill="#1f2937" />
-              <circle cx="54" cy="26" r="4" fill="#4b5563" />
-              <circle cx="54" cy="26" r="1.5" fill="#9ca3af" />
-              <line x1="54" y1="22" x2="54" y2="30" stroke="#6b7280" strokeWidth="1" />
-              <line x1="50" y1="26" x2="58" y2="26" stroke="#6b7280" strokeWidth="1" />
+            {/* Roof rails */}
+            <rect x="20" y="6" width="32" height="2" rx="1" fill="#ea580c" />
+            
+            {/* Front wheel */}
+            <g className="origin-center animate-[wheel-spin_0.3s_linear_infinite]" style={{ transformOrigin: '52px 26px' }}>
+              <circle cx="52" cy="26" r="7" fill="#1f2937" />
+              <circle cx="52" cy="26" r="5" fill="#4b5563" />
+              <circle cx="52" cy="26" r="2" fill="#9ca3af" />
+              <line x1="52" y1="21" x2="52" y2="31" stroke="#6b7280" strokeWidth="1" />
+              <line x1="47" y1="26" x2="57" y2="26" stroke="#6b7280" strokeWidth="1" />
             </g>
             
-            {/* Rear wheel (left side) */}
-            <g className="origin-center animate-[wheel-spin_0.3s_linear_infinite]" style={{ transformOrigin: '18px 26px' }}>
-              <circle cx="18" cy="26" r="6" fill="#1f2937" />
-              <circle cx="18" cy="26" r="4" fill="#4b5563" />
-              <circle cx="18" cy="26" r="1.5" fill="#9ca3af" />
-              <line x1="18" y1="22" x2="18" y2="30" stroke="#6b7280" strokeWidth="1" />
-              <line x1="14" y1="26" x2="22" y2="26" stroke="#6b7280" strokeWidth="1" />
+            {/* Rear wheel */}
+            <g className="origin-center animate-[wheel-spin_0.3s_linear_infinite]" style={{ transformOrigin: '20px 26px' }}>
+              <circle cx="20" cy="26" r="7" fill="#1f2937" />
+              <circle cx="20" cy="26" r="5" fill="#4b5563" />
+              <circle cx="20" cy="26" r="2" fill="#9ca3af" />
+              <line x1="20" y1="21" x2="20" y2="31" stroke="#6b7280" strokeWidth="1" />
+              <line x1="15" y1="26" x2="25" y2="26" stroke="#6b7280" strokeWidth="1" />
             </g>
             
-            {/* Headlights at front (right side) */}
-            <ellipse cx="64" cy="18" rx="2" ry="2" fill="#fef3c7" className="animate-pulse" />
-            <ellipse cx="64" cy="22" rx="1.5" ry="1.5" fill="#fef3c7" opacity="0.8" />
+            {/* Headlights - modern LED style */}
+            <rect x="62" y="16" width="3" height="4" rx="1" fill="#fef3c7" className="animate-pulse" />
+            <rect x="62" y="21" width="3" height="3" rx="1" fill="#fef3c7" opacity="0.7" />
             
-            {/* Taillights at back (left side) */}
-            <rect x="6" y="17" width="2" height="3" rx="1" fill="#ef4444" className="animate-pulse" />
-            <rect x="6" y="21" width="2" height="2" rx="0.5" fill="#ef4444" opacity="0.7" />
+            {/* Taillights - modern LED strip */}
+            <rect x="7" y="16" width="2" height="4" rx="1" fill="#ef4444" className="animate-pulse" />
+            <rect x="7" y="21" width="2" height="3" rx="1" fill="#ef4444" opacity="0.7" />
             
-            {/* Front grille (right side) */}
-            <rect x="62" y="19" width="2" height="4" rx="0.5" fill="#1f2937" />
+            {/* Front grille */}
+            <rect x="63" y="18" width="2" height="6" rx="0.5" fill="#1f2937" />
             
             {/* Door handles */}
-            <rect x="32" y="14" width="3" height="1" rx="0.5" fill="#c2410c" />
-            <rect x="40" y="14" width="3" height="1" rx="0.5" fill="#c2410c" />
+            <rect x="30" y="16" width="3" height="1" rx="0.5" fill="#c2410c" />
+            <rect x="42" y="16" width="3" height="1" rx="0.5" fill="#c2410c" />
             
             {/* Side mirror */}
-            <rect x="52" y="10" width="2" height="2" rx="0.5" fill="#ea580c" />
+            <rect x="56" y="12" width="3" height="2" rx="0.5" fill="#ea580c" />
             
-            {/* Exhaust smoke at back (left side) */}
+            {/* Exhaust smoke */}
             <g className="animate-[exhaust_0.8s_ease-out_infinite]">
-              <circle cx="4" cy="24" r="2" fill="#9ca3af" opacity="0.4" />
+              <circle cx="5" cy="26" r="2" fill="#9ca3af" opacity="0.4" />
             </g>
             <g className="animate-[exhaust_0.8s_ease-out_infinite_0.2s]">
-              <circle cx="0" cy="22" r="1.5" fill="#9ca3af" opacity="0.3" />
+              <circle cx="1" cy="24" r="1.5" fill="#9ca3af" opacity="0.3" />
             </g>
             <g className="animate-[exhaust_0.8s_ease-out_infinite_0.4s]">
-              <circle cx="-3" cy="20" r="1" fill="#9ca3af" opacity="0.2" />
+              <circle cx="-2" cy="22" r="1" fill="#9ca3af" opacity="0.2" />
             </g>
           </svg>
         </div>
