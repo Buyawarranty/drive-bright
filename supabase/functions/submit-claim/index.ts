@@ -199,7 +199,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Prepare email with attachment
     const emailPayload: any = {
-      from: "BuyaWarranty Team <noreply@buyawarranty.co.uk>",
+      from: "Buyawarranty Customer Care <noreply@buyawarranty.co.uk>",
       to: ["claims@buyawarranty.co.uk", "info@buyawarranty.co.uk"],
       subject: emailSubject,
       html: emailHtml,
@@ -256,7 +256,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     await resend.emails.send({
-      from: "BuyaWarranty Team <claims@buyawarranty.co.uk>",
+      from: "Buyawarranty Customer Care <claims@buyawarranty.co.uk>",
       to: [email],
       subject: "Claim Submission Received",
       html: customerEmailHtml,

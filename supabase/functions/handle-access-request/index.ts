@@ -120,7 +120,7 @@ const handler = async (req: Request): Promise<Response> => {
       
       try {
         await resend.emails.send({
-          from: "BuyaWarranty Team <noreply@buyawarranty.co.uk>",
+          from: "Buyawarranty Customer Care <noreply@buyawarranty.co.uk>",
           to: ["info@buyawarranty.co.uk"],
           subject: `New Access Request from ${body.fullName} (${ROLE_LABELS[body.requestedRole] || body.requestedRole})`,
           html: `

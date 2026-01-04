@@ -184,7 +184,7 @@ serve(async (req) => {
 
     try {
       await resend.emails.send({
-        from: 'BuyaWarranty Team <noreply@buyawarranty.co.uk>',
+        from: 'Buyawarranty Customer Care <noreply@buyawarranty.co.uk>',
         to: [email],
         subject: 'Reset Your BuyaWarranty Portal Password',
         html: emailHtml,
