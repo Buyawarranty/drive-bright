@@ -42,6 +42,7 @@ import AddOnProtectionDisplay from '@/components/AddOnProtectionDisplay';
 import { W2KAuditLog } from './W2KAuditLog';
 import { WarrantyUpgradeDialog } from './WarrantyUpgradeDialog';
 import { InlineWarrantyUpgrade } from './InlineWarrantyUpgrade';
+import { InlineFutureActivationEdit } from './InlineFutureActivationEdit';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
@@ -3430,39 +3431,14 @@ Please log in and change your password after first login.`;
                     </TableCell>
                     {/* Future Activation Column */}
                     <TableCell className="text-center">
-                      {(() => {
-                        const startDate = customer.policy_start_date || customer.customer_policies?.[0]?.policy_start_date || customer.signup_date;
-                        const scheduledFor = customer.warranties_2000_scheduled_for;
-                        const w2000Status = customer.customer_policies?.[0]?.warranties_2000_status;
-                        const isFutureActivation = startDate && new Date(startDate) > new Date();
-                        const isScheduled = w2000Status === 'scheduled' && scheduledFor;
-                        
-                        if (isFutureActivation || isScheduled) {
-                          const activationDate = scheduledFor || startDate;
-                          const daysUntil = activationDate ? Math.ceil((new Date(activationDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0;
-                          
-                          return (
-                            <div className="bg-amber-100 border-2 border-amber-400 rounded-lg px-3 py-2 inline-block shadow-sm">
-                              <div className="flex items-center gap-1.5 text-amber-900 font-bold text-xs uppercase tracking-wide">
-                                <Clock className="h-3.5 w-3.5" />
-                                Future Activation
-                              </div>
-                              <div className="text-amber-800 font-semibold text-sm mt-1">
-                                {format(new Date(activationDate), 'dd MMM yyyy')}
-                              </div>
-                              <div className="text-amber-600 text-xs mt-0.5">
-                                {daysUntil > 0 ? `${daysUntil} day${daysUntil !== 1 ? 's' : ''} until activation` : 'Activates today'}
-                              </div>
-                              <div className="mt-1.5 flex items-center gap-1 text-xs text-amber-700">
-                                <AlertCircle className="h-3 w-3" />
-                                <span>Do not activate early</span>
-                              </div>
-                            </div>
-                          );
-                        }
-                        
-                        return <span className="text-gray-400 text-xs">—</span>;
-                      })()}
+                      <InlineFutureActivationEdit
+                        customerId={customer.id}
+                        policyId={(customer.customer_policies as any)?.[0]?.id}
+                        currentDate={(customer.customer_policies as any)?.[0]?.policy_start_date || customer.signup_date}
+                        scheduledFor={customer.warranties_2000_scheduled_for}
+                        w2000Status={(customer.customer_policies as any)?.[0]?.warranties_2000_status}
+                        onUpdate={fetchCustomers}
+                      />
                     </TableCell>
                     <TableCell className="text-center">
                       {customer.customer_policies?.[0]?.policy_start_date || customer.signup_date ? (
