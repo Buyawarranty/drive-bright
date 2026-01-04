@@ -120,7 +120,7 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     const emailResponse = await resend.emails.send({
-      from: "BuyaWarranty Team <support@buyawarranty.co.uk>",
+      from: "Buyawarranty Customer Care <support@buyawarranty.co.uk>",
       to: [email],
       subject,
       html: emailHtml,

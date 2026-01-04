@@ -236,7 +236,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailSubject = `Your ${vehicleDisplay} Warranty Quote is Ready – Lock in Your Price Today`;
     
     const emailResponse = await resend.emails.send({
-      from: "BuyaWarranty Team <noreply@buyawarranty.co.uk>",
+      from: "Buyawarranty Customer Care <noreply@buyawarranty.co.uk>",
       to: [data.email],
       subject: emailSubject,
       html: htmlContent,

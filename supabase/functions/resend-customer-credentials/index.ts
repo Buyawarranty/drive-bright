@@ -176,7 +176,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'BuyaWarranty Team <noreply@buyawarranty.co.uk>',
+        from: 'Buyawarranty Customer Care <noreply@buyawarranty.co.uk>',
         to: [email],
         subject: 'Your Customer Dashboard Login Details',
         html: emailHtml,

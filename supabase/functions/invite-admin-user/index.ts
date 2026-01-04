@@ -194,7 +194,7 @@ serve(async (req: Request) => {
     // Send invitation email
     try {
       await resend.emails.send({
-        from: 'BuyaWarranty Team <noreply@buyawarranty.co.uk>',
+        from: 'Buyawarranty Customer Care <noreply@buyawarranty.co.uk>',
         to: [email],
         subject: 'You\'ve been invited to the BuyaWarranty Admin Dashboard',
         html: `

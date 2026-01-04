@@ -72,7 +72,7 @@ const handler = async (req: Request): Promise<Response> => {
         await Promise.all(emailLogsPromises);
 
         const emailResponse = await resend.emails.send({
-          from: "BuyaWarranty Team <marketing@buyawarranty.co.uk>",
+          from: "Buyawarranty Customer Care <marketing@buyawarranty.co.uk>",
           to: batch,
           subject: subject,
           html: `

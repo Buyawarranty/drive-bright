@@ -158,7 +158,7 @@ const handler = async (req: Request): Promise<Response> => {
       `;
 
       const confirmationResponse = await resend.emails.send({
-        from: 'BuyaWarranty Team <support@buyawarranty.co.uk>',
+        from: 'Buyawarranty Customer Care <support@buyawarranty.co.uk>',
         to: [body.email],
         subject: 'Thank you for contacting BuyaWarranty',
         html: confirmationEmailContent,

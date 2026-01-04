@@ -285,7 +285,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailPayload = {
-      from: "BuyaWarranty Team <info@buyawarranty.co.uk>",
+      from: "Buyawarranty Customer Care <info@buyawarranty.co.uk>",
       to: [emailRequest.email],
       subject: subject,
       html: htmlContent,
