@@ -105,7 +105,7 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
               Over 120,000 miles
             </span>
           </div>
-          <span className="text-xs text-gray-400 ml-8 mt-1">(Up to 150,000 miles)</span>
+          <span className="text-xs text-gray-400 ml-8 mt-1 font-bold">(Up to 150,000 miles)</span>
         </label>
       </div>
       
