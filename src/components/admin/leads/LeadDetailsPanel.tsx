@@ -103,12 +103,31 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
       {/* Single Card with Everything */}
       <Card className="border-2 border-primary/30 shadow-sm">
         <CardContent className="p-0">
-          {/* Header Row - Vehicle Info, Notes Title, Quick Actions, Contact Details Button */}
+          {/* Header Row - All left-aligned */}
           <div 
-            className="flex flex-wrap items-center gap-3 p-4 border-b bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
+            className="flex items-center gap-3 p-4 border-b bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
             onClick={() => setNotesOpen(!notesOpen)}
           >
-            {/* Left Side - Quick Actions */}
+            {/* Expand/Collapse Chevron - First and prominent */}
+            <Button
+              variant={notesOpen ? "default" : "outline"}
+              size="icon"
+              className={cn(
+                "h-10 w-10 flex-shrink-0 transition-all",
+                notesOpen 
+                  ? "bg-primary text-primary-foreground shadow-md" 
+                  : "border-2 border-primary/50 hover:border-primary hover:bg-primary/10"
+              )}
+              onClick={(e) => { e.stopPropagation(); setNotesOpen(!notesOpen); }}
+            >
+              {notesOpen ? (
+                <ChevronUp className="h-6 w-6" strokeWidth={3} />
+              ) : (
+                <ChevronDown className="h-6 w-6" strokeWidth={3} />
+              )}
+            </Button>
+
+            {/* Quick Actions */}
             <div className="flex items-center gap-2 flex-shrink-0">
               <Button
                 variant="outline"
@@ -165,15 +184,8 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
             {/* Spacer */}
             <div className="flex-1" />
 
-            {/* Notes Title + Close Chevron */}
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-lg">Notes</h3>
-              {notesOpen ? (
-                <ChevronUp className="h-5 w-5 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="h-5 w-5 text-muted-foreground" />
-              )}
-            </div>
+            {/* Notes Title */}
+            <h3 className="font-semibold text-lg">Notes</h3>
 
             {/* Contact Details Button */}
             <Button
@@ -195,10 +207,10 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
             </Button>
           </div>
 
-          {/* Contact Details - Collapsible inline */}
+          {/* Contact Details - Collapsible inline, left-aligned */}
           {contactOpen && (
             <div className="p-4 border-b bg-muted/20">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-left">
                 <div>
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Email</label>
                   <p className="text-sm font-medium mt-0.5">{lead.email}</p>
@@ -305,7 +317,7 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
                 ) : (
                   <div
                     className={cn(
-                      "min-h-[120px] p-4 rounded-lg border-2 border-dashed cursor-pointer transition-all",
+                      "min-h-[120px] p-4 rounded-lg border-2 border-dashed cursor-pointer transition-all text-left",
                       lead.notes 
                         ? "border-muted bg-muted/20 hover:border-primary/30 hover:bg-muted/30"
                         : "border-primary/30 bg-primary/5 hover:border-primary/50 hover:bg-primary/10"
@@ -317,12 +329,12 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
                   >
                     {lead.notes ? (
                       <div className="space-y-2">
-                        <pre className="text-sm whitespace-pre-wrap font-sans leading-relaxed text-foreground">
+                        <pre className="text-sm whitespace-pre-wrap font-sans leading-relaxed text-foreground text-left">
                           {lead.notes}
                         </pre>
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center justify-center h-full text-center py-4">
+                      <div className="flex flex-col items-start justify-center h-full py-4">
                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
                           <MessageSquare className="h-5 w-5 text-primary" />
                         </div>
@@ -336,10 +348,10 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
                 )}
               </div>
 
-              {/* Timestamp Footer - Bold */}
+              {/* Timestamp Footer - Bold, left-aligned */}
               {lead.notes && !isEditing && (
                 <div className="px-4 pb-4">
-                  <div className="flex items-center gap-2 text-xs">
+                  <div className="flex items-center gap-2 text-xs text-left">
                     <Clock className="h-3 w-3 text-muted-foreground" />
                     <span className="font-bold text-foreground">
                       Last updated {format(new Date(), 'dd MMM yyyy, HH:mm')}

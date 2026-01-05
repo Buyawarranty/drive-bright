@@ -265,18 +265,24 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
 
                   {/* Quick Actions */}
                   <TableCell onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center gap-0.5">
+                    <div className="flex items-center gap-1">
+                      {/* Expand/Collapse - Primary action, larger and more prominent */}
                       <Button 
-                        variant="ghost" 
+                        variant={expandedLead === lead.id ? "default" : "outline"}
                         size="icon"
-                        className="h-7 w-7"
+                        className={cn(
+                          "h-8 w-8 transition-all",
+                          expandedLead === lead.id 
+                            ? "bg-primary text-primary-foreground shadow-md" 
+                            : "border-2 border-primary/50 hover:border-primary hover:bg-primary/10"
+                        )}
                         onClick={() => setExpandedLead(expandedLead === lead.id ? null : lead.id)}
-                        title={expandedLead === lead.id ? "Collapse" : "Expand details"}
+                        title={expandedLead === lead.id ? "Close notes" : "Open notes & details"}
                       >
                         {expandedLead === lead.id ? (
-                          <ChevronUp className="h-3.5 w-3.5" />
+                          <ChevronUp className="h-5 w-5" strokeWidth={3} />
                         ) : (
-                          <ChevronDown className="h-3.5 w-3.5" />
+                          <ChevronDown className="h-5 w-5" strokeWidth={3} />
                         )}
                       </Button>
                       <Button 
