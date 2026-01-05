@@ -167,10 +167,11 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/30">
-            <TableHead className="sticky left-0 bg-muted/30 z-10 w-[100px] min-w-[100px]">Next Action</TableHead>
+            <TableHead className="sticky left-0 bg-muted/30 z-10 w-[120px] min-w-[120px]">Assigned To</TableHead>
             <TableHead className="w-[100px]">Status</TableHead>
             <TableHead className="w-[120px]">Actions</TableHead>
             <TableHead className="w-[90px]">Payment</TableHead>
+            <TableHead className="w-[100px]">Next Action</TableHead>
             <TableHead className="w-[90px]">Urgency</TableHead>
             <TableHead className="w-[120px]">Name</TableHead>
             <TableHead className="w-[160px]">Phone</TableHead>
@@ -180,7 +181,6 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
             <TableHead className="w-[90px]">Reg Plate</TableHead>
             <TableHead className="w-[70px] text-right">Mileage</TableHead>
             <TableHead className="w-[140px]">Tags</TableHead>
-            <TableHead className="w-[120px]">Assigned To</TableHead>
             <TableHead className="w-[100px]">Last Activity</TableHead>
             <TableHead className="w-[100px]">Date Created</TableHead>
           </TableRow>
@@ -199,69 +199,42 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                   )}
                   onClick={() => setExpandedLead(expandedLead === lead.id ? null : lead.id)}
                 >
-                  {/* Next Action - Sticky */}
+                  {/* Assigned To - First column, Sticky */}
                   <TableCell className="sticky left-0 bg-inherit z-10" onClick={(e) => e.stopPropagation()}>
-                    {lead.next_action_date ? (
-                      <div className={cn(
-                        "text-xs",
-                        isOverdue(lead) && "text-red-600 font-semibold"
+                    <Select
+                      value={lead.assigned_to || 'unassigned'}
+                      onValueChange={(value) => {
+                        if (!lead.is_from_abandoned_cart) {
+                          if (value === 'auto') {
+                            onAutoAssign(lead.id);
+                          } else {
+                            onAssign(lead.id, value === 'unassigned' ? null : value);
+                          }
+                        }
+                      }}
+                      disabled={lead.is_from_abandoned_cart}
+                    >
+                      <SelectTrigger className={cn(
+                        "w-[110px] h-7 text-xs",
+                        !lead.assigned_to && "border-amber-400 bg-amber-50"
                       )}>
-                        <div className="flex items-center gap-1 font-medium">
-                          {lead.next_action_type === 'call' && <Phone className="h-3 w-3" />}
-                          {lead.next_action_type === 'email' && <Mail className="h-3 w-3" />}
-                          {lead.next_action_type === 'meeting' && <User className="h-3 w-3" />}
-                          {lead.next_action_type === 'sms' && <MessageSquare className="h-3 w-3" />}
-                          {getNextActionLabel(lead)}
-                        </div>
-                        <div className="text-muted-foreground">
-                          {format(new Date(lead.next_action_date), 'MMM d, HH:mm')}
-                        </div>
-                      </div>
-                    ) : (
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button variant="outline" size="sm" className="h-7 text-xs w-full">
-                            <CalendarIcon className="h-3 w-3 mr-1" />
-                            Schedule
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-3">
-                          <div className="space-y-3">
-                            <Select value={followUpType} onValueChange={setFollowUpType}>
-                              <SelectTrigger className="w-full">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="call">📞 Call</SelectItem>
-                                <SelectItem value="email">✉️ Email</SelectItem>
-                                <SelectItem value="whatsapp">💬 WhatsApp</SelectItem>
-                                <SelectItem value="sms">📱 SMS</SelectItem>
-                                <SelectItem value="quote">📄 Send quote</SelectItem>
-                                <SelectItem value="meeting">👤 Meeting</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <Calendar
-                              mode="single"
-                              selected={followUpDate}
-                              onSelect={setFollowUpDate}
-                            />
-                            <Button 
-                              size="sm" 
-                              className="w-full"
-                              disabled={!followUpDate}
-                              onClick={() => {
-                                if (followUpDate) {
-                                  onScheduleFollowUp(lead.id, followUpType, followUpDate.toISOString());
-                                  setFollowUpDate(undefined);
-                                }
-                              }}
-                            >
-                              Schedule
-                            </Button>
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                    )}
+                        <SelectValue placeholder="Unassigned">
+                          {lead.assigned_user 
+                            ? `${lead.assigned_user.first_name || ''} ${lead.assigned_user.last_name || ''}`.trim() || lead.assigned_user.email.split('@')[0]
+                            : 'Unassigned'
+                          }
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unassigned">Unassigned</SelectItem>
+                        <SelectItem value="auto">🔄 Auto-assign</SelectItem>
+                        {salesUsers.map((user) => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </TableCell>
 
                   {/* Status */}
@@ -290,7 +263,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                     </Select>
                   </TableCell>
 
-                  {/* Quick Actions - Moved to 3rd column */}
+                  {/* Quick Actions */}
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-0.5">
                       <Button 
@@ -382,6 +355,71 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                       </div>
                     ) : (
                       <span className="text-muted-foreground text-xs">—</span>
+                    )}
+                  </TableCell>
+
+                  {/* Next Action - After Payment */}
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    {lead.next_action_date ? (
+                      <div className={cn(
+                        "text-xs",
+                        isOverdue(lead) && "text-red-600 font-semibold"
+                      )}>
+                        <div className="flex items-center gap-1 font-medium">
+                          {lead.next_action_type === 'call' && <Phone className="h-3 w-3" />}
+                          {lead.next_action_type === 'email' && <Mail className="h-3 w-3" />}
+                          {lead.next_action_type === 'meeting' && <User className="h-3 w-3" />}
+                          {lead.next_action_type === 'sms' && <MessageSquare className="h-3 w-3" />}
+                          {getNextActionLabel(lead)}
+                        </div>
+                        <div className="text-muted-foreground">
+                          {format(new Date(lead.next_action_date), 'MMM d, HH:mm')}
+                        </div>
+                      </div>
+                    ) : (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" size="sm" className="h-7 text-xs w-full">
+                            <CalendarIcon className="h-3 w-3 mr-1" />
+                            Schedule
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-3">
+                          <div className="space-y-3">
+                            <Select value={followUpType} onValueChange={setFollowUpType}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="call">📞 Call</SelectItem>
+                                <SelectItem value="email">✉️ Email</SelectItem>
+                                <SelectItem value="whatsapp">💬 WhatsApp</SelectItem>
+                                <SelectItem value="sms">📱 SMS</SelectItem>
+                                <SelectItem value="quote">📄 Send quote</SelectItem>
+                                <SelectItem value="meeting">👤 Meeting</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Calendar
+                              mode="single"
+                              selected={followUpDate}
+                              onSelect={setFollowUpDate}
+                            />
+                            <Button 
+                              size="sm" 
+                              className="w-full"
+                              disabled={!followUpDate}
+                              onClick={() => {
+                                if (followUpDate) {
+                                  onScheduleFollowUp(lead.id, followUpType, followUpDate.toISOString());
+                                  setFollowUpDate(undefined);
+                                }
+                              }}
+                            >
+                              Schedule
+                            </Button>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
                     )}
                   </TableCell>
 
@@ -614,44 +652,6 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                         </PopoverContent>
                       </Popover>
                     </div>
-                  </TableCell>
-
-                  {/* Assigned To */}
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <Select
-                      value={lead.assigned_to || 'unassigned'}
-                      onValueChange={(value) => {
-                        if (!lead.is_from_abandoned_cart) {
-                          if (value === 'auto') {
-                            onAutoAssign(lead.id);
-                          } else {
-                            onAssign(lead.id, value === 'unassigned' ? null : value);
-                          }
-                        }
-                      }}
-                      disabled={lead.is_from_abandoned_cart}
-                    >
-                      <SelectTrigger className={cn(
-                        "w-[110px] h-7 text-xs",
-                        !lead.assigned_to && "border-amber-400 bg-amber-50"
-                      )}>
-                        <SelectValue placeholder="Unassigned">
-                          {lead.assigned_user 
-                            ? `${lead.assigned_user.first_name || ''} ${lead.assigned_user.last_name || ''}`.trim() || lead.assigned_user.email.split('@')[0]
-                            : 'Unassigned'
-                          }
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="unassigned">Unassigned</SelectItem>
-                        <SelectItem value="auto">🔄 Auto-assign</SelectItem>
-                        {salesUsers.map((user) => (
-                          <SelectItem key={user.id} value={user.id}>
-                            {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
                   </TableCell>
 
                   {/* Last Activity */}
