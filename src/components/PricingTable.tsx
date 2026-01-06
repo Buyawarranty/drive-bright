@@ -473,6 +473,53 @@ const PricingTable: React.FC<PricingTableProps> = ({
     trackPricingPageView();
   }, []); // Only run once when component mounts
 
+  // Restore quote settings from localStorage if available (set by email quote restoration)
+  useEffect(() => {
+    try {
+      const savedQuoteSettings = localStorage.getItem('buyawarranty_quotePlanSettings');
+      if (savedQuoteSettings) {
+        const settings = JSON.parse(savedQuoteSettings);
+        console.log('📧 Restoring quote settings from email link:', settings);
+        
+        // Only restore if we don't have previous props (user came from email, not back navigation)
+        if (!previousPaymentType && !previousClaimLimit && !previousLabourRate) {
+          if (settings.paymentType && ['12months', '24months', '36months'].includes(settings.paymentType)) {
+            setPaymentType(settings.paymentType);
+          }
+          if (settings.claimLimit && [750, 1250, 2000].includes(settings.claimLimit)) {
+            setSelectedClaimLimit(settings.claimLimit);
+          }
+          if (settings.labourRate && [50, 70, 100, 200].includes(settings.labourRate)) {
+            setSelectedLabourRate(settings.labourRate);
+          }
+          if (typeof settings.voluntaryExcess === 'number') {
+            setVoluntaryExcess(settings.voluntaryExcess);
+          }
+          if (typeof settings.boostAddon === 'boolean') {
+            setBoostAddon(settings.boostAddon);
+          }
+          if (settings.addOns && Array.isArray(settings.addOns)) {
+            const restoredAddOns: {[key: string]: boolean} = {};
+            settings.addOns.forEach((addon: string) => {
+              restoredAddOns[addon] = true;
+            });
+            if (Object.keys(restoredAddOns).length > 0) {
+              setSelectedProtectionAddOns(prev => ({ ...prev, ...restoredAddOns }));
+            }
+          }
+          
+          // Mark as restoring from previous to prevent auto-inclusion overrides
+          isRestoringFromPrevious.current = true;
+        }
+        
+        // Clear the stored settings after restoration
+        localStorage.removeItem('buyawarranty_quotePlanSettings');
+      }
+    } catch (error) {
+      console.error('Error restoring quote settings:', error);
+    }
+  }, []);
+
   // Fetch reliability score when component loads
   useEffect(() => {
     if (vehicleData?.regNumber && vt === 'car') {
@@ -1062,7 +1109,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
           selectedPlan: {
             name: 'Platinum Complete Plan',
             price: displayedMonthlyPrice,
-            paymentType: emailQuoteDuration
+            paymentType: emailQuoteDuration,
+            claimLimit: selectedClaimLimit,
+            labourRate: selectedLabourRate,
+            voluntaryExcess: voluntaryExcess,
+            boostAddon: boostAddon,
+            addOns: selectedProtectionAddOns
           }
         }
       });
