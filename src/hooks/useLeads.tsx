@@ -52,6 +52,8 @@ export interface Lead {
   step_abandoned: number | null;
   contact_status: string | null;
   is_from_abandoned_cart: boolean;
+  // Application count - how many times they've applied (hot lead indicator)
+  application_count: number;
   // Joined data
   assigned_user?: {
     id: string;
@@ -213,9 +215,24 @@ export const useLeads = () => {
       const allLeads = [...salesLeadsWithFlags, ...cartsAsLeads]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
+      // Calculate application count per email (how many times this email has applied)
+      const emailCounts: Record<string, number> = {};
+      allLeads.forEach((lead: any) => {
+        const email = lead.email?.toLowerCase();
+        if (email) {
+          emailCounts[email] = (emailCounts[email] || 0) + 1;
+        }
+      });
+
+      // Add application count to each lead
+      const leadsWithCounts = allLeads.map((lead: any) => ({
+        ...lead,
+        application_count: emailCounts[lead.email?.toLowerCase()] || 1
+      }));
+
       // Fetch tags for sales leads only
       const leadsWithTags = await Promise.all(
-        allLeads.map(async (lead: any) => {
+        leadsWithCounts.map(async (lead: any) => {
           if (lead.is_from_abandoned_cart) {
             return lead;
           }

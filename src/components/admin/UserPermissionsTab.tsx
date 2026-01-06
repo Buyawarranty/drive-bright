@@ -38,7 +38,7 @@ interface Permission {
 const ADMIN_TABS = [
   { id: 'get-quote', label: 'Send a Quote', description: 'Generate and send quotes to customers' },
   { id: 'customers', label: 'Customers', description: 'Manage customer accounts and policies' },
-  { id: 'leads', label: 'Leads', description: 'Manage sales leads and CRM' },
+  { id: 'new-leads', label: 'New Leads', description: 'Manage sales pipeline and lead assignments' },
   { id: 'plans', label: 'Standard Plans', description: 'Manage Basic, Gold, and Platinum plans' },
   { id: 'bulk-pricing', label: 'Bulk Pricing', description: 'Update pricing using CSV files' },
   { id: 'special-plans', label: 'Special Vehicle Plans', description: 'Manage EV, PHEV, and Motorbike plans' },

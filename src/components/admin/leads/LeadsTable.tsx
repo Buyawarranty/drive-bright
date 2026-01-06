@@ -10,7 +10,7 @@ import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, 
   Tag, User, Clock, AlertTriangle, Copy, FileText, StickyNote,
-  CheckCircle, CreditCard, ChevronDown, ChevronUp, Send, ExternalLink
+  CheckCircle, CreditCard, ChevronDown, ChevronUp, Send, ExternalLink, Flame
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -490,6 +490,16 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                   <TableCell>
                     <div className="flex items-center gap-1.5">
                       {isOverdue(lead) && <AlertTriangle className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />}
+                      {/* Hot Lead Indicator - Applied multiple times */}
+                      {lead.application_count > 1 && (
+                        <Badge 
+                          className="text-[10px] px-1.5 py-0.5 bg-orange-500 text-white border-0 flex items-center gap-0.5 flex-shrink-0"
+                          title={`Applied ${lead.application_count} times - Hot Lead!`}
+                        >
+                          <Flame className="h-3 w-3" />
+                          {lead.application_count}x
+                        </Badge>
+                      )}
                       {displayName ? (
                         <span className="font-medium text-sm truncate max-w-[100px]" title={displayName}>
                           {displayName}
