@@ -30,6 +30,11 @@ interface QuoteEmailRequest {
     name: string;
     price: number;
     paymentType: string;
+    claimLimit?: number;
+    labourRate?: number;
+    voluntaryExcess?: number;
+    boostAddon?: boolean;
+    addOns?: string[];
   };
   quoteId?: string;
 }
@@ -120,7 +125,7 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
           
           <!-- CTA Button - Orange with enhanced glow effect -->
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${baseUrl}/?quoteId=${quoteId}" style="background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: #ffffff; padding: 20px 45px; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 20px; display: inline-block; box-shadow: 0 0 20px rgba(249, 115, 22, 0.5), 0 0 40px rgba(249, 115, 22, 0.3), 0 8px 20px rgba(234, 88, 12, 0.4); border: 2px solid #f97316;">
+            <a href="${baseUrl}/?quote=${quoteId}&email=${encodeURIComponent(email)}&step=3" style="background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: #ffffff; padding: 20px 45px; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 20px; display: inline-block; box-shadow: 0 0 20px rgba(249, 115, 22, 0.5), 0 0 40px rgba(249, 115, 22, 0.3), 0 8px 20px rgba(234, 88, 12, 0.4); border: 2px solid #f97316;">
               View My Quote Now →
             </a>
           </div>
@@ -205,7 +210,11 @@ const handler = async (req: Request): Promise<Response> => {
     // Always use production URL for email links
     const baseUrl = 'https://buyawarranty.co.uk';
     
-    logStep('Email URL generation', { baseUrl, quoteId });
+    logStep('Email URL generation', { baseUrl, quoteId, email: data.email });
+    
+    // Build complete quote link with proper parameters for restoration
+    const quoteLink = `${baseUrl}/?quote=${quoteId}&email=${encodeURIComponent(data.email)}&step=3`;
+    logStep('Generated quote link', { quoteLink });
     
     // Store quote data in database for restoration
     try {
