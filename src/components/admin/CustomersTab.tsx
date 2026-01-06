@@ -44,6 +44,7 @@ import { W2KAuditLog } from './W2KAuditLog';
 import { WarrantyUpgradeDialog } from './WarrantyUpgradeDialog';
 import { InlineWarrantyUpgrade } from './InlineWarrantyUpgrade';
 import { InlineFutureActivationEdit } from './InlineFutureActivationEdit';
+import { InlineUpgradeCell } from './InlineUpgradeCell';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
@@ -1969,9 +1970,11 @@ export const CustomersTab = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Customer Management</h2>
-        <div className="flex space-x-2">
+        <div className="flex items-center gap-3">
           <ManualOrderEntry />
+          <h2 className="text-2xl font-bold text-gray-900">Customer Management</h2>
+        </div>
+        <div className="flex space-x-2">
           <Button 
             onClick={fetchCustomers} 
             variant="outline"
@@ -2280,6 +2283,7 @@ export const CustomersTab = () => {
               <TableHead>Dur.</TableHead>
               <TableHead>Start Date</TableHead>
               <TableHead className="bg-amber-50">Future Activation</TableHead>
+              <TableHead className="bg-gradient-to-r from-amber-50 to-orange-50">Upgrade</TableHead>
               <TableHead>Expiry Date</TableHead>
               <TableHead>Payment Method</TableHead>
               <TableHead>Vol. Excess</TableHead>
@@ -2299,7 +2303,7 @@ export const CustomersTab = () => {
           <TableBody>
             {filteredCustomers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={29} className="text-center py-8">
+                <TableCell colSpan={30} className="text-center py-8">
                   <div className="space-y-4">
                     <AlertCircle className="h-12 w-12 text-gray-400 mx-auto" />
                     <div>
@@ -3449,6 +3453,29 @@ Please log in and change your password after first login.`;
                         scheduledFor={customer.warranties_2000_scheduled_for}
                         w2000Status={(customer.customer_policies as any)?.[0]?.warranties_2000_status}
                         onUpdate={fetchCustomers}
+                      />
+                    </TableCell>
+                    {/* Upgrade Column */}
+                    <TableCell className="text-center">
+                      <InlineUpgradeCell
+                        customerId={customer.id}
+                        customerEmail={customer.email}
+                        customerName={customer.name}
+                        registrationPlate={customer.registration_plate || ''}
+                        currentClaimLimit={customer.claim_limit || 1250}
+                        currentLabourRate={customer.labour_rate || 70}
+                        currentExcess={customer.voluntary_excess || 100}
+                        onUpdate={fetchCustomers}
+                        tyreCover={customer.tyre_cover}
+                        wearTear={customer.wear_tear}
+                        europeCover={customer.europe_cover}
+                        transferCover={customer.transfer_cover}
+                        breakdownRecovery={customer.breakdown_recovery}
+                        vehicleRental={customer.vehicle_rental}
+                        motFee={customer.mot_fee}
+                        motRepair={customer.mot_repair}
+                        lostKey={customer.lost_key}
+                        consequential={customer.consequential}
                       />
                     </TableCell>
                     <TableCell className="text-center">
