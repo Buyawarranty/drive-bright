@@ -17,28 +17,6 @@ import { toast } from 'sonner';
 import { format, formatDistanceToNow, isPast, differenceInHours, differenceInDays, isToday } from 'date-fns';
 import { cn } from '@/lib/utils';
 
-// Click sound effect using Web Audio API
-const playClickSound = () => {
-  try {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.frequency.value = 800;
-    oscillator.type = 'sine';
-    
-    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.1);
-  } catch (e) {
-    // Audio not supported, fail silently
-  }
-};
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -309,12 +287,10 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                         )}
                         onMouseEnter={() => {
                           if (expandedLead !== lead.id) {
-                            playClickSound();
                             setExpandedLead(lead.id);
                           }
                         }}
                         onClick={() => {
-                          playClickSound();
                           setExpandedLead(expandedLead === lead.id ? null : lead.id);
                         }}
                         title={expandedLead === lead.id ? "Close notes" : "Hover or click to open"}
