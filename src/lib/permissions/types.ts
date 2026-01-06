@@ -62,6 +62,7 @@ export interface PermissionPolicy {
 
 // Tab definitions for the admin panel
 export const ADMIN_TAB_DEFINITIONS = [
+  { id: 'new-leads', key: 'new_leads', label: 'New Leads', description: 'Manage sales pipeline and lead assignments', category: 'Sales' },
   { id: 'get-quote', key: 'get_quote', label: 'Send a Quote', description: 'Generate and send quotes to customers', category: 'Sales' },
   { id: 'customers', key: 'customers', label: 'Customers', description: 'Manage customer accounts and policies', category: 'Sales' },
   { id: 'plans', key: 'plans', label: 'Standard Plans', description: 'Manage Basic, Gold, and Platinum plans', category: 'Products' },
