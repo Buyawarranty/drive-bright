@@ -499,7 +499,7 @@ const AdminDashboard = () => {
         <AdminSidebar activeTab={activeTab} onTabChange={setActiveTab} userRole={userRole} userPermissions={userPermissions} />
         
         <div className="flex-1 lg:ml-64 overflow-hidden">
-          <main className="p-4 lg:p-6 overflow-y-auto h-[calc(100vh-80px)]">
+          <main className="p-4 lg:p-6 overflow-y-auto h-[calc(100vh-104px)]">
             {renderContent()}
           </main>
         </div>
