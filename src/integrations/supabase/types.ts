@@ -2432,6 +2432,42 @@ export type Database = {
           },
         ]
       }
+      lead_reminders: {
+        Row: {
+          created_at: string
+          id: string
+          label: string | null
+          lead_id: string
+          reminder_time: string
+          snoozed_until: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          lead_id: string
+          reminder_time: string
+          snoozed_until?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          lead_id?: string
+          reminder_time?: string
+          snoozed_until?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       lead_tag_assignments: {
         Row: {
           assigned_at: string
