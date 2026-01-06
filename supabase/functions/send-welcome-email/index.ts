@@ -213,9 +213,9 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || 'https://mzlpuxzwyrcyrgrongeb.supabase.co';
     
     // Construct direct public URLs for documents in Storage
-    // Always use Platinum warranty plan for all purchases
+    // Always use Platinum warranty plan v2.3 for all purchases
     const termsStoragePath = 'terms/Terms-and-Conditions-v2.3.pdf';
-    const platinumPlanPath = 'platinum/Platinum-Warranty-Plan_v2.7.pdf';
+    const platinumPlanPath = 'platinum/Platinum-Warranty-Plan-v2.3.pdf';
     
     const termsDoc = {
       file_url: `${supabaseUrl}/storage/v1/object/public/policy-documents/${termsStoragePath}`,
@@ -224,7 +224,7 @@ serve(async (req) => {
     
     const planDoc = {
       file_url: `${supabaseUrl}/storage/v1/object/public/policy-documents/${platinumPlanPath}`,
-      document_name: 'Platinum-Warranty-Plan-v2.7.pdf'
+      document_name: 'Platinum-Warranty-Plan-v2.3.pdf'
     };
     
     logStep("Document URLs constructed", { 
