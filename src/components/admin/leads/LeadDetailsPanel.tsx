@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Lead } from '@/hooks/useLeads';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,6 +13,29 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+
+// Click sound effect using Web Audio API
+const playClickSound = () => {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 800;
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.1);
+  } catch (e) {
+    // Audio not supported, fail silently
+  }
+};
 
 interface LeadDetailsPanelProps {
   lead: Lead;
@@ -106,19 +129,29 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
           {/* Header Row - All left-aligned */}
           <div 
             className="flex items-center gap-3 p-4 border-b bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
-            onClick={() => setNotesOpen(!notesOpen)}
+            onClick={() => { playClickSound(); setNotesOpen(!notesOpen); }}
           >
-            {/* Expand/Collapse Chevron - First and prominent */}
+            {/* Expand/Collapse Chevron - First and prominent, hover to toggle with sound */}
             <Button
               variant={notesOpen ? "default" : "outline"}
               size="icon"
               className={cn(
-                "h-10 w-10 flex-shrink-0 transition-all",
+                "h-10 w-10 flex-shrink-0 transition-all duration-100",
                 notesOpen 
-                  ? "bg-primary text-primary-foreground shadow-md" 
-                  : "border-2 border-primary/50 hover:border-primary hover:bg-primary/10"
+                  ? "bg-primary text-primary-foreground shadow-lg scale-105" 
+                  : "border-2 border-primary hover:border-primary hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-lg"
               )}
-              onClick={(e) => { e.stopPropagation(); setNotesOpen(!notesOpen); }}
+              onMouseEnter={() => {
+                if (!notesOpen) {
+                  playClickSound();
+                  setNotesOpen(true);
+                }
+              }}
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                playClickSound();
+                setNotesOpen(!notesOpen); 
+              }}
             >
               {notesOpen ? (
                 <ChevronUp className="h-6 w-6" strokeWidth={3} />

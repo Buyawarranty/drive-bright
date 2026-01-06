@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { Lead, LeadStatus, LeadPriority, LeadTag, AdminUser } from '@/hooks/useLeads';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,29 @@ import {
 import { toast } from 'sonner';
 import { format, formatDistanceToNow, isPast, differenceInHours, differenceInDays, isToday } from 'date-fns';
 import { cn } from '@/lib/utils';
+
+// Click sound effect using Web Audio API
+const playClickSound = () => {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 800;
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.1);
+  } catch (e) {
+    // Audio not supported, fail silently
+  }
+};
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -266,18 +289,27 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                   {/* Quick Actions */}
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-1">
-                      {/* Expand/Collapse - Primary action, larger and more prominent */}
+                      {/* Expand/Collapse - Primary action, hover to open instantly with sound */}
                       <Button 
                         variant={expandedLead === lead.id ? "default" : "outline"}
                         size="icon"
                         className={cn(
-                          "h-8 w-8 transition-all",
+                          "h-9 w-9 transition-all duration-100",
                           expandedLead === lead.id 
-                            ? "bg-primary text-primary-foreground shadow-md" 
-                            : "border-2 border-primary/50 hover:border-primary hover:bg-primary/10"
+                            ? "bg-primary text-primary-foreground shadow-lg scale-105" 
+                            : "border-2 border-primary hover:border-primary hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-lg"
                         )}
-                        onClick={() => setExpandedLead(expandedLead === lead.id ? null : lead.id)}
-                        title={expandedLead === lead.id ? "Close notes" : "Open notes & details"}
+                        onMouseEnter={() => {
+                          if (expandedLead !== lead.id) {
+                            playClickSound();
+                            setExpandedLead(lead.id);
+                          }
+                        }}
+                        onClick={() => {
+                          playClickSound();
+                          setExpandedLead(expandedLead === lead.id ? null : lead.id);
+                        }}
+                        title={expandedLead === lead.id ? "Close notes" : "Hover or click to open"}
                       >
                         {expandedLead === lead.id ? (
                           <ChevronUp className="h-5 w-5" strokeWidth={3} />
