@@ -4,16 +4,17 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
   Phone, Mail, MessageSquare, Car, User, 
   ChevronDown, ChevronUp, Bold, Italic, List, 
-  Clock, Save, X
+  Clock, Save, X, Plus
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-
+import { ManualOrderEntry } from '../ManualOrderEntry';
 // Click sound effect using Web Audio API
 const playClickSound = () => {
   try {
@@ -52,6 +53,22 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   const [notesValue, setNotesValue] = useState(lead.notes || '');
   const [contactOpen, setContactOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(true);
+  const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
+
+  // Prepare customer data for ManualOrderEntry pre-fill
+  const customerDataForOrder = {
+    id: lead.id,
+    name: lead.first_name && lead.last_name 
+      ? `${lead.first_name} ${lead.last_name}` 
+      : lead.full_name || '',
+    email: lead.email,
+    phone: lead.phone || '',
+    registration_plate: lead.vehicle_reg || '',
+    vehicle_make: lead.vehicle_make || '',
+    vehicle_model: lead.vehicle_model || '',
+    vehicle_year: lead.vehicle_year || '',
+    mileage: lead.mileage || '',
+  };
 
   const handleSaveNotes = () => {
     onUpdateNotes(lead.id, notesValue);
@@ -188,6 +205,19 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
               >
                 <MessageSquare className="h-4 w-4 mr-1.5" />
                 WhatsApp
+              </Button>
+              
+              {/* Create Order Button */}
+              <Button
+                size="sm"
+                className="h-8 bg-primary hover:bg-primary/90"
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  setIsOrderDialogOpen(true); 
+                }}
+              >
+                <Plus className="h-4 w-4 mr-1.5" />
+                Create Order
               </Button>
             </div>
 
@@ -396,6 +426,16 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
           )}
         </CardContent>
       </Card>
+
+      {/* Manual Order Entry Dialog */}
+      <Dialog open={isOrderDialogOpen} onOpenChange={setIsOrderDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+          <ManualOrderEntry 
+            customerToEdit={customerDataForOrder}
+            onClose={() => setIsOrderDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
