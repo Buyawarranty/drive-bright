@@ -9,12 +9,14 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { 
   Phone, Mail, MessageSquare, Car, User, 
   ChevronDown, ChevronUp, Bold, Italic, List, 
-  Clock, Save, X, Plus
+  Clock, Save, X, Plus, StickyNote
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { ManualOrderEntry } from '../ManualOrderEntry';
+import { InlineQuickNote } from './InlineQuickNote';
+import { RemindMePopover } from './RemindMePopover';
 
 interface LeadDetailsPanelProps {
   lead: Lead;
@@ -195,6 +197,11 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
                 <Plus className="h-4 w-4 mr-1.5" />
                 Create Order
               </Button>
+              
+              {/* Remind Me Button */}
+              <div onClick={(e) => e.stopPropagation()}>
+                <RemindMePopover leadId={lead.id} />
+              </div>
             </div>
 
             {/* Divider */}
@@ -387,9 +394,18 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
                 )}
               </div>
 
+              {/* Quick Notes Section */}
+              <div className="mt-4 pt-4 border-t border-border/50">
+                <div className="flex items-center gap-2 mb-3">
+                  <StickyNote className="h-4 w-4 text-muted-foreground" />
+                  <h4 className="text-sm font-medium text-muted-foreground">Quick Notes</h4>
+                </div>
+                <InlineQuickNote leadId={lead.id} />
+              </div>
+
               {/* Timestamp Footer - Bold, left-aligned */}
               {lead.notes && !isEditing && (
-                <div className="px-4 pb-4">
+                <div className="pt-4">
                   <div className="flex items-center gap-2 text-xs text-left">
                     <Clock className="h-3 w-3 text-muted-foreground" />
                     <span className="font-bold text-foreground">

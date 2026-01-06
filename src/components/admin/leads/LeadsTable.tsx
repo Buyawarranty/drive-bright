@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
+import { RemindMePopover } from './RemindMePopover';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, 
   Tag, User, Clock, AlertTriangle, Copy, FileText, StickyNote,
@@ -342,6 +343,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                       >
                         <Send className="h-3.5 w-3.5" />
                       </Button>
+                      <RemindMePopover leadId={lead.id} compact />
                     </div>
                   </TableCell>
 

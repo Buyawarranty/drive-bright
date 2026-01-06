@@ -26,12 +26,12 @@ export const useLeadQuickNotes = (leadId: string) => {
     
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('lead_quick_notes')
+      const { data, error } = await (supabase
+        .from('lead_quick_notes' as any)
         .select('*')
         .eq('lead_id', leadId)
         .order('is_pinned', { ascending: false })
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any);
 
       if (error) throw error;
 
@@ -50,7 +50,7 @@ export const useLeadQuickNotes = (leadId: string) => {
         })
       );
 
-      setNotes(notesWithAuthors);
+      setNotes(notesWithAuthors as QuickNote[]);
     } catch (error) {
       console.error('Error fetching quick notes:', error);
     } finally {
@@ -76,15 +76,15 @@ export const useLeadQuickNotes = (leadId: string) => {
         return null;
       }
 
-      const { data, error } = await supabase
-        .from('lead_quick_notes')
+      const { data, error } = await (supabase
+        .from('lead_quick_notes' as any)
         .insert({
           lead_id: leadId,
           note_text: noteText.trim(),
           created_by: adminUser.id
         })
         .select()
-        .single();
+        .single() as any);
 
       if (error) throw error;
 
@@ -99,10 +99,10 @@ export const useLeadQuickNotes = (leadId: string) => {
 
   const updateNote = async (noteId: string, noteText: string) => {
     try {
-      const { error } = await supabase
-        .from('lead_quick_notes')
+      const { error } = await (supabase
+        .from('lead_quick_notes' as any)
         .update({ note_text: noteText.trim() })
-        .eq('id', noteId);
+        .eq('id', noteId) as any);
 
       if (error) throw error;
       await fetchNotes();
@@ -116,16 +116,16 @@ export const useLeadQuickNotes = (leadId: string) => {
     try {
       // If pinning, unpin all others first
       if (!isPinned) {
-        await supabase
-          .from('lead_quick_notes')
+        await (supabase
+          .from('lead_quick_notes' as any)
           .update({ is_pinned: false })
-          .eq('lead_id', leadId);
+          .eq('lead_id', leadId) as any);
       }
 
-      const { error } = await supabase
-        .from('lead_quick_notes')
+      const { error } = await (supabase
+        .from('lead_quick_notes' as any)
         .update({ is_pinned: !isPinned })
-        .eq('id', noteId);
+        .eq('id', noteId) as any);
 
       if (error) throw error;
       await fetchNotes();
@@ -137,10 +137,10 @@ export const useLeadQuickNotes = (leadId: string) => {
 
   const deleteNote = async (noteId: string) => {
     try {
-      const { error } = await supabase
-        .from('lead_quick_notes')
+      const { error } = await (supabase
+        .from('lead_quick_notes' as any)
         .delete()
-        .eq('id', noteId);
+        .eq('id', noteId) as any);
 
       if (error) throw error;
       await fetchNotes();
