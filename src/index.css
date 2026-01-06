@@ -57,6 +57,22 @@ input:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s;
 }
 
+/* Override autofill for yellow registration plate input */
+input.bg-yellow-400:-webkit-autofill,
+input.bg-yellow-400:-webkit-autofill:hover,
+input.bg-yellow-400:-webkit-autofill:focus,
+input.bg-yellow-400:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #facc15 inset !important;
+  -webkit-text-fill-color: #000000 !important;
+  background-color: #facc15 !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Remove autofill text decoration/underline */
+input:-webkit-autofill::first-line {
+  text-decoration: none !important;
+}
+
 /* Mobile optimization for better responsive behavior */
 * {
   box-sizing: border-box;
