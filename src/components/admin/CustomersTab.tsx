@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -258,6 +259,7 @@ const NumberPlate = ({ plateNumber }: { plateNumber: string }) => {
 };
 
 export const CustomersTab = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [deletedCustomers, setDeletedCustomers] = useState<Customer[]>([]);
@@ -268,7 +270,8 @@ export const CustomersTab = () => {
   const [loading, setLoading] = useState(true);
   const [deletedLoading, setDeletedLoading] = useState(true);
   const [incompleteLoading, setIncompleteLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  // Initialize search term from URL parameter if present
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [deletedSearchTerm, setDeletedSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest'); // Default to newest first
   const [filterByPlan, setFilterByPlan] = useState('all');
@@ -322,6 +325,14 @@ export const CustomersTab = () => {
     getCurrentUser();
     fetchAvailableTags();
   }, []);
+
+  // Listen for URL search parameter changes
+  useEffect(() => {
+    const urlSearch = searchParams.get('search');
+    if (urlSearch && urlSearch !== searchTerm) {
+      setSearchTerm(urlSearch);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     applyFiltersAndSort();
