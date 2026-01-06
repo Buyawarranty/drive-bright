@@ -3286,6 +3286,63 @@ export type Database = {
           },
         ]
       }
+      selling_tips: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_pinned: boolean | null
+          is_resolved: boolean | null
+          resolved_at: string | null
+          resolved_by: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          is_resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          is_resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "selling_tips_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "selling_tips_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       special_vehicle_plans: {
         Row: {
           coverage: Json

@@ -43,6 +43,7 @@ import { TestTrustpilotEmail } from '@/components/admin/TestTrustpilotEmail';
 import { TestAbandonedCartEmail } from '@/components/admin/TestAbandonedCartEmail';
 import { PendingW2000Tab } from '@/components/admin/PendingW2000Tab';
 import { NewLeadsTab } from '@/components/admin/leads/NewLeadsTab';
+import { SellingTipsSection } from '@/components/admin/SellingTipsSection';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -206,6 +207,8 @@ const AdminDashboard = () => {
         return <GetQuoteTab />;
       case 'new-leads':
         return <NewLeadsTab />;
+      case 'selling-tips':
+        return <SellingTipsSection />;
       case 'testing':
         console.log('Rendering Testing Tab');
         try {

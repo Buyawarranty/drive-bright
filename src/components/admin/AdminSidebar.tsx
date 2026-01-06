@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target } from 'lucide-react';
+import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -96,6 +96,12 @@ const defaultTabs: Tab[] = [
     label: 'Send a Quote',
     icon: Calculator,
     description: 'Generate and send quotes to customers'
+  },
+  {
+    id: 'selling-tips',
+    label: 'Selling Tips',
+    icon: Lightbulb,
+    description: 'Share sales techniques and team feedback'
   },
   {
     id: 'customers',
