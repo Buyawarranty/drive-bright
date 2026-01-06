@@ -51,12 +51,12 @@ export const useLeadReminders = (leadId?: string) => {
       if (!userId) return;
       setCurrentUserId(userId);
 
-      const { data, error } = await supabase
-        .from('lead_reminders')
+      const { data, error } = await (supabase
+        .from('lead_reminders' as any)
         .select('*')
         .eq('user_id', userId)
         .in('status', ['pending', 'snoozed'])
-        .order('reminder_time', { ascending: true });
+        .order('reminder_time', { ascending: true }) as any);
 
       if (error) throw error;
 
@@ -76,6 +76,7 @@ export const useLeadReminders = (leadId?: string) => {
             
             return {
               ...reminder,
+              status: reminder.status as LeadReminder['status'],
               lead: cartData ? {
                 email: cartData.email,
                 first_name: cartData.full_name?.split(' ')[0] || null,
@@ -89,12 +90,16 @@ export const useLeadReminders = (leadId?: string) => {
               .select('email, first_name, last_name, vehicle_reg')
               .eq('id', reminder.lead_id)
               .single();
-            return { ...reminder, lead: leadData };
+            return { 
+              ...reminder, 
+              status: reminder.status as LeadReminder['status'],
+              lead: leadData 
+            };
           }
         })
       );
 
-      setReminders(remindersWithLeads);
+      setReminders(remindersWithLeads as LeadReminder[]);
     } catch (error) {
       console.error('Error fetching reminders:', error);
     } finally {
@@ -111,16 +116,24 @@ export const useLeadReminders = (leadId?: string) => {
       if (!userId) return;
       setCurrentUserId(userId);
 
-      const { data, error } = await supabase
-        .from('lead_reminders')
+      const { data, error } = await (supabase
+        .from('lead_reminders' as any)
         .select('*')
         .eq('lead_id', leadId)
         .eq('user_id', userId)
         .in('status', ['pending', 'snoozed'])
-        .single();
+        .single() as any);
 
       if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows
-      setCurrentReminder(data || null);
+      
+      if (data) {
+        setCurrentReminder({
+          ...data,
+          status: data.status as LeadReminder['status']
+        } as LeadReminder);
+      } else {
+        setCurrentReminder(null);
+      }
     } catch (error) {
       console.error('Error fetching lead reminder:', error);
     }
@@ -168,8 +181,8 @@ export const useLeadReminders = (leadId?: string) => {
         ? customTime 
         : getPresetTime(preset);
 
-      const { data, error } = await supabase
-        .from('lead_reminders')
+      const { data, error } = await (supabase
+        .from('lead_reminders' as any)
         .insert({
           lead_id: targetLeadId,
           user_id: userId,
@@ -177,7 +190,7 @@ export const useLeadReminders = (leadId?: string) => {
           label: label?.trim() || null
         })
         .select()
-        .single();
+        .single() as any);
 
       if (error) {
         if (error.code === '23505') {
@@ -207,14 +220,14 @@ export const useLeadReminders = (leadId?: string) => {
         ? customTime 
         : getPresetTime(preset);
 
-      const { error } = await supabase
-        .from('lead_reminders')
+      const { error } = await (supabase
+        .from('lead_reminders' as any)
         .update({
           status: 'snoozed',
           snoozed_until: snoozedUntil.toISOString(),
           reminder_time: snoozedUntil.toISOString()
         })
-        .eq('id', reminderId);
+        .eq('id', reminderId) as any);
 
       if (error) throw error;
 
@@ -232,10 +245,10 @@ export const useLeadReminders = (leadId?: string) => {
 
   const dismissReminder = async (reminderId: string) => {
     try {
-      const { error } = await supabase
-        .from('lead_reminders')
+      const { error } = await (supabase
+        .from('lead_reminders' as any)
         .update({ status: 'dismissed' })
-        .eq('id', reminderId);
+        .eq('id', reminderId) as any);
 
       if (error) throw error;
 
@@ -254,10 +267,10 @@ export const useLeadReminders = (leadId?: string) => {
 
   const completeReminder = async (reminderId: string) => {
     try {
-      const { error } = await supabase
-        .from('lead_reminders')
+      const { error } = await (supabase
+        .from('lead_reminders' as any)
         .update({ status: 'completed' })
-        .eq('id', reminderId);
+        .eq('id', reminderId) as any);
 
       if (error) throw error;
 
@@ -276,10 +289,10 @@ export const useLeadReminders = (leadId?: string) => {
 
   const deleteReminder = async (reminderId: string) => {
     try {
-      const { error } = await supabase
-        .from('lead_reminders')
+      const { error } = await (supabase
+        .from('lead_reminders' as any)
         .delete()
-        .eq('id', reminderId);
+        .eq('id', reminderId) as any);
 
       if (error) throw error;
 

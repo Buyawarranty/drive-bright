@@ -7,11 +7,16 @@ import { LeadsFilters } from './LeadsFilters';
 import { SalespersonDashboard } from './SalespersonDashboard';
 import { ManagerDashboard } from './ManagerDashboard';
 import { ManualOrderEntry } from '../ManualOrderEntry';
-import { Users, UserCircle, LayoutDashboard } from 'lucide-react';
+import { MyRemindersPanel } from './MyRemindersPanel';
+import { Users, UserCircle, LayoutDashboard, Bell } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Button } from '@/components/ui/button';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 export const NewLeadsTab: React.FC = () => {
   const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard'>('leads');
   const [searchTerm, setSearchTerm] = useState('');
+  const [remindersOpen, setRemindersOpen] = useState(true);
   
   const {
     leads,
@@ -101,36 +106,67 @@ export const NewLeadsTab: React.FC = () => {
 
       {/* Content based on view */}
       {activeView === 'leads' && (
-        <div className="space-y-4">
-          <LeadsFilters
-            filter={filter}
-            onFilterChange={setFilter}
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            onRefresh={fetchLeads}
-            onMigrate={migrateFromAbandonedCarts}
-            leadCounts={leadCounts}
-          />
-          
-          <Card>
-            <CardContent className="pt-6">
-              <LeadsTable
-                leads={filteredLeads}
-                tags={tags}
-                salesUsers={salesUsers}
-                onUpdateStatus={updateLeadStatus}
-                onAssign={assignLead}
-                onAutoAssign={autoAssignLead}
-                onUpdatePriority={updateLeadPriority}
-                onScheduleFollowUp={scheduleFollowUp}
-                onAddTag={addTagToLead}
-                onRemoveTag={removeTagFromLead}
-                onUpdateNotes={updateLeadNotes}
-                onMarkContacted={markContactedAt}
-                onLogActivity={logActivity}
-              />
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-4">
+          {/* Main Leads Section */}
+          <div className="space-y-4 min-w-0">
+            <LeadsFilters
+              filter={filter}
+              onFilterChange={setFilter}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              onRefresh={fetchLeads}
+              onMigrate={migrateFromAbandonedCarts}
+              leadCounts={leadCounts}
+            />
+            
+            <Card>
+              <CardContent className="pt-6">
+                <LeadsTable
+                  leads={filteredLeads}
+                  tags={tags}
+                  salesUsers={salesUsers}
+                  onUpdateStatus={updateLeadStatus}
+                  onAssign={assignLead}
+                  onAutoAssign={autoAssignLead}
+                  onUpdatePriority={updateLeadPriority}
+                  onScheduleFollowUp={scheduleFollowUp}
+                  onAddTag={addTagToLead}
+                  onRemoveTag={removeTagFromLead}
+                  onUpdateNotes={updateLeadNotes}
+                  onMarkContacted={markContactedAt}
+                  onLogActivity={logActivity}
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* My Reminders Sidebar */}
+          <div className="space-y-4">
+            {/* Collapsible on mobile/tablet, always visible on XL */}
+            <div className="xl:hidden">
+              <Collapsible open={remindersOpen} onOpenChange={setRemindersOpen}>
+                <CollapsibleTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-between mb-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Bell className="h-4 w-4" />
+                      My Reminders
+                    </div>
+                    {remindersOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <MyRemindersPanel compact />
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
+            {/* Always visible on XL screens */}
+            <div className="hidden xl:block">
+              <MyRemindersPanel />
+            </div>
+          </div>
         </div>
       )}
 
