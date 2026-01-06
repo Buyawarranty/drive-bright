@@ -10,8 +10,9 @@ import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, 
   Tag, User, Clock, AlertTriangle, Copy, FileText, StickyNote,
-  CheckCircle, CreditCard, ChevronDown, ChevronUp, Send
+  CheckCircle, CreditCard, ChevronDown, ChevronUp, Send, ExternalLink
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow, isPast, differenceInHours, differenceInDays, isToday } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -155,6 +156,13 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
+  const navigate = useNavigate();
+
+  const handleViewCustomer = (email: string) => {
+    // Navigate to customers tab with email filter pre-applied
+    navigate(`/admin?tab=customers&search=${encodeURIComponent(email)}`);
+  };
+
   const getDisplayName = (lead: Lead) => {
     // Only show name if we have first_name or last_name (from step 4 or manual entry)
     if (lead.first_name || lead.last_name) {
@@ -362,7 +370,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                   </TableCell>
 
                   {/* Payment Status */}
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     {lead.is_paid ? (
                       <div className="space-y-0.5">
                         <Badge className="bg-green-500 text-white text-[10px] flex items-center gap-1 w-fit">
@@ -390,6 +398,16 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                             })()}
                           </div>
                         )}
+                        {/* View Customer Profile Link */}
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-5 px-0 text-[10px] text-primary hover:text-primary/80 font-medium"
+                          onClick={() => handleViewCustomer(lead.email)}
+                        >
+                          <ExternalLink className="h-3 w-3 mr-1" />
+                          View Customer
+                        </Button>
                       </div>
                     ) : (
                       <span className="text-muted-foreground text-xs">—</span>
