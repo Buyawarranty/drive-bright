@@ -264,14 +264,14 @@ const handler = async (req: Request): Promise<Response> => {
         console.log(JSON.stringify({ evt: "terms.pdf.failed", rid, status: termsResponse.status }));
       }
 
-      // Load Platinum Warranty Plan PDF v2.7 (used for all plan types)
-      const platinumResponse = await fetch('https://buyawarranty.co.uk/documents/Platinum-Warranty-Plan_v2.7.pdf');
+      // Load Platinum Warranty Plan PDF v2.3 (used for all plan types)
+      const platinumResponse = await fetch('https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/Platinum-Warranty-Plan-v2.3.pdf');
       if (platinumResponse.ok) {
         const platinumBuffer = await platinumResponse.arrayBuffer();
         const platinumBase64 = arrayBufferToBase64(platinumBuffer);
         
         attachments.push({
-          filename: 'Platinum-Warranty-Plan-v2.7.pdf',
+          filename: 'Platinum-Warranty-Plan-v2.3.pdf',
           content: platinumBase64,
           type: 'application/pdf',
           disposition: 'attachment'
@@ -519,8 +519,8 @@ const handler = async (req: Request): Promise<Response> => {
       paymentMethod = 'Bumper';
     }
 
-    // Use the new v2.3 and v2.7 PDFs for all warranty types
-    const policyDocumentUrl = 'https://buyawarranty.co.uk/documents/Platinum-Warranty-Plan_v2.7.pdf';
+    // Use v2.3 PDFs for all warranty types
+    const policyDocumentUrl = 'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/Platinum-Warranty-Plan-v2.3.pdf';
     const termsUrl = 'https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/Terms-and-Conditions-v2.3.pdf';
 
     // Define login URL for customer portal
