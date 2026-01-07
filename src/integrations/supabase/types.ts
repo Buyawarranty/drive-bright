@@ -1712,6 +1712,10 @@ export type Database = {
           final_amount: number | null
           first_name: string | null
           flat_number: string | null
+          google_review_completed: boolean | null
+          google_review_completed_at: string | null
+          google_review_requested: boolean | null
+          google_review_requested_at: string | null
           id: string
           is_deleted: boolean | null
           labour_rate: number | null
@@ -1740,6 +1744,10 @@ export type Database = {
           stripe_session_id: string | null
           town: string | null
           transfer_cover: boolean | null
+          trustpilot_review_completed: boolean | null
+          trustpilot_review_completed_at: string | null
+          trustpilot_review_requested: boolean | null
+          trustpilot_review_requested_at: string | null
           tyre_cover: boolean | null
           updated_at: string
           vehicle_fuel_type: string | null
@@ -1774,6 +1782,10 @@ export type Database = {
           final_amount?: number | null
           first_name?: string | null
           flat_number?: string | null
+          google_review_completed?: boolean | null
+          google_review_completed_at?: string | null
+          google_review_requested?: boolean | null
+          google_review_requested_at?: string | null
           id?: string
           is_deleted?: boolean | null
           labour_rate?: number | null
@@ -1802,6 +1814,10 @@ export type Database = {
           stripe_session_id?: string | null
           town?: string | null
           transfer_cover?: boolean | null
+          trustpilot_review_completed?: boolean | null
+          trustpilot_review_completed_at?: string | null
+          trustpilot_review_requested?: boolean | null
+          trustpilot_review_requested_at?: string | null
           tyre_cover?: boolean | null
           updated_at?: string
           vehicle_fuel_type?: string | null
@@ -1836,6 +1852,10 @@ export type Database = {
           final_amount?: number | null
           first_name?: string | null
           flat_number?: string | null
+          google_review_completed?: boolean | null
+          google_review_completed_at?: string | null
+          google_review_requested?: boolean | null
+          google_review_requested_at?: string | null
           id?: string
           is_deleted?: boolean | null
           labour_rate?: number | null
@@ -1864,6 +1884,10 @@ export type Database = {
           stripe_session_id?: string | null
           town?: string | null
           transfer_cover?: boolean | null
+          trustpilot_review_completed?: boolean | null
+          trustpilot_review_completed_at?: string | null
+          trustpilot_review_requested?: boolean | null
+          trustpilot_review_requested_at?: string | null
           tyre_cover?: boolean | null
           updated_at?: string
           vehicle_fuel_type?: string | null

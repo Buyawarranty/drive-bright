@@ -45,6 +45,7 @@ import { PendingW2000Tab } from '@/components/admin/PendingW2000Tab';
 import { NewLeadsTab } from '@/components/admin/leads/NewLeadsTab';
 import { SellingTipsSection } from '@/components/admin/SellingTipsSection';
 import { TimesheetsTab } from '@/components/admin/timesheets/TimesheetsTab';
+import { ReviewsTab } from '@/components/admin/ReviewsTab';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -184,6 +185,8 @@ const AdminDashboard = () => {
         return <ReferralsTab />;
       case 'claims':
         return <ClaimsTab />;
+      case 'reviews':
+        return <ReviewsTab />;
       case 'contact':
         return <ContactSubmissionsTab />;
       case 'abandoned-carts':

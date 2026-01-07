@@ -166,6 +166,15 @@ interface Customer {
   manual_upgrade_at?: string;
   manual_upgrade_by?: string;
   manual_upgrade_notes?: string;
+  // Review tracking fields
+  trustpilot_review_requested?: boolean;
+  trustpilot_review_requested_at?: string;
+  trustpilot_review_completed?: boolean;
+  trustpilot_review_completed_at?: string;
+  google_review_requested?: boolean;
+  google_review_requested_at?: string;
+  google_review_completed?: boolean;
+  google_review_completed_at?: string;
   admin_users?: {
     id: string;
     email: string;
@@ -670,7 +679,16 @@ export const CustomersTab = () => {
           labour_rate: 70,
           manual_upgrade_at: null,
           manual_upgrade_by: null,
-          manual_upgrade_notes: null
+          manual_upgrade_notes: null,
+          // Review tracking columns
+          trustpilot_review_requested: false,
+          trustpilot_review_requested_at: null,
+          trustpilot_review_completed: false,
+          trustpilot_review_completed_at: null,
+          google_review_requested: false,
+          google_review_requested_at: null,
+          google_review_completed: false,
+          google_review_completed_at: null
         }));
         
         directData = [...directData, ...orphanedAsCustomers];
@@ -2290,6 +2308,8 @@ export const CustomersTab = () => {
               <TableHead>Claim Limit</TableHead>
               <TableHead>Claims Made</TableHead>
               <TableHead>Claims Paid</TableHead>
+              <TableHead className="text-center bg-green-50">Trustpilot</TableHead>
+              <TableHead className="text-center bg-blue-50">Google</TableHead>
               <TableHead>Labour Rate</TableHead>
               <TableHead>Tags</TableHead>
               <TableHead>Ref</TableHead>
@@ -2303,7 +2323,7 @@ export const CustomersTab = () => {
           <TableBody>
             {filteredCustomers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={30} className="text-center py-8">
+                <TableCell colSpan={32} className="text-center py-8">
                   <div className="space-y-4">
                     <AlertCircle className="h-12 w-12 text-gray-400 mx-auto" />
                     <div>
@@ -3552,6 +3572,32 @@ Please log in and change your password after first login.`;
                            vehicleReg={customer.registration_plate}
                            showOnly="claimsPaid"
                          />
+                       </TableCell>
+                       <TableCell className="text-center">
+                         {customer.trustpilot_review_completed ? (
+                           <Badge className="bg-green-500 hover:bg-green-600">
+                             <CheckCircle className="h-3 w-3 mr-1" />Done
+                           </Badge>
+                         ) : customer.trustpilot_review_requested ? (
+                           <Badge variant="outline" className="border-yellow-500 text-yellow-600">
+                             <Clock className="h-3 w-3 mr-1" />Sent
+                           </Badge>
+                         ) : (
+                           <span className="text-muted-foreground text-xs">-</span>
+                         )}
+                       </TableCell>
+                       <TableCell className="text-center">
+                         {customer.google_review_completed ? (
+                           <Badge className="bg-green-500 hover:bg-green-600">
+                             <CheckCircle className="h-3 w-3 mr-1" />Done
+                           </Badge>
+                         ) : customer.google_review_requested ? (
+                           <Badge variant="outline" className="border-yellow-500 text-yellow-600">
+                             <Clock className="h-3 w-3 mr-1" />Sent
+                           </Badge>
+                         ) : (
+                           <span className="text-muted-foreground text-xs">-</span>
+                         )}
                        </TableCell>
                        <TableCell>
                          <div className="flex items-center gap-1">
