@@ -85,7 +85,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     previousClaimLimit || 1250
   );
   const [selectedLabourRate, setSelectedLabourRate] = useState<number>(
-    previousLabourRate || 50
+    previousLabourRate || 70
   );
   const [boostAddon, setBoostAddon] = useState(previousBoostAddon !== undefined ? previousBoostAddon : false);
   const [selectedProtectionAddOns, setSelectedProtectionAddOns] = useState<{ [key: string]: boolean }>(
