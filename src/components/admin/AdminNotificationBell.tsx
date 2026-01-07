@@ -10,6 +10,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistanceToNow } from 'date-fns';
 import { AdminNotification } from '@/hooks/useAdminNotifications';
+export type { AdminNotification };
 
 interface AdminNotificationBellProps {
   notifications: AdminNotification[];

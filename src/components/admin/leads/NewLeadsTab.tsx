@@ -8,6 +8,7 @@ import { SalespersonDashboard } from './SalespersonDashboard';
 import { ManagerDashboard } from './ManagerDashboard';
 import { ManualOrderEntry } from '../ManualOrderEntry';
 import { MyRemindersPanel } from './MyRemindersPanel';
+import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
 import { Users, UserCircle, LayoutDashboard, Bell, BellOff, PanelRightClose, PanelRight } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,21 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
-export const NewLeadsTab: React.FC = () => {
+interface NewLeadsTabProps {
+  notifications?: AdminNotification[];
+  unreadCount?: number;
+  onMarkAsRead?: (id: string) => void;
+  onMarkAllAsRead?: () => void;
+  onNavigateToTab?: (tab: string) => void;
+}
+
+export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
+  notifications = [],
+  unreadCount = 0,
+  onMarkAsRead,
+  onMarkAllAsRead,
+  onNavigateToTab,
+}) => {
   const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard'>('leads');
   const [searchTerm, setSearchTerm] = useState('');
   const [remindersOpen, setRemindersOpen] = useState(true);
@@ -84,6 +99,17 @@ export const NewLeadsTab: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-3">
+          {/* Notification Bell */}
+          {onMarkAsRead && onMarkAllAsRead && (
+            <AdminNotificationBell
+              notifications={notifications}
+              unreadCount={unreadCount}
+              onMarkAsRead={onMarkAsRead}
+              onMarkAllAsRead={onMarkAllAsRead}
+              onNavigateToTab={onNavigateToTab}
+            />
+          )}
+          
           {/* Toggle Reminders Panel Button */}
           <TooltipProvider>
             <Tooltip delayDuration={100}>
