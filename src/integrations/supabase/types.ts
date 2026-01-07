@@ -1174,6 +1174,74 @@ export type Database = {
         }
         Relationships: []
       }
+      commission_records: {
+        Row: {
+          admin_user_id: string | null
+          approved_at: string | null
+          approved_by: string | null
+          bonus_amount: number | null
+          commission_amount: number | null
+          commission_rate: number | null
+          created_at: string
+          deals_count: number | null
+          id: string
+          notes: string | null
+          paid_at: string | null
+          period_end: string
+          period_start: string
+          status: string | null
+          total_sales_value: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_user_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          bonus_amount?: number | null
+          commission_amount?: number | null
+          commission_rate?: number | null
+          created_at?: string
+          deals_count?: number | null
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          period_end: string
+          period_start: string
+          status?: string | null
+          total_sales_value?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_user_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          bonus_amount?: number | null
+          commission_amount?: number | null
+          commission_rate?: number | null
+          created_at?: string
+          deals_count?: number | null
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          period_end?: string
+          period_start?: string
+          status?: string | null
+          total_sales_value?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commission_records_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_submissions: {
         Row: {
           assigned_to: string | null
@@ -1815,6 +1883,76 @@ export type Database = {
             columns: ["assigned_to"]
             isOneToOne: false
             referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deal_records: {
+        Row: {
+          admin_user_id: string | null
+          commission_record_id: string | null
+          created_at: string
+          customer_id: string | null
+          customer_name: string | null
+          deal_date: string
+          deal_value: number
+          id: string
+          notes: string | null
+          plan_type: string | null
+          updated_at: string
+          user_id: string
+          vehicle_reg: string | null
+        }
+        Insert: {
+          admin_user_id?: string | null
+          commission_record_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          customer_name?: string | null
+          deal_date?: string
+          deal_value: number
+          id?: string
+          notes?: string | null
+          plan_type?: string | null
+          updated_at?: string
+          user_id: string
+          vehicle_reg?: string | null
+        }
+        Update: {
+          admin_user_id?: string | null
+          commission_record_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          customer_name?: string | null
+          deal_date?: string
+          deal_value?: number
+          id?: string
+          notes?: string | null
+          plan_type?: string | null
+          updated_at?: string
+          user_id?: string
+          vehicle_reg?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_records_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deal_records_commission_record_id_fkey"
+            columns: ["commission_record_id"]
+            isOneToOne: false
+            referencedRelation: "commission_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deal_records_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
             referencedColumns: ["id"]
           },
         ]
@@ -3424,6 +3562,68 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_timesheets: {
+        Row: {
+          admin_user_id: string | null
+          approved_at: string | null
+          approved_by: string | null
+          break_minutes: number | null
+          created_at: string
+          end_time: string | null
+          entry_date: string
+          entry_type: Database["public"]["Enums"]["timesheet_entry_type"]
+          hours_worked: number | null
+          id: string
+          is_approved: boolean | null
+          notes: string | null
+          start_time: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_user_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          break_minutes?: number | null
+          created_at?: string
+          end_time?: string | null
+          entry_date: string
+          entry_type?: Database["public"]["Enums"]["timesheet_entry_type"]
+          hours_worked?: number | null
+          id?: string
+          is_approved?: boolean | null
+          notes?: string | null
+          start_time?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_user_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          break_minutes?: number | null
+          created_at?: string
+          end_time?: string | null
+          entry_date?: string
+          entry_type?: Database["public"]["Enums"]["timesheet_entry_type"]
+          hours_worked?: number | null
+          id?: string
+          is_approved?: boolean | null
+          notes?: string | null
+          start_time?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_timesheets_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       structured_customer_notes: {
         Row: {
           actions_taken: Json | null
@@ -4282,6 +4482,13 @@ export type Database = {
         | "general"
         | "complaint"
       risk_level: "low" | "medium" | "high"
+      timesheet_entry_type:
+        | "worked"
+        | "sick"
+        | "holiday"
+        | "unpaid_leave"
+        | "training"
+        | "wfh"
       user_role:
         | "admin"
         | "customer"
@@ -4450,6 +4657,14 @@ export const Constants = {
         "complaint",
       ],
       risk_level: ["low", "medium", "high"],
+      timesheet_entry_type: [
+        "worked",
+        "sick",
+        "holiday",
+        "unpaid_leave",
+        "training",
+        "wfh",
+      ],
       user_role: [
         "admin",
         "customer",

@@ -44,6 +44,7 @@ import { TestAbandonedCartEmail } from '@/components/admin/TestAbandonedCartEmai
 import { PendingW2000Tab } from '@/components/admin/PendingW2000Tab';
 import { NewLeadsTab } from '@/components/admin/leads/NewLeadsTab';
 import { SellingTipsSection } from '@/components/admin/SellingTipsSection';
+import { TimesheetsTab } from '@/components/admin/timesheets/TimesheetsTab';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -209,6 +210,8 @@ const AdminDashboard = () => {
         return <NewLeadsTab />;
       case 'selling-tips':
         return <SellingTipsSection />;
+      case 'timesheets':
+        return <TimesheetsTab />;
       case 'testing':
         console.log('Rendering Testing Tab');
         try {
