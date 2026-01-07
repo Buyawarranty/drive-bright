@@ -1928,6 +1928,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                               e.stopPropagation();
                               e.preventDefault();
                               
+                              // Auto-select this payment option for visual feedback
+                              setPaymentMethod('bumper');
+                              
                               // Prevent double-clicks and prevent if other payment is processing
                               if (isLoadingStripe || isLoadingBumper) {
                                 console.log('⚠️ Payment already in progress, ignoring click');
@@ -2179,6 +2182,9 @@ const CustomerDetailsStep: React.FC<CustomerDetailsStepProps> = ({
                             onClick={async (e) => {
                               e.stopPropagation();
                               e.preventDefault();
+                              
+                              // Auto-select this payment option for visual feedback
+                              setPaymentMethod('stripe');
                               
                               // Prevent double-clicks and prevent if other payment is processing
                               if (isLoadingStripe || isLoadingBumper) {
