@@ -125,10 +125,12 @@ export const ROLE_TEMPLATES: Record<string, PermissionPolicy> = {
     security: baseSecuritySettings,
     tabs: {
       analytics: { view: 'team', create: false, edit: false, delete: false, export: false, approve: false },
+      new_leads: { view: true, create: true, edit: true, delete: false, export: false, approve: false },
+      get_quote: { view: true, create: true, edit: true, delete: false, export: false, approve: false },
       customers: { view: true, create: true, edit: true, delete: false, export: false, approve: false },
       orders: { view: true, create: true, edit: 'own', delete: false, export: false, approve: false },
       warranties: { view: true, create: true, edit: true, delete: false, export: false, approve: false },
-      get_quote: { view: true, create: true, edit: true, delete: false, export: false, approve: false },
+      discount_codes: { view: true, create: false, edit: false, delete: false, export: false, approve: false },
       abandoned_carts: { view: true, create: false, edit: true, delete: false, export: false, approve: false },
     },
     columns: {
