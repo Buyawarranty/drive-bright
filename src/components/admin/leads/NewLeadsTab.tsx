@@ -9,12 +9,15 @@ import { ManagerDashboard } from './ManagerDashboard';
 import { ManualOrderEntry } from '../ManualOrderEntry';
 import { MyRemindersPanel } from './MyRemindersPanel';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
-import { Users, UserCircle, LayoutDashboard, Bell, BellOff, PanelRightClose, PanelRight } from 'lucide-react';
+import { Users, UserCircle, LayoutDashboard, Bell, BellOff, PanelRightClose, PanelRight, Download, FileSpreadsheet } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useDataExport } from '@/hooks/useDataExport';
 
 interface NewLeadsTabProps {
   notifications?: AdminNotification[];
@@ -40,6 +43,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [remindersOpen, setRemindersOpen] = useState(true);
   const [showRemindersPanel, setShowRemindersPanel] = useState(true);
   
+  const { canExportTab } = usePermissions();
+  const { exportToCSV, exportToExcel } = useDataExport();
+  const canExport = canExportTab('new_leads');
+
   const {
     leads,
     tags,
@@ -84,6 +91,32 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     lost: leads.filter(l => l.status === 'lost').length,
     high_priority: leads.filter(l => l.priority === 'high' || l.priority === 'urgent').length,
   }), [leads]);
+
+  const handleExport = (format: 'csv' | 'xlsx') => {
+    const exportData = filteredLeads.map(lead => ({
+      'First Name': lead.first_name || '',
+      'Last Name': lead.last_name || '',
+      'Email': lead.email,
+      'Phone': lead.phone || '',
+      'Status': lead.status,
+      'Priority': lead.priority,
+      'Source': lead.lead_source,
+      'Vehicle Reg': lead.vehicle_reg || '',
+      'Vehicle': `${lead.vehicle_make || ''} ${lead.vehicle_model || ''} ${lead.vehicle_year || ''}`.trim(),
+      'Plan Interest': lead.plan_interest || '',
+      'Quote Amount': lead.quote_amount || '',
+      'Assigned To': lead.assigned_user?.email || 'Unassigned',
+      'Last Contacted': lead.last_contacted_at || '',
+      'Created At': lead.created_at,
+      'Notes': lead.notes || '',
+    }));
+
+    if (format === 'csv') {
+      exportToCSV(exportData, { filename: 'leads', format: 'csv' });
+    } else {
+      exportToExcel(exportData, { filename: 'leads', format: 'xlsx' });
+    }
+  };
 
   if (loading) {
     return (
@@ -148,6 +181,28 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+          
+          {/* Export Button - Permission Controlled */}
+          {canExport && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Download className="h-4 w-4" />
+                  <span className="hidden sm:inline">Export</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleExport('csv')}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export as CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('xlsx')}>
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Export as Excel
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           
           {/* Add Manual Order Button */}
           <ManualOrderEntry />
