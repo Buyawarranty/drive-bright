@@ -214,6 +214,7 @@ const AdminDashboard = () => {
             onMarkAsRead={markAsRead}
             onMarkAllAsRead={markAllAsRead}
             onNavigateToTab={setActiveTab}
+            userRole={userRole}
           />
         );
       case 'selling-tips':
