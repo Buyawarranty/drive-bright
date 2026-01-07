@@ -207,7 +207,15 @@ const AdminDashboard = () => {
       case 'get-quote':
         return <GetQuoteTab />;
       case 'new-leads':
-        return <NewLeadsTab />;
+        return (
+          <NewLeadsTab 
+            notifications={notifications}
+            unreadCount={unreadCount}
+            onMarkAsRead={markAsRead}
+            onMarkAllAsRead={markAllAsRead}
+            onNavigateToTab={setActiveTab}
+          />
+        );
       case 'selling-tips':
         return <SellingTipsSection />;
       case 'timesheets':
@@ -349,13 +357,6 @@ const AdminDashboard = () => {
 
             {/* Desktop CTA Buttons - Show on desktop */}
             <div className="hidden lg:flex items-center space-x-3">
-              <AdminNotificationBell
-                notifications={notifications}
-                unreadCount={unreadCount}
-                onMarkAsRead={markAsRead}
-                onMarkAllAsRead={markAllAsRead}
-                onNavigateToTab={setActiveTab}
-              />
               <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer">
                 <Button 
                   variant="outline" 
@@ -376,13 +377,6 @@ const AdminDashboard = () => {
 
             {/* Mobile Menu Button */}
             <div className="lg:hidden flex items-center space-x-2">
-              <AdminNotificationBell
-                notifications={notifications}
-                unreadCount={unreadCount}
-                onMarkAsRead={markAsRead}
-                onMarkAllAsRead={markAllAsRead}
-                onNavigateToTab={setActiveTab}
-              />
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <SheetTrigger asChild>
                   <Button
@@ -485,19 +479,6 @@ const AdminDashboard = () => {
             </div>
           </div>
           
-          {/* Second line - Admin-specific navigation */}
-          <div className="hidden lg:flex items-center justify-center space-x-6 py-2 border-t border-gray-200">
-            <span className="text-orange-500 font-semibold text-sm">Admin Dashboard</span>
-            <button
-              onClick={async () => {
-                await supabase.auth.signOut();
-                navigate('/auth');
-              }}
-              className="bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors text-sm"
-            >
-              Sign Out
-            </button>
-          </div>
         </div>
       </header>
       
