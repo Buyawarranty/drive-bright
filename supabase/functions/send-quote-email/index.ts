@@ -59,9 +59,6 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
     : 'there';
   const vehicleDisplay = `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() || 'Your Vehicle';
   
-  // Green checkmark icon - clean modern style
-  const checkIcon = `<img src="https://buyawarranty.co.uk/lovable-uploads/green-checkmark.png" alt="✓" width="20" height="20" style="display: inline-block; vertical-align: middle; margin-right: 10px;" onerror="this.outerHTML='<span style=\\'color: #22c55e; font-weight: bold; margin-right: 10px;\\'>✓</span>'" />`;
-  
   // Quote restoration link - goes directly to step 3
   const quoteLink = `${baseUrl}/?quote=${quoteId}&email=${encodeURIComponent(email)}&step=3`;
   
@@ -72,95 +69,61 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta http-equiv="X-UA-Compatible" content="IE=edge">
-      <title>Your ${vehicleDisplay} Warranty Quote – Complete Your Purchase</title>
+      <title>Your ${vehicleDisplay} Warranty Quote</title>
       <!--[if mso]>
       <style type="text/css">
         body, table, td {font-family: Arial, Helvetica, sans-serif !important;}
       </style>
       <![endif]-->
     </head>
-    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #1a1a1a; margin: 0; padding: 0; background-color: #f5f5f5; -webkit-font-smoothing: antialiased;">
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #1a1a1a; margin: 0; padding: 0; background-color: #ffffff; -webkit-font-smoothing: antialiased;">
       
       <!-- Wrapper Table -->
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f5f5f5;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff;">
         <tr>
           <td align="center" style="padding: 20px 10px;">
             
             <!-- Main Container -->
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 600px; background-color: #ffffff;">
               
               <!-- Header with Logo -->
               <tr>
-                <td align="center" style="padding: 35px 30px 25px 30px; background-color: #ffffff;">
+                <td align="center" style="padding: 30px 30px 20px 30px;">
                   <a href="https://buyawarranty.co.uk" target="_blank">
-                    <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" alt="buyawarranty" width="200" style="display: block; width: 200px; height: auto;" />
+                    <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" alt="buyawarranty" width="180" style="display: block; width: 180px; height: auto;" />
                   </a>
                 </td>
               </tr>
               
-              <!-- Primary Headline -->
+              <!-- Main Content -->
               <tr>
-                <td align="center" style="padding: 0 30px 25px 30px;">
-                  <h1 style="font-size: 28px; font-weight: 700; color: #1a1a1a; margin: 0 0 10px 0; line-height: 1.3;">
-                    You're Almost There!
-                  </h1>
-                  <p style="font-size: 16px; color: #666666; margin: 0;">
-                    Your warranty quote is saved and ready to activate
-                  </p>
-                </td>
-              </tr>
-              
-              <!-- Opening Copy -->
-              <tr>
-                <td style="padding: 0 30px 25px 30px;">
-                  <p style="font-size: 17px; color: #333333; margin: 0 0 15px 0;">
+                <td style="padding: 0 30px 20px 30px;">
+                  <p style="font-size: 16px; color: #333333; margin: 0 0 20px 0;">
                     Hi ${customerName},
                   </p>
-                  <p style="font-size: 16px; color: #444444; margin: 0 0 10px 0; line-height: 1.7;">
-                    You were just a step away from protecting your <strong>${vehicleDisplay}</strong> (${vehicleData.regNumber}).
+                  <p style="font-size: 16px; color: #333333; margin: 0 0 20px 0; line-height: 1.7;">
+                    Thank you for your interest in warranty cover for your <strong>${vehicleDisplay}</strong> (${vehicleData.regNumber}).
                   </p>
-                  <p style="font-size: 16px; color: #444444; margin: 0; line-height: 1.7;">
-                    Your warranty details are saved and ready. Complete your purchase now to get instant cover.
+                  <p style="font-size: 16px; color: #333333; margin: 0 0 20px 0; line-height: 1.7;">
+                    We noticed you didn't complete your purchase. Your quote details have been saved, and you can continue where you left off using the link below.
                   </p>
                 </td>
               </tr>
               
-              <!-- Discount Section - Visual Highlight -->
+              <!-- Quote Details Box -->
               <tr>
                 <td style="padding: 0 30px 25px 30px;">
-                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background: linear-gradient(135deg, #FFF8E7 0%, #FFF4D9 100%); border-radius: 12px; border: 2px solid #F59E0B;">
-                    <tr>
-                      <td align="center" style="padding: 25px;">
-                        <p style="font-size: 16px; color: #92400E; font-weight: 600; margin: 0 0 12px 0;">
-                          Complete your purchase now and save 10% with code
-                        </p>
-                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="background-color: #F59E0B; border-radius: 8px;">
-                          <tr>
-                            <td align="center" style="padding: 14px 30px;">
-                              <span style="font-size: 22px; font-weight: 800; color: #000000; letter-spacing: 2px; font-family: monospace;">SAVE10PERCENT</span>
-                            </td>
-                          </tr>
-                        </table>
-                        <p style="font-size: 13px; color: #92400E; margin: 12px 0 0 0;">
-                          Apply at checkout • Easy to use • Limited time offer
-                        </p>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-              
-              <!-- Clarity Section - Friction Removal -->
-              <tr>
-                <td style="padding: 0 30px 25px 30px;">
-                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
                     <tr>
                       <td style="padding: 20px;">
-                        <p style="font-size: 15px; font-weight: 600; color: #334155; margin: 0 0 10px 0;">
-                          What happens when you click below?
+                        <p style="font-size: 14px; font-weight: 600; color: #333333; margin: 0 0 12px 0;">
+                          Your Quote Reference: ${quoteId}
                         </p>
-                        <p style="font-size: 14px; color: #64748b; margin: 0; line-height: 1.6;">
-                          You'll go straight back to your saved quote – no need to re-enter any details. Your vehicle information and plan selections are all pre-filled. Just review and complete your secure checkout in under 2 minutes.
+                        <p style="font-size: 14px; color: #555555; margin: 0 0 8px 0;">
+                          Vehicle: ${vehicleDisplay}
+                        </p>
+                        <p style="font-size: 14px; color: #555555; margin: 0;">
+                          Registration: ${vehicleData.regNumber}
                         </p>
                       </td>
                     </tr>
@@ -168,56 +131,14 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
                 </td>
               </tr>
               
-              <!-- Benefits List -->
+              <!-- CTA Button -->
               <tr>
-                <td style="padding: 0 30px 25px 30px;">
-                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background: #f0fdf4; border-radius: 10px;">
-                    <tr>
-                      <td style="padding: 20px 25px;">
-                        <p style="font-size: 13px; color: #166534; font-weight: 700; margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 0.5px;">
-                          Your Quote Includes:
-                        </p>
-                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                          <tr>
-                            <td style="padding: 8px 0; font-size: 15px; color: #166534;">
-                              ${checkIcon}<span style="vertical-align: middle;">Comprehensive mechanical & electrical cover</span>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td style="padding: 8px 0; font-size: 15px; color: #166534;">
-                              ${checkIcon}<span style="vertical-align: middle;">UK-based customer support</span>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td style="padding: 8px 0; font-size: 15px; color: #166534;">
-                              ${checkIcon}<span style="vertical-align: middle;">Fast and simple claims process</span>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td style="padding: 8px 0; font-size: 15px; color: #166534;">
-                              ${checkIcon}<span style="vertical-align: middle;">FCA-regulated provider</span>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td style="padding: 8px 0; font-size: 15px; color: #166534;">
-                              ${checkIcon}<span style="vertical-align: middle;">14-day money-back guarantee</span>
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-              
-              <!-- Primary CTA Button -->
-              <tr>
-                <td align="center" style="padding: 0 30px 20px 30px;">
-                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <td align="center" style="padding: 0 30px 25px 30px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                     <tr>
                       <td align="center">
-                        <a href="${quoteLink}" target="_blank" style="display: block; width: 100%; max-width: 380px; background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: #ffffff; padding: 20px 30px; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 19px; text-align: center; box-shadow: 0 6px 20px rgba(234, 88, 12, 0.4); border: none;">
-                          Complete My Purchase
+                        <a href="${quoteLink}" target="_blank" style="display: inline-block; background-color: #ea580c; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
+                          Continue Your Quote
                         </a>
                       </td>
                     </tr>
@@ -225,60 +146,38 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
                 </td>
               </tr>
               
-              <!-- Urgency / Reassurance Line -->
+              <!-- Additional Info -->
               <tr>
-                <td align="center" style="padding: 0 30px 30px 30px;">
-                  <p style="font-size: 14px; color: #64748b; margin: 0;">
-                    Your quote is reserved – secure your cover before prices change
+                <td style="padding: 0 30px 25px 30px;">
+                  <p style="font-size: 14px; color: #666666; margin: 0 0 15px 0; line-height: 1.7;">
+                    If you have any questions about your quote or our warranty cover, please don't hesitate to get in touch. Our team is happy to help.
                   </p>
                 </td>
               </tr>
               
-              <!-- Trust Section with Trustpilot -->
+              <!-- Divider -->
               <tr>
-                <td style="padding: 0 30px 25px 30px; border-top: 1px solid #e5e7eb;">
-                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                    <tr>
-                      <td align="center" style="padding-top: 25px;">
-                        <a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" target="_blank" style="text-decoration: none;">
-                          <img src="https://buyawarranty.co.uk/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" alt="Trustpilot 5 stars" width="150" style="display: block; width: 150px; height: auto; margin: 0 auto;" />
-                        </a>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td align="center" style="padding-top: 15px;">
-                        <p style="font-size: 13px; color: #64748b; margin: 0;">
-                          No hidden fees&nbsp;&nbsp;|&nbsp;&nbsp;FCA compliant&nbsp;&nbsp;|&nbsp;&nbsp;14-day money-back guarantee
-                        </p>
-                      </td>
-                    </tr>
-                  </table>
+                <td style="padding: 0 30px;">
+                  <hr style="border: none; border-top: 1px solid #e9ecef; margin: 0;" />
                 </td>
               </tr>
               
-              <!-- Support & Trust Footer -->
+              <!-- Footer -->
               <tr>
-                <td style="background-color: #f8fafc; padding: 30px; border-top: 1px solid #e2e8f0;">
-                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                    <tr>
-                      <td align="center">
-                        <p style="font-size: 15px; font-weight: 600; color: #1a1a1a; margin: 0 0 15px 0;">
-                          Questions? We're here to help
-                        </p>
-                        <p style="font-size: 14px; color: #64748b; margin: 0 0 8px 0;">
-                          Email: <a href="mailto:support@buyawarranty.co.uk" style="color: #ea580c; text-decoration: none; font-weight: 500;">support@buyawarranty.co.uk</a>
-                        </p>
-                        <p style="font-size: 14px; color: #64748b; margin: 0 0 20px 0;">
-                          Phone: <a href="tel:03302295040" style="color: #ea580c; text-decoration: none; font-weight: 500;">0330 229 5040</a>
-                        </p>
-                        <p style="font-size: 13px; color: #94a3b8; margin: 0;">
-                          Kind regards,<br />
-                          <strong style="color: #64748b;">The Buy A Warranty Team</strong><br />
-                          <a href="https://www.buyawarranty.co.uk" style="color: #ea580c; text-decoration: none;">buyawarranty.co.uk</a>
-                        </p>
-                      </td>
-                    </tr>
-                  </table>
+                <td style="padding: 25px 30px;">
+                  <p style="font-size: 14px; color: #333333; margin: 0 0 15px 0;">
+                    Kind regards,<br />
+                    <strong>The Buy A Warranty Team</strong>
+                  </p>
+                  <p style="font-size: 13px; color: #666666; margin: 0 0 8px 0;">
+                    Email: <a href="mailto:support@buyawarranty.co.uk" style="color: #ea580c; text-decoration: none;">support@buyawarranty.co.uk</a>
+                  </p>
+                  <p style="font-size: 13px; color: #666666; margin: 0 0 8px 0;">
+                    Phone: <a href="tel:03302295040" style="color: #ea580c; text-decoration: none;">0330 229 5040</a>
+                  </p>
+                  <p style="font-size: 13px; color: #666666; margin: 0;">
+                    <a href="https://www.buyawarranty.co.uk" style="color: #ea580c; text-decoration: none;">buyawarranty.co.uk</a>
+                  </p>
                 </td>
               </tr>
               
