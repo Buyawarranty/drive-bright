@@ -17,7 +17,7 @@ import {
   Mail, Users, TrendingUp, Calendar, Brain, History, Shield, Zap, 
   Plus, Edit, Eye, Send, Download, Search, RefreshCw, CheckCircle, 
   XCircle, Clock, BarChart3, Tag, Filter, Settings, Play, Pause,
-  Trash2, Copy, LayoutTemplate, Megaphone, UserCheck, Activity
+  Trash2, Copy, LayoutTemplate, Megaphone, UserCheck, Activity, ShoppingCart
 } from 'lucide-react';
 import { AIEmailSuggestions } from './email/AIEmailSuggestions';
 import { TestEmailFunctionDirect } from "./TestEmailFunctionDirect";
@@ -851,40 +851,149 @@ const UnifiedEmailHub = () => {
     </div>
   );
 
-  // Automation View - TODO: Implement automation
-  const AutomationView = () => (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Email Automation</h2>
-        <p className="text-muted-foreground">Schedule emails and set up automated workflows</p>
-      </div>
+  // Automation View
+  const AutomationView = () => {
+    const handleTestAbandonedCart = async () => {
+      try {
+        const { error } = await supabase.functions.invoke('schedule-abandoned-cart-emails');
+        if (error) throw error;
+        toast.success('Abandoned cart email scheduler triggered');
+      } catch (error) {
+        toast.error('Failed to trigger abandoned cart scheduler');
+      }
+    };
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Scheduled Emails ({scheduledEmails.length})</CardTitle>
-          <CardDescription>Emails scheduled for future delivery</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {scheduledEmails.map((email) => (
-              <div key={email.id} className="flex items-center justify-between p-3 rounded-lg border">
-                <div className="flex-1">
-                  <p className="font-medium">{email.email_templates?.name || 'Unknown Template'}</p>
-                  <p className="text-sm text-muted-foreground">To: {email.recipient_email}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-muted-foreground">
-                    {new Date(email.scheduled_for).toLocaleString()}
-                  </span>
-                  {getStatusBadge(email.status || 'scheduled')}
-                </div>
-              </div>
-            ))}
+    const handleTestReturnReminder = async () => {
+      try {
+        const { error } = await supabase.functions.invoke('schedule-return-discount-reminders');
+        if (error) throw error;
+        toast.success('Return discount reminder scheduler triggered');
+      } catch (error) {
+        toast.error('Failed to trigger return reminder scheduler');
+      }
+    };
+
+    const handleProcessScheduled = async () => {
+      try {
+        const { error } = await supabase.functions.invoke('process-scheduled-emails');
+        if (error) throw error;
+        toast.success('Scheduled emails processed');
+        loadScheduledEmails();
+      } catch (error) {
+        toast.error('Failed to process scheduled emails');
+      }
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">Email Automation</h2>
+            <p className="text-muted-foreground">Schedule emails and set up automated workflows</p>
           </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+          <Button onClick={handleProcessScheduled}>
+            <Play className="w-4 h-4 mr-2" />
+            Process Scheduled Emails
+          </Button>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="border-orange-200 bg-orange-50/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <ShoppingCart className="h-5 w-5 text-orange-500" />
+                Abandoned Cart
+              </CardTitle>
+              <CardDescription>Recover lost sales with automated reminders</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">Sends after 1 hour of cart abandonment</p>
+              <Button onClick={handleTestAbandonedCart} variant="outline" className="w-full">
+                <Zap className="w-4 h-4 mr-2" />
+                Run Now
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-blue-200 bg-blue-50/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <RefreshCw className="h-5 w-5 text-blue-500" />
+                Return Discount
+              </CardTitle>
+              <CardDescription>Re-engage customers with special offers</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">Sends at 9 & 29 days after purchase</p>
+              <Button onClick={handleTestReturnReminder} variant="outline" className="w-full">
+                <Zap className="w-4 h-4 mr-2" />
+                Run Now
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-green-200 bg-green-50/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Mail className="h-5 w-5 text-green-500" />
+                Welcome Series
+              </CardTitle>
+              <CardDescription>Onboard new customers automatically</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">3-email series after signup</p>
+              <Button variant="outline" className="w-full" onClick={() => setActiveView('templates')}>
+                <Settings className="w-4 h-4 mr-2" />
+                Configure Templates
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Scheduled Emails */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Scheduled Emails ({scheduledEmails.length})</CardTitle>
+              <CardDescription>Emails scheduled for future delivery</CardDescription>
+            </div>
+            <Button variant="outline" size="sm" onClick={loadScheduledEmails}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {scheduledEmails.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p>No emails scheduled</p>
+                <p className="text-sm">Automated workflows will queue emails here</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {scheduledEmails.map((email) => (
+                  <div key={email.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                    <div className="flex-1">
+                      <p className="font-medium">{email.email_templates?.name || 'Unknown Template'}</p>
+                      <p className="text-sm text-muted-foreground">To: {email.recipient_email}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-muted-foreground">
+                        <Clock className="w-3 h-3 inline mr-1" />
+                        {new Date(email.scheduled_for).toLocaleString()}
+                      </span>
+                      {getStatusBadge(email.status || 'scheduled')}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
 
   // Email Logs View
   const LogsView = () => {
