@@ -310,6 +310,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                     getRowUrgencyClass(lead)
                   )}
                   onClick={() => setExpandedLead(expandedLead === lead.id ? null : lead.id)}
+                  onMouseEnter={() => handleHoverIntent(lead.id, 'enter')}
+                  onMouseLeave={() => handleHoverIntent(lead.id, 'leave')}
                 >
                   {/* Assigned To - First column, Sticky */}
                   <TableCell className="sticky left-0 bg-inherit z-10" onClick={(e) => e.stopPropagation()}>
