@@ -133,6 +133,21 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         }
       });
 
+      // Save customer data to localStorage for Step 4 pre-population
+      try {
+        const existingCustomerData = localStorage.getItem('buyawarranty_customerData');
+        const parsedData = existingCustomerData ? JSON.parse(existingCustomerData) : {};
+        localStorage.setItem('buyawarranty_customerData', JSON.stringify({
+          ...parsedData,
+          first_name: firstName.trim(),
+          email: email.trim(),
+          phone: phone.trim()
+        }));
+        console.log('✅ Saved customer data to localStorage for Step 4');
+      } catch (error) {
+        console.error('Error saving customer data to localStorage:', error);
+      }
+
       // Create lead in sales_leads table
       const { data: nextUserId } = await supabase.rpc('get_next_sales_user');
       
