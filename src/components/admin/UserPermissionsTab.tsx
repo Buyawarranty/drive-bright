@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings } from 'lucide-react';
+import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download } from 'lucide-react';
 import { AccessRequestsPanel } from './AccessRequestsPanel';
 import { TeamActivityPanel } from './TeamActivityPanel';
 
@@ -37,8 +37,8 @@ interface Permission {
 // Define all admin tabs that can be granted as permissions
 const ADMIN_TABS = [
   { id: 'get-quote', label: 'Send a Quote', description: 'Generate and send quotes to customers' },
-  { id: 'customers', label: 'Customers', description: 'Manage customer accounts and policies' },
-  { id: 'new-leads', label: 'New Leads', description: 'Manage sales pipeline and lead assignments' },
+  { id: 'customers', label: 'Customers', description: 'Manage customer accounts and policies', hasGranular: true },
+  { id: 'new-leads', label: 'New Leads', description: 'Manage sales pipeline and lead assignments', hasGranular: true },
   { id: 'plans', label: 'Standard Plans', description: 'Manage Basic, Gold, and Platinum plans' },
   { id: 'bulk-pricing', label: 'Bulk Pricing', description: 'Update pricing using CSV files' },
   { id: 'special-plans', label: 'Special Vehicle Plans', description: 'Manage EV, PHEV, and Motorbike plans' },
@@ -57,6 +57,18 @@ const ADMIN_TABS = [
   { id: 'testing', label: 'Testing', description: 'Test APIs and create test data' },
   { id: 'account', label: 'Account Settings', description: 'Manage your account and password' },
 ];
+
+// Granular permissions for specific tabs
+const GRANULAR_PERMISSIONS = {
+  'customers': [
+    { key: 'view', label: 'View', description: 'Can view customer data' },
+    { key: 'export', label: 'Export', description: 'Can export customer data to CSV/Excel' },
+  ],
+  'new-leads': [
+    { key: 'view', label: 'View', description: 'Can view lead data' },
+    { key: 'export', label: 'Export', description: 'Can export lead data to CSV/Excel' },
+  ],
+};
 
 export const UserPermissionsTab = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -352,6 +364,28 @@ export const UserPermissionsTab = () => {
     return ADMIN_TABS.filter(tab => permissions[`tab_${tab.id}`]).length;
   };
 
+  const toggleGranularPermission = (tabId: string, permKey: string, isEditing: boolean) => {
+    const fullKey = `tab_${tabId}_${permKey}`;
+    
+    if (isEditing && editingUser) {
+      setEditingUser(prev => prev ? {
+        ...prev,
+        permissions: {
+          ...prev.permissions,
+          [fullKey]: !prev.permissions[fullKey]
+        }
+      } : null);
+    } else {
+      setInviteData(prev => ({
+        ...prev,
+        permissions: {
+          ...prev.permissions,
+          [fullKey]: !prev.permissions[fullKey]
+        }
+      }));
+    }
+  };
+
   const groupedPermissions = permissions.reduce((acc, permission) => {
     if (!acc[permission.category]) {
       acc[permission.category] = [];
@@ -386,35 +420,69 @@ export const UserPermissionsTab = () => {
       <p className="text-sm text-muted-foreground">
         Select which admin panel tabs this user can access
       </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto border rounded-lg p-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto border rounded-lg p-4">
         {ADMIN_TABS.map((tab) => {
           const permKey = `tab_${tab.id}`;
           const isChecked = perms[permKey] || false;
+          const granularPerms = GRANULAR_PERMISSIONS[tab.id as keyof typeof GRANULAR_PERMISSIONS];
           
           return (
             <div 
               key={tab.id} 
-              className={`flex items-start space-x-3 p-3 rounded-lg border transition-colors ${
+              className={`flex flex-col p-3 rounded-lg border transition-colors ${
                 isChecked ? 'bg-primary/5 border-primary/20' : 'bg-background hover:bg-muted/50'
               }`}
             >
-              <Checkbox
-                id={`${isEditing ? 'edit' : 'invite'}-${permKey}`}
-                checked={isChecked}
-                onCheckedChange={() => toggleTabPermission(tab.id, isEditing)}
-                className="mt-0.5"
-              />
-              <div className="flex-1 min-w-0">
-                <Label 
-                  htmlFor={`${isEditing ? 'edit' : 'invite'}-${permKey}`} 
-                  className="text-sm font-medium cursor-pointer"
-                >
-                  {tab.label}
-                </Label>
-                <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                  {tab.description}
-                </p>
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id={`${isEditing ? 'edit' : 'invite'}-${permKey}`}
+                  checked={isChecked}
+                  onCheckedChange={() => toggleTabPermission(tab.id, isEditing)}
+                  className="mt-0.5"
+                />
+                <div className="flex-1 min-w-0">
+                  <Label 
+                    htmlFor={`${isEditing ? 'edit' : 'invite'}-${permKey}`} 
+                    className="text-sm font-medium cursor-pointer"
+                  >
+                    {tab.label}
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                    {tab.description}
+                  </p>
+                </div>
               </div>
+              
+              {/* Granular permissions for specific tabs */}
+              {isChecked && granularPerms && (
+                <div className="ml-7 mt-3 pt-3 border-t border-border/50 space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground mb-2">Permissions:</p>
+                  <div className="flex flex-wrap gap-3">
+                    {granularPerms.map((gPerm) => {
+                      const gPermKey = `tab_${tab.id}_${gPerm.key}`;
+                      const gIsChecked = perms[gPermKey] || false;
+                      
+                      return (
+                        <div key={gPerm.key} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`${isEditing ? 'edit' : 'invite'}-${gPermKey}`}
+                            checked={gIsChecked}
+                            onCheckedChange={() => toggleGranularPermission(tab.id, gPerm.key, isEditing)}
+                            className="h-3.5 w-3.5"
+                          />
+                          <Label 
+                            htmlFor={`${isEditing ? 'edit' : 'invite'}-${gPermKey}`}
+                            className="text-xs cursor-pointer"
+                            title={gPerm.description}
+                          >
+                            {gPerm.label}
+                          </Label>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

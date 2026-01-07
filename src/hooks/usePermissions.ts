@@ -14,6 +14,8 @@ interface UsePermissionsReturn {
   canEditTab: (tabKey: string) => boolean;
   canDeleteTab: (tabKey: string) => boolean;
   canExportTab: (tabKey: string) => boolean;
+  // Granular tab permissions (view/export for customers and new-leads)
+  hasGranularPermission: (tabKey: string, permissionKey: string) => boolean;
   // Column masking
   getMaskLevel: (columnKey: string) => MaskLevel;
   maskValue: (value: string | null | undefined, columnKey: string) => string;
@@ -23,6 +25,8 @@ interface UsePermissionsReturn {
   canApproveDiscount: (percent: number) => boolean;
   // Refresh
   refreshPermissions: () => Promise<void>;
+  // Raw permissions for legacy checks
+  rawPermissions: Record<string, boolean>;
 }
 
 export function usePermissions(): UsePermissionsReturn {
@@ -30,6 +34,7 @@ export function usePermissions(): UsePermissionsReturn {
   const [policy, setPolicy] = useState<PermissionPolicy | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [rawPermissions, setRawPermissions] = useState<Record<string, boolean>>({});
 
   const fetchPermissions = useCallback(async () => {
     if (!user?.id) {
@@ -75,10 +80,14 @@ export function usePermissions(): UsePermissionsReturn {
           actions: policyData.action_permissions ?? {},
           elevated_until: policyData.elevated_until,
         });
+        setRawPermissions({});
       } else {
         // Fallback to legacy permissions
         const legacyPerms = adminUser.permissions as Record<string, boolean> || {};
         const columnMasking = (adminUser as any).column_masking as Record<string, any> || {};
+        
+        // Store raw permissions for granular checks
+        setRawPermissions(legacyPerms);
         
         // Convert legacy tab permissions
         const tabs: Record<string, TabPermission> = {};
@@ -174,6 +183,12 @@ export function usePermissions(): UsePermissionsReturn {
     return allowed && percent <= limit_percent;
   }, [policy]);
 
+  // Check granular permissions like tab_customers_view, tab_new-leads_export
+  const hasGranularPermission = useCallback((tabKey: string, permissionKey: string): boolean => {
+    const key = `tab_${tabKey}_${permissionKey}`;
+    return rawPermissions[key] === true;
+  }, [rawPermissions]);
+
   return {
     policy,
     loading,
@@ -182,11 +197,13 @@ export function usePermissions(): UsePermissionsReturn {
     canEditTab,
     canDeleteTab,
     canExportTab,
+    hasGranularPermission,
     getMaskLevel,
     maskValue,
     canInviteUsers,
     canManageRoles,
     canApproveDiscount,
     refreshPermissions: fetchPermissions,
+    rawPermissions,
   };
 }
