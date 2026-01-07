@@ -8,15 +8,18 @@ import { SalespersonDashboard } from './SalespersonDashboard';
 import { ManagerDashboard } from './ManagerDashboard';
 import { ManualOrderEntry } from '../ManualOrderEntry';
 import { MyRemindersPanel } from './MyRemindersPanel';
-import { Users, UserCircle, LayoutDashboard, Bell } from 'lucide-react';
+import { Users, UserCircle, LayoutDashboard, Bell, BellOff, PanelRightClose, PanelRight } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 export const NewLeadsTab: React.FC = () => {
   const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard'>('leads');
   const [searchTerm, setSearchTerm] = useState('');
   const [remindersOpen, setRemindersOpen] = useState(true);
+  const [showRemindersPanel, setShowRemindersPanel] = useState(true);
   
   const {
     leads,
@@ -81,6 +84,41 @@ export const NewLeadsTab: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-3">
+          {/* Toggle Reminders Panel Button */}
+          <TooltipProvider>
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={showRemindersPanel ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowRemindersPanel(!showRemindersPanel)}
+                  className={cn(
+                    "gap-2 transition-all duration-150",
+                    showRemindersPanel 
+                      ? "bg-primary text-primary-foreground" 
+                      : "hover:bg-primary/10"
+                  )}
+                  aria-label={showRemindersPanel ? "Hide reminders panel" : "Show reminders panel"}
+                >
+                  {showRemindersPanel ? (
+                    <>
+                      <PanelRightClose className="h-4 w-4" />
+                      <span className="hidden sm:inline">Hide Reminders</span>
+                    </>
+                  ) : (
+                    <>
+                      <Bell className="h-4 w-4" />
+                      <span className="hidden sm:inline">Show Reminders</span>
+                    </>
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs">
+                {showRemindersPanel ? "Hide reminders panel" : "Show reminders panel"}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          
           {/* Add Manual Order Button */}
           <ManualOrderEntry />
           
@@ -106,7 +144,10 @@ export const NewLeadsTab: React.FC = () => {
 
       {/* Content based on view */}
       {activeView === 'leads' && (
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-4">
+        <div className={cn(
+          "grid grid-cols-1 gap-4 transition-all duration-200",
+          showRemindersPanel ? "xl:grid-cols-[1fr_320px]" : "xl:grid-cols-1"
+        )}>
           {/* Main Leads Section */}
           <div className="space-y-4 min-w-0">
             <LeadsFilters
@@ -140,33 +181,35 @@ export const NewLeadsTab: React.FC = () => {
             </Card>
           </div>
 
-          {/* My Reminders Sidebar */}
-          <div className="space-y-4">
-            {/* Collapsible on mobile/tablet, always visible on XL */}
-            <div className="xl:hidden">
-              <Collapsible open={remindersOpen} onOpenChange={setRemindersOpen}>
-                <CollapsibleTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-between mb-2"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Bell className="h-4 w-4" />
-                      My Reminders
-                    </div>
-                    {remindersOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                  </Button>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <MyRemindersPanel compact />
-                </CollapsibleContent>
-              </Collapsible>
+          {/* My Reminders Sidebar - Conditionally rendered */}
+          {showRemindersPanel && (
+            <div className="space-y-4 animate-fade-in">
+              {/* Collapsible on mobile/tablet */}
+              <div className="xl:hidden">
+                <Collapsible open={remindersOpen} onOpenChange={setRemindersOpen}>
+                  <CollapsibleTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-between mb-2 hover:bg-muted/50"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Bell className="h-4 w-4" />
+                        My Reminders
+                      </div>
+                      {remindersOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="animate-accordion-down">
+                    <MyRemindersPanel compact />
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
+              {/* Always visible on XL screens */}
+              <div className="hidden xl:block">
+                <MyRemindersPanel />
+              </div>
             </div>
-            {/* Always visible on XL screens */}
-            <div className="hidden xl:block">
-              <MyRemindersPanel />
-            </div>
-          </div>
+          )}
         </div>
       )}
 
