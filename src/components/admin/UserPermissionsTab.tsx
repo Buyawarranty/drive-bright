@@ -10,9 +10,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download } from 'lucide-react';
+import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck } from 'lucide-react';
 import { AccessRequestsPanel } from './AccessRequestsPanel';
 import { TeamActivityPanel } from './TeamActivityPanel';
+import { useAuth } from '@/hooks/useAuth';
 
 interface AdminUser {
   id: string;
@@ -71,12 +72,14 @@ const GRANULAR_PERMISSIONS = {
 };
 
 export const UserPermissionsTab = () => {
+  const { user } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
+  const [currentAdminUser, setCurrentAdminUser] = useState<AdminUser | null>(null);
   const [inviteData, setInviteData] = useState({
     email: '',
     firstName: '',
@@ -90,7 +93,25 @@ export const UserPermissionsTab = () => {
   useEffect(() => {
     fetchUsers();
     fetchPermissions();
-  }, []);
+    fetchCurrentAdmin();
+  }, [user?.id]);
+
+  const fetchCurrentAdmin = async () => {
+    if (!user?.id) return;
+    try {
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!error && data) {
+        setCurrentAdminUser(data as AdminUser);
+      }
+    } catch (error) {
+      console.error('Error fetching current admin:', error);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -496,6 +517,28 @@ export const UserPermissionsTab = () => {
 
   return (
     <div className="space-y-6">
+      {/* Logged-in Admin Banner */}
+      <Card className="bg-primary/5 border-primary/20">
+        <CardContent className="py-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-full bg-primary/10">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Logged in as</p>
+              <p className="font-semibold text-foreground">
+                {currentAdminUser 
+                  ? `${currentAdminUser.first_name || ''} ${currentAdminUser.last_name || ''}`.trim() || currentAdminUser.email
+                  : user?.email || 'Unknown'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {currentAdminUser?.email || user?.email} • <Badge variant="destructive" className="text-xs py-0 px-1.5">{currentAdminUser?.role || 'admin'}</Badge>
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Team Activity Panel */}
       <TeamActivityPanel />
       
