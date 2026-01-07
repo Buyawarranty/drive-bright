@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Plus, Edit, Eye, Send, Users, Calendar, TrendingUp } from 'lucide-react';
+import { Mail, Plus, Edit, Eye, Send, Users, Calendar, TrendingUp, Bold, Italic, Link, Smile, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -723,47 +724,86 @@ const EmailManagementTab = () => {
 
         <TabsContent value="logs" className="space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle>Recent Email Activity</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                Email Confirmation Log
+              </CardTitle>
+              <div className="flex items-center gap-4 text-sm">
+                <div className="flex items-center gap-1">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span>{emailLogs.filter(l => l.status === 'sent').length} Sent</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Clock className="h-4 w-4 text-yellow-600" />
+                  <span>{emailLogs.filter(l => l.status === 'pending').length} Pending</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <XCircle className="h-4 w-4 text-red-600" />
+                  <span>{emailLogs.filter(l => l.status === 'failed').length} Failed</span>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {emailLogs.map((log) => (
-                  <div key={log.id} className="flex justify-between items-center p-3 border rounded-lg">
-                    <div className="space-y-1 flex-1">
-                      <div className="font-medium">{log.subject}</div>
-                      <div className="text-sm text-muted-foreground">
-                        To: {log.recipient_email}
+              <div className="space-y-3">
+                {emailLogs.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">No email logs yet</p>
+                ) : (
+                  emailLogs.map((log) => (
+                    <div key={log.id} className={`flex justify-between items-center p-4 border rounded-lg ${
+                      log.status === 'sent' ? 'border-l-4 border-l-green-500 bg-green-50/50' :
+                      log.status === 'failed' ? 'border-l-4 border-l-red-500 bg-red-50/50' :
+                      'border-l-4 border-l-yellow-500 bg-yellow-50/50'
+                    }`}>
+                      <div className="space-y-1 flex-1">
+                        <div className="flex items-center gap-2">
+                          {log.status === 'sent' ? (
+                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          ) : log.status === 'failed' ? (
+                            <XCircle className="h-4 w-4 text-red-600" />
+                          ) : (
+                            <Clock className="h-4 w-4 text-yellow-600" />
+                          )}
+                          <span className="font-medium">{log.subject}</span>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          To: <span className="font-mono">{log.recipient_email}</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground flex items-center gap-2">
+                          <span>{log.template?.name || 'Manual'}</span>
+                          <span>•</span>
+                          <span>{new Date(log.sent_at || log.created_at).toLocaleString('en-GB', { 
+                            day: '2-digit', month: 'short', year: 'numeric', 
+                            hour: '2-digit', minute: '2-digit' 
+                          })}</span>
+                          {log.template?.template_type && (
+                            <Badge variant="outline" className="text-xs">
+                              {log.template.template_type}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {log.template?.name} • {new Date(log.sent_at || log.created_at).toLocaleString()}
-                        {log.template?.template_type && (
-                          <Badge variant="outline" className="ml-2 text-xs">
-                            {log.template.template_type}
-                          </Badge>
+                      <div className="text-right space-y-2 flex flex-col items-end">
+                        {getStatusBadge(log.status)}
+                        {log.status === 'sent' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleResendEmail(log)}
+                            disabled={isResending === log.id}
+                          >
+                            {isResending === log.id ? 'Resending...' : 'Resend'}
+                          </Button>
+                        )}
+                        {log.error_message && (
+                          <div className="text-xs text-red-600 max-w-48 truncate" title={log.error_message}>
+                            {log.error_message}
+                          </div>
                         )}
                       </div>
                     </div>
-                    <div className="text-right space-y-2 flex flex-col items-end">
-                      {getStatusBadge(log.status)}
-                      {log.status === 'sent' && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleResendEmail(log)}
-                          disabled={isResending === log.id}
-                        >
-                          {isResending === log.id ? 'Resending...' : 'Resend'}
-                        </Button>
-                      )}
-                      {log.error_message && (
-                        <div className="text-xs text-red-600 max-w-48 truncate">
-                          {log.error_message}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -980,6 +1020,7 @@ const EmailManagementTab = () => {
                     <SelectItem value="abandoned_cart">Abandoned Cart</SelectItem>
                     <SelectItem value="expiry">Expiry</SelectItem>
                     <SelectItem value="feedback">Feedback</SelectItem>
+                    <SelectItem value="review">Review Request</SelectItem>
                     <SelectItem value="sales">Sales</SelectItem>
                     <SelectItem value="marketing">Marketing</SelectItem>
                     <SelectItem value="claims">Claims</SelectItem>
@@ -1016,12 +1057,107 @@ const EmailManagementTab = () => {
 
               <div>
                 <Label htmlFor="content">Email Content</Label>
+                {/* Formatting Toolbar */}
+                <div className="flex items-center gap-1 mb-2 p-2 border rounded-t-lg bg-muted/50">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const textarea = document.getElementById('content') as HTMLTextAreaElement;
+                      const start = textarea?.selectionStart || 0;
+                      const end = textarea?.selectionEnd || 0;
+                      const text = formData.content;
+                      const selectedText = text.substring(start, end);
+                      const newText = text.substring(0, start) + `<strong>${selectedText}</strong>` + text.substring(end);
+                      setFormData({...formData, content: newText});
+                    }}
+                    title="Bold"
+                  >
+                    <Bold className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const textarea = document.getElementById('content') as HTMLTextAreaElement;
+                      const start = textarea?.selectionStart || 0;
+                      const end = textarea?.selectionEnd || 0;
+                      const text = formData.content;
+                      const selectedText = text.substring(start, end);
+                      const newText = text.substring(0, start) + `<em>${selectedText}</em>` + text.substring(end);
+                      setFormData({...formData, content: newText});
+                    }}
+                    title="Italic"
+                  >
+                    <Italic className="h-4 w-4" />
+                  </Button>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button type="button" variant="ghost" size="sm" title="Insert Link">
+                        <Link className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80">
+                      <div className="space-y-3">
+                        <Label>Insert Hyperlink</Label>
+                        <Input
+                          id="link-text"
+                          placeholder="Link text (e.g., Click here)"
+                        />
+                        <Input
+                          id="link-url"
+                          placeholder="URL (e.g., https://example.com)"
+                        />
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            const linkText = (document.getElementById('link-text') as HTMLInputElement)?.value || 'Link';
+                            const linkUrl = (document.getElementById('link-url') as HTMLInputElement)?.value || '#';
+                            const hyperlink = `<a href="${linkUrl}" style="color: #ea580c; text-decoration: underline;">${linkText}</a>`;
+                            setFormData({...formData, content: formData.content + hyperlink});
+                          }}
+                        >
+                          Insert Link
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button type="button" variant="ghost" size="sm" title="Insert Emoji">
+                        <Smile className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-64">
+                      <div className="space-y-2">
+                        <Label>Quick Emojis</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {['👋', '⭐', '🎉', '✅', '🚗', '🔧', '💪', '❤️', '👍', '🙏', '📧', '📞', '🛡️', '✨', '🏆', '💯'].map((emoji) => (
+                            <Button
+                              key={emoji}
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="text-lg p-2"
+                              onClick={() => setFormData({...formData, content: formData.content + emoji})}
+                            >
+                              {emoji}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
                 <Textarea
                   id="content"
                   value={formData.content}
                   onChange={(e) => setFormData({...formData, content: e.target.value})}
                   placeholder="Email content with {{variables}}"
                   rows={12}
+                  className="rounded-t-none"
                 />
               </div>
 
