@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useLeadReminders, ReminderPreset } from '@/hooks/useLeadReminders';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,15 +7,18 @@ import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { 
   Bell, BellRing, Clock, Calendar as CalendarIcon, 
-  Sun, Sunrise, CalendarDays, X, Check, AlarmClock
+  Sun, Sunrise, CalendarDays, X, Check, AlarmClock, Loader2
 } from 'lucide-react';
 import { format, isToday, isTomorrow, isPast, formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface RemindMePopoverProps {
   leadId: string;
   compact?: boolean;
 }
+
+type LabelSaveState = 'idle' | 'saving' | 'saved' | 'error';
 
 export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compact = false }) => {
   const { currentReminder, createReminder, snoozeReminder, dismissReminder, completeReminder } = useLeadReminders(leadId);
@@ -24,7 +27,43 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
   const [customDate, setCustomDate] = useState<Date | undefined>(undefined);
   const [customTime, setCustomTime] = useState('09:00');
   const [label, setLabel] = useState('');
+  const [labelSaveState, setLabelSaveState] = useState<LabelSaveState>('idle');
   const [showSnoozeOptions, setShowSnoozeOptions] = useState(false);
+  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
+  const labelSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  // Autosave label after 700ms
+  const handleLabelChange = (value: string) => {
+    const trimmedValue = value.slice(0, 120);
+    setLabel(trimmedValue);
+    setLabelSaveState('idle');
+    
+    if (labelSaveTimeoutRef.current) {
+      clearTimeout(labelSaveTimeoutRef.current);
+    }
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (labelSaveTimeoutRef.current) {
+        clearTimeout(labelSaveTimeoutRef.current);
+      }
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout);
+      }
+    };
+  }, [hoverTimeout]);
+
+  // Handle keyboard shortcuts for label (Ctrl/Cmd + Enter to save immediately)
+  const handleLabelKeyDown = (e: React.KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      // Trigger immediate preset selection
+      handlePresetSelect('today');
+    }
+  };
 
   const handlePresetSelect = async (preset: ReminderPreset) => {
     if (preset === 'custom') {
@@ -32,9 +71,17 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
       return;
     }
     
-    await createReminder(leadId, preset, undefined, label || undefined);
-    setLabel('');
-    setOpen(false);
+    setLabelSaveState('saving');
+    try {
+      await createReminder(leadId, preset, undefined, label || undefined);
+      setLabelSaveState('saved');
+      toast.success('Reminder set ✓', { duration: 1500 });
+      setLabel('');
+      setOpen(false);
+    } catch (error) {
+      setLabelSaveState('error');
+      toast.error("Couldn't set reminder. Try again.");
+    }
   };
 
   const handleCustomSubmit = async () => {
@@ -44,31 +91,54 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
     const dateTime = new Date(customDate);
     dateTime.setHours(hours, minutes, 0, 0);
     
-    await createReminder(leadId, 'custom', dateTime, label || undefined);
-    setCustomDate(undefined);
-    setCustomTime('09:00');
-    setLabel('');
-    setShowCustom(false);
-    setOpen(false);
+    setLabelSaveState('saving');
+    try {
+      await createReminder(leadId, 'custom', dateTime, label || undefined);
+      setLabelSaveState('saved');
+      toast.success('Reminder set ✓', { duration: 1500 });
+      setCustomDate(undefined);
+      setCustomTime('09:00');
+      setLabel('');
+      setShowCustom(false);
+      setOpen(false);
+    } catch (error) {
+      setLabelSaveState('error');
+      toast.error("Couldn't set reminder. Try again.");
+    }
   };
 
   const handleSnooze = async (preset: ReminderPreset) => {
     if (!currentReminder) return;
-    await snoozeReminder(currentReminder.id, preset);
-    setShowSnoozeOptions(false);
-    setOpen(false);
+    try {
+      await snoozeReminder(currentReminder.id, preset);
+      toast.success('Snoozed ✓', { duration: 1500 });
+      setShowSnoozeOptions(false);
+      setOpen(false);
+    } catch (error) {
+      toast.error("Couldn't snooze. Try again.");
+    }
   };
 
   const handleDismiss = async () => {
     if (!currentReminder) return;
-    await dismissReminder(currentReminder.id);
-    setOpen(false);
+    try {
+      await dismissReminder(currentReminder.id);
+      toast.success('Dismissed', { duration: 1500 });
+      setOpen(false);
+    } catch (error) {
+      toast.error("Couldn't dismiss. Try again.");
+    }
   };
 
   const handleComplete = async () => {
     if (!currentReminder) return;
-    await completeReminder(currentReminder.id);
-    setOpen(false);
+    try {
+      await completeReminder(currentReminder.id);
+      toast.success('Done ✓', { duration: 1500 });
+      setOpen(false);
+    } catch (error) {
+      toast.error("Couldn't complete. Try again.");
+    }
   };
 
   const getReminderStatus = () => {
@@ -87,7 +157,54 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
     return { label: format(reminderTime, 'MMM d'), color: 'bg-blue-100 text-blue-800', urgent: false };
   };
 
+  // Hover intent handler for opening popover (450-600ms delay)
+  const handleMouseEnter = () => {
+    if (open) return;
+    const timeout = setTimeout(() => {
+      setOpen(true);
+    }, 500);
+    setHoverTimeout(timeout);
+  };
+
+  const handleMouseLeave = () => {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
+      setHoverTimeout(null);
+    }
+  };
+
   const status = getReminderStatus();
+
+  const getLabelSaveIndicator = () => {
+    switch (labelSaveState) {
+      case 'saving':
+        return (
+          <span className="flex items-center gap-1 text-muted-foreground text-[10px]">
+            <Loader2 className="h-2.5 w-2.5 animate-spin" />
+            Saving…
+          </span>
+        );
+      case 'saved':
+        return (
+          <span className="flex items-center gap-1 text-green-600 text-[10px]">
+            <Check className="h-2.5 w-2.5" />
+            Saved
+          </span>
+        );
+      case 'error':
+        return (
+          <span className="text-destructive text-[10px]">
+            Couldn't save
+          </span>
+        );
+      default:
+        return label.length > 0 ? (
+          <span className="text-muted-foreground text-[10px]">
+            {label.length}/120
+          </span>
+        ) : null;
+    }
+  };
 
   // If there's an active reminder, show reminder badge
   if (currentReminder && !open) {
@@ -95,12 +212,16 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
+            ref={triggerRef}
             variant="ghost"
             size="sm"
             className={cn(
-              "h-7 gap-1.5 px-2",
+              "h-7 gap-1.5 px-2 transition-all duration-150 hover:scale-105 hover:shadow-sm",
               status?.urgent && "animate-pulse"
             )}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            aria-label="View reminder"
           >
             <BellRing className={cn("h-3.5 w-3.5", status?.urgent && "text-amber-500")} />
             <Badge className={cn("text-[10px] px-1.5 py-0", status?.color)}>
@@ -108,7 +229,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
             </Badge>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-72 p-3" align="start">
+        <PopoverContent className="w-72 p-3 animate-scale-in" align="start">
           <div className="space-y-3">
             <div className="flex items-start justify-between">
               <div>
@@ -123,8 +244,9 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6"
+                className="h-6 w-6 hover:scale-110 transition-transform"
                 onClick={() => setOpen(false)}
+                aria-label="Close"
               >
                 <X className="h-3.5 w-3.5" />
               </Button>
@@ -134,13 +256,28 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
               <div className="space-y-2">
                 <p className="text-xs font-medium text-muted-foreground">Snooze until</p>
                 <div className="grid grid-cols-3 gap-2">
-                  <Button variant="outline" size="sm" className="text-xs" onClick={() => handleSnooze('today')}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-xs hover:scale-105 transition-transform" 
+                    onClick={() => handleSnooze('today')}
+                  >
                     Later today
                   </Button>
-                  <Button variant="outline" size="sm" className="text-xs" onClick={() => handleSnooze('tomorrow')}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-xs hover:scale-105 transition-transform" 
+                    onClick={() => handleSnooze('tomorrow')}
+                  >
                     Tomorrow
                   </Button>
-                  <Button variant="outline" size="sm" className="text-xs" onClick={() => handleSnooze('next_week')}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-xs hover:scale-105 transition-transform" 
+                    onClick={() => handleSnooze('next_week')}
+                  >
                     Next week
                   </Button>
                 </div>
@@ -158,7 +295,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-1 gap-1.5 text-xs"
+                  className="flex-1 gap-1.5 text-xs hover:scale-105 transition-transform"
                   onClick={() => setShowSnoozeOptions(true)}
                 >
                   <AlarmClock className="h-3.5 w-3.5" />
@@ -167,7 +304,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-1 gap-1.5 text-xs"
+                  className="flex-1 gap-1.5 text-xs hover:scale-105 transition-transform"
                   onClick={handleDismiss}
                 >
                   <X className="h-3.5 w-3.5" />
@@ -175,7 +312,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
                 </Button>
                 <Button
                   size="sm"
-                  className="flex-1 gap-1.5 text-xs"
+                  className="flex-1 gap-1.5 text-xs hover:scale-105 transition-transform"
                   onClick={handleComplete}
                 >
                   <Check className="h-3.5 w-3.5" />
@@ -197,22 +334,27 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
         setShowCustom(false);
         setCustomDate(undefined);
         setLabel('');
+        setLabelSaveState('idle');
       }
     }}>
       <PopoverTrigger asChild>
         <Button
+          ref={triggerRef}
           variant="ghost"
           size="sm"
           className={cn(
-            "gap-1.5",
+            "gap-1.5 transition-all duration-150 hover:scale-105 hover:shadow-sm",
             compact ? "h-7 px-2 text-xs" : "h-8"
           )}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          aria-label="Set reminder"
         >
           <Bell className="h-3.5 w-3.5" />
           {!compact && "Remind me"}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-72 p-3" align="start">
+      <PopoverContent className="w-72 p-3 animate-scale-in" align="start">
         {showCustom ? (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -220,8 +362,9 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6"
+                className="h-6 w-6 hover:scale-110 transition-transform"
                 onClick={() => setShowCustom(false)}
+                aria-label="Back"
               >
                 <X className="h-3.5 w-3.5" />
               </Button>
@@ -241,11 +384,13 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
                 value={customTime}
                 onChange={(e) => setCustomTime(e.target.value)}
                 className="flex-1"
+                aria-label="Reminder time"
               />
               <Button
                 size="sm"
                 disabled={!customDate}
                 onClick={handleCustomSubmit}
+                className="hover:scale-105 transition-transform"
               >
                 Set
               </Button>
@@ -255,20 +400,27 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
           <div className="space-y-3">
             <p className="font-medium text-sm">Remind me</p>
             
-            {/* Label input */}
-            <Input
-              placeholder="Add a note (optional)"
-              value={label}
-              onChange={(e) => setLabel(e.target.value.slice(0, 120))}
-              className="text-sm"
-              maxLength={120}
-            />
+            {/* Label input with autosave feedback */}
+            <div className="relative">
+              <Input
+                placeholder="Add a note (optional)"
+                value={label}
+                onChange={(e) => handleLabelChange(e.target.value)}
+                onKeyDown={handleLabelKeyDown}
+                className="text-sm pr-12"
+                maxLength={120}
+                aria-label="Reminder note"
+              />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                {getLabelSaveIndicator()}
+              </div>
+            </div>
             
             {/* Preset options */}
             <div className="space-y-1">
               <Button
                 variant="ghost"
-                className="w-full justify-start gap-3 h-9"
+                className="w-full justify-start gap-3 h-9 hover:scale-[1.02] transition-transform"
                 onClick={() => handlePresetSelect('today')}
               >
                 <Sun className="h-4 w-4 text-amber-500" />
@@ -277,7 +429,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
               </Button>
               <Button
                 variant="ghost"
-                className="w-full justify-start gap-3 h-9"
+                className="w-full justify-start gap-3 h-9 hover:scale-[1.02] transition-transform"
                 onClick={() => handlePresetSelect('tomorrow')}
               >
                 <Sunrise className="h-4 w-4 text-orange-500" />
@@ -286,7 +438,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
               </Button>
               <Button
                 variant="ghost"
-                className="w-full justify-start gap-3 h-9"
+                className="w-full justify-start gap-3 h-9 hover:scale-[1.02] transition-transform"
                 onClick={() => handlePresetSelect('next_week')}
               >
                 <CalendarDays className="h-4 w-4 text-blue-500" />
@@ -295,7 +447,7 @@ export const RemindMePopover: React.FC<RemindMePopoverProps> = ({ leadId, compac
               </Button>
               <Button
                 variant="ghost"
-                className="w-full justify-start gap-3 h-9"
+                className="w-full justify-start gap-3 h-9 hover:scale-[1.02] transition-transform"
                 onClick={() => handlePresetSelect('custom')}
               >
                 <CalendarIcon className="h-4 w-4 text-purple-500" />

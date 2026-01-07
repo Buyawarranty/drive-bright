@@ -6,12 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { RemindMePopover } from './RemindMePopover';
+import { CopyButton } from './CopyButton';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, 
   Tag, User, Clock, AlertTriangle, Copy, FileText, StickyNote,
-  CheckCircle, CreditCard, ChevronDown, ChevronUp, Send, ExternalLink, Flame
+  CheckCircle, CreditCard, ChevronDown, ChevronUp, Send, ExternalLink, Flame, Check
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -117,6 +119,86 @@ const getRowUrgencyClass = (lead: Lead): string => {
   return 'hover:bg-muted/50';
 };
 
+// Copy-first text component for phone numbers
+const PhoneCopyText: React.FC<{ phone: string }> = ({ phone }) => {
+  const [copied, setCopied] = useState(false);
+  
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(phone);
+      setCopied(true);
+      toast.success('Phone number copied to clipboard', { duration: 1500 });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast.error('Failed to copy');
+    }
+  };
+  
+  return (
+    <Tooltip delayDuration={100}>
+      <TooltipTrigger asChild>
+        <span 
+          className={cn(
+            "text-xs font-medium cursor-pointer hover:text-primary select-all truncate max-w-[100px] transition-colors",
+            copied && "text-green-600"
+          )}
+          onClick={handleCopy}
+          title={phone}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleCopy(); }}
+          aria-label="Copy phone number"
+        >
+          {copied ? 'Copied ✓' : formatUKPhone(phone)}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="text-xs">
+        {copied ? 'Copied ✓' : 'Click to copy'}
+      </TooltipContent>
+    </Tooltip>
+  );
+};
+
+// Copy-first text component for emails
+const EmailCopyText: React.FC<{ email: string }> = ({ email }) => {
+  const [copied, setCopied] = useState(false);
+  
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(email);
+      setCopied(true);
+      toast.success('Email copied to clipboard', { duration: 1500 });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast.error('Failed to copy');
+    }
+  };
+  
+  return (
+    <Tooltip delayDuration={100}>
+      <TooltipTrigger asChild>
+        <span 
+          className={cn(
+            "text-xs cursor-pointer hover:text-primary select-all truncate max-w-[120px] transition-colors",
+            copied && "text-green-600"
+          )}
+          onClick={handleCopy}
+          title={email}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleCopy(); }}
+          aria-label="Copy email address"
+        >
+          {copied ? 'Copied ✓' : email}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="text-xs">
+        {copied ? 'Copied ✓' : 'Click to copy'}
+      </TooltipContent>
+    </Tooltip>
+  );
+};
+
 export const LeadsTable: React.FC<LeadsTableProps> = ({
   leads,
   tags,
@@ -135,7 +217,27 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
+  const [hoverTimeouts, setHoverTimeouts] = useState<Record<string, NodeJS.Timeout>>({});
   const navigate = useNavigate();
+
+  // Hover intent handler (450-600ms delay before opening)
+  const handleHoverIntent = useCallback((leadId: string, action: 'enter' | 'leave') => {
+    if (action === 'enter') {
+      const timeout = setTimeout(() => {
+        setExpandedLead(leadId);
+      }, 500); // 500ms hover intent
+      setHoverTimeouts(prev => ({ ...prev, [leadId]: timeout }));
+    } else {
+      if (hoverTimeouts[leadId]) {
+        clearTimeout(hoverTimeouts[leadId]);
+        setHoverTimeouts(prev => {
+          const newTimeouts = { ...prev };
+          delete newTimeouts[leadId];
+          return newTimeouts;
+        });
+      }
+    }
+  }, [hoverTimeouts]);
 
   const handleViewCustomer = (email: string) => {
     // Navigate to customers tab with email filter pre-applied
@@ -275,76 +377,79 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
 
                   {/* Quick Actions */}
                   <TableCell onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center gap-1">
-                      {/* Expand/Collapse - Primary action, hover to open instantly with sound */}
-                      <Button 
-                        variant={expandedLead === lead.id ? "default" : "outline"}
-                        size="icon"
-                        className={cn(
-                          "h-9 w-9 transition-all duration-100",
-                          expandedLead === lead.id 
-                            ? "bg-primary text-primary-foreground shadow-lg scale-105" 
-                            : "border-2 border-primary hover:border-primary hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-lg"
-                        )}
-                        onMouseEnter={() => {
-                          if (expandedLead !== lead.id) {
-                            setExpandedLead(lead.id);
-                          }
-                        }}
-                        onClick={() => {
-                          setExpandedLead(expandedLead === lead.id ? null : lead.id);
-                        }}
-                        title={expandedLead === lead.id ? "Close notes" : "Hover or click to open"}
-                      >
-                        {expandedLead === lead.id ? (
-                          <ChevronUp className="h-5 w-5" strokeWidth={3} />
-                        ) : (
-                          <ChevronDown className="h-5 w-5" strokeWidth={3} />
-                        )}
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-50"
-                        onClick={() => {
-                          if (lead.phone) {
-                            window.open(`tel:${lead.phone}`);
-                            if (!lead.is_from_abandoned_cart) {
-                              onLogActivity(lead.id, 'call', 'Made phone call');
-                            }
-                          } else {
-                            toast.error('No phone number');
-                          }
-                        }}
-                        title="Call"
-                      >
-                        <Phone className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => setExpandedLead(lead.id)}
-                        title="Add note"
-                      >
-                        <StickyNote className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        className="h-7 w-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                        onClick={() => {
-                          window.open(`mailto:${lead.email}?subject=Your Warranty Quote`);
-                          if (!lead.is_from_abandoned_cart) {
-                            onLogActivity(lead.id, 'email', 'Sent quote email');
-                          }
-                        }}
-                        title="Email quote"
-                      >
-                        <Send className="h-3.5 w-3.5" />
-                      </Button>
-                      <RemindMePopover leadId={lead.id} compact />
-                    </div>
+                    <TooltipProvider>
+                      <div className="flex items-center gap-1">
+                        {/* Expand/Collapse - Primary action with hover intent */}
+                        <Tooltip delayDuration={100}>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              variant={expandedLead === lead.id ? "default" : "outline"}
+                              size="icon"
+                              className={cn(
+                                "h-9 w-9 transition-all duration-150",
+                                expandedLead === lead.id 
+                                  ? "bg-primary text-primary-foreground shadow-lg scale-105" 
+                                  : "border-2 border-primary hover:border-primary hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-md"
+                              )}
+                              onMouseEnter={() => handleHoverIntent(lead.id, 'enter')}
+                              onMouseLeave={() => handleHoverIntent(lead.id, 'leave')}
+                              onClick={() => {
+                                // Clear any pending hover timeout
+                                if (hoverTimeouts[lead.id]) {
+                                  clearTimeout(hoverTimeouts[lead.id]);
+                                }
+                                setExpandedLead(expandedLead === lead.id ? null : lead.id);
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  setExpandedLead(expandedLead === lead.id ? null : lead.id);
+                                }
+                                if (e.key === 'Escape' && expandedLead === lead.id) {
+                                  setExpandedLead(null);
+                                }
+                              }}
+                              aria-expanded={expandedLead === lead.id}
+                              aria-label={expandedLead === lead.id ? "Close details" : "Open details"}
+                            >
+                              <ChevronDown 
+                                className={cn(
+                                  "h-5 w-5 transition-transform duration-180",
+                                  expandedLead === lead.id && "rotate-180"
+                                )} 
+                                strokeWidth={3} 
+                              />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-xs">
+                            {expandedLead === lead.id ? "Close" : "Hover or click to open"}
+                          </TooltipContent>
+                        </Tooltip>
+                        
+                        {/* Phone - Copy first */}
+                        <CopyButton value={lead.phone || ''} type="phone" />
+                        
+                        {/* Notes */}
+                        <Tooltip delayDuration={100}>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              className="h-7 w-7 hover:scale-110 transition-transform"
+                              onClick={() => setExpandedLead(lead.id)}
+                              aria-label="Add note"
+                            >
+                              <StickyNote className="h-3.5 w-3.5" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-xs">Add note</TooltipContent>
+                        </Tooltip>
+                        
+                        {/* Email - Copy first */}
+                        <CopyButton value={lead.email} type="email" />
+                        
+                        <RemindMePopover leadId={lead.id} compact />
+                      </div>
+                    </TooltipProvider>
                   </TableCell>
 
                   {/* Payment Status */}
@@ -493,63 +598,54 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                     </div>
                   </TableCell>
 
-                  {/* Phone */}
+                  {/* Phone - Copy-first behaviour */}
                   <TableCell onClick={(e) => e.stopPropagation()}>
-                    {lead.phone ? (
-                      <div className="flex items-center gap-0.5">
-                        <span 
-                          className="text-xs font-medium cursor-pointer hover:text-primary select-all truncate max-w-[100px]"
-                          onClick={() => {
-                            navigator.clipboard.writeText(lead.phone || '');
-                            toast.success('Phone copied');
-                          }}
-                          title={lead.phone}
-                        >
-                          {formatUKPhone(lead.phone)}
-                        </span>
-                        <div className="flex items-center">
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => {
-                              navigator.clipboard.writeText(lead.phone || '');
-                              toast.success('Phone copied');
-                            }}
-                            title="Copy"
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            className="h-6 w-6 text-green-600 hover:text-green-700 hover:bg-green-50"
-                            onClick={() => {
-                              window.open(`tel:${lead.phone}`);
-                              if (!lead.is_from_abandoned_cart) {
-                                onLogActivity(lead.id, 'call', 'Made phone call');
-                              }
-                            }}
-                            title="Call"
-                          >
-                            <Phone className="h-3 w-3" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            className="h-6 w-6 text-green-600 hover:text-green-700 hover:bg-green-50"
-                            onClick={() => {
-                              window.open(`https://wa.me/${lead.phone?.replace(/\D/g, '')}`);
-                            }}
-                            title="WhatsApp"
-                          >
-                            <MessageSquare className="h-3 w-3" />
-                          </Button>
+                    <TooltipProvider>
+                      {lead.phone ? (
+                        <div className="flex items-center gap-0.5">
+                          <PhoneCopyText phone={lead.phone} />
+                          <div className="flex items-center">
+                            <Tooltip delayDuration={100}>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  className="h-6 w-6 text-green-600 hover:text-green-700 hover:bg-green-50 hover:scale-110 transition-transform"
+                                  onClick={() => {
+                                    window.open(`tel:${lead.phone}`);
+                                    if (!lead.is_from_abandoned_cart) {
+                                      onLogActivity(lead.id, 'call', 'Made phone call');
+                                    }
+                                  }}
+                                  aria-label="Call"
+                                >
+                                  <Phone className="h-3 w-3" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-xs">Call</TooltipContent>
+                            </Tooltip>
+                            <Tooltip delayDuration={100}>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  className="h-6 w-6 text-green-600 hover:text-green-700 hover:bg-green-50 hover:scale-110 transition-transform"
+                                  onClick={() => {
+                                    window.open(`https://wa.me/${lead.phone?.replace(/\D/g, '')}`);
+                                  }}
+                                  aria-label="WhatsApp"
+                                >
+                                  <MessageSquare className="h-3 w-3" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-xs">WhatsApp</TooltipContent>
+                            </Tooltip>
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground text-xs">—</span>
-                    )}
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
+                    </TooltipProvider>
                   </TableCell>
 
                   {/* Step Reached */}
@@ -573,46 +669,32 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                     )}
                   </TableCell>
 
-                  {/* Email */}
+                  {/* Email - Copy-first behaviour */}
                   <TableCell onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center gap-0.5">
-                      <span 
-                        className="text-xs cursor-pointer hover:text-primary select-all truncate max-w-[120px]"
-                        onClick={() => {
-                          navigator.clipboard.writeText(lead.email);
-                          toast.success('Email copied');
-                        }}
-                        title={lead.email}
-                      >
-                        {lead.email}
-                      </span>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        className="h-6 w-6 flex-shrink-0"
-                        onClick={() => {
-                          navigator.clipboard.writeText(lead.email);
-                          toast.success('Email copied');
-                        }}
-                        title="Copy"
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        className="h-6 w-6 flex-shrink-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                        onClick={() => {
-                          window.open(`mailto:${lead.email}`);
-                          if (!lead.is_from_abandoned_cart) {
-                            onLogActivity(lead.id, 'email', 'Sent email');
-                          }
-                        }}
-                        title="Send email"
-                      >
-                        <Mail className="h-3 w-3" />
-                      </Button>
-                    </div>
+                    <TooltipProvider>
+                      <div className="flex items-center gap-0.5">
+                        <EmailCopyText email={lead.email} />
+                        <Tooltip delayDuration={100}>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              className="h-6 w-6 flex-shrink-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 hover:scale-110 transition-transform"
+                              onClick={() => {
+                                window.open(`mailto:${lead.email}`);
+                                if (!lead.is_from_abandoned_cart) {
+                                  onLogActivity(lead.id, 'email', 'Sent email');
+                                }
+                              }}
+                              aria-label="Send email"
+                            >
+                              <Send className="h-3 w-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-xs">Send email</TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </TooltipProvider>
                   </TableCell>
 
                   {/* Plan */}
