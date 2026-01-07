@@ -22,6 +22,7 @@ interface NewLeadsTabProps {
   onMarkAsRead?: (id: string) => void;
   onMarkAllAsRead?: () => void;
   onNavigateToTab?: (tab: string) => void;
+  userRole?: string | null;
 }
 
 export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
@@ -30,7 +31,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   onMarkAsRead,
   onMarkAllAsRead,
   onNavigateToTab,
+  userRole,
 }) => {
+  // Salespeople can't see Team View
+  const canSeeTeamView = userRole !== 'sales';
   const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard'>('leads');
   const [searchTerm, setSearchTerm] = useState('');
   const [remindersOpen, setRemindersOpen] = useState(true);
@@ -159,10 +163,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 <UserCircle className="h-4 w-4" />
                 My Dashboard
               </TabsTrigger>
-              <TabsTrigger value="team-dashboard" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Team View
-              </TabsTrigger>
+              {canSeeTeamView && (
+                <TabsTrigger value="team-dashboard" className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Team View
+                </TabsTrigger>
+              )}
             </TabsList>
           </Tabs>
         </div>
