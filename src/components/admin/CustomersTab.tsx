@@ -15,9 +15,12 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, Copy, FileText, User, Sparkles } from 'lucide-react';
+import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, Copy, FileText, User, Sparkles, FileSpreadsheet } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useDataExport } from '@/hooks/useDataExport';
 
 import { CustomerNotesSection } from './CustomerNotesSection';
 import { StructuredNotesSection } from './StructuredNotesSection';
@@ -269,6 +272,10 @@ const NumberPlate = ({ plateNumber }: { plateNumber: string }) => {
 };
 
 export const CustomersTab = () => {
+  const { canExportTab } = usePermissions();
+  const { exportToCSV: exportDataToCSV, exportToExcel } = useDataExport();
+  const canExport = canExportTab('customers');
+  
   const [searchParams, setSearchParams] = useSearchParams();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
@@ -1312,34 +1319,28 @@ export const CustomersTab = () => {
     }
   };
 
-  const exportToCSV = () => {
-    const headers = ['Name', 'Email', 'Phone', 'Full Address', 'Registration Plate', 'Vehicle Details', 'Plan Type', 'Payment Type', 'Signup Date', 'Warranty Expiry', 'Voluntary Excess', 'Status', 'Final Amount'];
-    const csvContent = [
-      headers.join(','),
-      ...filteredCustomers.map(customer => [
-        customer.name,
-        customer.email,
-        customer.phone || '',
-        `${customer.street || ''} ${customer.town || ''} ${customer.county || ''} ${customer.postcode || ''}`.trim(),
-        customer.registration_plate || '',
-        `${customer.vehicle_make || ''} ${customer.vehicle_model || ''} ${customer.vehicle_year || ''}`.trim(),
-        customer.plan_type,
-        customer.payment_type || '',
-        format(new Date(customer.signup_date), 'yyyy-MM-dd'),
-        customer.warranty_expiry ? format(new Date(customer.warranty_expiry), 'yyyy-MM-dd') : 'N/A',
-        customer.voluntary_excess || 0,
-        customer.status,
-        
-      ].join(','))
-    ].join('\n');
+  const handleExport = (format: 'csv' | 'xlsx') => {
+    const exportData = filteredCustomers.map(customer => ({
+      'Name': customer.name,
+      'Email': customer.email,
+      'Phone': customer.phone || '',
+      'Address': `${customer.street || ''} ${customer.town || ''} ${customer.county || ''} ${customer.postcode || ''}`.trim(),
+      'Registration Plate': customer.registration_plate || '',
+      'Vehicle': `${customer.vehicle_make || ''} ${customer.vehicle_model || ''} ${customer.vehicle_year || ''}`.trim(),
+      'Plan Type': customer.plan_type,
+      'Payment Type': customer.payment_type || '',
+      'Signup Date': format === 'csv' ? customer.signup_date : new Date(customer.signup_date).toLocaleDateString(),
+      'Warranty Expiry': customer.warranty_expiry ? new Date(customer.warranty_expiry).toLocaleDateString() : 'N/A',
+      'Voluntary Excess': customer.voluntary_excess || 0,
+      'Status': customer.status,
+      'Final Amount': customer.final_amount || 0,
+    }));
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `customers-${format(new Date(), 'yyyy-MM-dd')}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+    if (format === 'csv') {
+      exportDataToCSV(exportData, { filename: 'customers', format: 'csv' });
+    } else {
+      exportToExcel(exportData, { filename: 'customers', format: 'xlsx' });
+    }
   };
 
   const fetchCustomerCredentials = async (customerEmail: string) => {
@@ -2001,10 +2002,26 @@ export const CustomersTab = () => {
             <RefreshCw className="h-4 w-4" />
             <span>Refresh</span>
           </Button>
-          <Button onClick={exportToCSV} className="flex items-center space-x-2">
-            <Download className="h-4 w-4" />
-            <span>Export CSV</span>
-          </Button>
+          {canExport && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="flex items-center space-x-2">
+                  <Download className="h-4 w-4" />
+                  <span>Export</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleExport('csv')}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export as CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('xlsx')}>
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Export as Excel
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           
           {/* Debug Info Button */}
           {debugInfo && (
