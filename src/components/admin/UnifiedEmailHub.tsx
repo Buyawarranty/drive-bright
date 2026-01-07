@@ -296,6 +296,89 @@ const UnifiedEmailHub = () => {
     }
   };
 
+  const [sendTestDialogOpen, setSendTestDialogOpen] = useState(false);
+  const [useTemplateDialogOpen, setUseTemplateDialogOpen] = useState(false);
+  const [testEmailAddress, setTestEmailAddress] = useState('');
+  const [sendingTest, setSendingTest] = useState(false);
+  const [recipientEmail, setRecipientEmail] = useState('');
+  const [recipientName, setRecipientName] = useState('');
+
+  const handleSendTestEmail = (template: EmailTemplate) => {
+    setSelectedTemplate(template);
+    setTestEmailAddress('');
+    setSendTestDialogOpen(true);
+  };
+
+  const handleUseTemplate = (template: EmailTemplate) => {
+    setSelectedTemplate(template);
+    setRecipientEmail('');
+    setRecipientName('');
+    setUseTemplateDialogOpen(true);
+  };
+
+  const sendTestEmail = async () => {
+    if (!testEmailAddress || !selectedTemplate) return;
+    
+    setSendingTest(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-email', {
+        body: {
+          templateId: selectedTemplate.template_type,
+          recipientEmail: testEmailAddress,
+          variables: {
+            firstName: 'Test',
+            customerName: 'Test Customer',
+            policyNumber: 'TEST-123456',
+            planType: 'Gold Plan',
+            vehicleReg: 'AB12 CDE'
+          }
+        }
+      });
+      
+      if (error) throw error;
+      
+      toast.success(`Test email sent to ${testEmailAddress}`);
+      setSendTestDialogOpen(false);
+    } catch (error) {
+      console.error('Error sending test email:', error);
+      toast.error('Failed to send test email');
+    } finally {
+      setSendingTest(false);
+    }
+  };
+
+  const sendEmailWithTemplate = async () => {
+    if (!recipientEmail || !selectedTemplate) return;
+    
+    setSendingTest(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-email', {
+        body: {
+          templateId: selectedTemplate.template_type,
+          recipientEmail: recipientEmail,
+          variables: {
+            firstName: recipientName.split(' ')[0] || recipientName,
+            customerName: recipientName || 'Customer',
+            policyNumber: '',
+            planType: '',
+            vehicleReg: ''
+          }
+        }
+      });
+      
+      if (error) throw error;
+      
+      toast.success(`Email sent to ${recipientEmail}`);
+      setUseTemplateDialogOpen(false);
+      loadEmailLogs();
+    } catch (error) {
+      console.error('Error sending email:', error);
+      toast.error('Failed to send email');
+    } finally {
+      setSendingTest(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { className: string; icon: any }> = {
       sent: { className: 'bg-green-100 text-green-800', icon: CheckCircle },
@@ -591,11 +674,10 @@ const UnifiedEmailHub = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">{template.subject}</p>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button 
                   variant="outline" 
-                  size="sm" 
-                  className="flex-1"
+                  size="sm"
                   onClick={() => handleEditTemplate(template)}
                 >
                   <Edit className="w-3 h-3 mr-1" />
@@ -603,8 +685,7 @@ const UnifiedEmailHub = () => {
                 </Button>
                 <Button 
                   variant="outline" 
-                  size="sm" 
-                  className="flex-1"
+                  size="sm"
                   onClick={() => handlePreviewTemplate(template)}
                 >
                   <Eye className="w-3 h-3 mr-1" />
@@ -612,8 +693,7 @@ const UnifiedEmailHub = () => {
                 </Button>
                 <Button 
                   variant="outline" 
-                  size="sm" 
-                  className="flex-1"
+                  size="sm"
                   onClick={() => {
                     const newTemplate = { ...template, id: crypto.randomUUID(), name: `${template.name} (Copy)` };
                     handleEditTemplate(newTemplate as EmailTemplate);
@@ -621,6 +701,25 @@ const UnifiedEmailHub = () => {
                 >
                   <Copy className="w-3 h-3 mr-1" />
                   Duplicate
+                </Button>
+              </div>
+              <div className="flex gap-2 mt-3 pt-3 border-t">
+                <Button 
+                  size="sm"
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={() => handleSendTestEmail(template)}
+                >
+                  <Send className="w-3 h-3 mr-1" />
+                  Send Test
+                </Button>
+                <Button 
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => handleUseTemplate(template)}
+                >
+                  <Mail className="w-3 h-3 mr-1" />
+                  Use Template
                 </Button>
               </div>
             </CardContent>
@@ -1226,6 +1325,83 @@ const UnifiedEmailHub = () => {
               <div className="whitespace-pre-wrap">{selectedTemplate?.content?.content}</div>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Send Test Email Dialog */}
+      <Dialog open={sendTestDialogOpen} onOpenChange={setSendTestDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send Test Email</DialogTitle>
+            <DialogDescription>
+              Send a test email using the "{selectedTemplate?.name}" template with sample data.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="test-email">Test Email Address</Label>
+              <Input
+                id="test-email"
+                type="email"
+                value={testEmailAddress}
+                onChange={(e) => setTestEmailAddress(e.target.value)}
+                placeholder="your@email.com"
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              The email will be sent with placeholder data (Test Customer, TEST-123456, etc.)
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSendTestDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={sendTestEmail} disabled={!testEmailAddress || sendingTest}>
+              {sendingTest ? 'Sending...' : 'Send Test Email'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Use Template Dialog */}
+      <Dialog open={useTemplateDialogOpen} onOpenChange={setUseTemplateDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send Email</DialogTitle>
+            <DialogDescription>
+              Send an email using the "{selectedTemplate?.name}" template.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="recipient-name">Recipient Name</Label>
+              <Input
+                id="recipient-name"
+                value={recipientName}
+                onChange={(e) => setRecipientName(e.target.value)}
+                placeholder="John Smith"
+              />
+            </div>
+            <div>
+              <Label htmlFor="recipient-email">Recipient Email</Label>
+              <Input
+                id="recipient-email"
+                type="email"
+                value={recipientEmail}
+                onChange={(e) => setRecipientEmail(e.target.value)}
+                placeholder="customer@email.com"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setUseTemplateDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={sendEmailWithTemplate} disabled={!recipientEmail || sendingTest}>
+              <Send className="w-4 h-4 mr-2" />
+              {sendingTest ? 'Sending...' : 'Send Email'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
