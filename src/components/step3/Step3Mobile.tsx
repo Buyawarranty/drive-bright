@@ -249,6 +249,16 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     return paymentType !== null && voluntaryExcess !== null && selectedClaimLimit !== null;
   }, [paymentType, voluntaryExcess, selectedClaimLimit]);
 
+  // Check if any optional add-ons are selected (excluding auto-included ones)
+  const hasAddOnsSelected = useMemo(() => {
+    const autoIncluded = paymentType ? getAutoIncludedAddOns(paymentType) : [];
+    // Check if any add-on is selected that isn't auto-included, OR if boost is enabled
+    const hasManualAddOns = Object.entries(selectedProtectionAddOns).some(
+      ([key, value]) => value && !autoIncluded.includes(key)
+    );
+    return hasManualAddOns || boostAddon;
+  }, [selectedProtectionAddOns, paymentType, boostAddon]);
+
   // Handle continue
   const handleContinue = async () => {
     if (!isFormValid) {
@@ -384,6 +394,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
           availableDurations={availableDurations}
           getPriceForTerm={calculateMonthlyPrice}
           getTotalForTerm={calculateTotalPrice}
+          hasAddOnsSelected={hasAddOnsSelected}
         />
 
         <ExcessSelector
@@ -428,6 +439,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
         isLoading={loading}
         isValid={isFormValid}
         paymentPeriod={paymentType}
+        hasAddOnsSelected={hasAddOnsSelected}
       />
     </div>
   );
