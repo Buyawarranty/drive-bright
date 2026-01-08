@@ -987,6 +987,47 @@ export const CustomersTab = () => {
     }
   };
 
+  // Update review status (Trustpilot/Google)
+  const updateReviewStatus = async (
+    customerId: string,
+    field: 'trustpilot_review_requested' | 'trustpilot_review_completed' | 'google_review_requested' | 'google_review_completed',
+    value: boolean
+  ) => {
+    try {
+      const updateData: Record<string, any> = { [field]: value };
+      
+      // Add timestamp if marking as true
+      if (value) {
+        const timestampField = field + '_at';
+        updateData[timestampField] = new Date().toISOString();
+      }
+
+      const { error } = await supabase
+        .from('customers')
+        .update(updateData)
+        .eq('id', customerId);
+
+      if (error) throw error;
+
+      // Update local state
+      setCustomers(prev => prev.map(c => 
+        c.id === customerId 
+          ? { ...c, [field]: value, [field + '_at']: value ? new Date().toISOString() : null }
+          : c
+      ));
+      setFilteredCustomers(prev => prev.map(c => 
+        c.id === customerId 
+          ? { ...c, [field]: value, [field + '_at']: value ? new Date().toISOString() : null }
+          : c
+      ));
+
+      toast.success('Review status updated');
+    } catch (error) {
+      console.error('Error updating review status:', error);
+      toast.error('Failed to update review status');
+    }
+  };
+
   const sendBulkReminderEmails = async () => {
     if (selectedIncompleteCustomers.length === 0) {
       toast.error('Please select at least one customer');
@@ -3586,30 +3627,70 @@ Please log in and change your password after first login.`;
                          />
                        </TableCell>
                        <TableCell className="text-center">
-                         {customer.trustpilot_review_completed ? (
-                           <Badge className="bg-green-500 hover:bg-green-600">
-                             <CheckCircle className="h-3 w-3 mr-1" />Done
-                           </Badge>
-                         ) : customer.trustpilot_review_requested ? (
-                           <Badge variant="outline" className="border-yellow-500 text-yellow-600">
-                             <Clock className="h-3 w-3 mr-1" />Sent
-                           </Badge>
-                         ) : (
-                           <span className="text-muted-foreground text-xs">-</span>
-                         )}
+                         <DropdownMenu>
+                           <DropdownMenuTrigger asChild>
+                             <Button variant="ghost" size="sm" className="h-7 px-2">
+                               {customer.trustpilot_review_completed ? (
+                                 <Badge className="bg-green-500 hover:bg-green-600 cursor-pointer">
+                                   <CheckCircle className="h-3 w-3 mr-1" />Done
+                                 </Badge>
+                               ) : customer.trustpilot_review_requested ? (
+                                 <Badge variant="outline" className="border-yellow-500 text-yellow-600 cursor-pointer">
+                                   <Clock className="h-3 w-3 mr-1" />Sent
+                                 </Badge>
+                               ) : (
+                                 <span className="text-muted-foreground text-xs hover:text-foreground cursor-pointer">+ Add</span>
+                               )}
+                             </Button>
+                           </DropdownMenuTrigger>
+                           <DropdownMenuContent align="center">
+                             <DropdownMenuItem 
+                               onClick={() => updateReviewStatus(customer.id, 'trustpilot_review_requested', !customer.trustpilot_review_requested)}
+                             >
+                               <Clock className="h-4 w-4 mr-2" />
+                               {customer.trustpilot_review_requested ? 'Unmark Requested' : 'Mark as Requested'}
+                             </DropdownMenuItem>
+                             <DropdownMenuItem 
+                               onClick={() => updateReviewStatus(customer.id, 'trustpilot_review_completed', !customer.trustpilot_review_completed)}
+                             >
+                               <CheckCircle className="h-4 w-4 mr-2" />
+                               {customer.trustpilot_review_completed ? 'Unmark Completed' : 'Mark Review Received'}
+                             </DropdownMenuItem>
+                           </DropdownMenuContent>
+                         </DropdownMenu>
                        </TableCell>
                        <TableCell className="text-center">
-                         {customer.google_review_completed ? (
-                           <Badge className="bg-green-500 hover:bg-green-600">
-                             <CheckCircle className="h-3 w-3 mr-1" />Done
-                           </Badge>
-                         ) : customer.google_review_requested ? (
-                           <Badge variant="outline" className="border-yellow-500 text-yellow-600">
-                             <Clock className="h-3 w-3 mr-1" />Sent
-                           </Badge>
-                         ) : (
-                           <span className="text-muted-foreground text-xs">-</span>
-                         )}
+                         <DropdownMenu>
+                           <DropdownMenuTrigger asChild>
+                             <Button variant="ghost" size="sm" className="h-7 px-2">
+                               {customer.google_review_completed ? (
+                                 <Badge className="bg-green-500 hover:bg-green-600 cursor-pointer">
+                                   <CheckCircle className="h-3 w-3 mr-1" />Done
+                                 </Badge>
+                               ) : customer.google_review_requested ? (
+                                 <Badge variant="outline" className="border-yellow-500 text-yellow-600 cursor-pointer">
+                                   <Clock className="h-3 w-3 mr-1" />Sent
+                                 </Badge>
+                               ) : (
+                                 <span className="text-muted-foreground text-xs hover:text-foreground cursor-pointer">+ Add</span>
+                               )}
+                             </Button>
+                           </DropdownMenuTrigger>
+                           <DropdownMenuContent align="center">
+                             <DropdownMenuItem 
+                               onClick={() => updateReviewStatus(customer.id, 'google_review_requested', !customer.google_review_requested)}
+                             >
+                               <Clock className="h-4 w-4 mr-2" />
+                               {customer.google_review_requested ? 'Unmark Requested' : 'Mark as Requested'}
+                             </DropdownMenuItem>
+                             <DropdownMenuItem 
+                               onClick={() => updateReviewStatus(customer.id, 'google_review_completed', !customer.google_review_completed)}
+                             >
+                               <CheckCircle className="h-4 w-4 mr-2" />
+                               {customer.google_review_completed ? 'Unmark Completed' : 'Mark Review Received'}
+                             </DropdownMenuItem>
+                           </DropdownMenuContent>
+                         </DropdownMenu>
                        </TableCell>
                        <TableCell>
                          <div className="flex items-center gap-1">
