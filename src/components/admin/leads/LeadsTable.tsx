@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Checkbox } from '@/components/ui/checkbox';
 import { LeadDetailsPanel } from './LeadDetailsPanel';
 import { RemindMePopover } from './RemindMePopover';
 import { CopyButton } from './CopyButton';
@@ -25,6 +26,9 @@ interface LeadsTableProps {
   leads: Lead[];
   tags: LeadTag[];
   salesUsers: AdminUser[];
+  selectedLeads: Set<string>;
+  onSelectLead: (leadId: string) => void;
+  onSelectAll: () => void;
   onUpdateStatus: (leadId: string, status: LeadStatus) => void;
   onAssign: (leadId: string, userId: string | null) => void;
   onAutoAssign: (leadId: string) => void;
@@ -203,6 +207,9 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
   leads,
   tags,
   salesUsers,
+  selectedLeads,
+  onSelectLead,
+  onSelectAll,
   onUpdateStatus,
   onAssign,
   onAutoAssign,
@@ -275,6 +282,13 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/30">
+            <TableHead className="w-[40px]">
+              <Checkbox
+                checked={selectedLeads.size === leads.length && leads.length > 0}
+                onCheckedChange={onSelectAll}
+                aria-label="Select all leads"
+              />
+            </TableHead>
             <TableHead className="sticky left-0 bg-muted/30 z-10 w-[120px] min-w-[120px]">Assigned To</TableHead>
             <TableHead className="w-[100px]">Status</TableHead>
             <TableHead className="w-[120px]">Actions</TableHead>
@@ -306,7 +320,15 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                     getRowUrgencyClass(lead)
                   )}
                 >
-                  {/* Assigned To - First column, Sticky */}
+                  {/* Selection Checkbox */}
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={selectedLeads.has(lead.id)}
+                      onCheckedChange={() => onSelectLead(lead.id)}
+                      aria-label={`Select ${lead.email}`}
+                    />
+                  </TableCell>
+                  {/* Assigned To - Sticky */}
                   <TableCell className="sticky left-0 bg-inherit z-10" onClick={(e) => e.stopPropagation()}>
                     <Select
                       value={lead.assigned_to || 'unassigned'}

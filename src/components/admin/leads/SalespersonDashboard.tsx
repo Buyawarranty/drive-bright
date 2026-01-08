@@ -16,6 +16,7 @@ import { format, isToday, isPast } from 'date-fns';
 export const SalespersonDashboard: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [myLeads, setMyLeads] = useState<Lead[]>([]);
+  const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   
   const { 
     leads, 
@@ -79,6 +80,24 @@ export const SalespersonDashboard: React.FC = () => {
   const targetProgress = personalStats 
     ? Math.min((personalStats.totalRevenue / monthlyTarget) * 100, 100) 
     : 0;
+
+  const handleSelectLead = (leadId: string) => {
+    const newSelected = new Set(selectedLeads);
+    if (newSelected.has(leadId)) {
+      newSelected.delete(leadId);
+    } else {
+      newSelected.add(leadId);
+    }
+    setSelectedLeads(newSelected);
+  };
+
+  const handleSelectAll = (leadsToSelect: Lead[]) => {
+    if (selectedLeads.size === leadsToSelect.length) {
+      setSelectedLeads(new Set());
+    } else {
+      setSelectedLeads(new Set(leadsToSelect.map(l => l.id)));
+    }
+  };
 
   if (loading || statsLoading) {
     return (
@@ -197,6 +216,9 @@ export const SalespersonDashboard: React.FC = () => {
               leads={hotLeads}
               tags={tags}
               salesUsers={salesUsers}
+              selectedLeads={selectedLeads}
+              onSelectLead={handleSelectLead}
+              onSelectAll={() => handleSelectAll(hotLeads)}
               onUpdateStatus={updateLeadStatus}
               onAssign={assignLead}
               onAutoAssign={autoAssignLead}
@@ -257,6 +279,9 @@ export const SalespersonDashboard: React.FC = () => {
             leads={myLeads}
             tags={tags}
             salesUsers={salesUsers}
+            selectedLeads={selectedLeads}
+            onSelectLead={handleSelectLead}
+            onSelectAll={() => handleSelectAll(myLeads)}
             onUpdateStatus={updateLeadStatus}
             onAssign={assignLead}
             onAutoAssign={autoAssignLead}
