@@ -18,7 +18,7 @@ interface LeadsFiltersProps {
     new: number;
     contacted: number;
     follow_up: number;
-    converted: number;
+    paid: number;
     lost: number;
     high_priority: number;
   };
@@ -54,9 +54,9 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             Follow-up
             <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-purple-100">{leadCounts.follow_up}</Badge>
           </TabsTrigger>
-          <TabsTrigger value="converted">
-            Converted
-            <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-green-100">{leadCounts.converted}</Badge>
+          <TabsTrigger value="paid">
+            Paid
+            <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-green-100">{leadCounts.paid}</Badge>
           </TabsTrigger>
           <TabsTrigger value="lost">
             Lost

@@ -129,15 +129,15 @@ export const SalespersonDashboard: React.FC = () => {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Conversion Rate</CardDescription>
+            <CardDescription>Paid Deals</CardDescription>
             <CardTitle className="text-3xl">
-              {personalStats?.conversionRate.toFixed(1) || 0}%
+              {myLeads.filter(l => l.is_paid).length}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2 text-sm text-green-600">
               <TrendingUp className="h-4 w-4" />
-              <span>{personalStats?.convertedLeads || 0} converted</span>
+              <span>£{myLeads.filter(l => l.is_paid).reduce((sum, l) => sum + (l.payment_amount || 0), 0).toLocaleString()} revenue</span>
             </div>
           </CardContent>
         </Card>

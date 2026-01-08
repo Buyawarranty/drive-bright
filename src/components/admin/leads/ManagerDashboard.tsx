@@ -56,7 +56,7 @@ export const ManagerDashboard: React.FC = () => {
           <CardContent>
             <div className="flex items-center gap-2 text-sm text-green-600">
               <TrendingUp className="h-4 w-4" />
-              <span>{teamStats.totalConverted} deals closed</span>
+              <span>{teamStats.totalConverted} paid deals</span>
             </div>
           </CardContent>
         </Card>
@@ -233,7 +233,7 @@ export const ManagerDashboard: React.FC = () => {
                 <TableHead className="text-right">Total Leads</TableHead>
                 <TableHead className="text-right">New</TableHead>
                 <TableHead className="text-right">Contacted</TableHead>
-                <TableHead className="text-right">Converted</TableHead>
+                <TableHead className="text-right">Paid</TableHead>
                 <TableHead className="text-right">Lost</TableHead>
                 <TableHead className="text-right">Revenue</TableHead>
                 <TableHead className="text-right">Conversion %</TableHead>
