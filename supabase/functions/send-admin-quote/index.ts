@@ -10,6 +10,7 @@ const corsHeaders = {
 
 interface QuoteEmailRequest {
   to: string;
+  cc?: string;
   subject: string;
   content: string;
   vehicleData: {
@@ -23,8 +24,10 @@ interface QuoteEmailRequest {
     plan: string;
     paymentType: string;
     price: number;
-    excessAmount: string;
-    claimLimit: string;
+    excessAmount: number;
+    claimLimit: number;
+    labourRate?: number;
+    boostAddon?: boolean;
   };
 }
 
@@ -37,6 +40,7 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const {
       to,
+      cc,
       subject,
       content,
       vehicleData,
@@ -105,6 +109,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: "BuyaWarranty Team <quotes@buyawarranty.co.uk>",
       to: [to],
+      cc: cc ? [cc] : undefined,
       subject: subject,
       html: finalHtml,
     });

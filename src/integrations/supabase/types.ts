@@ -350,6 +350,8 @@ export type Database = {
       }
       admin_sent_quotes: {
         Row: {
+          additional_notes: string | null
+          boost_addon: boolean | null
           claim_limit: number
           created_at: string | null
           customer_email: string
@@ -360,6 +362,7 @@ export type Database = {
           email_subject: string
           excess_amount: number
           id: string
+          labour_rate: number | null
           last_resent_at: string | null
           monthly_price: number | null
           notes: string | null
@@ -381,6 +384,8 @@ export type Database = {
           vehicle_year: string | null
         }
         Insert: {
+          additional_notes?: string | null
+          boost_addon?: boolean | null
           claim_limit: number
           created_at?: string | null
           customer_email: string
@@ -391,6 +396,7 @@ export type Database = {
           email_subject: string
           excess_amount: number
           id?: string
+          labour_rate?: number | null
           last_resent_at?: string | null
           monthly_price?: number | null
           notes?: string | null
@@ -412,6 +418,8 @@ export type Database = {
           vehicle_year?: string | null
         }
         Update: {
+          additional_notes?: string | null
+          boost_addon?: boolean | null
           claim_limit?: number
           created_at?: string | null
           customer_email?: string
@@ -422,6 +430,7 @@ export type Database = {
           email_subject?: string
           excess_amount?: number
           id?: string
+          labour_rate?: number | null
           last_resent_at?: string | null
           monthly_price?: number | null
           notes?: string | null
