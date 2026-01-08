@@ -217,27 +217,23 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
-  const [hoverTimeouts, setHoverTimeouts] = useState<Record<string, NodeJS.Timeout>>({});
+  const hoverTimeoutsRef = useRef<Record<string, NodeJS.Timeout>>({});
   const navigate = useNavigate();
 
-  // Hover intent handler (450-600ms delay before opening)
+  // Hover intent handler using ref to avoid re-renders
   const handleHoverIntent = useCallback((leadId: string, action: 'enter' | 'leave') => {
     if (action === 'enter') {
       const timeout = setTimeout(() => {
         setExpandedLead(leadId);
-      }, 500); // 500ms hover intent
-      setHoverTimeouts(prev => ({ ...prev, [leadId]: timeout }));
+      }, 500);
+      hoverTimeoutsRef.current[leadId] = timeout;
     } else {
-      if (hoverTimeouts[leadId]) {
-        clearTimeout(hoverTimeouts[leadId]);
-        setHoverTimeouts(prev => {
-          const newTimeouts = { ...prev };
-          delete newTimeouts[leadId];
-          return newTimeouts;
-        });
+      if (hoverTimeoutsRef.current[leadId]) {
+        clearTimeout(hoverTimeoutsRef.current[leadId]);
+        delete hoverTimeoutsRef.current[leadId];
       }
     }
-  }, [hoverTimeouts]);
+  }, []);
 
   const handleViewCustomer = (email: string) => {
     // Navigate to customers tab with email filter pre-applied
@@ -397,8 +393,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                               onMouseLeave={() => handleHoverIntent(lead.id, 'leave')}
                               onClick={() => {
                                 // Clear any pending hover timeout
-                                if (hoverTimeouts[lead.id]) {
-                                  clearTimeout(hoverTimeouts[lead.id]);
+                                if (hoverTimeoutsRef.current[lead.id]) {
+                                  clearTimeout(hoverTimeoutsRef.current[lead.id]);
                                 }
                                 setExpandedLead(expandedLead === lead.id ? null : lead.id);
                               }}
