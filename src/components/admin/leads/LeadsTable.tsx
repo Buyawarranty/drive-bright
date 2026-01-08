@@ -302,12 +302,9 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
               <React.Fragment key={lead.id}>
                 <TableRow 
                   className={cn(
-                    "cursor-pointer transition-colors",
+                    "transition-colors",
                     getRowUrgencyClass(lead)
                   )}
-                  onClick={() => setExpandedLead(expandedLead === lead.id ? null : lead.id)}
-                  onMouseEnter={() => handleHoverIntent(lead.id, 'enter')}
-                  onMouseLeave={() => handleHoverIntent(lead.id, 'leave')}
                 >
                   {/* Assigned To - First column, Sticky */}
                   <TableCell className="sticky left-0 bg-inherit z-10" onClick={(e) => e.stopPropagation()}>
@@ -389,15 +386,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                                   ? "bg-primary text-primary-foreground shadow-lg scale-105" 
                                   : "border-2 border-primary hover:border-primary hover:bg-primary hover:text-primary-foreground hover:scale-110 hover:shadow-md"
                               )}
-                              onMouseEnter={() => handleHoverIntent(lead.id, 'enter')}
-                              onMouseLeave={() => handleHoverIntent(lead.id, 'leave')}
-                              onClick={() => {
-                                // Clear any pending hover timeout
-                                if (hoverTimeoutsRef.current[lead.id]) {
-                                  clearTimeout(hoverTimeoutsRef.current[lead.id]);
-                                }
-                                setExpandedLead(expandedLead === lead.id ? null : lead.id);
-                              }}
+                              onClick={() => setExpandedLead(expandedLead === lead.id ? null : lead.id)}
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter' || e.key === ' ') {
                                   setExpandedLead(expandedLead === lead.id ? null : lead.id);
@@ -407,7 +396,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                                 }
                               }}
                               aria-expanded={expandedLead === lead.id}
-                              aria-label={expandedLead === lead.id ? "Close details" : "Open details"}
+                              aria-label={expandedLead === lead.id ? "Close details" : "Click to open"}
                             >
                               <ChevronDown 
                                 className={cn(
@@ -419,7 +408,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="text-xs">
-                            {expandedLead === lead.id ? "Close" : "Hover or click to open"}
+                            {expandedLead === lead.id ? "Close" : "Click to open"}
                           </TooltipContent>
                         </Tooltip>
                         
