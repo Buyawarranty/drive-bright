@@ -43,11 +43,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Only admin can delete leads
   const isAdmin = userRole === 'admin';
   
+  // Export permission - admins always can, others need explicit permission
+  const canExport = isAdmin || canExportTab('new-leads') || hasGranularPermission('new-leads', 'export');
+  
   // Granular permissions for sub-views (default: all-leads and my-dashboard, no team-view)
   const canSeeAllLeads = hasGranularPermission('new-leads', 'all-leads') !== false; // Default true if not set
   const canSeeMyDashboard = hasGranularPermission('new-leads', 'my-dashboard') !== false; // Default true if not set
   const canSeeTeamView = hasGranularPermission('new-leads', 'team-view'); // Default false - requires explicit permission
-  const canExport = canExportTab('new-leads') || hasGranularPermission('new-leads', 'export');
   
   // Determine default view based on permissions
   const getDefaultView = () => {
