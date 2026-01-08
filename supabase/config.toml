@@ -169,6 +169,9 @@ verify_jwt = true
 [functions.send-step4-instant-email]
 verify_jwt = false
 
+[functions.create-stripe-checkout]
+verify_jwt = false
+
 [functions.create-payment-assist-checkout]
 verify_jwt = false
 
