@@ -347,14 +347,16 @@ serve(async (req) => {
         throw new Error("Invalid response from Payment Assist API");
       }
       
+      // Payment Assist /begin returns { status, msg, data: { token, url } }
+      const responseData = paymentAssistData.data || paymentAssistData;
+      const checkoutUrl = responseData.url;
+      const token = responseData.token;
+      
       logStep("Payment Assist checkout created", { 
-        token: paymentAssistData.token,
-        url: paymentAssistData.url,
+        token,
+        url: checkoutUrl,
         transactionId
       });
-      
-      // Payment Assist /begin returns { token, url }
-      const checkoutUrl = paymentAssistData.url;
       
       if (!checkoutUrl) {
         logStep("No checkout URL in Payment Assist response", paymentAssistData);
@@ -365,7 +367,7 @@ serve(async (req) => {
         JSON.stringify({ 
           url: checkoutUrl,
           transactionId,
-          token: paymentAssistData.token,
+          token,
           success: true
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
