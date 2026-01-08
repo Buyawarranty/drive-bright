@@ -13,6 +13,7 @@ interface LeadsFiltersProps {
   onSearchChange: (term: string) => void;
   onRefresh: () => void;
   onMigrate: () => void;
+  onExport: (format: 'csv' | 'xlsx') => void;
   leadCounts: {
     all: number;
     new: number;
@@ -31,6 +32,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   onSearchChange,
   onRefresh,
   onMigrate,
+  onExport,
   leadCounts
 }) => {
   return (
@@ -90,9 +92,9 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             <Upload className="h-4 w-4 mr-1" />
             Import from Carts
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => onExport('csv')}>
             <Download className="h-4 w-4 mr-1" />
-            Export
+            Export CSV
           </Button>
         </div>
       </div>
