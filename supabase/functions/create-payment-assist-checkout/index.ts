@@ -279,6 +279,7 @@ serve(async (req) => {
     
     // Build request parameters for Payment Assist API (flat structure as per docs)
     // All params must be strings for signature generation
+    // Note: plan_id removed - let Payment Assist use default or configure in dashboard
     const requestParams: Record<string, string> = {
       order_id: transactionId,
       amount: String(Math.round(totalAmount * 100)), // Convert to pence
@@ -290,8 +291,7 @@ serve(async (req) => {
       telephone: customerData?.phone || '',
       success_url: successUrl,
       failure_url: failureUrl,
-      reg_no: vehicleData?.regNumber || vehicleData?.registration || '',
-      plan_id: "1" // Default plan, can be adjusted based on requirements
+      reg_no: vehicleData?.regNumber || vehicleData?.registration || ''
     };
     
     logStep("Payment Assist request params (before signature)", requestParams);
