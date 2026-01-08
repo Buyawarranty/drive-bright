@@ -2,16 +2,20 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 import { useSalesStats, Badge as SalesBadge } from '@/hooks/useSalesStats';
 import { useLeads, Lead } from '@/hooks/useLeads';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   TrendingUp, Users, DollarSign, Target, 
   Clock, AlertTriangle, CheckCircle, Phone,
-  Mail, Calendar, Award
+  Mail, Calendar, Award, Trash2, Trophy
 } from 'lucide-react';
 import { LeadsTable } from './LeadsTable';
+import { MyRemindersPanel } from './MyRemindersPanel';
 import { format, isToday, isPast } from 'date-fns';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 export const SalespersonDashboard: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -32,10 +36,11 @@ export const SalespersonDashboard: React.FC = () => {
     removeTagFromLead,
     updateLeadNotes,
     markContactedAt,
-    logActivity
+    logActivity,
+    deleteLeads
   } = useLeads();
   
-  const { personalStats, userBadges, loading: statsLoading } = useSalesStats(currentUserId || undefined);
+  const { personalStats, teamStats, userBadges, loading: statsLoading } = useSalesStats(currentUserId || undefined);
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -98,6 +103,15 @@ export const SalespersonDashboard: React.FC = () => {
       setSelectedLeads(new Set(leadsToSelect.map(l => l.id)));
     }
   };
+
+  const handleDeleteSelected = async () => {
+    if (selectedLeads.size === 0) return;
+    await deleteLeads(Array.from(selectedLeads));
+    setSelectedLeads(new Set());
+  };
+
+  // Get current user's rank
+  const myRank = teamStats?.leaderboard.findIndex(p => p.userId === currentUserId) ?? -1;
 
   if (loading || statsLoading) {
     return (
@@ -268,11 +282,40 @@ export const SalespersonDashboard: React.FC = () => {
         </Card>
       )}
 
-      {/* All My Leads */}
+      {/* All My Leads with Delete */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">All My Leads</CardTitle>
-          <CardDescription>Leads assigned to you</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-lg">All My Leads</CardTitle>
+            <CardDescription>Leads assigned to you</CardDescription>
+          </div>
+          {selectedLeads.size > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm" className="gap-2">
+                  <Trash2 className="h-4 w-4" />
+                  Delete ({selectedLeads.size})
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete {selectedLeads.size} lead{selectedLeads.size > 1 ? 's' : ''}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the selected lead{selectedLeads.size > 1 ? 's' : ''}.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={handleDeleteSelected}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </CardHeader>
         <CardContent>
           <LeadsTable
@@ -295,6 +338,64 @@ export const SalespersonDashboard: React.FC = () => {
           />
         </CardContent>
       </Card>
+
+      {/* Scoreboard */}
+      {teamStats && teamStats.leaderboard.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Trophy className="h-5 w-5 text-orange-500" />
+              Team Scoreboard
+              {myRank >= 0 && (
+                <Badge variant="secondary" className="ml-2">
+                  Your Rank: #{myRank + 1}
+                </Badge>
+              )}
+            </CardTitle>
+            <CardDescription>Top performers by revenue this month</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px]">#</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead className="text-right">Revenue</TableHead>
+                  <TableHead className="text-right">Deals</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {teamStats.leaderboard.slice(0, 10).map((person, index) => (
+                  <TableRow 
+                    key={person.userId}
+                    className={person.userId === currentUserId ? 'bg-primary/10' : ''}
+                  >
+                    <TableCell>
+                      {index === 0 && '🥇'}
+                      {index === 1 && '🥈'}
+                      {index === 2 && '🥉'}
+                      {index > 2 && index + 1}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {person.userName}
+                      {person.userId === currentUserId && (
+                        <Badge variant="outline" className="ml-2 text-xs">You</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      £{person.totalRevenue.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-right">{person.convertedLeads}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* My Reminders Panel */}
+      <MyRemindersPanel />
     </div>
   );
 };
