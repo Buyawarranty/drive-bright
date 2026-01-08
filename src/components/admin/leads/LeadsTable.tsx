@@ -443,14 +443,22 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                             <Button 
                               variant="ghost" 
                               size="icon"
-                              className="h-7 w-7 hover:scale-110 transition-transform"
+                              className={cn(
+                                "h-7 w-7 hover:scale-110 transition-transform relative",
+                                lead.notes && "text-amber-600"
+                              )}
                               onClick={() => setExpandedLead(lead.id)}
                               aria-label="Add note"
                             >
                               <StickyNote className="h-3.5 w-3.5" />
+                              {lead.notes && (
+                                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-amber-500" />
+                              )}
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent side="top" className="text-xs">Add note</TooltipContent>
+                          <TooltipContent side="top" className="text-xs">
+                            {lead.notes ? 'View notes' : 'Add note'}
+                          </TooltipContent>
                         </Tooltip>
                         
                         {/* Email - Copy first */}

@@ -2594,6 +2594,51 @@ export type Database = {
           },
         ]
       }
+      lead_quick_notes: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          id: string
+          is_pinned: boolean | null
+          lead_id: string
+          note_text: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          id?: string
+          is_pinned?: boolean | null
+          lead_id: string
+          note_text: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          id?: string
+          is_pinned?: boolean | null
+          lead_id?: string
+          note_text?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_quick_notes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_quick_notes_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "sales_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_reminders: {
         Row: {
           created_at: string

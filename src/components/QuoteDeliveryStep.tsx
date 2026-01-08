@@ -178,7 +178,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             assigned_at: nextUserId ? new Date().toISOString() : null,
             next_action_type: 'call',
             next_action_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-            notes: `Quote requested via website. Vehicle: ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber}).`,
+            notes: null,
             last_activity_date: new Date().toISOString(),
             step_two_completed_at: new Date().toISOString()
           });
@@ -196,7 +196,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             vehicle_type: vehicleData?.vehicleType || 'car',
             mileage: vehicleData?.mileage || null,
             last_activity_date: new Date().toISOString(),
-            notes: `Quote re-requested. Vehicle: ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber}).`,
+            
             step_two_completed_at: new Date().toISOString()
           })
           .eq('id', existingLead.id);
