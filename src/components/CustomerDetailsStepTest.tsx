@@ -428,7 +428,16 @@ const CustomerDetailsStepTest: React.FC<CustomerDetailsStepTestProps> = ({
         formData: customerData,
         timestamp: Date.now()
       }));
-      window.location.href = checkoutData.url;
+      // Open in new tab to avoid iframe restrictions, with fallback to same window
+      const newWindow = window.open(checkoutData.url, '_blank');
+      if (!newWindow) {
+        // Fallback if popup blocked - try top-level navigation
+        if (window.top?.location) {
+          window.top.location.href = checkoutData.url;
+        } else {
+          window.location.href = checkoutData.url;
+        }
+      }
     } else {
       toast.error('Payment setup failed. Please try again.');
       setIsLoadingPaymentAssist(false);
