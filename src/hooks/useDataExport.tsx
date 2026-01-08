@@ -8,25 +8,33 @@ interface ExportOptions {
 
 export function useDataExport() {
   const downloadFile = useCallback((content: string, filename: string, mimeType: string) => {
-    // Add BOM for Excel UTF-8 compatibility
-    const bom = '\uFEFF';
-    const blob = new Blob([bom + content], { type: mimeType });
-    
-    // Create download link
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    
-    // Trigger download
-    document.body.appendChild(a);
-    a.click();
-    
-    // Cleanup
-    setTimeout(() => {
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    }, 100);
+    try {
+      // Add BOM for Excel UTF-8 compatibility
+      const bom = '\uFEFF';
+      const blob = new Blob([bom + content], { type: mimeType });
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = filename;
+      
+      // Append to body and trigger download
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup after a short delay
+      setTimeout(() => {
+        if (document.body.contains(a)) {
+          document.body.removeChild(a);
+        }
+        window.URL.revokeObjectURL(url);
+      }, 150);
+    } catch (error) {
+      console.error('Download error:', error);
+      throw error;
+    }
   }, []);
 
   const exportToCSV = useCallback((data: Record<string, any>[], options: ExportOptions) => {
