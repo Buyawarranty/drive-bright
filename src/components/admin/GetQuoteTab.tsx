@@ -828,6 +828,7 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
                       placeholder="e.g. John Smith"
+                      className="bg-amber-50 border-amber-200 focus:border-amber-400"
                     />
                   </div>
                   <div className="space-y-2">
@@ -837,6 +838,7 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
                       value={customerEmail}
                       onChange={(e) => setCustomerEmail(e.target.value)}
                       placeholder="customer@example.com"
+                      className="bg-amber-50 border-amber-200 focus:border-amber-400"
                     />
                   </div>
                 </div>
@@ -1032,21 +1034,21 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
                 </div>
 
                 {/* Sticky Price Summary Bar */}
-                <div className="sticky bottom-0 -mx-6 -mb-6 p-4 bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-b-lg shadow-lg">
+                <div className="sticky bottom-0 -mx-6 -mb-6 p-4 bg-gray-100 text-foreground rounded-b-lg shadow-lg border-t">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-baseline gap-3">
                         <div>
-                          <div className="text-sm opacity-90">Monthly (12 payments via Bumper)</div>
-                          <div className="text-2xl font-bold">£{currentPrice.monthlyPrice}/month</div>
+                          <div className="text-sm text-muted-foreground">Monthly (12 payments via Bumper)</div>
+                          <div className="text-2xl font-bold text-foreground">£{currentPrice.monthlyPrice}/month</div>
                         </div>
-                        <div className="text-primary-foreground/60">|</div>
+                        <div className="text-muted-foreground">|</div>
                         <div>
-                          <div className="text-sm opacity-90">Pay in Full (10% off via Stripe)</div>
-                          <div className="text-2xl font-bold">£{currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}</div>
+                          <div className="text-sm text-muted-foreground">Pay in Full (10% off via Stripe)</div>
+                          <div className="text-2xl font-bold text-foreground">£{currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}</div>
                         </div>
                       </div>
-                      <div className="text-xs opacity-75 mt-1">
+                      <div className="text-xs text-muted-foreground mt-1">
                         Total: £{currentPrice.totalPrice} | Claim Limit: £{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()} | Labour: £{labourRate}/hr
                       </div>
                     </div>
@@ -1119,18 +1121,18 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
                     </Button>
                   </div>
                   
-                  <div className="p-4 rounded-lg border-2 border-green-200 bg-green-50">
+                  <div className="p-4 rounded-lg border-2 border-orange-200 bg-orange-50">
                     <div className="flex items-center gap-2 mb-2">
-                      <CreditCard className="w-5 h-5 text-green-600" />
-                      <h4 className="font-semibold text-green-900">Pay in Full</h4>
-                      <Badge className="bg-green-600 text-xs">10% OFF</Badge>
+                      <CreditCard className="w-5 h-5 text-orange-600" />
+                      <h4 className="font-semibold text-orange-900">Pay in Full</h4>
+                      <Badge className="bg-orange-500 text-xs">10% OFF</Badge>
                     </div>
-                    <div className="text-2xl font-bold text-green-800 mb-1">£{currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}</div>
-                    <p className="text-sm text-green-600 mb-3">One-time payment via Stripe</p>
+                    <div className="text-2xl font-bold text-orange-800 mb-1">£{currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}</div>
+                    <p className="text-sm text-orange-600 mb-3">One-time payment via Stripe</p>
                     <Button
                       onClick={handleGenerateStripeLink}
                       disabled={isGeneratingStripeLink}
-                      className="w-full bg-green-600 hover:bg-green-700"
+                      className="w-full bg-orange-500 hover:bg-orange-600"
                     >
                       {isGeneratingStripeLink ? (
                         <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Generating...</>
@@ -1162,10 +1164,11 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
                     Email Quote
                   </Button>
                   <Button 
-                    onClick={generateWhatsAppMessage}
+                    onClick={() => window.open('https://wa.me/447000000000', '_blank')}
                     variant="outline"
+                    className="border-green-500 text-green-600 hover:bg-green-50"
                   >
-                    <MessageCircle className="w-4 h-4 mr-2" />
+                    <MessageCircle className="w-4 h-4 mr-2 text-green-500" />
                     WhatsApp
                   </Button>
                 </div>
