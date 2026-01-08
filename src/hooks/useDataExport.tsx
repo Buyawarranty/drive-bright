@@ -7,6 +7,28 @@ interface ExportOptions {
 }
 
 export function useDataExport() {
+  const downloadFile = useCallback((content: string, filename: string, mimeType: string) => {
+    // Add BOM for Excel UTF-8 compatibility
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + content], { type: mimeType });
+    
+    // Create download link
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    
+    // Trigger download
+    document.body.appendChild(a);
+    a.click();
+    
+    // Cleanup
+    setTimeout(() => {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }, 100);
+  }, []);
+
   const exportToCSV = useCallback((data: Record<string, any>[], options: ExportOptions) => {
     if (!data || data.length === 0) {
       toast.error('No data to export');
@@ -18,47 +40,36 @@ export function useDataExport() {
       const headers = Object.keys(data[0]);
       
       // Create CSV content
-      const csvContent = [
-        headers.join(','),
-        ...data.map(row => 
-          headers.map(header => {
-            const value = row[header];
-            // Handle null, undefined, objects
-            if (value === null || value === undefined) return '';
-            if (typeof value === 'object') return JSON.stringify(value).replace(/,/g, ';');
-            // Escape quotes and wrap in quotes if contains comma
-            const stringValue = String(value);
-            if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
-              return `"${stringValue.replace(/"/g, '""')}"`;
-            }
-            return stringValue;
-          }).join(',')
-        )
-      ].join('\n');
+      const csvRows = [headers.join(',')];
+      
+      for (const row of data) {
+        const values = headers.map(header => {
+          const value = row[header];
+          if (value === null || value === undefined) return '';
+          if (typeof value === 'object') return `"${JSON.stringify(value).replace(/"/g, '""')}"`;
+          const stringValue = String(value);
+          // Escape quotes and wrap in quotes if contains comma, quote, or newline
+          if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+            return `"${stringValue.replace(/"/g, '""')}"`;
+          }
+          return stringValue;
+        });
+        csvRows.push(values.join(','));
+      }
 
-      // Create and download file
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
+      const csvContent = csvRows.join('\n');
+      const filename = `${options.filename}_${new Date().toISOString().split('T')[0]}.csv`;
       
-      link.setAttribute('href', url);
-      link.setAttribute('download', `${options.filename}_${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
+      downloadFile(csvContent, filename, 'text/csv;charset=utf-8');
       toast.success(`Exported ${data.length} records to CSV`);
     } catch (error) {
       console.error('Export error:', error);
       toast.error('Failed to export data');
     }
-  }, []);
+  }, [downloadFile]);
 
   const exportToExcel = useCallback((data: Record<string, any>[], options: ExportOptions) => {
-    // For Excel, we'll use CSV with .xlsx extension (Excel can open CSV files)
-    // For proper XLSX support, you'd need a library like xlsx
+    // Excel can open CSV files, so we use CSV format for compatibility
     if (!data || data.length === 0) {
       toast.error('No data to export');
       return;
@@ -67,37 +78,33 @@ export function useDataExport() {
     try {
       const headers = Object.keys(data[0]);
       
-      // Tab-separated values work better for Excel
-      const tsvContent = [
-        headers.join('\t'),
-        ...data.map(row => 
-          headers.map(header => {
-            const value = row[header];
-            if (value === null || value === undefined) return '';
-            if (typeof value === 'object') return JSON.stringify(value);
-            return String(value).replace(/\t/g, ' ');
-          }).join('\t')
-        )
-      ].join('\n');
+      // Create CSV content (Excel opens CSV files perfectly)
+      const csvRows = [headers.join(',')];
+      
+      for (const row of data) {
+        const values = headers.map(header => {
+          const value = row[header];
+          if (value === null || value === undefined) return '';
+          if (typeof value === 'object') return `"${JSON.stringify(value).replace(/"/g, '""')}"`;
+          const stringValue = String(value);
+          if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+            return `"${stringValue.replace(/"/g, '""')}"`;
+          }
+          return stringValue;
+        });
+        csvRows.push(values.join(','));
+      }
 
-      const blob = new Blob([tsvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
+      const csvContent = csvRows.join('\n');
+      const filename = `${options.filename}_${new Date().toISOString().split('T')[0]}.csv`;
       
-      link.setAttribute('href', url);
-      link.setAttribute('download', `${options.filename}_${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
-      toast.success(`Exported ${data.length} records to CSV`);
+      downloadFile(csvContent, filename, 'text/csv;charset=utf-8');
+      toast.success(`Exported ${data.length} records`);
     } catch (error) {
       console.error('Export error:', error);
       toast.error('Failed to export data');
     }
-  }, []);
+  }, [downloadFile]);
 
   return { exportToCSV, exportToExcel };
 }
