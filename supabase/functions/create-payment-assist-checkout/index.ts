@@ -213,36 +213,125 @@ serve(async (req) => {
       redirectUrl 
     });
     
-    // PLACEHOLDER: Payment Assist API integration
-    // TODO: Replace with actual Payment Assist API when credentials are provided
-    // For now, we'll simulate a successful response with a mock URL
+    // Payment Assist API integration
+    const paymentAssistApiKey = Deno.env.get("PAYMENT_ASSIST_API_KEY");
+    const paymentAssistSecretKey = Deno.env.get("PAYMENT_ASSIST_SECRET_KEY");
     
-    // The actual implementation would look something like:
-    // const paymentAssistApiKey = Deno.env.get("PAYMENT_ASSIST_API_KEY");
-    // const paymentAssistSecretKey = Deno.env.get("PAYMENT_ASSIST_SECRET_KEY");
-    // const paymentAssistResponse = await fetch("https://api.paymentassist.co.uk/v2/checkout", {...})
+    if (!paymentAssistApiKey || !paymentAssistSecretKey) {
+      logStep("Missing Payment Assist API credentials");
+      throw new Error("Payment Assist API credentials are not configured");
+    }
     
-    // For testing purposes, construct success URL that will be handled by our success handler
+    // Success URL - handled by our success handler edge function
     const successUrl = `https://mzlpuxzwyrcyrgrongeb.supabase.co/functions/v1/process-payment-assist-success?tx=${transactionId}`;
+    const failureUrl = `${origin}/payment-assist-test?error=payment_failed&tx=${transactionId}`;
     
-    // MOCK: Simulate Payment Assist checkout URL
-    // In production, this would come from Payment Assist API response
-    const mockPaymentAssistUrl = `${origin}/payment-assist-test?tx=${transactionId}&amount=${totalAmount}&redirect=${encodeURIComponent(successUrl)}`;
-    
-    logStep("Payment Assist checkout URL generated (MOCK)", { 
-      url: mockPaymentAssistUrl,
+    logStep("Calling Payment Assist API", { 
       transactionId,
-      totalAmount
+      totalAmount,
+      successUrl,
+      customerEmail: customerData?.email
     });
+    
+    // Prepare customer address
+    const addressLine1 = customerData?.address_line_1 || customerData?.building_number || '';
+    const city = customerData?.city || customerData?.town || '';
+    const postcode = customerData?.postcode || '';
+    
+    // Build request payload for Payment Assist API
+    const paymentAssistPayload = {
+      amount: Math.round(totalAmount * 100), // Convert to pence
+      currency: "GBP",
+      order_id: transactionId,
+      description: `${planData.name} - Vehicle Warranty`,
+      customer: {
+        first_name: customerData?.first_name || '',
+        last_name: customerData?.last_name || '',
+        email: customerData?.email || '',
+        phone: customerData?.phone || '',
+        address: {
+          line1: addressLine1,
+          city: city,
+          postcode: postcode,
+          country: "GB"
+        }
+      },
+      vehicle: {
+        registration: vehicleData?.regNumber || '',
+        make: vehicleData?.make || '',
+        model: vehicleData?.model || '',
+        year: vehicleData?.year || null,
+        mileage: parseInt(vehicleData?.mileage) || null
+      },
+      success_url: successUrl,
+      failure_url: failureUrl,
+      instalment_plan: "12" // 12 monthly payments
+    };
+    
+    logStep("Payment Assist request payload", paymentAssistPayload);
+    
+    try {
+      // Call Payment Assist API to create checkout session
+      const paymentAssistResponse = await fetch("https://api.v1.payment-assist.co.uk/checkouts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Api-Key": paymentAssistApiKey,
+          "X-Api-Secret": paymentAssistSecretKey
+        },
+        body: JSON.stringify(paymentAssistPayload)
+      });
+      
+      const responseText = await paymentAssistResponse.text();
+      logStep("Payment Assist raw response", { 
+        status: paymentAssistResponse.status, 
+        statusText: paymentAssistResponse.statusText,
+        responseText: responseText.substring(0, 500)
+      });
+      
+      if (!paymentAssistResponse.ok) {
+        logStep("Payment Assist API error", { 
+          status: paymentAssistResponse.status, 
+          response: responseText 
+        });
+        throw new Error(`Payment Assist API error: ${paymentAssistResponse.status} - ${responseText}`);
+      }
+      
+      let paymentAssistData;
+      try {
+        paymentAssistData = JSON.parse(responseText);
+      } catch (parseError) {
+        logStep("Failed to parse Payment Assist response", { responseText });
+        throw new Error("Invalid response from Payment Assist API");
+      }
+      
+      logStep("Payment Assist checkout created", { 
+        checkoutUrl: paymentAssistData.checkout_url || paymentAssistData.url,
+        checkoutId: paymentAssistData.id,
+        transactionId
+      });
+      
+      const checkoutUrl = paymentAssistData.checkout_url || paymentAssistData.url || paymentAssistData.redirect_url;
+      
+      if (!checkoutUrl) {
+        logStep("No checkout URL in Payment Assist response", paymentAssistData);
+        throw new Error("Payment Assist did not return a checkout URL");
+      }
 
-    return new Response(
-      JSON.stringify({ 
-        url: mockPaymentAssistUrl,
-        transactionId,
-        success: true
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+      return new Response(
+        JSON.stringify({ 
+          url: checkoutUrl,
+          transactionId,
+          success: true
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+      
+    } catch (apiError) {
+      const apiErrorMessage = apiError instanceof Error ? apiError.message : 'Unknown API error';
+      logStep("Payment Assist API call failed", { error: apiErrorMessage });
+      throw new Error(`Payment Assist checkout failed: ${apiErrorMessage}`);
+    }
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
