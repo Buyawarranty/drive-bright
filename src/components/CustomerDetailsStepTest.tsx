@@ -289,31 +289,31 @@ const CustomerDetailsStepTest: React.FC<CustomerDetailsStepTestProps> = ({
     }
   };
 
-  const validateForm = () => {
+  const validateForm = (): { isValid: boolean; errors: {[key: string]: string} } => {
     const errors: {[key: string]: string} = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const phoneRegex = /^(\+44\s?7\d{3}|\(?07\d{3}\)?)\s?\d{3}\s?\d{3}$/;
     const postcodeRegex = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
     
-    if (!customerData.first_name.trim() || customerData.first_name.trim().length < 2) {
+    if (!customerData.first_name?.trim() || customerData.first_name.trim().length < 2) {
       errors.first_name = 'Please enter your first name.';
     }
-    if (!customerData.last_name.trim() || customerData.last_name.trim().length < 2) {
+    if (!customerData.last_name?.trim() || customerData.last_name.trim().length < 2) {
       errors.last_name = 'Please enter your last name.';
     }
-    if (!customerData.email.trim() || !emailRegex.test(customerData.email)) {
+    if (!customerData.email?.trim() || !emailRegex.test(customerData.email)) {
       errors.email = 'Enter a valid email address.';
     }
-    if (!customerData.phone.trim() || !phoneRegex.test(customerData.phone)) {
+    if (!customerData.phone?.trim() || !phoneRegex.test(customerData.phone)) {
       errors.phone = 'Enter a valid UK phone number.';
     }
-    if (!customerData.address_line_1.trim() || customerData.address_line_1.trim().length < 3) {
+    if (!customerData.address_line_1?.trim() || customerData.address_line_1.trim().length < 3) {
       errors.address_line_1 = 'Enter your street address.';
     }
-    if (!customerData.city.trim() || customerData.city.trim().length < 2) {
+    if (!customerData.city?.trim() || customerData.city.trim().length < 2) {
       errors.city = 'Enter your city or town.';
     }
-    if (!customerData.postcode.trim() || !postcodeRegex.test(customerData.postcode)) {
+    if (!customerData.postcode?.trim() || !postcodeRegex.test(customerData.postcode)) {
       errors.postcode = 'Enter a valid UK postcode.';
     }
     
@@ -324,13 +324,20 @@ const CustomerDetailsStepTest: React.FC<CustomerDetailsStepTestProps> = ({
     }
     
     if (!startDate) {
-      setStartDateError('Please select a valid start date.');
+      errors.startDate = 'Please select a valid start date.';
+    }
+    
+    const isValid = Object.keys(errors).length === 0;
+    return { isValid, errors };
+  };
+  
+  const applyValidationErrors = (errors: {[key: string]: string}) => {
+    setFieldErrors(errors);
+    if (errors.startDate) {
+      setStartDateError(errors.startDate);
     } else {
       setStartDateError('');
     }
-    
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0 && !!startDate;
   };
 
   const processStripeCheckout = async () => {
@@ -767,37 +774,44 @@ const CustomerDetailsStepTest: React.FC<CustomerDetailsStepTestProps> = ({
                                 return;
                               }
                               
-                              // Validate form first before any state updates
-                              const isValid = validateForm();
-                              console.log('📋 Form validation result:', isValid);
-                              setShowValidation(true);
-                              
-                              if (!isValid) {
-                                toast.error('Please fill in all required fields');
-                                setTimeout(() => {
-                                  const firstErrorField = document.querySelector('.border-red-500');
-                                  firstErrorField?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                }, 100);
-                                return;
+                              try {
+                                // Validate form first - no state updates here
+                                const { isValid, errors } = validateForm();
+                                console.log('📋 Form validation result:', isValid, errors);
+                                
+                                if (!isValid) {
+                                  // Now apply the state updates for UI
+                                  setShowValidation(true);
+                                  applyValidationErrors(errors);
+                                  toast.error('Please fill in all required fields');
+                                  setTimeout(() => {
+                                    const firstErrorField = document.querySelector('[class*="border-red"]');
+                                    firstErrorField?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                  }, 100);
+                                  return;
+                                }
+                                
+                                console.log('✅ Validation passed, starting Payment Assist checkout');
+                                isProcessingRef.current = true;
+                                setPaymentMethod('payment-assist');
+                                setIsLoadingPaymentAssist(true);
+                                setIsLoadingPayment(true);
+                                trackFormSubmission('customer_details', { payment_method: 'payment_assist' });
+                                
+                                processPaymentAssistCheckout()
+                                  .catch((error) => {
+                                    console.error('❌ Payment Assist checkout error:', error);
+                                    toast.error('Payment processing failed. Please try again.');
+                                  })
+                                  .finally(() => {
+                                    isProcessingRef.current = false;
+                                    setIsLoadingPaymentAssist(false);
+                                    setIsLoadingPayment(false);
+                                  });
+                              } catch (err) {
+                                console.error('❌ Button handler error:', err);
+                                toast.error('An error occurred. Please try again.');
                               }
-                              
-                              console.log('✅ Validation passed, starting Payment Assist checkout');
-                              isProcessingRef.current = true;
-                              setPaymentMethod('payment-assist');
-                              setIsLoadingPaymentAssist(true);
-                              setIsLoadingPayment(true);
-                              trackFormSubmission('customer_details', { payment_method: 'payment_assist' });
-                              
-                              processPaymentAssistCheckout()
-                                .catch((error) => {
-                                  console.error('❌ Payment Assist checkout error:', error);
-                                  toast.error('Payment processing failed. Please try again.');
-                                })
-                                .finally(() => {
-                                  isProcessingRef.current = false;
-                                  setIsLoadingPaymentAssist(false);
-                                  setIsLoadingPayment(false);
-                                });
                             }}
                             disabled={isLoadingStripe || isLoadingPaymentAssist}
                             className="w-full rounded-lg transition-colors shadow-lg text-white disabled:opacity-50 bg-purple-600 hover:bg-purple-700"
@@ -880,38 +894,45 @@ const CustomerDetailsStepTest: React.FC<CustomerDetailsStepTestProps> = ({
                                 return;
                               }
                               
-                              // Validate form first before any state updates
-                              const isValid = validateForm();
-                              console.log('📋 Form validation result:', isValid);
-                              setShowValidation(true);
-                              
-                              if (!isValid) {
-                                toast.error('Please fill in all required fields');
-                                setTimeout(() => {
-                                  const firstErrorField = document.querySelector('.border-red-500');
-                                  firstErrorField?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                }, 100);
-                                return;
+                              try {
+                                // Validate form first - no state updates here
+                                const { isValid, errors } = validateForm();
+                                console.log('📋 Form validation result:', isValid, errors);
+                                
+                                if (!isValid) {
+                                  // Now apply the state updates for UI
+                                  setShowValidation(true);
+                                  applyValidationErrors(errors);
+                                  toast.error('Please fill in all required fields');
+                                  setTimeout(() => {
+                                    const firstErrorField = document.querySelector('[class*="border-red"]');
+                                    firstErrorField?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                  }, 100);
+                                  return;
+                                }
+                                
+                                console.log('✅ Validation passed, starting Stripe checkout');
+                                isProcessingRef.current = true;
+                                setPaymentMethod('stripe');
+                                setIsLoadingStripe(true);
+                                setIsLoadingPayment(true);
+                                trackFormSubmission('customer_details', { payment_method: 'stripe' });
+                                trackStripeCheckoutClick();
+                                
+                                processStripeCheckout()
+                                  .catch((error) => {
+                                    console.error('❌ Stripe checkout error:', error);
+                                    toast.error('Payment processing failed. Please try again.');
+                                  })
+                                  .finally(() => {
+                                    isProcessingRef.current = false;
+                                    setIsLoadingStripe(false);
+                                    setIsLoadingPayment(false);
+                                  });
+                              } catch (err) {
+                                console.error('❌ Button handler error:', err);
+                                toast.error('An error occurred. Please try again.');
                               }
-                              
-                              console.log('✅ Validation passed, starting Stripe checkout');
-                              isProcessingRef.current = true;
-                              setPaymentMethod('stripe');
-                              setIsLoadingStripe(true);
-                              setIsLoadingPayment(true);
-                              trackFormSubmission('customer_details', { payment_method: 'stripe' });
-                              trackStripeCheckoutClick();
-                              
-                              processStripeCheckout()
-                                .catch((error) => {
-                                  console.error('❌ Stripe checkout error:', error);
-                                  toast.error('Payment processing failed. Please try again.');
-                                })
-                                .finally(() => {
-                                  isProcessingRef.current = false;
-                                  setIsLoadingStripe(false);
-                                  setIsLoadingPayment(false);
-                                });
                             }}
                             disabled={isLoadingStripe || isLoadingPaymentAssist}
                             className="w-full rounded-lg transition-colors shadow-lg text-white disabled:opacity-50 hover:opacity-90"
