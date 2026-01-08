@@ -2328,62 +2328,31 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <DialogHeader className="pr-12">
                   <DialogTitle className="flex items-center gap-2 text-xl">
                     <ShieldCheck className="w-6 h-6 text-green-600" />
-                    Understanding Your Claim Limit
+                    Your claim limit
                   </DialogTitle>
                 </DialogHeader>
                 
-                <div className="space-y-4 py-4">
+                <div className="space-y-5 py-4">
                   <p className="text-gray-700 leading-relaxed">
-                    <span className="font-semibold text-gray-900">What is a Claim Limit?</span> Your claim limit is the maximum amount we'll pay per claim for covered repairs. If your repair costs exceed your chosen limit, you'll need to pay the difference.
+                    Your claim limit is the maximum we pay per repair. It covers parts and your chosen labour rate. Any excess you selected is paid once per claim.
                   </p>
                   
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                      <Info className="w-5 h-5 text-green-600" />
-                      How It Works - Example:
-                    </h4>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <p className="font-medium text-gray-900 mb-2">Advanced Coverage (£1,250 limit):</p>
-                        <div className="ml-4 space-y-2 text-sm">
-                          <div className="flex items-start gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <div>
-                              <p className="font-medium text-foreground">If your repair costs £1,250 or less:</p>
-                              <p className="text-muted-foreground">We'll cover the full cost of parts and labour, within the limits of your warranty plan.</p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-start gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <div>
-                              <p className="font-medium text-foreground">If your repair costs more than £1,250:</p>
-                              <p className="text-muted-foreground">You'll simply pay the difference. For example, if the total is £1,400, we'll cover £1,250 and you'll only pay £150.</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <p className="text-gray-700 text-sm">
-                      <span className="font-semibold text-gray-900">💡 Pro Tip:</span> Choose a higher limit for greater peace of mind. Most major repairs fall within the £1,250-£2,000 range, making our Advanced and Elite plans the most popular choices for comprehensive protection.
-                    </p>
-                  </div>
+                  <p className="text-gray-700 leading-relaxed">
+                    Most repair claims average between <span className="font-semibold">£700 and £1,100</span>, so most customers are fully covered.
+                  </p>
                   
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                    <p className="text-gray-700 text-sm">
-                      Your excess amount and claim limits depend on the cover options you choose – there are no hidden fees. Just clear, reliable protection to help you manage unexpected repair bills.
+                    <h4 className="font-semibold text-gray-900 mb-3">
+                      Example
+                    </h4>
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                      With a £1,250 claim limit: if your repair costs £1,400, we pay £1,250 and you pay the remaining £150 (plus your excess).
                     </p>
                   </div>
                   
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-gray-700 text-sm">
-                      Plus, with nationwide support and fast claims processing, we'll get you back on the road quickly and with confidence.
-                    </p>
-                  </div>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Your excess and claim limit are set when you buy your cover. There are no hidden fees.
+                  </p>
                 </div>
               </DialogContent>
             </Dialog>
