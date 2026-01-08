@@ -43,7 +43,7 @@ const StayOfferCard: React.FC<StayOfferCardProps> = ({ onStaySuccess }) => {
           registrationPlate: stayRegPlate,
           fullName: stayEmail,
           reason: 'CUSTOMER_STAYING',
-          feedback: `Customer has decided to STAY and keep their warranty. They accepted the 3 months FREE offer. Email: ${stayEmail}, Registration: ${stayRegPlate}. Please add 3 months to their warranty expiry date.`
+          feedback: `Customer has decided to STAY and keep their warranty. Email: ${stayEmail}, Registration: ${stayRegPlate}. Please contact them to discuss retention options.`
         }
       });
 
@@ -75,22 +75,22 @@ const StayOfferCard: React.FC<StayOfferCardProps> = ({ onStaySuccess }) => {
           Wait! Before You Go...
         </h3>
         <p className="text-lg text-muted-foreground">
-          Get <span className="font-bold text-success">3 months FREE</span> if you decide to stay!
+          We'd love to keep you as a customer. Let us see what we can do for you.
         </p>
       </div>
 
       <div className="space-y-3 mb-6">
         <div className="flex items-center gap-3 bg-card rounded-lg p-3">
           <Check className="w-5 h-5 text-success" />
-          <span className="text-foreground">No extra cost – just extra protection</span>
+          <span className="text-foreground">Speak to our team about your options</span>
         </div>
         <div className="flex items-center gap-3 bg-card rounded-lg p-3">
           <Check className="w-5 h-5 text-success" />
-          <span className="text-foreground">Added to your current policy immediately</span>
+          <span className="text-foreground">We may be able to offer you a better deal</span>
         </div>
         <div className="flex items-center gap-3 bg-card rounded-lg p-3">
           <Check className="w-5 h-5 text-success" />
-          <span className="text-foreground">Stay protected for longer</span>
+          <span className="text-foreground">Keep your vehicle protected</span>
         </div>
       </div>
 
@@ -116,11 +116,11 @@ const StayOfferCard: React.FC<StayOfferCardProps> = ({ onStaySuccess }) => {
         disabled={isStaying}
         className="w-full h-14 bg-success hover:bg-success/90 text-success-foreground font-bold text-lg px-6"
       >
-        {isStaying ? 'Processing...' : "🎁 Yes, I'll Stay – Add 3 Months Free"}
+        {isStaying ? 'Processing...' : "Yes, I'd Like to Stay"}
       </Button>
 
       <p className="text-center text-sm text-success mt-4">
-        No strings attached. We just want to keep you happy.
+        Our team will be in touch to discuss your options.
       </p>
 
       {/* Panda Image */}
