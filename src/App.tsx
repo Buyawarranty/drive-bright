@@ -95,6 +95,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const QuickPasswordReset = lazy(() => import("./pages/QuickPasswordReset"));
 const QuickResetTest = lazy(() => import("./pages/QuickResetTest"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const StepTest = lazy(() => import("./pages/StepTest"));
 const SetupAdmin = lazy(() => import("./pages/SetupAdmin"));
 const UpdateAdminCredentials = lazy(() => import("./pages/UpdateAdminCredentials"));
 const RequestAccess = lazy(() => import("./pages/RequestAccess"));
@@ -198,6 +199,7 @@ const App = () => {
                     
                     {/* Dynamic landing pages from admin - supports nested paths under warranty-types */}
                     <Route path="/warranty-types/:brand" element={<DynamicLandingPage />} />
+                    <Route path="/steptest" element={<StepTest />} />
                     <Route path="/:slug" element={<DynamicLandingPage />} />
                     
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
