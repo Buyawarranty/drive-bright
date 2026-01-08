@@ -275,6 +275,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
   // Claim limit guide expansion state
   const [claimLimitGuideExpanded, setClaimLimitGuideExpanded] = useState(false);
   
+  // Check if any optional add-ons are selected (excluding auto-included ones)
+  const hasAddOnsSelected = useMemo(() => {
+    const autoIncluded = paymentType ? getAutoIncludedAddOns(paymentType) : [];
+    // Check if any add-on is selected that isn't auto-included, OR if boost is enabled
+    const hasManualAddOns = Object.entries(selectedProtectionAddOns).some(
+      ([key, value]) => value && !autoIncluded.includes(key)
+    );
+    return hasManualAddOns || boostAddon;
+  }, [selectedProtectionAddOns, paymentType, boostAddon]);
+  
   // What's Covered section expansion state
   const [whatsCoveredOpen, setWhatsCoveredOpen] = useState(false);
   
@@ -1331,7 +1341,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
         {/* Choose Warranty Duration - Moved to top */}
         <div id="duration-price-section" className="section-header rounded-lg p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-3">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
                 1
@@ -1342,6 +1352,31 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </h2>
             </div>
             <span className="text-sm text-gray-600 font-bold text-center w-full sm:w-auto sm:text-base sm:self-center">All parts included at no extra cost</span>
+          </div>
+          
+          {/* Dynamic microcopy for add-ons explanation */}
+          <div className={cn(
+            "mb-6 px-4 py-3 rounded-lg text-sm transition-all duration-300",
+            hasAddOnsSelected 
+              ? "bg-green-50 border border-green-200" 
+              : "bg-gray-50 border border-gray-200"
+          )}>
+            {hasAddOnsSelected ? (
+              <div className="flex items-start gap-2">
+                <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                <p className="text-gray-800">
+                  <span className="font-medium text-green-700">Optional Add-Ons selected.</span>{' '}
+                  <span className="text-gray-600">Your updated total is shown in the summary bar below.</span>
+                </p>
+              </div>
+            ) : (
+              <div className="flex items-start gap-2">
+                <Search className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5" />
+                <p className="text-gray-600">
+                  Base cover prices shown below. Any Optional Add-Ons you choose are added to the total in the summary bar.
+                </p>
+              </div>
+            )}
           </div>
 
           {validationErrors.paymentType && (
@@ -2632,7 +2667,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <p className="text-sm text-gray-500 mb-1">Your Platinum Plan</p>
                     <div className="flex flex-col">
                       <div className="flex items-baseline gap-2">
-                        <span className="text-xl font-bold text-gray-900">Total:</span>
+                        <span className="text-xl font-bold text-gray-900">
+                          {hasAddOnsSelected ? 'Total incl. add-ons:' : 'Total:'}
+                        </span>
                         <span className="text-3xl font-bold text-gray-900">£{displayMonthlyPrice}/month</span>
                       </div>
                       <span className="text-sm text-black">(Only 12 payments)</span>

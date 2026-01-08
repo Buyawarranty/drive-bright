@@ -1,7 +1,8 @@
-import React from 'react';
-import { ArrowRight, Star, Shield, Lock } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ArrowRight, Star, Shield, Lock, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getMarketingSavings, PaymentPeriod } from '@/lib/pricingMatrix';
+import { cn } from '@/lib/utils';
 
 interface StickyFooterProps {
   monthlyPrice: number;
@@ -11,6 +12,7 @@ interface StickyFooterProps {
   isLoading: boolean;
   isValid: boolean;
   paymentPeriod?: string;
+  hasAddOnsSelected?: boolean;
 }
 
 const StickyFooter: React.FC<StickyFooterProps> = ({
@@ -19,8 +21,22 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
   onContinue,
   isLoading,
   isValid,
-  paymentPeriod = '24months'
+  paymentPeriod = '24months',
+  hasAddOnsSelected = false
 }) => {
+  // Track price changes for pulse animation
+  const [isPulsing, setIsPulsing] = useState(false);
+  const [prevPrice, setPrevPrice] = useState(monthlyPrice);
+  
+  useEffect(() => {
+    if (monthlyPrice !== prevPrice) {
+      setIsPulsing(true);
+      setPrevPrice(monthlyPrice);
+      const timer = setTimeout(() => setIsPulsing(false), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [monthlyPrice, prevPrice]);
+  
   // Pay in full = monthly × 12 (what user actually pays over 12 months)
   const payInFull = monthlyPrice * 12;
   
@@ -53,8 +69,13 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           {/* Middle Section - Pricing */}
           <div className="flex flex-col items-center gap-1 flex-1">
             <div className="flex flex-col items-center">
-              <div className="flex items-baseline gap-2">
-                <span className="text-xl font-bold text-gray-900">Total:</span>
+              <div className={cn(
+                "flex items-baseline gap-2 transition-all duration-300",
+                isPulsing && "animate-pulse scale-105"
+              )}>
+                <span className="text-xl font-bold text-gray-900">
+                  {hasAddOnsSelected ? 'Total incl. add-ons:' : 'Total:'}
+                </span>
                 <span className="text-2xl font-bold text-gray-900">£{monthlyPrice}/month</span>
               </div>
               <span className="text-sm text-gray-500">(Only 12 payments)</span>
@@ -112,8 +133,19 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
       <div className="md:hidden px-5 py-4">
         {/* Plan Title */}
         <div className="text-center mb-3">
-          <h3 className="text-lg font-bold text-gray-900">Platinum Plan</h3>
-          <p className="text-base text-gray-700 mt-1">
+          <div className="flex items-center justify-center gap-2">
+            <h3 className="text-lg font-bold text-gray-900">Platinum Plan</h3>
+            {hasAddOnsSelected && (
+              <span className="bg-success/10 text-success text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
+                <Package className="w-3 h-3" />
+                + Add-ons
+              </span>
+            )}
+          </div>
+          <p className={cn(
+            "text-base text-gray-700 mt-1 transition-all duration-300",
+            isPulsing && "animate-pulse"
+          )}>
             <span className="font-semibold">£{monthlyPrice}/month</span>
             <span className="text-gray-500"> for 12 months</span>
           </p>

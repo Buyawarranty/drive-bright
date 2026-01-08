@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, ChevronDown, ChevronUp, Flame, Wrench } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Flame, Wrench, Search, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface TermOption {
@@ -17,6 +17,7 @@ interface TermSelectorProps {
   availableDurations: ('12months' | '24months' | '36months')[];
   getPriceForTerm: (term: string) => number;
   getTotalForTerm: (term: string) => number;
+  hasAddOnsSelected?: boolean;
 }
 
 const TermSelector: React.FC<TermSelectorProps> = ({
@@ -24,7 +25,8 @@ const TermSelector: React.FC<TermSelectorProps> = ({
   onTermChange,
   availableDurations,
   getPriceForTerm,
-  getTotalForTerm
+  getTotalForTerm,
+  hasAddOnsSelected = false
 }) => {
   const [showAllOptions, setShowAllOptions] = useState(false);
 
@@ -82,7 +84,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
 
   return (
     <div className="px-4 py-4">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-2">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold">
             1
@@ -90,6 +92,31 @@ const TermSelector: React.FC<TermSelectorProps> = ({
           <h3 className="font-semibold text-lg text-foreground">Choose your cover duration</h3>
         </div>
         <span className="text-sm text-gray-600 font-bold text-center w-full sm:w-auto sm:text-base sm:self-center flex items-center gap-1">All parts included at no extra cost</span>
+      </div>
+      
+      {/* Dynamic microcopy for add-ons explanation */}
+      <div className={cn(
+        "mb-4 px-3 py-2.5 rounded-lg text-sm transition-all duration-300",
+        hasAddOnsSelected 
+          ? "bg-success/10 border border-success/30" 
+          : "bg-muted/50 border border-border"
+      )}>
+        {hasAddOnsSelected ? (
+          <div className="flex items-start gap-2">
+            <CheckCircle className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
+            <p className="text-foreground">
+              <span className="font-medium">Optional Add-Ons selected.</span>{' '}
+              <span className="text-muted-foreground">Your updated total is shown in the summary below.</span>
+            </p>
+          </div>
+        ) : (
+          <div className="flex items-start gap-2">
+            <Search className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+            <p className="text-muted-foreground">
+              Base cover prices shown below. Any Optional Add-Ons you choose are added to the total in the summary bar.
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="space-y-3">
