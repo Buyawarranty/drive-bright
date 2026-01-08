@@ -9,12 +9,13 @@ import { ManagerDashboard } from './ManagerDashboard';
 import { ManualOrderEntry } from '../ManualOrderEntry';
 import { MyRemindersPanel } from './MyRemindersPanel';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
-import { Users, UserCircle, LayoutDashboard, Bell, BellOff, PanelRightClose, PanelRight, Download, FileSpreadsheet } from 'lucide-react';
+import { Users, UserCircle, LayoutDashboard, Bell, BellOff, PanelRightClose, PanelRight, Download, FileSpreadsheet, Trash2 } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useDataExport } from '@/hooks/useDataExport';
@@ -38,6 +39,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 }) => {
   const { canExportTab, hasGranularPermission } = usePermissions();
   const { exportToCSV, exportToExcel } = useDataExport();
+  
+  // Only admin can delete leads
+  const isAdmin = userRole === 'admin';
   
   // Granular permissions for sub-views (default: all-leads and my-dashboard, no team-view)
   const canSeeAllLeads = hasGranularPermission('new-leads', 'all-leads') !== false; // Default true if not set
@@ -77,7 +81,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     updateLeadNotes,
     markContactedAt,
     logActivity,
-    migrateFromAbandonedCarts
+    migrateFromAbandonedCarts,
+    deleteLeads
   } = useLeads();
 
   const filteredLeads = useMemo(() => {
@@ -150,6 +155,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     } else {
       exportToExcel(exportData, { filename: 'leads', format: 'xlsx' });
     }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedLeads.size === 0) return;
+    
+    await deleteLeads(Array.from(selectedLeads));
+    setSelectedLeads(new Set());
   };
 
   if (loading) {
@@ -238,6 +250,35 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+          )}
+
+          {/* Delete Button - Admin Only, shows when leads selected */}
+          {isAdmin && selectedLeads.size > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm" className="gap-2">
+                  <Trash2 className="h-4 w-4" />
+                  <span className="hidden sm:inline">Delete ({selectedLeads.size})</span>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete {selectedLeads.size} lead{selectedLeads.size > 1 ? 's' : ''}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the selected lead{selectedLeads.size > 1 ? 's' : ''} and all associated data.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={handleDeleteSelected}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
           
           {/* Add Manual Order Button */}

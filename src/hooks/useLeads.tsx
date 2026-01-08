@@ -616,6 +616,26 @@ export const useLeads = () => {
     }
   };
 
+  // Delete multiple leads (admin only - permission checked at component level)
+  const deleteLeads = async (leadIds: string[]) => {
+    if (leadIds.length === 0) return;
+
+    try {
+      const { error } = await supabase
+        .from('sales_leads')
+        .delete()
+        .in('id', leadIds);
+
+      if (error) throw error;
+
+      toast.success(`Deleted ${leadIds.length} lead${leadIds.length > 1 ? 's' : ''}`);
+      fetchLeads();
+    } catch (error) {
+      console.error('Error deleting leads:', error);
+      toast.error('Failed to delete leads');
+    }
+  };
+
   return {
     leads,
     tags,
@@ -634,6 +654,7 @@ export const useLeads = () => {
     logActivity,
     updateLeadNotes,
     markContactedAt,
-    migrateFromAbandonedCarts
+    migrateFromAbandonedCarts,
+    deleteLeads
   };
 };
