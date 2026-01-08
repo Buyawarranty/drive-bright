@@ -60,44 +60,72 @@ export const useLeadReminders = (leadId?: string) => {
 
       if (error) throw error;
 
-      // Fetch lead info for each reminder
-      const remindersWithLeads = await Promise.all(
-        (data || []).map(async (reminder: any) => {
-          // Handle both regular leads and abandoned cart leads
-          const isAbandonedCart = reminder.lead_id.startsWith('cart_');
-          
-          if (isAbandonedCart) {
-            const cartId = reminder.lead_id.replace('cart_', '');
-            const { data: cartData } = await supabase
-              .from('abandoned_carts')
-              .select('email, full_name, vehicle_reg')
-              .eq('id', cartId)
-              .single();
-            
-            return {
-              ...reminder,
-              status: reminder.status as LeadReminder['status'],
-              lead: cartData ? {
-                email: cartData.email,
-                first_name: cartData.full_name?.split(' ')[0] || null,
-                last_name: cartData.full_name?.split(' ').slice(1).join(' ') || null,
-                vehicle_reg: cartData.vehicle_reg
-              } : null
-            };
-          } else {
-            const { data: leadData } = await supabase
-              .from('sales_leads')
-              .select('email, first_name, last_name, vehicle_reg')
-              .eq('id', reminder.lead_id)
-              .single();
-            return { 
-              ...reminder, 
-              status: reminder.status as LeadReminder['status'],
-              lead: leadData 
-            };
-          }
-        })
-      );
+      const reminderData = data || [];
+      
+      // Separate regular leads and abandoned cart leads
+      const regularLeadIds: string[] = [];
+      const cartIds: string[] = [];
+      
+      reminderData.forEach((reminder: any) => {
+        if (reminder.lead_id.startsWith('cart_')) {
+          cartIds.push(reminder.lead_id.replace('cart_', ''));
+        } else {
+          regularLeadIds.push(reminder.lead_id);
+        }
+      });
+
+      // Batch fetch all leads in single queries
+      let leadsMap: Record<string, any> = {};
+      let cartsMap: Record<string, any> = {};
+
+      if (regularLeadIds.length > 0) {
+        const { data: leadsData } = await supabase
+          .from('sales_leads')
+          .select('id, email, first_name, last_name, vehicle_reg')
+          .in('id', regularLeadIds);
+        
+        (leadsData || []).forEach((lead: any) => {
+          leadsMap[lead.id] = lead;
+        });
+      }
+
+      if (cartIds.length > 0) {
+        const { data: cartsData } = await supabase
+          .from('abandoned_carts')
+          .select('id, email, full_name, vehicle_reg')
+          .in('id', cartIds);
+        
+        (cartsData || []).forEach((cart: any) => {
+          cartsMap[cart.id] = cart;
+        });
+      }
+
+      // Map reminders with their lead data
+      const remindersWithLeads = reminderData.map((reminder: any) => {
+        const isAbandonedCart = reminder.lead_id.startsWith('cart_');
+        
+        if (isAbandonedCart) {
+          const cartId = reminder.lead_id.replace('cart_', '');
+          const cartData = cartsMap[cartId];
+          return {
+            ...reminder,
+            status: reminder.status as LeadReminder['status'],
+            lead: cartData ? {
+              email: cartData.email,
+              first_name: cartData.full_name?.split(' ')[0] || null,
+              last_name: cartData.full_name?.split(' ').slice(1).join(' ') || null,
+              vehicle_reg: cartData.vehicle_reg
+            } : null
+          };
+        } else {
+          const leadData = leadsMap[reminder.lead_id];
+          return { 
+            ...reminder, 
+            status: reminder.status as LeadReminder['status'],
+            lead: leadData || null
+          };
+        }
+      });
 
       setReminders(remindersWithLeads as LeadReminder[]);
     } catch (error) {
