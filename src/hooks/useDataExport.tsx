@@ -47,6 +47,7 @@ export function useDataExport() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url);
       
       toast.success(`Exported ${data.length} records to CSV`);
     } catch (error) {
@@ -84,13 +85,14 @@ export function useDataExport() {
       const url = URL.createObjectURL(blob);
       
       link.setAttribute('href', url);
-      link.setAttribute('download', `${options.filename}_${new Date().toISOString().split('T')[0]}.xls`);
+      link.setAttribute('download', `${options.filename}_${new Date().toISOString().split('T')[0]}.csv`);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url);
       
-      toast.success(`Exported ${data.length} records to Excel`);
+      toast.success(`Exported ${data.length} records to CSV`);
     } catch (error) {
       console.error('Export error:', error);
       toast.error('Failed to export data');

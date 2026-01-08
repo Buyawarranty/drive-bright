@@ -43,7 +43,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const canSeeAllLeads = hasGranularPermission('new-leads', 'all-leads') !== false; // Default true if not set
   const canSeeMyDashboard = hasGranularPermission('new-leads', 'my-dashboard') !== false; // Default true if not set
   const canSeeTeamView = hasGranularPermission('new-leads', 'team-view'); // Default false - requires explicit permission
-  const canExport = canExportTab('new_leads') || hasGranularPermission('new-leads', 'export');
+  const canExport = canExportTab('new-leads') || hasGranularPermission('new-leads', 'export');
   
   // Determine default view based on permissions
   const getDefaultView = () => {
