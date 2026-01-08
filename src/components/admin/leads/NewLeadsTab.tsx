@@ -282,6 +282,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             onSearchChange={setSearchTerm}
             onRefresh={fetchLeads}
             onMigrate={migrateFromAbandonedCarts}
+            onExport={handleExport}
             leadCounts={leadCounts}
           />
           
