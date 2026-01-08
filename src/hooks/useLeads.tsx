@@ -230,23 +230,35 @@ export const useLeads = () => {
         application_count: emailCounts[lead.email?.toLowerCase()] || 1
       }));
 
-      // Fetch tags for sales leads only
-      const leadsWithTags = await Promise.all(
-        leadsWithCounts.map(async (lead: any) => {
-          if (lead.is_from_abandoned_cart) {
-            return lead;
-          }
-          const { data: tagData } = await supabase
-            .from('lead_tag_assignments')
-            .select('tag_id, lead_tags(id, name, color, description)')
-            .eq('lead_id', lead.id);
+      // Fetch all tag assignments in a single query (instead of N+1 queries)
+      const salesLeadIds = leadsWithCounts
+        .filter((lead: any) => !lead.is_from_abandoned_cart)
+        .map((lead: any) => lead.id);
 
-          return {
-            ...lead,
-            tags: tagData?.map((t: any) => t.lead_tags).filter(Boolean) || []
-          };
-        })
-      );
+      let tagsByLeadId: Record<string, any[]> = {};
+      
+      if (salesLeadIds.length > 0) {
+        const { data: allTagData } = await supabase
+          .from('lead_tag_assignments')
+          .select('lead_id, tag_id, lead_tags(id, name, color, description)')
+          .in('lead_id', salesLeadIds);
+
+        // Group tags by lead_id
+        (allTagData || []).forEach((assignment: any) => {
+          if (!tagsByLeadId[assignment.lead_id]) {
+            tagsByLeadId[assignment.lead_id] = [];
+          }
+          if (assignment.lead_tags) {
+            tagsByLeadId[assignment.lead_id].push(assignment.lead_tags);
+          }
+        });
+      }
+
+      // Assign tags to leads without additional queries
+      const leadsWithTags = leadsWithCounts.map((lead: any) => ({
+        ...lead,
+        tags: lead.is_from_abandoned_cart ? [] : (tagsByLeadId[lead.id] || [])
+      }));
 
       setLeads(leadsWithTags as Lead[]);
     } catch (error) {
