@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { crypto } from "https://deno.land/std@0.190.0/crypto/mod.ts";
+import { encode as hexEncode } from "https://deno.land/std@0.190.0/encoding/hex.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,6 +19,44 @@ const logStep = (step: string, details?: any) => {
     console.log(`[CREATE-PAYMENT-ASSIST-CHECKOUT] ${new Date().toISOString()} ${step} - [JSON stringify failed]`);
   }
 };
+
+// Generate HMAC-SHA256 signature for Payment Assist API
+async function generateSignature(params: Record<string, string>, secretKey: string): Promise<string> {
+  // Sort keys alphabetically (before uppercasing as per docs)
+  const sortedKeys = Object.keys(params).sort();
+  
+  // Build the signature string with UPPER_CASE keys
+  let signatureString = '';
+  for (const key of sortedKeys) {
+    const upperKey = key.toUpperCase();
+    // Skip api_key and signature from the signature generation
+    if (upperKey !== 'API_KEY' && upperKey !== 'SIGNATURE') {
+      const value = params[key] ?? '';
+      signatureString += `${upperKey}=${value}&`;
+    }
+  }
+  
+  logStep("Signature string (pre-hash)", { signatureString });
+  
+  // Generate HMAC-SHA256 hash
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secretKey);
+  const data = encoder.encode(signatureString);
+  
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    keyData,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  
+  const signature = await crypto.subtle.sign("HMAC", cryptoKey, data);
+  // Convert to hex string
+  const signatureArray = new Uint8Array(signature);
+  const hexArray = hexEncode(signatureArray);
+  return new TextDecoder().decode(hexArray);
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -235,51 +275,53 @@ serve(async (req) => {
     
     // Prepare customer address
     const addressLine1 = customerData?.address_line_1 || customerData?.building_number || '';
-    const city = customerData?.city || customerData?.town || '';
     const postcode = customerData?.postcode || '';
     
-    // Build request payload for Payment Assist API
-    const paymentAssistPayload = {
-      amount: Math.round(totalAmount * 100), // Convert to pence
-      currency: "GBP",
+    // Build request parameters for Payment Assist API (flat structure as per docs)
+    // All params must be strings for signature generation
+    const requestParams: Record<string, string> = {
       order_id: transactionId,
-      description: `${planData.name} - Vehicle Warranty`,
-      customer: {
-        first_name: customerData?.first_name || '',
-        last_name: customerData?.last_name || '',
-        email: customerData?.email || '',
-        phone: customerData?.phone || '',
-        address: {
-          line1: addressLine1,
-          city: city,
-          postcode: postcode,
-          country: "GB"
-        }
-      },
-      vehicle: {
-        registration: vehicleData?.regNumber || '',
-        make: vehicleData?.make || '',
-        model: vehicleData?.model || '',
-        year: vehicleData?.year || null,
-        mileage: parseInt(vehicleData?.mileage) || null
-      },
+      amount: String(Math.round(totalAmount * 100)), // Convert to pence
+      f_name: customerData?.first_name || '',
+      s_name: customerData?.last_name || '',
+      addr1: addressLine1,
+      postcode: postcode,
+      email: customerData?.email || '',
+      telephone: customerData?.phone || '',
       success_url: successUrl,
       failure_url: failureUrl,
-      instalment_plan: "12" // 12 monthly payments
+      reg_no: vehicleData?.regNumber || vehicleData?.registration || '',
+      plan_id: "1" // Default plan, can be adjusted based on requirements
     };
     
-    logStep("Payment Assist request payload", paymentAssistPayload);
+    logStep("Payment Assist request params (before signature)", requestParams);
     
     try {
-      // Call Payment Assist API to create checkout session
-      const paymentAssistResponse = await fetch("https://api.v1.payment-assist.co.uk/checkouts", {
+      // Generate HMAC-SHA256 signature
+      const signature = await generateSignature(requestParams, paymentAssistSecretKey);
+      logStep("Generated signature", { signature });
+      
+      // Add api_key and signature to the request
+      const fullPayload = {
+        ...requestParams,
+        api_key: paymentAssistApiKey,
+        signature: signature
+      };
+      
+      logStep("Full Payment Assist payload", { 
+        ...fullPayload,
+        api_key: "[REDACTED]",
+        signature: signature.substring(0, 20) + "..."
+      });
+      
+      // Call Payment Assist API /begin endpoint
+      const paymentAssistResponse = await fetch("https://api.v1.payment-assist.co.uk/begin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Api-Key": paymentAssistApiKey,
-          "X-Api-Secret": paymentAssistSecretKey
+          "Accept": "application/json"
         },
-        body: JSON.stringify(paymentAssistPayload)
+        body: JSON.stringify(fullPayload)
       });
       
       const responseText = await paymentAssistResponse.text();
@@ -306,12 +348,13 @@ serve(async (req) => {
       }
       
       logStep("Payment Assist checkout created", { 
-        checkoutUrl: paymentAssistData.checkout_url || paymentAssistData.url,
-        checkoutId: paymentAssistData.id,
+        token: paymentAssistData.token,
+        url: paymentAssistData.url,
         transactionId
       });
       
-      const checkoutUrl = paymentAssistData.checkout_url || paymentAssistData.url || paymentAssistData.redirect_url;
+      // Payment Assist /begin returns { token, url }
+      const checkoutUrl = paymentAssistData.url;
       
       if (!checkoutUrl) {
         logStep("No checkout URL in Payment Assist response", paymentAssistData);
@@ -322,6 +365,7 @@ serve(async (req) => {
         JSON.stringify({ 
           url: checkoutUrl,
           transactionId,
+          token: paymentAssistData.token,
           success: true
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
