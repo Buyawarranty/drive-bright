@@ -756,21 +756,39 @@ const CustomerDetailsStepTest: React.FC<CustomerDetailsStepTestProps> = ({
                             onClick={async (e) => {
                               e.stopPropagation();
                               e.preventDefault();
+                              console.log('🟣 Payment Assist button clicked');
                               setPaymentMethod('payment-assist');
                               
-                              if (isLoadingStripe || isLoadingPaymentAssist) return;
-                              
-                              setShowValidation(true);
-                              if (!validateForm()) {
-                                toast.error('Please fill in all required fields');
+                              if (isLoadingStripe || isLoadingPaymentAssist) {
+                                console.log('⚠️ Already loading, returning');
                                 return;
                               }
                               
+                              setShowValidation(true);
+                              const isValid = validateForm();
+                              console.log('📋 Form validation result:', isValid, 'Errors:', fieldErrors);
+                              
+                              if (!isValid) {
+                                toast.error('Please fill in all required fields');
+                                // Scroll to first error field
+                                const firstErrorField = document.querySelector('.border-red-500');
+                                firstErrorField?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                return;
+                              }
+                              
+                              console.log('✅ Validation passed, starting Payment Assist checkout');
                               setIsLoadingPaymentAssist(true);
                               setIsLoadingPayment(true);
                               trackFormSubmission('customer_details', { payment_method: 'payment_assist' });
                               
-                              await processPaymentAssistCheckout();
+                              try {
+                                await processPaymentAssistCheckout();
+                              } catch (error) {
+                                console.error('❌ Payment Assist checkout error:', error);
+                                toast.error('Payment processing failed. Please try again.');
+                                setIsLoadingPaymentAssist(false);
+                                setIsLoadingPayment(false);
+                              }
                             }}
                             disabled={isLoadingStripe || isLoadingPaymentAssist}
                             className="w-full rounded-lg transition-colors shadow-lg text-white disabled:opacity-50 bg-purple-600 hover:bg-purple-700"
@@ -845,22 +863,40 @@ const CustomerDetailsStepTest: React.FC<CustomerDetailsStepTestProps> = ({
                             onClick={async (e) => {
                               e.stopPropagation();
                               e.preventDefault();
+                              console.log('🟢 Stripe button clicked');
                               setPaymentMethod('stripe');
                               
-                              if (isLoadingStripe || isLoadingPaymentAssist) return;
-                              
-                              setShowValidation(true);
-                              if (!validateForm()) {
-                                toast.error('Please fill in all required fields');
+                              if (isLoadingStripe || isLoadingPaymentAssist) {
+                                console.log('⚠️ Already loading, returning');
                                 return;
                               }
                               
+                              setShowValidation(true);
+                              const isValid = validateForm();
+                              console.log('📋 Form validation result:', isValid, 'Errors:', fieldErrors);
+                              
+                              if (!isValid) {
+                                toast.error('Please fill in all required fields');
+                                // Scroll to first error field
+                                const firstErrorField = document.querySelector('.border-red-500');
+                                firstErrorField?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                return;
+                              }
+                              
+                              console.log('✅ Validation passed, starting Stripe checkout');
                               setIsLoadingStripe(true);
                               setIsLoadingPayment(true);
                               trackFormSubmission('customer_details', { payment_method: 'stripe' });
                               trackStripeCheckoutClick();
                               
-                              await processStripeCheckout();
+                              try {
+                                await processStripeCheckout();
+                              } catch (error) {
+                                console.error('❌ Stripe checkout error:', error);
+                                toast.error('Payment processing failed. Please try again.');
+                                setIsLoadingStripe(false);
+                                setIsLoadingPayment(false);
+                              }
                             }}
                             disabled={isLoadingStripe || isLoadingPaymentAssist}
                             className="w-full rounded-lg transition-colors shadow-lg text-white disabled:opacity-50 hover:opacity-90"
