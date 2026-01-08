@@ -164,6 +164,9 @@ const CustomerDetailsStepTest: React.FC<CustomerDetailsStepTestProps> = ({
   const [seasonalOfferClaimed, setSeasonalOfferClaimed] = useState(false);
   const [validatedFields, setValidatedFields] = useState<{[key: string]: boolean}>({});
   
+  // Refs to prevent state updates from interrupting async flows
+  const isProcessingRef = React.useRef(false);
+  
   const [startDate, setStartDate] = useState<Date | undefined>(() => {
     try {
       const savedStartDate = localStorage.getItem('buyawarranty_startDate');
@@ -753,42 +756,48 @@ const CustomerDetailsStepTest: React.FC<CustomerDetailsStepTestProps> = ({
                         <div className="mt-auto">
                           <Button
                             type="button"
-                            onClick={async (e) => {
+                            onClick={(e) => {
                               e.stopPropagation();
                               e.preventDefault();
                               console.log('🟣 Payment Assist button clicked');
-                              setPaymentMethod('payment-assist');
                               
-                              if (isLoadingStripe || isLoadingPaymentAssist) {
-                                console.log('⚠️ Already loading, returning');
+                              // Use ref to prevent double clicks
+                              if (isProcessingRef.current || isLoadingStripe || isLoadingPaymentAssist) {
+                                console.log('⚠️ Already processing, returning');
                                 return;
                               }
                               
-                              setShowValidation(true);
+                              // Validate form first before any state updates
                               const isValid = validateForm();
-                              console.log('📋 Form validation result:', isValid, 'Errors:', fieldErrors);
+                              console.log('📋 Form validation result:', isValid);
+                              setShowValidation(true);
                               
                               if (!isValid) {
                                 toast.error('Please fill in all required fields');
-                                // Scroll to first error field
-                                const firstErrorField = document.querySelector('.border-red-500');
-                                firstErrorField?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                setTimeout(() => {
+                                  const firstErrorField = document.querySelector('.border-red-500');
+                                  firstErrorField?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }, 100);
                                 return;
                               }
                               
                               console.log('✅ Validation passed, starting Payment Assist checkout');
+                              isProcessingRef.current = true;
+                              setPaymentMethod('payment-assist');
                               setIsLoadingPaymentAssist(true);
                               setIsLoadingPayment(true);
                               trackFormSubmission('customer_details', { payment_method: 'payment_assist' });
                               
-                              try {
-                                await processPaymentAssistCheckout();
-                              } catch (error) {
-                                console.error('❌ Payment Assist checkout error:', error);
-                                toast.error('Payment processing failed. Please try again.');
-                                setIsLoadingPaymentAssist(false);
-                                setIsLoadingPayment(false);
-                              }
+                              processPaymentAssistCheckout()
+                                .catch((error) => {
+                                  console.error('❌ Payment Assist checkout error:', error);
+                                  toast.error('Payment processing failed. Please try again.');
+                                })
+                                .finally(() => {
+                                  isProcessingRef.current = false;
+                                  setIsLoadingPaymentAssist(false);
+                                  setIsLoadingPayment(false);
+                                });
                             }}
                             disabled={isLoadingStripe || isLoadingPaymentAssist}
                             className="w-full rounded-lg transition-colors shadow-lg text-white disabled:opacity-50 bg-purple-600 hover:bg-purple-700"
@@ -860,43 +869,49 @@ const CustomerDetailsStepTest: React.FC<CustomerDetailsStepTestProps> = ({
                         <div className="mt-auto">
                           <Button
                             type="button"
-                            onClick={async (e) => {
+                            onClick={(e) => {
                               e.stopPropagation();
                               e.preventDefault();
                               console.log('🟢 Stripe button clicked');
-                              setPaymentMethod('stripe');
                               
-                              if (isLoadingStripe || isLoadingPaymentAssist) {
-                                console.log('⚠️ Already loading, returning');
+                              // Use ref to prevent double clicks
+                              if (isProcessingRef.current || isLoadingStripe || isLoadingPaymentAssist) {
+                                console.log('⚠️ Already processing, returning');
                                 return;
                               }
                               
-                              setShowValidation(true);
+                              // Validate form first before any state updates
                               const isValid = validateForm();
-                              console.log('📋 Form validation result:', isValid, 'Errors:', fieldErrors);
+                              console.log('📋 Form validation result:', isValid);
+                              setShowValidation(true);
                               
                               if (!isValid) {
                                 toast.error('Please fill in all required fields');
-                                // Scroll to first error field
-                                const firstErrorField = document.querySelector('.border-red-500');
-                                firstErrorField?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                setTimeout(() => {
+                                  const firstErrorField = document.querySelector('.border-red-500');
+                                  firstErrorField?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }, 100);
                                 return;
                               }
                               
                               console.log('✅ Validation passed, starting Stripe checkout');
+                              isProcessingRef.current = true;
+                              setPaymentMethod('stripe');
                               setIsLoadingStripe(true);
                               setIsLoadingPayment(true);
                               trackFormSubmission('customer_details', { payment_method: 'stripe' });
                               trackStripeCheckoutClick();
                               
-                              try {
-                                await processStripeCheckout();
-                              } catch (error) {
-                                console.error('❌ Stripe checkout error:', error);
-                                toast.error('Payment processing failed. Please try again.');
-                                setIsLoadingStripe(false);
-                                setIsLoadingPayment(false);
-                              }
+                              processStripeCheckout()
+                                .catch((error) => {
+                                  console.error('❌ Stripe checkout error:', error);
+                                  toast.error('Payment processing failed. Please try again.');
+                                })
+                                .finally(() => {
+                                  isProcessingRef.current = false;
+                                  setIsLoadingStripe(false);
+                                  setIsLoadingPayment(false);
+                                });
                             }}
                             disabled={isLoadingStripe || isLoadingPaymentAssist}
                             className="w-full rounded-lg transition-colors shadow-lg text-white disabled:opacity-50 hover:opacity-90"
