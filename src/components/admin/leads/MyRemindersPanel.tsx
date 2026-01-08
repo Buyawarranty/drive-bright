@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Bell, BellRing, Clock, ExternalLink, Check, X, AlarmClock,
-  ChevronRight, Car, User
+  ChevronDown, ChevronUp, Car, Trash2
 } from 'lucide-react';
 import { format, isToday, isTomorrow, isPast, formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -20,8 +20,30 @@ export const MyRemindersPanel: React.FC<MyRemindersPanelProps> = ({
   onNavigateToLead,
   compact = false 
 }) => {
-  const { reminders, loading, snoozeReminder, dismissReminder, completeReminder } = useLeadReminders();
+  const { reminders, loading, snoozeReminder, dismissReminder, completeReminder, deleteReminder } = useLeadReminders();
   const [snoozeTarget, setSnoozeTarget] = useState<string | null>(null);
+  const [expandedReminders, setExpandedReminders] = useState<Set<string>>(new Set());
+
+  const toggleExpanded = (id: string) => {
+    setExpandedReminders(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const collapseReminder = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedReminders(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(id);
+      return newSet;
+    });
+  };
 
   const getReminderStatus = (reminder: LeadReminder) => {
     const reminderTime = new Date(reminder.reminder_time);
@@ -56,6 +78,11 @@ export const MyRemindersPanel: React.FC<MyRemindersPanelProps> = ({
     setSnoozeTarget(null);
   };
 
+  const handleDelete = async (reminderId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    await deleteReminder(reminderId);
+  };
+
   const overdueReminders = reminders.filter(r => isPast(new Date(r.reminder_time)));
   const upcomingReminders = reminders.filter(r => !isPast(new Date(r.reminder_time)));
 
@@ -82,25 +109,35 @@ export const MyRemindersPanel: React.FC<MyRemindersPanelProps> = ({
   const ReminderItem = ({ reminder }: { reminder: LeadReminder }) => {
     const status = getReminderStatus(reminder);
     const isSnoozing = snoozeTarget === reminder.id;
+    const isExpanded = expandedReminders.has(reminder.id);
 
     return (
       <div 
         className={cn(
-          "group p-3 rounded-lg border transition-all",
+          "group p-3 rounded-lg border transition-all cursor-pointer",
           status.urgent 
             ? "bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-900" 
             : "bg-background border-border hover:border-muted-foreground/30"
         )}
+        onClick={() => toggleExpanded(reminder.id)}
       >
         <div className="flex items-start gap-3">
+          {/* Expand/Collapse Icon */}
           <div className={cn(
-            "h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0",
+            "h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0 transition-colors",
             status.urgent ? "bg-red-100 dark:bg-red-900/30" : "bg-muted"
           )}>
-            <BellRing className={cn(
-              "h-4 w-4",
-              status.urgent ? "text-red-600 dark:text-red-400" : "text-muted-foreground"
-            )} />
+            {isExpanded ? (
+              <ChevronUp className={cn(
+                "h-4 w-4",
+                status.urgent ? "text-red-600 dark:text-red-400" : "text-muted-foreground"
+              )} />
+            ) : (
+              <BellRing className={cn(
+                "h-4 w-4",
+                status.urgent ? "text-red-600 dark:text-red-400" : "text-muted-foreground"
+              )} />
+            )}
           </div>
 
           <div className="flex-1 min-w-0">
@@ -109,6 +146,30 @@ export const MyRemindersPanel: React.FC<MyRemindersPanelProps> = ({
               <Badge className={cn("text-[10px] px-1.5 py-0 flex-shrink-0", status.color)}>
                 {status.label}
               </Badge>
+              {/* X button to collapse (shown when expanded) */}
+              {isExpanded && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5 ml-auto opacity-70 hover:opacity-100"
+                  onClick={(e) => collapseReminder(reminder.id, e)}
+                  aria-label="Collapse"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
+              {/* Delete button (always visible on hover) */}
+              {!isExpanded && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5 ml-auto opacity-0 group-hover:opacity-70 hover:!opacity-100 hover:text-destructive"
+                  onClick={(e) => handleDelete(reminder.id, e)}
+                  aria-label="Delete reminder"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              )}
             </div>
 
             {reminder.lead?.vehicle_reg && (
@@ -127,80 +188,93 @@ export const MyRemindersPanel: React.FC<MyRemindersPanelProps> = ({
               <span>{format(new Date(reminder.reminder_time), 'EEE, MMM d • h:mm a')}</span>
             </div>
 
-            {/* Actions */}
-            {isSnoozing ? (
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="h-6 text-[10px] px-2"
-                  onClick={() => handleSnooze(reminder.id, 'today')}
-                >
-                  Later today
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="h-6 text-[10px] px-2"
-                  onClick={() => handleSnooze(reminder.id, 'tomorrow')}
-                >
-                  Tomorrow
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="h-6 text-[10px] px-2"
-                  onClick={() => handleSnooze(reminder.id, 'next_week')}
-                >
-                  Next week
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-6 text-[10px] px-2"
-                  onClick={() => setSnoozeTarget(null)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-6 text-[10px] px-2 gap-1"
-                  onClick={() => setSnoozeTarget(reminder.id)}
-                >
-                  <AlarmClock className="h-3 w-3" />
-                  Snooze
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-6 text-[10px] px-2 gap-1"
-                  onClick={() => dismissReminder(reminder.id)}
-                >
-                  <X className="h-3 w-3" />
-                  Dismiss
-                </Button>
-                <Button
-                  size="sm"
-                  className="h-6 text-[10px] px-2 gap-1"
-                  onClick={() => completeReminder(reminder.id)}
-                >
-                  <Check className="h-3 w-3" />
-                  Done
-                </Button>
-                {onNavigateToLead && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 text-[10px] px-2 gap-1 ml-auto"
-                    onClick={() => onNavigateToLead(reminder.lead_id)}
-                  >
-                    <ExternalLink className="h-3 w-3" />
-                    View
-                  </Button>
+            {/* Expanded Actions */}
+            {isExpanded && (
+              <div className="mt-3 pt-3 border-t space-y-2 animate-in slide-in-from-top-2 duration-200">
+                {isSnoozing ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-6 text-[10px] px-2"
+                      onClick={(e) => { e.stopPropagation(); handleSnooze(reminder.id, 'today'); }}
+                    >
+                      Later today
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-6 text-[10px] px-2"
+                      onClick={(e) => { e.stopPropagation(); handleSnooze(reminder.id, 'tomorrow'); }}
+                    >
+                      Tomorrow
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-6 text-[10px] px-2"
+                      onClick={(e) => { e.stopPropagation(); handleSnooze(reminder.id, 'next_week'); }}
+                    >
+                      Next week
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-6 text-[10px] px-2"
+                      onClick={(e) => { e.stopPropagation(); setSnoozeTarget(null); }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-6 text-[10px] px-2 gap-1"
+                      onClick={(e) => { e.stopPropagation(); setSnoozeTarget(reminder.id); }}
+                    >
+                      <AlarmClock className="h-3 w-3" />
+                      Snooze
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-6 text-[10px] px-2 gap-1"
+                      onClick={(e) => { e.stopPropagation(); dismissReminder(reminder.id); }}
+                    >
+                      <X className="h-3 w-3" />
+                      Dismiss
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="h-6 text-[10px] px-2 gap-1"
+                      onClick={(e) => { e.stopPropagation(); completeReminder(reminder.id); }}
+                    >
+                      <Check className="h-3 w-3" />
+                      Done
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 text-[10px] px-2 gap-1 text-destructive hover:text-destructive"
+                      onClick={(e) => handleDelete(reminder.id, e)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      Delete
+                    </Button>
+                    {onNavigateToLead && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 text-[10px] px-2 gap-1 ml-auto"
+                        onClick={(e) => { e.stopPropagation(); onNavigateToLead(reminder.lead_id); }}
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        View
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
             )}
