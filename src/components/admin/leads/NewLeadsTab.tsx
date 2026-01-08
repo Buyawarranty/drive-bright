@@ -57,6 +57,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [remindersOpen, setRemindersOpen] = useState(true);
   const [showRemindersPanel, setShowRemindersPanel] = useState(true);
+  const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
 
   const {
     leads,
@@ -103,8 +104,30 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     high_priority: leads.filter(l => l.priority === 'high' || l.priority === 'urgent').length,
   }), [leads]);
 
+  const handleSelectLead = (leadId: string) => {
+    const newSelected = new Set(selectedLeads);
+    if (newSelected.has(leadId)) {
+      newSelected.delete(leadId);
+    } else {
+      newSelected.add(leadId);
+    }
+    setSelectedLeads(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedLeads.size === filteredLeads.length) {
+      setSelectedLeads(new Set());
+    } else {
+      setSelectedLeads(new Set(filteredLeads.map(l => l.id)));
+    }
+  };
   const handleExport = (format: 'csv' | 'xlsx') => {
-    const exportData = filteredLeads.map(lead => ({
+    // Export selected leads if any are selected, otherwise export all filtered leads
+    const leadsToExport = selectedLeads.size > 0 
+      ? filteredLeads.filter(lead => selectedLeads.has(lead.id))
+      : filteredLeads;
+
+    const exportData = leadsToExport.map(lead => ({
       'First Name': lead.first_name || '',
       'Last Name': lead.last_name || '',
       'Email': lead.email,
@@ -199,17 +222,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2">
                   <Download className="h-4 w-4" />
-                  <span className="hidden sm:inline">Export</span>
+                  <span className="hidden sm:inline">
+                    Export{selectedLeads.size > 0 ? ` (${selectedLeads.size})` : ''}
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => handleExport('csv')}>
                   <Download className="h-4 w-4 mr-2" />
-                  Export as CSV
+                  Export {selectedLeads.size > 0 ? `${selectedLeads.size} selected` : 'all'} as CSV
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleExport('xlsx')}>
                   <FileSpreadsheet className="h-4 w-4 mr-2" />
-                  Export as Excel
+                  Export {selectedLeads.size > 0 ? `${selectedLeads.size} selected` : 'all'} as Excel
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -268,6 +293,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                   leads={filteredLeads}
                   tags={tags}
                   salesUsers={salesUsers}
+                  selectedLeads={selectedLeads}
+                  onSelectLead={handleSelectLead}
+                  onSelectAll={handleSelectAll}
                   onUpdateStatus={updateLeadStatus}
                   onAssign={assignLead}
                   onAutoAssign={autoAssignLead}
