@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar } from 'lucide-react';
 import MileageSlider from '@/components/MileageSlider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -19,6 +19,7 @@ import {
   DURATION_MONTHS,
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
+import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 
 interface VehicleData {
   regNumber: string;
@@ -100,7 +101,7 @@ export const GetQuoteTab = () => {
     loadSentQuotesHistory();
   }, []);
 
-  // Calculate price using pricingMatrix.ts
+  // Calculate price using pricingMatrix.ts with add-ons
   const calculatePrice = () => {
     if (customFullPrice && parseFloat(customFullPrice) > 0) {
       return { totalPrice: parseFloat(customFullPrice), monthlyPrice: Math.floor(parseFloat(customFullPrice) / 12) };
@@ -110,14 +111,36 @@ export const GetQuoteTab = () => {
       return { totalPrice: total, monthlyPrice: parseFloat(customMonthlyPrice) };
     }
     
+    // Get duration months for add-on calculation
+    const durationMonths = DURATION_MONTHS[paymentType] || 12;
+    
+    // Auto-included add-ons based on duration (2yr gets breakdown, 3yr gets breakdown+rental)
+    const autoIncluded = getAutoIncludedAddOns(paymentType);
+    const autoAddOns: { [key: string]: boolean } = {};
+    autoIncluded.forEach(addon => { autoAddOns[addon] = true; });
+    
+    // Calculate add-on price (auto-included ones are free, so this will be 0 for auto-included)
+    const addOnPrice = calculateAddOnPrice(autoAddOns, paymentType, durationMonths);
+    
     const result = calculateTotalWarrantyPrice({
       paymentPeriod: paymentType,
       voluntaryExcess: excessAmount,
       claimLimit: claimLimit,
       labourRate: labourRate,
-      boostEnabled: boostAddon
+      boostEnabled: boostAddon,
+      addOnPrice: addOnPrice
     });
-    return { totalPrice: result.totalPrice, monthlyPrice: result.monthlyPrice };
+    
+    // Calculate pay-in-full with 10% discount
+    const payInFullPrice = Math.floor(result.totalPrice * 0.90);
+    
+    return { 
+      totalPrice: result.totalPrice, 
+      monthlyPrice: result.monthlyPrice,
+      payInFullPrice,
+      wasPrice: result.wasPrice,
+      savings: result.savings
+    };
   };
 
   const currentPrice = calculatePrice();
@@ -558,6 +581,157 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
     window.open(whatsappUrl, '_blank');
   };
 
+  // Generate Bumper payment link (monthly instalments)
+  const [isGeneratingBumperLink, setIsGeneratingBumperLink] = useState(false);
+  const [isGeneratingStripeLink, setIsGeneratingStripeLink] = useState(false);
+
+  const handleGenerateBumperLink = async () => {
+    if (!customerEmail || !customerName || !vehicleData) {
+      toast({
+        title: "Missing Information",
+        description: "Please complete all customer and vehicle details first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingBumperLink(true);
+    try {
+      const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
+      
+      const { data, error } = await supabase.functions.invoke('create-bumper-checkout', {
+        body: {
+          planId: 'platinum',
+          vehicleData: {
+            regNumber: vehicleData.regNumber,
+            make: vehicleData.make,
+            model: vehicleData.model,
+            year: vehicleData.year,
+            fuelType: vehicleData.fuelType,
+            transmission: vehicleData.transmission,
+            mileage: vehicleData.mileage
+          },
+          paymentType,
+          voluntaryExcess: excessAmount,
+          claimLimit: displayClaimLimit,
+          labourRate,
+          customerData: {
+            firstName: customerName.split(' ')[0],
+            lastName: customerName.split(' ').slice(1).join(' ') || '',
+            email: customerEmail,
+            phone: '',
+            final_amount: currentPrice.totalPrice
+          },
+          protectionAddOns: {
+            breakdown: getAutoIncludedAddOns(paymentType).includes('breakdown'),
+            rental: getAutoIncludedAddOns(paymentType).includes('rental'),
+          },
+          additionalNotes
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.checkout_url || data?.url) {
+        const paymentUrl = data.checkout_url || data.url;
+        // Copy to clipboard
+        await navigator.clipboard.writeText(paymentUrl);
+        toast({
+          title: "✅ Bumper Payment Link Generated!",
+          description: "Link copied to clipboard. Send this to customer for monthly payments.",
+          duration: 5000,
+        });
+        // Open in new tab
+        window.open(paymentUrl, '_blank');
+      } else {
+        throw new Error('No payment URL returned');
+      }
+    } catch (error: any) {
+      console.error('Error generating Bumper link:', error);
+      toast({
+        title: "❌ Failed to Generate Bumper Link",
+        description: error.message || "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingBumperLink(false);
+    }
+  };
+
+  // Generate Stripe payment link (pay in full with 10% discount)
+  const handleGenerateStripeLink = async () => {
+    if (!customerEmail || !customerName || !vehicleData) {
+      toast({
+        title: "Missing Information",
+        description: "Please complete all customer and vehicle details first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingStripeLink(true);
+    try {
+      const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
+      const payInFullPrice = currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.90);
+      
+      const { data, error } = await supabase.functions.invoke('create-stripe-checkout', {
+        body: {
+          planId: 'platinum',
+          vehicleData: {
+            regNumber: vehicleData.regNumber,
+            make: vehicleData.make,
+            model: vehicleData.model,
+            year: vehicleData.year,
+            fuelType: vehicleData.fuelType,
+            transmission: vehicleData.transmission,
+            mileage: vehicleData.mileage
+          },
+          paymentType,
+          voluntaryExcess: excessAmount,
+          claimLimit: displayClaimLimit,
+          labourRate,
+          customerData: {
+            firstName: customerName.split(' ')[0],
+            lastName: customerName.split(' ').slice(1).join(' ') || '',
+            email: customerEmail,
+            phone: '',
+            final_amount: payInFullPrice
+          },
+          protectionAddOns: {
+            breakdown: getAutoIncludedAddOns(paymentType).includes('breakdown'),
+            rental: getAutoIncludedAddOns(paymentType).includes('rental'),
+          },
+          additionalNotes
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        // Copy to clipboard
+        await navigator.clipboard.writeText(data.url);
+        toast({
+          title: "✅ Stripe Payment Link Generated!",
+          description: "Link copied to clipboard. Send this to customer for pay-in-full (10% off).",
+          duration: 5000,
+        });
+        // Open in new tab
+        window.open(data.url, '_blank');
+      } else {
+        throw new Error('No payment URL returned');
+      }
+    } catch (error: any) {
+      console.error('Error generating Stripe link:', error);
+      toast({
+        title: "❌ Failed to Generate Stripe Link",
+        description: error.message || "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingStripeLink(false);
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="mb-8">
@@ -743,13 +917,32 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
                   </div>
                 </div>
 
+                {/* Auto-Included Add-ons Display */}
+                {getAutoIncludedAddOns(paymentType).length > 0 && (
+                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                    <div className="flex items-center gap-2 text-green-700">
+                      <span className="text-sm font-medium">✓ Included FREE with {termOptions.find(t => t.id === paymentType)?.label}:</span>
+                      <div className="flex gap-2">
+                        {getAutoIncludedAddOns(paymentType).includes('breakdown') && (
+                          <Badge variant="outline" className="bg-green-100 border-green-300 text-green-800">Vehicle Recovery</Badge>
+                        )}
+                        {getAutoIncludedAddOns(paymentType).includes('rental') && (
+                          <Badge variant="outline" className="bg-green-100 border-green-300 text-green-800">Hire Car</Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Boost Addon */}
                 <div className="flex items-center justify-between p-4 rounded-lg border-2 border-dashed border-amber-400 bg-amber-50">
                   <div className="flex items-center gap-3">
                     <Zap className="w-5 h-5 text-amber-500" />
                     <div>
                       <div className="font-semibold">Boost Claim Limit (+£1,000)</div>
-                      <div className="text-sm text-muted-foreground">+£5/month</div>
+                      <div className="text-sm text-muted-foreground">
+                        +£{5 * DURATION_MONTHS[paymentType]} total (+£5/month × {DURATION_MONTHS[paymentType]} months)
+                      </div>
                     </div>
                   </div>
                   <Switch
@@ -838,13 +1031,24 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
                   </div>
                 </div>
 
-                {/* Live Price Display */}
-                <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold">Calculated Price:</span>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-primary">£{currentPrice.monthlyPrice}/month</div>
-                      <div className="text-sm text-muted-foreground">Total: £{currentPrice.totalPrice}</div>
+                {/* Sticky Price Summary Bar */}
+                <div className="sticky bottom-0 -mx-6 -mb-6 p-4 bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-b-lg shadow-lg">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-baseline gap-3">
+                        <div>
+                          <div className="text-sm opacity-90">Monthly (12 payments via Bumper)</div>
+                          <div className="text-2xl font-bold">£{currentPrice.monthlyPrice}/month</div>
+                        </div>
+                        <div className="text-primary-foreground/60">|</div>
+                        <div>
+                          <div className="text-sm opacity-90">Pay in Full (10% off via Stripe)</div>
+                          <div className="text-2xl font-bold">£{currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}</div>
+                        </div>
+                      </div>
+                      <div className="text-xs opacity-75 mt-1">
+                        Total: £{currentPrice.totalPrice} | Claim Limit: £{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()} | Labour: £{labourRate}/hr
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -886,12 +1090,54 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
                     <p><strong>Registration:</strong> {vehicleData?.regNumber}</p>
                     <p><strong>Mileage:</strong> {parseInt(vehicleData?.mileage || '0').toLocaleString()} miles</p>
                     <p><strong>Duration:</strong> {termOptions.find(t => t.id === paymentType)?.label}</p>
-                    <p><strong>Total Price:</strong> £{currentPrice.totalPrice}</p>
-                    <p><strong>Monthly Price:</strong> £{currentPrice.monthlyPrice}/month</p>
                     <p><strong>Excess:</strong> £{excessAmount}</p>
                     <p><strong>Claim Limit:</strong> £{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}{boostAddon ? ' (boost)' : ''}</p>
                     <p><strong>Labour Rate:</strong> £{labourRate}/hr</p>
                     {additionalNotes && <p className="col-span-2"><strong>Notes:</strong> {additionalNotes}</p>}
+                  </div>
+                </div>
+
+                {/* Payment Options Card */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 rounded-lg border-2 border-blue-200 bg-blue-50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Calendar className="w-5 h-5 text-blue-600" />
+                      <h4 className="font-semibold text-blue-900">Monthly Instalments</h4>
+                    </div>
+                    <div className="text-2xl font-bold text-blue-800 mb-1">£{currentPrice.monthlyPrice}/month</div>
+                    <p className="text-sm text-blue-600 mb-3">12 interest-free payments via Bumper</p>
+                    <Button
+                      onClick={handleGenerateBumperLink}
+                      disabled={isGeneratingBumperLink}
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                    >
+                      {isGeneratingBumperLink ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Generating...</>
+                      ) : (
+                        <>Generate Bumper Link</>
+                      )}
+                    </Button>
+                  </div>
+                  
+                  <div className="p-4 rounded-lg border-2 border-green-200 bg-green-50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CreditCard className="w-5 h-5 text-green-600" />
+                      <h4 className="font-semibold text-green-900">Pay in Full</h4>
+                      <Badge className="bg-green-600 text-xs">10% OFF</Badge>
+                    </div>
+                    <div className="text-2xl font-bold text-green-800 mb-1">£{currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}</div>
+                    <p className="text-sm text-green-600 mb-3">One-time payment via Stripe</p>
+                    <Button
+                      onClick={handleGenerateStripeLink}
+                      disabled={isGeneratingStripeLink}
+                      className="w-full bg-green-600 hover:bg-green-700"
+                    >
+                      {isGeneratingStripeLink ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Generating...</>
+                      ) : (
+                        <>Generate Stripe Link</>
+                      )}
+                    </Button>
                   </div>
                 </div>
 
@@ -905,7 +1151,6 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
                   <Button 
                     variant="outline"
                     onClick={() => setStep(2)}
-                    className="flex-1"
                   >
                     Back
                   </Button>
@@ -919,7 +1164,6 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
                   <Button 
                     onClick={generateWhatsAppMessage}
                     variant="outline"
-                    className="flex-1"
                   >
                     <MessageCircle className="w-4 h-4 mr-2" />
                     WhatsApp
