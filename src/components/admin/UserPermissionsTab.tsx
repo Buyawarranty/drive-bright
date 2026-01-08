@@ -64,10 +64,12 @@ const GRANULAR_PERMISSIONS = {
   'customers': [
     { key: 'view', label: 'View', description: 'Can view customer data' },
     { key: 'export', label: 'Export', description: 'Can export customer data to CSV/Excel' },
+    { key: 'delete', label: 'Delete', description: 'Can delete customer records' },
   ],
   'new-leads': [
     { key: 'view', label: 'View', description: 'Can view lead data' },
     { key: 'export', label: 'Export', description: 'Can export lead data to CSV/Excel' },
+    { key: 'delete', label: 'Delete', description: 'Can delete lead records' },
     { key: 'all-leads', label: 'All Leads', description: 'Can view the All Leads section' },
     { key: 'my-dashboard', label: 'My Dashboard', description: 'Can view My Dashboard section' },
     { key: 'team-view', label: 'Team View', description: 'Can view Team View (manager view)' },

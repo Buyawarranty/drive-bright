@@ -40,8 +40,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const { canExportTab, hasGranularPermission } = usePermissions();
   const { exportToCSV, exportToExcel } = useDataExport();
   
-  // Only admin can delete leads
+  // Delete permission - admin role OR explicit delete permission
   const isAdmin = userRole === 'admin';
+  const canDelete = isAdmin || hasGranularPermission('new-leads', 'delete');
   
   // Export permission - admins always can, others need explicit permission
   const canExport = isAdmin || canExportTab('new-leads') || hasGranularPermission('new-leads', 'export');
@@ -254,8 +255,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             </DropdownMenu>
           )}
 
-          {/* Delete Button - Admin Only, shows when leads selected */}
-          {isAdmin && selectedLeads.size > 0 && (
+          {/* Delete Button - Shows when leads selected and user has delete permission */}
+          {canDelete && selectedLeads.size > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm" className="gap-2">

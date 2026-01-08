@@ -272,9 +272,10 @@ const NumberPlate = ({ plateNumber }: { plateNumber: string }) => {
 };
 
 export const CustomersTab = () => {
-  const { canExportTab } = usePermissions();
+  const { canExportTab, hasGranularPermission } = usePermissions();
   const { exportToCSV: exportDataToCSV, exportToExcel } = useDataExport();
   const canExport = canExportTab('customers');
+  const canDelete = hasGranularPermission('customers', 'delete');
   
   const [searchParams, setSearchParams] = useSearchParams();
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -927,7 +928,7 @@ export const CustomersTab = () => {
   };
 
   const restoreCustomer = async (customerId: string, customerName: string) => {
-    if (!isAdmin()) {
+    if (!canDeleteCustomers()) {
       toast.error('Only administrators can restore customer records');
       return;
     }
@@ -1404,23 +1405,17 @@ export const CustomersTab = () => {
     fetchCustomerCredentials(customer.email);
   };
 
-  // Check if current user is admin (not just member)
-  const isAdmin = () => {
+  // Check if current user can delete (admin role OR has delete permission)
+  const canDeleteCustomers = () => {
     const isMasterAdmin = localStorage.getItem('masterAdmin') === 'true';
     const hasAdminRole = currentAdminUser?.role === 'admin';
     
-    console.log('isAdmin check:', {
-      isMasterAdmin,
-      currentAdminUser: currentAdminUser,
-      hasAdminRole,
-      result: isMasterAdmin || hasAdminRole
-    });
-    
-    return isMasterAdmin || hasAdminRole;
+    // Admin role OR granular delete permission
+    return isMasterAdmin || hasAdminRole || canDelete;
   };
 
   const deleteCustomer = async (customerId: string, customerName: string) => {
-    if (!isAdmin()) {
+    if (!canDeleteCustomers()) {
       toast.error('Only administrators can delete customer records');
       return;
     }
@@ -1506,7 +1501,7 @@ export const CustomersTab = () => {
   };
 
   const bulkDeleteCustomers = async () => {
-    if (!isAdmin()) {
+    if (!canDeleteCustomers()) {
       toast.error('Only administrators can delete customer records');
       return;
     }
@@ -2256,7 +2251,7 @@ export const CustomersTab = () => {
                       selectedCustomerIds={Array.from(selectedCustomers)}
                       onComplete={() => setSelectedCustomers(new Set())}
                     />
-                    {isAdmin() && (
+                    {canDeleteCustomers() && (
                       <Button
                         variant="destructive"
                         size="sm"
@@ -3785,7 +3780,7 @@ Please log in and change your password after first login.`;
                         </Button>
 
 
-                        {isAdmin() && (
+                        {canDeleteCustomers() && (
                           <Button
                             variant="ghost"
                             size="sm"
