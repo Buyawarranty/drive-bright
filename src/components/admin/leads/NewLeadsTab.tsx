@@ -36,16 +36,27 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   onNavigateToTab,
   userRole,
 }) => {
-  // Salespeople can't see Team View
-  const canSeeTeamView = userRole !== 'sales';
-  const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard'>('leads');
+  const { canExportTab, hasGranularPermission } = usePermissions();
+  const { exportToCSV, exportToExcel } = useDataExport();
+  
+  // Granular permissions for sub-views (default: all-leads and my-dashboard, no team-view)
+  const canSeeAllLeads = hasGranularPermission('new-leads', 'all-leads') !== false; // Default true if not set
+  const canSeeMyDashboard = hasGranularPermission('new-leads', 'my-dashboard') !== false; // Default true if not set
+  const canSeeTeamView = hasGranularPermission('new-leads', 'team-view'); // Default false - requires explicit permission
+  const canExport = canExportTab('new_leads') || hasGranularPermission('new-leads', 'export');
+  
+  // Determine default view based on permissions
+  const getDefaultView = () => {
+    if (canSeeAllLeads) return 'leads';
+    if (canSeeMyDashboard) return 'my-dashboard';
+    if (canSeeTeamView) return 'team-dashboard';
+    return 'leads';
+  };
+  
+  const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard'>(getDefaultView());
   const [searchTerm, setSearchTerm] = useState('');
   const [remindersOpen, setRemindersOpen] = useState(true);
   const [showRemindersPanel, setShowRemindersPanel] = useState(true);
-  
-  const { canExportTab } = usePermissions();
-  const { exportToCSV, exportToExcel } = useDataExport();
-  const canExport = canExportTab('new_leads');
 
   const {
     leads,
@@ -87,7 +98,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     new: leads.filter(l => l.status === 'new').length,
     contacted: leads.filter(l => l.status === 'contacted').length,
     follow_up: leads.filter(l => l.status === 'follow_up').length,
-    converted: leads.filter(l => l.status === 'converted').length,
+    paid: leads.filter(l => l.is_paid === true).length,
     lost: leads.filter(l => l.status === 'lost').length,
     high_priority: leads.filter(l => l.priority === 'high' || l.priority === 'urgent').length,
   }), [leads]);
@@ -210,14 +221,18 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           {/* View Toggle */}
           <Tabs value={activeView} onValueChange={(v) => setActiveView(v as any)}>
             <TabsList>
-              <TabsTrigger value="leads" className="flex items-center gap-2">
-                <LayoutDashboard className="h-4 w-4" />
-                All Leads
-              </TabsTrigger>
-              <TabsTrigger value="my-dashboard" className="flex items-center gap-2">
-                <UserCircle className="h-4 w-4" />
-                My Dashboard
-              </TabsTrigger>
+              {canSeeAllLeads && (
+                <TabsTrigger value="leads" className="flex items-center gap-2">
+                  <LayoutDashboard className="h-4 w-4" />
+                  All Leads
+                </TabsTrigger>
+              )}
+              {canSeeMyDashboard && (
+                <TabsTrigger value="my-dashboard" className="flex items-center gap-2">
+                  <UserCircle className="h-4 w-4" />
+                  My Dashboard
+                </TabsTrigger>
+              )}
               {canSeeTeamView && (
                 <TabsTrigger value="team-dashboard" className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
