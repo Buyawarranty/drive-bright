@@ -177,3 +177,12 @@ verify_jwt = false
 
 [functions.process-payment-assist-success]
 verify_jwt = false
+
+[functions.create-live-quote]
+verify_jwt = true
+
+[functions.get-live-quote]
+verify_jwt = false
+
+[functions.quote-payment]
+verify_jwt = false
