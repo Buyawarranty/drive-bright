@@ -495,6 +495,9 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
       setAdditionalNotes('');
       setCustomMonthlyPrice('');
       setCustomFullPrice('');
+      setBumperLink(null);
+      setStripeLink(null);
+      setLinksGenerated(false);
       
     } catch (error: any) {
       console.error('💥 Error in quote send process:', error);
@@ -584,6 +587,109 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
   // Generate Bumper payment link (monthly instalments)
   const [isGeneratingBumperLink, setIsGeneratingBumperLink] = useState(false);
   const [isGeneratingStripeLink, setIsGeneratingStripeLink] = useState(false);
+  const [bumperLink, setBumperLink] = useState<string | null>(null);
+  const [stripeLink, setStripeLink] = useState<string | null>(null);
+  const [linksGenerated, setLinksGenerated] = useState(false);
+
+  // Auto-generate both payment links when entering step 3
+  useEffect(() => {
+    if (step === 3 && customerEmail && customerName && vehicleData && !linksGenerated) {
+      generateBothLinks();
+    }
+  }, [step, customerEmail, customerName, vehicleData]);
+
+  const generateBothLinks = async () => {
+    if (!customerEmail || !customerName || !vehicleData) return;
+    
+    setIsGeneratingBumperLink(true);
+    setIsGeneratingStripeLink(true);
+    setBumperLink(null);
+    setStripeLink(null);
+    
+    const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
+    const payInFullPrice = currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.90);
+    
+    // Generate both links in parallel
+    const [bumperResult, stripeResult] = await Promise.allSettled([
+      // Bumper link
+      supabase.functions.invoke('create-bumper-checkout', {
+        body: {
+          planId: 'platinum',
+          vehicleData: {
+            regNumber: vehicleData.regNumber,
+            make: vehicleData.make,
+            model: vehicleData.model,
+            year: vehicleData.year,
+            fuelType: vehicleData.fuelType,
+            transmission: vehicleData.transmission,
+            mileage: vehicleData.mileage
+          },
+          paymentType,
+          voluntaryExcess: excessAmount,
+          claimLimit: displayClaimLimit,
+          labourRate,
+          customerData: {
+            firstName: customerName.split(' ')[0],
+            lastName: customerName.split(' ').slice(1).join(' ') || '',
+            email: customerEmail,
+            phone: '',
+            final_amount: currentPrice.totalPrice
+          },
+          protectionAddOns: {
+            breakdown: getAutoIncludedAddOns(paymentType).includes('breakdown'),
+            rental: getAutoIncludedAddOns(paymentType).includes('rental'),
+          },
+          additionalNotes
+        }
+      }),
+      // Stripe link
+      supabase.functions.invoke('create-stripe-checkout', {
+        body: {
+          planId: 'platinum',
+          vehicleData: {
+            regNumber: vehicleData.regNumber,
+            make: vehicleData.make,
+            model: vehicleData.model,
+            year: vehicleData.year,
+            fuelType: vehicleData.fuelType,
+            transmission: vehicleData.transmission,
+            mileage: vehicleData.mileage
+          },
+          paymentType,
+          voluntaryExcess: excessAmount,
+          claimLimit: displayClaimLimit,
+          labourRate,
+          customerData: {
+            firstName: customerName.split(' ')[0],
+            lastName: customerName.split(' ').slice(1).join(' ') || '',
+            email: customerEmail,
+            phone: '',
+            final_amount: payInFullPrice
+          },
+          protectionAddOns: {
+            breakdown: getAutoIncludedAddOns(paymentType).includes('breakdown'),
+            rental: getAutoIncludedAddOns(paymentType).includes('rental'),
+          },
+          additionalNotes
+        }
+      })
+    ]);
+    
+    // Process Bumper result
+    if (bumperResult.status === 'fulfilled' && bumperResult.value.data) {
+      const url = bumperResult.value.data.checkout_url || bumperResult.value.data.url;
+      if (url) setBumperLink(url);
+    }
+    
+    // Process Stripe result
+    if (stripeResult.status === 'fulfilled' && stripeResult.value.data?.url) {
+      setStripeLink(stripeResult.value.data.url);
+    }
+    
+    setIsGeneratingBumperLink(false);
+    setIsGeneratingStripeLink(false);
+    setLinksGenerated(true);
+  };
 
   const handleGenerateBumperLink = async () => {
     if (!customerEmail || !customerName || !vehicleData) {
@@ -1108,17 +1214,51 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
                     </div>
                     <div className="text-2xl font-bold text-blue-800 mb-1">£{currentPrice.monthlyPrice}/month</div>
                     <p className="text-sm text-blue-600 mb-3">12 interest-free payments via Bumper</p>
-                    <Button
-                      onClick={handleGenerateBumperLink}
-                      disabled={isGeneratingBumperLink}
-                      className="w-full bg-blue-600 hover:bg-blue-700"
-                    >
-                      {isGeneratingBumperLink ? (
-                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Generating...</>
-                      ) : (
-                        <>Generate Bumper Link</>
-                      )}
-                    </Button>
+                    
+                    {isGeneratingBumperLink ? (
+                      <div className="flex items-center justify-center py-2 text-blue-600">
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        <span className="text-sm">Generating link...</span>
+                      </div>
+                    ) : bumperLink ? (
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={async () => {
+                              await navigator.clipboard.writeText(bumperLink);
+                              toast({ title: "✓ Bumper link copied!", duration: 2000 });
+                            }}
+                            className="flex-1 bg-blue-600 hover:bg-blue-700"
+                            size="sm"
+                          >
+                            📋 Copy Link
+                          </Button>
+                          <Button
+                            onClick={() => window.open(bumperLink, '_blank')}
+                            variant="outline"
+                            className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                            size="sm"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <p className="text-xs text-blue-600 truncate" title={bumperLink}>
+                          ✓ Ready to send
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-red-600 py-2">
+                        ⚠️ Failed to generate link
+                        <Button
+                          onClick={generateBothLinks}
+                          variant="link"
+                          size="sm"
+                          className="text-blue-600 p-0 ml-2"
+                        >
+                          Retry
+                        </Button>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="p-4 rounded-lg border-2 border-orange-200 bg-orange-50">
@@ -1129,17 +1269,51 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
                     </div>
                     <div className="text-2xl font-bold text-orange-800 mb-1">£{currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}</div>
                     <p className="text-sm text-orange-600 mb-3">One-time payment via Stripe</p>
-                    <Button
-                      onClick={handleGenerateStripeLink}
-                      disabled={isGeneratingStripeLink}
-                      className="w-full bg-orange-500 hover:bg-orange-600"
-                    >
-                      {isGeneratingStripeLink ? (
-                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Generating...</>
-                      ) : (
-                        <>Generate Stripe Link</>
-                      )}
-                    </Button>
+                    
+                    {isGeneratingStripeLink ? (
+                      <div className="flex items-center justify-center py-2 text-orange-600">
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        <span className="text-sm">Generating link...</span>
+                      </div>
+                    ) : stripeLink ? (
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={async () => {
+                              await navigator.clipboard.writeText(stripeLink);
+                              toast({ title: "✓ Stripe link copied!", duration: 2000 });
+                            }}
+                            className="flex-1 bg-orange-500 hover:bg-orange-600"
+                            size="sm"
+                          >
+                            📋 Copy Link
+                          </Button>
+                          <Button
+                            onClick={() => window.open(stripeLink, '_blank')}
+                            variant="outline"
+                            className="border-orange-300 text-orange-700 hover:bg-orange-100"
+                            size="sm"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <p className="text-xs text-orange-600 truncate" title={stripeLink}>
+                          ✓ Ready to send
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-red-600 py-2">
+                        ⚠️ Failed to generate link
+                        <Button
+                          onClick={generateBothLinks}
+                          variant="link"
+                          size="sm"
+                          className="text-orange-600 p-0 ml-2"
+                        >
+                          Retry
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1152,7 +1326,12 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
                 <div className="flex gap-3">
                   <Button 
                     variant="outline"
-                    onClick={() => setStep(2)}
+                    onClick={() => {
+                      setLinksGenerated(false);
+                      setBumperLink(null);
+                      setStripeLink(null);
+                      setStep(2);
+                    }}
                   >
                     Back
                   </Button>
