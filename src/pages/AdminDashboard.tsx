@@ -61,6 +61,7 @@ const AdminDashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userPermissions, setUserPermissions] = useState<Record<string, boolean> | null>(null);
+  const [hasSetInitialTab, setHasSetInitialTab] = useState(false);
   const navigate = useNavigate();
   const { session, loading: authLoading } = useAuth();
   
@@ -135,17 +136,22 @@ const AdminDashboard = () => {
       
       setIsCheckingRole(false);
       
-      // Set default tab for blog writers
-      if (primaryRole === 'blog_writer') {
-        setActiveTab('blog-writing');
-      } else if (primaryRole === 'sales') {
-        setActiveTab('customers');
-      } else if (!['admin'].includes(primaryRole) && adminUserData?.permissions) {
-        // For users with custom permissions, set first allowed tab
-        const perms = adminUserData.permissions as Record<string, boolean>;
-        const firstAllowedTab = Object.keys(perms).find(key => key.startsWith('tab_') && perms[key]);
-        if (firstAllowedTab) {
-          setActiveTab(firstAllowedTab.replace('tab_', ''));
+      // Only set default tab on initial load, not on subsequent re-checks
+      if (!hasSetInitialTab) {
+        setHasSetInitialTab(true);
+        
+        // Set default tab for blog writers
+        if (primaryRole === 'blog_writer') {
+          setActiveTab('blog-writing');
+        } else if (primaryRole === 'sales') {
+          setActiveTab('customers');
+        } else if (!['admin'].includes(primaryRole) && adminUserData?.permissions) {
+          // For users with custom permissions, set first allowed tab
+          const perms = adminUserData.permissions as Record<string, boolean>;
+          const firstAllowedTab = Object.keys(perms).find(key => key.startsWith('tab_') && perms[key]);
+          if (firstAllowedTab) {
+            setActiveTab(firstAllowedTab.replace('tab_', ''));
+          }
         }
       }
     } catch (error) {
