@@ -53,7 +53,6 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   const handleSaveNotes = () => {
     onUpdateNotes(lead.id, notesValue);
     setIsEditing(false);
-    toast.success('Notes saved');
   };
 
   const handleCall = () => {
