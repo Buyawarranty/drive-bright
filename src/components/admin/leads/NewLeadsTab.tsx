@@ -43,13 +43,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const canExport = isAdmin || canExportTab('new-leads') || hasGranularPermission('new-leads', 'export');
   
   // Granular permissions for sub-views
-  // Default: ALL users can see all-leads and my-dashboard (unless explicitly denied)
-  // team-view requires explicit permission
+  // hasGranularPermission returns: true (granted), false (denied), undefined (not set)
   const hasAllLeadsPerm = hasGranularPermission('new-leads', 'all-leads');
-  const hasMyDashboardPerm = hasGranularPermission('new-leads', 'my-dashboard');
   const hasTeamViewPerm = hasGranularPermission('new-leads', 'team-view');
   
-  // Default to true for all-leads and my-dashboard if not explicitly set to false
+  // Default behavior:
+  // - all-leads: defaults to TRUE unless explicitly denied (false)
+  // - my-dashboard: ALWAYS allowed (shows only user's own leads)
+  // - team-view: must be explicitly granted (true)
   const canSeeAllLeads = hasAllLeadsPerm !== false; // true if undefined or true
   const canSeeMyDashboard = true; // Always allow - shows only user's own leads
   const canSeeTeamView = hasTeamViewPerm === true; // Must be explicitly granted
