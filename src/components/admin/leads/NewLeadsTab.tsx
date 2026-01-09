@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+// Tabs import removed - using custom button toggle
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLeads, Lead } from '@/hooks/useLeads';
 import { LeadsTable } from './LeadsTable';
@@ -254,29 +254,42 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           {/* Add Manual Order Button */}
           <ManualOrderEntry />
           
-          {/* View Toggle */}
-          <Tabs value={activeView} onValueChange={(v) => setActiveView(v as any)}>
-            <TabsList>
-              {canSeeAllLeads && (
-                <TabsTrigger value="leads" className="flex items-center gap-2">
-                  <LayoutDashboard className="h-4 w-4" />
-                  All Leads
-                </TabsTrigger>
-              )}
-              {canSeeMyDashboard && (
-                <TabsTrigger value="my-dashboard" className="flex items-center gap-2">
-                  <UserCircle className="h-4 w-4" />
-                  My Dashboard
-                </TabsTrigger>
-              )}
-              {canSeeTeamView && (
-                <TabsTrigger value="team-dashboard" className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Team View
-                </TabsTrigger>
-              )}
-            </TabsList>
-          </Tabs>
+          {/* View Toggle - Always visible tabs */}
+          <div className="flex items-center border rounded-lg bg-muted/50 p-1">
+            {canSeeAllLeads && (
+              <Button 
+                variant={activeView === 'leads' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveView('leads')}
+                className="flex items-center gap-2"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <span className="hidden sm:inline">All Leads</span>
+              </Button>
+            )}
+            {canSeeMyDashboard && (
+              <Button 
+                variant={activeView === 'my-dashboard' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveView('my-dashboard')}
+                className="flex items-center gap-2"
+              >
+                <UserCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">My Dashboard</span>
+              </Button>
+            )}
+            {canSeeTeamView && (
+              <Button 
+                variant={activeView === 'team-dashboard' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveView('team-dashboard')}
+                className="flex items-center gap-2"
+              >
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline">Team View</span>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
