@@ -49,6 +49,7 @@ const ConditionalFooter = () => {
 
 // Lazy load pages
 const FAQ = lazy(() => import("./pages/FAQ"));
+const LiveQuotePage = lazy(() => import("./pages/LiveQuotePage"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
 const PaymentFallback = lazy(() => import("./pages/PaymentFallback"));
 const Cart = lazy(() => import("./pages/Cart"));
@@ -176,6 +177,8 @@ const App = () => {
                     <Route path="/complaints/" element={<Complaints />} />
                     <Route path="/thewarrantyhub/" element={<Blog />} />
                     <Route path="/thewarrantyhub/:slug/" element={<BlogArticle />} />
+                    <Route path="/quote/:token" element={<LiveQuotePage />} />
+                    <Route path="/quote/:token/success" element={<LiveQuotePage />} />
                     <Route path="/warranty-plan/" element={<WarrantyPlan />} />
                     <Route path="/buy-a-used-car-warranty-reliable-warranties/" element={<BuyCarWarranty />} />
                     <Route path="/van-warranty/" element={<VanWarrantyNew />} />

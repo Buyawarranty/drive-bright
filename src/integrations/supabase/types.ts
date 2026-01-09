@@ -2757,6 +2757,132 @@ export type Database = {
         }
         Relationships: []
       }
+      live_quotes: {
+        Row: {
+          access_token: string
+          additional_notes: string | null
+          bonus_months: number
+          boost_addon: boolean | null
+          breakdown_included: boolean | null
+          claim_limit: number
+          created_at: string
+          created_by: string | null
+          created_by_name: string | null
+          currency: string | null
+          customer_email: string
+          customer_name: string
+          customer_phone: string | null
+          duration_months: number
+          excess_amount: number
+          expires_at: string
+          id: string
+          labour_rate: number | null
+          monthly_price: number
+          paid_at: string | null
+          payment_method: string | null
+          payment_reference: string | null
+          plan_type: string
+          policy_id: string | null
+          policy_number: string | null
+          rental_included: boolean | null
+          share_link: string | null
+          status: string
+          updated_at: string
+          upfront_price: number
+          vehicle_fuel_type: string | null
+          vehicle_make: string | null
+          vehicle_mileage: string | null
+          vehicle_model: string | null
+          vehicle_reg: string
+          vehicle_transmission: string | null
+          vehicle_type: string | null
+          vehicle_year: string | null
+          viewed_at: string | null
+        }
+        Insert: {
+          access_token: string
+          additional_notes?: string | null
+          bonus_months?: number
+          boost_addon?: boolean | null
+          breakdown_included?: boolean | null
+          claim_limit?: number
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          currency?: string | null
+          customer_email: string
+          customer_name: string
+          customer_phone?: string | null
+          duration_months?: number
+          excess_amount?: number
+          expires_at?: string
+          id?: string
+          labour_rate?: number | null
+          monthly_price: number
+          paid_at?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          plan_type?: string
+          policy_id?: string | null
+          policy_number?: string | null
+          rental_included?: boolean | null
+          share_link?: string | null
+          status?: string
+          updated_at?: string
+          upfront_price: number
+          vehicle_fuel_type?: string | null
+          vehicle_make?: string | null
+          vehicle_mileage?: string | null
+          vehicle_model?: string | null
+          vehicle_reg: string
+          vehicle_transmission?: string | null
+          vehicle_type?: string | null
+          vehicle_year?: string | null
+          viewed_at?: string | null
+        }
+        Update: {
+          access_token?: string
+          additional_notes?: string | null
+          bonus_months?: number
+          boost_addon?: boolean | null
+          breakdown_included?: boolean | null
+          claim_limit?: number
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          currency?: string | null
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string | null
+          duration_months?: number
+          excess_amount?: number
+          expires_at?: string
+          id?: string
+          labour_rate?: number | null
+          monthly_price?: number
+          paid_at?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          plan_type?: string
+          policy_id?: string | null
+          policy_number?: string | null
+          rental_included?: boolean | null
+          share_link?: string | null
+          status?: string
+          updated_at?: string
+          upfront_price?: number
+          vehicle_fuel_type?: string | null
+          vehicle_make?: string | null
+          vehicle_mileage?: string | null
+          vehicle_model?: string | null
+          vehicle_reg?: string
+          vehicle_transmission?: string | null
+          vehicle_type?: string | null
+          vehicle_year?: string | null
+          viewed_at?: string | null
+        }
+        Relationships: []
+      }
       mot_history: {
         Row: {
           co2_emissions: number | null
