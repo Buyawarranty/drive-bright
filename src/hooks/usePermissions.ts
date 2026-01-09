@@ -15,7 +15,8 @@ interface UsePermissionsReturn {
   canDeleteTab: (tabKey: string) => boolean;
   canExportTab: (tabKey: string) => boolean;
   // Granular tab permissions (view/export for customers and new-leads)
-  hasGranularPermission: (tabKey: string, permissionKey: string) => boolean;
+  // Returns true if granted, false if denied, undefined if not explicitly set
+  hasGranularPermission: (tabKey: string, permissionKey: string) => boolean | undefined;
   // Column masking
   getMaskLevel: (columnKey: string) => MaskLevel;
   maskValue: (value: string | null | undefined, columnKey: string) => string;
@@ -184,9 +185,14 @@ export function usePermissions(): UsePermissionsReturn {
   }, [policy]);
 
   // Check granular permissions like tab_customers_view, tab_new-leads_export
-  const hasGranularPermission = useCallback((tabKey: string, permissionKey: string): boolean => {
+  // Returns: true if explicitly granted, false if explicitly denied, undefined if not set
+  const hasGranularPermission = useCallback((tabKey: string, permissionKey: string): boolean | undefined => {
     const key = `tab_${tabKey}_${permissionKey}`;
-    return rawPermissions[key] === true;
+    if (key in rawPermissions) {
+      return rawPermissions[key] === true;
+    }
+    // Not explicitly set - return undefined so callers can apply defaults
+    return undefined;
   }, [rawPermissions]);
 
   return {

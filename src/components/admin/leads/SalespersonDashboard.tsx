@@ -61,8 +61,10 @@ export const SalespersonDashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (currentUserId && leads.length > 0) {
-      setMyLeads(leads.filter(l => l.assigned_to === currentUserId));
+    if (currentUserId && leads.length >= 0) {
+      const filtered = leads.filter(l => l.assigned_to === currentUserId);
+      console.log('My Dashboard - currentUserId:', currentUserId, 'Total leads:', leads.length, 'My leads:', filtered.length);
+      setMyLeads(filtered);
     }
   }, [currentUserId, leads]);
 
@@ -318,24 +320,32 @@ export const SalespersonDashboard: React.FC = () => {
           )}
         </CardHeader>
         <CardContent>
-          <LeadsTable
-            leads={myLeads}
-            tags={tags}
-            salesUsers={salesUsers}
-            selectedLeads={selectedLeads}
-            onSelectLead={handleSelectLead}
-            onSelectAll={() => handleSelectAll(myLeads)}
-            onUpdateStatus={updateLeadStatus}
-            onAssign={assignLead}
-            onAutoAssign={autoAssignLead}
-            onUpdatePriority={updateLeadPriority}
-            onScheduleFollowUp={scheduleFollowUp}
-            onAddTag={addTagToLead}
-            onRemoveTag={removeTagFromLead}
-            onUpdateNotes={updateLeadNotes}
-            onMarkContacted={markContactedAt}
-            onLogActivity={logActivity}
-          />
+          {myLeads.length > 0 ? (
+            <LeadsTable
+              leads={myLeads}
+              tags={tags}
+              salesUsers={salesUsers}
+              selectedLeads={selectedLeads}
+              onSelectLead={handleSelectLead}
+              onSelectAll={() => handleSelectAll(myLeads)}
+              onUpdateStatus={updateLeadStatus}
+              onAssign={assignLead}
+              onAutoAssign={autoAssignLead}
+              onUpdatePriority={updateLeadPriority}
+              onScheduleFollowUp={scheduleFollowUp}
+              onAddTag={addTagToLead}
+              onRemoveTag={removeTagFromLead}
+              onUpdateNotes={updateLeadNotes}
+              onMarkContacted={markContactedAt}
+              onLogActivity={logActivity}
+            />
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p className="font-medium">No leads assigned to you yet</p>
+              <p className="text-sm mt-1">Go to "All Leads" to assign leads to yourself</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
