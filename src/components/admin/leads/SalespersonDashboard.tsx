@@ -339,8 +339,8 @@ export const SalespersonDashboard: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Scoreboard */}
-      {teamStats && teamStats.leaderboard.length > 0 && (
+      {/* Scoreboard - Always show for visibility */}
+      {teamStats && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
@@ -355,41 +355,45 @@ export const SalespersonDashboard: React.FC = () => {
             <CardDescription>Top performers by revenue this month</CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50px]">#</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead className="text-right">Revenue</TableHead>
-                  <TableHead className="text-right">Deals</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {teamStats.leaderboard.slice(0, 10).map((person, index) => (
-                  <TableRow 
-                    key={person.userId}
-                    className={person.userId === currentUserId ? 'bg-primary/10' : ''}
-                  >
-                    <TableCell>
-                      {index === 0 && '🥇'}
-                      {index === 1 && '🥈'}
-                      {index === 2 && '🥉'}
-                      {index > 2 && index + 1}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {person.userName}
-                      {person.userId === currentUserId && (
-                        <Badge variant="outline" className="ml-2 text-xs">You</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      £{person.totalRevenue.toLocaleString()}
-                    </TableCell>
-                    <TableCell className="text-right">{person.convertedLeads}</TableCell>
+            {teamStats.leaderboard.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[50px]">#</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead className="text-right">Revenue</TableHead>
+                    <TableHead className="text-right">Deals</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {teamStats.leaderboard.slice(0, 10).map((person, index) => (
+                    <TableRow 
+                      key={person.userId}
+                      className={person.userId === currentUserId ? 'bg-primary/10' : ''}
+                    >
+                      <TableCell>
+                        {index === 0 && '🥇'}
+                        {index === 1 && '🥈'}
+                        {index === 2 && '🥉'}
+                        {index > 2 && index + 1}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {person.userName}
+                        {person.userId === currentUserId && (
+                          <Badge variant="outline" className="ml-2 text-xs">You</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        £{person.totalRevenue.toLocaleString()}
+                      </TableCell>
+                      <TableCell className="text-right">{person.convertedLeads}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="text-muted-foreground text-center py-4">No team members to display yet</p>
+            )}
           </CardContent>
         </Card>
       )}

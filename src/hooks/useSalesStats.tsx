@@ -70,11 +70,12 @@ export const useSalesStats = (userId?: string) => {
       
       const newLeads = leadsData.filter(l => l.status === 'new').length;
       const contactedLeads = leadsData.filter(l => l.status === 'contacted').length;
-      const convertedLeads = leadsData.filter(l => l.status === 'converted').length;
+      // Use is_paid for converted/revenue calculations
+      const convertedLeads = leadsData.filter(l => l.is_paid === true).length;
       const lostLeads = leadsData.filter(l => l.status === 'lost').length;
       const totalRevenue = leadsData
-        .filter(l => l.status === 'converted')
-        .reduce((sum, l) => sum + (l.cart_value || l.quote_amount || 0), 0);
+        .filter(l => l.is_paid === true)
+        .reduce((sum, l) => sum + (l.payment_amount || l.cart_value || l.quote_amount || 0), 0);
 
       // Calculate follow-ups
       const now = new Date();
@@ -132,10 +133,11 @@ export const useSalesStats = (userId?: string) => {
       const leaderboard: SalespersonStats[] = await Promise.all(
         (users || []).map(async (user) => {
           const userLeads = leadsData.filter(l => l.assigned_to === user.id);
-          const converted = userLeads.filter(l => l.status === 'converted').length;
+          // Use is_paid for converted/revenue calculations
+          const converted = userLeads.filter(l => l.is_paid === true).length;
           const revenue = userLeads
-            .filter(l => l.status === 'converted')
-            .reduce((sum, l) => sum + (l.cart_value || l.quote_amount || 0), 0);
+            .filter(l => l.is_paid === true)
+            .reduce((sum, l) => sum + (l.payment_amount || l.cart_value || l.quote_amount || 0), 0);
 
           return {
             userId: user.id,
@@ -159,11 +161,12 @@ export const useSalesStats = (userId?: string) => {
       leaderboard.sort((a, b) => b.totalRevenue - a.totalRevenue);
 
       // Calculate totals
-      const totalConverted = leadsData.filter(l => l.status === 'converted').length;
+      // Use is_paid for converted/revenue calculations
+      const totalConverted = leadsData.filter(l => l.is_paid === true).length;
       const totalLost = leadsData.filter(l => l.status === 'lost').length;
       const totalRevenue = leadsData
-        .filter(l => l.status === 'converted')
-        .reduce((sum, l) => sum + (l.cart_value || l.quote_amount || 0), 0);
+        .filter(l => l.is_paid === true)
+        .reduce((sum, l) => sum + (l.payment_amount || l.cart_value || l.quote_amount || 0), 0);
 
       // Leads by source
       const sourceMap = new Map<string, number>();
