@@ -63,38 +63,44 @@ export const useLeadQuickNotes = (leadId: string) => {
   }, [fetchNotes]);
 
   const addNote = async (noteText: string) => {
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      const { data: adminUser } = await supabase
-        .from('admin_users')
-        .select('id')
-        .eq('user_id', userData.user?.id)
-        .single();
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !userData.user) {
+      console.error('Error getting user:', userError);
+      toast.error('Please sign in to add notes');
+      throw new Error('User not authenticated');
+    }
 
-      if (!adminUser) {
-        toast.error('Could not identify user');
-        return null;
-      }
+    const { data: adminUser, error: adminError } = await supabase
+      .from('admin_users')
+      .select('id')
+      .eq('user_id', userData.user.id)
+      .single();
 
-      const { data, error } = await supabase
-        .from('lead_quick_notes')
-        .insert({
-          lead_id: leadId,
-          note_text: noteText.trim(),
-          created_by: adminUser.id
-        })
-        .select()
-        .single();
+    if (adminError || !adminUser) {
+      console.error('Error finding admin user:', adminError);
+      toast.error('Could not identify your admin account');
+      throw new Error('Admin user not found');
+    }
 
-      if (error) throw error;
+    const { data, error } = await supabase
+      .from('lead_quick_notes')
+      .insert({
+        lead_id: leadId,
+        note_text: noteText.trim(),
+        created_by: adminUser.id
+      })
+      .select()
+      .single();
 
-      await fetchNotes();
-      return data;
-    } catch (error) {
+    if (error) {
       console.error('Error adding quick note:', error);
       toast.error('Failed to add note');
-      return null;
+      throw error;
     }
+
+    await fetchNotes();
+    return data;
   };
 
   const updateNote = async (noteId: string, noteText: string) => {
