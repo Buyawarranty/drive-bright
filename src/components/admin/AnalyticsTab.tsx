@@ -17,11 +17,21 @@ interface Customer {
   final_amount: number | null;
 }
 
-// Test names to exclude from analytics
+// Test names to exclude from analytics (matching CustomersTab filtering)
 const TEST_NAMES = ['kamran qureshi', 'prajwal chauhan', 'accepttest'];
 
-const isTestOrder = (name: string): boolean => {
+const isTestOrder = (name: string, email: string): boolean => {
   const lowerName = name?.toLowerCase() || '';
+  const lowerEmail = email?.toLowerCase() || '';
+  
+  // Match CustomersTab exclusions
+  if (lowerEmail.includes('@test.com')) return true;
+  if (lowerEmail.includes('testuser')) return true;
+  if (lowerEmail.includes('guest@')) return true;
+  if (lowerName === 'test customer') return true;
+  if (lowerName === 'guest customer') return true;
+  
+  // Also exclude specific test names
   return TEST_NAMES.some(testName => lowerName.includes(testName));
 };
 
@@ -37,18 +47,25 @@ export const AnalyticsTab = () => {
     try {
       console.log('Fetching analytics data...');
       
+      // Match CustomersTab filtering exactly
       const { data, error } = await supabase
         .from('customers')
-        .select('id, name, email, plan_type, signup_date, status, final_amount');
+        .select('id, name, email, plan_type, signup_date, status, final_amount')
+        .not('email', 'ilike', '%@test.com%')
+        .not('email', 'ilike', '%testuser%')
+        .not('email', 'ilike', '%guest@%')
+        .not('name', 'eq', 'Test Customer')
+        .not('name', 'eq', 'Guest Customer')
+        .eq('is_deleted', false);
 
       if (error) {
         console.error('Error fetching customers:', error);
         throw error;
       }
 
-      // Filter out test orders
-      const realCustomers = (data || []).filter(c => !isTestOrder(c.name));
-      console.log('Real customers (excluding test):', realCustomers.length);
+      // Also filter out specific test names not caught by DB query
+      const realCustomers = (data || []).filter(c => !isTestOrder(c.name, c.email));
+      console.log('Real customers (matching Customer Dashboard):', realCustomers.length);
       
       setCustomers(realCustomers);
     } catch (error) {
