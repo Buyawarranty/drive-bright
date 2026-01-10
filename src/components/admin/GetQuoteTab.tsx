@@ -699,12 +699,12 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
           voluntaryExcess: excessAmount,
           claimLimit: displayClaimLimit,
           labourRate,
+          finalAmount: currentPrice.totalPrice,
           customerData: {
             firstName: customerName.split(' ')[0],
             lastName: customerName.split(' ').slice(1).join(' ') || '',
             email: customerEmail,
-            phone: '',
-            final_amount: currentPrice.totalPrice
+            phone: ''
           },
           protectionAddOns: {
             breakdown: getAutoIncludedAddOns(paymentType).includes('breakdown'),
@@ -730,12 +730,12 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
           voluntaryExcess: excessAmount,
           claimLimit: displayClaimLimit,
           labourRate,
+          finalAmount: payInFullPrice,
           customerData: {
             firstName: customerName.split(' ')[0],
             lastName: customerName.split(' ').slice(1).join(' ') || '',
             email: customerEmail,
-            phone: '',
-            final_amount: payInFullPrice
+            phone: ''
           },
           protectionAddOns: {
             breakdown: getAutoIncludedAddOns(paymentType).includes('breakdown'),
@@ -792,12 +792,12 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
           voluntaryExcess: excessAmount,
           claimLimit: displayClaimLimit,
           labourRate,
+          finalAmount: currentPrice.totalPrice,
           customerData: {
             firstName: customerName.split(' ')[0],
             lastName: customerName.split(' ').slice(1).join(' ') || '',
             email: customerEmail,
-            phone: '',
-            final_amount: currentPrice.totalPrice
+            phone: ''
           },
           protectionAddOns: {
             breakdown: getAutoIncludedAddOns(paymentType).includes('breakdown'),
@@ -867,12 +867,12 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
           voluntaryExcess: excessAmount,
           claimLimit: displayClaimLimit,
           labourRate,
+          finalAmount: payInFullPrice,
           customerData: {
             firstName: customerName.split(' ')[0],
             lastName: customerName.split(' ').slice(1).join(' ') || '',
             email: customerEmail,
-            phone: '',
-            final_amount: payInFullPrice
+            phone: ''
           },
           protectionAddOns: {
             breakdown: getAutoIncludedAddOns(paymentType).includes('breakdown'),
