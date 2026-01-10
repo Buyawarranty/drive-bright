@@ -647,7 +647,10 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
         status: 'Active',
         warranty_reference_number: warrantyReference,
         voluntary_excess: orderData.voluntaryExcess,
-        claim_limit: orderData.claimLimit
+        claim_limit: orderData.claimLimit,
+        // Mark as manual entry - not from automated payment flow
+        is_manual_entry: true,
+        payment_verified: false
       };
 
       // Only add fields if they have actual values (not empty strings)
@@ -754,7 +757,10 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
         vehicle_rental: orderData.vehicleRental,
         mot_fee: orderData.motFeeCover,
         transfer_cover: orderData.transferCover,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        // Mark as manual entry - not from automated payment flow
+        is_manual_entry: true,
+        payment_verified: false
       };
 
       if (isEditMode && policyToEdit?.id) {

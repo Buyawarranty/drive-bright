@@ -1446,6 +1446,7 @@ export type Database = {
           europe_cover: boolean | null
           id: string
           is_deleted: boolean | null
+          is_manual_entry: boolean | null
           last_login: string | null
           lost_key: boolean | null
           manual_upgrade_at: string | null
@@ -1456,6 +1457,7 @@ export type Database = {
           payment_amount: number | null
           payment_currency: string | null
           payment_type: string
+          payment_verified: boolean | null
           pdf_basic_url: string | null
           pdf_document_path: string | null
           pdf_gold_url: string | null
@@ -1499,6 +1501,7 @@ export type Database = {
           europe_cover?: boolean | null
           id?: string
           is_deleted?: boolean | null
+          is_manual_entry?: boolean | null
           last_login?: string | null
           lost_key?: boolean | null
           manual_upgrade_at?: string | null
@@ -1509,6 +1512,7 @@ export type Database = {
           payment_amount?: number | null
           payment_currency?: string | null
           payment_type: string
+          payment_verified?: boolean | null
           pdf_basic_url?: string | null
           pdf_document_path?: string | null
           pdf_gold_url?: string | null
@@ -1552,6 +1556,7 @@ export type Database = {
           europe_cover?: boolean | null
           id?: string
           is_deleted?: boolean | null
+          is_manual_entry?: boolean | null
           last_login?: string | null
           lost_key?: boolean | null
           manual_upgrade_at?: string | null
@@ -1562,6 +1567,7 @@ export type Database = {
           payment_amount?: number | null
           payment_currency?: string | null
           payment_type?: string
+          payment_verified?: boolean | null
           pdf_basic_url?: string | null
           pdf_document_path?: string | null
           pdf_gold_url?: string | null
@@ -1727,6 +1733,7 @@ export type Database = {
           google_review_requested_at: string | null
           id: string
           is_deleted: boolean | null
+          is_manual_entry: boolean | null
           labour_rate: number | null
           last_login: string | null
           last_name: string | null
@@ -1740,6 +1747,7 @@ export type Database = {
           name: string
           original_amount: number | null
           payment_type: string | null
+          payment_verified: boolean | null
           phone: string | null
           plan_type: string
           postcode: string | null
@@ -1797,6 +1805,7 @@ export type Database = {
           google_review_requested_at?: string | null
           id?: string
           is_deleted?: boolean | null
+          is_manual_entry?: boolean | null
           labour_rate?: number | null
           last_login?: string | null
           last_name?: string | null
@@ -1810,6 +1819,7 @@ export type Database = {
           name: string
           original_amount?: number | null
           payment_type?: string | null
+          payment_verified?: boolean | null
           phone?: string | null
           plan_type: string
           postcode?: string | null
@@ -1867,6 +1877,7 @@ export type Database = {
           google_review_requested_at?: string | null
           id?: string
           is_deleted?: boolean | null
+          is_manual_entry?: boolean | null
           labour_rate?: number | null
           last_login?: string | null
           last_name?: string | null
@@ -1880,6 +1891,7 @@ export type Database = {
           name?: string
           original_amount?: number | null
           payment_type?: string | null
+          payment_verified?: boolean | null
           phone?: string | null
           plan_type?: string
           postcode?: string | null
