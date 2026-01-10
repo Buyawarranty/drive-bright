@@ -91,59 +91,63 @@ serve(async (req) => {
       instalmentCount
     });
 
-    // Only fetch plan data if finalAmount is NOT provided (i.e., not an admin quote)
-    // Admin quotes provide finalAmount directly, so we don't need to look up the plan
+    // Always fetch plan data to get plan name and ID for display and storage
     let planData = null;
     let planType = 'basic'; // Default plan type for admin quotes
+    let planName = 'Warranty Plan'; // Default plan name
     
-    if (!finalAmount) {
-      // Fetch plan data to get plan type
-      // Handle both UUID and plan name (for backward compatibility)
-      logStep("Fetching plan data", { planId });
-      
-      // Check if planId is a UUID or a plan name
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(planId);
-      
-      let planError;
-      
-      if (isUUID) {
-        const result = await supabase
-          .from('special_vehicle_plans')
-          .select('*')
-          .eq('id', planId)
-          .single();
-        planData = result.data;
-        planError = result.error;
-      } else {
-        // If not UUID, treat as plan name (case insensitive)
-        const result = await supabase
-          .from('special_vehicle_plans')
-          .select('*')
-          .ilike('name', planId)
-          .single();
-        planData = result.data;
-        planError = result.error;
+    logStep("Fetching plan data", { planId });
+    
+    // Check if planId is a UUID or a plan name
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(planId);
+    
+    if (isUUID) {
+      const result = await supabase
+        .from('special_vehicle_plans')
+        .select('*')
+        .eq('id', planId)
+        .maybeSingle();
+      planData = result.data;
+      if (result.error) {
+        logStep("Plan fetch error (non-fatal)", { planId, error: result.error });
       }
-
-      if (planError || !planData) {
-        throw new Error(`Failed to fetch plan: ${planError?.message}`);
-      }
-
-      // Map plan to Bumper plan type
-      const planTypeMapping: Record<string, string> = {
-        'Basic Van Plan': 'basic_van_plan',
-        'Premium Van Plan': 'premium_van_plan',
-        'Comprehensive Van Plan': 'comprehensive_van_plan',
-        'Basic Car Plan': 'basic_car_plan',
-        'Premium Car Plan': 'premium_car_plan',
-        'Comprehensive Car Plan': 'comprehensive_car_plan',
-      };
-
-      planType = planTypeMapping[planData.name] || 'basic';
-      logStep("Using plan type", { planId, planType });
     } else {
-      logStep("Skipping plan lookup - using provided finalAmount", { planId, finalAmount });
+      // If not UUID, treat as plan name (case insensitive)
+      const result = await supabase
+        .from('special_vehicle_plans')
+        .select('*')
+        .ilike('name', planId)
+        .maybeSingle();
+      planData = result.data;
+      if (result.error) {
+        logStep("Plan fetch error (non-fatal)", { planId, error: result.error });
+      }
     }
+
+    // Map plan to Bumper plan type
+    const planTypeMapping: Record<string, string> = {
+      'Basic Van Plan': 'basic_van_plan',
+      'Premium Van Plan': 'premium_van_plan',
+      'Comprehensive Van Plan': 'comprehensive_van_plan',
+      'Basic Car Plan': 'basic_car_plan',
+      'Premium Car Plan': 'premium_car_plan',
+      'Comprehensive Car Plan': 'comprehensive_car_plan',
+    };
+
+    // Set plan type and name from fetched data or use fallbacks
+    if (planData) {
+      planType = planTypeMapping[planData.name] || 'basic';
+      planName = planData.name;
+    } else if (!finalAmount) {
+      // Only throw error if we don't have a finalAmount (no fallback pricing)
+      throw new Error(`Plan not found: ${planId}`);
+    } else {
+      // We have finalAmount but no plan data - use fallback
+      planName = isUUID ? 'Warranty Plan' : planId;
+      logStep("Using fallback plan name", { planId, planName, hasFinalAmount: !!finalAmount });
+    }
+    
+    logStep("Using plan type", { planId, planType, planName });
 
     // Use the provided finalAmount as the total amount for Bumper
     const totalAmount = finalAmount || 500; // Fallback amount
@@ -187,7 +191,7 @@ serve(async (req) => {
     
     const transactionInsertData = {
       transaction_id: transactionId,
-      plan_id: planData.id, // Use the actual UUID from the fetched plan data
+      plan_id: planData?.id || planId, // Use the actual UUID from the fetched plan data, or fallback to planId
       payment_type: originalPaymentType, // Store original warranty duration, not Bumper payment frequency
       customer_data: {
         ...customerData,

@@ -119,52 +119,53 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
     
-    // Only fetch plan data if finalAmount is NOT provided (i.e., not an admin quote)
-    // Admin quotes provide finalAmount directly, so we don't need to look up the plan
+    // Always fetch plan data to get plan name for display purposes
     let planData = null;
-    let planType = planId || 'platinum'; // Use planId as the plan type for admin quotes
+    let planType = planId || 'platinum'; // Fallback for admin quotes
+    let planName = 'Warranty Plan'; // Default plan name
     
-    if (!finalAmount) {
-      logStep("Fetching plan data", { planId });
-      
-      // Check if planId is a UUID or a plan name
-      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(planId);
-      
-      let planError;
-      
-      if (isUUID) {
-        const result = await supabaseService
-          .from('special_vehicle_plans')
-          .select('*')
-          .eq('id', planId)
-          .maybeSingle();
-        planData = result.data;
-        planError = result.error;
-      } else {
-        // If not UUID, treat as plan name (case insensitive)
-        const result = await supabaseService
-          .from('special_vehicle_plans')
-          .select('*')
-          .ilike('name', planId)
-          .maybeSingle();
-        planData = result.data;
-        planError = result.error;
+    logStep("Fetching plan data", { planId });
+    
+    // Check if planId is a UUID or a plan name
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(planId);
+    
+    if (isUUID) {
+      const result = await supabaseService
+        .from('special_vehicle_plans')
+        .select('*')
+        .eq('id', planId)
+        .maybeSingle();
+      planData = result.data;
+      if (result.error) {
+        logStep("Plan fetch error (non-fatal)", { planId, error: result.error });
       }
-      
-      if (planError) {
-        logStep("Plan fetch error", { planId, error: planError });
-        throw new Error(`Database error fetching plan: ${planError.message}`);
-      }
-      
-      if (!planData) {
-        throw new Error(`Plan not found: ${planId}`);
-      }
-
-      planType = planData.name.toLowerCase();
     } else {
-      logStep("Skipping plan lookup - using provided finalAmount", { planId, finalAmount });
+      // If not UUID, treat as plan name (case insensitive)
+      const result = await supabaseService
+        .from('special_vehicle_plans')
+        .select('*')
+        .ilike('name', planId)
+        .maybeSingle();
+      planData = result.data;
+      if (result.error) {
+        logStep("Plan fetch error (non-fatal)", { planId, error: result.error });
+      }
     }
-    logStep("Using plan type", { planId, planType });
+    
+    // Set plan type and name from fetched data or use fallbacks
+    if (planData) {
+      planType = planData.name.toLowerCase();
+      planName = planData.name;
+    } else if (!finalAmount) {
+      // Only throw error if we don't have a finalAmount (no fallback pricing)
+      throw new Error(`Plan not found: ${planId}`);
+    } else {
+      // We have finalAmount but no plan data - use planId as display name if it looks like a plan name
+      planName = isUUID ? 'Warranty Plan' : planId;
+      logStep("Using fallback plan name", { planId, planName, hasFinalAmount: !!finalAmount });
+    }
+    
+    logStep("Using plan type", { planId, planType, planName });
 
     // Get authenticated user
     let user = null;
@@ -312,7 +313,7 @@ serve(async (req) => {
         selectedPlan: {
           id: planType,
           paymentType: paymentType,
-          name: planData.name,
+          name: planName,
           pricingData: {
             totalPrice: finalAmount,
             monthlyPrice: paymentType === 'monthly' ? finalAmount : 0,
@@ -337,7 +338,7 @@ serve(async (req) => {
         original_amount: totalAmount.toString(),
         final_amount: totalAmount.toString(),
         discount_code: discountCode || '',
-        claim_limit: claimLimit?.toString() || getMaxClaimAmount(planData.name, paymentType),
+        claim_limit: claimLimit?.toString() || getMaxClaimAmount(planName, paymentType),
         seasonal_bonus_months: seasonalBonusMonths.toString(),
         // Add-ons data - using correct field names that match handle-successful-payment
         addon_tyre_cover: protectionAddOns?.tyre ? 'true' : 'false',
