@@ -39,6 +39,7 @@ interface LeadsTableProps {
   onUpdateNotes: (leadId: string, notes: string) => void;
   onMarkContacted: (leadId: string) => void;
   onLogActivity: (leadId: string, type: string, description: string) => void;
+  onSendQuote?: (lead: Lead) => void;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -219,7 +220,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
   onRemoveTag,
   onUpdateNotes,
   onMarkContacted,
-  onLogActivity
+  onLogActivity,
+  onSendQuote
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
@@ -465,6 +467,26 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                         <CopyButton value={lead.email} type="email" />
                         
                         <RemindMePopover leadId={lead.id} compact />
+                        
+                        {/* Send Quote Button */}
+                        {onSendQuote && !lead.is_paid && (
+                          <Tooltip delayDuration={100}>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="icon"
+                                className="h-7 w-7 hover:scale-110 transition-transform text-primary hover:bg-primary/10"
+                                onClick={() => onSendQuote(lead)}
+                                aria-label="Send quote"
+                              >
+                                <Send className="h-3.5 w-3.5" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="text-xs">
+                              Send Quote
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                       </div>
                     </TooltipProvider>
                   </TableCell>

@@ -54,6 +54,21 @@ import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell'
 import { useAdminNotifications } from '@/hooks/useAdminNotifications';
 import { useUserPresence } from '@/hooks/useUserPresence';
 
+// Lead data type for passing to GetQuoteTab
+interface LeadForQuote {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
+  phone: string | null;
+  vehicle_reg: string | null;
+  vehicle_make: string | null;
+  vehicle_model: string | null;
+  vehicle_year: string | null;
+  mileage: string | null;
+  plan_interest: string | null;
+}
+
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('customers');
   const [isCheckingRole, setIsCheckingRole] = useState(true);
@@ -62,6 +77,7 @@ const AdminDashboard = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userPermissions, setUserPermissions] = useState<Record<string, boolean> | null>(null);
   const [hasSetInitialTab, setHasSetInitialTab] = useState(false);
+  const [selectedLeadForQuote, setSelectedLeadForQuote] = useState<LeadForQuote | null>(null);
   const navigate = useNavigate();
   const { session, loading: authLoading } = useAuth();
   
@@ -75,12 +91,18 @@ const AdminDashboard = () => {
   const [tabHistory, setTabHistory] = useState<string[]>(['customers']);
 
   // Handle tab changes and update history
-  const handleTabChange = useCallback((newTab: string) => {
+  const handleTabChange = useCallback((newTab: string, leadData?: LeadForQuote) => {
     setTabHistory(prev => {
       // Don't add duplicate consecutive tabs
       if (prev[prev.length - 1] === newTab) return prev;
       return [...prev, newTab];
     });
+    // Clear lead data when navigating away from get-quote, or set new lead data
+    if (newTab === 'get-quote' && leadData) {
+      setSelectedLeadForQuote(leadData);
+    } else if (newTab !== 'get-quote') {
+      setSelectedLeadForQuote(null);
+    }
     setActiveTab(newTab);
   }, []);
 
@@ -256,7 +278,7 @@ const AdminDashboard = () => {
       case 'landing-pages':
         return <LandingPageBuilder />;
       case 'get-quote':
-        return <GetQuoteTab />;
+        return <GetQuoteTab prePopulatedLead={selectedLeadForQuote} />;
       case 'new-leads':
         return (
           <NewLeadsTab 
@@ -264,7 +286,7 @@ const AdminDashboard = () => {
             unreadCount={unreadCount}
             onMarkAsRead={markAsRead}
             onMarkAllAsRead={markAllAsRead}
-            onNavigateToTab={setActiveTab}
+            onNavigateToTab={handleTabChange}
             userRole={userRole}
           />
         );

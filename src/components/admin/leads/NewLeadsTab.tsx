@@ -15,12 +15,27 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { usePermissions } from '@/hooks/usePermissions';
 import { useDataExport } from '@/hooks/useDataExport';
 
+// Lead data for quote navigation
+interface LeadForQuote {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
+  phone: string | null;
+  vehicle_reg: string | null;
+  vehicle_make: string | null;
+  vehicle_model: string | null;
+  vehicle_year: string | null;
+  mileage: string | null;
+  plan_interest: string | null;
+}
+
 interface NewLeadsTabProps {
   notifications?: AdminNotification[];
   unreadCount?: number;
   onMarkAsRead?: (id: string) => void;
   onMarkAllAsRead?: () => void;
-  onNavigateToTab?: (tab: string) => void;
+  onNavigateToTab?: (tab: string, leadData?: LeadForQuote) => void;
   userRole?: string | null;
 }
 
@@ -326,6 +341,23 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 onUpdateNotes={updateLeadNotes}
                 onMarkContacted={markContactedAt}
                 onLogActivity={logActivity}
+                onSendQuote={(lead) => {
+                  if (onNavigateToTab) {
+                    onNavigateToTab('get-quote', {
+                      id: lead.id,
+                      first_name: lead.first_name,
+                      last_name: lead.last_name,
+                      email: lead.email,
+                      phone: lead.phone,
+                      vehicle_reg: lead.vehicle_reg,
+                      vehicle_make: lead.vehicle_make,
+                      vehicle_model: lead.vehicle_model,
+                      vehicle_year: lead.vehicle_year,
+                      mileage: lead.mileage,
+                      plan_interest: lead.plan_interest,
+                    });
+                  }
+                }}
               />
             </CardContent>
           </Card>
