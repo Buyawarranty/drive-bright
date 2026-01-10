@@ -688,7 +688,7 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
   const generateWhatsAppMessage = () => {
     const { content } = generateEmailContent();
     const encodedMessage = encodeURIComponent(content);
-    const whatsappUrl = `https://api.whatsapp.com/send?phone=&text=${encodedMessage}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=447467703287&text=${encodedMessage}`;
     window.open(whatsappUrl, '_blank');
   };
 
@@ -1276,7 +1276,7 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
                     Email Quote
                   </Button>
                   <Button 
-                    onClick={() => window.open('https://wa.me/447000000000', '_blank')}
+                    onClick={() => window.open('https://wa.me/447467703287', '_blank')}
                     variant="outline"
                     className="border-green-500 text-green-600 hover:bg-green-50"
                   >
