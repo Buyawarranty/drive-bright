@@ -171,6 +171,11 @@ export const GetQuoteTab = () => {
   const currentPrice = calculatePrice();
   const basePrice = calculateBasePrice();
 
+  // Reset price override when any selection changes
+  useEffect(() => {
+    setIsPriceOverridden(false);
+  }, [paymentType, excessAmount, claimLimit, labourRate, boostAddon]);
+
   // Auto-populate custom price fields when selections change (if not manually overridden)
   useEffect(() => {
     if (!isPriceOverridden) {
