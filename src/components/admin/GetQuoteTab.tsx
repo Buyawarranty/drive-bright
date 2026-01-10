@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck } from 'lucide-react';
+import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
 import MileageSlider from '@/components/MileageSlider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -55,7 +56,11 @@ const labourRateOptions = [
   { rate: 200, label: '£200/hr', description: 'Expert Garages' }
 ];
 
-export const GetQuoteTab = () => {
+interface GetQuoteTabProps {
+  prePopulatedLead?: LeadData | null;
+}
+
+export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) => {
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [regNumber, setRegNumber] = useState('');
@@ -65,6 +70,8 @@ export const GetQuoteTab = () => {
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
   const [excessAmount, setExcessAmount] = useState(100);
   const [claimLimit, setClaimLimit] = useState(1250);
@@ -83,6 +90,37 @@ export const GetQuoteTab = () => {
   const [selectedHistoryQuote, setSelectedHistoryQuote] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('new');
   const [adminEmail, setAdminEmail] = useState<string | null>(null);
+
+  // Handle lead selection (from search or pre-populated)
+  const handleLeadSelect = (lead: LeadData) => {
+    setSelectedLeadId(lead.id);
+    setCustomerEmail(lead.email);
+    setCustomerName(`${lead.first_name || ''} ${lead.last_name || ''}`.trim());
+    setCustomerPhone(lead.phone || '');
+    
+    if (lead.vehicle_reg) {
+      setRegNumber(lead.vehicle_reg.toUpperCase());
+    }
+    if (lead.mileage) {
+      const numMileage = parseInt(lead.mileage.replace(/,/g, ''), 10);
+      if (!isNaN(numMileage)) {
+        setMileage(numMileage.toLocaleString());
+        setSliderMileage(numMileage);
+      }
+    }
+    
+    toast({
+      title: "Lead imported",
+      description: `Details for ${lead.first_name || lead.email} have been loaded.`,
+    });
+  };
+
+  // Handle pre-populated lead on mount
+  useEffect(() => {
+    if (prePopulatedLead) {
+      handleLeadSelect(prePopulatedLead);
+    }
+  }, [prePopulatedLead]);
 
   // Get admin email on mount
   useEffect(() => {
@@ -761,8 +799,21 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
           {step === 1 && (
             <Card>
               <CardHeader>
-                <CardTitle>Step 1: Vehicle Details</CardTitle>
-                <CardDescription>Enter the customer's vehicle registration and mileage</CardDescription>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <CardTitle>Step 1: Vehicle Details</CardTitle>
+                    <CardDescription>Enter the customer's vehicle registration and mileage</CardDescription>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <LeadSearchPopover onSelectLead={handleLeadSelect} />
+                    {selectedLeadId && (
+                      <Badge variant="secondary" className="gap-1">
+                        <UserCheck className="h-3 w-3" />
+                        Lead imported
+                      </Badge>
+                    )}
+                  </div>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
