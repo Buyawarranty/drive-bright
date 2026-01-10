@@ -268,14 +268,63 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
                   <p className="text-sm font-medium mt-0.5">{format(new Date(lead.created_at), 'dd MMM yyyy, HH:mm')}</p>
                 </div>
               </div>
-              {lead.plan_name && (
+              {/* Plan Selection Summary - Show what customer selected */}
+              {(lead.plan_name || lead.step_abandoned) && (
                 <div className="mt-3 pt-3 border-t border-border/50">
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-primary text-primary-foreground">{lead.plan_name}</Badge>
-                    {lead.payment_amount && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      Customer Selection (Step {lead.step_abandoned || '?'})
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {lead.plan_name && (
+                      <Badge className="bg-primary text-primary-foreground">{lead.plan_name}</Badge>
+                    )}
+                    {lead.payment_type && (
+                      <Badge variant="secondary">{lead.payment_type === '12months' ? '12 Month' : lead.payment_type === '24months' ? '24 Month' : lead.payment_type}</Badge>
+                    )}
+                    {lead.cart_metadata?.claim_limit && (
+                      <Badge variant="outline">Claim: £{lead.cart_metadata.claim_limit.toLocaleString()}</Badge>
+                    )}
+                    {lead.cart_metadata?.voluntary_excess !== undefined && (
+                      <Badge variant="outline">Excess: £{lead.cart_metadata.voluntary_excess}</Badge>
+                    )}
+                    {lead.cart_metadata?.labour_rate && (
+                      <Badge variant="outline">Labour: £{lead.cart_metadata.labour_rate}/hr</Badge>
+                    )}
+                    {lead.cart_metadata?.total_price && (
+                      <span className="text-sm font-semibold text-green-600">Total: £{lead.cart_metadata.total_price.toFixed(2)}</span>
+                    )}
+                    {lead.payment_amount && !lead.cart_metadata?.total_price && (
                       <span className="text-sm font-semibold">£{lead.payment_amount.toFixed(2)}</span>
                     )}
                   </div>
+                  {/* Protection Add-ons */}
+                  {lead.cart_metadata?.protection_addons && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {lead.cart_metadata.protection_addons.breakdown && (
+                        <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">✓ Breakdown</Badge>
+                      )}
+                      {lead.cart_metadata.protection_addons.rental && (
+                        <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">✓ Rental</Badge>
+                      )}
+                      {lead.cart_metadata.protection_addons.european && (
+                        <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">✓ European</Badge>
+                      )}
+                      {lead.cart_metadata.protection_addons.tyre && (
+                        <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">✓ Tyre</Badge>
+                      )}
+                      {lead.cart_metadata.protection_addons.wearAndTear && (
+                        <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">✓ Wear & Tear</Badge>
+                      )}
+                      {lead.cart_metadata.protection_addons.motFee && (
+                        <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">✓ MOT Fee</Badge>
+                      )}
+                      {lead.cart_metadata.protection_addons.transfer && (
+                        <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">✓ Transfer</Badge>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

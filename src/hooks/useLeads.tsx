@@ -52,6 +52,22 @@ export interface Lead {
   step_abandoned: number | null;
   contact_status: string | null;
   is_from_abandoned_cart: boolean;
+  // Cart metadata for plan selections
+  cart_metadata: {
+    claim_limit?: number;
+    voluntary_excess?: number;
+    labour_rate?: number;
+    total_price?: number;
+    protection_addons?: {
+      breakdown?: boolean;
+      rental?: boolean;
+      european?: boolean;
+      tyre?: boolean;
+      wearAndTear?: boolean;
+      motFee?: boolean;
+      transfer?: boolean;
+    };
+  } | null;
   // Application count - how many times they've applied (hot lead indicator)
   application_count: number;
   // Joined data
@@ -194,6 +210,7 @@ export const useLeads = () => {
           payment_method: null,
           payment_date: null,
           step_two_completed_at: null,
+          cart_metadata: cart.cart_metadata || null,
           assigned_user: null,
           tags: []
         }));
@@ -208,7 +225,8 @@ export const useLeads = () => {
         payment_type: null,
         step_abandoned: null,
         contact_status: null,
-        is_from_abandoned_cart: false
+        is_from_abandoned_cart: false,
+        cart_metadata: null
       }));
 
       // Combine and sort by created_at
