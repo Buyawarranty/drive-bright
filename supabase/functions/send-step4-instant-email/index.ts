@@ -167,13 +167,13 @@ const handler = async (req: Request): Promise<Response> => {
       <!-- Promo Code Section -->
       <div style="background-color: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center;">
         <p style="color: #856404; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">
-          Complete your purchase now and save 10%!
+          Complete your purchase now and save £50!
         </p>
         <p style="color: #856404; font-size: 14px; margin: 0 0 12px 0;">
-          Use this code at checkout:
+          Use this code at checkout – <strong>valid for 24 hours only</strong>:
         </p>
         <div style="background-color: #ffc107; color: #000; font-size: 24px; font-weight: bold; padding: 12px 24px; border-radius: 4px; display: inline-block; letter-spacing: 2px;">
-          SAVE10PERCENT
+          SAVE50POUNDS
         </div>
       </div>
     ` : '';
