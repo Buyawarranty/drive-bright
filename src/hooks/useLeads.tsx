@@ -621,14 +621,22 @@ export const useLeads = () => {
     if (leadIds.length === 0) return;
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('sales_leads')
         .delete()
-        .in('id', leadIds);
+        .in('id', leadIds)
+        .select('id');
 
       if (error) throw error;
 
-      toast.success(`Deleted ${leadIds.length} lead${leadIds.length > 1 ? 's' : ''}`);
+      // Check if any rows were actually deleted (RLS may block silently)
+      const deletedCount = data?.length || 0;
+      if (deletedCount === 0) {
+        toast.error('Unable to delete leads. You may not have permission to delete these leads.');
+        return;
+      }
+
+      toast.success(`Deleted ${deletedCount} lead${deletedCount > 1 ? 's' : ''}`);
       fetchLeads();
     } catch (error) {
       console.error('Error deleting leads:', error);
