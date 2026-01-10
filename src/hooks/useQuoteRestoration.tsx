@@ -61,7 +61,7 @@ export const useQuoteRestoration = () => {
         const planSettings = {
           paymentType: planDataJson.paymentType || '12months',
           claimLimit: planDataJson.claimLimit || 2500,
-          labourRate: planDataJson.labourRate || 50,
+          labourRate: planDataJson.labourRate || 70,
           voluntaryExcess: planDataJson.voluntaryExcess || 0,
           boostAddon: planDataJson.boostAddon || false,
           addOns: planDataJson.addOns || []
