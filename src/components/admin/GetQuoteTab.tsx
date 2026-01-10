@@ -368,65 +368,33 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     setStep(3);
   };
 
-  const generateEmailContent = (): { subject: string; content: string } => {
-    const firstName = customerName.split(' ')[0];
-    const termOption = termOptions.find(t => t.id === paymentType);
-    const months = termOption?.months || 12;
-    const bonus = termOption?.bonus || 3;
-    const totalMonths = months + bonus;
-    const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
-
-    const subject = `Your Warranty Quote for ${vehicleData?.make} ${vehicleData?.model} - ${vehicleData?.regNumber}`;
-
-    const content = `Hi ${firstName},
-
-Thank you for considering BuyAWarranty.co.uk for your vehicle protection. Please find your quote details below:
-
-Quote Summary:
-
-Vehicle: ${vehicleData?.make || ''} ${vehicleData?.model || ''}
-Registration: ${vehicleData?.regNumber}
-Mileage: ${parseInt(vehicleData?.mileage || '0').toLocaleString()} miles
-Plan: Platinum
-Payment: Monthly (interest-free)
-Price: £${currentPrice.monthlyPrice}/month
-Total: £${currentPrice.totalPrice}
-Excess: £${excessAmount}
-Claim Limit: £${displayClaimLimit.toLocaleString()}${boostAddon ? ' (includes +£1,000 boost)' : ''}
-Labour Rate: £${labourRate}/hr
-Cover Period: ${months} months + ${bonus} extra months free (total ${totalMonths} months)
-Coverage: All mechanical and electrical parts, including labour.
-Unlimited Claims up to the value of your vehicle
-
-Breakdowns Happen. Don't Risk It!
-
-For full details on what's covered, please visit:
-https://buyawarranty.co.uk/what-is-covered/
-
-If you have any questions or would like to proceed, please call us on 0330 229 5040 or click the link sent separately from our payment partner, Bumper.
-
-Your peace of mind is our priority.
-
-If It Breaks, We'll Fix It!
-
-Thank you for choosing BuyAWarranty.co.uk.
-
-The BuyAWarranty.co.uk Team
-Customer Service & Sales: 0330 229 5040
-Claims Line: 0330 229 5045
-www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
-
-    return { subject, content };
+  const generateEmailSubject = (): string => {
+    return `Your Warranty Quote for ${vehicleData?.make} ${vehicleData?.model} - ${vehicleData?.regNumber}`;
   };
 
   const handlePreviewEmail = () => {
-    const { subject, content } = generateEmailContent();
-    setEmailSubject(subject);
-    setEmailContent(content);
+    if (!quoteLink) {
+      toast({
+        title: "Quote Link Required",
+        description: "Please wait for the quote link to be generated first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setEmailSubject(generateEmailSubject());
     setShowEmailDialog(true);
   };
 
   const handleSendEmail = async () => {
+    if (!quoteLink) {
+      toast({
+        title: "Quote Link Required",
+        description: "Please wait for the quote link to be generated first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSendingEmail(true);
     try {
       console.log('🚀 Starting quote send process...');
@@ -435,6 +403,9 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
       // Generate unique quote ID for restoration
       const quoteId = `ADMIN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
+      const termOption = termOptions.find(t => t.id === paymentType);
+      const coverMonths = termOption?.months || 12;
+      const bonusMonths = termOption?.bonus || 3;
 
       // Build recipients - customer + admin copy
       const recipients = [customerEmail];
@@ -443,23 +414,28 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
       }
 
       console.log('📧 Sending email to:', recipients);
+      console.log('📎 Quote link:', quoteLink);
       
-      // Send the email (to both customer and admin)
+      // Send the email with HTML template (to both customer and admin)
       const { error: emailError } = await supabase.functions.invoke('send-admin-quote', {
         body: {
           to: customerEmail,
           cc: adminEmail !== customerEmail ? adminEmail : undefined,
           subject: emailSubject,
-          content: emailContent,
+          quoteLink: quoteLink,
+          customerName,
           vehicleData,
           quoteDetails: {
             plan: 'Platinum',
             paymentType,
-            price: currentPrice.totalPrice,
+            totalPrice: currentPrice.totalPrice,
+            monthlyPrice: currentPrice.monthlyPrice,
             excessAmount,
             claimLimit: displayClaimLimit,
             labourRate,
-            boostAddon
+            boostAddon,
+            coverMonths,
+            bonusMonths
           }
         }
       });
@@ -686,7 +662,25 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
   };
 
   const generateWhatsAppMessage = () => {
-    const { content } = generateEmailContent();
+    const termOption = termOptions.find(t => t.id === paymentType);
+    const months = termOption?.months || 12;
+    const bonus = termOption?.bonus || 3;
+    const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
+    
+    const content = `Hi ${customerName.split(' ')[0]},
+
+Here's your warranty quote for ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber}):
+
+Plan: Platinum
+Price: £${currentPrice.monthlyPrice}/month
+Cover: ${months} months + ${bonus} FREE
+Claim Limit: £${displayClaimLimit.toLocaleString()}
+
+Complete your purchase here:
+${quoteLink || 'https://buyawarranty.co.uk'}
+
+Questions? Call 0330 229 5040`;
+
     const encodedMessage = encodeURIComponent(content);
     const whatsappUrl = `https://api.whatsapp.com/send?phone=447467703287&text=${encodedMessage}`;
     window.open(whatsappUrl, '_blank');
@@ -1316,14 +1310,16 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
                   />
                 </div>
                 
-                <div>
-                  <Label>Email Content</Label>
-                  <Textarea
-                    value={emailContent}
-                    onChange={(e) => setEmailContent(e.target.value)}
-                    rows={20}
-                    className="mt-2 font-mono text-sm"
-                  />
+                <div className="p-4 bg-muted rounded-lg space-y-3">
+                  <p className="text-sm font-medium">Email will include:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>✓ Professional HTML quote template</li>
+                    <li>✓ Vehicle & coverage details summary</li>
+                    <li>✓ "What's Included" benefits list</li>
+                    <li>✓ Payment options explanation</li>
+                    <li>✓ Direct "Activate My Warranty Now" button</li>
+                    <li>✓ Link: {quoteLink ? <span className="text-primary break-all">{quoteLink}</span> : 'Generating...'}</li>
+                  </ul>
                 </div>
               </div>
 
