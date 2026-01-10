@@ -94,16 +94,16 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
     body = "Your warranty details are saved and ready. Complete your purchase now to get instant cover.";
     ctaText = 'Complete My Purchase';
     showPromo = true;
-    promoCode = 'SAVE10PERCENT';
-    promoText = 'Complete your purchase now and save 10% with code SAVE10PERCENT.';
+    promoCode = 'SAVE50POUNDS';
+    promoText = 'Complete your purchase now and save £50 with code SAVE50POUNDS. Valid for 24 hours only!';
   } else if (request.triggerType === 'pricing_page_view_24h') {
     showPromo = true;
-    promoCode = 'SAVE10PERCENT';
-    promoText = 'Special offer: Use code SAVE10PERCENT for 10% off (valid for 24 hours).';
+    promoCode = 'SAVE50POUNDS';
+    promoText = 'Special offer: Use code SAVE50POUNDS for £50 off – valid for 24 hours only!';
   } else if (request.triggerType === 'pricing_page_view_72h') {
     showPromo = true;
-    promoCode = 'SAVE10PERCENT';
-    promoText = 'Limited time: Use code SAVE10PERCENT for 10% off your purchase.';
+    promoCode = 'SAVE50POUNDS';
+    promoText = 'Limited time: Use code SAVE50POUNDS for £50 off your purchase. Valid for 24 hours!';
     intro = `This is a reminder about your warranty quote for ${vehicleReg}.`;
     body = "Your quote information is still available to review.";
   }
@@ -247,8 +247,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (emailRequest.vehicleReg) {
       // Determine target step based on trigger type
+      // Step 2 emails go to step 2, Step 3 emails go to step 3, checkout abandoned goes to step 4
       let targetStep = 2;
-      if (emailRequest.triggerType === 'plan_selected') {
+      if (emailRequest.triggerType === 'plan_selected' || emailRequest.triggerType === 'pricing_page_view_24h' || emailRequest.triggerType === 'pricing_page_view_72h') {
         targetStep = 3;
       } else if (emailRequest.triggerType === 'checkout_abandoned') {
         targetStep = 4;

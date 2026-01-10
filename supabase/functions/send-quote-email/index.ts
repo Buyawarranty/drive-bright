@@ -132,17 +132,17 @@ const generateQuoteEmail = (data: QuoteEmailRequest, baseUrl: string): string =>
                     <tr>
                       <td align="center" style="padding: 20px 16px;">
                         <p style="font-size: 15px; color: #92400E; font-weight: 600; margin: 0 0 12px 0;">
-                          Complete your purchase now and save 10% with code
+                          Complete your purchase now and save £50 with code
                         </p>
                         <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="background-color: #F59E0B; border-radius: 6px;">
                           <tr>
                             <td align="center" style="padding: 12px 24px;">
-                              <span style="font-size: 20px; font-weight: 800; color: #000000; letter-spacing: 2px; font-family: monospace;">SAVE10PERCENT</span>
+                              <span style="font-size: 20px; font-weight: 800; color: #000000; letter-spacing: 2px; font-family: monospace;">SAVE50POUNDS</span>
                             </td>
                           </tr>
                         </table>
                         <p style="font-size: 12px; color: #92400E; margin: 10px 0 0 0;">
-                          Apply at checkout &bull; Easy to use &bull; Limited time offer
+                          Apply at checkout &bull; <strong>Valid for 24 hours only</strong>
                         </p>
                       </td>
                     </tr>
