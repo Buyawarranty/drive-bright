@@ -101,16 +101,11 @@ export const GetQuoteTab = () => {
     loadSentQuotesHistory();
   }, []);
 
-  // Calculate price using pricingMatrix.ts with add-ons
-  const calculatePrice = () => {
-    if (customFullPrice && parseFloat(customFullPrice) > 0) {
-      return { totalPrice: parseFloat(customFullPrice), monthlyPrice: Math.floor(parseFloat(customFullPrice) / 12) };
-    }
-    if (customMonthlyPrice && parseFloat(customMonthlyPrice) > 0) {
-      const total = parseFloat(customMonthlyPrice) * 12;
-      return { totalPrice: total, monthlyPrice: parseFloat(customMonthlyPrice) };
-    }
-    
+  // Track if custom prices have been manually overridden
+  const [isPriceOverridden, setIsPriceOverridden] = useState(false);
+
+  // Calculate base price (before any custom overrides)
+  const calculateBasePrice = () => {
     // Get duration months for add-on calculation
     const durationMonths = DURATION_MONTHS[paymentType] || 12;
     
@@ -143,7 +138,77 @@ export const GetQuoteTab = () => {
     };
   };
 
+  // Calculate price using pricingMatrix.ts with add-ons
+  const calculatePrice = () => {
+    // If custom prices are set and user has manually overridden, use them
+    if (isPriceOverridden) {
+      if (customFullPrice && parseFloat(customFullPrice) > 0) {
+        const fullPrice = parseFloat(customFullPrice);
+        return { 
+          totalPrice: fullPrice, 
+          monthlyPrice: Math.floor(fullPrice / 12),
+          payInFullPrice: Math.floor(fullPrice * 0.90),
+          wasPrice: 0,
+          savings: 0
+        };
+      }
+      if (customMonthlyPrice && parseFloat(customMonthlyPrice) > 0) {
+        const monthly = parseFloat(customMonthlyPrice);
+        const total = monthly * 12;
+        return { 
+          totalPrice: total, 
+          monthlyPrice: monthly,
+          payInFullPrice: Math.floor(total * 0.90),
+          wasPrice: 0,
+          savings: 0
+        };
+      }
+    }
+    
+    return calculateBasePrice();
+  };
+
   const currentPrice = calculatePrice();
+  const basePrice = calculateBasePrice();
+
+  // Auto-populate custom price fields when selections change (if not manually overridden)
+  useEffect(() => {
+    if (!isPriceOverridden) {
+      setCustomMonthlyPrice(basePrice.monthlyPrice.toString());
+      setCustomFullPrice(basePrice.totalPrice.toString());
+    }
+  }, [paymentType, excessAmount, claimLimit, labourRate, boostAddon, isPriceOverridden]);
+
+  // Handle custom price field changes
+  const handleCustomMonthlyChange = (value: string) => {
+    setCustomMonthlyPrice(value);
+    if (value && parseFloat(value) > 0) {
+      setIsPriceOverridden(true);
+      // Sync full price when monthly is changed
+      const fullPrice = parseFloat(value) * 12;
+      setCustomFullPrice(fullPrice.toString());
+    } else if (!value) {
+      setIsPriceOverridden(false);
+    }
+  };
+
+  const handleCustomFullChange = (value: string) => {
+    setCustomFullPrice(value);
+    if (value && parseFloat(value) > 0) {
+      setIsPriceOverridden(true);
+      // Sync monthly price when full is changed
+      const monthly = Math.floor(parseFloat(value) / 12);
+      setCustomMonthlyPrice(monthly.toString());
+    } else if (!value) {
+      setIsPriceOverridden(false);
+    }
+  };
+
+  const resetToCalculatedPrice = () => {
+    setIsPriceOverridden(false);
+    setCustomMonthlyPrice(basePrice.monthlyPrice.toString());
+    setCustomFullPrice(basePrice.totalPrice.toString());
+  };
 
   const formatRegNumber = (value: string) => {
     return value.replace(/\s/g, '').toUpperCase();
@@ -495,6 +560,7 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
       setAdditionalNotes('');
       setCustomMonthlyPrice('');
       setCustomFullPrice('');
+      setIsPriceOverridden(false);
       setBumperLink(null);
       setStripeLink(null);
       setLinksGenerated(false);
@@ -1106,35 +1172,63 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
 
                 {/* Custom Pricing Override */}
                 <div className="border-t pt-4 space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-base font-semibold">Custom Pricing (Optional)</Label>
-                    <p className="text-sm text-muted-foreground">Override calculated price with custom values</p>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label className="text-base font-semibold">Custom Pricing</Label>
+                      <p className="text-sm text-muted-foreground">
+                        {isPriceOverridden 
+                          ? "Using custom price — edit fields or reset to calculated" 
+                          : "Auto-calculated based on selections — edit to override"}
+                      </p>
+                    </div>
+                    {isPriceOverridden && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={resetToCalculatedPrice}
+                        className="text-xs"
+                      >
+                        Reset to Calculated
+                      </Button>
+                    )}
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="custom-monthly">Custom Monthly (£)</Label>
+                      <Label htmlFor="custom-monthly">Monthly Price (£)</Label>
                       <Input
                         id="custom-monthly"
                         type="number"
-                        step="0.01"
+                        step="1"
                         min="0"
                         value={customMonthlyPrice}
-                        onChange={(e) => setCustomMonthlyPrice(e.target.value)}
-                        placeholder="e.g. 45.99"
+                        onChange={(e) => handleCustomMonthlyChange(e.target.value)}
+                        className={cn(
+                          "font-semibold",
+                          isPriceOverridden ? "border-amber-400 bg-amber-50" : "border-green-400 bg-green-50"
+                        )}
                       />
+                      <p className="text-xs text-muted-foreground">
+                        {isPriceOverridden ? "Custom override" : `Calculated: £${basePrice.monthlyPrice}`}
+                      </p>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="custom-full">Custom Full Price (£)</Label>
+                      <Label htmlFor="custom-full">Total Price (£)</Label>
                       <Input
                         id="custom-full"
                         type="number"
-                        step="0.01"
+                        step="1"
                         min="0"
                         value={customFullPrice}
-                        onChange={(e) => setCustomFullPrice(e.target.value)}
-                        placeholder="e.g. 499.99"
+                        onChange={(e) => handleCustomFullChange(e.target.value)}
+                        className={cn(
+                          "font-semibold",
+                          isPriceOverridden ? "border-amber-400 bg-amber-50" : "border-green-400 bg-green-50"
+                        )}
                       />
+                      <p className="text-xs text-muted-foreground">
+                        {isPriceOverridden ? "Custom override" : `Calculated: £${basePrice.totalPrice}`}
+                      </p>
                     </div>
                   </div>
                 </div>
