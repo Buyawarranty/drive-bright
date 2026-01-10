@@ -2,7 +2,7 @@ import { ClaimsTab } from '@/components/admin/ClaimsTab';
 import ContactSubmissionsTab from '@/components/admin/ContactSubmissionsTab';
 import { AbandonedCartsTab } from '@/components/admin/AbandonedCartsTab';
 import { GetQuoteTab } from '@/components/admin/GetQuoteTab';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -70,6 +70,48 @@ const AdminDashboard = () => {
   
   // Track user presence with current tab
   useUserPresence({ currentTab: activeTab });
+
+  // Track tab history for back navigation
+  const [tabHistory, setTabHistory] = useState<string[]>(['customers']);
+
+  // Handle tab changes and update history
+  const handleTabChange = useCallback((newTab: string) => {
+    setTabHistory(prev => {
+      // Don't add duplicate consecutive tabs
+      if (prev[prev.length - 1] === newTab) return prev;
+      return [...prev, newTab];
+    });
+    setActiveTab(newTab);
+  }, []);
+
+  // Back navigation guard - prevent leaving admin dashboard
+  useEffect(() => {
+    // Push initial history state
+    window.history.pushState({ adminGuard: true, tab: activeTab }, '', window.location.href);
+
+    const handlePopState = (event: PopStateEvent) => {
+      // Always prevent leaving the admin dashboard
+      event.preventDefault();
+      
+      // If we have tab history, go back to previous tab
+      if (tabHistory.length > 1) {
+        const newHistory = [...tabHistory];
+        newHistory.pop(); // Remove current tab
+        const previousTab = newHistory[newHistory.length - 1];
+        setTabHistory(newHistory);
+        setActiveTab(previousTab);
+      }
+      
+      // Push state again to maintain the guard
+      window.history.pushState({ adminGuard: true, tab: activeTab }, '', window.location.href);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [activeTab, tabHistory]);
 
   useEffect(() => {
     // Only run check when auth is done loading
@@ -493,7 +535,7 @@ const AdminDashboard = () => {
       </header>
       
       <div className="flex-1 flex flex-col lg:flex-row">
-        <AdminSidebar activeTab={activeTab} onTabChange={setActiveTab} userRole={userRole} userPermissions={userPermissions} />
+        <AdminSidebar activeTab={activeTab} onTabChange={handleTabChange} userRole={userRole} userPermissions={userPermissions} />
         
         <div className="flex-1 lg:ml-64 overflow-hidden">
           <main className="p-4 lg:p-6 overflow-y-auto h-[calc(100vh-104px)]">
