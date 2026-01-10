@@ -2,20 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { PostcodeAutocomplete } from '@/components/ui/uk-postcode-autocomplete';
+import { StartDatePicker } from '@/components/checkout/StartDatePicker';
+import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { 
   Shield, Car, Clock, CheckCircle, CreditCard, Calendar, 
   Phone, Mail, MessageCircle, AlertCircle, Loader2, Lock,
-  Wrench, MapPin, Zap, FileText, Award, Heart
+  Wrench, MapPin, Zap, FileText, Award, Heart, User, Check
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { startOfDay, format, isToday } from 'date-fns';
+import bumperLogo from '@/assets/bumper-logo-transparent.png';
+import stripeLogo from '@/assets/stripe-logo.png';
 
 interface QuoteData {
   id: string;
   customerName: string;
   customerEmail: string;
+  customerPhone?: string;
   vehicle: {
     reg: string;
     make: string;
@@ -58,6 +68,23 @@ export default function LiveQuotePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState<'stripe' | 'bumper' | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'bumper' | 'stripe'>('bumper');
+
+  // Customer form state
+  const [customerData, setCustomerData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    addressLine1: '',
+    addressLine2: '',
+    city: '',
+    postcode: '',
+    mileage: ''
+  });
+  const [startDate, setStartDate] = useState<Date | undefined>(startOfDay(new Date()));
+  const [showValidation, setShowValidation] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
 
   const cancelled = searchParams.get('cancelled') === '1';
   const failed = searchParams.get('failed') === '1';
@@ -67,6 +94,21 @@ export default function LiveQuotePage() {
       fetchQuote();
     }
   }, [token]);
+
+  // Pre-fill form when quote loads
+  useEffect(() => {
+    if (quote) {
+      const nameParts = quote.customerName.split(' ');
+      setCustomerData(prev => ({
+        ...prev,
+        firstName: nameParts[0] || '',
+        lastName: nameParts.slice(1).join(' ') || '',
+        email: quote.customerEmail || '',
+        phone: quote.customerPhone || '',
+        mileage: quote.vehicle.mileage || ''
+      }));
+    }
+  }, [quote]);
 
   const fetchQuote = async () => {
     try {
@@ -87,12 +129,50 @@ export default function LiveQuotePage() {
     }
   };
 
+  const validateForm = () => {
+    const errors: {[key: string]: string} = {};
+    
+    if (!customerData.firstName.trim()) errors.firstName = 'First name is required';
+    if (!customerData.lastName.trim()) errors.lastName = 'Last name is required';
+    if (!customerData.email.trim()) errors.email = 'Email is required';
+    if (!customerData.phone.trim()) errors.phone = 'Phone is required';
+    if (!customerData.addressLine1.trim()) errors.addressLine1 = 'Address is required';
+    if (!customerData.city.trim()) errors.city = 'Town/City is required';
+    if (!customerData.postcode.trim()) errors.postcode = 'Postcode is required';
+    if (!customerData.mileage.trim()) errors.mileage = 'Mileage is required';
+    
+    // Mileage validation
+    const mileage = parseInt(customerData.mileage);
+    if (mileage > 150000) {
+      errors.mileage = 'Mileage cannot exceed 150,000 miles';
+    }
+    
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handlePayment = async (method: 'stripe' | 'bumper') => {
+    setShowValidation(true);
+    
+    if (!validateForm()) {
+      toast.error('Please fill in all required fields');
+      document.getElementById('customer-form')?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
     try {
       setProcessingPayment(method);
       
       const { data, error: paymentError } = await supabase.functions.invoke('quote-payment', {
-        body: { accessToken: token, paymentMethod: method }
+        body: { 
+          accessToken: token, 
+          paymentMethod: method,
+          customerData: {
+            ...customerData,
+            fullName: `${customerData.firstName} ${customerData.lastName}`.trim(),
+            startDate: startDate?.toISOString()
+          }
+        }
       });
 
       if (paymentError) throw paymentError;
@@ -204,27 +284,31 @@ export default function LiveQuotePage() {
   const totalMonths = quote.cover.durationMonths + quote.cover.bonusMonths;
   const displayClaimLimit = quote.cover.boostAddon ? quote.cover.claimLimit + 1000 : quote.cover.claimLimit;
   const firstName = quote.customerName.split(' ')[0];
+  const bumperMonthlyTotal = quote.pricing.monthlyPrice * 12;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
+    <div className="min-h-screen bg-[#e8f4fb]">
       {/* Header */}
       <header className="bg-white border-b sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Shield className="h-8 w-8 text-orange-600" />
             <span className="font-bold text-xl">BuyaWarranty</span>
           </div>
-          <Badge variant="secondary" className="text-xs">
-            <Lock className="h-3 w-3 mr-1" />
-            Secure
-          </Badge>
+          <div className="flex items-center gap-3">
+            <TrustpilotHeader className="h-6" />
+            <Badge variant="secondary" className="text-xs">
+              <Lock className="h-3 w-3 mr-1" />
+              Secure
+            </Badge>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-4xl mx-auto px-4 py-6">
         {/* Cancelled/Failed alerts */}
         {cancelled && (
-          <Card className="border-orange-200 bg-orange-50">
+          <Card className="border-orange-200 bg-orange-50 mb-4">
             <CardContent className="py-4 flex items-center gap-3">
               <AlertCircle className="h-5 w-5 text-orange-600 flex-shrink-0" />
               <p className="text-sm text-orange-800">Payment was cancelled. You can try again when you're ready.</p>
@@ -232,7 +316,7 @@ export default function LiveQuotePage() {
           </Card>
         )}
         {failed && (
-          <Card className="border-red-200 bg-red-50">
+          <Card className="border-red-200 bg-red-50 mb-4">
             <CardContent className="py-4 flex items-center gap-3">
               <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
               <p className="text-sm text-red-800">Payment failed. Please try again or choose a different payment method.</p>
@@ -240,252 +324,481 @@ export default function LiveQuotePage() {
           </Card>
         )}
 
-        {/* Title Section */}
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold text-gray-900">Your Vehicle Warranty Quote</h1>
-          <p className="text-gray-600">Prepared for {firstName}</p>
-        </div>
-
-        {/* Vehicle Card */}
-        <Card>
-          <CardContent className="py-4">
-            <div className="flex items-center gap-4">
-              <div className="bg-orange-100 rounded-full p-3">
-                <Car className="h-6 w-6 text-orange-600" />
-              </div>
-              <div>
-                <p className="font-semibold text-lg">{quote.vehicle.make} {quote.vehicle.model}</p>
-                <p className="text-gray-600 text-sm">{quote.vehicle.year} • {quote.vehicle.reg}</p>
-              </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Customer Form */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Title Section */}
+            <div className="text-center lg:text-left">
+              <h1 className="text-2xl font-bold text-gray-900">Complete Your Warranty Purchase</h1>
+              <p className="text-gray-600 mt-1">Welcome back, {firstName}! Just a few details to complete.</p>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* What You're Getting */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              What You're Getting
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-3">
-              {/* Cover Duration */}
-              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                <Calendar className="h-5 w-5 text-orange-600 mt-0.5" />
-                <div>
-                  <p className="font-medium">{quote.cover.durationMonths/12}-Year Cover + {quote.cover.bonusMonths} Months Free</p>
-                  <p className="text-sm text-gray-600">Total {totalMonths} months of protection</p>
-                </div>
-              </div>
-
-              {/* Excess */}
-              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                <FileText className="h-5 w-5 text-orange-600 mt-0.5" />
-                <div>
-                  <p className="font-medium">£{quote.cover.excessAmount} Excess</p>
-                  <p className="text-sm text-gray-600">The amount you pay towards each approved claim</p>
-                </div>
-              </div>
-
-              {/* Claim Limit */}
-              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                <Award className="h-5 w-5 text-orange-600 mt-0.5" />
-                <div>
-                  <p className="font-medium">£{displayClaimLimit.toLocaleString()} Claim Limit</p>
-                  <p className="text-sm text-gray-600">Maximum per claim for parts and labour</p>
-                  {quote.cover.boostAddon && (
-                    <Badge className="mt-1 bg-orange-100 text-orange-800 text-xs">+£1,000 Boost included</Badge>
-                  )}
-                </div>
-              </div>
-
-              {/* Labour Rate */}
-              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                <Wrench className="h-5 w-5 text-orange-600 mt-0.5" />
-                <div>
-                  <p className="font-medium">£{quote.cover.labourRate}/hr Labour Rate</p>
-                  <p className="text-sm text-gray-600">Parts and labour covered up to this rate</p>
-                </div>
-              </div>
-
-              {/* Use Any Garage */}
-              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                <MapPin className="h-5 w-5 text-orange-600 mt-0.5" />
-                <div>
-                  <p className="font-medium">Any VAT-Registered Garage</p>
-                  <p className="text-sm text-gray-600">Nationwide coverage at your choice of garage</p>
-                </div>
-              </div>
-
-              {/* Instant Activation */}
-              <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-                <Zap className="h-5 w-5 text-green-600 mt-0.5" />
-                <div>
-                  <p className="font-medium text-green-800">Instant Activation</p>
-                  <p className="text-sm text-green-700">No 30-day waiting period. Cover starts when payment completes.</p>
-                </div>
-              </div>
-
-              {/* Add-ons if included */}
-              {(quote.cover.breakdownIncluded || quote.cover.rentalIncluded) && (
-                <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                  <Heart className="h-5 w-5 text-blue-600 mt-0.5" />
+            {/* Vehicle Summary Card */}
+            <Card>
+              <CardContent className="py-4">
+                <div className="flex items-center gap-4">
+                  <div className="bg-orange-100 rounded-full p-3">
+                    <Car className="h-6 w-6 text-orange-600" />
+                  </div>
                   <div>
-                    <p className="font-medium text-blue-800">Included Add-ons</p>
-                    <ul className="text-sm text-blue-700 mt-1 space-y-1">
-                      {quote.cover.breakdownIncluded && <li>• Breakdown Recovery</li>}
-                      {quote.cover.rentalIncluded && <li>• Car Hire Cover</li>}
-                    </ul>
+                    <p className="font-semibold text-lg">{quote.vehicle.make} {quote.vehicle.model}</p>
+                    <p className="text-gray-600 text-sm">{quote.vehicle.year} • {quote.vehicle.reg}</p>
                   </div>
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
 
-        {/* Additional Notes */}
-        {quote.additionalNotes && (
-          <Card className="border-orange-200 bg-orange-50/50">
-            <CardContent className="py-4">
-              <p className="text-sm font-medium text-orange-800 mb-1">Special Notes</p>
-              <p className="text-sm text-gray-700">{quote.additionalNotes}</p>
-            </CardContent>
-          </Card>
-        )}
+            {/* Start Date Picker */}
+            <Card>
+              <CardContent className="py-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Calendar className="h-5 w-5 text-orange-600" />
+                  <Label className="font-semibold">When should your cover start?</Label>
+                </div>
+                <StartDatePicker
+                  value={startDate}
+                  onChange={setStartDate}
+                  maxDaysAhead={365}
+                />
+              </CardContent>
+            </Card>
 
-        {/* Price Summary */}
-        <Card className="border-2 border-orange-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Price Summary</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-              <div>
-                <p className="font-medium">Monthly Option</p>
-                <p className="text-sm text-gray-600">12 instalments via Bumper</p>
-              </div>
-              <p className="text-xl font-bold text-orange-600">£{quote.pricing.monthlyPrice}/mo</p>
-            </div>
-            <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-              <div>
-                <p className="font-medium text-green-800">Pay in Full</p>
-                <p className="text-sm text-green-700">One-time payment via Stripe</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xl font-bold text-green-700">£{quote.pricing.upfrontPrice}</p>
-                <Badge className="bg-green-200 text-green-800 text-xs">Save 10%</Badge>
-              </div>
-            </div>
-            <p className="text-sm text-gray-600 text-center italic">
-              "Most customers think of it as protection against just one unexpected bill."
-            </p>
-          </CardContent>
-        </Card>
+            {/* Customer Details Form */}
+            <Card id="customer-form">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <User className="h-5 w-5 text-orange-600" />
+                  Your Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Name Row */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name *</Label>
+                    <Input
+                      id="firstName"
+                      value={customerData.firstName}
+                      onChange={(e) => setCustomerData(prev => ({ ...prev, firstName: e.target.value }))}
+                      className={fieldErrors.firstName && showValidation ? 'border-red-500' : ''}
+                    />
+                    {fieldErrors.firstName && showValidation && (
+                      <p className="text-xs text-red-500">{fieldErrors.firstName}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name *</Label>
+                    <Input
+                      id="lastName"
+                      value={customerData.lastName}
+                      onChange={(e) => setCustomerData(prev => ({ ...prev, lastName: e.target.value }))}
+                      className={fieldErrors.lastName && showValidation ? 'border-red-500' : ''}
+                    />
+                    {fieldErrors.lastName && showValidation && (
+                      <p className="text-xs text-red-500">{fieldErrors.lastName}</p>
+                    )}
+                  </div>
+                </div>
 
-        {/* Why This Makes Sense */}
-        <Card className="bg-gray-50 border-0">
-          <CardContent className="py-6">
-            <h3 className="font-semibold mb-3 text-center">Why This Makes Sense</h3>
-            <ul className="space-y-2 text-sm text-gray-700">
-              <li className="flex items-start gap-2">
-                <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>Modern car repairs can easily cost £500-£2,000 for a single issue</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>This protects you from unexpected repair bills</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>Designed to work when you actually need it</span>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
+                {/* Contact Row */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={customerData.email}
+                      onChange={(e) => setCustomerData(prev => ({ ...prev, email: e.target.value }))}
+                      className={fieldErrors.email && showValidation ? 'border-red-500' : ''}
+                    />
+                    {fieldErrors.email && showValidation && (
+                      <p className="text-xs text-red-500">{fieldErrors.email}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone *</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={customerData.phone}
+                      onChange={(e) => setCustomerData(prev => ({ ...prev, phone: e.target.value }))}
+                      className={fieldErrors.phone && showValidation ? 'border-red-500' : ''}
+                    />
+                    {fieldErrors.phone && showValidation && (
+                      <p className="text-xs text-red-500">{fieldErrors.phone}</p>
+                    )}
+                  </div>
+                </div>
 
-        {/* Payment Buttons */}
-        <div className="space-y-3">
-          <Button 
-            onClick={() => handlePayment('bumper')}
-            disabled={!!processingPayment}
-            className="w-full h-14 text-lg bg-blue-600 hover:bg-blue-700"
-          >
-            {processingPayment === 'bumper' ? (
-              <Loader2 className="h-5 w-5 animate-spin mr-2" />
-            ) : (
-              <Calendar className="h-5 w-5 mr-2" />
-            )}
-            Pay Monthly with Bumper
-          </Button>
-          <p className="text-xs text-center text-gray-500">Soft credit check by Bumper for eligibility</p>
+                {/* Mileage */}
+                <div className="space-y-2">
+                  <Label htmlFor="mileage">Current Mileage *</Label>
+                  <Input
+                    id="mileage"
+                    type="number"
+                    value={customerData.mileage}
+                    onChange={(e) => setCustomerData(prev => ({ ...prev, mileage: e.target.value }))}
+                    placeholder="e.g. 45000"
+                    className={fieldErrors.mileage && showValidation ? 'border-red-500' : ''}
+                  />
+                  {fieldErrors.mileage && showValidation && (
+                    <p className="text-xs text-red-500">{fieldErrors.mileage}</p>
+                  )}
+                </div>
 
-          <Button 
-            onClick={() => handlePayment('stripe')}
-            disabled={!!processingPayment}
-            variant="outline"
-            className="w-full h-14 text-lg border-2 border-green-600 text-green-700 hover:bg-green-50"
-          >
-            {processingPayment === 'stripe' ? (
-              <Loader2 className="h-5 w-5 animate-spin mr-2" />
-            ) : (
-              <CreditCard className="h-5 w-5 mr-2" />
-            )}
-            Pay in Full — £{quote.pricing.upfrontPrice}
-          </Button>
-          <p className="text-xs text-center text-gray-500">Secure card payment via Stripe</p>
-        </div>
+                <Separator />
 
-        <Separator />
+                {/* Address */}
+                <div className="space-y-4">
+                  <Label className="font-semibold flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-orange-600" />
+                    Your Address
+                  </Label>
+                  
+                  <PostcodeAutocomplete
+                    value={customerData.postcode}
+                    onChange={(value) => setCustomerData(prev => ({ ...prev, postcode: value }))}
+                    onAddressSelect={(address: any) => {
+                      setCustomerData(prev => ({
+                        ...prev,
+                        addressLine1: address.line_1 || '',
+                        addressLine2: address.line_2 || '',
+                        city: address.town_or_city || '',
+                        postcode: address.postcode || ''
+                      }));
+                    }}
+                  />
 
-        {/* What Happens Next */}
-        <div className="space-y-4 pb-8">
-          <h3 className="font-semibold text-center">What Happens Next</h3>
-          <div className="grid gap-3 text-sm">
-            <div className="flex items-center gap-3">
-              <div className="bg-orange-100 rounded-full p-2 flex-shrink-0">
-                <Mail className="h-4 w-4 text-orange-600" />
-              </div>
-              <span>Confirmation email sent immediately</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="bg-orange-100 rounded-full p-2 flex-shrink-0">
-                <Shield className="h-4 w-4 text-orange-600" />
-              </div>
-              <span>Cover activates instantly</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="bg-orange-100 rounded-full p-2 flex-shrink-0">
-                <Phone className="h-4 w-4 text-orange-600" />
-              </div>
-              <span>Claims support via phone, email & WhatsApp</span>
-            </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="addressLine1">Address Line 1 *</Label>
+                    <Input
+                      id="addressLine1"
+                      value={customerData.addressLine1}
+                      onChange={(e) => setCustomerData(prev => ({ ...prev, addressLine1: e.target.value }))}
+                      className={fieldErrors.addressLine1 && showValidation ? 'border-red-500' : ''}
+                    />
+                    {fieldErrors.addressLine1 && showValidation && (
+                      <p className="text-xs text-red-500">{fieldErrors.addressLine1}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="addressLine2">Address Line 2</Label>
+                    <Input
+                      id="addressLine2"
+                      value={customerData.addressLine2}
+                      onChange={(e) => setCustomerData(prev => ({ ...prev, addressLine2: e.target.value }))}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="city">Town/City *</Label>
+                      <Input
+                        id="city"
+                        value={customerData.city}
+                        onChange={(e) => setCustomerData(prev => ({ ...prev, city: e.target.value }))}
+                        className={fieldErrors.city && showValidation ? 'border-red-500' : ''}
+                      />
+                      {fieldErrors.city && showValidation && (
+                        <p className="text-xs text-red-500">{fieldErrors.city}</p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="postcode">Postcode *</Label>
+                      <Input
+                        id="postcode"
+                        value={customerData.postcode}
+                        onChange={(e) => setCustomerData(prev => ({ ...prev, postcode: e.target.value.toUpperCase() }))}
+                        className={fieldErrors.postcode && showValidation ? 'border-red-500' : ''}
+                      />
+                      {fieldErrors.postcode && showValidation && (
+                        <p className="text-xs text-red-500">{fieldErrors.postcode}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Payment Options */}
+            <Card className="border-2 border-gray-200">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-orange-600" />
+                  Choose How to Pay
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <RadioGroup value={paymentMethod} onValueChange={(value: 'bumper' | 'stripe') => setPaymentMethod(value)}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Pay Monthly - Bumper */}
+                    <div 
+                      onClick={() => setPaymentMethod('bumper')}
+                      className={`relative rounded-xl cursor-pointer transition-all duration-300 flex flex-col ${
+                        paymentMethod === 'bumper' 
+                          ? 'shadow-[0_0_15px_rgba(243,156,18,0.4)] border-2 border-orange-500' 
+                          : 'border-2 border-gray-200 hover:border-orange-300'
+                      }`}
+                      style={{ padding: '20px' }}
+                    >
+                      <div className="absolute -top-3 left-4 bg-orange-500 text-white text-xs font-bold rounded-full px-3 py-1">
+                        0% APR
+                      </div>
+
+                      <div className="flex items-start justify-between mb-3 mt-2">
+                        <RadioGroupItem value="bumper" id="bumper-option" className="border-2 border-gray-400 w-6 h-6" />
+                      </div>
+
+                      <Label htmlFor="bumper-option" className="block cursor-pointer mb-3">
+                        <h4 className="text-lg font-bold text-gray-900">Pay Monthly</h4>
+                      </Label>
+
+                      <div className="mb-4">
+                        <div className="text-sm text-gray-600 font-bold">Total: £{bumperMonthlyTotal}</div>
+                        <div className="text-2xl font-bold text-gray-900">£{quote.pricing.monthlyPrice}/month</div>
+                        <div className="text-sm text-gray-600 font-bold">Only 12 payments</div>
+                      </div>
+
+                      <div className="space-y-2 mb-4 flex-grow">
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                          <span>Soft search only</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                          <span>No impact on credit score</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                          <span>No hidden fees</span>
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPaymentMethod('bumper');
+                          handlePayment('bumper');
+                        }}
+                        disabled={!!processingPayment}
+                        className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3"
+                      >
+                        {processingPayment === 'bumper' ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          'Complete checkout'
+                        )}
+                      </Button>
+
+                      <div className="text-center pt-3 border-t mt-4">
+                        <span className="text-xs text-gray-500 block mb-1">Powered by</span>
+                        <img src={bumperLogo} alt="Bumper" className="h-5 mx-auto" />
+                      </div>
+                    </div>
+
+                    {/* Pay in Full - Stripe */}
+                    <div 
+                      onClick={() => setPaymentMethod('stripe')}
+                      className={`relative rounded-xl cursor-pointer transition-all duration-300 flex flex-col ${
+                        paymentMethod === 'stripe' 
+                          ? 'shadow-[0_0_15px_rgba(39,174,96,0.4)] border-2 border-green-500' 
+                          : 'border-2 border-gray-200 hover:border-green-300'
+                      }`}
+                      style={{ padding: '20px' }}
+                    >
+                      <div className="absolute -top-3 left-4 bg-green-500 text-white text-xs font-bold rounded-full px-3 py-1">
+                        BEST VALUE
+                      </div>
+
+                      <div className="flex items-start justify-between mb-3 mt-2">
+                        <RadioGroupItem value="stripe" id="stripe-option" className="border-2 border-gray-400 w-6 h-6" />
+                      </div>
+
+                      <Label htmlFor="stripe-option" className="block cursor-pointer mb-3">
+                        <h4 className="text-lg font-bold text-gray-900">Pay in Full</h4>
+                      </Label>
+
+                      <div className="mb-4">
+                        <div className="text-sm text-gray-600 font-bold line-through">Was: £{bumperMonthlyTotal}</div>
+                        <div className="text-2xl font-bold text-green-700">£{quote.pricing.upfrontPrice}</div>
+                        <Badge className="bg-green-100 text-green-800 text-xs mt-1">Save 10%</Badge>
+                      </div>
+
+                      <div className="space-y-2 mb-4 flex-grow">
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                          <span>Instant activation</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                          <span>One simple payment</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-700">
+                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                          <span>Best value option</span>
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPaymentMethod('stripe');
+                          handlePayment('stripe');
+                        }}
+                        disabled={!!processingPayment}
+                        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3"
+                      >
+                        {processingPayment === 'stripe' ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          'Complete checkout'
+                        )}
+                      </Button>
+
+                      <div className="text-center pt-3 border-t mt-4">
+                        <span className="text-xs text-gray-500 block mb-1">Secure payment via</span>
+                        <img src={stripeLogo} alt="Stripe" className="h-5 mx-auto" />
+                      </div>
+                    </div>
+                  </div>
+                </RadioGroup>
+
+                <p className="text-xs text-center text-gray-500 mt-4">
+                  <Lock className="w-3 h-3 inline mr-1" />
+                  Your payment is secured with 256-bit SSL encryption
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Contact */}
-          <Card className="bg-gray-50 border-0">
-            <CardContent className="py-4 text-center">
-              <p className="text-sm text-gray-600 mb-2">Questions? We're here to help:</p>
-              <p className="font-semibold">0330 229 5045</p>
-              <p className="text-sm text-gray-600">support@buyawarranty.co.uk</p>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="mt-2 text-green-600"
-                onClick={() => window.open('https://wa.me/443302295045', '_blank')}
-              >
-                <MessageCircle className="h-4 w-4 mr-1" />
-                WhatsApp
-              </Button>
-            </CardContent>
-          </Card>
+          {/* Right Column - Order Summary */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-24">
+              <Card className="border-2 border-orange-200">
+                <CardHeader className="pb-2 bg-orange-50">
+                  <CardTitle className="text-lg">Your Cover Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-4">
+                  {/* Cover Details */}
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Plan</span>
+                      <span className="font-semibold">{quote.cover.planType}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Duration</span>
+                      <span className="font-semibold">{totalMonths} months</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Excess</span>
+                      <span className="font-semibold">£{quote.cover.excessAmount}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Claim Limit</span>
+                      <span className="font-semibold">
+                        £{displayClaimLimit.toLocaleString()}
+                        {quote.cover.boostAddon && <Badge className="ml-1 text-xs bg-orange-100 text-orange-800">+Boost</Badge>}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Labour Rate</span>
+                      <span className="font-semibold">£{quote.cover.labourRate}/hr</span>
+                    </div>
+                  </div>
 
-          {quote.createdByName && (
-            <p className="text-xs text-center text-gray-400">
-              Quote prepared by {quote.createdByName}
-            </p>
-          )}
+                  <Separator />
+
+                  {/* Included Features */}
+                  <div className="space-y-2">
+                    <p className="font-semibold text-sm">What's Included:</p>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2 text-sm text-green-700">
+                        <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                        <span>All mechanical parts</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-green-700">
+                        <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                        <span>All electrical parts</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-green-700">
+                        <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                        <span>Labour costs covered</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-green-700">
+                        <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                        <span>Any VAT-registered garage</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-green-700">
+                        <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                        <span>No waiting period</span>
+                      </div>
+                      {quote.cover.breakdownIncluded && (
+                        <div className="flex items-center gap-2 text-sm text-blue-700">
+                          <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                          <span>Vehicle Recovery (FREE)</span>
+                        </div>
+                      )}
+                      {quote.cover.rentalIncluded && (
+                        <div className="flex items-center gap-2 text-sm text-blue-700">
+                          <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                          <span>Hire Car Cover (FREE)</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Price Summary */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Monthly option</span>
+                      <span className="font-semibold">£{quote.pricing.monthlyPrice}/mo</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 text-sm">Pay in full</span>
+                      <div className="text-right">
+                        <span className="font-bold text-green-700 text-lg">£{quote.pricing.upfrontPrice}</span>
+                        <Badge className="ml-2 bg-green-100 text-green-800 text-xs">Save 10%</Badge>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Additional Notes */}
+                  {quote.additionalNotes && (
+                    <>
+                      <Separator />
+                      <div className="bg-orange-50 rounded-lg p-3">
+                        <p className="text-sm font-medium text-orange-800 mb-1">Special Notes:</p>
+                        <p className="text-sm text-gray-700">{quote.additionalNotes}</p>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Trust indicators */}
+                  <div className="pt-4 border-t space-y-2">
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <Lock className="w-3 h-3" />
+                      <span>Secure checkout</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <Phone className="w-3 h-3" />
+                      <span>0330 229 5045</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       </main>
     </div>
