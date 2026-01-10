@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { PostcodeAutocomplete } from '@/components/ui/uk-postcode-autocomplete';
+
 import { StartDatePicker } from '@/components/checkout/StartDatePicker';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { 
@@ -694,26 +694,12 @@ export default function LiveQuotePage() {
 
                 <Separator />
 
-                {/* Address Section - Single postcode lookup at top */}
+                {/* Address Section */}
                 <div className="space-y-4">
                   <Label className="font-semibold flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-orange-600" />
                     Your Address
                   </Label>
-                  
-                  <PostcodeAutocomplete
-                    value={customerData.postcode}
-                    onChange={(value) => setCustomerData(prev => ({ ...prev, postcode: value }))}
-                    onAddressSelect={(address: any) => {
-                      setCustomerData(prev => ({
-                        ...prev,
-                        addressLine1: address.line_1 || '',
-                        addressLine2: address.line_2 || '',
-                        city: address.town_or_city || '',
-                        postcode: address.postcode || ''
-                      }));
-                    }}
-                  />
 
                   <div className="space-y-2">
                     <Label htmlFor="addressLine1">Address Line 1 *</Label>
@@ -757,7 +743,7 @@ export default function LiveQuotePage() {
                         value={customerData.postcode}
                         onChange={(e) => setCustomerData(prev => ({ ...prev, postcode: e.target.value.toUpperCase() }))}
                         className={fieldErrors.postcode && showValidation ? 'border-red-500' : ''}
-                        readOnly
+                        placeholder="e.g. SW1A 1AA"
                       />
                       {fieldErrors.postcode && showValidation && (
                         <p className="text-xs text-red-500">{fieldErrors.postcode}</p>
