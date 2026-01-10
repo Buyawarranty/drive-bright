@@ -473,17 +473,18 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                           <Tooltip delayDuration={100}>
                             <TooltipTrigger asChild>
                               <Button 
-                                variant="ghost" 
-                                size="icon"
-                                className="h-7 w-7 hover:scale-110 transition-transform text-primary hover:bg-primary/10"
+                                variant="outline" 
+                                size="sm"
+                                className="h-7 px-2 text-xs font-medium text-orange-600 border-orange-300 hover:bg-orange-50 hover:border-orange-400"
                                 onClick={() => onSendQuote(lead)}
                                 aria-label="Send quote"
                               >
-                                <Send className="h-3.5 w-3.5" />
+                                <FileText className="h-3 w-3 mr-1" />
+                                Quote
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="text-xs">
-                              Send Quote
+                              Send Quote to this lead
                             </TooltipContent>
                           </Tooltip>
                         )}
