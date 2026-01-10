@@ -246,7 +246,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   );
   
   // New state for labour rate selection - restore from previous if available
-  const [selectedLabourRate, setSelectedLabourRate] = useState<number>(previousLabourRate || 70);
+  const [selectedLabourRate, setSelectedLabourRate] = useState<number>(previousLabourRate ?? 70);
   
   // NOTE: Add-on auto-inclusion on payment type change is handled by a single useEffect below (around line 490)
   // to avoid duplicate state updates that cause pricing inconsistencies when navigating between steps

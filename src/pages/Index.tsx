@@ -1096,7 +1096,7 @@ const Index = () => {
                 previousClaimLimit={selectedPlan?.pricingData?.claimLimit}
                 previousSelectedAddOns={selectedPlan?.pricingData?.selectedAddOns}
                 previousProtectionAddOns={selectedPlan?.pricingData?.protectionAddOns}
-                previousLabourRate={selectedPlan?.pricingData?.labourRate}
+                previousLabourRate={selectedPlan?.pricingData?.labourRate ?? 70}
                 previousBoostAddon={selectedPlan?.pricingData?.boostAddon}
               />
             </PerformanceOptimizedSuspense>
