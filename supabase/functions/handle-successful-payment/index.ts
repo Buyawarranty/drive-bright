@@ -68,11 +68,25 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { planId, paymentType, userEmail, userId, stripeSessionId, vehicleData, customerData, skipEmail, metadata, protectionAddOns, claimLimit, voluntaryExcess, seasonalBonusMonths = 0, labourRate, startDate } = await req.json();
-    logStep("Request data", { planId, paymentType, userEmail, userId, stripeSessionId, skipEmail, hasMetadata: !!metadata, hasProtectionAddOns: !!protectionAddOns, claimLimit, voluntaryExcess, seasonalBonusMonths, labourRate, startDate });
+    const { planId, paymentType, userEmail, userId, stripeSessionId, vehicleData, customerData, skipEmail, metadata, protectionAddOns, claimLimit, voluntaryExcess, seasonalBonusMonths = 0, labourRate, startDate, bumperOrderId } = await req.json();
+    logStep("Request data", { planId, paymentType, userEmail, userId, stripeSessionId, bumperOrderId, skipEmail, hasMetadata: !!metadata, hasProtectionAddOns: !!protectionAddOns, claimLimit, voluntaryExcess, seasonalBonusMonths, labourRate, startDate });
 
     if (!planId || !paymentType || !userEmail) {
       throw new Error("Missing required parameters");
+    }
+
+    // CRITICAL: Validate that a valid payment reference exists
+    // Either stripeSessionId or bumperOrderId (from parameter or metadata) must be provided
+    const effectiveBumperOrderId = bumperOrderId || metadata?.bumper_order_id;
+    const hasValidPaymentReference = (stripeSessionId && !stripeSessionId.startsWith('manual_')) || effectiveBumperOrderId;
+    
+    if (!hasValidPaymentReference) {
+      logStep("WARNING: No valid payment reference provided", { 
+        stripeSessionId, 
+        bumperOrderId: effectiveBumperOrderId,
+        source: metadata?.source 
+      });
+      // We allow processing but flag as unverified payment
     }
 
     // CRITICAL: Check for duplicate payment to prevent double-charging and duplicate records
@@ -282,6 +296,9 @@ serve(async (req) => {
       finalCombined: finalAddOnsForCustomer
     });
     
+    // Determine if this is a verified payment
+    const isPaymentVerified = (stripeSessionId && !stripeSessionId.startsWith('manual_')) || !!effectiveBumperOrderId;
+    
     const customerRecord = {
       name: customerName,
       email: userEmail,
@@ -299,7 +316,7 @@ serve(async (req) => {
       plan_type: planName, // Use the actual plan name, not UUID
       payment_type: paymentType,
       stripe_session_id: stripeSessionId,
-      bumper_order_id: metadata?.bumper_order_id, // Store Bumper order ID if present
+      bumper_order_id: effectiveBumperOrderId, // Store Bumper order ID if present
       registration_plate: vehicleData?.regNumber || customerData?.vehicle_reg || metadata?.vehicle_reg || 'Unknown',
       vehicle_make: vehicleData?.make || metadata?.vehicle_make || 'Unknown',
       vehicle_model: vehicleData?.model || metadata?.vehicle_model || 'Unknown',
@@ -317,6 +334,9 @@ serve(async (req) => {
       warranty_reference_number: warrantyReference,
       seasonal_bonus_months: seasonalBonusMonths, // Store seasonal bonus
       labour_rate: labourRate || parseInt(metadata?.labour_rate) || 50, // Store selected labour rate (default to £50/hr)
+      // Payment verification flags
+      is_manual_entry: false, // Automated payment flow
+      payment_verified: isPaymentVerified,
       // Store final combined add-ons in customer record (user selections + auto-inclusions)
       ...finalAddOnsForCustomer
     };
@@ -537,13 +557,16 @@ serve(async (req) => {
         claim_limit: parseInt(metadata?.claim_limit || customerData?.claimLimit || claimLimit || protectionAddOns?.claimLimit || '1250'), // User-selected claim limit
         voluntary_excess: getStandardizedVoluntaryExcess(metadata, customerData, vehicleData, voluntaryExcess), // Fixed field name
         seasonal_bonus_months: seasonalBonusMonths, // Store seasonal bonus
-        bumper_order_id: metadata?.bumper_order_id, // Store Bumper order ID if present
+        bumper_order_id: effectiveBumperOrderId, // Store Bumper order ID if present
         stripe_session_id: stripeSessionId,
         // Store payment amount from final_amount in metadata or customerData
         payment_amount: parseFloat(metadata?.final_amount) || customerData?.final_amount || null,
         // W2000 scheduling: if start date is in future, schedule for that date
         warranties_2000_status: isStartDateInFuture ? 'scheduled' : 'not_sent',
         warranties_2000_scheduled_for: isStartDateInFuture ? policyStartDate.toISOString() : null,
+        // Payment verification flags
+        is_manual_entry: false, // Automated payment flow
+        payment_verified: isPaymentVerified,
         // Include final combined add-ons in policy record
         ...finalAddOnsData
       };

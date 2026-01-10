@@ -178,6 +178,9 @@ interface Customer {
   google_review_requested_at?: string;
   google_review_completed?: boolean;
   google_review_completed_at?: string;
+  // Payment verification fields
+  is_manual_entry?: boolean;
+  payment_verified?: boolean;
   admin_users?: {
     id: string;
     email: string;
@@ -696,7 +699,10 @@ export const CustomersTab = () => {
           google_review_requested: false,
           google_review_requested_at: null,
           google_review_completed: false,
-          google_review_completed_at: null
+          google_review_completed_at: null,
+          // Payment verification columns
+          is_manual_entry: true,
+          payment_verified: false
         }));
         
         directData = [...directData, ...orphanedAsCustomers];
@@ -3568,10 +3574,20 @@ Please log in and change your password after first login.`;
                    </TableCell>
                      <TableCell>
                        <div className="flex flex-col gap-1">
-                         <Badge variant="outline">
-                           {customer.bumper_order_id ? 'Bumper' : 
-                            customer.stripe_session_id ? 'Stripe' : 'N/A'}
-                         </Badge>
+                         <div className="flex items-center gap-1">
+                           <Badge variant={customer.is_manual_entry ? 'secondary' : 'outline'}>
+                             {customer.is_manual_entry ? 'Manual' :
+                              customer.bumper_order_id ? 'Bumper' : 
+                              customer.stripe_session_id ? 'Stripe' : 'N/A'}
+                           </Badge>
+                           {customer.payment_verified ? (
+                             <span className="text-green-600" title="Payment verified">✓</span>
+                           ) : customer.is_manual_entry ? (
+                             <span className="text-amber-500" title="Manual entry - no payment record">⚠</span>
+                           ) : (
+                             <span className="text-red-500" title="Payment not verified">✗</span>
+                           )}
+                         </div>
                          {customer.final_amount && customer.final_amount > 0 && (
                            <span className="text-xs font-medium text-green-700">
                              £{customer.final_amount.toFixed(2)}
