@@ -1217,13 +1217,15 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
                   ) : quoteLink ? (
                     <div className="space-y-3">
                       <div className="flex gap-2">
-                        <Button
-                          onClick={handleCopyQuoteLink}
-                          className="flex-1"
-                          size="lg"
-                        >
-                          📋 Copy Quote Link
-                        </Button>
+                        <a href={quoteLink} target="_blank" rel="noopener noreferrer" className="flex-1">
+                          <Button
+                            onClick={handleCopyQuoteLink}
+                            className="w-full"
+                            size="lg"
+                          >
+                            📋 Copy Quote Link
+                          </Button>
+                        </a>
                         <Button
                           onClick={() => window.open(quoteLink, '_blank')}
                           variant="outline"
@@ -1268,13 +1270,18 @@ www.buyawarranty.co.uk | info@buyawarranty.co.uk`;
                   >
                     Back
                   </Button>
-                  <Button 
-                    onClick={handlePreviewEmail}
-                    className="flex-1"
-                  >
-                    <Mail className="w-4 h-4 mr-2" />
-                    Email Quote
-                  </Button>
+                  <a href={quoteLink || '#'} target="_blank" rel="noopener noreferrer" className="flex-1">
+                    <Button 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePreviewEmail();
+                      }}
+                      className="w-full"
+                    >
+                      <Mail className="w-4 h-4 mr-2" />
+                      Email Quote
+                    </Button>
+                  </a>
                   <Button 
                     onClick={() => window.open('https://wa.me/447467703287', '_blank')}
                     variant="outline"
