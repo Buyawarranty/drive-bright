@@ -119,43 +119,51 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
     
-    logStep("Fetching plan data", { planId });
+    // Only fetch plan data if finalAmount is NOT provided (i.e., not an admin quote)
+    // Admin quotes provide finalAmount directly, so we don't need to look up the plan
+    let planData = null;
+    let planType = planId || 'platinum'; // Use planId as the plan type for admin quotes
     
-    // Check if planId is a UUID or a plan name
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(planId);
-    
-    let planData;
-    let planError;
-    
-    if (isUUID) {
-      const result = await supabaseService
-        .from('special_vehicle_plans')
-        .select('*')
-        .eq('id', planId)
-        .maybeSingle();
-      planData = result.data;
-      planError = result.error;
-    } else {
-      // If not UUID, treat as plan name (case insensitive)
-      const result = await supabaseService
-        .from('special_vehicle_plans')
-        .select('*')
-        .ilike('name', planId)
-        .maybeSingle();
-      planData = result.data;
-      planError = result.error;
-    }
-    
-    if (planError) {
-      logStep("Plan fetch error", { planId, error: planError });
-      throw new Error(`Database error fetching plan: ${planError.message}`);
-    }
-    
-    if (!planData) {
-      throw new Error(`Plan not found: ${planId}`);
-    }
+    if (!finalAmount) {
+      logStep("Fetching plan data", { planId });
+      
+      // Check if planId is a UUID or a plan name
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(planId);
+      
+      let planError;
+      
+      if (isUUID) {
+        const result = await supabaseService
+          .from('special_vehicle_plans')
+          .select('*')
+          .eq('id', planId)
+          .maybeSingle();
+        planData = result.data;
+        planError = result.error;
+      } else {
+        // If not UUID, treat as plan name (case insensitive)
+        const result = await supabaseService
+          .from('special_vehicle_plans')
+          .select('*')
+          .ilike('name', planId)
+          .maybeSingle();
+        planData = result.data;
+        planError = result.error;
+      }
+      
+      if (planError) {
+        logStep("Plan fetch error", { planId, error: planError });
+        throw new Error(`Database error fetching plan: ${planError.message}`);
+      }
+      
+      if (!planData) {
+        throw new Error(`Plan not found: ${planId}`);
+      }
 
-    const planType = planData.name.toLowerCase();
+      planType = planData.name.toLowerCase();
+    } else {
+      logStep("Skipping plan lookup - using provided finalAmount", { planId, finalAmount });
+    }
     logStep("Using plan type", { planId, planType });
 
     // Get authenticated user
@@ -186,7 +194,7 @@ serve(async (req) => {
     // Calculate pricing based on payment type and voluntary excess
     let totalAmount = finalAmount;
     
-    if (!totalAmount) {
+    if (!totalAmount && planData) {
       // Use plan pricing with voluntary excess calculation
       const basePrices = {
         monthly: planData.monthly_price,
@@ -200,6 +208,8 @@ serve(async (req) => {
       // Apply voluntary excess discount (5% off for every £50 excess)
       const discountPercent = Math.min(voluntaryExcess / 50 * 5, 25); // Cap at 25% discount
       totalAmount = basePrice * (1 - discountPercent / 100);
+    } else if (!totalAmount) {
+      throw new Error("No pricing available: finalAmount not provided and no plan data found");
     }
 
     logStep("Calculated pricing", { totalAmount, paymentType, voluntaryExcess });
