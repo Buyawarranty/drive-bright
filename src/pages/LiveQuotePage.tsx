@@ -537,6 +537,117 @@ export default function LiveQuotePage() {
               </CardContent>
             </Card>
 
+            {/* Cover Summary - Mobile Only (at top) */}
+            <div className="lg:hidden">
+              <Card className="border-2 border-orange-200">
+                <CardHeader className="pb-2 bg-orange-50">
+                  <CardTitle className="text-lg">Your Cover Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-4">
+                  {/* Cover Details */}
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Plan</span>
+                      <span className="font-semibold">{quote.cover.planType}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Duration</span>
+                      <span className="font-semibold">
+                        {quote.cover.durationMonths} months
+                        {quote.cover.bonusMonths > 0 && (
+                          <Badge className="ml-1 text-xs bg-green-100 text-green-800">+{quote.cover.bonusMonths} FREE</Badge>
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Excess</span>
+                      <span className="font-semibold">£{quote.cover.excessAmount}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Claim Limit</span>
+                      <span className="font-semibold">
+                        £{displayClaimLimit.toLocaleString()}
+                        {quote.cover.boostAddon && <Badge className="ml-1 text-xs bg-orange-100 text-orange-800">+Boost</Badge>}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Labour Rate</span>
+                      <span className="font-semibold">£{quote.cover.labourRate}/hr</span>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Included Features */}
+                  <div className="space-y-2">
+                    <p className="font-semibold text-sm">What's Included:</p>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2 text-sm text-green-700">
+                        <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                        <span>All mechanical parts</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-green-700">
+                        <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                        <span>All electrical parts</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-green-700">
+                        <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                        <span>Labour costs covered</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-green-700">
+                        <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                        <span>Any VAT-registered garage</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-green-700">
+                        <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                        <span>No waiting period</span>
+                      </div>
+                      {quote.cover.breakdownIncluded && (
+                        <div className="flex items-center gap-2 text-sm text-blue-700">
+                          <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                          <span>Vehicle Recovery (FREE)</span>
+                        </div>
+                      )}
+                      {quote.cover.rentalIncluded && (
+                        <div className="flex items-center gap-2 text-sm text-blue-700">
+                          <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                          <span>Hire Car Cover (FREE)</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Price Summary */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Monthly option</span>
+                      <span className="font-semibold">£{quote.pricing.monthlyPrice}/mo</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 text-sm">Pay in full</span>
+                      <div className="text-right">
+                        <span className="font-bold text-green-700 text-lg">£{quote.pricing.upfrontPrice}</span>
+                        <Badge className="ml-2 bg-green-100 text-green-800 text-xs">Save 10%</Badge>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Additional Notes */}
+                  {quote.additionalNotes && (
+                    <>
+                      <Separator />
+                      <div className="bg-orange-50 rounded-lg p-3">
+                        <p className="text-sm font-medium text-orange-800 mb-1">Special Notes:</p>
+                        <p className="text-sm text-gray-700">{quote.additionalNotes}</p>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
             {/* Start Date Picker */}
             <Card>
               <CardContent className="py-4">
@@ -760,8 +871,8 @@ export default function LiveQuotePage() {
             </div>
           </div>
 
-          {/* Right Column - Order Summary + Payment Options on Desktop */}
-          <div className="lg:col-span-1">
+          {/* Right Column - Order Summary + Payment Options on Desktop Only */}
+          <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-24 space-y-6">
               {/* Cover Summary */}
               <Card className="border-2 border-orange-200">
