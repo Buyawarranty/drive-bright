@@ -1057,8 +1057,10 @@ Questions? Call 0330 229 5040`;
         try {
           await supabase.functions.invoke('send-to-warranties-2000', {
             body: { 
-              email: customerEmail.toLowerCase(), 
-              notes: `External payment confirmed via ${paymentSource}. Ref: ${paymentReference}. ${additionalNotes || ''}`.trim()
+              email: customerEmail.toLowerCase(),
+              customerId: customerId,
+              force: true,
+              additionalNotes: additionalNotes ? `External payment via ${paymentSource}. Ref: ${paymentReference}. ${additionalNotes}`.trim() : `External payment via ${paymentSource}. Ref: ${paymentReference}`.trim()
             }
           });
         } catch (w2kError) {
