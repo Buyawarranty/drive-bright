@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -116,6 +116,10 @@ export const useLeads = () => {
   const [salesUsers, setSalesUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<LeadStatus | 'all' | 'high_priority'>('all');
+  
+  // Cache sales users for optimistic updates
+  const salesUsersRef = useRef<AdminUser[]>([]);
+  salesUsersRef.current = salesUsers;
 
   const fetchLeads = useCallback(async () => {
     try {
@@ -341,20 +345,27 @@ export const useLeads = () => {
     fetchSalesUsers();
   }, [fetchLeads, fetchTags, fetchSalesUsers]);
 
-  const updateLeadStatus = async (leadId: string, status: LeadStatus) => {
+  // OPTIMISTIC UPDATE: Update status instantly, then sync to DB
+  const updateLeadStatus = useCallback(async (leadId: string, status: LeadStatus) => {
+    const now = new Date().toISOString();
+    const updates: any = { 
+      status, 
+      updated_at: now,
+      last_activity_date: now
+    };
+
+    if (status === 'converted') {
+      updates.converted_at = now;
+    } else if (status === 'lost') {
+      updates.lost_at = now;
+    }
+
+    // Optimistic update - instant UI response
+    setLeads(prev => prev.map(lead => 
+      lead.id === leadId ? { ...lead, ...updates } : lead
+    ));
+
     try {
-      const updates: any = { 
-        status, 
-        updated_at: new Date().toISOString(),
-        last_activity_date: new Date().toISOString()
-      };
-
-      if (status === 'converted') {
-        updates.converted_at = new Date().toISOString();
-      } else if (status === 'lost') {
-        updates.lost_at = new Date().toISOString();
-      }
-
       const { error } = await supabase
         .from('sales_leads')
         .update(updates)
@@ -362,46 +373,63 @@ export const useLeads = () => {
 
       if (error) throw error;
 
-      // Log activity
-      await logActivity(leadId, 'status_change', `Status changed to ${status}`);
-
-      toast.success('Lead status updated');
-      fetchLeads();
+      // Log activity in background (don't await)
+      logActivity(leadId, 'status_change', `Status changed to ${status}`);
     } catch (error) {
       console.error('Error updating lead status:', error);
       toast.error('Failed to update lead status');
+      // Revert on error
+      fetchLeads();
     }
-  };
+  }, []);
 
-  const assignLead = async (leadId: string, userId: string | null) => {
+  // OPTIMISTIC UPDATE: Assign lead instantly
+  const assignLead = useCallback(async (leadId: string, userId: string | null) => {
+    const now = new Date().toISOString();
+    const user = salesUsersRef.current.find(u => u.id === userId);
+    
+    // Optimistic update
+    setLeads(prev => prev.map(lead => 
+      lead.id === leadId 
+        ? { 
+            ...lead, 
+            assigned_to: userId,
+            assigned_at: userId ? now : null,
+            updated_at: now,
+            assigned_user: user ? {
+              id: user.id,
+              first_name: user.first_name,
+              last_name: user.last_name,
+              email: user.email
+            } : null
+          } 
+        : lead
+    ));
+
     try {
       const { error } = await supabase
         .from('sales_leads')
         .update({
           assigned_to: userId,
-          assigned_at: userId ? new Date().toISOString() : null,
-          updated_at: new Date().toISOString()
+          assigned_at: userId ? now : null,
+          updated_at: now
         })
         .eq('id', leadId);
 
       if (error) throw error;
 
-      if (userId) {
-        const user = salesUsers.find(u => u.id === userId);
-        await logActivity(leadId, 'assignment', `Assigned to ${user?.first_name || user?.email || 'Unknown'}`);
+      if (userId && user) {
+        logActivity(leadId, 'assignment', `Assigned to ${user.first_name || user.email || 'Unknown'}`);
       }
-
-      toast.success('Lead assigned successfully');
-      fetchLeads();
     } catch (error) {
       console.error('Error assigning lead:', error);
       toast.error('Failed to assign lead');
+      fetchLeads();
     }
-  };
+  }, []);
 
-  const autoAssignLead = async (leadId: string) => {
+  const autoAssignLead = useCallback(async (leadId: string) => {
     try {
-      // Call the round-robin function
       const { data: nextUserId, error: rpcError } = await supabase
         .rpc('get_next_sales_user');
 
@@ -416,29 +444,48 @@ export const useLeads = () => {
       console.error('Error auto-assigning lead:', error);
       toast.error('Failed to auto-assign lead');
     }
-  };
+  }, [assignLead]);
 
-  const updateLeadPriority = async (leadId: string, priority: LeadPriority) => {
+  // OPTIMISTIC UPDATE: Update priority instantly
+  const updateLeadPriority = useCallback(async (leadId: string, priority: LeadPriority) => {
+    const now = new Date().toISOString();
+    
+    // Optimistic update
+    setLeads(prev => prev.map(lead => 
+      lead.id === leadId ? { ...lead, priority, updated_at: now } : lead
+    ));
+
     try {
       const { error } = await supabase
         .from('sales_leads')
-        .update({ 
-          priority, 
-          updated_at: new Date().toISOString() 
-        })
+        .update({ priority, updated_at: now })
         .eq('id', leadId);
 
       if (error) throw error;
-
-      toast.success('Priority updated');
-      fetchLeads();
     } catch (error) {
       console.error('Error updating priority:', error);
       toast.error('Failed to update priority');
+      fetchLeads();
     }
-  };
+  }, []);
 
-  const scheduleFollowUp = async (leadId: string, actionType: string, actionDate: string) => {
+  // OPTIMISTIC UPDATE: Schedule follow-up instantly
+  const scheduleFollowUp = useCallback(async (leadId: string, actionType: string, actionDate: string) => {
+    const now = new Date().toISOString();
+    
+    // Optimistic update
+    setLeads(prev => prev.map(lead => 
+      lead.id === leadId 
+        ? { 
+            ...lead, 
+            next_action_type: actionType,
+            next_action_date: actionDate,
+            follow_up_status: 'pending',
+            updated_at: now 
+          } 
+        : lead
+    ));
+
     try {
       const { error } = await supabase
         .from('sales_leads')
@@ -446,23 +493,38 @@ export const useLeads = () => {
           next_action_type: actionType,
           next_action_date: actionDate,
           follow_up_status: 'pending',
-          updated_at: new Date().toISOString()
+          updated_at: now
         })
         .eq('id', leadId);
 
       if (error) throw error;
 
-      await logActivity(leadId, 'follow_up', `Scheduled ${actionType} for ${new Date(actionDate).toLocaleDateString()}`);
-
+      logActivity(leadId, 'follow_up', `Scheduled ${actionType} for ${new Date(actionDate).toLocaleDateString()}`);
       toast.success('Follow-up scheduled');
-      fetchLeads();
     } catch (error) {
       console.error('Error scheduling follow-up:', error);
       toast.error('Failed to schedule follow-up');
+      fetchLeads();
     }
-  };
+  }, []);
 
-  const addTagToLead = async (leadId: string, tagId: string) => {
+  // OPTIMISTIC UPDATE: Add tag instantly
+  const addTagToLead = useCallback(async (leadId: string, tagId: string) => {
+    const tagToAdd = tags.find(t => t.id === tagId);
+    if (!tagToAdd) return;
+
+    // Optimistic update
+    setLeads(prev => prev.map(lead => {
+      if (lead.id === leadId) {
+        const existingTags = lead.tags || [];
+        if (existingTags.some(t => t.id === tagId)) {
+          return lead; // Already has tag
+        }
+        return { ...lead, tags: [...existingTags, tagToAdd] };
+      }
+      return lead;
+    }));
+
     try {
       const { data: userData } = await supabase.auth.getUser();
       const { data: adminUser } = await supabase
@@ -481,21 +543,27 @@ export const useLeads = () => {
 
       if (error) {
         if (error.code === '23505') {
-          toast.info('Tag already assigned');
-          return;
+          return; // Already assigned, no need to revert
         }
         throw error;
       }
-
-      toast.success('Tag added');
-      fetchLeads();
     } catch (error) {
       console.error('Error adding tag:', error);
       toast.error('Failed to add tag');
+      fetchLeads();
     }
-  };
+  }, [tags]);
 
-  const removeTagFromLead = async (leadId: string, tagId: string) => {
+  // OPTIMISTIC UPDATE: Remove tag instantly
+  const removeTagFromLead = useCallback(async (leadId: string, tagId: string) => {
+    // Optimistic update
+    setLeads(prev => prev.map(lead => {
+      if (lead.id === leadId) {
+        return { ...lead, tags: (lead.tags || []).filter(t => t.id !== tagId) };
+      }
+      return lead;
+    }));
+
     try {
       const { error } = await supabase
         .from('lead_tag_assignments')
@@ -504,16 +572,14 @@ export const useLeads = () => {
         .eq('tag_id', tagId);
 
       if (error) throw error;
-
-      toast.success('Tag removed');
-      fetchLeads();
     } catch (error) {
       console.error('Error removing tag:', error);
       toast.error('Failed to remove tag');
+      fetchLeads();
     }
-  };
+  }, []);
 
-  const logActivity = async (leadId: string, activityType: string, description: string, outcome?: string) => {
+  const logActivity = useCallback(async (leadId: string, activityType: string, description: string, outcome?: string) => {
     try {
       const { data: userData } = await supabase.auth.getUser();
       const { data: adminUser } = await supabase
@@ -534,62 +600,81 @@ export const useLeads = () => {
 
       if (error) throw error;
 
-      // Update last activity date
-      await supabase
-        .from('sales_leads')
-        .update({ last_activity_date: new Date().toISOString() })
-        .eq('id', leadId);
+      // Update last activity date optimistically
+      setLeads(prev => prev.map(lead => 
+        lead.id === leadId 
+          ? { ...lead, last_activity_date: new Date().toISOString() }
+          : lead
+      ));
     } catch (error) {
       console.error('Error logging activity:', error);
     }
-  };
+  }, []);
 
-  const updateLeadNotes = async (leadId: string, notes: string) => {
+  // OPTIMISTIC UPDATE: Update notes instantly
+  const updateLeadNotes = useCallback(async (leadId: string, notes: string) => {
+    const now = new Date().toISOString();
+    
+    // Optimistic update
+    setLeads(prev => prev.map(lead => 
+      lead.id === leadId ? { ...lead, notes, updated_at: now } : lead
+    ));
+
     try {
       const { error } = await supabase
         .from('sales_leads')
-        .update({ 
-          notes, 
-          updated_at: new Date().toISOString() 
-        })
+        .update({ notes, updated_at: now })
         .eq('id', leadId);
 
       if (error) throw error;
-
       toast.success('Notes saved');
-      fetchLeads();
     } catch (error) {
       console.error('Error updating notes:', error);
       toast.error('Failed to save notes');
+      fetchLeads();
     }
-  };
+  }, []);
 
-  const markContactedAt = async (leadId: string) => {
+  // OPTIMISTIC UPDATE: Mark contacted instantly
+  const markContactedAt = useCallback(async (leadId: string) => {
+    const now = new Date().toISOString();
+    
+    // Optimistic update
+    setLeads(prev => prev.map(lead => 
+      lead.id === leadId 
+        ? { 
+            ...lead, 
+            last_contacted_at: now,
+            last_activity_date: now,
+            status: 'contacted' as LeadStatus,
+            updated_at: now 
+          } 
+        : lead
+    ));
+
     try {
       const { error } = await supabase
         .from('sales_leads')
         .update({
-          last_contacted_at: new Date().toISOString(),
-          last_activity_date: new Date().toISOString(),
+          last_contacted_at: now,
+          last_activity_date: now,
           status: 'contacted',
-          updated_at: new Date().toISOString()
+          updated_at: now
         })
         .eq('id', leadId);
 
       if (error) throw error;
 
-      await logActivity(leadId, 'contact', 'Marked as contacted');
-      toast.success('Lead marked as contacted');
-      fetchLeads();
+      logActivity(leadId, 'contact', 'Marked as contacted');
     } catch (error) {
       console.error('Error marking contacted:', error);
       toast.error('Failed to update contact status');
+      fetchLeads();
     }
-  };
+  }, []);
 
-  const migrateFromAbandonedCarts = async () => {
+  const migrateFromAbandonedCarts = useCallback(async () => {
     try {
-      // Fetch abandoned carts that haven't been migrated
       const { data: carts, error: fetchError } = await supabase
         .from('abandoned_carts')
         .select('*')
@@ -604,7 +689,6 @@ export const useLeads = () => {
 
       let migrated = 0;
       for (const cart of carts) {
-        // Check if already migrated
         const { data: existing } = await supabase
           .from('sales_leads')
           .select('id')
@@ -613,10 +697,8 @@ export const useLeads = () => {
 
         if (existing) continue;
 
-        // Get next user for round-robin
         const { data: nextUserId } = await supabase.rpc('get_next_sales_user');
 
-        // Create lead from cart
         const { error: insertError } = await supabase
           .from('sales_leads')
           .insert({
@@ -650,11 +732,17 @@ export const useLeads = () => {
       console.error('Error migrating carts:', error);
       toast.error('Failed to migrate abandoned carts');
     }
-  };
+  }, [fetchLeads]);
 
-  // Delete multiple leads (admin only - permission checked at component level)
-  const deleteLeads = async (leadIds: string[]) => {
+  // OPTIMISTIC UPDATE: Delete leads with instant removal
+  const deleteLeads = useCallback(async (leadIds: string[]) => {
     if (leadIds.length === 0) return;
+
+    // Store previous state for potential rollback
+    const previousLeads = leads;
+    
+    // Optimistic update - remove from UI immediately
+    setLeads(prev => prev.filter(lead => !leadIds.includes(lead.id)));
 
     try {
       const { data, error } = await supabase
@@ -665,20 +753,20 @@ export const useLeads = () => {
 
       if (error) throw error;
 
-      // Check if any rows were actually deleted (RLS may block silently)
       const deletedCount = data?.length || 0;
       if (deletedCount === 0) {
-        toast.error('Unable to delete leads. You may not have permission to delete these leads.');
+        toast.error('Unable to delete leads. You may not have permission.');
+        setLeads(previousLeads); // Rollback
         return;
       }
 
       toast.success(`Deleted ${deletedCount} lead${deletedCount > 1 ? 's' : ''}`);
-      fetchLeads();
     } catch (error) {
       console.error('Error deleting leads:', error);
       toast.error('Failed to delete leads');
+      setLeads(previousLeads); // Rollback
     }
-  };
+  }, [leads]);
 
   return {
     leads,
