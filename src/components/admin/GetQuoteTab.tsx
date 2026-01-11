@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
@@ -1586,6 +1586,37 @@ Questions? Call 0330 229 5040`;
                     className="flex-1"
                   >
                     Back
+                  </Button>
+                  <Button 
+                    variant="secondary"
+                    onClick={() => {
+                      // Save quote data to localStorage for later
+                      const savedQuote = {
+                        vehicleData,
+                        customerName,
+                        customerEmail,
+                        customerPhone,
+                        paymentType,
+                        excessAmount,
+                        claimLimit,
+                        labourRate,
+                        boostAddon,
+                        selectedAddOns,
+                        currentPrice,
+                        savedAt: new Date().toISOString()
+                      };
+                      const savedQuotes = JSON.parse(localStorage.getItem('admin_saved_quotes') || '[]');
+                      savedQuotes.unshift(savedQuote);
+                      localStorage.setItem('admin_saved_quotes', JSON.stringify(savedQuotes.slice(0, 50)));
+                      toast({
+                        title: "Quote saved",
+                        description: "Quote saved for later. You can find it in your saved quotes.",
+                      });
+                    }}
+                    className="flex-1"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Quote
                   </Button>
                   <Button 
                     onClick={handleCalculateQuote}
