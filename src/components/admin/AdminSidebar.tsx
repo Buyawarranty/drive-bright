@@ -93,9 +93,9 @@ const defaultTabs: Tab[] = [
   },
   {
     id: 'get-quote',
-    label: 'Send a Quote',
+    label: 'Quotes & Orders',
     icon: Calculator,
-    description: 'Generate and send quotes to customers'
+    description: 'Create quotes or confirm paid orders'
   },
   {
     id: 'selling-tips',

@@ -7,7 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
 import MileageSlider from '@/components/MileageSlider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -90,6 +92,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [selectedHistoryQuote, setSelectedHistoryQuote] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('new');
   const [adminEmail, setAdminEmail] = useState<string | null>(null);
+  
+  // Confirm as Paid state
+  const [isConfirmingPaid, setIsConfirmingPaid] = useState(false);
+  const [paymentReference, setPaymentReference] = useState('');
+  const [sendToW2k, setSendToW2k] = useState(true);
+  const [sendWelcomeEmail, setSendWelcomeEmail] = useState(true);
 
   // Handle lead selection (from search or pre-populated)
   const handleLeadSelect = (lead: LeadData) => {
@@ -772,19 +780,222 @@ Questions? Call 0330 229 5040`;
     toast({ title: "✓ Quote link copied!", duration: 2000 });
   };
 
+  // Generate warranty reference for confirmed orders
+  const generateWarrantyReference = (): string => {
+    const date = new Date();
+    const year = String(date.getFullYear()).slice(-2);
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const dateCode = `${year}${month}`;
+    const randomSerial = Math.floor(Math.random() * 100000) + 500000;
+    return `ADM-${dateCode}-${randomSerial}`;
+  };
+
+  // Handle confirm as paid - creates customer and policy records directly
+  const handleConfirmAsPaid = async () => {
+    if (!customerEmail || !customerName || !vehicleData) {
+      toast({
+        title: "Missing Information",
+        description: "Please ensure customer and vehicle details are complete",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsConfirmingPaid(true);
+    const warrantyReference = generateWarrantyReference();
+    const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
+    const termOption = termOptions.find(t => t.id === paymentType);
+    const durationMonths = termOption?.months || 12;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // Check for existing customer by email
+      const { data: existingCustomer } = await supabase
+        .from('customers')
+        .select('id, name, email, registration_plate')
+        .ilike('email', customerEmail)
+        .maybeSingle();
+
+      let customerId: string;
+      
+      // Customer record data
+      const customerData = {
+        name: customerName,
+        email: customerEmail.toLowerCase(),
+        phone: customerPhone || null,
+        registration_plate: vehicleData.regNumber?.toUpperCase() || null,
+        vehicle_make: vehicleData.make || null,
+        vehicle_model: vehicleData.model || null,
+        vehicle_year: vehicleData.year || null,
+        vehicle_fuel_type: vehicleData.fuelType || null,
+        vehicle_transmission: vehicleData.transmission || null,
+        mileage: vehicleData.mileage || null,
+        plan_type: 'Platinum',
+        payment_type: paymentType,
+        status: 'Active',
+        warranty_reference_number: warrantyReference,
+        voluntary_excess: excessAmount,
+        claim_limit: displayClaimLimit,
+        labour_rate: labourRate,
+        final_amount: currentPrice.totalPrice,
+        is_manual_entry: true,
+        payment_verified: true, // Marked as verified since admin confirmed payment
+        breakdown_recovery: getAutoIncludedAddOns(paymentType).includes('breakdown'),
+        vehicle_rental: getAutoIncludedAddOns(paymentType).includes('rental'),
+      };
+
+      if (existingCustomer) {
+        // Update existing customer
+        const { error: updateError } = await supabase
+          .from('customers')
+          .update({ ...customerData, updated_at: new Date().toISOString() })
+          .eq('id', existingCustomer.id);
+        
+        if (updateError) throw updateError;
+        customerId = existingCustomer.id;
+      } else {
+        // Create new customer
+        const { data: newCustomer, error: insertError } = await supabase
+          .from('customers')
+          .insert(customerData)
+          .select('id')
+          .single();
+        
+        if (insertError) throw insertError;
+        customerId = newCustomer.id;
+      }
+
+      // Calculate policy dates
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + durationMonths);
+
+      // Create policy record
+      const { error: policyError } = await supabase
+        .from('customer_policies')
+        .insert({
+          customer_id: customerId,
+          email: customerEmail.toLowerCase(),
+          customer_full_name: customerName,
+          plan_type: 'platinum',
+          payment_type: paymentType,
+          policy_number: warrantyReference,
+          policy_start_date: startDate.toISOString(),
+          policy_end_date: endDate.toISOString(),
+          status: 'active',
+          voluntary_excess: excessAmount,
+          claim_limit: displayClaimLimit,
+          payment_amount: currentPrice.totalPrice,
+          breakdown_recovery: getAutoIncludedAddOns(paymentType).includes('breakdown'),
+          vehicle_rental: getAutoIncludedAddOns(paymentType).includes('rental'),
+          is_manual_entry: true,
+          payment_verified: true,
+        });
+
+      if (policyError) throw policyError;
+
+      // Mark any abandoned carts as converted
+      await supabase
+        .from('abandoned_carts')
+        .update({ 
+          is_converted: true, 
+          converted_at: new Date().toISOString(),
+          contact_status: 'converted'
+        })
+        .eq('email', customerEmail.toLowerCase());
+
+      // Mark any sales leads as converted
+      if (selectedLeadId) {
+        await supabase
+          .from('sales_leads')
+          .update({
+            status: 'converted',
+            converted_at: new Date().toISOString()
+          })
+          .eq('id', selectedLeadId);
+      }
+
+      // Send to Warranties 2000 if checked
+      if (sendToW2k) {
+        try {
+          await supabase.functions.invoke('send-to-warranties-2000', {
+            body: { email: customerEmail.toLowerCase(), notes: additionalNotes || paymentReference }
+          });
+        } catch (w2kError) {
+          console.error('W2K error:', w2kError);
+          // Don't block on W2K failure
+        }
+      }
+
+      // Send welcome email if checked
+      if (sendWelcomeEmail) {
+        try {
+          await supabase.functions.invoke('send-welcome-email-manual', {
+            body: { 
+              customerEmail: customerEmail.toLowerCase(),
+              customerName,
+              warrantyReference,
+              planType: 'Platinum',
+              vehicleReg: vehicleData.regNumber
+            }
+          });
+        } catch (emailError) {
+          console.error('Welcome email error:', emailError);
+        }
+      }
+
+      toast({
+        title: "✅ Order Confirmed!",
+        description: `Warranty ${warrantyReference} created for ${customerName}`,
+        duration: 5000,
+      });
+
+      // Reset form
+      setStep(1);
+      setRegNumber('');
+      setMileage('');
+      setSliderMileage(0);
+      setVehicleData(null);
+      setCustomerEmail('');
+      setCustomerName('');
+      setCustomerPhone('');
+      setPaymentType('24months');
+      setExcessAmount(100);
+      setClaimLimit(1250);
+      setLabourRate(70);
+      setBoostAddon(false);
+      setAdditionalNotes('');
+      setQuoteLink(null);
+      setQuoteGenerated(false);
+      setPaymentReference('');
+      setSelectedLeadId(null);
+
+    } catch (error: any) {
+      console.error('Error confirming order:', error);
+      toast({
+        title: "❌ Error Confirming Order",
+        description: error.message || "Failed to create order",
+        variant: "destructive",
+      });
+    } finally {
+      setIsConfirmingPaid(false);
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Send a Quote</h1>
-        <p className="text-gray-600 mt-2">Generate and send quotes with tracking history</p>
+        <h1 className="text-3xl font-bold text-gray-900">Quotes & Orders</h1>
+        <p className="text-gray-600 mt-2">Create quotes to send customers or confirm orders paid elsewhere</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="new">New Quote</TabsTrigger>
+          <TabsTrigger value="new">New Quote/Order</TabsTrigger>
           <TabsTrigger value="history">
             <History className="w-4 h-4 mr-2" />
-            Quote History ({sentQuotes.length})
+            History ({sentQuotes.length})
           </TabsTrigger>
         </TabsList>
 
@@ -1156,19 +1367,22 @@ Questions? Call 0330 229 5040`;
             </Card>
           )}
 
-          {/* Step 3: Send Quote */}
+          {/* Step 3: Choose Action */}
           {step === 3 && (
             <Card>
               <CardHeader>
-                <CardTitle>Step 3: Send Quote</CardTitle>
+                <CardTitle>Step 3: Complete Order</CardTitle>
                 <CardDescription>
-                  Quote: £{currentPrice.monthlyPrice}/month for {customerName}
+                  Choose to send a quote or confirm payment received elsewhere
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
+                {/* Quote Summary */}
                 <div className="bg-muted p-4 rounded-lg">
-                  <h3 className="font-semibold mb-2">Quote Summary</h3>
+                  <h3 className="font-semibold mb-2">Order Summary</h3>
                   <div className="grid grid-cols-2 gap-2 text-sm">
+                    <p><strong>Customer:</strong> {customerName}</p>
+                    <p><strong>Email:</strong> {customerEmail}</p>
                     <p><strong>Vehicle:</strong> {vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
                     <p><strong>Registration:</strong> {vehicleData?.regNumber}</p>
                     <p><strong>Mileage:</strong> {parseInt(vehicleData?.mileage || '0').toLocaleString()} miles</p>
@@ -1176,115 +1390,157 @@ Questions? Call 0330 229 5040`;
                     <p><strong>Excess:</strong> £{excessAmount}</p>
                     <p><strong>Claim Limit:</strong> £{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}{boostAddon ? ' (boost)' : ''}</p>
                     <p><strong>Labour Rate:</strong> £{labourRate}/hr</p>
+                    <p><strong>Total Price:</strong> £{currentPrice.totalPrice}</p>
                     {additionalNotes && <p className="col-span-2"><strong>Notes:</strong> {additionalNotes}</p>}
                   </div>
                 </div>
 
-                {/* Payment Options Card */}
-                {/* Single Quote Link Card */}
-                <div className="p-6 rounded-lg border-2 border-primary/30 bg-primary/5">
-                  <div className="flex items-center gap-2 mb-4">
-                    <LinkIcon className="w-5 h-5 text-primary" />
-                    <h4 className="font-semibold text-foreground">Customer Quote Link</h4>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="text-center p-3 rounded-lg bg-blue-50 border border-blue-200">
-                      <div className="text-lg font-bold text-blue-800">£{currentPrice.monthlyPrice}/month</div>
-                      <p className="text-xs text-blue-600">Monthly via Bumper</p>
+                {/* Two Action Cards */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  {/* Option 1: Send Quote */}
+                  <div className="p-5 rounded-lg border-2 border-blue-200 bg-blue-50/50 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Send className="w-5 h-5 text-blue-600" />
+                      <h4 className="font-semibold text-blue-900">Send Quote to Customer</h4>
                     </div>
-                    <div className="text-center p-3 rounded-lg bg-orange-50 border border-orange-200">
-                      <div className="text-lg font-bold text-orange-800">£{currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}</div>
-                      <p className="text-xs text-orange-600">Pay in Full (10% off)</p>
+                    <p className="text-sm text-blue-700">
+                      Customer will receive a link to complete payment via Bumper (monthly) or Stripe (pay in full).
+                    </p>
+                    <div className="flex gap-2 text-sm">
+                      <span className="px-2 py-1 rounded bg-blue-100 text-blue-800">£{currentPrice.monthlyPrice}/mo</span>
+                      <span className="px-2 py-1 rounded bg-orange-100 text-orange-800">£{currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)} upfront</span>
                     </div>
-                  </div>
-                  
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Customer will see both payment options when they open this link
-                  </p>
-                  
-                  {isGeneratingQuoteLink ? (
-                    <div className="flex items-center justify-center py-4 text-primary">
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      <span>Generating quote link...</span>
-                    </div>
-                  ) : quoteLink ? (
-                    <div className="space-y-3">
-                      <div className="flex gap-2">
-                        <a href={quoteLink} target="_blank" rel="noopener noreferrer" className="flex-1">
+                    
+                    {isGeneratingQuoteLink ? (
+                      <div className="flex items-center gap-2 text-blue-600">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span className="text-sm">Generating quote link...</span>
+                      </div>
+                    ) : quoteLink ? (
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
                           <Button
                             onClick={handleCopyQuoteLink}
-                            className="w-full"
-                            size="lg"
+                            size="sm"
+                            variant="outline"
+                            className="flex-1"
                           >
-                            📋 Copy Quote Link
+                            📋 Copy Link
                           </Button>
-                        </a>
-                        <Button
-                          onClick={() => window.open(quoteLink, '_blank')}
-                          variant="outline"
-                          size="lg"
+                          <Button
+                            onClick={() => window.open(quoteLink, '_blank')}
+                            size="sm"
+                            variant="outline"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <Button 
+                          onClick={handlePreviewEmail}
+                          className="w-full bg-blue-600 hover:bg-blue-700"
                         >
-                          <Eye className="w-4 h-4 mr-2" />
-                          Preview
+                          <Mail className="w-4 h-4 mr-2" />
+                          Email Quote
+                        </Button>
+                        <Button 
+                          onClick={() => window.open('https://wa.me/447467703287', '_blank')}
+                          variant="outline"
+                          className="w-full border-green-500 text-green-600 hover:bg-green-50"
+                        >
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          WhatsApp
                         </Button>
                       </div>
-                      <p className="text-sm text-green-600 text-center">
-                        ✓ Quote ready - customer can choose to pay monthly or in full
-                      </p>
+                    ) : (
+                      <Button onClick={handleRetryQuoteLink} variant="outline" size="sm">
+                        Retry Link Generation
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Option 2: Confirm as Paid */}
+                  <div className="p-5 rounded-lg border-2 border-green-200 bg-green-50/50 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-green-600" />
+                      <h4 className="font-semibold text-green-900">Confirm Payment Received</h4>
                     </div>
-                  ) : (
-                    <div className="text-center py-4">
-                      <p className="text-sm text-red-600 mb-2">⚠️ Failed to generate quote link</p>
-                      <Button
-                        onClick={handleRetryQuoteLink}
-                        variant="outline"
-                        size="sm"
+                    <p className="text-sm text-green-700">
+                      Payment was made via phone, bank transfer, or other portal. Create the order directly.
+                    </p>
+                    
+                    <div className="space-y-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="payment-ref" className="text-sm text-green-800">Payment Reference (optional)</Label>
+                        <Input
+                          id="payment-ref"
+                          value={paymentReference}
+                          onChange={(e) => setPaymentReference(e.target.value)}
+                          placeholder="e.g. Bank ref, Stripe ID, etc."
+                          className="bg-white border-green-200"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2 pt-2 border-t border-green-200">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox 
+                            id="send-w2k" 
+                            checked={sendToW2k}
+                            onCheckedChange={(checked) => setSendToW2k(checked === true)}
+                          />
+                          <Label htmlFor="send-w2k" className="text-sm text-green-800 cursor-pointer">
+                            Send to Warranties 2000
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox 
+                            id="send-welcome" 
+                            checked={sendWelcomeEmail}
+                            onCheckedChange={(checked) => setSendWelcomeEmail(checked === true)}
+                          />
+                          <Label htmlFor="send-welcome" className="text-sm text-green-800 cursor-pointer">
+                            Send welcome email to customer
+                          </Label>
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        onClick={handleConfirmAsPaid}
+                        disabled={isConfirmingPaid}
+                        className="w-full bg-green-600 hover:bg-green-700"
                       >
-                        Retry
+                        {isConfirmingPaid ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Creating Order...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 className="w-4 h-4 mr-2" />
+                            Confirm as Paid
+                          </>
+                        )}
                       </Button>
                     </div>
-                  )}
+                  </div>
                 </div>
 
                 {adminEmail && (
-                  <div className="text-sm text-muted-foreground">
-                    ✉️ A copy will also be sent to: {adminEmail}
+                  <div className="text-sm text-muted-foreground text-center">
+                    ✉️ Email copy will be sent to: {adminEmail}
                   </div>
                 )}
 
-                <div className="flex gap-3">
-                  <Button 
-                    variant="outline"
-                    onClick={() => {
-                      setQuoteGenerated(false);
-                      setQuoteLink(null);
-                      setStep(2);
-                    }}
-                  >
-                    Back
-                  </Button>
-                  <a href={quoteLink || '#'} target="_blank" rel="noopener noreferrer" className="flex-1">
-                    <Button 
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handlePreviewEmail();
-                      }}
-                      className="w-full"
-                    >
-                      <Mail className="w-4 h-4 mr-2" />
-                      Email Quote
-                    </Button>
-                  </a>
-                  <Button 
-                    onClick={() => window.open('https://wa.me/447467703287', '_blank')}
-                    variant="outline"
-                    className="border-green-500 text-green-600 hover:bg-green-50"
-                  >
-                    <MessageCircle className="w-4 h-4 mr-2 text-green-500" />
-                    WhatsApp
-                  </Button>
-                </div>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setQuoteGenerated(false);
+                    setQuoteLink(null);
+                    setStep(2);
+                  }}
+                  className="w-full"
+                >
+                  ← Back to Edit Details
+                </Button>
               </CardContent>
             </Card>
           )}
@@ -1439,7 +1695,7 @@ Questions? Call 0330 229 5040`;
         <TabsContent value="history" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Sent Quotes History</CardTitle>
+              <CardTitle>Quote & Order History</CardTitle>
               <CardDescription>View and resend previously sent quotes</CardDescription>
             </CardHeader>
             <CardContent>
