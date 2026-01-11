@@ -22,7 +22,7 @@ import {
   DURATION_MONTHS,
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
-import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
+import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
 
 interface VehicleData {
   regNumber: string;
@@ -79,7 +79,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [claimLimit, setClaimLimit] = useState(1250);
   const [labourRate, setLabourRate] = useState(70);
   const [boostAddon, setBoostAddon] = useState(false);
+  const [selectedAddOns, setSelectedAddOns] = useState<{ [key: string]: boolean }>({});
   const [additionalNotes, setAdditionalNotes] = useState('');
+  
+  // Validation state
+  const [showNameError, setShowNameError] = useState(false);
+  const [showEmailError, setShowEmailError] = useState(false);
   const [customMonthlyPrice, setCustomMonthlyPrice] = useState('');
   const [customFullPrice, setCustomFullPrice] = useState('');
   const [showEmailDialog, setShowEmailDialog] = useState(false);
@@ -164,11 +169,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     
     // Auto-included add-ons based on duration (2yr gets breakdown, 3yr gets breakdown+rental)
     const autoIncluded = getAutoIncludedAddOns(paymentType);
-    const autoAddOns: { [key: string]: boolean } = {};
-    autoIncluded.forEach(addon => { autoAddOns[addon] = true; });
     
-    // Calculate add-on price (auto-included ones are free, so this will be 0 for auto-included)
-    const addOnPrice = calculateAddOnPrice(autoAddOns, paymentType, durationMonths);
+    // Calculate add-on price from selected add-ons (excluding auto-included)
+    const addOnPrice = calculateAddOnPrice(selectedAddOns, paymentType, durationMonths);
     
     const result = calculateTotalWarrantyPrice({
       paymentPeriod: paymentType,
@@ -227,7 +230,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   // Reset price override when any selection changes
   useEffect(() => {
     setIsPriceOverridden(false);
-  }, [paymentType, excessAmount, claimLimit, labourRate, boostAddon]);
+  }, [paymentType, excessAmount, claimLimit, labourRate, boostAddon, selectedAddOns]);
 
   // Auto-populate custom price fields when selections change (if not manually overridden)
   useEffect(() => {
@@ -235,7 +238,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       setCustomMonthlyPrice(basePrice.monthlyPrice.toString());
       setCustomFullPrice(basePrice.totalPrice.toString());
     }
-  }, [paymentType, excessAmount, claimLimit, labourRate, boostAddon, isPriceOverridden]);
+  }, [paymentType, excessAmount, claimLimit, labourRate, boostAddon, selectedAddOns, isPriceOverridden]);
 
   // Handle custom price field changes
   const handleCustomMonthlyChange = (value: string) => {
@@ -372,15 +375,39 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   };
 
   const handleCalculateQuote = () => {
-    if (!customerEmail || !customerName) {
+    let hasError = false;
+    
+    if (!customerName.trim()) {
+      setShowNameError(true);
+      hasError = true;
+    } else {
+      setShowNameError(false);
+    }
+    
+    if (!customerEmail.trim() || !customerEmail.includes('@')) {
+      setShowEmailError(true);
+      hasError = true;
+    } else {
+      setShowEmailError(false);
+    }
+    
+    if (hasError) {
       toast({
         title: "Missing Information",
-        description: "Please fill in customer name and email",
+        description: "Please fill in customer name and a valid email address",
         variant: "destructive",
       });
       return;
     }
     setStep(3);
+  };
+  
+  // Toggle an add-on
+  const handleToggleAddOn = (key: string) => {
+    setSelectedAddOns(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
   };
 
   const generateEmailSubject = (): string => {
@@ -1097,10 +1124,14 @@ Questions? Call 0330 229 5040`;
     setClaimLimit(1250);
     setLabourRate(70);
     setBoostAddon(false);
+    setSelectedAddOns({});
     setAdditionalNotes('');
     setQuoteLink(null);
     setQuoteGenerated(false);
     setSelectedLeadId(null);
+    // Reset validation state
+    setShowNameError(false);
+    setShowEmailError(false);
     // Reset payment confirmation fields
     setPaymentSource('');
     setPaymentReference('');
@@ -1215,23 +1246,45 @@ Questions? Call 0330 229 5040`;
                 {/* Customer Info */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Customer Name</Label>
+                    <Label>Customer Name <span className="text-red-500">*</span></Label>
                     <Input
                       value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
+                      onChange={(e) => {
+                        setCustomerName(e.target.value);
+                        if (showNameError && e.target.value.trim()) setShowNameError(false);
+                      }}
                       placeholder="e.g. John Smith"
-                      className="bg-amber-50 border-amber-200 focus:border-amber-400"
+                      className={cn(
+                        "bg-amber-50 border-amber-200 focus:border-amber-400",
+                        showNameError && "border-red-500 bg-red-50"
+                      )}
                     />
+                    {showNameError && (
+                      <p className="text-sm text-red-500 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" /> Customer name is required
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
-                    <Label>Customer Email</Label>
+                    <Label>Customer Email <span className="text-red-500">*</span></Label>
                     <Input
                       type="email"
                       value={customerEmail}
-                      onChange={(e) => setCustomerEmail(e.target.value)}
+                      onChange={(e) => {
+                        setCustomerEmail(e.target.value);
+                        if (showEmailError && e.target.value.includes('@')) setShowEmailError(false);
+                      }}
                       placeholder="customer@example.com"
-                      className="bg-amber-50 border-amber-200 focus:border-amber-400"
+                      className={cn(
+                        "bg-amber-50 border-amber-200 focus:border-amber-400",
+                        showEmailError && "border-red-500 bg-red-50"
+                      )}
                     />
+                    {showEmailError && (
+                      <p className="text-sm text-red-500 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" /> Valid email address is required
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -1311,22 +1364,61 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
 
-                {/* Auto-Included Add-ons Display */}
-                {getAutoIncludedAddOns(paymentType).length > 0 && (
-                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                    <div className="flex items-center gap-2 text-green-700">
-                      <span className="text-sm font-medium">✓ Included FREE with {termOptions.find(t => t.id === paymentType)?.label}:</span>
-                      <div className="flex gap-2">
-                        {getAutoIncludedAddOns(paymentType).includes('breakdown') && (
-                          <Badge variant="outline" className="bg-green-100 border-green-300 text-green-800">Vehicle Recovery</Badge>
-                        )}
-                        {getAutoIncludedAddOns(paymentType).includes('rental') && (
-                          <Badge variant="outline" className="bg-green-100 border-green-300 text-green-800">Hire Car</Badge>
-                        )}
+                {/* Optional Add-ons Section */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">Optional Add-ons</Label>
+                  
+                  {/* Auto-Included Add-ons Display */}
+                  {getAutoIncludedAddOns(paymentType).length > 0 && (
+                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                      <div className="flex items-center gap-2 text-green-700">
+                        <span className="text-sm font-medium">✓ Included FREE with {termOptions.find(t => t.id === paymentType)?.label}:</span>
+                        <div className="flex gap-2">
+                          {getAutoIncludedAddOns(paymentType).includes('breakdown') && (
+                            <Badge variant="outline" className="bg-green-100 border-green-300 text-green-800">Vehicle Recovery</Badge>
+                          )}
+                          {getAutoIncludedAddOns(paymentType).includes('rental') && (
+                            <Badge variant="outline" className="bg-green-100 border-green-300 text-green-800">Hire Car</Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
+                  )}
+
+                  {/* Selectable Add-ons Grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {getAddOnInfo(paymentType, DURATION_MONTHS[paymentType]).map((addon) => {
+                      const isAutoIncluded = addon.isAutoIncluded;
+                      const isSelected = selectedAddOns[addon.key] || isAutoIncluded;
+                      
+                      return (
+                        <button
+                          key={addon.key}
+                          onClick={() => !isAutoIncluded && handleToggleAddOn(addon.key)}
+                          disabled={isAutoIncluded}
+                          className={cn(
+                            "p-3 rounded-lg border-2 text-left transition-all",
+                            isAutoIncluded 
+                              ? "border-green-300 bg-green-50 cursor-default" 
+                              : isSelected
+                                ? "border-primary bg-primary/10"
+                                : "border-border hover:border-primary/50"
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-medium text-sm">{addon.name}</span>
+                            {isAutoIncluded ? (
+                              <Badge variant="outline" className="text-[10px] bg-green-100 border-green-300 text-green-700">FREE</Badge>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">{addon.displayPrice}</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">{addon.description}</p>
+                        </button>
+                      );
+                    })}
                   </div>
-                )}
+                </div>
 
                 {/* Boost Addon */}
                 <div className="flex items-center justify-between p-4 rounded-lg border-2 border-dashed border-amber-400 bg-amber-50">
@@ -1571,7 +1663,11 @@ Questions? Call 0330 229 5040`;
                           Email Quote
                         </Button>
                         <Button 
-                          onClick={() => window.open('https://wa.me/447467703287', '_blank')}
+                          onClick={() => {
+                            const message = `Hi ${customerName?.split(' ')[0] || 'there'},\n\nYour warranty quote for ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber}) is ready!\n\n💰 £${currentPrice.monthlyPrice}/month via Bumper\n💳 £${currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)} pay in full (10% off)\n\n🔗 Complete your purchase: ${quoteLink}\n\nBuyawarranty Customer Care\n📞 0330 229 5040`;
+                            const encodedMessage = encodeURIComponent(message);
+                            window.open(`https://api.whatsapp.com/send?text=${encodedMessage}`, '_blank');
+                          }}
                           variant="outline"
                           className="w-full border-green-500 text-green-600 hover:bg-green-50"
                         >
