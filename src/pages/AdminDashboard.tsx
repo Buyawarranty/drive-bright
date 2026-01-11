@@ -70,7 +70,8 @@ interface LeadForQuote {
 }
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('customers');
+  // Initialize with null to prevent rendering wrong tab before role check
+  const [activeTab, setActiveTab] = useState<string | null>(null);
   const [isCheckingRole, setIsCheckingRole] = useState(true);
   const [hasAdminAccess, setHasAdminAccess] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -85,10 +86,10 @@ const AdminDashboard = () => {
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useAdminNotifications();
   
   // Track user presence with current tab
-  useUserPresence({ currentTab: activeTab });
+  useUserPresence({ currentTab: activeTab || 'customers' });
 
   // Track tab history for back navigation
-  const [tabHistory, setTabHistory] = useState<string[]>(['customers']);
+  const [tabHistory, setTabHistory] = useState<string[]>([]);
 
   // Handle tab changes and update history
   const handleTabChange = useCallback((newTab: string, leadData?: LeadForQuote) => {
@@ -204,19 +205,25 @@ const AdminDashboard = () => {
       if (!hasSetInitialTab) {
         setHasSetInitialTab(true);
         
+        let defaultTab = 'customers'; // Default for admins
+        
         // Set default tab for blog writers
         if (primaryRole === 'blog_writer') {
-          setActiveTab('blog-writing');
+          defaultTab = 'blog-writing';
         } else if (primaryRole === 'sales') {
-          setActiveTab('new-leads');
+          defaultTab = 'new-leads';
         } else if (!['admin'].includes(primaryRole) && adminUserData?.permissions) {
           // For users with custom permissions, set first allowed tab
           const perms = adminUserData.permissions as Record<string, boolean>;
           const firstAllowedTab = Object.keys(perms).find(key => key.startsWith('tab_') && perms[key]);
           if (firstAllowedTab) {
-            setActiveTab(firstAllowedTab.replace('tab_', ''));
+            defaultTab = firstAllowedTab.replace('tab_', '');
           }
         }
+        
+        console.log('🎯 Setting default tab for role', primaryRole, ':', defaultTab);
+        setActiveTab(defaultTab);
+        setTabHistory([defaultTab]);
       }
     } catch (error) {
       console.error('💥 Error checking admin access:', error);
@@ -225,8 +232,8 @@ const AdminDashboard = () => {
     }
   };
 
-  // Show loading while checking auth or role
-  if (authLoading || isCheckingRole || !hasAdminAccess) {
+  // Show loading while checking auth or role or tab not yet set
+  if (authLoading || isCheckingRole || !hasAdminAccess || !activeTab) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
