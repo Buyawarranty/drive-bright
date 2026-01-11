@@ -279,8 +279,8 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
       // Boost addon: +£5/month for duration
       const boostCost = boostAddon ? (5 * durationMonths) : 0;
       
-      // Labour rate adjustment: £40=-£5/mo, £50=base, £70=+£4/mo, £100=+£8/mo
-      const labourMonthlyAdjust = selectedLabourRate === 40 ? -5 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : 0;
+      // Labour rate adjustment: £40=-£5/mo, £50=base, £70=+£4/mo, £100=+£8/mo, £200=+£24/mo
+      const labourMonthlyAdjust = selectedLabourRate === 40 ? -5 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
       const labourAdjust = labourMonthlyAdjust * durationMonths;
 
       const rawTotalPrice = adjustedPrice + addOnPrice + boostCost + labourAdjust;
