@@ -341,6 +341,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 onUpdateNotes={updateLeadNotes}
                 onMarkContacted={markContactedAt}
                 onLogActivity={logActivity}
+                onRefresh={fetchLeads}
                 onSendQuote={(lead) => {
                   if (onNavigateToTab) {
                     onNavigateToTab('get-quote', {

@@ -24,13 +24,15 @@ interface LeadDetailsPanelProps {
   onUpdateNotes: (leadId: string, notes: string) => void;
   onLogActivity: (leadId: string, type: string, description: string) => void;
   onRefresh?: () => void;
+  onNavigateToQuote?: (lead: Lead) => void;
 }
 
 export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   lead,
   onUpdateNotes,
   onLogActivity,
-  onRefresh
+  onRefresh,
+  onNavigateToQuote
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [notesValue, setNotesValue] = useState(lead.notes || '');
@@ -496,6 +498,7 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
         open={isMarkPaidDialogOpen}
         onOpenChange={setIsMarkPaidDialogOpen}
         onSuccess={onRefresh}
+        onNavigateToQuote={onNavigateToQuote ? () => onNavigateToQuote(lead) : undefined}
       />
     </div>
   );
