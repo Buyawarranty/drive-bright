@@ -1166,9 +1166,19 @@ Questions? Call 0330 229 5040`;
             <Card>
               <CardHeader>
                 <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <CardTitle>Step 1: Vehicle Details</CardTitle>
-                    <CardDescription>Enter the customer's vehicle registration and mileage</CardDescription>
+                  <div className="flex items-center gap-3">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={resetForm}
+                      className="text-muted-foreground hover:text-foreground -ml-2"
+                    >
+                      ← Back
+                    </Button>
+                    <div>
+                      <CardTitle>Step 1: Vehicle Details</CardTitle>
+                      <CardDescription>Enter the customer's vehicle registration and mileage</CardDescription>
+                    </div>
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <LeadSearchPopover onSelectLead={handleLeadSelect} />
