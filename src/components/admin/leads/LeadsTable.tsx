@@ -40,6 +40,7 @@ interface LeadsTableProps {
   onMarkContacted: (leadId: string) => void;
   onLogActivity: (leadId: string, type: string, description: string) => void;
   onSendQuote?: (lead: Lead) => void;
+  onRefresh?: () => void;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -221,7 +222,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
   onUpdateNotes,
   onMarkContacted,
   onLogActivity,
-  onSendQuote
+  onSendQuote,
+  onRefresh
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
@@ -850,6 +852,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = ({
                         lead={lead}
                         onUpdateNotes={onUpdateNotes}
                         onLogActivity={onLogActivity}
+                        onRefresh={onRefresh}
+                        onNavigateToQuote={onSendQuote}
                       />
                     </TableCell>
                   </TableRow>
