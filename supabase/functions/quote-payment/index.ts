@@ -13,6 +13,80 @@ const logStep = (step: string, details?: any) => {
   console.log(`[QUOTE-PAYMENT] ${timestamp} ${step}${detailsStr}`);
 };
 
+// Generate signature for Bumper API according to their exact documentation
+async function generateSignature(payload: any, secretKey: string): Promise<string> {
+  logStep('🔐 Starting signature generation with Bumper specification', { 
+    payloadKeys: Object.keys(payload),
+    secretKeyLength: secretKey.length 
+  });
+  
+  // Create a copy and remove excluded fields as per Bumper docs:
+  // "except for api_key, signature, product_description, preferred_product_type, and additional_data parameters"
+  const filteredPayload = { ...payload };
+  delete filteredPayload.api_key;
+  delete filteredPayload.signature;
+  delete filteredPayload.product_description;
+  delete filteredPayload.preferred_product_type;
+  delete filteredPayload.additional_data;
+  
+  logStep('🔍 Filtered payload (excluded signature fields)', { 
+    filteredKeys: Object.keys(filteredPayload),
+    excludedFields: ['api_key', 'signature', 'product_description', 'preferred_product_type', 'additional_data']
+  });
+  
+  // Sort keys alphabetically as per Bumper specification
+  const sortedKeys = Object.keys(filteredPayload).sort();
+  logStep('📋 Sorted keys alphabetically', sortedKeys);
+  
+  // Build signature string exactly as per Bumper specification:
+  // Format: "{PARAMETER}={value}&" where PARAMETER is upper-cased
+  let signatureString = '';
+  
+  for (const key of sortedKeys) {
+    const value = filteredPayload[key];
+    
+    // Handle boolean values - Bumper expects "True"/"False" (capitalized)
+    let stringValue: string;
+    if (typeof value === 'boolean') {
+      stringValue = value ? 'True' : 'False';
+    } else if (value === null || value === undefined) {
+      stringValue = '';
+    } else {
+      stringValue = String(value);
+    }
+    
+    // Parameter key should be upper-cased, value as-is
+    // Format: "{PARAMETER}={value}&"
+    signatureString += `${key.toUpperCase()}=${stringValue}&`;
+  }
+  
+  logStep('📝 Final signature string for HMAC', { 
+    signatureString,
+    length: signatureString.length 
+  });
+  
+  // Generate HMAC SHA-256 exactly as Bumper expects
+  const encoder = new TextEncoder();
+  const keyData = encoder.encode(secretKey);
+  const messageData = encoder.encode(signatureString);
+  
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, messageData);
+  const hashArray = Array.from(new Uint8Array(signature));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  
+  logStep('✅ Generated HMAC signature', { signature: hashHex });
+  
+  return hashHex;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -27,9 +101,13 @@ serve(async (req) => {
     );
 
     const body = await req.json();
-    const { accessToken, paymentMethod } = body;
+    const { accessToken, paymentMethod, customerData: providedCustomerData } = body;
 
-    logStep("Request data", { accessToken: accessToken?.substring(0, 8) + '...', paymentMethod });
+    logStep("Request data", { 
+      accessToken: accessToken?.substring(0, 8) + '...', 
+      paymentMethod,
+      hasCustomerData: !!providedCustomerData
+    });
 
     if (!accessToken || !paymentMethod) {
       return new Response(
@@ -140,38 +218,65 @@ serve(async (req) => {
       const totalAmount = quote.monthly_price * 12; // Total for Bumper finance
       const transactionId = `LQ-${quote.id.substring(0, 8)}-${Date.now()}`;
 
-      // Parse customer name
-      const nameParts = quote.customer_name.split(' ');
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
+      // Parse customer name from quote or provided data
+      const customerName = providedCustomerData?.fullName || quote.customer_name || '';
+      const nameParts = customerName.split(' ');
+      const firstName = providedCustomerData?.firstName || nameParts[0] || '';
+      const lastName = providedCustomerData?.lastName || nameParts.slice(1).join(' ') || '';
+
+      // Get address from provided customer data (from LiveQuotePage form)
+      const street = providedCustomerData?.addressLine1 || '';
+      const addressLine2 = providedCustomerData?.addressLine2 || '';
+      const town = providedCustomerData?.city || '';
+      const postcode = providedCustomerData?.postcode || '';
+      const phone = providedCustomerData?.phone || quote.customer_phone || '';
+
+      logStep("Customer data for Bumper", {
+        firstName,
+        lastName,
+        street,
+        town,
+        postcode,
+        hasProvidedData: !!providedCustomerData
+      });
 
       const successUrl = `https://mzlpuxzwyrcyrgrongeb.supabase.co/functions/v1/process-quote-bumper-success?quote_token=${accessToken}`;
       const failureUrl = `${origin}/quote/${accessToken}?failed=1`;
 
-      const bumperRequestData: Record<string, any> = {
+      // Build signature payload - must include ALL fields that will be in the request
+      const signaturePayload = {
         amount: totalAmount.toFixed(2),
-        preferred_product_type: "paylater",
-        api_key: bumperApiKey,
         success_url: successUrl,
         failure_url: failureUrl,
         currency: "GBP",
         order_reference: transactionId,
         first_name: firstName,
         last_name: lastName,
-        email: quote.customer_email,
-        mobile: quote.customer_phone || "",
-        vehicle_reg: quote.vehicle_reg,
+        email: quote.customer_email || '',
+        mobile: phone,
+        vehicle_reg: quote.vehicle_reg || '',
         flat_number: "",
-        building_name: "",
+        building_name: addressLine2,
         building_number: "",
-        street: "",
-        town: "",
+        street: street,
+        town: town,
         county: "",
-        postcode: "",
+        postcode: postcode,
         country: "UK",
         product_id: "4",
         send_sms: false,
-        send_email: false,
+        send_email: false
+      };
+
+      // Generate signature using the correct Bumper algorithm
+      const signature = await generateSignature(signaturePayload, bumperSecretKey);
+
+      // Build the actual request data
+      const bumperRequestData: Record<string, any> = {
+        ...signaturePayload,
+        preferred_product_type: "paylater",
+        api_key: bumperApiKey,
+        signature: signature,
         product_description: [{
           item: `${quote.plan_type} Vehicle Warranty - ${quote.duration_months + quote.bonus_months} Months`,
           quantity: "1",
@@ -179,38 +284,11 @@ serve(async (req) => {
         }]
       };
 
-      // Generate signature
-      const signaturePayload = { ...bumperRequestData };
-      delete signaturePayload.api_key;
-      delete signaturePayload.signature;
-      delete signaturePayload.product_description;
-      delete signaturePayload.preferred_product_type;
-      delete signaturePayload.additional_data;
-
-      const sortedKeys = Object.keys(signaturePayload).sort();
-      let signatureString = '';
-      for (const key of sortedKeys) {
-        const value = signaturePayload[key];
-        if (value !== undefined && value !== null && value !== '') {
-          signatureString += `${key.toUpperCase()}=${value}&`;
-        }
-      }
-      signatureString = signatureString.slice(0, -1);
-
-      const encoder = new TextEncoder();
-      const keyData = encoder.encode(bumperSecretKey);
-      const messageData = encoder.encode(signatureString);
-      const cryptoKey = await crypto.subtle.importKey(
-        "raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
-      );
-      const signatureBuffer = await crypto.subtle.sign("HMAC", cryptoKey, messageData);
-      const signature = Array.from(new Uint8Array(signatureBuffer))
-        .map(b => b.toString(16).padStart(2, '0'))
-        .join('');
-
-      bumperRequestData.signature = signature;
-
-      logStep("Calling Bumper API", { transactionId });
+      logStep("Calling Bumper API", { 
+        transactionId,
+        signatureGenerated: !!signature,
+        totalAmount: totalAmount.toFixed(2)
+      });
 
       const bumperResponse = await fetch("https://api.bumper.co/v2/apply/", {
         method: "POST",
@@ -236,7 +314,7 @@ serve(async (req) => {
         );
       } else {
         logStep("Bumper API error", { response: bumperData });
-        throw new Error(bumperData?.error || "Failed to create Bumper session");
+        throw new Error(bumperData?.message || bumperData?.error || "Failed to create Bumper session");
       }
 
     } else {
