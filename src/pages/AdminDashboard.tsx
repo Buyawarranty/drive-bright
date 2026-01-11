@@ -208,7 +208,7 @@ const AdminDashboard = () => {
         if (primaryRole === 'blog_writer') {
           setActiveTab('blog-writing');
         } else if (primaryRole === 'sales') {
-          setActiveTab('customers');
+          setActiveTab('new-leads');
         } else if (!['admin'].includes(primaryRole) && adminUserData?.permissions) {
           // For users with custom permissions, set first allowed tab
           const perms = adminUserData.permissions as Record<string, boolean>;

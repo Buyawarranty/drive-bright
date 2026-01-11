@@ -121,31 +121,49 @@ export const useLeads = () => {
     try {
       setLoading(true);
       
-      // Fetch sales_leads
-      let query = supabase
-        .from('sales_leads')
-        .select(`
-          *,
-          assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email)
-        `)
-        .order('created_at', { ascending: false });
+      // Use Promise.all to fetch both data sources in parallel for better performance
+      const [salesLeadsResult, abandonedCartsResult] = await Promise.all([
+        // Fetch sales_leads with optimized column selection
+        (async () => {
+          let query = supabase
+            .from('sales_leads')
+            .select(`
+              id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
+              plan_interest, cart_value, quote_amount, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
+              vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status,
+              last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
+              created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
+              assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email)
+            `)
+            .order('created_at', { ascending: false })
+            .limit(500); // Limit initial fetch for performance
 
-      if (filter !== 'all' && filter !== 'high_priority') {
-        query = query.eq('status', filter);
-      } else if (filter === 'high_priority') {
-        query = query.in('priority', ['high', 'urgent']);
-      }
+          if (filter !== 'all' && filter !== 'high_priority') {
+            query = query.eq('status', filter);
+          } else if (filter === 'high_priority') {
+            query = query.in('priority', ['high', 'urgent']);
+          }
 
-      const { data: salesLeadsData, error: salesError } = await query;
+          return query;
+        })(),
+        // Fetch abandoned carts with optimized column selection and limit
+        supabase
+          .from('abandoned_carts')
+          .select(`
+            id, full_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
+            vehicle_type, mileage, plan_name, payment_type, step_abandoned, contact_status,
+            contacted_by, last_contacted_at, contact_notes, cart_metadata, is_converted,
+            created_at, updated_at
+          `)
+          .eq('is_converted', false)
+          .order('created_at', { ascending: false })
+          .limit(500) // Limit for performance
+      ]);
+
+      const { data: salesLeadsData, error: salesError } = salesLeadsResult;
       if (salesError) throw salesError;
 
-      // Fetch abandoned carts that are NOT already linked to a sales lead
-      const { data: abandonedCartsData, error: cartsError } = await supabase
-        .from('abandoned_carts')
-        .select('*')
-        .eq('is_converted', false)
-        .order('created_at', { ascending: false });
-
+      const { data: abandonedCartsData, error: cartsError } = abandonedCartsResult;
       if (cartsError) throw cartsError;
 
       // Get IDs of abandoned carts already linked to sales_leads
