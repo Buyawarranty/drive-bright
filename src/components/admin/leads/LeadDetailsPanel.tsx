@@ -9,7 +9,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { 
   Phone, Mail, MessageSquare, Car, User, 
   ChevronDown, ChevronUp, Bold, Italic, List, 
-  Clock, Save, X, Plus, StickyNote
+  Clock, Save, X, Plus, StickyNote, CreditCard
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -17,23 +17,27 @@ import { cn } from '@/lib/utils';
 import { ManualOrderEntry } from '../ManualOrderEntry';
 import { InlineQuickNote } from './InlineQuickNote';
 import { RemindMePopover } from './RemindMePopover';
+import { MarkAsPaidDialog } from './MarkAsPaidDialog';
 
 interface LeadDetailsPanelProps {
   lead: Lead;
   onUpdateNotes: (leadId: string, notes: string) => void;
   onLogActivity: (leadId: string, type: string, description: string) => void;
+  onRefresh?: () => void;
 }
 
 export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   lead,
   onUpdateNotes,
-  onLogActivity
+  onLogActivity,
+  onRefresh
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [notesValue, setNotesValue] = useState(lead.notes || '');
   const [contactOpen, setContactOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(true);
   const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
+  const [isMarkPaidDialogOpen, setIsMarkPaidDialogOpen] = useState(false);
 
   // Prepare customer data for ManualOrderEntry pre-fill
   const customerDataForOrder = {
@@ -190,6 +194,20 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
               >
                 <Plus className="h-4 w-4 mr-1.5" />
                 Create Order
+              </Button>
+              
+              {/* Mark as Paid Button */}
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 text-green-600 border-green-200 hover:bg-green-50 hover:border-green-300"
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  setIsMarkPaidDialogOpen(true); 
+                }}
+              >
+                <CreditCard className="h-4 w-4 mr-1.5" />
+                Mark as Paid
               </Button>
               
               {/* Remind Me Button */}
@@ -471,6 +489,14 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
           />
         </DialogContent>
       </Dialog>
+
+      {/* Mark as Paid Dialog */}
+      <MarkAsPaidDialog
+        lead={lead}
+        open={isMarkPaidDialogOpen}
+        onOpenChange={setIsMarkPaidDialogOpen}
+        onSuccess={onRefresh}
+      />
     </div>
   );
 };
