@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useDataExport } from '@/hooks/useDataExport';
+import { useDebounce } from '@/hooks/useDebounce';
+import { usePagination } from '@/hooks/usePagination';
+import { PaginationControls } from '@/components/ui/pagination-controls';
 
 import { CustomerNotesSection } from './CustomerNotesSection';
 import { StructuredNotesSection } from './StructuredNotesSection';
@@ -336,6 +339,9 @@ export const CustomersTab = () => {
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [upgradeCustomer, setUpgradeCustomer] = useState<Customer | null>(null);
 
+  // Pagination for customers table - only paginate filtered results
+  const customersPagination = usePagination(filteredCustomers, { initialPageSize: 50 });
+
   useEffect(() => {
     fetchCustomers();
     fetchDeletedCustomers();
@@ -355,9 +361,12 @@ export const CustomersTab = () => {
     }
   }, [searchParams]);
 
+  // Debounce search term to avoid filtering on every keystroke
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
   useEffect(() => {
     applyFiltersAndSort();
-  }, [searchTerm, customers, sortBy, filterByPlan, filterByStatus, filterByTag]);
+  }, [debouncedSearchTerm, customers, sortBy, filterByPlan, filterByStatus, filterByTag]);
 
   const fetchAvailableTags = async () => {
     try {
@@ -374,12 +383,12 @@ export const CustomersTab = () => {
     }
   };
 
-  const applyFiltersAndSort = async () => {
+  const applyFiltersAndSort = useCallback(async () => {
     let filtered = [...customers];
 
-    // Apply comprehensive search filter across all customer fields
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
+    // Apply comprehensive search filter across all customer fields using debounced search term
+    if (debouncedSearchTerm) {
+      const searchLower = debouncedSearchTerm.toLowerCase();
       filtered = filtered.filter(customer =>
         // Basic info
         customer.name?.toLowerCase().includes(searchLower) ||
@@ -479,7 +488,7 @@ export const CustomersTab = () => {
     });
 
     setFilteredCustomers(filtered);
-  };
+  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag]);
 
   const getCurrentUser = async () => {
     try {

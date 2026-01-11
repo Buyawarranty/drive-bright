@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 // Tabs import removed - using custom button toggle
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useLeads, Lead } from '@/hooks/useLeads';
 import { LeadsTable } from './LeadsTable';
 import { LeadsFilters } from './LeadsFilters';
@@ -8,12 +8,15 @@ import { SalespersonDashboard } from './SalespersonDashboard';
 import { ManagerDashboard } from './ManagerDashboard';
 import { ManualOrderEntry } from '../ManualOrderEntry';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
+import { PaginationControls } from '@/components/ui/pagination-controls';
 import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useDataExport } from '@/hooks/useDataExport';
+import { useDebounce } from '@/hooks/useDebounce';
+import { usePagination } from '@/hooks/usePagination';
 
 // Lead data for quote navigation
 interface LeadForQuote {
@@ -104,10 +107,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     deleteLeads
   } = useLeads();
 
+  // Debounce search term to avoid filtering on every keystroke
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
   const filteredLeads = useMemo(() => {
-    if (!searchTerm) return leads;
+    if (!debouncedSearchTerm) return leads;
     
-    const term = searchTerm.toLowerCase();
+    const term = debouncedSearchTerm.toLowerCase();
     return leads.filter(lead => 
       lead.email.toLowerCase().includes(term) ||
       (lead.first_name?.toLowerCase().includes(term)) ||
@@ -116,7 +122,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       (lead.vehicle_reg?.toLowerCase().includes(term)) ||
       (lead.plan_interest?.toLowerCase().includes(term))
     );
-  }, [leads, searchTerm]);
+  }, [leads, debouncedSearchTerm]);
+
+  // Pagination for leads table
+  const pagination = usePagination(filteredLeads, { initialPageSize: 50 });
 
   const leadCounts = useMemo(() => ({
     all: leads.length,
@@ -322,10 +331,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             leadCounts={leadCounts}
           />
           
-          <Card>
-            <CardContent className="pt-6">
+          <Card className="overflow-hidden">
+            <CardContent className="p-0">
               <LeadsTable
-                leads={filteredLeads}
+                leads={pagination.paginatedData}
                 tags={tags}
                 salesUsers={salesUsers}
                 selectedLeads={selectedLeads}
@@ -359,6 +368,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                     });
                   }
                 }}
+              />
+              {/* Pagination Controls */}
+              <PaginationControls
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                totalItems={pagination.totalItems}
+                startIndex={pagination.startIndex}
+                endIndex={pagination.endIndex}
+                pageSize={pagination.pageSize}
+                onPageChange={pagination.goToPage}
+                onPageSizeChange={pagination.setPageSize}
+                canGoNext={pagination.canGoNext}
+                canGoPrev={pagination.canGoPrev}
               />
             </CardContent>
           </Card>
