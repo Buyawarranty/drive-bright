@@ -1244,14 +1244,31 @@ Questions? Call 0330 229 5040`;
                       Vehicle: {vehicleData.make} {vehicleData.model} ({vehicleData.year}) - {vehicleData.regNumber}
                     </CardDescription>
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => setStep(1)}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    ← Back to Step 1
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setVehicleData(null);
+                        setRegNumber('');
+                        setMileage('');
+                        setSliderMileage(0);
+                        setStep(1);
+                      }}
+                      className="text-orange-600 border-orange-200 hover:bg-orange-50 hover:text-orange-700"
+                    >
+                      <RefreshCw className="w-3 h-3 mr-1" />
+                      Edit Vehicle
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => setStep(1)}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      ← Back
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -1641,18 +1658,37 @@ Questions? Call 0330 229 5040`;
                       Choose to send a quote or confirm payment received elsewhere
                     </CardDescription>
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => {
-                      setQuoteGenerated(false);
-                      setQuoteLink(null);
-                      setStep(2);
-                    }}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    ← Back to Step 2
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setVehicleData(null);
+                        setRegNumber('');
+                        setMileage('');
+                        setSliderMileage(0);
+                        setQuoteGenerated(false);
+                        setQuoteLink(null);
+                        setStep(1);
+                      }}
+                      className="text-orange-600 border-orange-200 hover:bg-orange-50 hover:text-orange-700"
+                    >
+                      <RefreshCw className="w-3 h-3 mr-1" />
+                      Edit Vehicle
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        setQuoteGenerated(false);
+                        setQuoteLink(null);
+                        setStep(2);
+                      }}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      ← Back
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
