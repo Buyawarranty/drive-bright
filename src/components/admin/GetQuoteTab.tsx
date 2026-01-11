@@ -93,11 +93,18 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [activeTab, setActiveTab] = useState('new');
   const [adminEmail, setAdminEmail] = useState<string | null>(null);
   
-  // Confirm as Paid state
+  // Confirm External Payment state
   const [isConfirmingPaid, setIsConfirmingPaid] = useState(false);
+  const [showConfirmPaymentDialog, setShowConfirmPaymentDialog] = useState(false);
+  const [paymentSource, setPaymentSource] = useState('');
   const [paymentReference, setPaymentReference] = useState('');
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [paymentNotes, setPaymentNotes] = useState('');
   const [sendToW2k, setSendToW2k] = useState(true);
   const [sendWelcomeEmail, setSendWelcomeEmail] = useState(true);
+  const [existingPolicyWarning, setExistingPolicyWarning] = useState<string | null>(null);
 
   // Handle lead selection (from search or pre-populated)
   const handleLeadSelect = (lead: LeadData) => {
@@ -790,12 +797,82 @@ Questions? Call 0330 229 5040`;
     return `ADM-${dateCode}-${randomSerial}`;
   };
 
-  // Handle confirm as paid - creates customer and policy records directly
-  const handleConfirmAsPaid = async () => {
+  // Check for existing active policy on this vehicle
+  const checkExistingPolicy = async () => {
+    if (!vehicleData?.regNumber) return null;
+    
+    const { data: existingPolicy } = await supabase
+      .from('customer_policies')
+      .select('id, policy_number, email, status, policy_start_date')
+      .eq('status', 'active')
+      .ilike('email', customerEmail)
+      .maybeSingle();
+    
+    // Also check customers table for active policy on same reg
+    const { data: existingCustomerPolicy } = await supabase
+      .from('customers')
+      .select('id, name, email, registration_plate, status')
+      .eq('registration_plate', vehicleData.regNumber.toUpperCase())
+      .eq('status', 'Active')
+      .maybeSingle();
+    
+    if (existingPolicy) {
+      return `An active policy (${existingPolicy.policy_number}) already exists for this email.`;
+    }
+    if (existingCustomerPolicy && existingCustomerPolicy.email.toLowerCase() !== customerEmail.toLowerCase()) {
+      return `This vehicle (${vehicleData.regNumber}) is already covered under ${existingCustomerPolicy.name}'s policy (${existingCustomerPolicy.email}).`;
+    }
+    return null;
+  };
+
+  // Open payment confirmation dialog with validation
+  const handleOpenConfirmPaymentDialog = async () => {
     if (!customerEmail || !customerName || !vehicleData) {
       toast({
-        title: "Missing Information",
-        description: "Please ensure customer and vehicle details are complete",
+        title: "Incomplete Quote",
+        description: "Please complete all customer and vehicle details first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check for existing policies
+    const warning = await checkExistingPolicy();
+    setExistingPolicyWarning(warning);
+    
+    // Pre-fill payment amount from quote
+    setPaymentAmount(currentPrice.totalPrice.toString());
+    setShowConfirmPaymentDialog(true);
+  };
+
+  // Validate payment confirmation form
+  const isPaymentFormValid = () => {
+    return (
+      paymentSource.trim() !== '' &&
+      paymentReference.trim() !== '' &&
+      paymentAmount.trim() !== '' &&
+      paymentDate.trim() !== '' &&
+      paymentConfirmed === true
+    );
+  };
+
+  // Handle confirm external payment - atomic operation
+  const handleConfirmExternalPayment = async () => {
+    if (!isPaymentFormValid()) {
+      toast({
+        title: "Incomplete Form",
+        description: "Please fill in all required fields and confirm payment",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Price validation
+    const confirmedAmount = parseFloat(paymentAmount);
+    if (Math.abs(confirmedAmount - currentPrice.totalPrice) > 1 && !paymentNotes) {
+      toast({
+        title: "Price Mismatch",
+        description: "Payment amount differs from quoted price. Please add a note explaining the difference.",
         variant: "destructive",
       });
       return;
@@ -809,8 +886,11 @@ Questions? Call 0330 229 5040`;
     
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      const adminUserId = user?.id;
+
+      // === ATOMIC TRANSACTION START ===
       
-      // Check for existing customer by email
+      // 1. Check for existing customer by email (case insensitive)
       const { data: existingCustomer } = await supabase
         .from('customers')
         .select('id, name, email, registration_plate')
@@ -819,7 +899,7 @@ Questions? Call 0330 229 5040`;
 
       let customerId: string;
       
-      // Customer record data
+      // 2. Customer record data with payment confirmation details
       const customerData = {
         name: customerName,
         email: customerEmail.toLowerCase(),
@@ -838,15 +918,15 @@ Questions? Call 0330 229 5040`;
         voluntary_excess: excessAmount,
         claim_limit: displayClaimLimit,
         labour_rate: labourRate,
-        final_amount: currentPrice.totalPrice,
+        final_amount: confirmedAmount,
         is_manual_entry: true,
-        payment_verified: true, // Marked as verified since admin confirmed payment
+        payment_verified: true,
         breakdown_recovery: getAutoIncludedAddOns(paymentType).includes('breakdown'),
         vehicle_rental: getAutoIncludedAddOns(paymentType).includes('rental'),
       };
 
+      // 3. Create or update customer
       if (existingCustomer) {
-        // Update existing customer
         const { error: updateError } = await supabase
           .from('customers')
           .update({ ...customerData, updated_at: new Date().toISOString() })
@@ -855,7 +935,6 @@ Questions? Call 0330 229 5040`;
         if (updateError) throw updateError;
         customerId = existingCustomer.id;
       } else {
-        // Create new customer
         const { data: newCustomer, error: insertError } = await supabase
           .from('customers')
           .insert(customerData)
@@ -866,13 +945,13 @@ Questions? Call 0330 229 5040`;
         customerId = newCustomer.id;
       }
 
-      // Calculate policy dates
-      const startDate = new Date();
-      const endDate = new Date();
+      // 4. Calculate policy dates
+      const startDate = new Date(paymentDate);
+      const endDate = new Date(paymentDate);
       endDate.setMonth(endDate.getMonth() + durationMonths);
 
-      // Create policy record
-      const { error: policyError } = await supabase
+      // 5. Create policy record with payment confirmation metadata
+      const { data: newPolicy, error: policyError } = await supabase
         .from('customer_policies')
         .insert({
           customer_id: customerId,
@@ -886,16 +965,44 @@ Questions? Call 0330 229 5040`;
           status: 'active',
           voluntary_excess: excessAmount,
           claim_limit: displayClaimLimit,
-          payment_amount: currentPrice.totalPrice,
+          payment_amount: confirmedAmount,
           breakdown_recovery: getAutoIncludedAddOns(paymentType).includes('breakdown'),
           vehicle_rental: getAutoIncludedAddOns(paymentType).includes('rental'),
           is_manual_entry: true,
           payment_verified: true,
-        });
+        })
+        .select('id')
+        .single();
 
       if (policyError) throw policyError;
 
-      // Mark any abandoned carts as converted
+      // 6. Add admin note with payment confirmation details
+      await supabase
+        .from('admin_notes')
+        .insert({
+          customer_id: customerId,
+          note: `External Payment Confirmed:\n• Source: ${paymentSource}\n• Reference: ${paymentReference}\n• Amount: £${confirmedAmount}\n• Date: ${paymentDate}\n• Confirmed by: ${adminEmail || 'Admin'}${paymentNotes ? `\n• Notes: ${paymentNotes}` : ''}`,
+          created_by: adminUserId
+        });
+
+      // 7. Update live_quotes status if exists
+      if (quoteLink) {
+        const accessToken = quoteLink.split('/quote/')[1];
+        if (accessToken) {
+          await supabase
+            .from('live_quotes')
+            .update({ 
+              status: 'paid_externally',
+              payment_confirmed_at: new Date().toISOString(),
+              payment_confirmed_by: adminUserId,
+              payment_source: paymentSource,
+              payment_reference: paymentReference
+            })
+            .eq('access_token', accessToken);
+        }
+      }
+
+      // 8. Mark any abandoned carts as converted
       await supabase
         .from('abandoned_carts')
         .update({ 
@@ -905,7 +1012,7 @@ Questions? Call 0330 229 5040`;
         })
         .eq('email', customerEmail.toLowerCase());
 
-      // Mark any sales leads as converted
+      // 9. Mark any sales leads as converted
       if (selectedLeadId) {
         await supabase
           .from('sales_leads')
@@ -916,19 +1023,23 @@ Questions? Call 0330 229 5040`;
           .eq('id', selectedLeadId);
       }
 
-      // Send to Warranties 2000 if checked
+      // === ATOMIC TRANSACTION END ===
+
+      // 10. Send to Warranties 2000 if checked
       if (sendToW2k) {
         try {
           await supabase.functions.invoke('send-to-warranties-2000', {
-            body: { email: customerEmail.toLowerCase(), notes: additionalNotes || paymentReference }
+            body: { 
+              email: customerEmail.toLowerCase(), 
+              notes: `External payment confirmed via ${paymentSource}. Ref: ${paymentReference}. ${additionalNotes || ''}`.trim()
+            }
           });
         } catch (w2kError) {
           console.error('W2K error:', w2kError);
-          // Don't block on W2K failure
         }
       }
 
-      // Send welcome email if checked
+      // 11. Send welcome email with warranty number and dashboard login
       if (sendWelcomeEmail) {
         try {
           await supabase.functions.invoke('send-welcome-email-manual', {
@@ -937,7 +1048,10 @@ Questions? Call 0330 229 5040`;
               customerName,
               warrantyReference,
               planType: 'Platinum',
-              vehicleReg: vehicleData.regNumber
+              vehicleReg: vehicleData.regNumber,
+              policyStartDate: startDate.toISOString(),
+              policyEndDate: endDate.toISOString(),
+              createDashboardLogin: true
             }
           });
         } catch (emailError) {
@@ -945,42 +1059,56 @@ Questions? Call 0330 229 5040`;
         }
       }
 
+      // Success!
       toast({
-        title: "✅ Order Confirmed!",
-        description: `Warranty ${warrantyReference} created for ${customerName}`,
-        duration: 5000,
+        title: "✅ Policy Activated!",
+        description: `Warranty ${warrantyReference} created. Customer will receive login details.`,
+        duration: 6000,
       });
 
-      // Reset form
-      setStep(1);
-      setRegNumber('');
-      setMileage('');
-      setSliderMileage(0);
-      setVehicleData(null);
-      setCustomerEmail('');
-      setCustomerName('');
-      setCustomerPhone('');
-      setPaymentType('24months');
-      setExcessAmount(100);
-      setClaimLimit(1250);
-      setLabourRate(70);
-      setBoostAddon(false);
-      setAdditionalNotes('');
-      setQuoteLink(null);
-      setQuoteGenerated(false);
-      setPaymentReference('');
-      setSelectedLeadId(null);
+      // Close dialog and reset form
+      setShowConfirmPaymentDialog(false);
+      resetForm();
 
     } catch (error: any) {
-      console.error('Error confirming order:', error);
+      console.error('Error confirming external payment:', error);
       toast({
-        title: "❌ Error Confirming Order",
-        description: error.message || "Failed to create order",
+        title: "❌ Payment Confirmation Failed",
+        description: error.message || "Failed to create policy. No changes were made.",
         variant: "destructive",
       });
     } finally {
       setIsConfirmingPaid(false);
     }
+  };
+
+  // Reset form to initial state
+  const resetForm = () => {
+    setStep(1);
+    setRegNumber('');
+    setMileage('');
+    setSliderMileage(0);
+    setVehicleData(null);
+    setCustomerEmail('');
+    setCustomerName('');
+    setCustomerPhone('');
+    setPaymentType('24months');
+    setExcessAmount(100);
+    setClaimLimit(1250);
+    setLabourRate(70);
+    setBoostAddon(false);
+    setAdditionalNotes('');
+    setQuoteLink(null);
+    setQuoteGenerated(false);
+    setSelectedLeadId(null);
+    // Reset payment confirmation fields
+    setPaymentSource('');
+    setPaymentReference('');
+    setPaymentAmount('');
+    setPaymentDate(new Date().toISOString().split('T')[0]);
+    setPaymentConfirmed(false);
+    setPaymentNotes('');
+    setExistingPolicyWarning(null);
   };
 
   return (
@@ -1458,69 +1586,26 @@ Questions? Call 0330 229 5040`;
                     )}
                   </div>
 
-                  {/* Option 2: Confirm as Paid */}
+                  {/* Option 2: Confirm External Payment */}
                   <div className="p-5 rounded-lg border-2 border-green-200 bg-green-50/50 space-y-4">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="w-5 h-5 text-green-600" />
-                      <h4 className="font-semibold text-green-900">Confirm Payment Received</h4>
+                      <h4 className="font-semibold text-green-900">Confirm External Payment</h4>
                     </div>
                     <p className="text-sm text-green-700">
-                      Payment was made via phone, bank transfer, or other portal. Create the order directly.
+                      Use this if payment was taken via phone, bank transfer, or another portal.
+                    </p>
+                    <p className="text-xs text-green-600 italic">
+                      This creates the warranty, customer login, and sends welcome email.
                     </p>
                     
-                    <div className="space-y-3">
-                      <div className="space-y-2">
-                        <Label htmlFor="payment-ref" className="text-sm text-green-800">Payment Reference (optional)</Label>
-                        <Input
-                          id="payment-ref"
-                          value={paymentReference}
-                          onChange={(e) => setPaymentReference(e.target.value)}
-                          placeholder="e.g. Bank ref, Stripe ID, etc."
-                          className="bg-white border-green-200"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2 pt-2 border-t border-green-200">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox 
-                            id="send-w2k" 
-                            checked={sendToW2k}
-                            onCheckedChange={(checked) => setSendToW2k(checked === true)}
-                          />
-                          <Label htmlFor="send-w2k" className="text-sm text-green-800 cursor-pointer">
-                            Send to Warranties 2000
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox 
-                            id="send-welcome" 
-                            checked={sendWelcomeEmail}
-                            onCheckedChange={(checked) => setSendWelcomeEmail(checked === true)}
-                          />
-                          <Label htmlFor="send-welcome" className="text-sm text-green-800 cursor-pointer">
-                            Send welcome email to customer
-                          </Label>
-                        </div>
-                      </div>
-                      
-                      <Button 
-                        onClick={handleConfirmAsPaid}
-                        disabled={isConfirmingPaid}
-                        className="w-full bg-green-600 hover:bg-green-700"
-                      >
-                        {isConfirmingPaid ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Creating Order...
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle2 className="w-4 h-4 mr-2" />
-                            Confirm as Paid
-                          </>
-                        )}
-                      </Button>
-                    </div>
+                    <Button 
+                      onClick={handleOpenConfirmPaymentDialog}
+                      className="w-full bg-green-600 hover:bg-green-700"
+                    >
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      Confirm External Payment...
+                    </Button>
                   </div>
                 </div>
 
@@ -1600,6 +1685,166 @@ Questions? Call 0330 229 5040`;
                     <>
                       <Mail className="w-4 h-4 mr-2" />
                       Send Email
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* External Payment Confirmation Dialog */}
+          <Dialog open={showConfirmPaymentDialog} onOpenChange={setShowConfirmPaymentDialog}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  Confirm External Payment
+                </DialogTitle>
+                <DialogDescription>
+                  This will create an active policy and send login details to the customer.
+                </DialogDescription>
+              </DialogHeader>
+
+              {existingPolicyWarning && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{existingPolicyWarning}</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="space-y-4">
+                {/* Payment Source */}
+                <div className="space-y-2">
+                  <Label htmlFor="payment-source">Payment Source *</Label>
+                  <select
+                    id="payment-source"
+                    value={paymentSource}
+                    onChange={(e) => setPaymentSource(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-md bg-background"
+                  >
+                    <option value="">Select payment source...</option>
+                    <option value="stripe_dashboard">Stripe Dashboard</option>
+                    <option value="bumper_portal">Bumper Portal</option>
+                    <option value="bank_transfer">Bank Transfer</option>
+                    <option value="phone_card">Phone Card Payment</option>
+                    <option value="dealer_portal">Dealer Portal</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                {/* Payment Reference */}
+                <div className="space-y-2">
+                  <Label htmlFor="payment-reference">Payment Reference / Transaction ID *</Label>
+                  <Input
+                    id="payment-reference"
+                    value={paymentReference}
+                    onChange={(e) => setPaymentReference(e.target.value)}
+                    placeholder="e.g. pi_xxxx, BAC123456, etc."
+                  />
+                </div>
+
+                {/* Amount */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="payment-amount">Amount Received (£) *</Label>
+                    <Input
+                      id="payment-amount"
+                      type="number"
+                      value={paymentAmount}
+                      onChange={(e) => setPaymentAmount(e.target.value)}
+                      placeholder={currentPrice.totalPrice.toString()}
+                    />
+                    {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
+                      <p className="text-xs text-amber-600">
+                        ⚠️ Differs from quoted price (£{currentPrice.totalPrice})
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="payment-date">Payment Date *</Label>
+                    <Input
+                      id="payment-date"
+                      type="date"
+                      value={paymentDate}
+                      onChange={(e) => setPaymentDate(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div className="space-y-2">
+                  <Label htmlFor="payment-notes">Internal Notes (optional)</Label>
+                  <Textarea
+                    id="payment-notes"
+                    value={paymentNotes}
+                    onChange={(e) => setPaymentNotes(e.target.value)}
+                    placeholder="Any additional notes about this payment..."
+                    rows={2}
+                  />
+                </div>
+
+                {/* Confirmation Checkbox */}
+                <div className="p-3 border rounded-md bg-green-50 border-green-200">
+                  <div className="flex items-start space-x-3">
+                    <Checkbox 
+                      id="confirm-payment"
+                      checked={paymentConfirmed}
+                      onCheckedChange={(checked) => setPaymentConfirmed(checked === true)}
+                      className="mt-1"
+                    />
+                    <Label htmlFor="confirm-payment" className="text-sm text-green-800 cursor-pointer leading-relaxed">
+                      <strong>I confirm</strong> that payment has been received externally and verified. This will activate the warranty immediately.
+                    </Label>
+                  </div>
+                </div>
+
+                {/* Options */}
+                <div className="space-y-2 pt-2 border-t">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="confirm-send-w2k" 
+                      checked={sendToW2k}
+                      onCheckedChange={(checked) => setSendToW2k(checked === true)}
+                    />
+                    <Label htmlFor="confirm-send-w2k" className="text-sm cursor-pointer">
+                      Send to Warranties 2000
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="confirm-send-welcome" 
+                      checked={sendWelcomeEmail}
+                      onCheckedChange={(checked) => setSendWelcomeEmail(checked === true)}
+                    />
+                    <Label htmlFor="confirm-send-welcome" className="text-sm cursor-pointer">
+                      Send welcome email with login details
+                    </Label>
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowConfirmPaymentDialog(false)}
+                  disabled={isConfirmingPaid}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleConfirmExternalPayment}
+                  disabled={isConfirmingPaid || !isPaymentFormValid()}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {isConfirmingPaid ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Creating Policy...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      Confirm & Activate Policy
                     </>
                   )}
                 </Button>

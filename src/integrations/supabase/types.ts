@@ -2791,8 +2791,11 @@ export type Database = {
           labour_rate: number | null
           monthly_price: number
           paid_at: string | null
+          payment_confirmed_at: string | null
+          payment_confirmed_by: string | null
           payment_method: string | null
           payment_reference: string | null
+          payment_source: string | null
           plan_type: string
           policy_id: string | null
           policy_number: string | null
@@ -2832,8 +2835,11 @@ export type Database = {
           labour_rate?: number | null
           monthly_price: number
           paid_at?: string | null
+          payment_confirmed_at?: string | null
+          payment_confirmed_by?: string | null
           payment_method?: string | null
           payment_reference?: string | null
+          payment_source?: string | null
           plan_type?: string
           policy_id?: string | null
           policy_number?: string | null
@@ -2873,8 +2879,11 @@ export type Database = {
           labour_rate?: number | null
           monthly_price?: number
           paid_at?: string | null
+          payment_confirmed_at?: string | null
+          payment_confirmed_by?: string | null
           payment_method?: string | null
           payment_reference?: string | null
+          payment_source?: string | null
           plan_type?: string
           policy_id?: string | null
           policy_number?: string | null
