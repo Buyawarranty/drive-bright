@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { useSalesStats, Badge as SalesBadge } from '@/hooks/useSalesStats';
-import { useLeads, Lead } from '@/hooks/useLeads';
+import { Lead, LeadTag, LeadStatus, AdminUser } from '@/hooks/useLeads';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   TrendingUp, Users, DollarSign, Target, 
@@ -17,28 +17,35 @@ import { format, isToday, isPast } from 'date-fns';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
-export const SalespersonDashboard: React.FC = () => {
+interface LeadHandlers {
+  updateLeadStatus: (leadId: string, status: LeadStatus) => Promise<void>;
+  assignLead: (leadId: string, userId: string | null) => Promise<void>;
+  autoAssignLead: (leadId: string) => Promise<void>;
+  updateLeadPriority: (leadId: string, priority: string) => Promise<void>;
+  scheduleFollowUp: (leadId: string, date: string, actionType: string) => Promise<void>;
+  addTagToLead: (leadId: string, tagId: string) => Promise<void>;
+  removeTagFromLead: (leadId: string, tagId: string) => Promise<void>;
+  updateLeadNotes: (leadId: string, notes: string) => Promise<void>;
+  markContactedAt: (leadId: string) => Promise<void>;
+  logActivity: (leadId: string, activityType: string, description: string) => Promise<void>;
+  deleteLeads: (leadIds: string[]) => Promise<void>;
+}
+
+interface SalespersonDashboardProps {
+  leads: Lead[];
+  tags: LeadTag[];
+  salesUsers: AdminUser[];
+  handlers: LeadHandlers;
+}
+
+export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
+  leads,
+  tags,
+  salesUsers,
+  handlers
+}) => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [myLeads, setMyLeads] = useState<Lead[]>([]);
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
-  
-  const { 
-    leads, 
-    tags, 
-    salesUsers, 
-    loading,
-    updateLeadStatus,
-    assignLead,
-    autoAssignLead,
-    updateLeadPriority,
-    scheduleFollowUp,
-    addTagToLead,
-    removeTagFromLead,
-    updateLeadNotes,
-    markContactedAt,
-    logActivity,
-    deleteLeads
-  } = useLeads();
   
   const { personalStats, teamStats, userBadges, loading: statsLoading } = useSalesStats(currentUserId || undefined);
 
@@ -60,26 +67,29 @@ export const SalespersonDashboard: React.FC = () => {
     getCurrentUser();
   }, []);
 
-  useEffect(() => {
-    if (currentUserId && leads.length >= 0) {
-      const filtered = leads.filter(l => l.assigned_to === currentUserId);
-      console.log('My Dashboard - currentUserId:', currentUserId, 'Total leads:', leads.length, 'My leads:', filtered.length);
-      setMyLeads(filtered);
-    }
+  // Memoize filtered leads to prevent recalculation
+  const myLeads = useMemo(() => {
+    if (!currentUserId) return [];
+    return leads.filter(l => l.assigned_to === currentUserId);
   }, [currentUserId, leads]);
 
-  const todayFollowUps = myLeads.filter(l => 
-    l.next_action_date && isToday(new Date(l.next_action_date))
+  const todayFollowUps = useMemo(() => 
+    myLeads.filter(l => l.next_action_date && isToday(new Date(l.next_action_date))),
+    [myLeads]
   );
 
-  const overdueFollowUps = myLeads.filter(l =>
-    l.next_action_date && 
-    isPast(new Date(l.next_action_date)) && 
-    l.follow_up_status === 'pending'
+  const overdueFollowUps = useMemo(() =>
+    myLeads.filter(l =>
+      l.next_action_date && 
+      isPast(new Date(l.next_action_date)) && 
+      l.follow_up_status === 'pending'
+    ),
+    [myLeads]
   );
 
-  const hotLeads = myLeads.filter(l => 
-    l.priority === 'high' || l.priority === 'urgent'
+  const hotLeads = useMemo(() => 
+    myLeads.filter(l => l.priority === 'high' || l.priority === 'urgent'),
+    [myLeads]
   );
 
   // Monthly target (example: £5000)
@@ -88,34 +98,38 @@ export const SalespersonDashboard: React.FC = () => {
     ? Math.min((personalStats.totalRevenue / monthlyTarget) * 100, 100) 
     : 0;
 
-  const handleSelectLead = (leadId: string) => {
-    const newSelected = new Set(selectedLeads);
-    if (newSelected.has(leadId)) {
-      newSelected.delete(leadId);
-    } else {
-      newSelected.add(leadId);
-    }
-    setSelectedLeads(newSelected);
-  };
+  const handleSelectLead = useCallback((leadId: string) => {
+    setSelectedLeads(prev => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(leadId)) {
+        newSelected.delete(leadId);
+      } else {
+        newSelected.add(leadId);
+      }
+      return newSelected;
+    });
+  }, []);
 
-  const handleSelectAll = (leadsToSelect: Lead[]) => {
-    if (selectedLeads.size === leadsToSelect.length) {
-      setSelectedLeads(new Set());
-    } else {
-      setSelectedLeads(new Set(leadsToSelect.map(l => l.id)));
-    }
-  };
+  const handleSelectAll = useCallback((leadsToSelect: Lead[]) => {
+    setSelectedLeads(prev => {
+      if (prev.size === leadsToSelect.length) {
+        return new Set();
+      } else {
+        return new Set(leadsToSelect.map(l => l.id));
+      }
+    });
+  }, []);
 
-  const handleDeleteSelected = async () => {
+  const handleDeleteSelected = useCallback(async () => {
     if (selectedLeads.size === 0) return;
-    await deleteLeads(Array.from(selectedLeads));
+    await handlers.deleteLeads(Array.from(selectedLeads));
     setSelectedLeads(new Set());
-  };
+  }, [selectedLeads, handlers]);
 
   // Get current user's rank
   const myRank = teamStats?.leaderboard.findIndex(p => p.userId === currentUserId) ?? -1;
 
-  if (loading || statsLoading) {
+  if (statsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
@@ -235,16 +249,16 @@ export const SalespersonDashboard: React.FC = () => {
               selectedLeads={selectedLeads}
               onSelectLead={handleSelectLead}
               onSelectAll={() => handleSelectAll(hotLeads)}
-              onUpdateStatus={updateLeadStatus}
-              onAssign={assignLead}
-              onAutoAssign={autoAssignLead}
-              onUpdatePriority={updateLeadPriority}
-              onScheduleFollowUp={scheduleFollowUp}
-              onAddTag={addTagToLead}
-              onRemoveTag={removeTagFromLead}
-              onUpdateNotes={updateLeadNotes}
-              onMarkContacted={markContactedAt}
-              onLogActivity={logActivity}
+              onUpdateStatus={handlers.updateLeadStatus}
+              onAssign={handlers.assignLead}
+              onAutoAssign={handlers.autoAssignLead}
+              onUpdatePriority={handlers.updateLeadPriority}
+              onScheduleFollowUp={handlers.scheduleFollowUp}
+              onAddTag={handlers.addTagToLead}
+              onRemoveTag={handlers.removeTagFromLead}
+              onUpdateNotes={handlers.updateLeadNotes}
+              onMarkContacted={handlers.markContactedAt}
+              onLogActivity={handlers.logActivity}
             />
           </CardContent>
         </Card>
@@ -328,16 +342,16 @@ export const SalespersonDashboard: React.FC = () => {
               selectedLeads={selectedLeads}
               onSelectLead={handleSelectLead}
               onSelectAll={() => handleSelectAll(myLeads)}
-              onUpdateStatus={updateLeadStatus}
-              onAssign={assignLead}
-              onAutoAssign={autoAssignLead}
-              onUpdatePriority={updateLeadPriority}
-              onScheduleFollowUp={scheduleFollowUp}
-              onAddTag={addTagToLead}
-              onRemoveTag={removeTagFromLead}
-              onUpdateNotes={updateLeadNotes}
-              onMarkContacted={markContactedAt}
-              onLogActivity={logActivity}
+              onUpdateStatus={handlers.updateLeadStatus}
+              onAssign={handlers.assignLead}
+              onAutoAssign={handlers.autoAssignLead}
+              onUpdatePriority={handlers.updateLeadPriority}
+              onScheduleFollowUp={handlers.scheduleFollowUp}
+              onAddTag={handlers.addTagToLead}
+              onRemoveTag={handlers.removeTagFromLead}
+              onUpdateNotes={handlers.updateLeadNotes}
+              onMarkContacted={handlers.markContactedAt}
+              onLogActivity={handlers.logActivity}
             />
           ) : (
             <div className="text-center py-8 text-muted-foreground">

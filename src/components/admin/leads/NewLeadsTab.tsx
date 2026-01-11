@@ -137,24 +137,35 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     high_priority: leads.filter(l => l.priority === 'high' || l.priority === 'urgent').length,
   }), [leads]);
 
-  const handleSelectLead = (leadId: string) => {
-    const newSelected = new Set(selectedLeads);
-    if (newSelected.has(leadId)) {
-      newSelected.delete(leadId);
-    } else {
-      newSelected.add(leadId);
-    }
-    setSelectedLeads(newSelected);
-  };
+  // Memoize handlers to prevent re-renders
+  const handleSelectLead = useCallback((leadId: string) => {
+    setSelectedLeads(prev => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(leadId)) {
+        newSelected.delete(leadId);
+      } else {
+        newSelected.add(leadId);
+      }
+      return newSelected;
+    });
+  }, []);
 
-  const handleSelectAll = () => {
-    if (selectedLeads.size === filteredLeads.length) {
-      setSelectedLeads(new Set());
-    } else {
-      setSelectedLeads(new Set(filteredLeads.map(l => l.id)));
-    }
-  };
-  const handleExport = (format: 'csv' | 'xlsx') => {
+  const handleSelectAll = useCallback(() => {
+    setSelectedLeads(prev => {
+      if (prev.size === filteredLeads.length) {
+        return new Set();
+      } else {
+        return new Set(filteredLeads.map(l => l.id));
+      }
+    });
+  }, [filteredLeads]);
+
+  // Memoize tab change handler for instant switching
+  const handleViewChange = useCallback((view: 'leads' | 'my-dashboard' | 'team-dashboard') => {
+    setActiveView(view);
+  }, []);
+
+  const handleExport = useCallback((format: 'csv' | 'xlsx') => {
     // Export selected leads if any are selected, otherwise export all filtered leads
     const leadsToExport = selectedLeads.size > 0 
       ? filteredLeads.filter(lead => selectedLeads.has(lead.id))
@@ -183,14 +194,60 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     } else {
       exportToExcel(exportData, { filename: 'leads', format: 'xlsx' });
     }
-  };
+  }, [selectedLeads, filteredLeads, exportToCSV, exportToExcel]);
 
-  const handleDeleteSelected = async () => {
+  const handleDeleteSelected = useCallback(async () => {
     if (selectedLeads.size === 0) return;
     
     await deleteLeads(Array.from(selectedLeads));
     setSelectedLeads(new Set());
-  };
+  }, [selectedLeads, deleteLeads]);
+
+  // Memoize quote navigation handler
+  const handleSendQuote = useCallback((lead: Lead) => {
+    if (onNavigateToTab) {
+      onNavigateToTab('get-quote', {
+        id: lead.id,
+        first_name: lead.first_name,
+        last_name: lead.last_name,
+        email: lead.email,
+        phone: lead.phone,
+        vehicle_reg: lead.vehicle_reg,
+        vehicle_make: lead.vehicle_make,
+        vehicle_model: lead.vehicle_model,
+        vehicle_year: lead.vehicle_year,
+        mileage: lead.mileage,
+        plan_interest: lead.plan_interest,
+      });
+    }
+  }, [onNavigateToTab]);
+
+  // Memoize shared lead handlers for dashboards
+  const leadHandlers = useMemo(() => ({
+    updateLeadStatus,
+    assignLead,
+    autoAssignLead,
+    updateLeadPriority,
+    scheduleFollowUp,
+    addTagToLead,
+    removeTagFromLead,
+    updateLeadNotes,
+    markContactedAt,
+    logActivity,
+    deleteLeads,
+  }), [
+    updateLeadStatus,
+    assignLead,
+    autoAssignLead,
+    updateLeadPriority,
+    scheduleFollowUp,
+    addTagToLead,
+    removeTagFromLead,
+    updateLeadNotes,
+    markContactedAt,
+    logActivity,
+    deleteLeads,
+  ]);
 
   if (loading) {
     return (
@@ -278,14 +335,14 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           {/* Add Manual Order Button */}
           <ManualOrderEntry />
           
-          {/* View Toggle - Always visible tabs */}
+          {/* View Toggle - Optimized with useCallback */}
           <div className="flex items-center border rounded-lg bg-muted/50 p-1">
             {canSeeAllLeads && (
               <Button 
                 variant={activeView === 'leads' ? 'default' : 'ghost'}
                 size="sm"
-                onClick={() => setActiveView('leads')}
-                className="flex items-center gap-2"
+                onClick={() => handleViewChange('leads')}
+                className="flex items-center gap-2 transition-none"
               >
                 <LayoutDashboard className="h-4 w-4" />
                 <span className="hidden sm:inline">All Leads</span>
@@ -295,8 +352,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               <Button 
                 variant={activeView === 'my-dashboard' ? 'default' : 'ghost'}
                 size="sm"
-                onClick={() => setActiveView('my-dashboard')}
-                className="flex items-center gap-2"
+                onClick={() => handleViewChange('my-dashboard')}
+                className="flex items-center gap-2 transition-none"
               >
                 <UserCircle className="h-4 w-4" />
                 <span className="hidden sm:inline">My Dashboard</span>
@@ -306,8 +363,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               <Button 
                 variant={activeView === 'team-dashboard' ? 'default' : 'ghost'}
                 size="sm"
-                onClick={() => setActiveView('team-dashboard')}
-                className="flex items-center gap-2"
+                onClick={() => handleViewChange('team-dashboard')}
+                className="flex items-center gap-2 transition-none"
               >
                 <Users className="h-4 w-4" />
                 <span className="hidden sm:inline">Team View</span>
@@ -317,8 +374,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         </div>
       </div>
 
-      {/* Content based on view */}
-      {activeView === 'leads' && (
+      {/* Content based on view - Using CSS visibility for instant switching */}
+      <div className={activeView === 'leads' ? 'block' : 'hidden'}>
         <div className="space-y-4">
           <LeadsFilters
             filter={filter}
@@ -351,23 +408,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 onMarkContacted={markContactedAt}
                 onLogActivity={logActivity}
                 onRefresh={fetchLeads}
-                onSendQuote={(lead) => {
-                  if (onNavigateToTab) {
-                    onNavigateToTab('get-quote', {
-                      id: lead.id,
-                      first_name: lead.first_name,
-                      last_name: lead.last_name,
-                      email: lead.email,
-                      phone: lead.phone,
-                      vehicle_reg: lead.vehicle_reg,
-                      vehicle_make: lead.vehicle_make,
-                      vehicle_model: lead.vehicle_model,
-                      vehicle_year: lead.vehicle_year,
-                      mileage: lead.mileage,
-                      plan_interest: lead.plan_interest,
-                    });
-                  }
-                }}
+                onSendQuote={handleSendQuote}
               />
               {/* Pagination Controls */}
               <PaginationControls
@@ -385,10 +426,21 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             </CardContent>
           </Card>
         </div>
-      )}
+      </div>
 
-      {activeView === 'my-dashboard' && <SalespersonDashboard />}
-      {activeView === 'team-dashboard' && <ManagerDashboard />}
+      {/* Pre-render dashboards but hide them - keeps state and avoids re-fetching */}
+      <div className={activeView === 'my-dashboard' ? 'block' : 'hidden'}>
+        <SalespersonDashboard 
+          leads={leads}
+          tags={tags}
+          salesUsers={salesUsers}
+          handlers={leadHandlers}
+        />
+      </div>
+      
+      <div className={activeView === 'team-dashboard' ? 'block' : 'hidden'}>
+        <ManagerDashboard />
+      </div>
     </div>
   );
 };
