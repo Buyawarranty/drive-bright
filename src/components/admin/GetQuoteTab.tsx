@@ -1237,10 +1237,22 @@ Questions? Call 0330 229 5040`;
           {step === 2 && vehicleData && (
             <Card>
               <CardHeader>
-                <CardTitle>Step 2: Quote Details</CardTitle>
-                <CardDescription>
-                  Vehicle: {vehicleData.make} {vehicleData.model} ({vehicleData.year}) - {vehicleData.regNumber}
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Step 2: Quote Details</CardTitle>
+                    <CardDescription>
+                      Vehicle: {vehicleData.make} {vehicleData.model} ({vehicleData.year}) - {vehicleData.regNumber}
+                    </CardDescription>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setStep(1)}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    ← Back to Step 1
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Customer Info */}
@@ -1591,10 +1603,26 @@ Questions? Call 0330 229 5040`;
           {step === 3 && (
             <Card>
               <CardHeader>
-                <CardTitle>Step 3: Complete Order</CardTitle>
-                <CardDescription>
-                  Choose to send a quote or confirm payment received elsewhere
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Step 3: Complete Order</CardTitle>
+                    <CardDescription>
+                      Choose to send a quote or confirm payment received elsewhere
+                    </CardDescription>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      setQuoteGenerated(false);
+                      setQuoteLink(null);
+                      setStep(2);
+                    }}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    ← Back to Step 2
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Quote Summary */}
