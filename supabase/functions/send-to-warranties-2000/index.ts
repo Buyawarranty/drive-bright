@@ -15,6 +15,9 @@ interface Warranties2000Request {
   policyId?: string;
   customerId?: string;
   force?: boolean;
+  additionalNotes?: string; // Custom notes to append to W2K "Any notes" field
+  notes?: string; // Alternative field name for additional notes
+  email?: string; // For lookup by email
 }
 
 interface Warranties2000Registration {
@@ -116,13 +119,18 @@ serve(async (req) => {
   }
 
   const body: Warranties2000Request = await req.json();
-  const { policyId, customerId, force = false } = body;
+  const { policyId, customerId, force = false, additionalNotes, notes, email } = body;
+  
+  // Combine additionalNotes and notes into one variable (support both field names)
+  const customNotes = additionalNotes || notes || '';
   
   console.log(`[WARRANTIES-2000] Function started with:`, { 
     policyId, 
     customerId,
+    email,
     hasPolicyId: !!policyId,
     hasCustomerId: !!customerId,
+    hasCustomNotes: !!customNotes,
     force
   });
 
@@ -483,15 +491,20 @@ serve(async (req) => {
       VolEx: String(finalVoluntaryExcess),
       Notes: (() => {
         const labourRate = customer?.labour_rate || 50;
-        let notes = `Plan: ${policy?.plan_type || customer.plan_type || 'N/A'} | Payment: ${paymentType || 'N/A'} | ClaimLimit: ${finalClaimLimit} | VolExcess: ${finalVoluntaryExcess} | LabourRate: £${labourRate}/hr`;
+        let notesStr = `Plan: ${policy?.plan_type || customer.plan_type || 'N/A'} | Payment: ${paymentType || 'N/A'} | ClaimLimit: ${finalClaimLimit} | VolExcess: ${finalVoluntaryExcess} | LabourRate: £${labourRate}/hr`;
         
         // Add seasonal bonus information if present
         const bonusMonths = policy?.seasonal_bonus_months || customer?.seasonal_bonus_months || 0;
         if (bonusMonths > 0) {
-          notes += ` | PROMOTION: ${bonusMonths} Months FREE Bonus - Total ${parseInt(coverageMonths) + bonusMonths} months coverage`;
+          notesStr += ` | PROMOTION: ${bonusMonths} Months FREE Bonus - Total ${parseInt(coverageMonths) + bonusMonths} months coverage`;
         }
         
-        return notes;
+        // Append custom notes from admin (Additional Notes for Warranties 2000)
+        if (customNotes && customNotes.trim()) {
+          notesStr += ` | NOTES: ${customNotes.trim()}`;
+        }
+        
+        return notesStr;
       })()
       // Note: Add-ons are only sent when actually selected to avoid W2000 API validation errors
     };
