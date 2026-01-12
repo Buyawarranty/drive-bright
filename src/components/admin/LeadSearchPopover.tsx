@@ -25,7 +25,132 @@ export interface LeadData {
 interface LeadSearchPopoverProps {
   onSelectLead: (lead: LeadData) => void;
   className?: string;
+  initialLeadId?: string;
 }
+
+// Inline search component for Step 1
+export const LeadQuickSearch: React.FC<{
+  onSelectLead: (lead: LeadData) => void;
+}> = ({ onSelectLead }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [leads, setLeads] = useState<LeadData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+
+  useEffect(() => {
+    if (!searchTerm || searchTerm.length < 2) {
+      setLeads([]);
+      setShowResults(false);
+      return;
+    }
+
+    const fetchLeads = async () => {
+      setLoading(true);
+      try {
+        const term = `%${searchTerm}%`;
+        const { data, error } = await supabase
+          .from('sales_leads')
+          .select('id, first_name, last_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year, mileage, plan_interest')
+          .eq('is_paid', false)
+          .or(`email.ilike.${term},first_name.ilike.${term},last_name.ilike.${term},phone.ilike.${term},vehicle_reg.ilike.${term}`)
+          .order('created_at', { ascending: false })
+          .limit(10);
+
+        if (!error && data) {
+          setLeads(data);
+          setShowResults(true);
+        }
+      } catch (err) {
+        console.error('Error searching leads:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const debounce = setTimeout(fetchLeads, 300);
+    return () => clearTimeout(debounce);
+  }, [searchTerm]);
+
+  const handleSelectLead = (lead: LeadData) => {
+    onSelectLead(lead);
+    setSearchTerm('');
+    setShowResults(false);
+  };
+
+  const getDisplayName = (lead: LeadData) => {
+    if (lead.first_name || lead.last_name) {
+      return `${lead.first_name || ''} ${lead.last_name || ''}`.trim();
+    }
+    return lead.email.split('@')[0];
+  };
+
+  return (
+    <div className="relative w-full">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Quick search: name, email, phone, or reg plate..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onFocus={() => searchTerm.length >= 2 && setShowResults(true)}
+          className="pl-9 border-orange-300 focus:border-orange-500"
+        />
+        {loading && (
+          <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+        )}
+      </div>
+      
+      {showResults && leads.length > 0 && (
+        <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-[300px] overflow-auto">
+          {leads.map((lead) => (
+            <button
+              key={lead.id}
+              onClick={() => handleSelectLead(lead)}
+              className="w-full text-left p-3 hover:bg-muted transition-colors border-b last:border-b-0"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-sm truncate">
+                    {getDisplayName(lead)}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+                    <Mail className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{lead.email}</span>
+                  </div>
+                  {lead.phone && (
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+                      <Phone className="h-3 w-3 shrink-0" />
+                      <span>{lead.phone}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="text-right shrink-0">
+                  {lead.vehicle_reg && (
+                    <Badge variant="outline" className="text-xs font-mono uppercase">
+                      <Car className="h-3 w-3 mr-1" />
+                      {lead.vehicle_reg}
+                    </Badge>
+                  )}
+                  {lead.vehicle_make && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {lead.vehicle_make} {lead.vehicle_model}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+      
+      {showResults && searchTerm.length >= 2 && leads.length === 0 && !loading && (
+        <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg p-4 text-center text-muted-foreground text-sm">
+          No leads found for "{searchTerm}"
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
   onSelectLead,
