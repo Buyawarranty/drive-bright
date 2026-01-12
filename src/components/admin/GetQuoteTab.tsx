@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -96,10 +96,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [emailSubject, setEmailSubject] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [sentQuotes, setSentQuotes] = useState<any[]>([]);
+  const [savedQuotes, setSavedQuotes] = useState<any[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [showHistoryDialog, setShowHistoryDialog] = useState(false);
   const [selectedHistoryQuote, setSelectedHistoryQuote] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('new');
+  const [historySubTab, setHistorySubTab] = useState<'sent' | 'saved'>('sent');
   const [adminEmail, setAdminEmail] = useState<string | null>(null);
   
   // Confirm External Payment state
@@ -161,7 +163,64 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     };
     getAdminEmail();
     loadSentQuotesHistory();
+    loadSavedQuotes();
   }, []);
+
+  // Load saved quotes from localStorage
+  const loadSavedQuotes = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('admin_saved_quotes') || '[]');
+      setSavedQuotes(saved);
+    } catch (e) {
+      console.error('Error loading saved quotes:', e);
+      setSavedQuotes([]);
+    }
+  };
+
+  // Load a saved quote into the form
+  const loadSavedQuote = (savedQuote: any) => {
+    if (savedQuote.vehicleData) {
+      setVehicleData(savedQuote.vehicleData);
+      setRegNumber(savedQuote.vehicleData.regNumber || '');
+      setMileage(savedQuote.vehicleData.mileage || '');
+      const numMileage = parseInt(String(savedQuote.vehicleData.mileage).replace(/,/g, ''), 10);
+      if (!isNaN(numMileage)) setSliderMileage(numMileage);
+    }
+    setCustomerName(savedQuote.customerName || '');
+    setCustomerEmail(savedQuote.customerEmail || '');
+    setCustomerPhone(savedQuote.customerPhone || '');
+    setPaymentType(savedQuote.paymentType || '24months');
+    setExcessAmount(savedQuote.excessAmount || 100);
+    setClaimLimit(savedQuote.claimLimit || 1250);
+    setLabourRate(savedQuote.labourRate || 70);
+    setBoostAddon(savedQuote.boostAddon || false);
+    setSelectedAddOns(savedQuote.selectedAddOns || {});
+    setFreeExtendedCover(savedQuote.freeExtendedCover || 'none');
+    setAdditionalNotes(savedQuote.additionalNotes || '');
+    
+    // Set step based on available data
+    if (savedQuote.vehicleData) {
+      setStep(2);
+    }
+    
+    setActiveTab('new');
+    toast({
+      title: "Quote loaded",
+      description: "Saved quote has been loaded. You can continue editing.",
+    });
+  };
+
+  // Delete a saved quote
+  const deleteSavedQuote = (index: number) => {
+    const updated = [...savedQuotes];
+    updated.splice(index, 1);
+    localStorage.setItem('admin_saved_quotes', JSON.stringify(updated));
+    setSavedQuotes(updated);
+    toast({
+      title: "Quote deleted",
+      description: "Saved quote has been removed.",
+    });
+  };
 
   // Track if custom prices have been manually overridden
   const [isPriceOverridden, setIsPriceOverridden] = useState(false);
@@ -1168,7 +1227,7 @@ Questions? Call 0330 229 5040`;
           <TabsTrigger value="new">New Quote/Order</TabsTrigger>
           <TabsTrigger value="history">
             <History className="w-4 h-4 mr-2" />
-            History ({sentQuotes.length})
+            History & Saved ({sentQuotes.length + savedQuotes.length})
           </TabsTrigger>
         </TabsList>
 
@@ -1193,7 +1252,23 @@ Questions? Call 0330 229 5040`;
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <LeadSearchPopover onSelectLead={handleLeadSelect} />
+                    <div className="flex gap-2">
+                      <LeadSearchPopover onSelectLead={handleLeadSelect} />
+                      {savedQuotes.length > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setActiveTab('history');
+                            setHistorySubTab('saved');
+                          }}
+                          className="gap-1"
+                        >
+                          <BookOpen className="h-4 w-4" />
+                          Saved ({savedQuotes.length})
+                        </Button>
+                      )}
+                    </div>
                     {selectedLeadId && (
                       <Badge variant="secondary" className="gap-1">
                         <UserCheck className="h-3 w-3" />
@@ -1290,6 +1365,20 @@ Questions? Call 0330 229 5040`;
                     </CardDescription>
                   </div>
                   <div className="flex items-center gap-2">
+                    {savedQuotes.length > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setActiveTab('history');
+                          setHistorySubTab('saved');
+                        }}
+                        className="gap-1"
+                      >
+                        <BookOpen className="h-4 w-4" />
+                        Saved ({savedQuotes.length})
+                      </Button>
+                    )}
                     <Button 
                       variant="outline" 
                       size="sm"
@@ -2238,110 +2327,225 @@ Questions? Call 0330 229 5040`;
         </TabsContent>
 
         <TabsContent value="history" className="space-y-6 mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Quote & Order History</CardTitle>
-              <CardDescription>View and resend previously sent quotes</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isLoadingHistory ? (
-                <div className="flex justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                </div>
-              ) : sentQuotes.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">No quotes sent yet</p>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Vehicle</TableHead>
-                      <TableHead>Duration</TableHead>
-                      <TableHead>Coverage</TableHead>
-                      <TableHead>Price</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sentQuotes.map((quote) => (
-                      <TableRow key={quote.id}>
-                        <TableCell>
-                          <div className="text-sm">
-                            {new Date(quote.sent_at).toLocaleDateString()}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {new Date(quote.sent_at).toLocaleTimeString()}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm font-medium">{quote.customer_name}</div>
-                          <div className="text-xs text-muted-foreground">{quote.customer_email}</div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm font-medium">{quote.vehicle_reg}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {quote.vehicle_make} {quote.vehicle_model}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm">{quote.payment_type}</div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm">£{quote.excess_amount} / £{quote.claim_limit}</div>
-                          <div className="text-xs text-muted-foreground">
-                            £{quote.labour_rate || 70}/hr
-                            {quote.boost_addon && <Badge variant="outline" className="ml-1 text-[10px]">Boost</Badge>}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm font-medium">£{quote.total_price}</div>
-                          <div className="text-xs text-muted-foreground">
-                            £{quote.monthly_price}/mo
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col gap-1">
-                            {quote.resent_count > 0 && (
-                              <Badge variant="outline" className="text-xs">
-                                Resent {quote.resent_count}x
-                              </Badge>
-                            )}
-                            {quote.customer_purchased && (
-                              <Badge variant="default" className="text-xs">Purchased</Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setSelectedHistoryQuote(quote);
-                                setShowHistoryDialog(true);
-                              }}
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleResendQuote(quote)}
-                              disabled={isSendingEmail}
-                            >
-                              <RefreshCw className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+          {/* Sub-tabs for Sent vs Saved */}
+          <div className="flex gap-2 mb-4">
+            <Button
+              variant={historySubTab === 'sent' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setHistorySubTab('sent')}
+              className="gap-2"
+            >
+              <Send className="w-4 h-4" />
+              Sent Quotes ({sentQuotes.length})
+            </Button>
+            <Button
+              variant={historySubTab === 'saved' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setHistorySubTab('saved')}
+              className="gap-2"
+            >
+              <BookOpen className="w-4 h-4" />
+              Saved Drafts ({savedQuotes.length})
+            </Button>
+          </div>
+
+          {/* Sent Quotes Section */}
+          {historySubTab === 'sent' && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Quote & Order History</CardTitle>
+                <CardDescription>View and resend previously sent quotes</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingHistory ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  </div>
+                ) : sentQuotes.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">No quotes sent yet</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Vehicle</TableHead>
+                        <TableHead>Duration</TableHead>
+                        <TableHead>Coverage</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {sentQuotes.map((quote) => (
+                        <TableRow key={quote.id}>
+                          <TableCell>
+                            <div className="text-sm">
+                              {new Date(quote.sent_at).toLocaleDateString()}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {new Date(quote.sent_at).toLocaleTimeString()}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm font-medium">{quote.customer_name}</div>
+                            <div className="text-xs text-muted-foreground">{quote.customer_email}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm font-medium">{quote.vehicle_reg}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {quote.vehicle_make} {quote.vehicle_model}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">{quote.payment_type}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">£{quote.excess_amount} / £{quote.claim_limit}</div>
+                            <div className="text-xs text-muted-foreground">
+                              £{quote.labour_rate || 70}/hr
+                              {quote.boost_addon && <Badge variant="outline" className="ml-1 text-[10px]">Boost</Badge>}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm font-medium">£{quote.total_price}</div>
+                            <div className="text-xs text-muted-foreground">
+                              £{quote.monthly_price}/mo
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-1">
+                              {quote.resent_count > 0 && (
+                                <Badge variant="outline" className="text-xs">
+                                  Resent {quote.resent_count}x
+                                </Badge>
+                              )}
+                              {quote.customer_purchased && (
+                                <Badge variant="default" className="text-xs">Purchased</Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setSelectedHistoryQuote(quote);
+                                  setShowHistoryDialog(true);
+                                }}
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleResendQuote(quote)}
+                                disabled={isSendingEmail}
+                              >
+                                <RefreshCw className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Saved Drafts Section */}
+          {historySubTab === 'saved' && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Saved Quote Drafts</CardTitle>
+                <CardDescription>Resume working on previously saved quotes</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {savedQuotes.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">No saved drafts yet. Use "Save Quote" in Step 2 to save a draft.</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Saved</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Vehicle</TableHead>
+                        <TableHead>Duration</TableHead>
+                        <TableHead>Coverage</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {savedQuotes.map((quote, index) => (
+                        <TableRow key={index}>
+                          <TableCell>
+                            <div className="text-sm">
+                              {quote.savedAt ? new Date(quote.savedAt).toLocaleDateString() : 'N/A'}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {quote.savedAt ? new Date(quote.savedAt).toLocaleTimeString() : ''}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm font-medium">{quote.customerName || 'Not set'}</div>
+                            <div className="text-xs text-muted-foreground">{quote.customerEmail || ''}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm font-medium">{quote.vehicleData?.regNumber || 'N/A'}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {quote.vehicleData?.make} {quote.vehicleData?.model}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">{quote.paymentType || '24months'}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">£{quote.excessAmount || 100} / £{quote.claimLimit || 1250}</div>
+                            <div className="text-xs text-muted-foreground">
+                              £{quote.labourRate || 70}/hr
+                              {quote.boostAddon && <Badge variant="outline" className="ml-1 text-[10px]">Boost</Badge>}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm font-medium">£{quote.currentPrice?.totalPrice || 'N/A'}</div>
+                            <div className="text-xs text-muted-foreground">
+                              £{quote.currentPrice?.monthlyPrice || 'N/A'}/mo
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="default"
+                                onClick={() => loadSavedQuote(quote)}
+                                className="gap-1"
+                              >
+                                <ArrowRight className="w-4 h-4" />
+                                Load
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => deleteSavedQuote(index)}
+                                className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>
