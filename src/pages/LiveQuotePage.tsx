@@ -685,6 +685,10 @@ export default function LiveQuotePage() {
                       <span className="font-semibold">{quote.cover.planType}</span>
                     </div>
                     <div className="flex justify-between">
+                      <span className="text-gray-600">Mileage</span>
+                      <span className="font-semibold">{quote.vehicle.mileage?.toLocaleString()} miles</span>
+                    </div>
+                    <div className="flex justify-between">
                       <span className="text-gray-600">Duration</span>
                       <span className="font-semibold">
                         {quote.cover.durationMonths} months
@@ -1052,6 +1056,10 @@ export default function LiveQuotePage() {
                     <div className="flex justify-between">
                       <span className="text-gray-600">Plan</span>
                       <span className="font-semibold">{quote.cover.planType}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Mileage</span>
+                      <span className="font-semibold">{quote.vehicle.mileage?.toLocaleString()} miles</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Duration</span>
