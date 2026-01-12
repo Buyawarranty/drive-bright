@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
@@ -58,6 +59,9 @@ const labourRateOptions = [
   { rate: 200, label: '£200/hr', description: 'Expert Garages' }
 ];
 
+// Mileage dropdown options (10,000 to 140,000 in 1,000 increments)
+const mileageDropdownOptions = Array.from({ length: 131 }, (_, i) => 10000 + (i * 1000));
+
 interface GetQuoteTabProps {
   prePopulatedLead?: LeadData | null;
 }
@@ -81,6 +85,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [boostAddon, setBoostAddon] = useState(false);
   const [selectedAddOns, setSelectedAddOns] = useState<{ [key: string]: boolean }>({});
   const [additionalNotes, setAdditionalNotes] = useState('');
+  const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months'>('none');
   
   // Validation state
   const [showNameError, setShowNameError] = useState(false);
@@ -1206,15 +1211,36 @@ Questions? Call 0330 229 5040`;
 
                 <div className="space-y-2">
                   <Label>Mileage</Label>
-                  <Input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={mileage}
-                    onChange={handleMileageChange}
-                    placeholder="e.g. 45000"
-                    className="text-lg py-4"
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={mileage}
+                      onChange={handleMileageChange}
+                      placeholder="e.g. 45000"
+                      className="text-lg py-4 flex-1"
+                    />
+                    <Select
+                      value={sliderMileage.toString()}
+                      onValueChange={(value) => {
+                        const numValue = parseInt(value, 10);
+                        setSliderMileage(numValue);
+                        setMileage(numValue.toLocaleString());
+                      }}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Quick select" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px]">
+                        {mileageDropdownOptions.map((miles) => (
+                          <SelectItem key={miles} value={miles.toString()}>
+                            {miles.toLocaleString()} miles
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <MileageSlider
                     value={sliderMileage}
                     onChange={handleSliderChange}
@@ -1260,6 +1286,14 @@ Questions? Call 0330 229 5040`;
                     <Button 
                       variant="outline" 
                       size="sm"
+                      onClick={() => setStep(1)}
+                      className="text-muted-foreground hover:text-foreground border-muted-foreground/30"
+                    >
+                      ← Back
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
                       onClick={() => {
                         setVehicleData(null);
                         setRegNumber('');
@@ -1267,18 +1301,10 @@ Questions? Call 0330 229 5040`;
                         setSliderMileage(0);
                         setStep(1);
                       }}
-                      className="text-orange-600 border-orange-200 hover:bg-orange-50 hover:text-orange-700"
+                      className="text-orange-600 hover:bg-orange-50 hover:text-orange-700"
                     >
-                      <RefreshCw className="w-3 h-3 mr-1" />
+                      <Pencil className="w-3 h-3 mr-1" />
                       Edit Vehicle
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => setStep(1)}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      ← Back
                     </Button>
                   </div>
                 </div>
@@ -1296,7 +1322,7 @@ Questions? Call 0330 229 5040`;
                       }}
                       placeholder="e.g. John Smith"
                       className={cn(
-                        "bg-amber-50 border-amber-200 focus:border-amber-400",
+                        "bg-blue-50 border-blue-200 focus:border-blue-400",
                         showNameError && "border-red-500 bg-red-50"
                       )}
                     />
@@ -1317,7 +1343,7 @@ Questions? Call 0330 229 5040`;
                       }}
                       placeholder="customer@example.com"
                       className={cn(
-                        "bg-amber-50 border-amber-200 focus:border-amber-400",
+                        "bg-blue-50 border-blue-200 focus:border-blue-400",
                         showEmailError && "border-red-500 bg-red-50"
                       )}
                     />
@@ -1355,71 +1381,42 @@ Questions? Call 0330 229 5040`;
                           </span>
                         )}
                         <div className="font-semibold">{term.label}</div>
-                        <div className="text-xs text-muted-foreground">+{term.bonus} months free</div>
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Excess - Quick Select Chips */}
+                {/* Labour Rate - Quick Select Chips */}
                 <div className="space-y-3">
-                  <Label className="text-base font-semibold">Excess Amount</Label>
+                  <Label className="text-base font-semibold">Labour Rate</Label>
                   <div className="grid grid-cols-4 gap-2">
-                    {excessOptions.map((excess) => (
+                    {labourRateOptions.map((option) => (
                       <button
-                        key={excess}
-                        onClick={() => setExcessAmount(excess)}
+                        key={option.rate}
+                        onClick={() => setLabourRate(option.rate)}
                         className={cn(
-                          "py-3 px-2 rounded-lg border-2 text-center font-semibold transition-all",
-                          excessAmount === excess
+                          "relative py-3 px-2 rounded-lg border-2 text-center transition-all min-h-[80px] flex flex-col items-center justify-center",
+                          labourRate === option.rate
                             ? "border-primary bg-primary/10"
                             : "border-border hover:border-primary/50"
                         )}
                       >
-                        £{excess}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground">Lower excess = higher monthly cost</p>
-                </div>
-
-                {/* Claim Limit - Quick Select Chips */}
-                <div className="space-y-3">
-                  <Label className="text-base font-semibold">Claim Limit</Label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {claimLimitOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => setClaimLimit(option.value)}
-                        className={cn(
-                          "py-3 px-2 rounded-lg border-2 text-center transition-all",
-                          claimLimit === option.value
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
+                        {option.isBestValue && (
+                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-success text-success-foreground text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
+                            BEST VALUE
+                          </span>
                         )}
-                      >
+                        {option.isPopular && (
+                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
+                            POPULAR
+                          </span>
+                        )}
                         <div className="font-semibold">{option.label}</div>
                         <div className="text-xs text-muted-foreground">{option.description}</div>
                       </button>
                     ))}
                   </div>
-                </div>
-
-                {/* Boost Addon - directly below Claim Limit */}
-                <div className="flex items-center justify-between p-4 rounded-lg border-2 border-dashed border-amber-400 bg-amber-50">
-                  <div className="flex items-center gap-3">
-                    <Zap className="w-5 h-5 text-amber-500" />
-                    <div>
-                      <div className="font-semibold">Boost Claim Limit (+£1,000)</div>
-                      <div className="text-sm text-muted-foreground">
-                        +£{5 * DURATION_MONTHS[paymentType]} total (+£5/month × {DURATION_MONTHS[paymentType]} months)
-                      </div>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={boostAddon}
-                    onCheckedChange={setBoostAddon}
-                  />
+                  <p className="text-xs text-muted-foreground">Higher rate = more garage choice</p>
                 </div>
 
                 {/* Optional Add-ons Section */}
@@ -1478,38 +1475,127 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
 
-
-                {/* Labour Rate - Quick Select Chips */}
+                {/* Claim Limit - Quick Select Chips */}
                 <div className="space-y-3">
-                  <Label className="text-base font-semibold">Labour Rate</Label>
+                  <Label className="text-base font-semibold">Claim Limit 🚗</Label>
                   <div className="grid grid-cols-4 gap-2">
-                    {labourRateOptions.map((option) => (
+                    {claimLimitOptions.map((option) => (
                       <button
-                        key={option.rate}
-                        onClick={() => setLabourRate(option.rate)}
+                        key={option.value}
+                        onClick={() => setClaimLimit(option.value)}
                         className={cn(
-                          "relative py-3 px-2 rounded-lg border-2 text-center transition-all min-h-[80px] flex flex-col items-center justify-center",
-                          labourRate === option.rate
+                          "py-3 px-2 rounded-lg border-2 text-center transition-all",
+                          claimLimit === option.value
                             ? "border-primary bg-primary/10"
                             : "border-border hover:border-primary/50"
                         )}
                       >
-                        {option.isBestValue && (
-                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-success text-success-foreground text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
-                            BEST VALUE
-                          </span>
-                        )}
-                        {option.isPopular && (
-                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
-                            POPULAR
-                          </span>
-                        )}
                         <div className="font-semibold">{option.label}</div>
                         <div className="text-xs text-muted-foreground">{option.description}</div>
                       </button>
                     ))}
                   </div>
-                  <p className="text-xs text-muted-foreground">Higher rate = more garage choice</p>
+                </div>
+
+                {/* Boost Addon - directly below Claim Limit */}
+                <div className="flex items-center justify-between p-4 rounded-lg border-2 border-dashed border-amber-400 bg-amber-50">
+                  <div className="flex items-center gap-3">
+                    <Zap className="w-5 h-5 text-amber-500" />
+                    <div>
+                      <div className="font-semibold">Boost Claim Limit (+£1,000)</div>
+                      <div className="text-sm text-muted-foreground">
+                        +£{5 * DURATION_MONTHS[paymentType]} total (+£5/month × {DURATION_MONTHS[paymentType]} months)
+                      </div>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={boostAddon}
+                    onCheckedChange={setBoostAddon}
+                  />
+                </div>
+
+                {/* Excess - Quick Select Chips */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">Excess Amount</Label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {excessOptions.map((excess) => (
+                      <button
+                        key={excess}
+                        onClick={() => setExcessAmount(excess)}
+                        className={cn(
+                          "py-3 px-2 rounded-lg border-2 text-center font-semibold transition-all",
+                          excessAmount === excess
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50"
+                        )}
+                      >
+                        £{excess}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Lower excess = higher monthly cost</p>
+                </div>
+
+                {/* Free Extended Cover Option */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold flex items-center gap-2">
+                    <Gift className="w-4 h-4 text-green-600" />
+                    Free Extended Cover
+                  </Label>
+                  <p className="text-sm text-muted-foreground">Add complimentary extended cover period (adds note to Warranties 2000)</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setFreeExtendedCover('none');
+                        // Remove any existing free cover notes
+                        setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').trim());
+                      }}
+                      className={cn(
+                        "flex-1 py-3 px-4 rounded-lg border-2 text-center font-semibold transition-all",
+                        freeExtendedCover === 'none'
+                          ? "border-primary bg-primary/10"
+                          : "border-border hover:border-primary/50"
+                      )}
+                    >
+                      None
+                    </button>
+                    <button
+                      onClick={() => {
+                        setFreeExtendedCover('3months');
+                        // Update notes with free cover
+                        setAdditionalNotes(prev => {
+                          const cleaned = prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').trim();
+                          return cleaned ? `${cleaned} | FREE EXTENDED COVER: 3 months` : 'FREE EXTENDED COVER: 3 months';
+                        });
+                      }}
+                      className={cn(
+                        "flex-1 py-3 px-4 rounded-lg border-2 text-center font-semibold transition-all",
+                        freeExtendedCover === '3months'
+                          ? "border-green-500 bg-green-50 text-green-700"
+                          : "border-border hover:border-green-400"
+                      )}
+                    >
+                      + 3 Months Free
+                    </button>
+                    <button
+                      onClick={() => {
+                        setFreeExtendedCover('6months');
+                        // Update notes with free cover
+                        setAdditionalNotes(prev => {
+                          const cleaned = prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').trim();
+                          return cleaned ? `${cleaned} | FREE EXTENDED COVER: 6 months` : 'FREE EXTENDED COVER: 6 months';
+                        });
+                      }}
+                      className={cn(
+                        "flex-1 py-3 px-4 rounded-lg border-2 text-center font-semibold transition-all",
+                        freeExtendedCover === '6months'
+                          ? "border-green-500 bg-green-50 text-green-700"
+                          : "border-border hover:border-green-400"
+                      )}
+                    >
+                      + 6 Months Free
+                    </button>
+                  </div>
                 </div>
 
                 {/* Additional Notes */}
@@ -1588,23 +1674,21 @@ Questions? Call 0330 229 5040`;
                 </div>
 
                 {/* Sticky Price Summary Bar */}
-                <div className="sticky bottom-0 -mx-6 -mb-6 p-4 bg-gray-100 text-foreground rounded-b-lg shadow-lg border-t">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-baseline gap-3">
-                        <div>
-                          <div className="text-sm text-muted-foreground">Monthly (12 payments via Bumper)</div>
-                          <div className="text-2xl font-bold text-foreground">£{currentPrice.monthlyPrice}/month</div>
-                        </div>
-                        <div className="text-muted-foreground">|</div>
-                        <div>
-                          <div className="text-sm text-muted-foreground">Pay in Full (10% off via Stripe)</div>
-                          <div className="text-2xl font-bold text-foreground">£{currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}</div>
-                        </div>
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Total: £{currentPrice.totalPrice} | Claim Limit: £{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()} | Labour: £{labourRate}/hr
-                      </div>
+                <div className="sticky bottom-0 -mx-6 -mb-6 p-4 bg-gray-50 rounded-b-lg shadow-lg border-t-4 border-green-400">
+                  <div className="flex items-center justify-center gap-6 text-center">
+                    <div>
+                      <div className="text-sm text-gray-700 font-medium">Monthly (12 payments via Bumper)</div>
+                      <div className="text-2xl font-bold text-gray-900">£{currentPrice.monthlyPrice}/month</div>
+                    </div>
+                    <div className="text-gray-400 text-2xl">|</div>
+                    <div>
+                      <div className="text-sm text-gray-700 font-medium">Pay in Full (10% off via Stripe)</div>
+                      <div className="text-2xl font-bold text-gray-900">£{currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}</div>
+                    </div>
+                    <div className="text-gray-400 text-2xl">|</div>
+                    <div className="text-sm text-gray-700 font-medium">
+                      <div>Total: £{currentPrice.totalPrice}</div>
+                      <div>Claim: £{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()} | Labour: £{labourRate}/hr</div>
                     </div>
                   </div>
                 </div>
@@ -1618,7 +1702,6 @@ Questions? Call 0330 229 5040`;
                     Back
                   </Button>
                   <Button 
-                    variant="secondary"
                     onClick={() => {
                       // Save quote data to localStorage for later
                       const savedQuote = {
@@ -1633,6 +1716,8 @@ Questions? Call 0330 229 5040`;
                         boostAddon,
                         selectedAddOns,
                         currentPrice,
+                        freeExtendedCover,
+                        additionalNotes,
                         savedAt: new Date().toISOString()
                       };
                       const savedQuotes = JSON.parse(localStorage.getItem('admin_saved_quotes') || '[]');
@@ -1643,7 +1728,7 @@ Questions? Call 0330 229 5040`;
                         description: "Quote saved for later. You can find it in your saved quotes.",
                       });
                     }}
-                    className="flex-1"
+                    className="flex-1 bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200"
                   >
                     <Save className="w-4 h-4 mr-2" />
                     Save Quote
