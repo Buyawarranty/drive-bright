@@ -150,19 +150,72 @@ export default function LiveQuotePage() {
   const validateForm = () => {
     const errors: {[key: string]: string} = {};
     
-    if (!customerData.firstName.trim()) errors.firstName = 'First name is required';
-    if (!customerData.lastName.trim()) errors.lastName = 'Last name is required';
-    if (!customerData.email.trim()) errors.email = 'Email is required';
-    if (!customerData.phone.trim()) errors.phone = 'Phone is required';
-    if (!customerData.addressLine1.trim()) errors.addressLine1 = 'Address is required';
-    if (!customerData.city.trim()) errors.city = 'Town/City is required';
-    if (!customerData.postcode.trim()) errors.postcode = 'Postcode is required';
-    if (!customerData.mileage.trim()) errors.mileage = 'Mileage is required';
+    // Same validation patterns as Step 4 (CustomerDetailsStep.tsx)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    // UK phone number validation (landline and mobile)
+    const phoneRegex = /^(\+44\s?7\d{3}|\(?07\d{3}\)?)\s?\d{3}\s?\d{3}$|^(\+44\s?1\d{3}|\(?01\d{3}\)?)\s?\d{3}\s?\d{3}$|^(\+44\s?2\d{2}|\(?02\d{2}\)?)\s?\d{3}\s?\d{4}$/;
+    
+    // UK postcode validation
+    const postcodeRegex = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
+    
+    // First name validation
+    if (!customerData.firstName.trim()) {
+      errors.firstName = 'Please enter your first name.';
+    } else if (customerData.firstName.trim().length < 2) {
+      errors.firstName = 'Please enter your first name.';
+    }
+    
+    // Last name validation
+    if (!customerData.lastName.trim()) {
+      errors.lastName = 'Please enter your last name.';
+    } else if (customerData.lastName.trim().length < 2) {
+      errors.lastName = 'Please enter your last name.';
+    }
+    
+    // Email validation
+    if (!customerData.email.trim()) {
+      errors.email = 'Please enter your email address.';
+    } else if (!emailRegex.test(customerData.email)) {
+      errors.email = 'Please enter a valid email address.';
+    }
+    
+    // Phone validation (UK format)
+    if (!customerData.phone.trim()) {
+      errors.phone = 'Enter a phone number.';
+    } else if (!phoneRegex.test(customerData.phone)) {
+      errors.phone = 'Enter a valid UK phone number.';
+    }
+    
+    // Address validation
+    if (!customerData.addressLine1.trim()) {
+      errors.addressLine1 = 'Enter your street address.';
+    } else if (customerData.addressLine1.trim().length < 3) {
+      errors.addressLine1 = 'Enter your street address.';
+    }
+    
+    // City validation
+    if (!customerData.city.trim()) {
+      errors.city = 'Enter your city or town.';
+    } else if (customerData.city.trim().length < 2) {
+      errors.city = 'Enter your city or town.';
+    }
+    
+    // Postcode validation (UK format)
+    if (!customerData.postcode.trim()) {
+      errors.postcode = 'Enter your postcode.';
+    } else if (!postcodeRegex.test(customerData.postcode)) {
+      errors.postcode = 'Enter a valid UK postcode.';
+    }
     
     // Mileage validation
-    const mileage = parseInt(customerData.mileage);
-    if (mileage > 150000) {
-      errors.mileage = 'Mileage cannot exceed 150,000 miles';
+    if (!customerData.mileage.trim()) {
+      errors.mileage = 'Please confirm the current mileage.';
+    } else {
+      const mileage = parseInt(customerData.mileage);
+      if (mileage > 150000) {
+        errors.mileage = 'Sorry, we only cover vehicles under 150,000 miles.';
+      }
     }
     
     setFieldErrors(errors);
