@@ -186,3 +186,6 @@ verify_jwt = false
 
 [functions.quote-payment]
 verify_jwt = false
+
+[functions.send-trustpilot-review-request]
+verify_jwt = false

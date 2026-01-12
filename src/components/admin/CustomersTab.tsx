@@ -15,7 +15,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, Copy, FileText, User, Sparkles, FileSpreadsheet } from 'lucide-react';
+import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, Copy, FileText, User, Sparkles, FileSpreadsheet, Star } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -51,6 +51,7 @@ import { WarrantyUpgradeDialog } from './WarrantyUpgradeDialog';
 import { InlineWarrantyUpgrade } from './InlineWarrantyUpgrade';
 import { InlineFutureActivationEdit } from './InlineFutureActivationEdit';
 import { InlineUpgradeCell } from './InlineUpgradeCell';
+import { TrustpilotReviewDialog } from './TrustpilotReviewDialog';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
@@ -338,6 +339,7 @@ export const CustomersTab = () => {
   }>({ isOpen: false, policy: null });
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [upgradeCustomer, setUpgradeCustomer] = useState<Customer | null>(null);
+  const [trustpilotReviewCustomer, setTrustpilotReviewCustomer] = useState<Customer | null>(null);
 
   // Pagination for customers table - only paginate filtered results
   const customersPagination = usePagination(filteredCustomers, { initialPageSize: 50 });
@@ -3670,6 +3672,13 @@ Please log in and change your password after first login.`;
                            </DropdownMenuTrigger>
                            <DropdownMenuContent align="center">
                              <DropdownMenuItem 
+                               onClick={() => setTrustpilotReviewCustomer(customer)}
+                               className="text-[#00b67a]"
+                             >
+                               <Star className="h-4 w-4 mr-2 fill-[#00b67a]" />
+                               Send Review Request
+                             </DropdownMenuItem>
+                             <DropdownMenuItem 
                                onClick={() => updateReviewStatus(customer.id, 'trustpilot_review_requested', !customer.trustpilot_review_requested)}
                              >
                                <Clock className="h-4 w-4 mr-2" />
@@ -4088,6 +4097,26 @@ Please log in and change your password after first login.`;
             fetchCustomers();
             setUpgradeCustomer(null);
           }}
+        />
+      )}
+
+      {/* Trustpilot Review Request Dialog */}
+      {trustpilotReviewCustomer && (
+        <TrustpilotReviewDialog
+          open={!!trustpilotReviewCustomer}
+          onOpenChange={(open) => {
+            if (!open) {
+              setTrustpilotReviewCustomer(null);
+              // Refresh customers to update the status
+              fetchCustomers();
+            }
+          }}
+          customerId={trustpilotReviewCustomer.id}
+          customerName={trustpilotReviewCustomer.name}
+          customerEmail={trustpilotReviewCustomer.email}
+          customerFirstName={trustpilotReviewCustomer.first_name}
+          alreadyRequested={trustpilotReviewCustomer.trustpilot_review_requested}
+          requestedAt={trustpilotReviewCustomer.trustpilot_review_requested_at}
         />
       )}
     </div>
