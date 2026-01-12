@@ -519,7 +519,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
       const termOption = termOptions.find(t => t.id === paymentType);
       const coverMonths = termOption?.months || 12;
-      const bonusMonths = termOption?.bonus || 3;
+      // Map freeExtendedCover to bonusMonths - only show bonus if explicitly selected
+      const bonusMonthsMap: Record<string, number> = { 'none': 0, '3months': 3, '6months': 6 };
+      const bonusMonths = bonusMonthsMap[freeExtendedCover] || 0;
 
       // Build recipients - customer + admin copy + additional emails
       const allCcEmails = [
