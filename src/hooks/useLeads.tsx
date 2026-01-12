@@ -388,6 +388,8 @@ export const useLeads = () => {
   const assignLead = useCallback(async (leadId: string, userId: string | null) => {
     const now = new Date().toISOString();
     const user = salesUsersRef.current.find(u => u.id === userId);
+    const isAbandonedCart = leadId.startsWith('cart_');
+    const actualId = isAbandonedCart ? leadId.replace('cart_', '') : leadId;
     
     // Optimistic update
     setLeads(prev => prev.map(lead => 
@@ -408,20 +410,37 @@ export const useLeads = () => {
     ));
 
     try {
-      const { error } = await supabase
-        .from('sales_leads')
-        .update({
-          assigned_to: userId,
-          assigned_at: userId ? now : null,
-          updated_at: now
-        })
-        .eq('id', leadId);
+      if (isAbandonedCart) {
+        // Update abandoned_carts table - uses contacted_by field for assignment
+        const { error } = await supabase
+          .from('abandoned_carts')
+          .update({
+            contacted_by: userId,
+            last_contacted_at: userId ? now : null,
+            updated_at: now
+          })
+          .eq('id', actualId);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        // Update sales_leads table
+        const { error } = await supabase
+          .from('sales_leads')
+          .update({
+            assigned_to: userId,
+            assigned_at: userId ? now : null,
+            updated_at: now
+          })
+          .eq('id', actualId);
 
-      if (userId && user) {
-        logActivity(leadId, 'assignment', `Assigned to ${user.first_name || user.email || 'Unknown'}`);
+        if (error) throw error;
+
+        if (userId && user) {
+          logActivity(leadId, 'assignment', `Assigned to ${user.first_name || user.email || 'Unknown'}`);
+        }
       }
+
+      toast.success(userId ? `Assigned to ${user?.first_name || user?.email || 'user'}` : 'Assignment removed');
     } catch (error) {
       console.error('Error assigning lead:', error);
       toast.error('Failed to assign lead');
