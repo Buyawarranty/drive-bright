@@ -90,7 +90,7 @@ export const LeadSearchPopover: React.FC<LeadSearchPopoverProps> = ({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" className={cn("gap-2", className)}>
+        <Button className={cn("gap-2 bg-blue-600 hover:bg-blue-700 text-white", className)}>
           <UserPlus className="h-4 w-4" />
           Import from Lead
         </Button>
