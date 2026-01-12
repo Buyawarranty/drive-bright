@@ -246,23 +246,16 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
 
       {/* Assigned To - Redesigned for better discoverability */}
       <TableCell className="sticky left-0 bg-inherit z-10" onClick={(e) => e.stopPropagation()}>
-        {lead.is_from_abandoned_cart ? (
-          // Read-only state for abandoned carts - clearly disabled
-          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-muted/50 text-muted-foreground text-xs">
-            <User className="h-3.5 w-3.5" />
-            <span>Not assignable</span>
-          </div>
-        ) : (
-          <Select
-            value={lead.assigned_to || 'unassigned'}
-            onValueChange={(value) => {
-              if (value === 'auto') {
-                onAutoAssign();
-              } else {
-                onAssign(value === 'unassigned' ? null : value);
-              }
-            }}
-          >
+        <Select
+          value={lead.assigned_to || 'unassigned'}
+          onValueChange={(value) => {
+            if (value === 'auto') {
+              onAutoAssign();
+            } else {
+              onAssign(value === 'unassigned' ? null : value);
+            }
+          }}
+        >
             <SelectTrigger 
               className={cn(
                 "w-[120px] h-8 text-xs font-medium transition-all",
@@ -320,7 +313,6 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               ))}
             </SelectContent>
           </Select>
-        )}
       </TableCell>
 
       {/* Status */}
