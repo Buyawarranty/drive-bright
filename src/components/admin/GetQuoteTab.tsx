@@ -778,7 +778,7 @@ Questions? Call 0330 229 5040`;
           },
           paymentType,
           excessAmount,
-          claimLimit: displayClaimLimit,
+          claimLimit, // Send raw claim limit - customer page will add boost if needed
           labourRate,
           boostAddon,
           monthlyPrice: currentPrice.monthlyPrice,
@@ -786,6 +786,7 @@ Questions? Call 0330 229 5040`;
           breakdownIncluded: getAutoIncludedAddOns(paymentType).includes('breakdown'),
           rentalIncluded: getAutoIncludedAddOns(paymentType).includes('rental'),
           additionalNotes,
+          freeExtendedCover, // Pass the free extended cover selection
           createdByName: 'Admin'
         }
       });
