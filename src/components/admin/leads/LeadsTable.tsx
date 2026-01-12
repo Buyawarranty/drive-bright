@@ -62,11 +62,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
           <TableHeader>
             <TableRow className="bg-muted/30">
               <TableHead className="w-[40px]">
-                <Checkbox
-                  checked={selectedLeads.size === leads.length && leads.length > 0}
-                  onCheckedChange={onSelectAll}
-                  aria-label="Select all leads"
-                />
+                {/* Checkbox moved to control bar */}
               </TableHead>
               <TableHead className="sticky left-0 bg-muted/30 z-10 w-[120px] min-w-[120px]">Assigned To</TableHead>
               <TableHead className="w-[100px]">Status</TableHead>
