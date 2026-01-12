@@ -244,42 +244,83 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         />
       </TableCell>
 
-      {/* Assigned To */}
+      {/* Assigned To - Redesigned for better discoverability */}
       <TableCell className="sticky left-0 bg-inherit z-10" onClick={(e) => e.stopPropagation()}>
-        <Select
-          value={lead.assigned_to || 'unassigned'}
-          onValueChange={(value) => {
-            if (!lead.is_from_abandoned_cart) {
+        {lead.is_from_abandoned_cart ? (
+          // Read-only state for abandoned carts - clearly disabled
+          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-muted/50 text-muted-foreground text-xs">
+            <User className="h-3.5 w-3.5" />
+            <span>Not assignable</span>
+          </div>
+        ) : (
+          <Select
+            value={lead.assigned_to || 'unassigned'}
+            onValueChange={(value) => {
               if (value === 'auto') {
                 onAutoAssign();
               } else {
                 onAssign(value === 'unassigned' ? null : value);
               }
-            }
-          }}
-          disabled={lead.is_from_abandoned_cart}
-        >
-          <SelectTrigger className={cn(
-            "w-[110px] h-7 text-xs",
-            !lead.assigned_to && "border-amber-400 bg-amber-50"
-          )}>
-            <SelectValue placeholder="Unassigned">
-              {lead.assigned_user 
-                ? `${lead.assigned_user.first_name || ''} ${lead.assigned_user.last_name || ''}`.trim() || lead.assigned_user.email.split('@')[0]
-                : 'Unassigned'
-              }
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="unassigned">Unassigned</SelectItem>
-            <SelectItem value="auto">🔄 Auto-assign</SelectItem>
-            {salesUsers.map((user) => (
-              <SelectItem key={user.id} value={user.id}>
-                {`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
+            }}
+          >
+            <SelectTrigger 
+              className={cn(
+                "w-[120px] h-8 text-xs font-medium transition-all",
+                !lead.assigned_to 
+                  ? "border-2 border-dashed border-amber-400 bg-amber-50 text-amber-700 hover:border-amber-500 hover:bg-amber-100" 
+                  : "border border-green-300 bg-green-50 text-green-800 hover:border-green-400"
+              )}
+            >
+              <div className="flex items-center gap-1.5 w-full">
+                {lead.assigned_to ? (
+                  // Assigned state - show initials avatar
+                  <>
+                    <div className="h-5 w-5 rounded-full bg-green-600 text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                      {lead.assigned_user?.first_name?.[0]?.toUpperCase() || lead.assigned_user?.email?.[0]?.toUpperCase() || '?'}
+                    </div>
+                    <span className="truncate">
+                      {lead.assigned_user 
+                        ? `${lead.assigned_user.first_name || ''}`.trim() || lead.assigned_user.email.split('@')[0]
+                        : 'Assigned'
+                      }
+                    </span>
+                  </>
+                ) : (
+                  // Unassigned state - clear call to action
+                  <>
+                    <Plus className="h-3.5 w-3.5 flex-shrink-0" />
+                    <span>Assign</span>
+                  </>
+                )}
+              </div>
+            </SelectTrigger>
+            <SelectContent className="bg-popover border shadow-lg z-50">
+              <SelectItem value="unassigned" className="text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <X className="h-3.5 w-3.5" />
+                  <span>Remove assignment</span>
+                </div>
               </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+              <SelectItem value="auto" className="text-primary">
+                <div className="flex items-center gap-2">
+                  <span>🔄</span>
+                  <span>Auto-assign (next available)</span>
+                </div>
+              </SelectItem>
+              <div className="h-px bg-border my-1" />
+              {salesUsers.map((user) => (
+                <SelectItem key={user.id} value={user.id}>
+                  <div className="flex items-center gap-2">
+                    <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium">
+                      {user.first_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
+                    </div>
+                    <span>{`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </TableCell>
 
       {/* Status */}
