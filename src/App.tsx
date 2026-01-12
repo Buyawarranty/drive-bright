@@ -202,7 +202,7 @@ const App = () => {
                     
                     {/* Dynamic landing pages from admin - supports nested paths under warranty-types */}
                     <Route path="/warranty-types/:brand" element={<DynamicLandingPage />} />
-                    <Route path="/steptest" element={<StepTest />} />
+                    <Route path="/payment-assist" element={<StepTest />} />
                     <Route path="/:slug" element={<DynamicLandingPage />} />
                     
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
