@@ -319,12 +319,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       <TableCell onClick={(e) => e.stopPropagation()}>
         <Select
           value={lead.status}
-          onValueChange={(value) => {
-            if (!lead.is_from_abandoned_cart) {
-              onUpdateStatus(value as LeadStatus);
-            }
-          }}
-          disabled={lead.is_from_abandoned_cart}
+          onValueChange={(value) => onUpdateStatus(value as LeadStatus)}
         >
           <SelectTrigger className={cn("w-[100px] h-7 text-xs", statusColors[lead.status])}>
             <SelectValue />
