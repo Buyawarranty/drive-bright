@@ -673,9 +673,12 @@ export default function LiveQuotePage() {
                   <Separator />
 
                   {/* Price Summary */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Monthly option</span>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="text-gray-600 text-sm">Monthly option</span>
+                        <p className="text-xs text-gray-500">Total: £{quote.pricing.monthlyPrice * quote.cover.durationMonths}</p>
+                      </div>
                       <span className="font-semibold">£{quote.pricing.monthlyPrice}/mo</span>
                     </div>
                     <div className="flex justify-between items-center">
@@ -1009,9 +1012,12 @@ export default function LiveQuotePage() {
                   <Separator />
 
                   {/* Price Summary */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Monthly option</span>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="text-gray-600 text-sm">Monthly option</span>
+                        <p className="text-xs text-gray-500">Total: £{quote.pricing.monthlyPrice * quote.cover.durationMonths}</p>
+                      </div>
                       <span className="font-semibold">£{quote.pricing.monthlyPrice}/mo</span>
                     </div>
                     <div className="flex justify-between items-center">
