@@ -311,7 +311,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   };
 
   const handleVehicleLookup = async () => {
+    console.log('handleVehicleLookup called - regNumber:', regNumber, 'mileage:', mileage);
+    
     if (!regNumber.trim() || !mileage.trim()) {
+      console.log('Validation failed - empty reg or mileage');
       toast({
         title: "Missing Information",
         description: "Please enter both registration number and mileage",
@@ -322,11 +325,15 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
 
     setIsLookingUp(true);
     try {
+      console.log('Calling DVLA lookup...');
       const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
         body: { registrationNumber: regNumber }
       });
 
+      console.log('DVLA response:', { data, error });
+
       if (error || data?.error || !data?.make || !data?.model) {
+        console.log('Vehicle not found or error');
         toast({
           title: "Vehicle Not Found",
           description: data?.error || "Unable to find vehicle details. Please check the registration number and try again.",
@@ -342,6 +349,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         if (!isNaN(vehicleYear) && vehicleYear > 0) {
           const vehicleAge = currentYear - vehicleYear;
           if (vehicleAge > 15) {
+            console.log('Vehicle too old:', vehicleAge);
             toast({
               title: "Vehicle Too Old",
               description: `This vehicle is ${vehicleAge} years old. We only cover vehicles up to 15 years old.`,
@@ -353,7 +361,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         }
       }
 
-      setVehicleData({
+      const newVehicleData = {
         regNumber: regNumber.toUpperCase(),
         mileage: mileage,
         make: data.make,
@@ -362,8 +370,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         transmission: data.transmission || '',
         year: data.yearOfManufacture || data.year || '',
         vehicleType: data.vehicleType || '',
-      });
+      };
       
+      console.log('Setting vehicleData:', newVehicleData);
+      setVehicleData(newVehicleData);
+      
+      console.log('Setting step to 2');
       setStep(2);
     } catch (error) {
       console.error('Error looking up vehicle:', error);
@@ -1287,7 +1299,10 @@ Questions? Call 0330 229 5040`;
                 </div>
 
                 <Button 
-                  onClick={handleVehicleLookup}
+                  onClick={() => {
+                    console.log('Continue clicked - regNumber:', regNumber, 'mileage:', mileage);
+                    handleVehicleLookup();
+                  }}
                   disabled={isLookingUp}
                   className="w-full"
                   size="lg"
