@@ -48,8 +48,7 @@ const excessOptions = [0, 50, 100, 150];
 const claimLimitOptions = [
   { value: 750, label: '£750', description: 'Minor repairs' },
   { value: 1250, label: '£1,250', description: 'Most popular' },
-  { value: 2000, label: '£2,000', description: 'Comprehensive' },
-  { value: 3000, label: '£3,000', description: 'Maximum protection' }
+  { value: 2000, label: '£2,000', description: 'Comprehensive' }
 ];
 
 const labourRateOptions = [
@@ -1445,6 +1444,10 @@ Questions? Call 0330 229 5040`;
                     {getAddOnInfo(paymentType, DURATION_MONTHS[paymentType]).map((addon) => {
                       const isAutoIncluded = addon.isAutoIncluded;
                       const isSelected = selectedAddOns[addon.key] || isAutoIncluded;
+                      // Display monthly price like Step 3
+                      const monthlyPriceDisplay = addon.oneTimePrice 
+                        ? `£${addon.oneTimePrice} one-off` 
+                        : `+£${addon.monthlyPrice}/mo`;
                       
                       return (
                         <button
@@ -1465,7 +1468,7 @@ Questions? Call 0330 229 5040`;
                             {isAutoIncluded ? (
                               <Badge variant="outline" className="text-[10px] bg-green-100 border-green-300 text-green-700">FREE</Badge>
                             ) : (
-                              <span className="text-xs text-muted-foreground">{addon.displayPrice}</span>
+                              <span className="text-xs font-medium text-primary">{monthlyPriceDisplay}</span>
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground mt-1">{addon.description}</p>
