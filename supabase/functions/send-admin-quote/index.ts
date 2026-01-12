@@ -54,14 +54,17 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Sending quote email to:", to);
     console.log("Quote link:", quoteLink);
+    console.log("Quote details received:", JSON.stringify(quoteDetails, null, 2));
+    console.log("Vehicle data received:", JSON.stringify(vehicleData, null, 2));
 
     const firstName = customerName.split(' ')[0];
     const vehicleDisplay = `${vehicleData.make || ''} ${vehicleData.model || ''}`.trim() || 'Your Vehicle';
-    const paymentTypeDisplay = quoteDetails.paymentType === 'monthly' ? 'Monthly (interest-free)' : 
-                               quoteDetails.paymentType === 'yearly' ? 'Pay in Full (12 months)' :
-                               quoteDetails.paymentType === 'twoYear' ? 'Pay in Full (24 months)' : 
-                               'Pay in Full (36 months)';
     const totalMonths = quoteDetails.coverMonths + quoteDetails.bonusMonths;
+    
+    // Cover period display
+    const coverPeriodDisplay = quoteDetails.bonusMonths > 0 
+      ? `${quoteDetails.coverMonths} months plus ${quoteDetails.bonusMonths} months FREE`
+      : `${quoteDetails.coverMonths} months`;
 
     const finalHtml = `
       <!DOCTYPE html>
@@ -95,10 +98,10 @@ const handler = async (req: Request): Promise<Response> => {
                   <tr>
                     <td align="center" style="padding: 0 24px 16px 24px;">
                       <h1 style="font-size: 26px; font-weight: 700; color: #1a1a1a; margin: 0 0 8px 0; line-height: 1.3;">
-                        Here's Your Warranty Quote
+                        Here's your ${vehicleDisplay} warranty quote
                       </h1>
                       <p style="font-size: 15px; color: #666666; margin: 0; line-height: 1.5;">
-                        You're just moments away from protecting your vehicle with BuyAWarranty.
+                        Protect your ${vehicleDisplay} from unexpected repair bills by choosing a payment option that works for you. Once payment is completed, your warranty will be activated immediately.
                       </p>
                     </td>
                   </tr>
@@ -110,7 +113,7 @@ const handler = async (req: Request): Promise<Response> => {
                         Hi ${firstName},
                       </p>
                       <p style="font-size: 15px; color: #444444; margin: 12px 0 0 0; line-height: 1.6;">
-                        Review your cover details and complete your payment to activate your warranty immediately.
+                        Thanks for requesting your personalised warranty quote. Please review your cover details below and choose how you'd like to pay to activate your warranty.
                       </p>
                     </td>
                   </tr>
@@ -136,34 +139,30 @@ const handler = async (req: Request): Promise<Response> => {
                               </tr>
                               <tr>
                                 <td style="padding: 8px 0; font-size: 14px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Plan</td>
-                                <td style="padding: 8px 0; font-size: 14px; color: #1a1a1a; font-weight: 600; text-align: right; border-bottom: 1px solid #e2e8f0;">${quoteDetails.plan}</td>
+                                <td style="padding: 8px 0; font-size: 14px; color: #1a1a1a; font-weight: 600; text-align: right; border-bottom: 1px solid #e2e8f0;">${quoteDetails.plan} cover</td>
                               </tr>
                               <tr>
-                                <td style="padding: 8px 0; font-size: 14px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Payment</td>
-                                <td style="padding: 8px 0; font-size: 14px; color: #1a1a1a; font-weight: 600; text-align: right; border-bottom: 1px solid #e2e8f0;">${paymentTypeDisplay}</td>
+                                <td style="padding: 8px 0; font-size: 14px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Cover period</td>
+                                <td style="padding: 8px 0; font-size: 14px; color: #1a1a1a; font-weight: 600; text-align: right; border-bottom: 1px solid #e2e8f0;">${coverPeriodDisplay}</td>
                               </tr>
                               <tr>
-                                <td style="padding: 8px 0; font-size: 14px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Cover Period</td>
-                                <td style="padding: 8px 0; font-size: 14px; color: #1a1a1a; font-weight: 600; text-align: right; border-bottom: 1px solid #e2e8f0;">${quoteDetails.coverMonths} months + ${quoteDetails.bonusMonths} FREE (${totalMonths} total)</td>
-                              </tr>
-                              <tr>
-                                <td style="padding: 8px 0; font-size: 14px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Claim Limit</td>
-                                <td style="padding: 8px 0; font-size: 14px; color: #1a1a1a; font-weight: 600; text-align: right; border-bottom: 1px solid #e2e8f0;">£${quoteDetails.claimLimit.toLocaleString()}${quoteDetails.boostAddon ? ' (inc. boost)' : ''}</td>
+                                <td style="padding: 8px 0; font-size: 14px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Claim limit</td>
+                                <td style="padding: 8px 0; font-size: 14px; color: #1a1a1a; font-weight: 600; text-align: right; border-bottom: 1px solid #e2e8f0;">£${quoteDetails.claimLimit.toLocaleString()} per claim</td>
                               </tr>
                               <tr>
                                 <td style="padding: 8px 0; font-size: 14px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Excess</td>
                                 <td style="padding: 8px 0; font-size: 14px; color: #1a1a1a; font-weight: 600; text-align: right; border-bottom: 1px solid #e2e8f0;">£${quoteDetails.excessAmount}</td>
                               </tr>
                               <tr>
-                                <td style="padding: 8px 0; font-size: 14px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Labour Rate</td>
-                                <td style="padding: 8px 0; font-size: 14px; color: #1a1a1a; font-weight: 600; text-align: right; border-bottom: 1px solid #e2e8f0;">£${quoteDetails.labourRate || 70}/hr</td>
+                                <td style="padding: 8px 0; font-size: 14px; color: #64748b; border-bottom: 1px solid #e2e8f0;">Labour rate covered</td>
+                                <td style="padding: 8px 0; font-size: 14px; color: #1a1a1a; font-weight: 600; text-align: right; border-bottom: 1px solid #e2e8f0;">Up to £${quoteDetails.labourRate || 70} per hour</td>
                               </tr>
                               <tr>
                                 <td style="padding: 12px 0 8px 0; font-size: 16px; color: #1a1a1a; font-weight: 700;">
-                                  ${quoteDetails.paymentType === 'monthly' ? 'Monthly Price' : 'Total Price'}
+                                  Total price
                                 </td>
                                 <td style="padding: 12px 0 8px 0; font-size: 20px; color: #ea580c; font-weight: 700; text-align: right;">
-                                  ${quoteDetails.paymentType === 'monthly' ? `£${quoteDetails.monthlyPrice}/month` : `£${quoteDetails.totalPrice}`}
+                                  £${quoteDetails.totalPrice}
                                 </td>
                               </tr>
                             </table>
@@ -173,47 +172,50 @@ const handler = async (req: Request): Promise<Response> => {
                     </td>
                   </tr>
                   
-                  <!-- What's Included Section -->
+                  <!-- What Your Warranty Includes Section -->
                   <tr>
                     <td style="padding: 0 24px 24px 24px;">
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f0fdf4; border-radius: 10px;">
                         <tr>
                           <td style="padding: 20px;">
                             <p style="font-size: 14px; font-weight: 700; color: #166534; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px;">
-                              What's Included
+                              What Your Warranty Includes
                             </p>
                             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                               <tr>
                                 <td style="padding: 6px 0; font-size: 14px; color: #166534;">
-                                  <span style="color: #22c55e; font-weight: bold; margin-right: 8px;">✓</span>All mechanical and electrical components
+                                  <span style="color: #22c55e; font-weight: bold; margin-right: 8px;">✔</span>Mechanical and electrical component cover
                                 </td>
                               </tr>
                               <tr>
                                 <td style="padding: 6px 0; font-size: 14px; color: #166534;">
-                                  <span style="color: #22c55e; font-weight: bold; margin-right: 8px;">✓</span>Labour costs included
+                                  <span style="color: #22c55e; font-weight: bold; margin-right: 8px;">✔</span>Labour costs included
                                 </td>
                               </tr>
                               <tr>
                                 <td style="padding: 6px 0; font-size: 14px; color: #166534;">
-                                  <span style="color: #22c55e; font-weight: bold; margin-right: 8px;">✓</span>VAT-registered garage repairs
+                                  <span style="color: #22c55e; font-weight: bold; margin-right: 8px;">✔</span>Repairs carried out at VAT-registered garages
                                 </td>
                               </tr>
                               <tr>
                                 <td style="padding: 6px 0; font-size: 14px; color: #166534;">
-                                  <span style="color: #22c55e; font-weight: bold; margin-right: 8px;">✓</span>No waiting period
+                                  <span style="color: #22c55e; font-weight: bold; margin-right: 8px;">✔</span>No waiting period once activated
                                 </td>
                               </tr>
                               <tr>
                                 <td style="padding: 6px 0; font-size: 14px; color: #166534;">
-                                  <span style="color: #22c55e; font-weight: bold; margin-right: 8px;">✓</span>Unlimited claims up to your vehicle's value
+                                  <span style="color: #22c55e; font-weight: bold; margin-right: 8px;">✔</span>Unlimited claims up to your vehicle's value
                                 </td>
                               </tr>
                               <tr>
                                 <td style="padding: 6px 0; font-size: 14px; color: #166534;">
-                                  <span style="color: #22c55e; font-weight: bold; margin-right: 8px;">✓</span>Fast, UK-based claims support
+                                  <span style="color: #22c55e; font-weight: bold; margin-right: 8px;">✔</span>Fast, UK-based claims support
                                 </td>
                               </tr>
                             </table>
+                            <p style="font-size: 15px; font-weight: 600; color: #166534; margin: 16px 0 0 0; font-style: italic;">
+                              If it breaks after activation, we'll fix it.
+                            </p>
                           </td>
                         </tr>
                       </table>
@@ -223,91 +225,119 @@ const handler = async (req: Request): Promise<Response> => {
                   <!-- Payment Options Section -->
                   <tr>
                     <td style="padding: 0 24px 24px 24px;">
-                      <p style="font-size: 16px; font-weight: 700; color: #1a1a1a; margin: 0 0 12px 0;">
-                        Choose How You'd Like to Pay
-                      </p>
-                      <p style="font-size: 14px; color: #64748b; margin: 0 0 16px 0; line-height: 1.5;">
-                        Select the option that suits you best and complete your secure checkout.
+                      <p style="font-size: 16px; font-weight: 700; color: #1a1a1a; margin: 0 0 16px 0;">
+                        Choose how you'd like to pay
                       </p>
                       
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                        <!-- Monthly Option -->
                         <tr>
-                          <td style="padding: 12px; background-color: #f8fafc; border-radius: 8px; margin-bottom: 8px;">
-                            <p style="font-size: 14px; font-weight: 600; color: #1a1a1a; margin: 0 0 4px 0;">💳 Monthly Payment</p>
-                            <p style="font-size: 13px; color: #64748b; margin: 0;">Spread the cost with simple, interest-free monthly payments. No credit score impact. No hidden fees.</p>
+                          <td style="padding: 16px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                            <p style="font-size: 15px; font-weight: 700; color: #1a1a1a; margin: 0 0 8px 0;">Pay monthly – spread the cost</p>
+                            <p style="font-size: 13px; color: #64748b; margin: 0 0 12px 0; line-height: 1.5;">
+                              A flexible way to protect your car without paying everything upfront.
+                            </p>
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                              <tr>
+                                <td style="padding: 3px 0; font-size: 13px; color: #444;">• Simple monthly payments</td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 3px 0; font-size: 13px; color: #444;">• Interest free</td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 3px 0; font-size: 13px; color: #444;">• No hidden fees</td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 3px 0; font-size: 13px; color: #444;">• No impact on your credit score</td>
+                              </tr>
+                            </table>
+                            <p style="margin: 12px 0 0 0;">
+                              <a href="${quoteLink}" target="_blank" style="font-size: 14px; color: #ea580c; font-weight: 600; text-decoration: none;">
+                                👉 Choose monthly payments to activate your warranty
+                              </a>
+                            </p>
                           </td>
                         </tr>
-                        <tr><td style="height: 8px;"></td></tr>
+                        <tr><td style="height: 12px;"></td></tr>
+                        <!-- Pay in Full Option -->
                         <tr>
-                          <td style="padding: 12px; background-color: #f8fafc; border-radius: 8px;">
-                            <p style="font-size: 14px; font-weight: 600; color: #1a1a1a; margin: 0 0 4px 0;">💰 Pay in Full</p>
-                            <p style="font-size: 13px; color: #64748b; margin: 0;">One simple payment with a clear saving. Instant activation and best overall value.</p>
+                          <td style="padding: 16px; background-color: #eff6ff; border-radius: 8px; border: 1px solid #bfdbfe;">
+                            <p style="font-size: 15px; font-weight: 700; color: #1a1a1a; margin: 0 0 8px 0;">Pay in full – save 10 percent</p>
+                            <p style="font-size: 13px; color: #64748b; margin: 0 0 12px 0; line-height: 1.5;">
+                              Our best-value option for complete peace of mind.
+                            </p>
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                              <tr>
+                                <td style="padding: 3px 0; font-size: 13px; color: #444;">• One upfront payment</td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 3px 0; font-size: 13px; color: #444;">• Save 10 percent instantly</td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 3px 0; font-size: 13px; color: #444;">• Warranty activated immediately after payment</td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 3px 0; font-size: 13px; color: #444;">• No ongoing payments</td>
+                              </tr>
+                            </table>
+                            <p style="margin: 12px 0 0 0;">
+                              <a href="${quoteLink}" target="_blank" style="font-size: 14px; color: #ea580c; font-weight: 600; text-decoration: none;">
+                                👉 Pay in full and save 10 percent
+                              </a>
+                            </p>
                           </td>
                         </tr>
                       </table>
-                      
-                      <p style="font-size: 12px; color: #94a3b8; margin: 16px 0 0 0; text-align: center;">
-                        All payments are processed securely via our trusted payment partners using 256-bit SSL encryption.
-                      </p>
-                    </td>
-                  </tr>
-                  
-                  <!-- Primary CTA Button -->
-                  <tr>
-                    <td align="center" style="padding: 0 24px 16px 24px;">
-                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                        <tr>
-                          <td align="center">
-                            <a href="${quoteLink}" target="_blank" style="display: block; width: 100%; max-width: 340px; background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: #ffffff; padding: 18px 32px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 18px; text-align: center; box-shadow: 0 4px 14px rgba(234, 88, 12, 0.4);">
-                              Activate My Warranty Now
-                            </a>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                  
-                  <!-- Reassurance Line -->
-                  <tr>
-                    <td align="center" style="padding: 0 24px 24px 24px;">
-                      <p style="font-size: 13px; color: #64748b; margin: 0;">
-                        🔒 Secure payment • Instant cover • Total peace of mind
-                      </p>
                     </td>
                   </tr>
                   
                   <!-- What Happens Next -->
                   <tr>
                     <td style="padding: 0 24px 24px 24px;">
-                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #eff6ff; border-radius: 10px;">
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #fefce8; border-radius: 10px; border: 1px solid #fef08a;">
                         <tr>
                           <td style="padding: 20px;">
-                            <p style="font-size: 14px; font-weight: 700; color: #1e40af; margin: 0 0 12px 0;">
-                              Complete Your Purchase
+                            <p style="font-size: 14px; font-weight: 700; color: #854d0e; margin: 0 0 12px 0;">
+                              What happens next
                             </p>
-                            <p style="font-size: 14px; color: #3b82f6; margin: 0 0 8px 0; line-height: 1.5;">
-                              Once payment is confirmed:
+                            <p style="font-size: 14px; color: #a16207; margin: 0 0 8px 0; line-height: 1.5;">
+                              Once your payment is completed:
                             </p>
                             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                               <tr>
-                                <td style="padding: 4px 0; font-size: 14px; color: #1e40af;">
-                                  <span style="margin-right: 8px;">✓</span>Your warranty is instantly activated
+                                <td style="padding: 4px 0; font-size: 14px; color: #854d0e;">
+                                  <span style="margin-right: 8px;">✔</span>Your warranty is activated straight away
                                 </td>
                               </tr>
                               <tr>
-                                <td style="padding: 4px 0; font-size: 14px; color: #1e40af;">
-                                  <span style="margin-right: 8px;">✓</span>You'll receive your policy documents by email
+                                <td style="padding: 4px 0; font-size: 14px; color: #854d0e;">
+                                  <span style="margin-right: 8px;">✔</span>Policy documents are emailed to you
                                 </td>
                               </tr>
                               <tr>
-                                <td style="padding: 4px 0; font-size: 14px; color: #1e40af;">
-                                  <span style="margin-right: 8px;">✓</span>You're fully protected from unexpected repair bills
+                                <td style="padding: 4px 0; font-size: 14px; color: #854d0e;">
+                                  <span style="margin-right: 8px;">✔</span>You're protected against unexpected repair bills
                                 </td>
                               </tr>
                             </table>
-                            <p style="font-size: 15px; font-weight: 600; color: #1e40af; margin: 16px 0 0 0; font-style: italic;">
-                              If it breaks, we'll fix it.
+                            <p style="font-size: 13px; color: #a16207; margin: 16px 0 0 0;">
+                              🔒 Secure checkout. Immediate activation after payment.
                             </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  
+                  <!-- Primary CTA Button -->
+                  <tr>
+                    <td align="center" style="padding: 0 24px 24px 24px;">
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                        <tr>
+                          <td align="center">
+                            <a href="${quoteLink}" target="_blank" style="display: block; width: 100%; max-width: 380px; background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: #ffffff; padding: 18px 32px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 16px; text-align: center; box-shadow: 0 4px 14px rgba(234, 88, 12, 0.4);">
+                              Choose how to pay and activate my warranty
+                            </a>
                           </td>
                         </tr>
                       </table>
@@ -320,9 +350,15 @@ const handler = async (req: Request): Promise<Response> => {
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                         <tr>
                           <td align="center" style="padding-top: 24px;">
+                            <p style="font-size: 14px; font-weight: 700; color: #1a1a1a; margin: 0 0 8px 0;">
+                              Trusted by UK drivers
+                            </p>
                             <a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" target="_blank" style="text-decoration: none;">
-                              <img src="https://buyawarranty.co.uk/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" alt="Trustpilot 5 stars" width="130" style="display: block; width: 130px; max-width: 100%; height: auto; margin: 0 auto;" />
+                              <img src="https://buyawarranty.co.uk/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" alt="Rated Excellent on Trustpilot" width="130" style="display: block; width: 130px; max-width: 100%; height: auto; margin: 0 auto;" />
                             </a>
+                            <p style="font-size: 13px; color: #64748b; margin: 8px 0 0 0;">
+                              Thousands of drivers trust BuyAWarranty for reliable vehicle protection.
+                            </p>
                           </td>
                         </tr>
                       </table>
@@ -336,10 +372,13 @@ const handler = async (req: Request): Promise<Response> => {
                         <tr>
                           <td align="center">
                             <p style="font-size: 14px; font-weight: 600; color: #1a1a1a; margin: 0 0 12px 0;">
-                              Need Help Before You Complete?
+                              Need help before you decide?
+                            </p>
+                            <p style="font-size: 13px; color: #64748b; margin: 0 0 4px 0;">
+                              Our UK-based team is happy to help.
                             </p>
                             <p style="font-size: 13px; color: #64748b; margin: 0 0 6px 0;">
-                              Customer Service & Sales: <a href="tel:03302295040" style="color: #ea580c; text-decoration: none; font-weight: 500;">0330 229 5040</a>
+                              Customer Services and Sales: <a href="tel:03302295040" style="color: #ea580c; text-decoration: none; font-weight: 500;">0330 229 5040</a>
                             </p>
                             <p style="font-size: 13px; color: #64748b; margin: 0 0 16px 0;">
                               Claims Line: <a href="tel:03302295045" style="color: #ea580c; text-decoration: none; font-weight: 500;">0330 229 5045</a>
