@@ -214,6 +214,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     : lead.full_name && !lead.full_name.includes('@') ? lead.full_name : null;
   
   const isOverdue = lead.next_action_date && isPast(new Date(lead.next_action_date)) && lead.follow_up_status === 'pending';
+  const isFakeLead = lead.status === 'fake_lead';
 
   const getNextActionLabel = () => {
     if (!lead.next_action_type) return 'Schedule';
@@ -229,7 +230,11 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   }, [navigate, lead.email]);
 
   return (
-    <TableRow className={cn("transition-colors", getRowUrgencyClass(lead))}>
+    <TableRow className={cn(
+      "transition-colors", 
+      getRowUrgencyClass(lead),
+      isFakeLead && "opacity-40 bg-gray-50 hover:opacity-60"
+    )}>
       {/* Selection Checkbox */}
       <TableCell onClick={(e) => e.stopPropagation()}>
         <Checkbox
