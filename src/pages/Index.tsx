@@ -857,11 +857,11 @@ const Index = () => {
   ) => {
     setSelectedPlan({ id: planId, paymentType, name: planName, pricingData });
     
-    // Check if S17DRW registration - redirect to /steptest for Payment Assist testing
+    // Check if S17DRW registration - redirect to /payment-assist for Payment Assist testing
     const normalizedReg = (vehicleData?.regNumber || '').replace(/\s/g, '').toUpperCase();
     if (normalizedReg === 'S17DRW') {
       saveStateToLocalStorage(4);
-      window.location.href = '/steptest';
+      window.location.href = '/payment-assist';
       return;
     }
     

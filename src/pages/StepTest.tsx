@@ -48,7 +48,7 @@ const StepTest = () => {
           if (normalizedReg === 'S17DRW') {
             setIsAuthorized(true);
           } else {
-            console.log('⚠️ Unauthorized access to /steptest - reg:', parsedVehicleData.regNumber);
+            console.log('⚠️ Unauthorized access to /payment-assist - reg:', parsedVehicleData.regNumber);
             setIsAuthorized(false);
           }
         }
