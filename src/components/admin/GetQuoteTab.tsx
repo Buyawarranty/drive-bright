@@ -305,9 +305,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
 
     setIsLookingUp(true);
     try {
-      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Lookup timeout - please try again')), 15000);
+      });
+      
+      const lookupPromise = supabase.functions.invoke('dvla-vehicle-lookup', {
         body: { registrationNumber: regNumber }
       });
+      
+      const { data, error } = await Promise.race([lookupPromise, timeoutPromise]) as any;
 
       if (error || data?.error || !data?.make || !data?.model) {
         toast({
