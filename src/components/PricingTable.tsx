@@ -121,7 +121,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const navigate = useNavigate();
 
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [paymentType, setPaymentType] = useState<'12months' | '24months' | '36months' | null>(previousPaymentType || '24months');
+  // Initialize payment type from previous selection, defaulting to 24 months
+  const initialPaymentType = previousPaymentType || '24months';
+  console.log('🎯 PricingTable mount - previousPaymentType:', previousPaymentType, 'initialPaymentType:', initialPaymentType);
+  const [paymentType, setPaymentType] = useState<'12months' | '24months' | '36months' | null>(initialPaymentType);
   // If previousVoluntaryExcess is explicitly set (including 0), use it; otherwise default to £100
   const [voluntaryExcess, setVoluntaryExcess] = useState<number | null>(
     previousVoluntaryExcess !== undefined ? previousVoluntaryExcess : 100
@@ -376,15 +379,29 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return finalDurations.length > 0 ? finalDurations : ['12months'];
   }, [vehicleAge, vehicleMileage]);
 
+  // Track if we've initialized from previous props to avoid overriding user's selection
+  const hasInitializedPaymentType = React.useRef(false);
+  
   // Ensure selected payment type is valid for vehicle age
   useEffect(() => {
-    console.log('🔄 Payment Type Validation:', { paymentType, availableDurations });
+    console.log('🔄 Payment Type Validation:', { paymentType, availableDurations, previousPaymentType, hasInitialized: hasInitializedPaymentType.current });
+    
+    // Skip validation on first render if we have a previous payment type
+    // This prevents the useEffect from overriding the user's selection when navigating back
+    if (!hasInitializedPaymentType.current && previousPaymentType) {
+      hasInitializedPaymentType.current = true;
+      console.log('✅ Skipping initial validation - respecting previousPaymentType:', previousPaymentType);
+      return;
+    }
+    
+    hasInitializedPaymentType.current = true;
+    
     if (paymentType && !availableDurations.includes(paymentType)) {
       // If current selection is not available, default to 12months
       console.log('⚠️ Resetting payment type to 12months - current selection not available');
       setPaymentType('12months');
     }
-  }, [paymentType, availableDurations]);
+  }, [paymentType, availableDurations, previousPaymentType]);
 
   // Retry function for fetching plans
   const retryFetchPlans = useCallback(async () => {
