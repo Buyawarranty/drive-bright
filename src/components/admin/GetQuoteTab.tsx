@@ -483,7 +483,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   };
 
   const generateEmailSubject = (): string => {
-    return `Your Warranty Quote for ${vehicleData?.make} ${vehicleData?.model} - ${vehicleData?.regNumber}`;
+    return `Your ${vehicleData?.make} ${vehicleData?.model} warranty quote is ready – choose how to pay`;
   };
 
   const handlePreviewEmail = () => {
