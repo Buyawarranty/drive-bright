@@ -7,11 +7,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, Search } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
+import { LeadSearchPopover, LeadQuickSearch, LeadData } from './LeadSearchPopover';
 import MileageSlider from '@/components/MileageSlider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -1215,6 +1215,25 @@ Questions? Call 0330 229 5040`;
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Quick Lead Search */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2 text-sm font-medium text-orange-700">
+                    <Search className="h-4 w-4" />
+                    Quick Find Lead
+                  </Label>
+                  <LeadQuickSearch onSelectLead={handleLeadSelect} />
+                  <p className="text-xs text-muted-foreground">Search by name, email, phone, or registration plate</p>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">or enter manually</span>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label>Registration Number</Label>
                   <Input
