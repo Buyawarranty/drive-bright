@@ -333,12 +333,25 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       console.log('DVLA response:', { data, error });
 
       if (error || data?.error || !data?.make || !data?.model) {
-        console.log('Vehicle not found or error');
+        console.log('Vehicle not found or error - allowing manual entry for admin');
+        // For admin dashboard, allow proceeding with manual entry even if DVLA lookup fails
+        const manualVehicleData = {
+          regNumber: regNumber.toUpperCase(),
+          mileage: mileage,
+          make: 'Unknown',
+          model: 'Unknown',
+          fuelType: '',
+          transmission: '',
+          year: '',
+          vehicleType: '',
+        };
+        setVehicleData(manualVehicleData);
         toast({
-          title: "Vehicle Not Found",
-          description: data?.error || "Unable to find vehicle details. Please check the registration number and try again.",
-          variant: "destructive",
+          title: "Vehicle Not Found in DVLA",
+          description: "Proceeding with manual entry. Please update vehicle details if known.",
+          variant: "default",
         });
+        setStep(2);
         setIsLookingUp(false);
         return;
       }
