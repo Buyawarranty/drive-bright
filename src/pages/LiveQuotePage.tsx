@@ -673,35 +673,16 @@ export default function LiveQuotePage() {
                   <Separator />
 
                   {/* Price Summary */}
-                  <div className="space-y-4">
-                    {/* Monthly Payment Option */}
-                    <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <span className="font-medium text-gray-900">Pay Monthly</span>
-                          <p className="text-xs text-gray-500 mt-0.5">12 interest-free instalments via Bumper</p>
-                        </div>
-                        <div className="text-right">
-                          <span className="font-bold text-lg">£{quote.pricing.monthlyPrice}/mo</span>
-                          <p className="text-xs text-gray-500">Total: £{quote.pricing.monthlyPrice * 12}</p>
-                        </div>
-                      </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Monthly option</span>
+                      <span className="font-semibold">£{quote.pricing.monthlyPrice}/mo</span>
                     </div>
-                    
-                    {/* Pay in Full Option */}
-                    <div className="bg-green-50 rounded-lg p-3 border-2 border-green-500">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-gray-900">Pay in Full</span>
-                            <Badge className="bg-green-600 text-white text-xs">SAVE 10%</Badge>
-                          </div>
-                          <p className="text-xs text-gray-600 mt-0.5">One-time payment via Stripe</p>
-                        </div>
-                        <div className="text-right">
-                          <span className="font-bold text-green-700 text-xl">£{quote.pricing.upfrontPrice}</span>
-                          <p className="text-xs text-green-600">Save £{(quote.pricing.monthlyPrice * 12) - quote.pricing.upfrontPrice}</p>
-                        </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 text-sm">Pay in full</span>
+                      <div className="text-right">
+                        <span className="font-bold text-green-700 text-lg">£{quote.pricing.upfrontPrice}</span>
+                        <Badge className="ml-2 bg-green-100 text-green-800 text-xs">Save 10%</Badge>
                       </div>
                     </div>
                   </div>
@@ -1028,35 +1009,16 @@ export default function LiveQuotePage() {
                   <Separator />
 
                   {/* Price Summary */}
-                  <div className="space-y-4">
-                    {/* Monthly Payment Option */}
-                    <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <span className="font-medium text-gray-900">Pay Monthly</span>
-                          <p className="text-xs text-gray-500 mt-0.5">12 interest-free instalments via Bumper</p>
-                        </div>
-                        <div className="text-right">
-                          <span className="font-bold text-lg">£{quote.pricing.monthlyPrice}/mo</span>
-                          <p className="text-xs text-gray-500">Total: £{quote.pricing.monthlyPrice * 12}</p>
-                        </div>
-                      </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Monthly option</span>
+                      <span className="font-semibold">£{quote.pricing.monthlyPrice}/mo</span>
                     </div>
-                    
-                    {/* Pay in Full Option */}
-                    <div className="bg-green-50 rounded-lg p-3 border-2 border-green-500">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-gray-900">Pay in Full</span>
-                            <Badge className="bg-green-600 text-white text-xs">SAVE 10%</Badge>
-                          </div>
-                          <p className="text-xs text-gray-600 mt-0.5">One-time payment via Stripe</p>
-                        </div>
-                        <div className="text-right">
-                          <span className="font-bold text-green-700 text-xl">£{quote.pricing.upfrontPrice}</span>
-                          <p className="text-xs text-green-600">Save £{(quote.pricing.monthlyPrice * 12) - quote.pricing.upfrontPrice}</p>
-                        </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600 text-sm">Pay in full</span>
+                      <div className="text-right">
+                        <span className="font-bold text-green-700 text-lg">£{quote.pricing.upfrontPrice}</span>
+                        <Badge className="ml-2 bg-green-100 text-green-800 text-xs">Save 10%</Badge>
                       </div>
                     </div>
                   </div>

@@ -7,11 +7,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, Search } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { LeadSearchPopover, LeadQuickSearch, LeadData } from './LeadSearchPopover';
+import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
 import MileageSlider from '@/components/MileageSlider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -85,8 +85,6 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [selectedAddOns, setSelectedAddOns] = useState<{ [key: string]: boolean }>({});
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months'>('none');
-  const [selectedDiscountCode, setSelectedDiscountCode] = useState<string>('');
-  const [availableDiscountCodes, setAvailableDiscountCodes] = useState<{id: string; code: string; type: string; value: number}[]>([]);
   
   // Validation state
   const [showNameError, setShowNameError] = useState(false);
@@ -148,7 +146,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     }
   }, [prePopulatedLead]);
 
-  // Get admin email and discount codes on mount
+  // Get admin email on mount
   useEffect(() => {
     const getAdminEmail = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -161,22 +159,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         setAdminEmail(adminUser?.email || user.email || null);
       }
     };
-    
-    const fetchDiscountCodes = async () => {
-      const { data, error } = await supabase
-        .from('discount_codes')
-        .select('id, code, type, value')
-        .eq('active', true)
-        .gte('valid_to', new Date().toISOString())
-        .order('code', { ascending: true });
-      
-      if (!error && data) {
-        setAvailableDiscountCodes(data);
-      }
-    };
-    
     getAdminEmail();
-    fetchDiscountCodes();
     loadSentQuotesHistory();
   }, []);
 
@@ -1152,8 +1135,6 @@ Questions? Call 0330 229 5040`;
     setQuoteLink(null);
     setQuoteGenerated(false);
     setSelectedLeadId(null);
-    setSelectedDiscountCode('');
-    setFreeExtendedCover('none');
     // Reset validation state
     setShowNameError(false);
     setShowEmailError(false);
@@ -1215,25 +1196,6 @@ Questions? Call 0330 229 5040`;
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Quick Lead Search */}
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2 text-sm font-medium text-orange-700">
-                    <Search className="h-4 w-4" />
-                    Quick Find Lead
-                  </Label>
-                  <LeadQuickSearch onSelectLead={handleLeadSelect} />
-                  <p className="text-xs text-muted-foreground">Search by name, email, phone, or registration plate</p>
-                </div>
-
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">or enter manually</span>
-                  </div>
-                </div>
-
                 <div className="space-y-2">
                   <Label>Registration Number</Label>
                   <Input
@@ -1456,68 +1418,7 @@ Questions? Call 0330 229 5040`;
                   <p className="text-xs text-muted-foreground">Higher rate = more garage choice</p>
                 </div>
 
-                {/* Claim Limit - Quick Select Chips */}
-                <div className="space-y-3">
-                  <Label className="text-base font-semibold">Claim Limit 🚗</Label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {claimLimitOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => setClaimLimit(option.value)}
-                        className={cn(
-                          "py-3 px-2 rounded-lg border-2 text-center transition-all",
-                          claimLimit === option.value
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
-                        )}
-                      >
-                        <div className="font-semibold">{option.label}</div>
-                        <div className="text-xs text-muted-foreground">{option.description}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Boost Addon - directly below Claim Limit */}
-                <div className="flex items-center justify-between p-4 rounded-lg border-2 border-dashed border-amber-400 bg-amber-50">
-                  <div className="flex items-center gap-3">
-                    <Zap className="w-5 h-5 text-amber-500" />
-                    <div>
-                      <div className="font-semibold">Boost Claim Limit (+£1,000)</div>
-                      <div className="text-sm text-muted-foreground">
-                        +£{5 * DURATION_MONTHS[paymentType]} total (+£5/month × {DURATION_MONTHS[paymentType]} months)
-                      </div>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={boostAddon}
-                    onCheckedChange={setBoostAddon}
-                  />
-                </div>
-
-                {/* Excess - Quick Select Chips */}
-                <div className="space-y-3">
-                  <Label className="text-base font-semibold">Excess Amount</Label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {excessOptions.map((excess) => (
-                      <button
-                        key={excess}
-                        onClick={() => setExcessAmount(excess)}
-                        className={cn(
-                          "py-3 px-2 rounded-lg border-2 text-center font-semibold transition-all",
-                          excessAmount === excess
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
-                        )}
-                      >
-                        £{excess}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground">Lower excess = higher monthly cost</p>
-                </div>
-
-                {/* Optional Add-ons Section - NOW BELOW EXCESS */}
+                {/* Optional Add-ons Section */}
                 <div className="space-y-3">
                   <Label className="text-base font-semibold">Optional Add-ons</Label>
                   
@@ -1577,33 +1478,65 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
 
-                {/* Discount Code Selector */}
+                {/* Claim Limit - Quick Select Chips */}
                 <div className="space-y-3">
-                  <Label className="text-base font-semibold flex items-center gap-2">
-                    <Gift className="w-4 h-4 text-purple-600" />
-                    Discount Code
-                  </Label>
-                  <Select value={selectedDiscountCode} onValueChange={setSelectedDiscountCode}>
-                    <SelectTrigger className={cn(
-                      selectedDiscountCode ? "border-purple-400 bg-purple-50" : ""
-                    )}>
-                      <SelectValue placeholder="Select a discount code (optional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">No discount</SelectItem>
-                      {availableDiscountCodes.map((dc) => (
-                        <SelectItem key={dc.id} value={dc.code}>
-                          {dc.code} ({dc.type === 'percentage' ? `${dc.value}% off` : `£${dc.value} off`})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {selectedDiscountCode && (
-                    <p className="text-xs text-purple-600 flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" />
-                      Discount code "{selectedDiscountCode}" will be mentioned in the quote email
-                    </p>
-                  )}
+                  <Label className="text-base font-semibold">Claim Limit 🚗</Label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {claimLimitOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => setClaimLimit(option.value)}
+                        className={cn(
+                          "py-3 px-2 rounded-lg border-2 text-center transition-all",
+                          claimLimit === option.value
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50"
+                        )}
+                      >
+                        <div className="font-semibold">{option.label}</div>
+                        <div className="text-xs text-muted-foreground">{option.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Boost Addon - directly below Claim Limit */}
+                <div className="flex items-center justify-between p-4 rounded-lg border-2 border-dashed border-amber-400 bg-amber-50">
+                  <div className="flex items-center gap-3">
+                    <Zap className="w-5 h-5 text-amber-500" />
+                    <div>
+                      <div className="font-semibold">Boost Claim Limit (+£1,000)</div>
+                      <div className="text-sm text-muted-foreground">
+                        +£{5 * DURATION_MONTHS[paymentType]} total (+£5/month × {DURATION_MONTHS[paymentType]} months)
+                      </div>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={boostAddon}
+                    onCheckedChange={setBoostAddon}
+                  />
+                </div>
+
+                {/* Excess - Quick Select Chips */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">Excess Amount</Label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {excessOptions.map((excess) => (
+                      <button
+                        key={excess}
+                        onClick={() => setExcessAmount(excess)}
+                        className={cn(
+                          "py-3 px-2 rounded-lg border-2 text-center font-semibold transition-all",
+                          excessAmount === excess
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50"
+                        )}
+                      >
+                        £{excess}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Lower excess = higher monthly cost</p>
                 </div>
 
                 {/* Free Extended Cover Option */}
