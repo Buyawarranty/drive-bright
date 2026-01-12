@@ -86,7 +86,7 @@ serve(async (req) => {
       createdByName
     } = body;
 
-    logStep("Request data", { customerEmail, vehicleData: vehicleData?.regNumber, paymentType });
+    logStep("Request data", { customerEmail, vehicleData: vehicleData?.regNumber, paymentType, claimLimit, boostAddon, labourRate, freeExtendedCover });
 
     // Validate required fields
     if (!customerName || !customerEmail || !vehicleData?.regNumber) {
