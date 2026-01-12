@@ -130,7 +130,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     if (lead.mileage) {
       const numMileage = parseInt(lead.mileage.replace(/,/g, ''), 10);
       if (!isNaN(numMileage)) {
-        setMileage(numMileage.toLocaleString());
+        setMileage(numMileage.toString()); // Store as plain number string, not formatted
         setSliderMileage(numMileage);
       }
     }
@@ -1265,7 +1265,7 @@ Questions? Call 0330 229 5040`;
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      value={mileage}
+                      value={mileage ? parseInt(mileage.replace(/,/g, ''), 10).toLocaleString() : ''}
                       onChange={handleMileageChange}
                       placeholder="e.g. 45000"
                       className="text-lg py-4 flex-1"
@@ -1275,7 +1275,7 @@ Questions? Call 0330 229 5040`;
                       onValueChange={(value) => {
                         const numValue = parseInt(value, 10);
                         setSliderMileage(numValue);
-                        setMileage(numValue.toLocaleString());
+                        setMileage(numValue.toString()); // Store as plain number string
                       }}
                     >
                       <SelectTrigger className="w-[180px]">
