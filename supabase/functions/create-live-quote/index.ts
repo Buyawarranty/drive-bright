@@ -82,6 +82,7 @@ serve(async (req) => {
       breakdownIncluded,
       rentalIncluded,
       additionalNotes,
+      freeExtendedCover,
       createdByName
     } = body;
 
@@ -102,7 +103,14 @@ serve(async (req) => {
       '36months': 36
     };
     const durationMonths = durationMap[paymentType] || 12;
-    const bonusMonths = 3; // Always 3 bonus months
+    
+    // Calculate bonus months based on freeExtendedCover selection
+    const bonusMonthsMap: Record<string, number> = {
+      'none': 0,
+      '3months': 3,
+      '6months': 6
+    };
+    const bonusMonths = bonusMonthsMap[freeExtendedCover] || 0;
 
     // Generate access token
     const accessToken = generateAccessToken();
