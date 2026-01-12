@@ -402,11 +402,24 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       setStep(2);
     } catch (error) {
       console.error('Error looking up vehicle:', error);
+      // For admin dashboard, allow proceeding even on network errors
+      const manualVehicleData = {
+        regNumber: regNumber.toUpperCase(),
+        mileage: mileage,
+        make: 'Unknown',
+        model: 'Unknown',
+        fuelType: '',
+        transmission: '',
+        year: '',
+        vehicleType: '',
+      };
+      setVehicleData(manualVehicleData);
       toast({
         title: "Lookup Failed",
-        description: "Unable to connect to vehicle database. Please try again.",
-        variant: "destructive",
+        description: "Proceeding with manual entry. Vehicle details can be updated later.",
+        variant: "default",
       });
+      setStep(2);
     } finally {
       setIsLookingUp(false);
     }
