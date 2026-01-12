@@ -1,8 +1,43 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+
+const STORAGE_KEY = 'leads_page_size';
+const DEFAULT_PAGE_SIZE = 50;
+
+/**
+ * Get persisted page size from localStorage
+ */
+function getPersistedPageSize(): number {
+  if (typeof window === 'undefined') return DEFAULT_PAGE_SIZE;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = parseInt(stored, 10);
+      if ([25, 50, 100, 200].includes(parsed)) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    // localStorage not available
+  }
+  return DEFAULT_PAGE_SIZE;
+}
+
+/**
+ * Persist page size to localStorage
+ */
+function persistPageSize(size: number): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(STORAGE_KEY, size.toString());
+  } catch (e) {
+    // localStorage not available
+  }
+}
 
 interface UsePaginationOptions {
   initialPageSize?: number;
   initialPage?: number;
+  persistKey?: string;
 }
 
 interface UsePaginationResult<T> {
@@ -24,15 +59,16 @@ interface UsePaginationResult<T> {
 /**
  * A hook for client-side pagination of data arrays.
  * Provides efficient slicing and navigation utilities.
+ * Persists page size preference to localStorage.
  */
 export function usePagination<T>(
   data: T[],
   options: UsePaginationOptions = {}
 ): UsePaginationResult<T> {
-  const { initialPageSize = 50, initialPage = 1 } = options;
+  const { initialPage = 1 } = options;
   
   const [currentPage, setCurrentPage] = useState(initialPage);
-  const [pageSize, setPageSize] = useState(initialPageSize);
+  const [pageSize, setPageSize] = useState(() => getPersistedPageSize());
 
   const totalItems = data.length;
   const totalPages = Math.ceil(totalItems / pageSize);
@@ -62,6 +98,7 @@ export function usePagination<T>(
 
   const handleSetPageSize = useCallback((size: number) => {
     setPageSize(size);
+    persistPageSize(size); // Persist to localStorage
     setCurrentPage(1); // Reset to first page when page size changes
   }, []);
 

@@ -4,11 +4,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useLeads, Lead } from '@/hooks/useLeads';
 import { LeadsTable } from './LeadsTable';
 import { LeadsFilters } from './LeadsFilters';
+import { LeadsTableControlBar } from './LeadsTableControlBar';
+import { LeadsTableFooter } from './LeadsTableFooter';
 import { SalespersonDashboard } from './SalespersonDashboard';
 import { ManagerDashboard } from './ManagerDashboard';
 import { ManualOrderEntry } from '../ManualOrderEntry';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
-import { PaginationControls } from '@/components/ui/pagination-controls';
 import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -390,6 +391,17 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           
           <Card className="overflow-hidden">
             <CardContent className="p-0">
+              {/* Sticky Control Bar */}
+              <LeadsTableControlBar
+                totalItems={pagination.totalItems}
+                pageSize={pagination.pageSize}
+                onPageSizeChange={pagination.setPageSize}
+                selectedCount={selectedLeads.size}
+                totalVisible={pagination.paginatedData.length}
+                allSelected={selectedLeads.size === filteredLeads.length && filteredLeads.length > 0}
+                onSelectAll={handleSelectAll}
+              />
+              
               <LeadsTable
                 leads={pagination.paginatedData}
                 tags={tags}
@@ -410,16 +422,15 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 onRefresh={fetchLeads}
                 onSendQuote={handleSendQuote}
               />
-              {/* Pagination Controls */}
-              <PaginationControls
+              
+              {/* Lightweight Footer Pagination */}
+              <LeadsTableFooter
                 currentPage={pagination.currentPage}
                 totalPages={pagination.totalPages}
                 totalItems={pagination.totalItems}
                 startIndex={pagination.startIndex}
                 endIndex={pagination.endIndex}
-                pageSize={pagination.pageSize}
                 onPageChange={pagination.goToPage}
-                onPageSizeChange={pagination.setPageSize}
                 canGoNext={pagination.canGoNext}
                 canGoPrev={pagination.canGoPrev}
               />
