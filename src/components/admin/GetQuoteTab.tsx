@@ -130,7 +130,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     if (lead.mileage) {
       const numMileage = parseInt(lead.mileage.replace(/,/g, ''), 10);
       if (!isNaN(numMileage)) {
-        setMileage(numMileage.toString()); // Store as plain number string, not formatted
+        setMileage(numMileage.toLocaleString());
         setSliderMileage(numMileage);
       }
     }
@@ -185,74 +185,64 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
 
   // Calculate base price (before any custom overrides)
   const calculateBasePrice = () => {
-    try {
-      // Get duration months for add-on calculation
-      const durationMonths = DURATION_MONTHS[paymentType] || 12;
-      
-      // Auto-included add-ons based on duration (2yr gets breakdown, 3yr gets breakdown+rental)
-      const autoIncluded = getAutoIncludedAddOns(paymentType);
-      
-      // Calculate add-on price from selected add-ons (excluding auto-included)
-      const addOnPrice = calculateAddOnPrice(selectedAddOns, paymentType, durationMonths);
-      
-      const result = calculateTotalWarrantyPrice({
-        paymentPeriod: paymentType,
-        voluntaryExcess: excessAmount,
-        claimLimit: claimLimit,
-        labourRate: labourRate,
-        boostEnabled: boostAddon,
-        addOnPrice: addOnPrice
-      });
-      
-      // Calculate pay-in-full with 10% discount
-      const payInFullPrice = Math.floor((result?.totalPrice || 0) * 0.90);
-      
-      return { 
-        totalPrice: result?.totalPrice || 0, 
-        monthlyPrice: result?.monthlyPrice || 0,
-        payInFullPrice,
-        wasPrice: result?.wasPrice || 0,
-        savings: result?.savings || 0
-      };
-    } catch (error) {
-      console.error('Error calculating base price:', error);
-      return { totalPrice: 0, monthlyPrice: 0, payInFullPrice: 0, wasPrice: 0, savings: 0 };
-    }
+    // Get duration months for add-on calculation
+    const durationMonths = DURATION_MONTHS[paymentType] || 12;
+    
+    // Auto-included add-ons based on duration (2yr gets breakdown, 3yr gets breakdown+rental)
+    const autoIncluded = getAutoIncludedAddOns(paymentType);
+    
+    // Calculate add-on price from selected add-ons (excluding auto-included)
+    const addOnPrice = calculateAddOnPrice(selectedAddOns, paymentType, durationMonths);
+    
+    const result = calculateTotalWarrantyPrice({
+      paymentPeriod: paymentType,
+      voluntaryExcess: excessAmount,
+      claimLimit: claimLimit,
+      labourRate: labourRate,
+      boostEnabled: boostAddon,
+      addOnPrice: addOnPrice
+    });
+    
+    // Calculate pay-in-full with 10% discount
+    const payInFullPrice = Math.floor(result.totalPrice * 0.90);
+    
+    return { 
+      totalPrice: result.totalPrice, 
+      monthlyPrice: result.monthlyPrice,
+      payInFullPrice,
+      wasPrice: result.wasPrice,
+      savings: result.savings
+    };
   };
 
   // Calculate price using pricingMatrix.ts with add-ons
   const calculatePrice = () => {
-    try {
-      // If custom prices are set and user has manually overridden, use them
-      if (isPriceOverridden) {
-        if (customFullPrice && parseFloat(customFullPrice) > 0) {
-          const fullPrice = parseFloat(customFullPrice);
-          return { 
-            totalPrice: fullPrice, 
-            monthlyPrice: Math.floor(fullPrice / 12),
-            payInFullPrice: Math.floor(fullPrice * 0.90),
-            wasPrice: 0,
-            savings: 0
-          };
-        }
-        if (customMonthlyPrice && parseFloat(customMonthlyPrice) > 0) {
-          const monthly = parseFloat(customMonthlyPrice);
-          const total = monthly * 12;
-          return { 
-            totalPrice: total, 
-            monthlyPrice: monthly,
-            payInFullPrice: Math.floor(total * 0.90),
-            wasPrice: 0,
-            savings: 0
-          };
-        }
+    // If custom prices are set and user has manually overridden, use them
+    if (isPriceOverridden) {
+      if (customFullPrice && parseFloat(customFullPrice) > 0) {
+        const fullPrice = parseFloat(customFullPrice);
+        return { 
+          totalPrice: fullPrice, 
+          monthlyPrice: Math.floor(fullPrice / 12),
+          payInFullPrice: Math.floor(fullPrice * 0.90),
+          wasPrice: 0,
+          savings: 0
+        };
       }
-      
-      return calculateBasePrice();
-    } catch (error) {
-      console.error('Error calculating price:', error);
-      return { totalPrice: 0, monthlyPrice: 0, payInFullPrice: 0, wasPrice: 0, savings: 0 };
+      if (customMonthlyPrice && parseFloat(customMonthlyPrice) > 0) {
+        const monthly = parseFloat(customMonthlyPrice);
+        const total = monthly * 12;
+        return { 
+          totalPrice: total, 
+          monthlyPrice: monthly,
+          payInFullPrice: Math.floor(total * 0.90),
+          wasPrice: 0,
+          savings: 0
+        };
+      }
     }
+    
+    return calculateBasePrice();
   };
 
   const currentPrice = calculatePrice();
@@ -321,10 +311,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   };
 
   const handleVehicleLookup = async () => {
-    console.log('handleVehicleLookup called - regNumber:', regNumber, 'mileage:', mileage);
-    
     if (!regNumber.trim() || !mileage.trim()) {
-      console.log('Validation failed - empty reg or mileage');
       toast({
         title: "Missing Information",
         description: "Please enter both registration number and mileage",
@@ -335,33 +322,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
 
     setIsLookingUp(true);
     try {
-      console.log('Calling DVLA lookup...');
       const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
         body: { registrationNumber: regNumber }
       });
 
-      console.log('DVLA response:', { data, error });
-
       if (error || data?.error || !data?.make || !data?.model) {
-        console.log('Vehicle not found or error - allowing manual entry for admin');
-        // For admin dashboard, allow proceeding with manual entry even if DVLA lookup fails
-        const manualVehicleData = {
-          regNumber: regNumber.toUpperCase(),
-          mileage: mileage,
-          make: 'Unknown',
-          model: 'Unknown',
-          fuelType: '',
-          transmission: '',
-          year: '',
-          vehicleType: '',
-        };
-        setVehicleData(manualVehicleData);
         toast({
-          title: "Vehicle Not Found in DVLA",
-          description: "Proceeding with manual entry. Please update vehicle details if known.",
-          variant: "default",
+          title: "Vehicle Not Found",
+          description: data?.error || "Unable to find vehicle details. Please check the registration number and try again.",
+          variant: "destructive",
         });
-        setStep(2);
         setIsLookingUp(false);
         return;
       }
@@ -372,7 +342,6 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         if (!isNaN(vehicleYear) && vehicleYear > 0) {
           const vehicleAge = currentYear - vehicleYear;
           if (vehicleAge > 15) {
-            console.log('Vehicle too old:', vehicleAge);
             toast({
               title: "Vehicle Too Old",
               description: `This vehicle is ${vehicleAge} years old. We only cover vehicles up to 15 years old.`,
@@ -384,7 +353,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         }
       }
 
-      const newVehicleData = {
+      setVehicleData({
         regNumber: regNumber.toUpperCase(),
         mileage: mileage,
         make: data.make,
@@ -393,33 +362,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         transmission: data.transmission || '',
         year: data.yearOfManufacture || data.year || '',
         vehicleType: data.vehicleType || '',
-      };
+      });
       
-      console.log('Setting vehicleData:', newVehicleData);
-      setVehicleData(newVehicleData);
-      
-      console.log('Setting step to 2');
       setStep(2);
     } catch (error) {
       console.error('Error looking up vehicle:', error);
-      // For admin dashboard, allow proceeding even on network errors
-      const manualVehicleData = {
-        regNumber: regNumber.toUpperCase(),
-        mileage: mileage,
-        make: 'Unknown',
-        model: 'Unknown',
-        fuelType: '',
-        transmission: '',
-        year: '',
-        vehicleType: '',
-      };
-      setVehicleData(manualVehicleData);
       toast({
         title: "Lookup Failed",
-        description: "Proceeding with manual entry. Vehicle details can be updated later.",
-        variant: "default",
+        description: "Unable to connect to vehicle database. Please try again.",
+        variant: "destructive",
       });
-      setStep(2);
     } finally {
       setIsLookingUp(false);
     }
@@ -1301,7 +1253,7 @@ Questions? Call 0330 229 5040`;
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      value={mileage && !isNaN(parseInt(mileage, 10)) ? parseInt(mileage, 10).toLocaleString() : ''}
+                      value={mileage}
                       onChange={handleMileageChange}
                       placeholder="e.g. 45000"
                       className="text-lg py-4 flex-1"
@@ -1311,7 +1263,7 @@ Questions? Call 0330 229 5040`;
                       onValueChange={(value) => {
                         const numValue = parseInt(value, 10);
                         setSliderMileage(numValue);
-                        setMileage(numValue.toString()); // Store as plain number string
+                        setMileage(numValue.toLocaleString());
                       }}
                     >
                       <SelectTrigger className="w-[180px]">
@@ -1335,10 +1287,7 @@ Questions? Call 0330 229 5040`;
                 </div>
 
                 <Button 
-                  onClick={() => {
-                    console.log('Continue clicked - regNumber:', regNumber, 'mileage:', mileage);
-                    handleVehicleLookup();
-                  }}
+                  onClick={handleVehicleLookup}
                   disabled={isLookingUp}
                   className="w-full"
                   size="lg"
