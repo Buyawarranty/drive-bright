@@ -1265,7 +1265,7 @@ Questions? Call 0330 229 5040`;
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      value={mileage ? parseInt(mileage.replace(/,/g, ''), 10).toLocaleString() : ''}
+                      value={mileage && !isNaN(parseInt(mileage, 10)) ? parseInt(mileage, 10).toLocaleString() : ''}
                       onChange={handleMileageChange}
                       placeholder="e.g. 45000"
                       className="text-lg py-4 flex-1"
