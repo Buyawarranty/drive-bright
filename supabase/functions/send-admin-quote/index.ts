@@ -10,7 +10,7 @@ const corsHeaders = {
 
 interface QuoteEmailRequest {
   to: string;
-  cc?: string;
+  cc?: string | string[];
   subject: string;
   quoteLink: string;
   customerName: string;
@@ -365,10 +365,15 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
+    // Handle CC as string or array
+    const ccRecipients = cc 
+      ? (Array.isArray(cc) ? cc : [cc])
+      : undefined;
+
     const emailResponse = await resend.emails.send({
       from: "Buyawarranty Customer Care <quotes@buyawarranty.co.uk>",
       to: [to],
-      cc: cc ? [cc] : undefined,
+      cc: ccRecipients,
       subject: subject,
       html: finalHtml,
     });

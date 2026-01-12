@@ -103,6 +103,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [activeTab, setActiveTab] = useState('new');
   const [historySubTab, setHistorySubTab] = useState<'sent' | 'saved'>('sent');
   const [adminEmail, setAdminEmail] = useState<string | null>(null);
+  const [additionalEmails, setAdditionalEmails] = useState<string[]>([]);
+  const [newEmailInput, setNewEmailInput] = useState('');
   
   // Confirm External Payment state
   const [isConfirmingPaid, setIsConfirmingPaid] = useState(false);
@@ -519,20 +521,21 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       const coverMonths = termOption?.months || 12;
       const bonusMonths = termOption?.bonus || 3;
 
-      // Build recipients - customer + admin copy
-      const recipients = [customerEmail];
-      if (adminEmail && adminEmail !== customerEmail) {
-        recipients.push(adminEmail);
-      }
+      // Build recipients - customer + admin copy + additional emails
+      const allCcEmails = [
+        ...(adminEmail && adminEmail !== customerEmail ? [adminEmail] : []),
+        ...additionalEmails.filter(e => e !== customerEmail && e !== adminEmail)
+      ];
 
-      console.log('📧 Sending email to:', recipients);
+      console.log('📧 Sending email to:', customerEmail);
+      console.log('📧 CC emails:', allCcEmails);
       console.log('📎 Quote link:', quoteLink);
       
-      // Send the email with HTML template (to both customer and admin)
+      // Send the email with HTML template (to customer with CC to admin and additional recipients)
       const { error: emailError } = await supabase.functions.invoke('send-admin-quote', {
         body: {
           to: customerEmail,
-          cc: adminEmail !== customerEmail ? adminEmail : undefined,
+          cc: allCcEmails.length > 0 ? allCcEmails : undefined,
           subject: emailSubject,
           quoteLink: quoteLink,
           customerName,
@@ -2035,12 +2038,83 @@ Questions? Call 0330 229 5040`;
               <DialogHeader>
                 <DialogTitle>Review & Send Email</DialogTitle>
                 <DialogDescription>
-                  Review and edit the email before sending to {customerEmail}
-                  {adminEmail && ` (copy to ${adminEmail})`}
+                  Review the email details before sending
                 </DialogDescription>
               </DialogHeader>
               
               <div className="space-y-4">
+                {/* Primary Recipient */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    Sending to
+                  </Label>
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="font-medium text-green-800">{customerEmail}</p>
+                    <p className="text-xs text-green-600 mt-1">Primary recipient (customer)</p>
+                  </div>
+                </div>
+
+                {/* CC Recipients */}
+                <div className="space-y-2">
+                  <Label>CC Recipients</Label>
+                  <div className="space-y-2">
+                    {adminEmail && adminEmail !== customerEmail && (
+                      <div className="flex items-center gap-2 p-2 bg-muted rounded text-sm">
+                        <span>{adminEmail}</span>
+                        <span className="text-xs text-muted-foreground">(admin copy)</span>
+                      </div>
+                    )}
+                    {additionalEmails.map((email, index) => (
+                      <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded text-sm">
+                        <span className="flex-1">{email}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => setAdditionalEmails(prev => prev.filter((_, i) => i !== index))}
+                        >
+                          ×
+                        </Button>
+                      </div>
+                    ))}
+                    <div className="flex gap-2">
+                      <Input
+                        type="email"
+                        placeholder="Add another email address..."
+                        value={newEmailInput}
+                        onChange={(e) => setNewEmailInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const email = newEmailInput.trim();
+                            if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !additionalEmails.includes(email)) {
+                              setAdditionalEmails(prev => [...prev, email]);
+                              setNewEmailInput('');
+                            }
+                          }
+                        }}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const email = newEmailInput.trim();
+                          if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !additionalEmails.includes(email)) {
+                            setAdditionalEmails(prev => [...prev, email]);
+                            setNewEmailInput('');
+                          }
+                        }}
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <Label>Subject</Label>
                   <Input
