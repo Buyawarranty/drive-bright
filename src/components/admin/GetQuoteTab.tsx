@@ -1648,7 +1648,7 @@ Questions? Call 0330 229 5040`;
                       onClick={() => {
                         setFreeExtendedCover('none');
                         // Remove any existing free cover notes
-                        setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').trim());
+                        setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
                       }}
                       className={cn(
                         "flex-1 py-3 px-4 rounded-lg border-2 text-center font-semibold transition-all",
@@ -1661,12 +1661,17 @@ Questions? Call 0330 229 5040`;
                     </button>
                     <button
                       onClick={() => {
-                        setFreeExtendedCover('3months');
-                        // Update notes with free cover
-                        setAdditionalNotes(prev => {
-                          const cleaned = prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').trim();
-                          return cleaned ? `${cleaned} | FREE EXTENDED COVER: 3 months` : 'FREE EXTENDED COVER: 3 months';
-                        });
+                        // Toggle behavior - click again to deselect
+                        if (freeExtendedCover === '3months') {
+                          setFreeExtendedCover('none');
+                          setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
+                        } else {
+                          setFreeExtendedCover('3months');
+                          setAdditionalNotes(prev => {
+                            const cleaned = prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim();
+                            return cleaned ? `${cleaned} | FREE EXTENDED COVER: 3 months` : 'FREE EXTENDED COVER: 3 months';
+                          });
+                        }
                       }}
                       className={cn(
                         "flex-1 py-3 px-4 rounded-lg border-2 text-center font-semibold transition-all",
@@ -1679,12 +1684,17 @@ Questions? Call 0330 229 5040`;
                     </button>
                     <button
                       onClick={() => {
-                        setFreeExtendedCover('6months');
-                        // Update notes with free cover
-                        setAdditionalNotes(prev => {
-                          const cleaned = prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').trim();
-                          return cleaned ? `${cleaned} | FREE EXTENDED COVER: 6 months` : 'FREE EXTENDED COVER: 6 months';
-                        });
+                        // Toggle behavior - click again to deselect
+                        if (freeExtendedCover === '6months') {
+                          setFreeExtendedCover('none');
+                          setAdditionalNotes(prev => prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim());
+                        } else {
+                          setFreeExtendedCover('6months');
+                          setAdditionalNotes(prev => {
+                            const cleaned = prev.replace(/\s*\|\s*FREE EXTENDED COVER: \d+ months\s*/g, '').replace(/^FREE EXTENDED COVER: \d+ months\s*\|?\s*/g, '').trim();
+                            return cleaned ? `${cleaned} | FREE EXTENDED COVER: 6 months` : 'FREE EXTENDED COVER: 6 months';
+                          });
+                        }
                       }}
                       className={cn(
                         "flex-1 py-3 px-4 rounded-lg border-2 text-center font-semibold transition-all",
