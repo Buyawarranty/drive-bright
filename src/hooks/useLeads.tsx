@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-export type LeadStatus = 'new' | 'contacted' | 'follow_up' | 'quote_sent' | 'negotiating' | 'converted' | 'lost';
+export type LeadStatus = 'new' | 'contacted' | 'follow_up' | 'quote_sent' | 'negotiating' | 'converted' | 'lost' | 'fake_lead';
 export type LeadPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type LeadSource = 'website' | 'referral' | 'social_ad' | 'google_ad' | 'phone' | 'email' | 'partner' | 'other';
 
@@ -143,7 +143,8 @@ export const useLeads = () => {
             .limit(500); // Limit initial fetch for performance
 
           if (filter !== 'all' && filter !== 'high_priority') {
-            query = query.eq('status', filter);
+            // Cast to any to allow custom status values not yet in database types
+            query = query.eq('status', filter as any);
           } else if (filter === 'high_priority') {
             query = query.in('priority', ['high', 'urgent']);
           }
