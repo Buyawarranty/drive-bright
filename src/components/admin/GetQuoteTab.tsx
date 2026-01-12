@@ -85,6 +85,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [selectedAddOns, setSelectedAddOns] = useState<{ [key: string]: boolean }>({});
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months'>('none');
+  const [selectedDiscountCode, setSelectedDiscountCode] = useState<string>('');
+  const [availableDiscountCodes, setAvailableDiscountCodes] = useState<{id: string; code: string; type: string; value: number}[]>([]);
   
   // Validation state
   const [showNameError, setShowNameError] = useState(false);
@@ -146,7 +148,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     }
   }, [prePopulatedLead]);
 
-  // Get admin email on mount
+  // Get admin email and discount codes on mount
   useEffect(() => {
     const getAdminEmail = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -159,7 +161,22 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         setAdminEmail(adminUser?.email || user.email || null);
       }
     };
+    
+    const fetchDiscountCodes = async () => {
+      const { data, error } = await supabase
+        .from('discount_codes')
+        .select('id, code, type, value')
+        .eq('active', true)
+        .gte('valid_to', new Date().toISOString())
+        .order('code', { ascending: true });
+      
+      if (!error && data) {
+        setAvailableDiscountCodes(data);
+      }
+    };
+    
     getAdminEmail();
+    fetchDiscountCodes();
     loadSentQuotesHistory();
   }, []);
 
@@ -1135,6 +1152,8 @@ Questions? Call 0330 229 5040`;
     setQuoteLink(null);
     setQuoteGenerated(false);
     setSelectedLeadId(null);
+    setSelectedDiscountCode('');
+    setFreeExtendedCover('none');
     // Reset validation state
     setShowNameError(false);
     setShowEmailError(false);
@@ -1418,66 +1437,6 @@ Questions? Call 0330 229 5040`;
                   <p className="text-xs text-muted-foreground">Higher rate = more garage choice</p>
                 </div>
 
-                {/* Optional Add-ons Section */}
-                <div className="space-y-3">
-                  <Label className="text-base font-semibold">Optional Add-ons</Label>
-                  
-                  {/* Auto-Included Add-ons Display */}
-                  {getAutoIncludedAddOns(paymentType).length > 0 && (
-                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                      <div className="flex items-center gap-2 text-green-700">
-                        <span className="text-sm font-medium">✓ Included FREE with {termOptions.find(t => t.id === paymentType)?.label}:</span>
-                        <div className="flex gap-2">
-                          {getAutoIncludedAddOns(paymentType).includes('breakdown') && (
-                            <Badge variant="outline" className="bg-green-100 border-green-300 text-green-800">Vehicle Recovery</Badge>
-                          )}
-                          {getAutoIncludedAddOns(paymentType).includes('rental') && (
-                            <Badge variant="outline" className="bg-green-100 border-green-300 text-green-800">Hire Car</Badge>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Selectable Add-ons Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {getAddOnInfo(paymentType, DURATION_MONTHS[paymentType]).map((addon) => {
-                      const isAutoIncluded = addon.isAutoIncluded;
-                      const isSelected = selectedAddOns[addon.key] || isAutoIncluded;
-                      // Display monthly price like Step 3
-                      const monthlyPriceDisplay = addon.oneTimePrice 
-                        ? `£${addon.oneTimePrice} one-off` 
-                        : `+£${addon.monthlyPrice}/mo`;
-                      
-                      return (
-                        <button
-                          key={addon.key}
-                          onClick={() => !isAutoIncluded && handleToggleAddOn(addon.key)}
-                          disabled={isAutoIncluded}
-                          className={cn(
-                            "p-3 rounded-lg border-2 text-left transition-all",
-                            isAutoIncluded 
-                              ? "border-green-300 bg-green-50 cursor-default" 
-                              : isSelected
-                                ? "border-primary bg-primary/10"
-                                : "border-border hover:border-primary/50"
-                          )}
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="font-medium text-sm">{addon.name}</span>
-                            {isAutoIncluded ? (
-                              <Badge variant="outline" className="text-[10px] bg-green-100 border-green-300 text-green-700">FREE</Badge>
-                            ) : (
-                              <span className="text-xs font-medium text-primary">{monthlyPriceDisplay}</span>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">{addon.description}</p>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
                 {/* Claim Limit - Quick Select Chips */}
                 <div className="space-y-3">
                   <Label className="text-base font-semibold">Claim Limit 🚗</Label>
@@ -1537,6 +1496,95 @@ Questions? Call 0330 229 5040`;
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground">Lower excess = higher monthly cost</p>
+                </div>
+
+                {/* Optional Add-ons Section - NOW BELOW EXCESS */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">Optional Add-ons</Label>
+                  
+                  {/* Auto-Included Add-ons Display */}
+                  {getAutoIncludedAddOns(paymentType).length > 0 && (
+                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                      <div className="flex items-center gap-2 text-green-700">
+                        <span className="text-sm font-medium">✓ Included FREE with {termOptions.find(t => t.id === paymentType)?.label}:</span>
+                        <div className="flex gap-2">
+                          {getAutoIncludedAddOns(paymentType).includes('breakdown') && (
+                            <Badge variant="outline" className="bg-green-100 border-green-300 text-green-800">Vehicle Recovery</Badge>
+                          )}
+                          {getAutoIncludedAddOns(paymentType).includes('rental') && (
+                            <Badge variant="outline" className="bg-green-100 border-green-300 text-green-800">Hire Car</Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Selectable Add-ons Grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {getAddOnInfo(paymentType, DURATION_MONTHS[paymentType]).map((addon) => {
+                      const isAutoIncluded = addon.isAutoIncluded;
+                      const isSelected = selectedAddOns[addon.key] || isAutoIncluded;
+                      // Display monthly price like Step 3
+                      const monthlyPriceDisplay = addon.oneTimePrice 
+                        ? `£${addon.oneTimePrice} one-off` 
+                        : `+£${addon.monthlyPrice}/mo`;
+                      
+                      return (
+                        <button
+                          key={addon.key}
+                          onClick={() => !isAutoIncluded && handleToggleAddOn(addon.key)}
+                          disabled={isAutoIncluded}
+                          className={cn(
+                            "p-3 rounded-lg border-2 text-left transition-all",
+                            isAutoIncluded 
+                              ? "border-green-300 bg-green-50 cursor-default" 
+                              : isSelected
+                                ? "border-primary bg-primary/10"
+                                : "border-border hover:border-primary/50"
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-medium text-sm">{addon.name}</span>
+                            {isAutoIncluded ? (
+                              <Badge variant="outline" className="text-[10px] bg-green-100 border-green-300 text-green-700">FREE</Badge>
+                            ) : (
+                              <span className="text-xs font-medium text-primary">{monthlyPriceDisplay}</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">{addon.description}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Discount Code Selector */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold flex items-center gap-2">
+                    <Gift className="w-4 h-4 text-purple-600" />
+                    Discount Code
+                  </Label>
+                  <Select value={selectedDiscountCode} onValueChange={setSelectedDiscountCode}>
+                    <SelectTrigger className={cn(
+                      selectedDiscountCode ? "border-purple-400 bg-purple-50" : ""
+                    )}>
+                      <SelectValue placeholder="Select a discount code (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No discount</SelectItem>
+                      {availableDiscountCodes.map((dc) => (
+                        <SelectItem key={dc.id} value={dc.code}>
+                          {dc.code} ({dc.type === 'percentage' ? `${dc.value}% off` : `£${dc.value} off`})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedDiscountCode && (
+                    <p className="text-xs text-purple-600 flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" />
+                      Discount code "{selectedDiscountCode}" will be mentioned in the quote email
+                    </p>
+                  )}
                 </div>
 
                 {/* Free Extended Cover Option */}
