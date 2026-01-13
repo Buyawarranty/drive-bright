@@ -201,6 +201,27 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           })
           .eq('id', existingLead.id);
       }
+
+      // Send confirmation SMS via ClickSend
+      try {
+        console.log('Sending confirmation SMS to:', phone);
+        const { error: smsError } = await supabase.functions.invoke('send-clicksend-sms', {
+          body: {
+            phone: phone.trim(),
+            firstName: firstName.trim() || 'there',
+            vehicleMake: vehicleData?.make,
+            vehicleModel: vehicleData?.model
+          }
+        });
+        
+        if (smsError) {
+          console.error('Error sending confirmation SMS:', smsError);
+        } else {
+          console.log('✅ Confirmation SMS sent successfully');
+        }
+      } catch (smsError) {
+        console.error('Failed to send confirmation SMS:', smsError);
+      }
     } catch (error) {
       console.error('Error in quote flow:', error);
     }

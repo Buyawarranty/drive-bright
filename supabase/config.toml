@@ -189,3 +189,6 @@ verify_jwt = false
 
 [functions.send-trustpilot-review-request]
 verify_jwt = false
+
+[functions.send-clicksend-sms]
+verify_jwt = false
