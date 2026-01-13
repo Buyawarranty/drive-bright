@@ -118,6 +118,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [sendToW2k, setSendToW2k] = useState(true);
   const [sendWelcomeEmail, setSendWelcomeEmail] = useState(true);
   const [existingPolicyWarning, setExistingPolicyWarning] = useState<string | null>(null);
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
 
   // Handle lead selection (from search or pre-populated)
   const handleLeadSelect = (lead: LeadData) => {
@@ -1964,10 +1965,19 @@ Questions? Call 0330 229 5040`;
                             onClick={() => window.open(quoteLink, '_blank')}
                             size="sm"
                             variant="outline"
+                            title="Open quote page"
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
                         </div>
+                        <Button 
+                          onClick={() => setShowPreviewDialog(true)}
+                          variant="outline"
+                          className="w-full border-purple-300 text-purple-700 hover:bg-purple-50"
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Preview Quote
+                        </Button>
                         <Button 
                           onClick={handlePreviewEmail}
                           className="w-full bg-blue-600 hover:bg-blue-700"
@@ -2172,6 +2182,219 @@ Questions? Call 0330 229 5040`;
                       Send Email
                     </>
                   )}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Quote Preview Dialog */}
+          <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Eye className="w-5 h-5 text-purple-600" />
+                  Quote Preview - What Customer Will See
+                </DialogTitle>
+                <DialogDescription>
+                  Review exactly what will be shown in the email and on the quote page
+                </DialogDescription>
+              </DialogHeader>
+              
+              <Tabs defaultValue="email" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="email">📧 Email Preview</TabsTrigger>
+                  <TabsTrigger value="summary">📋 Quote Summary</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="email" className="mt-4">
+                  <div className="border rounded-lg overflow-hidden bg-gray-100">
+                    <div className="bg-gray-200 p-3 border-b flex items-center gap-2">
+                      <Mail className="w-4 h-4" />
+                      <span className="text-sm font-medium">Email to: {customerEmail}</span>
+                    </div>
+                    <div className="p-4 bg-white">
+                      {/* Email Header Preview */}
+                      <div className="text-center mb-6">
+                        <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" alt="Buy A Warranty" className="h-12 mx-auto mb-4" />
+                        <h2 className="text-xl font-bold text-gray-900">
+                          Here's your {vehicleData?.make} {vehicleData?.model} warranty quote
+                        </h2>
+                        <p className="text-sm text-gray-600 mt-2">
+                          Protect your {vehicleData?.make} {vehicleData?.model} from unexpected repair bills
+                        </p>
+                      </div>
+                      
+                      {/* Greeting */}
+                      <div className="mb-4">
+                        <p className="text-gray-800">Hi {customerName?.split(' ')[0] || 'there'},</p>
+                        <p className="text-gray-600 text-sm mt-2">
+                          Thanks for requesting your personalised warranty quote. Please review your cover details below.
+                        </p>
+                      </div>
+                      
+                      {/* Quote Summary Box */}
+                      <div className="bg-slate-50 rounded-lg border p-4 mb-4">
+                        <p className="text-sm font-bold text-blue-700 uppercase tracking-wide mb-3">Your Cover at a Glance</p>
+                        <table className="w-full text-sm">
+                          <tbody>
+                            <tr className="border-b">
+                              <td className="py-2 text-gray-500">Vehicle</td>
+                              <td className="py-2 text-right font-semibold">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.regNumber})</td>
+                            </tr>
+                            <tr className="border-b">
+                              <td className="py-2 text-gray-500">Mileage</td>
+                              <td className="py-2 text-right font-semibold">{parseInt(vehicleData?.mileage || '0').toLocaleString()} miles</td>
+                            </tr>
+                            <tr className="border-b">
+                              <td className="py-2 text-gray-500">Plan</td>
+                              <td className="py-2 text-right font-semibold">Platinum cover</td>
+                            </tr>
+                            <tr className="border-b">
+                              <td className="py-2 text-gray-500">Cover period</td>
+                              <td className="py-2 text-right font-semibold">
+                                {termOptions.find(t => t.id === paymentType)?.months} months
+                                {freeExtendedCover !== 'none' && (
+                                  <span className="text-green-600"> + {freeExtendedCover === '3months' ? '3' : '6'} months FREE</span>
+                                )}
+                              </td>
+                            </tr>
+                            <tr className="border-b">
+                              <td className="py-2 text-gray-500">Claim limit</td>
+                              <td className="py-2 text-right font-semibold">£{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()} per claim</td>
+                            </tr>
+                            <tr className="border-b">
+                              <td className="py-2 text-gray-500">Excess</td>
+                              <td className="py-2 text-right font-semibold">£{excessAmount}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <td className="py-2 text-gray-500">Labour rate covered</td>
+                              <td className="py-2 text-right font-semibold">Up to £{labourRate} per hour</td>
+                            </tr>
+                            <tr>
+                              <td className="py-3 text-gray-900 font-bold">Total price</td>
+                              <td className="py-3 text-right text-xl font-bold text-orange-600">£{currentPrice.totalPrice}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      
+                      {/* What's Included */}
+                      <div className="bg-green-50 rounded-lg p-4 mb-4">
+                        <p className="text-sm font-bold text-green-800 uppercase tracking-wide mb-2">What Your Warranty Includes</p>
+                        <ul className="text-sm text-green-700 space-y-1">
+                          <li><span className="text-green-500 font-bold mr-2">✔</span>Mechanical and electrical component cover</li>
+                          <li><span className="text-green-500 font-bold mr-2">✔</span>Labour costs included</li>
+                          <li><span className="text-green-500 font-bold mr-2">✔</span>Repairs at VAT-registered garages</li>
+                          <li><span className="text-green-500 font-bold mr-2">✔</span>No waiting period once activated</li>
+                          <li><span className="text-green-500 font-bold mr-2">✔</span>Unlimited claims up to vehicle value</li>
+                          <li><span className="text-green-500 font-bold mr-2">✔</span>Fast, UK-based claims support</li>
+                        </ul>
+                      </div>
+                      
+                      {/* CTA Button Preview */}
+                      <div className="text-center">
+                        <div className="inline-block bg-gradient-to-r from-orange-600 to-orange-500 text-white px-8 py-4 rounded-lg font-bold shadow-lg">
+                          Choose how to pay and activate my warranty
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">Links to: {quoteLink}</p>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="summary" className="mt-4">
+                  <div className="space-y-4">
+                    {/* Customer Info */}
+                    <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                      <h4 className="font-semibold text-blue-900 mb-2">👤 Customer Details</h4>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <span className="text-blue-700">Name:</span>
+                        <span className="font-medium">{customerName || 'Not provided'}</span>
+                        <span className="text-blue-700">Email:</span>
+                        <span className="font-medium">{customerEmail}</span>
+                        <span className="text-blue-700">Phone:</span>
+                        <span className="font-medium">{customerPhone || 'Not provided'}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Vehicle Info */}
+                    <div className="bg-gray-50 rounded-lg p-4 border">
+                      <h4 className="font-semibold text-gray-900 mb-2">🚗 Vehicle Details</h4>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <span className="text-gray-600">Registration:</span>
+                        <span className="font-medium font-mono">{vehicleData?.regNumber}</span>
+                        <span className="text-gray-600">Make/Model:</span>
+                        <span className="font-medium">{vehicleData?.make} {vehicleData?.model}</span>
+                        <span className="text-gray-600">Year:</span>
+                        <span className="font-medium">{vehicleData?.year}</span>
+                        <span className="text-gray-600">Mileage:</span>
+                        <span className="font-medium">{parseInt(vehicleData?.mileage || '0').toLocaleString()} miles</span>
+                        <span className="text-gray-600">Fuel Type:</span>
+                        <span className="font-medium">{vehicleData?.fuelType || 'N/A'}</span>
+                        <span className="text-gray-600">Transmission:</span>
+                        <span className="font-medium">{vehicleData?.transmission || 'N/A'}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Cover Details */}
+                    <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                      <h4 className="font-semibold text-purple-900 mb-2">🛡️ Cover Details</h4>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <span className="text-purple-700">Plan:</span>
+                        <span className="font-medium">Platinum</span>
+                        <span className="text-purple-700">Duration:</span>
+                        <span className="font-medium">
+                          {termOptions.find(t => t.id === paymentType)?.label}
+                          {freeExtendedCover !== 'none' && (
+                            <span className="text-green-600 font-semibold ml-1">+ {freeExtendedCover === '3months' ? '3' : '6'} FREE months</span>
+                          )}
+                        </span>
+                        <span className="text-purple-700">Claim Limit:</span>
+                        <span className="font-medium">£{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}{boostAddon ? ' (boosted)' : ''}</span>
+                        <span className="text-purple-700">Excess:</span>
+                        <span className="font-medium">£{excessAmount}</span>
+                        <span className="text-purple-700">Labour Rate:</span>
+                        <span className="font-medium">£{labourRate}/hr</span>
+                      </div>
+                    </div>
+                    
+                    {/* Pricing */}
+                    <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+                      <h4 className="font-semibold text-orange-900 mb-2">💰 Pricing</h4>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <span className="text-orange-700">Total Price:</span>
+                        <span className="font-bold text-lg text-orange-600">£{currentPrice.totalPrice}</span>
+                        <span className="text-orange-700">Monthly Price:</span>
+                        <span className="font-medium">£{currentPrice.monthlyPrice}/month</span>
+                        <span className="text-orange-700">Pay in Full (10% off):</span>
+                        <span className="font-medium">£{currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Quote Link */}
+                    <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                      <h4 className="font-semibold text-green-900 mb-2">🔗 Quote Link</h4>
+                      <p className="text-sm text-green-700 break-all font-mono">{quoteLink}</p>
+                    </div>
+                    
+                    {/* Additional Notes */}
+                    {additionalNotes && (
+                      <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                        <h4 className="font-semibold text-yellow-900 mb-2">📝 Additional Notes</h4>
+                        <p className="text-sm text-yellow-800 whitespace-pre-wrap">{additionalNotes}</p>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+              </Tabs>
+              
+              <DialogFooter className="flex gap-2 mt-4">
+                <Button variant="outline" onClick={() => setShowPreviewDialog(false)}>
+                  Close Preview
+                </Button>
+                <Button onClick={() => { setShowPreviewDialog(false); handlePreviewEmail(); }}>
+                  <Mail className="w-4 h-4 mr-2" />
+                  Proceed to Send Email
                 </Button>
               </DialogFooter>
             </DialogContent>
