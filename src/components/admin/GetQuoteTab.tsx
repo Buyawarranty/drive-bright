@@ -1832,7 +1832,7 @@ Questions? Call 0330 229 5040`;
                     <div className="text-gray-400 text-2xl">|</div>
                     <div>
                       <div className="text-sm text-gray-700 font-medium">Pay in Full (10% off via Stripe)</div>
-                      <div className="text-2xl font-bold text-gray-900">£{currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)}</div>
+                      <div className="text-2xl font-bold text-gray-900">£{Math.floor(currentPrice.totalPrice * 0.9)}</div>
                     </div>
                     <div className="text-gray-400 text-2xl">|</div>
                     <div className="text-sm text-gray-700 font-medium">
