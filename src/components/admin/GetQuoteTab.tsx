@@ -119,6 +119,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [sendWelcomeEmail, setSendWelcomeEmail] = useState(true);
   const [existingPolicyWarning, setExistingPolicyWarning] = useState<string | null>(null);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
+  const [externalPaymentStep, setExternalPaymentStep] = useState<'details' | 'preview'>('details');
 
   // Handle lead selection (from search or pre-populated)
   const handleLeadSelect = (lead: LeadData) => {
@@ -946,7 +947,63 @@ Questions? Call 0330 229 5040`;
     
     // Pre-fill payment amount from quote
     setPaymentAmount(currentPrice.totalPrice.toString());
+    // Reset to details step when opening
+    setExternalPaymentStep('details');
     setShowConfirmPaymentDialog(true);
+  };
+
+  // Generate preview data for external payment
+  const getExternalPaymentPreviewData = () => {
+    const termOption = termOptions.find(t => t.id === paymentType);
+    const durationMonths = termOption?.months || 12;
+    const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
+    const startDate = new Date(paymentDate);
+    const endDate = new Date(paymentDate);
+    endDate.setMonth(endDate.getMonth() + durationMonths);
+    const autoIncludedAddOns = getAutoIncludedAddOns(paymentType);
+
+    return {
+      customer: {
+        name: customerName,
+        email: customerEmail.toLowerCase(),
+        phone: customerPhone || 'Not provided',
+      },
+      vehicle: {
+        registration: vehicleData?.regNumber?.toUpperCase() || '',
+        make: vehicleData?.make || 'Unknown',
+        model: vehicleData?.model || 'Unknown',
+        year: vehicleData?.year || 'Unknown',
+        mileage: parseInt(vehicleData?.mileage || '0').toLocaleString(),
+        fuelType: vehicleData?.fuelType || 'Unknown',
+        transmission: vehicleData?.transmission || 'Unknown',
+      },
+      policy: {
+        planType: 'Platinum',
+        duration: termOption?.label || '12 months',
+        durationMonths,
+        startDate: startDate.toLocaleDateString('en-GB'),
+        endDate: endDate.toLocaleDateString('en-GB'),
+        excess: excessAmount,
+        claimLimit: displayClaimLimit,
+        labourRate: labourRate,
+        boostAddon,
+        freeExtendedCover,
+        breakdownRecovery: autoIncludedAddOns.includes('breakdown'),
+        vehicleRental: autoIncludedAddOns.includes('rental'),
+      },
+      payment: {
+        source: paymentSource,
+        reference: paymentReference,
+        amount: parseFloat(paymentAmount),
+        date: paymentDate,
+        notes: paymentNotes,
+      },
+      integrations: {
+        sendToW2k,
+        sendWelcomeEmail,
+        w2kNotes: additionalNotes ? `External payment via ${paymentSource}. Ref: ${paymentReference}. ${additionalNotes}`.trim() : `External payment via ${paymentSource}. Ref: ${paymentReference}`.trim(),
+      }
+    };
   };
 
   // Validate payment confirmation form
@@ -2433,16 +2490,21 @@ Questions? Call 0330 229 5040`;
             </DialogContent>
           </Dialog>
 
-          {/* External Payment Confirmation Dialog */}
-          <Dialog open={showConfirmPaymentDialog} onOpenChange={setShowConfirmPaymentDialog}>
-            <DialogContent className="max-w-lg">
+          {/* External Payment Confirmation Dialog - Two Step Flow */}
+          <Dialog open={showConfirmPaymentDialog} onOpenChange={(open) => {
+            setShowConfirmPaymentDialog(open);
+            if (!open) setExternalPaymentStep('details');
+          }}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  Confirm External Payment
+                  {externalPaymentStep === 'details' ? 'Confirm External Payment' : 'Review Before Submission'}
                 </DialogTitle>
                 <DialogDescription>
-                  This will create an active policy and send login details to the customer.
+                  {externalPaymentStep === 'details' 
+                    ? 'Step 1: Verify details and enter payment information' 
+                    : 'Step 2: Review all data before creating the policy'}
                 </DialogDescription>
               </DialogHeader>
 
@@ -2453,142 +2515,343 @@ Questions? Call 0330 229 5040`;
                 </Alert>
               )}
 
-              <div className="space-y-4">
-                {/* Payment Source */}
-                <div className="space-y-2">
-                  <Label htmlFor="payment-source">Payment Source *</Label>
-                  <select
-                    id="payment-source"
-                    value={paymentSource}
-                    onChange={(e) => setPaymentSource(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-md bg-background"
-                  >
-                    <option value="">Select payment source...</option>
-                    <option value="stripe_dashboard">Stripe Dashboard</option>
-                    <option value="bumper_portal">Bumper Portal</option>
-                    <option value="bank_transfer">Bank Transfer</option>
-                    <option value="phone_card">Phone Card Payment</option>
-                    <option value="dealer_portal">Dealer Portal</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
+              {externalPaymentStep === 'details' ? (
+                <div className="space-y-4">
+                  {/* Pre-populated Customer & Vehicle Summary */}
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
+                    <h4 className="font-semibold text-blue-900 flex items-center gap-2">
+                      <UserCheck className="w-4 h-4" />
+                      Customer & Vehicle Details (from Step 2)
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <span className="text-blue-600 font-medium">Customer:</span>
+                        <p className="text-blue-900">{customerName}</p>
+                      </div>
+                      <div>
+                        <span className="text-blue-600 font-medium">Email:</span>
+                        <p className="text-blue-900">{customerEmail}</p>
+                      </div>
+                      <div>
+                        <span className="text-blue-600 font-medium">Phone:</span>
+                        <p className="text-blue-900">{customerPhone || 'Not provided'}</p>
+                      </div>
+                      <div>
+                        <span className="text-blue-600 font-medium">Registration:</span>
+                        <p className="text-blue-900 font-mono">{vehicleData?.regNumber}</p>
+                      </div>
+                      <div>
+                        <span className="text-blue-600 font-medium">Vehicle:</span>
+                        <p className="text-blue-900">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
+                      </div>
+                      <div>
+                        <span className="text-blue-600 font-medium">Mileage:</span>
+                        <p className="text-blue-900">{parseInt(vehicleData?.mileage || '0').toLocaleString()} miles</p>
+                      </div>
+                    </div>
+                  </div>
 
-                {/* Payment Reference */}
-                <div className="space-y-2">
-                  <Label htmlFor="payment-reference">Payment Reference / Transaction ID *</Label>
-                  <Input
-                    id="payment-reference"
-                    value={paymentReference}
-                    onChange={(e) => setPaymentReference(e.target.value)}
-                    placeholder="e.g. pi_xxxx, BAC123456, etc."
-                  />
-                </div>
+                  {/* Pre-populated Policy Summary */}
+                  <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg space-y-3">
+                    <h4 className="font-semibold text-purple-900 flex items-center gap-2">
+                      <Zap className="w-4 h-4" />
+                      Policy Configuration (from Step 2)
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <span className="text-purple-600 font-medium">Plan:</span>
+                        <p className="text-purple-900">Platinum</p>
+                      </div>
+                      <div>
+                        <span className="text-purple-600 font-medium">Duration:</span>
+                        <p className="text-purple-900">
+                          {termOptions.find(t => t.id === paymentType)?.label}
+                          {freeExtendedCover !== 'none' && (
+                            <span className="ml-1 text-green-600">+ {freeExtendedCover === '3months' ? '3' : '6'} months FREE</span>
+                          )}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-purple-600 font-medium">Excess:</span>
+                        <p className="text-purple-900">£{excessAmount}</p>
+                      </div>
+                      <div>
+                        <span className="text-purple-600 font-medium">Claim Limit:</span>
+                        <p className="text-purple-900">£{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}{boostAddon ? ' (boost)' : ''}</p>
+                      </div>
+                      <div>
+                        <span className="text-purple-600 font-medium">Labour Rate:</span>
+                        <p className="text-purple-900">£{labourRate}/hr</p>
+                      </div>
+                      <div>
+                        <span className="text-purple-600 font-medium">Quoted Price:</span>
+                        <p className="text-purple-900 font-semibold">£{currentPrice.totalPrice}</p>
+                      </div>
+                      {getAutoIncludedAddOns(paymentType).length > 0 && (
+                        <div className="col-span-2">
+                          <span className="text-purple-600 font-medium">Included Add-ons:</span>
+                          <p className="text-purple-900">
+                            {getAutoIncludedAddOns(paymentType).includes('breakdown') && 'Vehicle Recovery'}
+                            {getAutoIncludedAddOns(paymentType).includes('breakdown') && getAutoIncludedAddOns(paymentType).includes('rental') && ', '}
+                            {getAutoIncludedAddOns(paymentType).includes('rental') && 'Hire Car'}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-                {/* Amount */}
-                <div className="grid grid-cols-2 gap-4">
+                  {/* Payment Source */}
                   <div className="space-y-2">
-                    <Label htmlFor="payment-amount">Amount Received (£) *</Label>
-                    <Input
-                      id="payment-amount"
-                      type="number"
-                      value={paymentAmount}
-                      onChange={(e) => setPaymentAmount(e.target.value)}
-                      placeholder={currentPrice.totalPrice.toString()}
-                    />
-                    {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
-                      <p className="text-xs text-amber-600">
-                        ⚠️ Differs from quoted price (£{currentPrice.totalPrice})
-                      </p>
-                    )}
+                    <Label htmlFor="payment-source">Payment Source *</Label>
+                    <select
+                      id="payment-source"
+                      value={paymentSource}
+                      onChange={(e) => setPaymentSource(e.target.value)}
+                      className="w-full px-3 py-2 border rounded-md bg-background"
+                    >
+                      <option value="">Select payment source...</option>
+                      <option value="stripe_dashboard">Stripe Dashboard</option>
+                      <option value="bumper_portal">Bumper Portal</option>
+                      <option value="bank_transfer">Bank Transfer</option>
+                      <option value="phone_card">Phone Card Payment</option>
+                      <option value="dealer_portal">Dealer Portal</option>
+                      <option value="other">Other</option>
+                    </select>
                   </div>
+
+                  {/* Payment Reference */}
                   <div className="space-y-2">
-                    <Label htmlFor="payment-date">Payment Date *</Label>
+                    <Label htmlFor="payment-reference">Payment Reference / Transaction ID *</Label>
                     <Input
-                      id="payment-date"
-                      type="date"
-                      value={paymentDate}
-                      onChange={(e) => setPaymentDate(e.target.value)}
+                      id="payment-reference"
+                      value={paymentReference}
+                      onChange={(e) => setPaymentReference(e.target.value)}
+                      placeholder="e.g. pi_xxxx, BAC123456, etc."
                     />
                   </div>
-                </div>
 
-                {/* Notes */}
-                <div className="space-y-2">
-                  <Label htmlFor="payment-notes">Internal Notes (optional)</Label>
-                  <Textarea
-                    id="payment-notes"
-                    value={paymentNotes}
-                    onChange={(e) => setPaymentNotes(e.target.value)}
-                    placeholder="Any additional notes about this payment..."
-                    rows={2}
-                  />
-                </div>
+                  {/* Amount */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="payment-amount">Amount Received (£) *</Label>
+                      <Input
+                        id="payment-amount"
+                        type="number"
+                        value={paymentAmount}
+                        onChange={(e) => setPaymentAmount(e.target.value)}
+                        placeholder={currentPrice.totalPrice.toString()}
+                      />
+                      {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
+                        <p className="text-xs text-amber-600">
+                          ⚠️ Differs from quoted price (£{currentPrice.totalPrice})
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="payment-date">Payment / Start Date *</Label>
+                      <Input
+                        id="payment-date"
+                        type="date"
+                        value={paymentDate}
+                        onChange={(e) => setPaymentDate(e.target.value)}
+                      />
+                    </div>
+                  </div>
 
-                {/* Confirmation Checkbox */}
-                <div className="p-3 border rounded-md bg-green-50 border-green-200">
-                  <div className="flex items-start space-x-3">
-                    <Checkbox 
-                      id="confirm-payment"
-                      checked={paymentConfirmed}
-                      onCheckedChange={(checked) => setPaymentConfirmed(checked === true)}
-                      className="mt-1"
+                  {/* Notes */}
+                  <div className="space-y-2">
+                    <Label htmlFor="payment-notes">Internal Notes (optional)</Label>
+                    <Textarea
+                      id="payment-notes"
+                      value={paymentNotes}
+                      onChange={(e) => setPaymentNotes(e.target.value)}
+                      placeholder="Any additional notes about this payment..."
+                      rows={2}
                     />
-                    <Label htmlFor="confirm-payment" className="text-sm text-green-800 cursor-pointer leading-relaxed">
-                      <strong>I confirm</strong> that payment has been received externally and verified. This will activate the warranty immediately.
-                    </Label>
+                  </div>
+
+                  {/* Options */}
+                  <div className="space-y-2 pt-2 border-t">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="confirm-send-w2k" 
+                        checked={sendToW2k}
+                        onCheckedChange={(checked) => setSendToW2k(checked === true)}
+                      />
+                      <Label htmlFor="confirm-send-w2k" className="text-sm cursor-pointer">
+                        Send to Warranties 2000
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="confirm-send-welcome" 
+                        checked={sendWelcomeEmail}
+                        onCheckedChange={(checked) => setSendWelcomeEmail(checked === true)}
+                      />
+                      <Label htmlFor="confirm-send-welcome" className="text-sm cursor-pointer">
+                        Send welcome email with login details
+                      </Label>
+                    </div>
                   </div>
                 </div>
+              ) : (
+                /* Preview Step */
+                <div className="space-y-4">
+                  {(() => {
+                    const preview = getExternalPaymentPreviewData();
+                    return (
+                      <>
+                        <Alert className="bg-amber-50 border-amber-200">
+                          <Eye className="h-4 w-4 text-amber-600" />
+                          <AlertDescription className="text-amber-800">
+                            Please review all information carefully before confirming. This data will be sent to your Customer Dashboard and {sendToW2k ? 'Warranties 2000 API' : 'stored locally only'}.
+                          </AlertDescription>
+                        </Alert>
 
-                {/* Options */}
-                <div className="space-y-2 pt-2 border-t">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="confirm-send-w2k" 
-                      checked={sendToW2k}
-                      onCheckedChange={(checked) => setSendToW2k(checked === true)}
-                    />
-                    <Label htmlFor="confirm-send-w2k" className="text-sm cursor-pointer">
-                      Send to Warranties 2000
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="confirm-send-welcome" 
-                      checked={sendWelcomeEmail}
-                      onCheckedChange={(checked) => setSendWelcomeEmail(checked === true)}
-                    />
-                    <Label htmlFor="confirm-send-welcome" className="text-sm cursor-pointer">
-                      Send welcome email with login details
-                    </Label>
-                  </div>
+                        {/* Customer Dashboard Data */}
+                        <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg space-y-3">
+                          <h4 className="font-semibold text-green-900 flex items-center gap-2">
+                            <UserCheck className="w-4 h-4" />
+                            Customer Dashboard Record
+                          </h4>
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div><span className="font-medium">Name:</span> {preview.customer.name}</div>
+                            <div><span className="font-medium">Email:</span> {preview.customer.email}</div>
+                            <div><span className="font-medium">Phone:</span> {preview.customer.phone}</div>
+                            <div><span className="font-medium">Registration:</span> {preview.vehicle.registration}</div>
+                            <div><span className="font-medium">Vehicle:</span> {preview.vehicle.make} {preview.vehicle.model} ({preview.vehicle.year})</div>
+                            <div><span className="font-medium">Mileage:</span> {preview.vehicle.mileage} miles</div>
+                            <div><span className="font-medium">Plan:</span> {preview.policy.planType}</div>
+                            <div><span className="font-medium">Duration:</span> {preview.policy.duration}</div>
+                            <div><span className="font-medium">Start Date:</span> {preview.policy.startDate}</div>
+                            <div><span className="font-medium">End Date:</span> {preview.policy.endDate}</div>
+                            <div><span className="font-medium">Excess:</span> £{preview.policy.excess}</div>
+                            <div><span className="font-medium">Claim Limit:</span> £{preview.policy.claimLimit.toLocaleString()}</div>
+                            <div><span className="font-medium">Labour Rate:</span> £{preview.policy.labourRate}/hr</div>
+                            <div><span className="font-medium">Payment Amount:</span> £{preview.payment.amount}</div>
+                            <div><span className="font-medium">Payment Source:</span> {preview.payment.source}</div>
+                            <div><span className="font-medium">Payment Ref:</span> {preview.payment.reference}</div>
+                            {preview.policy.breakdownRecovery && <div className="text-green-700">✓ Breakdown Recovery</div>}
+                            {preview.policy.vehicleRental && <div className="text-green-700">✓ Hire Car Cover</div>}
+                            {preview.policy.boostAddon && <div className="text-green-700">✓ Boost Add-on</div>}
+                            {preview.policy.freeExtendedCover !== 'none' && (
+                              <div className="col-span-2 text-green-700 font-medium">
+                                🎁 FREE Extended Cover: {preview.policy.freeExtendedCover === '3months' ? '3' : '6'} bonus months
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Warranties 2000 Data */}
+                        {sendToW2k && (
+                          <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg space-y-3">
+                            <h4 className="font-semibold text-blue-900 flex items-center gap-2">
+                              <Send className="w-4 h-4" />
+                              Warranties 2000 API Payload
+                            </h4>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div><span className="font-medium">First:</span> {preview.customer.name.split(' ')[0]}</div>
+                              <div><span className="font-medium">Surname:</span> {preview.customer.name.split(' ').slice(1).join(' ') || 'N/A'}</div>
+                              <div><span className="font-medium">EMail:</span> {preview.customer.email}</div>
+                              <div><span className="font-medium">Tel:</span> {preview.customer.phone}</div>
+                              <div><span className="font-medium">VRM:</span> {preview.vehicle.registration}</div>
+                              <div><span className="font-medium">Make:</span> {preview.vehicle.make}</div>
+                              <div><span className="font-medium">Model:</span> {preview.vehicle.model}</div>
+                              <div><span className="font-medium">Year:</span> {preview.vehicle.year}</div>
+                              <div><span className="font-medium">Mileage:</span> {preview.vehicle.mileage.replace(/,/g, '')}</div>
+                              <div><span className="font-medium">Fuel:</span> {preview.vehicle.fuelType}</div>
+                              <div><span className="font-medium">Transmission:</span> {preview.vehicle.transmission}</div>
+                              <div><span className="font-medium">Cover (months):</span> {preview.policy.durationMonths}</div>
+                              <div><span className="font-medium">Excess:</span> £{preview.policy.excess}</div>
+                              <div><span className="font-medium">Claim Limit:</span> £{preview.policy.claimLimit.toLocaleString()}</div>
+                              <div><span className="font-medium">Labour Rate:</span> £{preview.policy.labourRate}/hr</div>
+                              <div><span className="font-medium">Price:</span> £{preview.payment.amount}</div>
+                            </div>
+                            {preview.integrations.w2kNotes && (
+                              <div className="mt-2 p-2 bg-white/50 rounded text-sm">
+                                <span className="font-medium">Notes to W2000:</span>
+                                <p className="text-muted-foreground mt-1">{preview.integrations.w2kNotes}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Welcome Email */}
+                        {sendWelcomeEmail && (
+                          <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                            <p className="text-sm text-orange-800">
+                              <Mail className="w-4 h-4 inline mr-1" />
+                              Welcome email with dashboard login will be sent to: <strong>{preview.customer.email}</strong>
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Final Confirmation */}
+                        <div className="p-3 border rounded-md bg-green-50 border-green-200">
+                          <div className="flex items-start space-x-3">
+                            <Checkbox 
+                              id="confirm-payment-final"
+                              checked={paymentConfirmed}
+                              onCheckedChange={(checked) => setPaymentConfirmed(checked === true)}
+                              className="mt-1"
+                            />
+                            <Label htmlFor="confirm-payment-final" className="text-sm text-green-800 cursor-pointer leading-relaxed">
+                              <strong>I confirm</strong> all the above information is correct and payment has been received. This will activate the warranty immediately.
+                            </Label>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
-              </div>
+              )}
 
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowConfirmPaymentDialog(false)}
-                  disabled={isConfirmingPaid}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleConfirmExternalPayment}
-                  disabled={isConfirmingPaid || !isPaymentFormValid()}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  {isConfirmingPaid ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Creating Policy...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Confirm & Activate Policy
-                    </>
-                  )}
-                </Button>
+              <DialogFooter className="flex gap-2">
+                {externalPaymentStep === 'details' ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowConfirmPaymentDialog(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() => setExternalPaymentStep('preview')}
+                      disabled={!paymentSource || !paymentReference || !paymentAmount || !paymentDate}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      Preview Before Submit
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => setExternalPaymentStep('details')}
+                      disabled={isConfirmingPaid}
+                    >
+                      ← Back to Edit
+                    </Button>
+                    <Button
+                      onClick={handleConfirmExternalPayment}
+                      disabled={isConfirmingPaid || !paymentConfirmed}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      {isConfirmingPaid ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Creating Policy...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-4 h-4 mr-2" />
+                          Confirm & Activate Policy
+                        </>
+                      )}
+                    </Button>
+                  </>
+                )}
               </DialogFooter>
             </DialogContent>
           </Dialog>
