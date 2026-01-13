@@ -1647,7 +1647,7 @@ Questions? Call 0330 229 5040`;
                     <Gift className="w-4 h-4 text-green-600" />
                     Free Extended Cover
                   </Label>
-                  <p className="text-sm text-muted-foreground">Add complimentary extended cover period (adds note to Warranties 2000)</p>
+                  <p className="text-sm text-muted-foreground">Add free months to customer's cover period (shown in email & quote page)</p>
                   <div className="flex gap-2">
                     <button
                       onClick={() => {
@@ -1914,13 +1914,18 @@ Questions? Call 0330 229 5040`;
                     <p><strong>Vehicle:</strong> {vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
                     <p><strong>Registration:</strong> {vehicleData?.regNumber}</p>
                     <p><strong>Mileage:</strong> {parseInt(vehicleData?.mileage || '0').toLocaleString()} miles</p>
-                    <p><strong>Duration:</strong> {termOptions.find(t => t.id === paymentType)?.label}</p>
+                    <p><strong>Duration:</strong> {termOptions.find(t => t.id === paymentType)?.label}{freeExtendedCover !== 'none' && <span className="ml-1 text-green-600 font-semibold">+ {freeExtendedCover === '3months' ? '3' : '6'} months FREE</span>}</p>
                     <p><strong>Excess:</strong> £{excessAmount}</p>
                     <p><strong>Claim Limit:</strong> £{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}{boostAddon ? ' (boost)' : ''}</p>
                     <p><strong>Labour Rate:</strong> £{labourRate}/hr</p>
                     <p><strong>Total Price:</strong> £{currentPrice.totalPrice}</p>
                     {additionalNotes && <p className="col-span-2"><strong>Notes:</strong> {additionalNotes}</p>}
                   </div>
+                  {freeExtendedCover !== 'none' && (
+                    <div className="mt-3 p-2 bg-green-100 border border-green-300 rounded-md">
+                      <p className="text-sm text-green-800 font-medium">🎁 Customer will receive {freeExtendedCover === '3months' ? '3' : '6'} FREE bonus months on their cover</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Two Action Cards */}
@@ -2136,6 +2141,11 @@ Questions? Call 0330 229 5040`;
                     <li>✓ Direct "Activate My Warranty Now" button</li>
                     <li>✓ Link: {quoteLink ? <span className="text-primary break-all">{quoteLink}</span> : 'Generating...'}</li>
                   </ul>
+                  {freeExtendedCover !== 'none' && (
+                    <div className="mt-2 p-2 bg-green-100 border border-green-300 rounded-md">
+                      <p className="text-sm text-green-800 font-medium">🎁 Includes {freeExtendedCover === '3months' ? '3' : '6'} FREE bonus months</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
