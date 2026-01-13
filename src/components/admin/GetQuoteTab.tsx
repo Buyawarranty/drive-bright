@@ -1642,13 +1642,25 @@ Questions? Call 0330 229 5040`;
                   <p className="text-xs text-muted-foreground">Lower excess = higher monthly cost</p>
                 </div>
 
-                {/* Free Extended Cover Option */}
-                <div className="space-y-3">
+                {/* Free Extended Cover Option - PROMINENT */}
+                <div className={cn(
+                  "space-y-3 p-4 rounded-lg border-2 transition-all",
+                  freeExtendedCover !== 'none' 
+                    ? "border-green-500 bg-green-50" 
+                    : "border-dashed border-gray-300 bg-gray-50"
+                )}>
                   <Label className="text-base font-semibold flex items-center gap-2">
-                    <Gift className="w-4 h-4 text-green-600" />
+                    <Gift className="w-5 h-5 text-green-600" />
                     Free Extended Cover
+                    {freeExtendedCover !== 'none' && (
+                      <Badge className="bg-green-600 text-white ml-2">
+                        +{freeExtendedCover === '3months' ? '3' : '6'} MONTHS ACTIVE
+                      </Badge>
+                    )}
                   </Label>
-                  <p className="text-sm text-muted-foreground">Add free months to customer's cover period (shown in email & quote page)</p>
+                  <p className="text-sm text-muted-foreground">
+                    <strong>IMPORTANT:</strong> Click a button below to add free months. This will show in the customer's email AND their quote page.
+                  </p>
                   <div className="flex gap-2">
                     <button
                       onClick={() => {
@@ -1682,8 +1694,8 @@ Questions? Call 0330 229 5040`;
                       className={cn(
                         "flex-1 py-3 px-4 rounded-lg border-2 text-center font-semibold transition-all",
                         freeExtendedCover === '3months'
-                          ? "border-green-500 bg-green-50 text-green-700"
-                          : "border-border hover:border-green-400"
+                          ? "border-green-500 bg-green-100 text-green-700 ring-2 ring-green-500"
+                          : "border-border hover:border-green-400 hover:bg-green-50"
                       )}
                     >
                       + 3 Months Free
@@ -1705,13 +1717,20 @@ Questions? Call 0330 229 5040`;
                       className={cn(
                         "flex-1 py-3 px-4 rounded-lg border-2 text-center font-semibold transition-all",
                         freeExtendedCover === '6months'
-                          ? "border-green-500 bg-green-50 text-green-700"
-                          : "border-border hover:border-green-400"
+                          ? "border-green-500 bg-green-100 text-green-700 ring-2 ring-green-500"
+                          : "border-border hover:border-green-400 hover:bg-green-50"
                       )}
                     >
                       + 6 Months Free
                     </button>
                   </div>
+                  {freeExtendedCover !== 'none' && (
+                    <div className="mt-2 p-2 bg-green-100 rounded border border-green-300">
+                      <p className="text-sm text-green-800">
+                        ✓ Customer will see <strong>+{freeExtendedCover === '3months' ? '3' : '6'} FREE months</strong> on their quote page and email
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Additional Notes */}
@@ -1724,6 +1743,20 @@ Questions? Call 0330 229 5040`;
                     rows={3}
                   />
                   <p className="text-xs text-muted-foreground">These notes will be sent to Warranties 2000 when the customer completes their purchase</p>
+                  
+                  {/* Warning if admin types about free months without selecting the toggle */}
+                  {freeExtendedCover === 'none' && 
+                   additionalNotes && 
+                   /\b(free|extra|bonus|additional)\b.*\b(month|months)\b/i.test(additionalNotes) && 
+                   !/FREE EXTENDED COVER:/i.test(additionalNotes) && (
+                    <Alert className="mt-2 border-amber-400 bg-amber-50">
+                      <AlertCircle className="h-4 w-4 text-amber-600" />
+                      <AlertDescription className="text-amber-800">
+                        <strong>Did you mean to add free months?</strong> It looks like you're writing about extra cover. 
+                        Click the <strong>+3 Months</strong> or <strong>+6 Months</strong> button above to add this to the customer's quote page and email.
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </div>
 
                 {/* Custom Pricing Override */}
