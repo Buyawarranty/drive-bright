@@ -2004,7 +2004,7 @@ Questions? Call 0330 229 5040`;
                           </Button>
                         </div>
                         <Button 
-                          onClick={() => setShowPreviewDialog(true)}
+                          onClick={() => window.open(quoteLink, '_blank')}
                           variant="outline"
                           className="w-full border-purple-300 text-purple-700 hover:bg-purple-50"
                         >
