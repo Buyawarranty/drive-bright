@@ -121,6 +121,23 @@ export const useLeads = () => {
   const salesUsersRef = useRef<AdminUser[]>([]);
   salesUsersRef.current = salesUsers;
 
+  // Helper to detect test/fake leads based on known test data
+  const isTestLead = (name: string | null, phone: string | null): boolean => {
+    const testNames = ['kamran', 'prajwal', 'praj', 'test'];
+    const testPhones = ['07960111131'];
+    
+    const nameLower = (name || '').toLowerCase();
+    const phoneClean = (phone || '').replace(/\s+/g, '');
+    
+    // Check if name contains any test name
+    const isTestName = testNames.some(testName => nameLower.includes(testName));
+    
+    // Check if phone matches test phone
+    const isTestPhone = testPhones.includes(phoneClean);
+    
+    return isTestName || isTestPhone;
+  };
+
   const fetchLeads = useCallback(async () => {
     try {
       setLoading(true);
@@ -189,16 +206,21 @@ export const useLeads = () => {
           !linkedCartIds.has(cart.id) && 
           !existingEmails.has(cart.email?.toLowerCase())
         )
-        .map((cart: any) => ({
-          id: `cart_${cart.id}`,
-          first_name: cart.full_name?.split(' ')[0] || null,
-          last_name: cart.full_name?.split(' ').slice(1).join(' ') || null,
-          full_name: cart.full_name || null,
-          email: cart.email,
-          phone: cart.phone,
-          lead_source: 'website' as LeadSource,
-          status: cart.contact_status === 'contacted' ? 'contacted' as LeadStatus : 'new' as LeadStatus,
-          priority: 'medium' as LeadPriority,
+        .map((cart: any) => {
+          const fullName = cart.full_name || '';
+          const isFakeLead = isTestLead(fullName, cart.phone) || cart.contact_status === 'fake_lead';
+          
+          return {
+            id: `cart_${cart.id}`,
+            first_name: fullName.split(' ')[0] || null,
+            last_name: fullName.split(' ').slice(1).join(' ') || null,
+            full_name: fullName || null,
+            email: cart.email,
+            phone: cart.phone,
+            lead_source: 'website' as LeadSource,
+            status: isFakeLead ? 'fake_lead' as LeadStatus : 
+                    cart.contact_status === 'contacted' ? 'contacted' as LeadStatus : 'new' as LeadStatus,
+            priority: 'medium' as LeadPriority,
           priority_score: 0,
           plan_interest: cart.plan_name,
           cart_value: null,
@@ -236,21 +258,29 @@ export const useLeads = () => {
           cart_metadata: cart.cart_metadata || null,
           assigned_user: null,
           tags: []
-        }));
+          };
+        });
 
       // Merge sales leads with abandoned carts
-      const salesLeadsWithFlags = (salesLeadsData || []).map((lead: any) => ({
-        ...lead,
-        full_name: lead.first_name || lead.last_name 
+      const salesLeadsWithFlags = (salesLeadsData || []).map((lead: any) => {
+        const fullName = lead.first_name || lead.last_name 
           ? `${lead.first_name || ''} ${lead.last_name || ''}`.trim() 
-          : null,
-        plan_name: lead.plan_interest,
-        payment_type: null,
-        step_abandoned: null,
-        contact_status: null,
-        is_from_abandoned_cart: false,
-        cart_metadata: null
-      }));
+          : null;
+        const isFakeLead = isTestLead(fullName, lead.phone);
+        
+        return {
+          ...lead,
+          full_name: fullName,
+          // Auto-detect fake leads but don't override if already set to a different status
+          status: isFakeLead && lead.status === 'new' ? 'fake_lead' : lead.status,
+          plan_name: lead.plan_interest,
+          payment_type: null,
+          step_abandoned: null,
+          contact_status: null,
+          is_from_abandoned_cart: false,
+          cart_metadata: null
+        };
+      });
 
       // Combine and sort by created_at
       const allLeads = [...salesLeadsWithFlags, ...cartsAsLeads]
