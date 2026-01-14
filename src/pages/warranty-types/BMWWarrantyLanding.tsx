@@ -996,7 +996,7 @@ const BMWWarrantyLanding: React.FC = () => {
                 <h2 className="text-3xl sm:text-4xl font-bold mb-6">
                   Nationwide UK Coverage
                 </h2>
-                <p className="text-lg text-gray-300 mb-6">
+                <p className="text-lg text-white mb-6">
                   Your BMW is covered wherever you drive in the United Kingdom. Our network of approved garages spans England, Scotland, Wales, and Northern Ireland.
                 </p>
                 <ul className="space-y-3">
