@@ -325,7 +325,7 @@ const BMWWarrantyLanding: React.FC = () => {
         };
         
         localStorage.setItem('vehicleData', JSON.stringify(vehicleData));
-        navigate('/checkout');
+        navigate('/?step=2');
       } else {
         toast({
           title: "Vehicle Not Found",
