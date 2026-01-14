@@ -28,36 +28,41 @@ import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import pandaMechanic from '@/assets/panda-mechanic.png';
 import pandaGarage from '@/assets/panda-garage-service.png';
 
-// BMW Models covered
-const bmwModels = {
-  '1 Series': ['F20', 'F21', 'F40', 'F52'],
-  '2 Series': ['F22', 'F23', 'F44', 'F45', 'F46', 'G42', 'G87'],
-  '3 Series': ['F30', 'F31', 'F34', 'G20', 'G21'],
-  '4 Series': ['F32', 'F33', 'F36', 'G22', 'G23', 'G26'],
-  '5 Series': ['F10', 'F11', 'G30', 'G31'],
-  '6 Series': ['F06', 'F12', 'F13', 'G32'],
-  '7 Series': ['F01', 'F02', 'G11', 'G12'],
-  '8 Series': ['G14', 'G15', 'G16'],
-  'X1': ['F48', 'U11'],
-  'X2': ['F39', 'U10'],
-  'X3': ['F25', 'G01'],
-  'X4': ['F26', 'G02'],
-  'X5': ['F15', 'F85', 'G05'],
-  'X6': ['F16', 'F86', 'G06'],
-  'X7': ['G07'],
-  'Z4': ['E89', 'G29'],
-  'i3': ['I01'],
-  'i4': ['G26'],
-  'i7': ['G70'],
-  'i8': ['I12', 'I15'],
-  'iX': ['I20'],
-  'iX3': ['G08'],
-  'M2': ['F87', 'G87'],
-  'M3': ['F80', 'G80'],
-  'M4': ['F82', 'F83', 'G82', 'G83'],
-  'M5': ['F10', 'F90'],
-  'M8': ['F91', 'F92', 'F93'],
+// BMW Models covered (grouped by category)
+const bmwModelCategories = {
+  'Series': {
+    '1 Series': ['F20', 'F21', 'F40', 'F52'],
+    '2 Series': ['F22', 'F23', 'F44', 'F45', 'F46', 'G42'],
+    '3 Series': ['F30', 'F31', 'F34', 'G20', 'G21'],
+    '4 Series': ['F32', 'F33', 'F36', 'G22', 'G23', 'G26'],
+    '5 Series': ['F10', 'F11', 'G30', 'G31'],
+    '6 Series': ['F06', 'F12', 'F13', 'G32'],
+    '7 Series': ['F01', 'F02', 'G11', 'G12'],
+    '8 Series': ['G14', 'G15', 'G16'],
+  },
+  'X Series SUVs': {
+    'X1': ['F48', 'U11'],
+    'X2': ['F39', 'U10'],
+    'X3': ['F25', 'G01'],
+    'X4': ['F26', 'G02'],
+    'X5': ['F15', 'G05'],
+    'X6': ['F16', 'G06'],
+    'X7': ['G07'],
+  },
+  'Electric & Hybrid': {
+    'i3': ['I01'],
+    'i4': ['G26'],
+    'i7': ['G70'],
+    'i8': ['I12', 'I15'],
+    'iX': ['I20'],
+    'iX3': ['G08'],
+  },
+  'Sports & Roadster': {
+    'Z4': ['E89', 'G29'],
+  },
 };
+
+type ModelCategory = keyof typeof bmwModelCategories;
 
 // Coverage components data
 const coverageCategories = [
@@ -228,6 +233,8 @@ const BMWWarrantyLanding: React.FC = () => {
   const [vehicleAgeError, setVehicleAgeError] = useState('');
   const [openFaqId, setOpenFaqId] = useState<number | null>(null);
   const [expandedCoverage, setExpandedCoverage] = useState(false);
+  const [activeModelFilter, setActiveModelFilter] = useState<ModelCategory | 'All'>('All');
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
 
   const eligibilityError = vehicleAgeError;
 
@@ -697,26 +704,90 @@ const BMWWarrantyLanding: React.FC = () => {
         {/* BMW Models Section */}
         <section className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
+            <div className="text-center mb-8">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                All BMW Models Covered (2011-2025)
+                All BMW Models Covered
               </h2>
               <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-                From the compact 1 Series to the flagship 7 Series, and all X Series SUVs to electric i models.
+                Select your BMW model below to get an instant warranty quote.
               </p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {Object.entries(bmwModels).map(([model, generations]) => (
-                <div key={model} className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100 hover:border-brand-orange hover:shadow-md transition-all">
-                  <h3 className="font-bold text-gray-900 mb-1">BMW {model}</h3>
-                  <p className="text-xs text-gray-500">{generations.join(', ')}</p>
-                </div>
+            {/* Filter Tabs */}
+            <div className="flex flex-wrap justify-center gap-2 mb-8 sticky top-0 bg-white py-4 z-10">
+              <button
+                onClick={() => setActiveModelFilter('All')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  activeModelFilter === 'All'
+                    ? 'bg-brand-orange text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                All Models
+              </button>
+              {(Object.keys(bmwModelCategories) as ModelCategory[]).map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setActiveModelFilter(category)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    activeModelFilter === category
+                      ? 'bg-brand-orange text-white shadow-md'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {category}
+                </button>
               ))}
             </div>
 
-            <p className="text-center text-gray-600 mt-8">
-              <strong>Plus:</strong> All M-Sport variants, xDrive models, and plug-in hybrids
+            {/* Models Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {(activeModelFilter === 'All'
+                ? Object.entries(bmwModelCategories).flatMap(([, models]) => Object.entries(models))
+                : Object.entries(bmwModelCategories[activeModelFilter])
+              ).map(([model, generations]) => (
+                <button
+                  key={model}
+                  onClick={() => {
+                    setSelectedModel(model);
+                    scrollToQuoteForm();
+                  }}
+                  className={`group bg-white rounded-xl p-5 text-center border-2 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg ${
+                    selectedModel === model
+                      ? 'border-brand-orange shadow-md bg-orange-50'
+                      : 'border-gray-100 hover:border-brand-orange'
+                  }`}
+                  aria-label={`BMW ${model}, chassis codes ${generations.join(', ')}`}
+                >
+                  {/* Model Icon */}
+                  <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-brand-orange/10 transition-colors">
+                    <Car className="w-6 h-6 text-gray-600 group-hover:text-brand-orange transition-colors" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-brand-orange transition-colors">
+                    BMW {model}
+                  </h3>
+                  <p className="text-xs text-gray-400 font-mono">
+                    {generations.join(' • ')}
+                  </p>
+                </button>
+              ))}
+            </div>
+
+            {/* Selected Model CTA */}
+            {selectedModel && (
+              <div className="mt-8 text-center animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <Button
+                  size="lg"
+                  onClick={scrollToQuoteForm}
+                  className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-8"
+                >
+                  Get Warranty Quote for BMW {selectedModel} <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </div>
+            )}
+
+            <p className="text-center text-gray-500 mt-8 text-sm">
+              <strong>Also covered:</strong> M-Sport variants, xDrive models, and plug-in hybrids
             </p>
           </div>
         </section>
