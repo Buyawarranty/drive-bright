@@ -172,10 +172,12 @@ const LandingPageDirectory: React.FC = () => {
         {/* SEO-friendly footer text */}
         {!loading && pages.length > 0 && (
           <div className="mt-10 text-center">
-            <p className="text-sm text-muted-foreground max-w-3xl mx-auto">
-              We provide extended car warranties for all major manufacturers including BMW, Mercedes-Benz, 
-              Audi, Volkswagen, Ford, Toyota, Honda, and many more. Each warranty plan is designed to 
-              protect your specific vehicle with comprehensive coverage for mechanical and electrical components.
+            <p className="text-sm text-muted-foreground max-w-4xl mx-auto">
+              We provide extended car warranties for all major vehicle manufacturers, including BMW, Mercedes-Benz, 
+              Audi, Volkswagen, Ford, Toyota, Honda, Nissan, Land Rover, Jaguar, Kia, Hyundai, Peugeot, Citroën, 
+              Volvo, and many more. Every warranty plan is specifically designed for your make and model, delivering 
+              comprehensive protection for mechanical and electrical components. Whether you drive a hybrid saloon, 
+              a family SUV, or an electric vehicle, our cover ensures peace of mind with UK-wide support and transparent pricing.
             </p>
           </div>
         )}
