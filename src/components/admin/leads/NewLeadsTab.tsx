@@ -8,9 +8,10 @@ import { LeadsTableControlBar } from './LeadsTableControlBar';
 import { LeadsTableFooter } from './LeadsTableFooter';
 import { SalespersonDashboard } from './SalespersonDashboard';
 import { ManagerDashboard } from './ManagerDashboard';
+import { AgentsLeadsView } from './AgentsLeadsView';
 import { ManualOrderEntry } from '../ManualOrderEntry';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
-import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Trash2 } from 'lucide-react';
+import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Trash2, UsersRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -82,7 +83,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return 'leads';
   };
   
-  const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard'>(getDefaultView());
+  const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view'>(getDefaultView());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
 
@@ -162,7 +163,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   }, [filteredLeads]);
 
   // Memoize tab change handler for instant switching
-  const handleViewChange = useCallback((view: 'leads' | 'my-dashboard' | 'team-dashboard') => {
+  const handleViewChange = useCallback((view: 'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view') => {
     setActiveView(view);
   }, []);
 
@@ -371,6 +372,18 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 <span className="hidden sm:inline">Team View</span>
               </Button>
             )}
+            {/* See Agents - Admin only */}
+            {isAdmin && (
+              <Button 
+                variant={activeView === 'agents-view' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => handleViewChange('agents-view')}
+                className="flex items-center gap-2 transition-none"
+              >
+                <UsersRound className="h-4 w-4" />
+                <span className="hidden sm:inline">See Agents</span>
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -452,6 +465,16 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       <div className={activeView === 'team-dashboard' ? 'block' : 'hidden'}>
         <ManagerDashboard />
       </div>
+      
+      {/* Agents View - Admin only */}
+      {isAdmin && (
+        <div className={activeView === 'agents-view' ? 'block' : 'hidden'}>
+          <AgentsLeadsView 
+            leads={leads}
+            salesUsers={salesUsers}
+          />
+        </div>
+      )}
     </div>
   );
 };
