@@ -259,14 +259,15 @@ const WarrantyTypes: React.FC = () => {
 
               {/* Right Content - Hero Image */}
               <div className="relative hidden lg:block">
-                <div className="max-w-[30%] mx-auto">
-                  <OptimizedImage 
-                    src={ukVehiclesImg}
-                    alt="UK Vehicles - Cars, Vans, EVs covered by warranty" 
-                    className="w-full h-auto rounded-xl border-2 border-gray-200 shadow-lg"
-                    priority={true}
-                    width={307}
-                    height={172}
+                <div className="max-w-[25%] mx-auto">
+                  <img 
+                    src="/assets/warranty-types-hero-car.png"
+                    alt="Blue Audi car - Buy A Warranty vehicle protection" 
+                    className="w-full h-auto object-contain"
+                    loading="eager"
+                    decoding="async"
+                    width={250}
+                    height={150}
                   />
                 </div>
                 {/* Vehicle Types */}
