@@ -15,6 +15,7 @@ import { saveWithTimestamp } from '@/utils/localStorage';
 
 // Lazy load heavy components
 const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
+const VehicleCoverageSection = lazy(() => import('@/components/homepage/VehicleCoverageSection'));
 
 // Assets
 import bmwLogo from '@/assets/logos/bmw.webp';
@@ -647,59 +648,10 @@ const BMWWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* Every BMW Part Covered Section */}
-        <section className="py-16 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full mb-4">
-                <Shield className="w-5 h-5 text-green-600" />
-                <span className="text-sm font-semibold text-green-700">Full Coverage Details</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                Every BMW Part Covered.<br />
-                <span className="text-brand-orange">Drive Worry-Free</span>
-              </h2>
-              <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-                From engine to electrics, see exactly what's protected on your BMW.
-              </p>
-            </div>
-
-            <div className={`grid md:grid-cols-2 lg:grid-cols-3 gap-6 ${!expandedCoverage ? 'max-h-[600px] overflow-hidden relative' : ''}`}>
-              {coverageCategories.map((category, index) => (
-                <div key={index} className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                      <category.icon className="w-5 h-5 text-green-600" />
-                    </div>
-                    <h3 className="text-lg font-bold text-gray-900">{category.title}</h3>
-                  </div>
-                  <ul className="space-y-2">
-                    {category.items.map((item, itemIndex) => (
-                      <li key={itemIndex} className="flex items-start gap-2 text-sm text-gray-700">
-                        <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-              {!expandedCoverage && (
-                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-blue-50 to-transparent pointer-events-none" />
-              )}
-            </div>
-
-            <div className="text-center mt-8">
-              <Button
-                variant="outline"
-                onClick={() => setExpandedCoverage(!expandedCoverage)}
-                className="gap-2"
-              >
-                {expandedCoverage ? 'Show Less' : 'View All Coverage Details'}
-                {expandedCoverage ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </Button>
-            </div>
-          </div>
-        </section>
+        {/* Vehicle Coverage Accordion Section - Matching Homepage */}
+        <Suspense fallback={<div className="py-12 md:py-16 bg-gray-50 min-h-[300px]" />}>
+          <VehicleCoverageSection />
+        </Suspense>
 
         {/* BMW Models Section */}
         <section className="py-16 bg-white">
