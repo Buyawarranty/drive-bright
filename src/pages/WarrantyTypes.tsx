@@ -557,10 +557,10 @@ const WarrantyTypes: React.FC = () => {
         {/* CTA Section */}
         <section className="py-16 md:py-20 bg-gradient-to-br from-gray-900 to-gray-800 text-white">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
               Ready to Protect Your Vehicle?
             </h2>
-            <p className="text-lg text-gray-300 mb-8">
+            <p className="text-lg text-white mb-8">
               Get an instant quote in under 60 seconds and find the perfect warranty for your vehicle.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
