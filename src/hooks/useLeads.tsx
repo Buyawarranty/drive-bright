@@ -349,6 +349,9 @@ export const useLeads = () => {
   // OPTIMISTIC UPDATE: Update status instantly, then sync to DB
   const updateLeadStatus = useCallback(async (leadId: string, status: LeadStatus) => {
     const now = new Date().toISOString();
+    const isAbandonedCart = leadId.startsWith('cart_');
+    const actualId = isAbandonedCart ? leadId.replace('cart_', '') : leadId;
+    
     const updates: any = { 
       status, 
       updated_at: now,
@@ -367,15 +370,35 @@ export const useLeads = () => {
     ));
 
     try {
-      const { error } = await supabase
-        .from('sales_leads')
-        .update(updates)
-        .eq('id', leadId);
+      if (isAbandonedCart) {
+        // Map status to contact_status for abandoned_carts table
+        const contactStatus = status === 'fake_lead' ? 'fake_lead' : 
+                              status === 'contacted' ? 'contacted' :
+                              status === 'converted' ? 'converted' :
+                              status === 'lost' ? 'lost' : 'pending';
+        
+        const { error } = await supabase
+          .from('abandoned_carts')
+          .update({
+            contact_status: contactStatus,
+            updated_at: now
+          })
+          .eq('id', actualId);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('sales_leads')
+          .update(updates)
+          .eq('id', actualId);
 
-      // Log activity in background (don't await)
-      logActivity(leadId, 'status_change', `Status changed to ${status}`);
+        if (error) throw error;
+
+        // Log activity in background (don't await)
+        logActivity(leadId, 'status_change', `Status changed to ${status}`);
+      }
+      
+      toast.success(`Lead status updated to ${status.replace('_', ' ')}`);
     } catch (error) {
       console.error('Error updating lead status:', error);
       toast.error('Failed to update lead status');
