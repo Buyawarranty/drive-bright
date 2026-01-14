@@ -26,7 +26,7 @@ const LandingPageDirectory = lazy(() => import('./homepage/LandingPageDirectory'
 
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import MileageSlider from './MileageSlider';
+import MileageQuickSelect from './MileageQuickSelect';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
 import { trackButtonClick, trackEvent, trackQuoteRequest } from '@/utils/analytics';
 import { saveWithTimestamp } from '@/utils/localStorage';
@@ -71,8 +71,7 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
   const isMobile = useIsMobile();
   const [regNumber, setRegNumber] = useState('');
   const [mileage, setMileage] = useState('');
-  const [sliderMileage, setSliderMileage] = useState(0);
-  const [showMileageField, setShowMileageField] = useState(false);
+  const [mileageSelection, setMileageSelection] = useState('');
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [mileageError, setMileageError] = useState('');
   const [vehicleAgeError, setVehicleAgeError] = useState('');
@@ -81,7 +80,6 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
   const [showSecondWarrantyDiscount, setShowSecondWarrantyDiscount] = useState(false);
   const [discountCode, setDiscountCode] = useState('');
   const [showEmailPopup, setShowEmailPopup] = useState(false);
-  const [mileagePlaceholder, setMileagePlaceholder] = useState('Enter current approximate mileage');
 
   // Default headline with brand name
   const headline = h1Override || `${brandName} Extended Warranty`;
@@ -192,41 +190,14 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
     }
   };
 
-  const handleMileageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^\d,]/g, '');
-    setMileage(value);
-    
-    const numericValue = parseInt(value.replace(/,/g, ''));
-    if (!isNaN(numericValue)) {
-      setSliderMileage(numericValue);
-    }
-    
-    if (value && numericValue > 150000) {
-      setMileageError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
-    } else {
+  const handleMileageSelection = (selection: string) => {
+    setMileageSelection(selection);
+    // Set a representative mileage value for the selection
+    if (selection === 'under120k') {
+      setMileage('100000');
       setMileageError('');
-    }
-  };
-
-  const handleMileageFocus = () => {
-    setMileage('');
-    setSliderMileage(0);
-    setMileagePlaceholder('Enter mileage (e.g. 32,000)');
-  };
-
-  const handleMileageBlur = () => {
-    if (!mileage || mileage === '0') {
-      setMileagePlaceholder('Enter current approximate mileage');
-    }
-  };
-
-  const handleSliderChange = (value: number) => {
-    setSliderMileage(value);
-    setMileage(value.toLocaleString());
-    
-    if (value > 150000) {
-      setMileageError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
-    } else {
+    } else if (selection === 'over120k') {
+      setMileage('130000');
       setMileageError('');
     }
   };
@@ -594,68 +565,15 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
                     Protection for vehicles up to 150,000 miles and 15 years.
                   </p>
 
-                  {/* Mileage Options - Always Visible */}
-                  <div className="space-y-2">
-                    {/* Text Input Option */}
-                    <div>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        value={mileage}
-                        onChange={handleMileageChange}
-                        onFocus={handleMileageFocus}
-                        onBlur={handleMileageBlur}
-                        placeholder={mileagePlaceholder}
-                        className={`w-full max-w-56 px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-sm sm:text-lg border-2 rounded-lg focus:outline-none min-w-0 placeholder:text-gray-500 ${
-                          eligibilityError ? 'border-destructive focus:border-destructive' : 'border-gray-400 focus:border-orange-500'
-                        }`}
-                      />
-                    </div>
-
-                    {/* Slider Option */}
-                    <div>
-                      <MileageSlider
-                        value={sliderMileage}
-                        onChange={handleSliderChange}
-                        min={0}
-                        max={150000}
-                      />
-                    </div>
-
-                    {/* Error Message (single) */}
-                    {eligibilityError && (
-                      <p className="text-sm text-destructive font-medium text-left w-full">
-                        {eligibilityError}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Get Quote Button */}
-                  <div className="space-y-2 mt-2">
-                    <Button 
-                      onClick={handleGetQuote}
-                      className={`w-full max-w-56 px-3 sm:px-6 md:px-12 h-[48px] sm:h-[60px] md:h-[66px] text-sm sm:text-lg md:text-xl font-bold rounded-lg transition-all min-w-0 ${
-                        isLookingUp || eligibilityError
-                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                          : 'bg-brand-orange hover:bg-brand-orange/90 text-white animate-cta-enhanced'
-                      }`}
-                      disabled={isLookingUp || !!eligibilityError}
-                    >
-                      {isLookingUp ? (
-                        <>
-                          <span className="hidden sm:inline">Looking up vehicle...</span>
-                          <span className="sm:hidden">Looking up...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="hidden sm:inline">Get my instant quote</span>
-                          <span className="sm:hidden">Get my instant quote</span>
-                          <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
-                        </>
-                      )}
-                    </Button>
-                  </div>
+                  {/* Mileage Quick Select */}
+                  <MileageQuickSelect
+                    value={mileageSelection}
+                    onChange={handleMileageSelection}
+                    onAutoSubmit={handleGetQuote}
+                    error={eligibilityError}
+                    isLoading={isLookingUp}
+                    isRegValid={regNumber.replace(/\s/g, '').length >= 5}
+                  />
                 </div>
               </div>
 
