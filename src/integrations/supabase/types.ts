@@ -3742,6 +3742,75 @@ export type Database = {
           },
         ]
       }
+      sms_consents: {
+        Row: {
+          abandoned_cart_id: string | null
+          consent_given_at: string | null
+          consent_status: string | null
+          created_at: string | null
+          customer_name: string | null
+          id: string
+          last_interaction_at: string | null
+          last_message_received: string | null
+          last_message_sent: string | null
+          lead_id: string | null
+          normalized_phone: string
+          opted_out_at: string | null
+          phone: string
+          updated_at: string | null
+          vehicle_info: string | null
+        }
+        Insert: {
+          abandoned_cart_id?: string | null
+          consent_given_at?: string | null
+          consent_status?: string | null
+          created_at?: string | null
+          customer_name?: string | null
+          id?: string
+          last_interaction_at?: string | null
+          last_message_received?: string | null
+          last_message_sent?: string | null
+          lead_id?: string | null
+          normalized_phone: string
+          opted_out_at?: string | null
+          phone: string
+          updated_at?: string | null
+          vehicle_info?: string | null
+        }
+        Update: {
+          abandoned_cart_id?: string | null
+          consent_given_at?: string | null
+          consent_status?: string | null
+          created_at?: string | null
+          customer_name?: string | null
+          id?: string
+          last_interaction_at?: string | null
+          last_message_received?: string | null
+          last_message_sent?: string | null
+          lead_id?: string | null
+          normalized_phone?: string
+          opted_out_at?: string | null
+          phone?: string
+          updated_at?: string | null
+          vehicle_info?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_consents_abandoned_cart_id_fkey"
+            columns: ["abandoned_cart_id"]
+            isOneToOne: false
+            referencedRelation: "abandoned_carts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sms_consents_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "sales_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       special_vehicle_plans: {
         Row: {
           coverage: Json

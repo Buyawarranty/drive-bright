@@ -1,9 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Welcome message for new leads
+const WELCOME_MESSAGE = `BuyaWarranty: Final step to protect your car from unexpected repair bills with vehicle warranty suited to you.
+
+Reply YES to see your options, NO to opt out.`;
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -12,9 +18,9 @@ serve(async (req) => {
   }
 
   try {
-    const { phone, firstName, vehicleMake, vehicleModel } = await req.json();
+    const { phone, firstName, vehicleMake, vehicleModel, leadId, abandonedCartId } = await req.json();
 
-    console.log('Received SMS request:', { phone, firstName, vehicleMake, vehicleModel });
+    console.log('Received SMS request:', { phone, firstName, vehicleMake, vehicleModel, leadId, abandonedCartId });
 
     // Validate phone number
     if (!phone) {
@@ -51,15 +57,12 @@ serve(async (req) => {
 
     console.log('Formatted phone number:', formattedPhone);
 
-    // Build personalized message
-    const customerName = firstName?.trim() || 'there';
+    // Build vehicle info string for storage
     const vehicleInfo = vehicleMake && vehicleModel 
-      ? ` for your ${vehicleMake} ${vehicleModel}` 
-      : '';
-    
-    const message = `Hi ${customerName}! Thanks for getting a quote with BuyAWarranty${vehicleInfo}. Your personalised warranty prices are ready to view. Any questions? Reply to this text or call us on 0800 917 9270 - Team BAW`;
+      ? `${vehicleMake} ${vehicleModel}` 
+      : null;
 
-    console.log('Sending SMS message:', message);
+    console.log('Sending welcome SMS message:', WELCOME_MESSAGE);
 
     // Create Basic Auth header
     const authString = btoa(`${clicksendUsername}:${clicksendApiKey}`);
@@ -75,7 +78,7 @@ serve(async (req) => {
         messages: [
           {
             source: 'sdk',
-            body: message,
+            body: WELCOME_MESSAGE,
             to: formattedPhone,
             from: 'BuyWarranty',
           }
@@ -95,6 +98,42 @@ serve(async (req) => {
     }
 
     console.log('SMS sent successfully to:', formattedPhone);
+
+    // Create consent record in database
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      
+      if (supabaseUrl && supabaseServiceKey) {
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        
+        // Upsert SMS consent record
+        const { error: consentError } = await supabase
+          .from('sms_consents')
+          .upsert({
+            phone: phone,
+            normalized_phone: formattedPhone,
+            consent_status: 'pending',
+            customer_name: firstName || null,
+            vehicle_info: vehicleInfo,
+            lead_id: leadId || null,
+            abandoned_cart_id: abandonedCartId || null,
+            last_message_sent: WELCOME_MESSAGE,
+            last_interaction_at: new Date().toISOString(),
+          }, {
+            onConflict: 'normalized_phone',
+          });
+
+        if (consentError) {
+          console.error('Error creating consent record:', consentError);
+        } else {
+          console.log('SMS consent record created/updated for:', formattedPhone);
+        }
+      }
+    } catch (dbError) {
+      console.error('Database error:', dbError);
+      // Don't fail the request if DB insert fails - SMS was still sent
+    }
 
     return new Response(
       JSON.stringify({ success: true, message: 'SMS sent successfully' }),
