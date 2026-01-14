@@ -594,25 +594,6 @@ const BMWWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* Social Proof Bar */}
-        <section className="bg-gray-900 py-4">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-12 text-white text-sm">
-              <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-brand-orange" />
-                <span><strong>50,000+</strong> UK Drivers Protected</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Award className="w-5 h-5 text-green-400" />
-                <span><strong>£2M+</strong> Claims Paid</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-blue-400" />
-                <span><strong>Same Day</strong> Claims Approval</span>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* Complete BMW Car Warranty Section */}
         <section className="py-16 bg-white">
@@ -660,7 +641,7 @@ const BMWWarrantyLanding: React.FC = () => {
         </section>
 
         {/* Every BMW Part Covered Section */}
-        <section className="py-16 bg-gradient-to-br from-blue-50 via-white to-orange-50">
+        <section className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full mb-4">
@@ -741,7 +722,7 @@ const BMWWarrantyLanding: React.FC = () => {
         </section>
 
         {/* Why Choose Us Section */}
-        <section className="py-16 bg-gray-50">
+        <section className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
@@ -789,7 +770,7 @@ const BMWWarrantyLanding: React.FC = () => {
         </section>
 
         {/* How It Works Section */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
@@ -820,7 +801,7 @@ const BMWWarrantyLanding: React.FC = () => {
         </section>
 
         {/* Your BMW Cover Made Crystal Clear Section */}
-        <section className="py-16 bg-gray-50">
+        <section className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full mb-4">
@@ -855,7 +836,7 @@ const BMWWarrantyLanding: React.FC = () => {
         </section>
 
         {/* High Mileage BMW Section */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-10 items-center">
               <div>
@@ -900,7 +881,7 @@ const BMWWarrantyLanding: React.FC = () => {
         </section>
 
         {/* Additional BMW Cover Options Section */}
-        <section className="py-16 bg-gradient-to-br from-orange-50 to-white">
+        <section className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
@@ -979,7 +960,7 @@ const BMWWarrantyLanding: React.FC = () => {
         </section>
 
         {/* Testimonials Section */}
-        <section className="py-16 bg-gray-50">
+        <section className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
@@ -1010,7 +991,7 @@ const BMWWarrantyLanding: React.FC = () => {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-gray-50">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
