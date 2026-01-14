@@ -589,9 +589,21 @@ const BMWWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* Plan Overview Section */}
+        {/* Complete BMW Car Warranty Section */}
         <section className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                Complete BMW Car Warranty.
+              </h2>
+              <h3 className="text-2xl sm:text-3xl font-bold text-brand-orange mb-3">
+                Peace of Mind.
+              </h3>
+              <p className="text-lg text-gray-600">
+                Superior Protection. Affordable Prices. Instant Cover.
+              </p>
+            </div>
+
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
                 One Comprehensive Plan, Everything Included
@@ -622,15 +634,20 @@ const BMWWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* Coverage Details Section */}
+        {/* Every BMW Part Covered Section */}
         <section className="py-16 bg-gradient-to-br from-blue-50 via-white to-orange-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full mb-4">
+                <Shield className="w-5 h-5 text-green-600" />
+                <span className="text-sm font-semibold text-green-700">Full Coverage Details</span>
+              </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                Complete BMW Coverage Details
+                Every BMW Part Covered.<br />
+                <span className="text-brand-orange">Drive Worry-Free</span>
               </h2>
               <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-                Our warranty covers hundreds of components. Here's a detailed breakdown of what's protected.
+                From engine to electrics, see exactly what's protected on your BMW.
               </p>
             </div>
 
@@ -777,6 +794,123 @@ const BMWWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
+        {/* Your BMW Cover Made Crystal Clear Section */}
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full mb-4">
+                <Shield className="w-5 h-5 text-green-600" />
+                <span className="text-sm font-semibold text-green-700">Transparent Coverage</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                Your BMW cover, made <span className="text-brand-orange">crystal clear</span>
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                See what's included - clear terms, no jargon, no surprises.
+              </p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 text-center">
+                <div className="text-4xl mb-4">✅</div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">No hidden catches</h3>
+                <p className="text-gray-600 text-sm">What you see is what you get</p>
+              </div>
+              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 text-center">
+                <div className="text-4xl mb-4">💰</div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">14-day money-back guarantee</h3>
+                <p className="text-gray-600 text-sm">Try risk-free</p>
+              </div>
+              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 text-center">
+                <div className="text-4xl mb-4">⭐</div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">94% of claims approved fast</h3>
+                <p className="text-gray-600 text-sm">We pay when you need us</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* High Mileage BMW Section */}
+        <section className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-10 items-center">
+              <div>
+                <div className="text-green-600 text-sm font-semibold uppercase tracking-wide mb-4">
+                  High Mileage BMW, No Problem!
+                </div>
+                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+                  Drive Your BMW With Confidence –<br />
+                  <span className="text-brand-orange">You're Covered</span>
+                </h2>
+                <p className="text-lg text-gray-600 mb-6">
+                  Once you have your BMW warranty, drive with complete peace of mind. If something 
+                  goes wrong, simply call our claims team and we'll take care of everything.
+                  We want to get you back on the road as soon as possible.
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Check className="w-5 h-5 text-green-500" />
+                    <span className="text-gray-700">Cover vehicles up to 150,000 miles</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Check className="w-5 h-5 text-green-500" />
+                    <span className="text-gray-700">No mileage restrictions during cover</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Check className="w-5 h-5 text-green-500" />
+                    <span className="text-gray-700">Unlimited claims value</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-center">
+                <OptimizedImage 
+                  src={pandaMechanic}
+                  alt="Miles the Panda mechanic - High mileage BMW warranty"
+                  className="w-64 md:w-80 h-auto object-contain"
+                  width={320}
+                  height={320}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Additional BMW Cover Options Section */}
+        <section className="py-16 bg-gradient-to-br from-orange-50 to-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                Additional BMW Cover Options
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Enhance your BMW warranty with these optional extras
+              </p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+                  <Car className="w-6 h-6 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Courtesy Car</h3>
+                <p className="text-gray-600">Keep moving while your BMW is being repaired</p>
+              </div>
+              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+                  <MapPin className="w-6 h-6 text-green-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">European Cover</h3>
+                <p className="text-gray-600">Extended protection when driving abroad</p>
+              </div>
+              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                  <Shield className="w-6 h-6 text-purple-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Wear & Tear</h3>
+                <p className="text-gray-600">Cover for gradual component deterioration</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* UK Coverage Section */}
         <section className="py-16 bg-gradient-to-br from-blue-900 to-gray-900 text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -894,7 +1028,7 @@ const BMWWarrantyLanding: React.FC = () => {
               Ready to Protect Your BMW?
             </h2>
             <p className="text-xl mb-8 opacity-90">
-              Get your instant quote in 60 seconds. No obligation, no hassle.
+              Get an instant quote and find the perfect warranty for your BMW today.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
