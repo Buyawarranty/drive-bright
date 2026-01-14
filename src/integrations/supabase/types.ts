@@ -4766,6 +4766,7 @@ export type Database = {
         | "negotiating"
         | "converted"
         | "lost"
+        | "fake_lead"
       mask_level: "none" | "partial" | "full"
       note_purpose:
         | "claim_query"
@@ -4939,6 +4940,7 @@ export const Constants = {
         "negotiating",
         "converted",
         "lost",
+        "fake_lead",
       ],
       mask_level: ["none", "partial", "full"],
       note_purpose: [
