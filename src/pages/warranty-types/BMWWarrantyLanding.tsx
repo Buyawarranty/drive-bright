@@ -17,9 +17,15 @@ const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
 
 // Assets
 import bmwLogo from '@/assets/logos/bmw.webp';
+import bmwHeroImage from '@/assets/Bmw-extended-used-car-warranty.png';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
+import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
+import pandaMascot from '@/assets/warranty-panda-mascot.png';
+import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
+import pandaMechanic from '@/assets/panda-mechanic.png';
+import pandaGarage from '@/assets/panda-garage-service.png';
 
 // BMW Models covered
 const bmwModels = {
@@ -512,13 +518,13 @@ const BMWWarrantyLanding: React.FC = () => {
                 </div>
               </div>
 
-              {/* Right Column - Trust Signals & Image */}
+              {/* Right Column - Hero Image with Mascot */}
               <div className="relative">
                 {/* Hero Image */}
                 <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                   <OptimizedImage
-                    src="/extended_warranty_uk-car-trustworthy-reviews.png"
-                    alt="BMW extended warranty UK - Trustworthy reviews and coverage"
+                    src={bmwHeroImage}
+                    alt="BMW extended warranty UK - Professional BMW warranty coverage with Miles the Panda"
                     className="w-full h-auto"
                     priority={true}
                     width={651}
@@ -533,7 +539,7 @@ const BMWWarrantyLanding: React.FC = () => {
                       className="hover:opacity-80 transition-opacity"
                     >
                       <OptimizedImage 
-                        src={trustpilotLogo} 
+                        src={trustpilotExcellent} 
                         alt="Trustpilot Excellent Rating" 
                         className="h-auto w-28 sm:w-36 object-contain"
                         width={144}
@@ -704,25 +710,38 @@ const BMWWarrantyLanding: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[
-                { icon: ThumbsUp, title: 'Transparent Pricing', desc: 'No hidden fees or surprise charges. The price you see is the price you pay.' },
-                { icon: Users, title: 'UK Claims Team', desc: 'Our friendly UK-based team handles claims quickly and fairly.' },
-                { icon: MapPin, title: 'Nationwide Garage Network', desc: 'Use any VAT-registered garage across England, Scotland, Wales & Northern Ireland.' },
-                { icon: Car, title: 'Courtesy Car Available', desc: 'Keep moving while your BMW is being repaired with our courtesy car option.' },
-                { icon: Shield, title: 'Cancel Anytime', desc: 'No lock-in contracts. Cancel anytime and get a pro-rata refund.' },
-                { icon: Clock, title: 'Instant Cover', desc: 'Get covered immediately after purchase. No waiting periods for breakdown cover.' },
-              ].map((benefit, index) => (
-                <div key={index} className="flex gap-4">
-                  <div className="w-12 h-12 bg-brand-orange/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <benefit.icon className="w-6 h-6 text-brand-orange" />
+            <div className="grid lg:grid-cols-3 gap-8 items-start">
+              <div className="lg:col-span-2 grid md:grid-cols-2 gap-6">
+                {[
+                  { icon: ThumbsUp, title: 'Transparent Pricing', desc: 'No hidden fees or surprise charges. The price you see is the price you pay.' },
+                  { icon: Users, title: 'UK Claims Team', desc: 'Our friendly UK-based team handles claims quickly and fairly.' },
+                  { icon: MapPin, title: 'Nationwide Garage Network', desc: 'Use any VAT-registered garage across England, Scotland, Wales & Northern Ireland.' },
+                  { icon: Car, title: 'Courtesy Car Available', desc: 'Keep moving while your BMW is being repaired with our courtesy car option.' },
+                  { icon: Shield, title: 'Cancel Anytime', desc: 'No lock-in contracts. Cancel anytime and get a pro-rata refund.' },
+                  { icon: Clock, title: 'Instant Cover', desc: 'Get covered immediately after purchase. No waiting periods for breakdown cover.' },
+                ].map((benefit, index) => (
+                  <div key={index} className="flex gap-4 bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+                    <div className="w-12 h-12 bg-brand-orange/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <benefit.icon className="w-6 h-6 text-brand-orange" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900 mb-1">{benefit.title}</h3>
+                      <p className="text-gray-600 text-sm">{benefit.desc}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">{benefit.title}</h3>
-                    <p className="text-gray-600">{benefit.desc}</p>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              
+              {/* Mascot - Miles the Panda */}
+              <div className="hidden lg:flex justify-center items-end">
+                <OptimizedImage 
+                  src={pandaGarage}
+                  alt="Miles the Panda - Your friendly BMW warranty guide"
+                  className="w-72 h-auto object-contain drop-shadow-lg"
+                  width={288}
+                  height={300}
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -784,11 +803,16 @@ const BMWWarrantyLanding: React.FC = () => {
                   ))}
                 </ul>
               </div>
-              <div className="text-center">
-                <div className="inline-block bg-white/10 rounded-2xl p-8 backdrop-blur-sm">
-                  <MapPin className="w-24 h-24 text-brand-orange mx-auto mb-4" />
-                  <p className="text-2xl font-bold">England • Scotland</p>
-                  <p className="text-2xl font-bold">Wales • Northern Ireland</p>
+              <div className="flex flex-col items-center">
+                <OptimizedImage 
+                  src={pandaThumbsUp}
+                  alt="Miles the Panda giving thumbs up for UK-wide coverage"
+                  className="w-48 md:w-64 h-auto object-contain mb-4"
+                  width={256}
+                  height={256}
+                />
+                <div className="inline-block bg-white/10 rounded-2xl px-8 py-4 backdrop-blur-sm">
+                  <p className="text-xl font-bold">England • Scotland • Wales • N. Ireland</p>
                 </div>
               </div>
             </div>
@@ -864,8 +888,8 @@ const BMWWarrantyLanding: React.FC = () => {
         </section>
 
         {/* Final CTA Section */}
-        <section className="py-16 bg-gradient-to-br from-brand-orange to-orange-600 text-white">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <section className="py-16 bg-gradient-to-br from-brand-orange to-orange-600 text-white relative overflow-hidden">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
             <h2 className="text-3xl sm:text-4xl font-bold mb-6">
               Ready to Protect Your BMW?
             </h2>
@@ -896,6 +920,17 @@ const BMWWarrantyLanding: React.FC = () => {
               Buy A Warranty arranges and administers warranty plans from trusted providers.<br />
               Not affiliated with BMW AG or BMW UK. Terms apply.
             </p>
+          </div>
+          
+          {/* Mascot decoration - hidden on mobile */}
+          <div className="hidden lg:block absolute bottom-0 right-8 z-0">
+            <OptimizedImage 
+              src={pandaMascot}
+              alt="Miles the Panda mascot"
+              className="w-48 h-auto object-contain opacity-90"
+              width={192}
+              height={200}
+            />
           </div>
         </section>
 
