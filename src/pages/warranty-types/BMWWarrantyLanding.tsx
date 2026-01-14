@@ -16,6 +16,8 @@ import { saveWithTimestamp } from '@/utils/localStorage';
 // Lazy load heavy components
 const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
 const VehicleCoverageSection = lazy(() => import('@/components/homepage/VehicleCoverageSection'));
+const CoverClaritySection = lazy(() => import('@/components/homepage/CoverClaritySection'));
+const VideoSection = lazy(() => import('@/components/homepage/VideoSection'));
 
 // Assets
 import bmwLogo from '@/assets/logos/bmw.webp';
@@ -651,6 +653,16 @@ const BMWWarrantyLanding: React.FC = () => {
         {/* Vehicle Coverage Accordion Section - Matching Homepage */}
         <Suspense fallback={<div className="py-12 md:py-16 bg-gray-50 min-h-[300px]" />}>
           <VehicleCoverageSection />
+        </Suspense>
+
+        {/* Cover Clarity Section - Your cover, made crystal clear */}
+        <Suspense fallback={<div className="py-8 md:py-12 bg-gray-50 min-h-[200px]" />}>
+          <CoverClaritySection />
+        </Suspense>
+
+        {/* Extended Warranty Video Section */}
+        <Suspense fallback={<div className="py-12 md:py-20 bg-brand-gray-bg min-h-[400px]" />}>
+          <VideoSection scrollToQuoteForm={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
         </Suspense>
 
         {/* BMW Models Section */}
