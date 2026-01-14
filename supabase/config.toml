@@ -192,3 +192,6 @@ verify_jwt = false
 
 [functions.send-clicksend-sms]
 verify_jwt = false
+
+[functions.sms-webhook]
+verify_jwt = false
