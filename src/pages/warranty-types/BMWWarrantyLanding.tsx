@@ -1,7 +1,8 @@
 import React, { useState, lazy, Suspense } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
-import { Check, ArrowRight, Shield, Phone, ChevronDown, ChevronUp, MapPin, Clock, Users, Car, Wrench, Zap, Star, Award, ThumbsUp, FileCheck, MessageCircle } from 'lucide-react';
+import { Check, ArrowRight, Shield, Phone, ChevronDown, ChevronUp, MapPin, Clock, Users, Car, Wrench, Zap, Star, Award, ThumbsUp, FileCheck, MessageCircle, Truck, Battery, Bike } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Link, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trackButtonClick } from '@/utils/analytics';
@@ -549,20 +550,44 @@ const BMWWarrantyLanding: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Trust Badges */}
-                <div className="flex flex-wrap justify-center gap-4 mt-6">
-                  <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-md border border-gray-100">
-                    <Shield className="w-5 h-5 text-green-600" />
-                    <span className="text-sm font-medium">FCA Regulated</span>
+                {/* Vehicle Type Tabs */}
+                <div className="flex flex-col items-center gap-4 mt-6">
+                  <div className="flex items-center justify-center gap-3 sm:gap-4 lg:gap-6 flex-wrap">
+                    <div className="flex items-center space-x-1.5">
+                      <Car className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">Cars</span>
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">Vans</span>
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">Hybrid</span>
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <Battery className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">EV</span>
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <Bike className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">Motorbikes</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-md border border-gray-100">
-                    <MapPin className="w-5 h-5 text-brand-orange" />
-                    <span className="text-sm font-medium">UK-Wide Coverage</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-md border border-gray-100">
-                    <Star className="w-5 h-5 text-yellow-500" />
-                    <span className="text-sm font-medium">4.8★ Trustpilot</span>
-                  </div>
+                  
+                  {/* Instant Activation Badge */}
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="inline-flex items-center gap-2 bg-green-50 border border-green-300 rounded-md px-3 py-1.5 sm:px-3.5 sm:py-2 cursor-pointer">
+                          <span className="text-sm font-semibold text-green-700">⚡ Instant cover</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>⚡ Cover starts immediately after purchase</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
             </div>
