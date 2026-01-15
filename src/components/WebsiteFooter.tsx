@@ -17,12 +17,12 @@ const WebsiteFooter = () => {
             Get an instant quote and find the perfect warranty for your vehicle today.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link 
-              to="/" 
-              className="bg-[#eb4b00] hover:bg-[#d63f00] text-white font-semibold px-8 py-3 rounded-lg transition-colors"
+            <button 
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="bg-[#eb4b00] hover:bg-[#d63f00] text-white font-semibold px-8 py-3 rounded-lg transition-colors animate-breathing"
             >
-              Get Your Free Quote
-            </Link>
+              Get your free quote
+            </button>
             <a 
               href="tel:03302295040" 
               className="text-white font-semibold text-lg hover:text-white/80 transition-colors flex items-center gap-2"
