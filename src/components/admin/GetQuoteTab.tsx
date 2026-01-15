@@ -7,7 +7,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2 } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info } from 'lucide-react';
+import { format, addDays, isBefore, startOfDay, isToday } from 'date-fns';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -120,6 +123,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [existingPolicyWarning, setExistingPolicyWarning] = useState<string | null>(null);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [externalPaymentStep, setExternalPaymentStep] = useState<'details' | 'preview'>('details');
+  
+  // Warranty Start Date (separate from payment date)
+  const [warrantyStartDate, setWarrantyStartDate] = useState<Date>(new Date());
+  const [isStartDateCalendarOpen, setIsStartDateCalendarOpen] = useState(false);
 
   // Handle lead selection (from search or pre-populated)
   const handleLeadSelect = (lead: LeadData) => {
@@ -947,6 +954,8 @@ Questions? Call 0330 229 5040`;
     
     // Pre-fill payment amount from quote
     setPaymentAmount(currentPrice.totalPrice.toString());
+    // Reset warranty start date to today
+    setWarrantyStartDate(new Date());
     // Reset to details step when opening
     setExternalPaymentStep('details');
     setShowConfirmPaymentDialog(true);
@@ -957,10 +966,11 @@ Questions? Call 0330 229 5040`;
     const termOption = termOptions.find(t => t.id === paymentType);
     const durationMonths = termOption?.months || 12;
     const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
-    const startDate = new Date(paymentDate);
-    const endDate = new Date(paymentDate);
+    const startDate = startOfDay(warrantyStartDate);
+    const endDate = new Date(startDate);
     endDate.setMonth(endDate.getMonth() + durationMonths);
     const autoIncludedAddOns = getAutoIncludedAddOns(paymentType);
+    const isFutureStart = !isToday(warrantyStartDate) && warrantyStartDate > new Date();
 
     return {
       customer: {
@@ -990,6 +1000,7 @@ Questions? Call 0330 229 5040`;
         freeExtendedCover,
         breakdownRecovery: autoIncludedAddOns.includes('breakdown'),
         vehicleRental: autoIncludedAddOns.includes('rental'),
+        isFutureStart,
       },
       payment: {
         source: paymentSource,
@@ -1012,7 +1023,7 @@ Questions? Call 0330 229 5040`;
       paymentSource.trim() !== '' &&
       paymentReference.trim() !== '' &&
       paymentAmount.trim() !== '' &&
-      paymentDate.trim() !== '' &&
+      warrantyStartDate !== undefined &&
       paymentConfirmed === true
     );
   };
@@ -1106,10 +1117,13 @@ Questions? Call 0330 229 5040`;
         customerId = newCustomer.id;
       }
 
-      // 4. Calculate policy dates
-      const startDate = new Date(paymentDate);
-      const endDate = new Date(paymentDate);
+      // 4. Calculate policy dates using warrantyStartDate
+      const startDate = startOfDay(warrantyStartDate);
+      const endDate = new Date(startDate);
       endDate.setMonth(endDate.getMonth() + durationMonths);
+      
+      // Check if this is a future start date for W2000 scheduling
+      const isFutureStartDate = !isToday(warrantyStartDate) && warrantyStartDate > new Date();
 
       // 5. Create policy record with payment confirmation metadata
       const { data: newPolicy, error: policyError } = await supabase
@@ -1123,7 +1137,7 @@ Questions? Call 0330 229 5040`;
           policy_number: warrantyReference,
           policy_start_date: startDate.toISOString(),
           policy_end_date: endDate.toISOString(),
-          status: 'active',
+          status: isFutureStartDate ? 'scheduled' : 'active',
           voluntary_excess: excessAmount,
           claim_limit: displayClaimLimit,
           payment_amount: confirmedAmount,
@@ -1131,6 +1145,9 @@ Questions? Call 0330 229 5040`;
           vehicle_rental: getAutoIncludedAddOns(paymentType).includes('rental'),
           is_manual_entry: true,
           payment_verified: true,
+          // W2000 scheduling for future start dates
+          warranties_2000_scheduled_for: isFutureStartDate ? startDate.toISOString() : null,
+          warranties_2000_status: sendToW2k ? (isFutureStartDate ? 'scheduled' : 'pending') : null,
         })
         .select('id')
         .single();
@@ -1142,7 +1159,7 @@ Questions? Call 0330 229 5040`;
         .from('admin_notes')
         .insert({
           customer_id: customerId,
-          note: `External Payment Confirmed:\n• Source: ${paymentSource}\n• Reference: ${paymentReference}\n• Amount: £${confirmedAmount}\n• Date: ${paymentDate}\n• Confirmed by: ${adminEmail || 'Admin'}${paymentNotes ? `\n• Notes: ${paymentNotes}` : ''}`,
+          note: `External Payment Confirmed:\n• Source: ${paymentSource}\n• Reference: ${paymentReference}\n• Amount: £${confirmedAmount}\n• Warranty Start Date: ${format(startDate, 'd MMM yyyy')}${isFutureStartDate ? ' (future start)' : ''}\n• Confirmed by: ${adminEmail || 'Admin'}${paymentNotes ? `\n• Notes: ${paymentNotes}` : ''}`,
           created_by: adminUserId
         });
 
@@ -1186,8 +1203,9 @@ Questions? Call 0330 229 5040`;
 
       // === ATOMIC TRANSACTION END ===
 
-      // 10. Send to Warranties 2000 if checked
-      if (sendToW2k) {
+      // 10. Send to Warranties 2000 if checked AND not a future start date
+      // Future start dates will be processed by the scheduled edge function
+      if (sendToW2k && !isFutureStartDate) {
         try {
           await supabase.functions.invoke('send-to-warranties-2000', {
             body: { 
@@ -1200,6 +1218,8 @@ Questions? Call 0330 229 5040`;
         } catch (w2kError) {
           console.error('W2K error:', w2kError);
         }
+      } else if (sendToW2k && isFutureStartDate) {
+        console.log('W2000 submission scheduled for future start date:', format(startDate, 'yyyy-MM-dd'));
       }
 
       // 11. Send welcome email with warranty number and dashboard login
@@ -1224,8 +1244,10 @@ Questions? Call 0330 229 5040`;
 
       // Success!
       toast({
-        title: "✅ Policy Activated!",
-        description: `Warranty ${warrantyReference} created. Customer will receive login details.`,
+        title: isFutureStartDate ? "✅ Policy Scheduled!" : "✅ Policy Activated!",
+        description: isFutureStartDate 
+          ? `Warranty ${warrantyReference} created. Cover starts ${format(startDate, 'd MMM yyyy')}.${sendToW2k ? ' W2000 submission scheduled.' : ''}`
+          : `Warranty ${warrantyReference} created. Customer will receive login details.`,
         duration: 6000,
       });
 
@@ -2647,14 +2669,92 @@ Questions? Call 0330 229 5040`;
                         </p>
                       )}
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="payment-date">Payment / Start Date *</Label>
-                      <Input
-                        id="payment-date"
-                        type="date"
-                        value={paymentDate}
-                        onChange={(e) => setPaymentDate(e.target.value)}
-                      />
+                    {/* Warranty Start Date Picker */}
+                    <div className="col-span-2 space-y-3">
+                      <Label className="flex items-center gap-2">
+                        <CalendarIcon className="w-4 h-4" />
+                        Warranty Start Date *
+                      </Label>
+                      
+                      {/* Start Date Options */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {/* Today Option */}
+                        <button
+                          type="button"
+                          onClick={() => setWarrantyStartDate(new Date())}
+                          className={cn(
+                            "flex items-center gap-2 p-3 rounded-lg border-2 transition-all duration-200 text-left",
+                            isToday(warrantyStartDate)
+                              ? "border-green-500 bg-green-50 text-green-700"
+                              : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50"
+                          )}
+                        >
+                          <CheckCircle2 className={cn(
+                            "w-4 h-4 flex-shrink-0",
+                            isToday(warrantyStartDate) ? "text-green-600" : "text-gray-400"
+                          )} />
+                          <div>
+                            <span className="font-medium text-sm">Start Today</span>
+                            <p className="text-xs text-muted-foreground">{format(new Date(), 'd MMM yyyy')}</p>
+                          </div>
+                        </button>
+
+                        {/* Future Date Picker */}
+                        <Popover open={isStartDateCalendarOpen} onOpenChange={setIsStartDateCalendarOpen}>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              className={cn(
+                                "flex items-center gap-2 p-3 rounded-lg border-2 transition-all duration-200 text-left",
+                                !isToday(warrantyStartDate)
+                                  ? "border-green-500 bg-green-50 text-green-700"
+                                  : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50"
+                              )}
+                            >
+                              <CalendarIcon className={cn(
+                                "w-4 h-4 flex-shrink-0",
+                                !isToday(warrantyStartDate) ? "text-green-600" : "text-gray-400"
+                              )} />
+                              <div>
+                                <span className="font-medium text-sm">
+                                  {!isToday(warrantyStartDate) ? format(warrantyStartDate, 'd MMM yyyy') : 'Future Date'}
+                                </span>
+                                <p className="text-xs text-muted-foreground">Select from calendar</p>
+                              </div>
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="center" sideOffset={8}>
+                            <CalendarComponent
+                              mode="single"
+                              selected={warrantyStartDate}
+                              onSelect={(date) => {
+                                if (date) {
+                                  setWarrantyStartDate(date);
+                                  setIsStartDateCalendarOpen(false);
+                                }
+                              }}
+                              disabled={(date) => isBefore(startOfDay(date), startOfDay(new Date()))}
+                              initialFocus
+                              className="p-3 pointer-events-auto"
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+
+                      {/* Future Start Date Note */}
+                      {!isToday(warrantyStartDate) && (
+                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <div className="flex items-start gap-2">
+                            <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <div className="text-sm text-blue-800">
+                              <p className="font-medium">Payment is processed today</p>
+                              <p className="text-blue-700 mt-1">
+                                The warranty will be activated on <span className="font-semibold">{format(warrantyStartDate, 'd MMMM yyyy')}</span>.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -2739,6 +2839,11 @@ Questions? Call 0330 229 5040`;
                                 🎁 FREE Extended Cover: {preview.policy.freeExtendedCover === '3months' ? '3' : '6'} bonus months
                               </div>
                             )}
+                            {preview.policy.isFutureStart && (
+                              <div className="col-span-2 p-2 bg-blue-100 border border-blue-200 rounded text-blue-800 text-sm">
+                                <span className="font-medium">📅 Future Start:</span> Payment today, warranty activates on {preview.policy.startDate}
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -2771,6 +2876,11 @@ Questions? Call 0330 229 5040`;
                               <div className="mt-2 p-2 bg-white/50 rounded text-sm">
                                 <span className="font-medium">Notes to W2000:</span>
                                 <p className="text-muted-foreground mt-1">{preview.integrations.w2kNotes}</p>
+                              </div>
+                            )}
+                            {preview.policy.isFutureStart && (
+                              <div className="mt-2 p-2 bg-amber-100 border border-amber-200 rounded text-sm text-amber-800">
+                                <span className="font-medium">⏰ Scheduled:</span> W2000 submission will be processed on {preview.policy.startDate}
                               </div>
                             )}
                           </div>
