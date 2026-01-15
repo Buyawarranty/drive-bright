@@ -16,32 +16,15 @@ import { AnalyticsTab } from '@/components/admin/AnalyticsTab';
 import UnifiedEmailHub from '@/components/admin/UnifiedEmailHub';
 import AccountSettings from '@/components/admin/AccountSettings';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import CreateTestCustomer from '@/components/CreateTestCustomer';
-import CreateTestAdmin from '@/components/admin/CreateTestAdmin';
-import ResetAdminPassword from '@/components/admin/ResetAdminPassword';
-import SetAdminPassword from '@/components/admin/SetAdminPassword';
-import TestWarranties2000 from '@/components/TestWarranties2000';
-import TestWarranties2000AddOns from '@/components/TestWarranties2000AddOns';
-import TestBumper from '@/components/TestBumper';
 import { ApiConnectivityTest } from '@/components/admin/ApiConnectivityTest';
 import { UserPermissionsTab } from '@/components/admin/UserPermissionsTab';
 import { DocumentMappingTab } from '@/components/admin/DocumentMappingTab';
 import { BulkPricingTab } from '@/components/admin/BulkPricingTab';
 import { BlogWritingTab } from '@/components/admin/BlogWritingTab';
 import { LandingPageBuilder } from '@/components/admin/LandingPageBuilder';
-import OrderReconciliation from '@/components/admin/OrderReconciliation';
-import { ManualPaymentProcessor } from '@/components/admin/ManualPaymentProcessor';
-import { ResendWelcomeEmail } from '@/components/admin/ResendWelcomeEmail';
-import { TestAutomatedEmail } from '@/components/admin/TestAutomatedEmail';
-import { SimpleEmailTest } from '@/components/admin/SimpleEmailTest';
-import { TestEmailFunctionDirect } from '@/components/admin/TestEmailFunctionDirect';
-import { EmailFunctionDiagnostics } from '@/components/admin/EmailFunctionDiagnostics';
-import { TestPolicyDocumentsEmail } from '@/components/admin/TestPolicyDocumentsEmail';
 import { ClickFraudTab } from '@/components/admin/ClickFraudTab';
-import { ResetCustomerPassword } from '@/components/admin/ResetCustomerPassword';
-import { TestTrustpilotEmail } from '@/components/admin/TestTrustpilotEmail';
-import { TestAbandonedCartEmail } from '@/components/admin/TestAbandonedCartEmail';
 import { PendingW2000Tab } from '@/components/admin/PendingW2000Tab';
+import { TestingTabContent } from '@/components/admin/TestingTabContent';
 import { NewLeadsTab } from '@/components/admin/leads/NewLeadsTab';
 import { SellingTipsSection } from '@/components/admin/SellingTipsSection';
 import { TimesheetsTab } from '@/components/admin/timesheets/TimesheetsTab';
@@ -311,95 +294,7 @@ const AdminDashboard = () => {
       case 'timesheets':
         return <TimesheetsTab />;
       case 'testing':
-        console.log('Rendering Testing Tab');
-        try {
-          return (
-            <div className="max-w-4xl mx-auto">
-              <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">Testing Tools</h1>
-                <p className="text-gray-600 mt-2">Tools for testing and development</p>
-              </div>
-              
-              <div className="grid grid-cols-1 gap-6">
-                <ManualPaymentProcessor />
-                
-                <OrderReconciliation />
-                
-                <ApiConnectivityTest />
-                
-                <EmailFunctionDiagnostics />
-                
-                <TestPolicyDocumentsEmail />
-                
-                <TestAbandonedCartEmail />
-                
-                <TestTrustpilotEmail />
-                
-                <SimpleEmailTest />
-                
-                <TestEmailFunctionDirect />
-                
-                <TestAutomatedEmail />
-                
-                <ResendWelcomeEmail />
-                
-                <CreateTestCustomer />
-                
-                <CreateTestAdmin />
-                
-                <ResetAdminPassword />
-                
-                <ResetCustomerPassword />
-                
-                <SetAdminPassword />
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Test Credentials</CardTitle>
-                    <CardDescription>
-                      Use these credentials to test the customer login
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div>
-                        <span className="font-medium">Email:</span> test@customer.com
-                      </div>
-                      <div>
-                        <span className="font-medium">Password:</span> password123
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <TestWarranties2000 />
-                
-                <TestWarranties2000AddOns />
-                
-                <TestBumper />
-              </div>
-            </div>
-          );
-        } catch (error) {
-          console.error('Error rendering testing tab:', error);
-          return (
-            <div className="max-w-4xl mx-auto p-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-red-600">Error Loading Testing Tab</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">
-                    There was an error loading the testing tools. Check the console for details.
-                  </p>
-                  <pre className="mt-4 p-4 bg-gray-100 rounded text-sm overflow-auto">
-                    {error instanceof Error ? error.message : 'Unknown error'}
-                  </pre>
-                </CardContent>
-              </Card>
-            </div>
-          );
-        }
+        return <TestingTabContent />;
       case 'account':
         return <AccountSettings />;
       default:
