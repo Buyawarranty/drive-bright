@@ -129,6 +129,21 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [isStartDateCalendarOpen, setIsStartDateCalendarOpen] = useState(false);
   const [isQuickConfirming, setIsQuickConfirming] = useState(false);
   
+  // Customer address fields for external payment
+  const [customerPostcode, setCustomerPostcode] = useState('');
+  const [customerStreet, setCustomerStreet] = useState('');
+  const [customerTown, setCustomerTown] = useState('');
+  const [customerBuildingNumber, setCustomerBuildingNumber] = useState('');
+  const [customerCounty, setCustomerCounty] = useState('');
+  const [skipAddressDetails, setSkipAddressDetails] = useState(false);
+  
+  // Editable customer fields for external payment dialog
+  const [editableCustomerName, setEditableCustomerName] = useState('');
+  const [editableCustomerEmail, setEditableCustomerEmail] = useState('');
+  const [editableCustomerPhone, setEditableCustomerPhone] = useState('');
+  const [editableMileage, setEditableMileage] = useState('');
+  const [editableRegNumber, setEditableRegNumber] = useState('');
+  
   // Completion status tracking
   const [completionStatus, setCompletionStatus] = useState<{
     policyCreated: boolean;
@@ -1070,6 +1085,22 @@ Questions? Call 0330 229 5040`;
     setWarrantyStartDate(new Date());
     // Reset to details step when opening
     setExternalPaymentStep('details');
+    
+    // Initialize editable fields with current values
+    setEditableCustomerName(customerName);
+    setEditableCustomerEmail(customerEmail);
+    setEditableCustomerPhone(customerPhone);
+    setEditableMileage(vehicleData?.mileage || mileage);
+    setEditableRegNumber(vehicleData?.regNumber || regNumber);
+    
+    // Reset address fields
+    setCustomerPostcode('');
+    setCustomerStreet('');
+    setCustomerTown('');
+    setCustomerBuildingNumber('');
+    setCustomerCounty('');
+    setSkipAddressDetails(false);
+    
     setShowConfirmPaymentDialog(true);
   };
 
@@ -1086,16 +1117,27 @@ Questions? Call 0330 229 5040`;
 
     return {
       customer: {
-        name: customerName,
-        email: customerEmail.toLowerCase(),
-        phone: customerPhone || 'Not provided',
+        name: editableCustomerName || customerName,
+        email: (editableCustomerEmail || customerEmail).toLowerCase(),
+        phone: editableCustomerPhone || customerPhone || 'Not provided',
+        address: skipAddressDetails 
+          ? 'Customer will complete in dashboard' 
+          : customerPostcode 
+            ? `${customerBuildingNumber ? customerBuildingNumber + ' ' : ''}${customerStreet}, ${customerTown}${customerCounty ? ', ' + customerCounty : ''}, ${customerPostcode}`
+            : 'Not provided',
+        postcode: customerPostcode,
+        street: customerStreet,
+        town: customerTown,
+        buildingNumber: customerBuildingNumber,
+        county: customerCounty,
+        skipAddressDetails,
       },
       vehicle: {
-        registration: vehicleData?.regNumber?.toUpperCase() || '',
+        registration: (editableRegNumber || vehicleData?.regNumber)?.toUpperCase() || '',
         make: vehicleData?.make || 'Unknown',
         model: vehicleData?.model || 'Unknown',
         year: vehicleData?.year || 'Unknown',
-        mileage: parseInt(vehicleData?.mileage || '0').toLocaleString(),
+        mileage: parseInt(editableMileage || vehicleData?.mileage || '0').toLocaleString(),
         fuelType: vehicleData?.fuelType || 'Unknown',
         transmission: vehicleData?.transmission || 'Unknown',
       },
@@ -1175,26 +1217,33 @@ Questions? Call 0330 229 5040`;
       // === ATOMIC TRANSACTION START ===
       
       // 1. Check for existing customer by email (case insensitive)
+      const finalEmail = editableCustomerEmail || customerEmail;
       const { data: existingCustomer } = await supabase
         .from('customers')
         .select('id, name, email, registration_plate')
-        .ilike('email', customerEmail)
+        .ilike('email', finalEmail)
         .maybeSingle();
 
       let customerId: string;
       
+      // Use editable fields for final data
+      const finalName = editableCustomerName || customerName;
+      const finalPhone = editableCustomerPhone || customerPhone;
+      const finalRegNumber = (editableRegNumber || vehicleData.regNumber)?.toUpperCase();
+      const finalMileage = editableMileage || vehicleData.mileage;
+      
       // 2. Customer record data with payment confirmation details
-      const customerData = {
-        name: customerName,
-        email: customerEmail.toLowerCase(),
-        phone: customerPhone || null,
-        registration_plate: vehicleData.regNumber?.toUpperCase() || null,
+      const customerData: Record<string, any> = {
+        name: finalName,
+        email: finalEmail.toLowerCase(),
+        phone: finalPhone || null,
+        registration_plate: finalRegNumber || null,
         vehicle_make: vehicleData.make || null,
         vehicle_model: vehicleData.model || null,
         vehicle_year: vehicleData.year || null,
         vehicle_fuel_type: vehicleData.fuelType || null,
         vehicle_transmission: vehicleData.transmission || null,
-        mileage: vehicleData.mileage || null,
+        mileage: finalMileage || null,
         plan_type: 'Platinum',
         payment_type: paymentType,
         status: 'Active',
@@ -1208,6 +1257,15 @@ Questions? Call 0330 229 5040`;
         breakdown_recovery: getAutoIncludedAddOns(paymentType).includes('breakdown'),
         vehicle_rental: getAutoIncludedAddOns(paymentType).includes('rental'),
       };
+      
+      // Include address if provided (not skipped)
+      if (!skipAddressDetails && customerPostcode) {
+        customerData.postcode = customerPostcode;
+        customerData.street = customerStreet || null;
+        customerData.town = customerTown || null;
+        customerData.building_number = customerBuildingNumber || null;
+        customerData.county = customerCounty || null;
+      }
 
       // 3. Create or update customer
       if (existingCustomer) {
@@ -1221,7 +1279,7 @@ Questions? Call 0330 229 5040`;
       } else {
         const { data: newCustomer, error: insertError } = await supabase
           .from('customers')
-          .insert(customerData)
+          .insert(customerData as any)
           .select('id')
           .single();
         
@@ -1238,30 +1296,43 @@ Questions? Call 0330 229 5040`;
       const isFutureStartDate = !isToday(warrantyStartDate) && warrantyStartDate > new Date();
 
       // 5. Create policy record with payment confirmation metadata
+      const policyData: Record<string, any> = {
+        customer_id: customerId,
+        email: finalEmail.toLowerCase(),
+        customer_full_name: finalName,
+        plan_type: 'platinum',
+        payment_type: paymentType,
+        policy_number: warrantyReference,
+        warranty_number: warrantyReference, // Use same reference to prevent trigger from generating a duplicate
+        policy_start_date: startDate.toISOString(),
+        policy_end_date: endDate.toISOString(),
+        status: isFutureStartDate ? 'scheduled' : 'active',
+        voluntary_excess: excessAmount,
+        claim_limit: displayClaimLimit,
+        payment_amount: confirmedAmount,
+        breakdown_recovery: getAutoIncludedAddOns(paymentType).includes('breakdown'),
+        vehicle_rental: getAutoIncludedAddOns(paymentType).includes('rental'),
+        is_manual_entry: true,
+        payment_verified: true,
+        // W2000 scheduling for future start dates
+        warranties_2000_scheduled_for: isFutureStartDate ? startDate.toISOString() : null,
+        warranties_2000_status: sendToW2k ? (isFutureStartDate ? 'scheduled' : 'pending') : null,
+      };
+      
+      // Include address in policy if provided
+      if (!skipAddressDetails && customerPostcode) {
+        policyData.address = {
+          postcode: customerPostcode,
+          street: customerStreet || '',
+          town: customerTown || '',
+          building_number: customerBuildingNumber || '',
+          county: customerCounty || '',
+        };
+      }
+      
       const { data: newPolicy, error: policyError } = await supabase
         .from('customer_policies')
-        .insert({
-          customer_id: customerId,
-          email: customerEmail.toLowerCase(),
-          customer_full_name: customerName,
-          plan_type: 'platinum',
-          payment_type: paymentType,
-          policy_number: warrantyReference,
-          warranty_number: warrantyReference, // Use same reference to prevent trigger from generating a duplicate
-          policy_start_date: startDate.toISOString(),
-          policy_end_date: endDate.toISOString(),
-          status: isFutureStartDate ? 'scheduled' : 'active',
-          voluntary_excess: excessAmount,
-          claim_limit: displayClaimLimit,
-          payment_amount: confirmedAmount,
-          breakdown_recovery: getAutoIncludedAddOns(paymentType).includes('breakdown'),
-          vehicle_rental: getAutoIncludedAddOns(paymentType).includes('rental'),
-          is_manual_entry: true,
-          payment_verified: true,
-          // W2000 scheduling for future start dates
-          warranties_2000_scheduled_for: isFutureStartDate ? startDate.toISOString() : null,
-          warranties_2000_status: sendToW2k ? (isFutureStartDate ? 'scheduled' : 'pending') : null,
-        })
+        .insert(policyData as any)
         .select('id')
         .single();
 
@@ -2713,38 +2784,138 @@ Questions? Call 0330 229 5040`;
 
               {externalPaymentStep === 'details' ? (
                 <div className="space-y-4">
-                  {/* Pre-populated Customer & Vehicle Summary */}
+                  {/* Editable Customer & Vehicle Details */}
                   <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
                     <h4 className="font-semibold text-blue-900 flex items-center gap-2">
                       <UserCheck className="w-4 h-4" />
-                      Customer & Vehicle Details (from Step 2)
+                      Customer & Vehicle Details
                     </h4>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <span className="text-blue-600 font-medium">Customer:</span>
-                        <p className="text-blue-900">{customerName}</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-blue-600">Customer Name *</Label>
+                        <Input
+                          value={editableCustomerName}
+                          onChange={(e) => setEditableCustomerName(e.target.value)}
+                          className="bg-white"
+                        />
                       </div>
-                      <div>
-                        <span className="text-blue-600 font-medium">Email:</span>
-                        <p className="text-blue-900">{customerEmail}</p>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-blue-600">Email *</Label>
+                        <Input
+                          value={editableCustomerEmail}
+                          onChange={(e) => setEditableCustomerEmail(e.target.value)}
+                          className="bg-white"
+                        />
                       </div>
-                      <div>
-                        <span className="text-blue-600 font-medium">Phone:</span>
-                        <p className="text-blue-900">{customerPhone || 'Not provided'}</p>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-blue-600">Phone</Label>
+                        <Input
+                          value={editableCustomerPhone}
+                          onChange={(e) => setEditableCustomerPhone(e.target.value)}
+                          placeholder="07xxx xxxxxx"
+                          className="bg-white"
+                        />
                       </div>
-                      <div>
-                        <span className="text-blue-600 font-medium">Registration:</span>
-                        <p className="text-blue-900 font-mono">{vehicleData?.regNumber}</p>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-blue-600">Registration *</Label>
+                        <Input
+                          value={editableRegNumber}
+                          onChange={(e) => setEditableRegNumber(e.target.value.toUpperCase())}
+                          className="bg-white font-mono"
+                        />
                       </div>
-                      <div>
-                        <span className="text-blue-600 font-medium">Vehicle:</span>
-                        <p className="text-blue-900">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-blue-600">Vehicle</Label>
+                        <p className="text-sm text-blue-900 py-2">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
                       </div>
-                      <div>
-                        <span className="text-blue-600 font-medium">Mileage:</span>
-                        <p className="text-blue-900">{parseInt(vehicleData?.mileage || '0').toLocaleString()} miles</p>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-blue-600">Mileage</Label>
+                        <Input
+                          value={editableMileage}
+                          onChange={(e) => setEditableMileage(e.target.value.replace(/\D/g, ''))}
+                          placeholder="e.g. 45000"
+                          className="bg-white"
+                        />
                       </div>
                     </div>
+                  </div>
+
+                  {/* Address Section */}
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-amber-900 flex items-center gap-2">
+                        📍 Customer Address
+                      </h4>
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="skip-address"
+                          checked={skipAddressDetails}
+                          onCheckedChange={(checked) => setSkipAddressDetails(checked === true)}
+                        />
+                        <Label htmlFor="skip-address" className="text-xs text-amber-700 cursor-pointer">
+                          Customer will complete in dashboard
+                        </Label>
+                      </div>
+                    </div>
+                    
+                    {!skipAddressDetails && (
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs text-amber-600">House/Building Number</Label>
+                          <Input
+                            value={customerBuildingNumber}
+                            onChange={(e) => setCustomerBuildingNumber(e.target.value)}
+                            placeholder="e.g. 42"
+                            className="bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-amber-600">Street</Label>
+                          <Input
+                            value={customerStreet}
+                            onChange={(e) => setCustomerStreet(e.target.value)}
+                            placeholder="e.g. High Street"
+                            className="bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-amber-600">Town/City</Label>
+                          <Input
+                            value={customerTown}
+                            onChange={(e) => setCustomerTown(e.target.value)}
+                            placeholder="e.g. Manchester"
+                            className="bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-amber-600">County</Label>
+                          <Input
+                            value={customerCounty}
+                            onChange={(e) => setCustomerCounty(e.target.value)}
+                            placeholder="e.g. Greater Manchester"
+                            className="bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs text-amber-600">Postcode *</Label>
+                          <Input
+                            value={customerPostcode}
+                            onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())}
+                            placeholder="e.g. M1 1AA"
+                            className="bg-white"
+                          />
+                        </div>
+                      </div>
+                    )}
+                    
+                    {skipAddressDetails && (
+                      <Alert className="bg-amber-100 border-amber-300">
+                        <Info className="h-4 w-4 text-amber-600" />
+                        <AlertDescription className="text-amber-800 text-sm">
+                          The customer will be prompted to complete their address when they log into their dashboard.
+                        </AlertDescription>
+                      </Alert>
+                    )}
                   </div>
 
                   {/* Pre-populated Policy Summary */}
