@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLeads, Lead, LeadTag, AdminUser, LeadStatus } from '@/hooks/useLeads';
 import { useSalesStats } from '@/hooks/useSalesStats';
 import { SalesAgentLeadsTable } from './SalesAgentLeadsTable';
-import { MyOrdersView } from './MyOrdersView';
+import { SalesCustomerManagement } from './SalesCustomerManagement';
 import { 
   LayoutDashboard, Users, ShoppingBag, Bell,
   TrendingUp, Clock, AlertTriangle, Target, DollarSign
@@ -317,7 +317,7 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
 
         {/* My Orders Tab */}
         <TabsContent value="orders">
-          <MyOrdersView currentUserId={currentUserId} />
+          <SalesCustomerManagement currentUserId={currentUserId} />
         </TabsContent>
 
         {/* Notifications Tab */}
