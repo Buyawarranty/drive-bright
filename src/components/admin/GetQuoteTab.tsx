@@ -3026,26 +3026,26 @@ Questions? Call 0330 229 5040`;
                       </div>
                     )}
 
-                    {/* W2000 Status - Note: Only shown as info, detailed status in dashboard */}
+                    {/* Warranty Registration Status - Note: Only shown as info, detailed status in dashboard */}
                     {sendToW2k && (
                       <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                         <div className="flex items-center gap-3">
                           <Info className="w-5 h-5 text-blue-600" />
                           <div>
-                            <span className="font-medium text-blue-800">Warranties 2000 Submission</span>
+                            <span className="font-medium text-blue-800">Warranty Registered</span>
                             <p className="text-xs text-blue-600">
                               {completionStatus.isFutureStart 
-                                ? 'Scheduled - will be sent on warranty start date' 
+                                ? 'Scheduled - will be registered on warranty start date' 
                                 : completionStatus.w2000Sent === true 
-                                  ? 'Sent successfully' 
+                                  ? 'Successfully registered' 
                                   : completionStatus.w2000Sent === false 
-                                    ? 'Failed - check customer dashboard for details'
-                                    : 'Processing...'}
+                                    ? 'Registration failed - check customer dashboard for details'
+                                    : 'Processing registration...'}
                             </p>
                           </div>
                         </div>
                         <p className="text-xs text-muted-foreground mt-2 pl-8">
-                          Full W2000 status available in the Customer Dashboard
+                          Full warranty registration status available in the Customer Dashboard
                         </p>
                       </div>
                     )}
