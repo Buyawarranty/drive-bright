@@ -178,6 +178,7 @@ serve(async (req) => {
         plan_type: planType.toLowerCase(),
         payment_type: paymentType,
         policy_number: policyNumber,
+        warranty_number: policyNumber, // Use same reference to prevent trigger from generating a duplicate
         policy_end_date: policyEndDate,
         status: 'active',
         email_sent_status: 'sent',

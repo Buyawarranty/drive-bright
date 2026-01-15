@@ -742,6 +742,7 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
         plan_type: orderData.planType.toLowerCase(),
         payment_type: orderData.paymentType,
         policy_number: warrantyReference,
+        warranty_number: warrantyReference, // Use same reference to prevent trigger from generating a duplicate
         policy_start_date: new Date(orderData.startDate).toISOString(),
         policy_end_date: endDate,
         status: 'active',

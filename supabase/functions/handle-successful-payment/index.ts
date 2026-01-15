@@ -551,6 +551,7 @@ serve(async (req) => {
         plan_type: planName.toLowerCase(), // Use the actual plan name in lowercase for customer_policies table
         payment_type: paymentType,
         policy_number: warrantyReference,
+        warranty_number: warrantyReference, // Use same reference to prevent trigger from generating a duplicate
         policy_start_date: policyStartDate.toISOString(),
         policy_end_date: calculatePolicyEndDate(paymentType, policyStartDate),
         status: 'active',
