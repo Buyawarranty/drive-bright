@@ -122,11 +122,20 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [sendWelcomeEmail, setSendWelcomeEmail] = useState(true);
   const [existingPolicyWarning, setExistingPolicyWarning] = useState<string | null>(null);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
-  const [externalPaymentStep, setExternalPaymentStep] = useState<'details' | 'preview'>('details');
+  const [externalPaymentStep, setExternalPaymentStep] = useState<'details' | 'preview' | 'complete'>('details');
   
   // Warranty Start Date (separate from payment date)
   const [warrantyStartDate, setWarrantyStartDate] = useState<Date>(new Date());
   const [isStartDateCalendarOpen, setIsStartDateCalendarOpen] = useState(false);
+  
+  // Completion status tracking
+  const [completionStatus, setCompletionStatus] = useState<{
+    policyCreated: boolean;
+    emailSent: boolean | null; // null = pending, true = success, false = failed
+    w2000Sent: boolean | null; // null = pending/scheduled, true = success, false = failed
+    warrantyReference: string;
+    isFutureStart: boolean;
+  } | null>(null);
 
   // Handle lead selection (from search or pre-populated)
   const handleLeadSelect = (lead: LeadData) => {
@@ -1203,11 +1212,15 @@ Questions? Call 0330 229 5040`;
 
       // === ATOMIC TRANSACTION END ===
 
+      // Initialize completion status - policy is created at this point
+      let emailSentSuccess: boolean | null = null;
+      let w2000SentSuccess: boolean | null = null;
+
       // 10. Send to Warranties 2000 if checked AND not a future start date
       // Future start dates will be processed by the scheduled edge function
       if (sendToW2k && !isFutureStartDate) {
         try {
-          await supabase.functions.invoke('send-to-warranties-2000', {
+          const { error: w2kError } = await supabase.functions.invoke('send-to-warranties-2000', {
             body: { 
               email: customerEmail.toLowerCase(),
               customerId: customerId,
@@ -1215,17 +1228,21 @@ Questions? Call 0330 229 5040`;
               additionalNotes: additionalNotes ? `External payment via ${paymentSource}. Ref: ${paymentReference}. ${additionalNotes}`.trim() : `External payment via ${paymentSource}. Ref: ${paymentReference}`.trim()
             }
           });
+          w2000SentSuccess = !w2kError;
+          if (w2kError) console.error('W2K error:', w2kError);
         } catch (w2kError) {
           console.error('W2K error:', w2kError);
+          w2000SentSuccess = false;
         }
       } else if (sendToW2k && isFutureStartDate) {
         console.log('W2000 submission scheduled for future start date:', format(startDate, 'yyyy-MM-dd'));
+        w2000SentSuccess = null; // Scheduled, not sent yet
       }
 
       // 11. Send welcome email with warranty number and dashboard login
       if (sendWelcomeEmail) {
         try {
-          await supabase.functions.invoke('send-welcome-email-manual', {
+          const { error: emailError } = await supabase.functions.invoke('send-welcome-email-manual', {
             body: { 
               customerEmail: customerEmail.toLowerCase(),
               customerName,
@@ -1237,23 +1254,42 @@ Questions? Call 0330 229 5040`;
               createDashboardLogin: true
             }
           });
+          emailSentSuccess = !emailError;
+          if (emailError) console.error('Welcome email error:', emailError);
+          
+          // Update policy with email sent status
+          await supabase
+            .from('customer_policies')
+            .update({ 
+              email_sent_status: emailSentSuccess ? 'sent' : 'failed',
+              email_sent_at: emailSentSuccess ? new Date().toISOString() : null
+            })
+            .eq('id', newPolicy.id);
         } catch (emailError) {
           console.error('Welcome email error:', emailError);
+          emailSentSuccess = false;
         }
       }
 
-      // Success!
+      // Set completion status and show complete step
+      setCompletionStatus({
+        policyCreated: true,
+        emailSent: sendWelcomeEmail ? emailSentSuccess : null,
+        w2000Sent: sendToW2k ? w2000SentSuccess : null,
+        warrantyReference,
+        isFutureStart: isFutureStartDate
+      });
+      setExternalPaymentStep('complete');
+      setIsConfirmingPaid(false);
+
+      // Success toast
       toast({
         title: isFutureStartDate ? "✅ Policy Scheduled!" : "✅ Policy Activated!",
         description: isFutureStartDate 
-          ? `Warranty ${warrantyReference} created. Cover starts ${format(startDate, 'd MMM yyyy')}.${sendToW2k ? ' W2000 submission scheduled.' : ''}`
-          : `Warranty ${warrantyReference} created. Customer will receive login details.`,
+          ? `Warranty ${warrantyReference} created. Cover starts ${format(startDate, 'd MMM yyyy')}.`
+          : `Warranty ${warrantyReference} created successfully.`,
         duration: 6000,
       });
-
-      // Close dialog and reset form
-      setShowConfirmPaymentDialog(false);
-      resetForm();
 
     } catch (error: any) {
       console.error('Error confirming external payment:', error);
@@ -1262,7 +1298,6 @@ Questions? Call 0330 229 5040`;
         description: error.message || "Failed to create policy. No changes were made.",
         variant: "destructive",
       });
-    } finally {
       setIsConfirmingPaid(false);
     }
   };
@@ -1298,6 +1333,9 @@ Questions? Call 0330 229 5040`;
     setPaymentConfirmed(false);
     setPaymentNotes('');
     setExistingPolicyWarning(null);
+    setExternalPaymentStep('details');
+    setCompletionStatus(null);
+    setWarrantyStartDate(new Date());
   };
 
   return (
@@ -2521,16 +2559,22 @@ Questions? Call 0330 229 5040`;
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  {externalPaymentStep === 'details' ? 'Confirm External Payment' : 'Review Before Submission'}
+                  {externalPaymentStep === 'details' 
+                    ? 'Confirm External Payment' 
+                    : externalPaymentStep === 'preview' 
+                      ? 'Review Before Submission'
+                      : 'Order Complete'}
                 </DialogTitle>
                 <DialogDescription>
                   {externalPaymentStep === 'details' 
                     ? 'Step 1: Verify details and enter payment information' 
-                    : 'Step 2: Review all data before creating the policy'}
+                    : externalPaymentStep === 'preview'
+                      ? 'Step 2: Review all data before creating the policy'
+                      : 'Step 3: Confirmation status'}
                 </DialogDescription>
               </DialogHeader>
 
-              {existingPolicyWarning && (
+              {existingPolicyWarning && externalPaymentStep !== 'complete' && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>{existingPolicyWarning}</AlertDescription>
@@ -2916,6 +2960,117 @@ Questions? Call 0330 229 5040`;
                 </div>
               )}
 
+              {/* Complete Step - Show confirmation status */}
+              {externalPaymentStep === 'complete' && completionStatus && (
+                <div className="space-y-4 py-4">
+                  <div className="text-center mb-6">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle2 className="w-10 h-10 text-green-600" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-green-800">
+                      {completionStatus.isFutureStart ? 'Policy Scheduled!' : 'Policy Activated!'}
+                    </h3>
+                    <p className="text-muted-foreground mt-1">
+                      Warranty Reference: <strong>{completionStatus.warrantyReference}</strong>
+                    </p>
+                  </div>
+
+                  {/* Status Items */}
+                  <div className="space-y-3">
+                    {/* Policy Created */}
+                    <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle2 className="w-5 h-5 text-green-600" />
+                        <span className="font-medium">Policy Created in Dashboard</span>
+                      </div>
+                      <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300">
+                        ✓ Complete
+                      </Badge>
+                    </div>
+
+                    {/* Email Status */}
+                    {sendWelcomeEmail && (
+                      <div className={cn(
+                        "flex items-center justify-between p-3 border rounded-lg",
+                        completionStatus.emailSent === true 
+                          ? "bg-green-50 border-green-200" 
+                          : completionStatus.emailSent === false 
+                            ? "bg-red-50 border-red-200"
+                            : "bg-gray-50 border-gray-200"
+                      )}>
+                        <div className="flex items-center gap-3">
+                          {completionStatus.emailSent === true ? (
+                            <CheckCircle2 className="w-5 h-5 text-green-600" />
+                          ) : completionStatus.emailSent === false ? (
+                            <AlertCircle className="w-5 h-5 text-red-600" />
+                          ) : (
+                            <Loader2 className="w-5 h-5 text-gray-500 animate-spin" />
+                          )}
+                          <div>
+                            <span className="font-medium">Welcome Email to Customer</span>
+                            <p className="text-xs text-muted-foreground">{customerEmail}</p>
+                          </div>
+                        </div>
+                        <Badge 
+                          variant="outline" 
+                          className={cn(
+                            completionStatus.emailSent === true 
+                              ? "bg-green-100 text-green-700 border-green-300"
+                              : completionStatus.emailSent === false
+                                ? "bg-red-100 text-red-700 border-red-300"
+                                : "bg-gray-100 text-gray-700 border-gray-300"
+                          )}
+                        >
+                          {completionStatus.emailSent === true ? '✓ Sent' : completionStatus.emailSent === false ? '✗ Failed' : 'Pending'}
+                        </Badge>
+                      </div>
+                    )}
+
+                    {/* W2000 Status - Note: Only shown as info, detailed status in dashboard */}
+                    {sendToW2k && (
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <Info className="w-5 h-5 text-blue-600" />
+                          <div>
+                            <span className="font-medium text-blue-800">Warranties 2000 Submission</span>
+                            <p className="text-xs text-blue-600">
+                              {completionStatus.isFutureStart 
+                                ? 'Scheduled - will be sent on warranty start date' 
+                                : completionStatus.w2000Sent === true 
+                                  ? 'Sent successfully' 
+                                  : completionStatus.w2000Sent === false 
+                                    ? 'Failed - check customer dashboard for details'
+                                    : 'Processing...'}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2 pl-8">
+                          Full W2000 status available in the Customer Dashboard
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Professional Note */}
+                  <Alert className="mt-4">
+                    <Info className="h-4 w-4" />
+                    <AlertDescription>
+                      {completionStatus.isFutureStart ? (
+                        <>
+                          <strong>Payment processed today.</strong> The warranty will be activated on the scheduled start date. 
+                          The customer has received confirmation of their upcoming cover.
+                        </>
+                      ) : (
+                        <>
+                          <strong>Order complete.</strong> The customer now has access to their warranty dashboard 
+                          and has been sent their policy documentation.
+                        </>
+                      )}
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              )}
+
               <DialogFooter className="flex gap-2">
                 {externalPaymentStep === 'details' ? (
                   <>
@@ -2934,7 +3089,7 @@ Questions? Call 0330 229 5040`;
                       Preview Before Submit
                     </Button>
                   </>
-                ) : (
+                ) : externalPaymentStep === 'preview' ? (
                   <>
                     <Button
                       variant="outline"
@@ -2961,6 +3116,17 @@ Questions? Call 0330 229 5040`;
                       )}
                     </Button>
                   </>
+                ) : (
+                  <Button
+                    onClick={() => {
+                      setShowConfirmPaymentDialog(false);
+                      resetForm();
+                    }}
+                    className="bg-brand-orange hover:bg-brand-orange/90"
+                  >
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Done - Close
+                  </Button>
                 )}
               </DialogFooter>
             </DialogContent>
