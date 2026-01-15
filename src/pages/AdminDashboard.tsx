@@ -46,6 +46,7 @@ import { NewLeadsTab } from '@/components/admin/leads/NewLeadsTab';
 import { SellingTipsSection } from '@/components/admin/SellingTipsSection';
 import { TimesheetsTab } from '@/components/admin/timesheets/TimesheetsTab';
 import { ReviewsTab } from '@/components/admin/ReviewsTab';
+import SalesCustomerManagement from '@/components/admin/sales/SalesCustomerManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -249,6 +250,14 @@ const AdminDashboard = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'customers':
+        // Check if user has "own customers only" permission
+        const hasOwnOnlyPermission = userPermissions && userPermissions['tab_customers_own-only'] === true;
+        const isNonAdminRole = userRole !== 'admin';
+        
+        // If user has own-only permission OR is sales role, show restricted view
+        if ((hasOwnOnlyPermission && isNonAdminRole) || userRole === 'sales') {
+          return <SalesCustomerManagement />;
+        }
         return <CustomersTab />;
       case 'plans':
         return <PlansTab />;

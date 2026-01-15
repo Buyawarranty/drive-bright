@@ -59,7 +59,7 @@ interface DailyOnlineTime {
 }
 
 const TAB_LABELS: Record<string, string> = {
-  'get-quote': 'Send a Quote',
+  'get-quote': 'Quotes & Orders',
   'customers': 'Customers',
   'plans': 'Standard Plans',
   'claims': 'Claims',

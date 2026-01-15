@@ -74,10 +74,10 @@ interface Customer {
 }
 
 interface SalesCustomerManagementProps {
-  currentUserId: string;
+  currentUserId?: string;
 }
 
-export const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ currentUserId }) => {
+const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ currentUserId: propUserId }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [availableTags, setAvailableTags] = useState<CustomerTag[]>([]);
   const [loading, setLoading] = useState(true);
@@ -87,16 +87,45 @@ export const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = (
   const [filterByStatus, setFilterByStatus] = useState('all');
   const [filterByTag, setFilterByTag] = useState('all');
   const [activeTab, setActiveTab] = useState('active');
+  const [currentUserId, setCurrentUserId] = useState<string | null>(propUserId || null);
   
   const [editDetailsDialog, setEditDetailsDialog] = useState<{
     open: boolean;
     customer: Customer | null;
   }>({ open: false, customer: null });
 
+  // Fetch current user's admin ID if not provided
   useEffect(() => {
-    fetchCustomers();
-    fetchTags();
+    const fetchCurrentUserId = async () => {
+      if (propUserId) {
+        setCurrentUserId(propUserId);
+        return;
+      }
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: adminUser } = await supabase
+          .from('admin_users')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (adminUser) {
+          setCurrentUserId(adminUser.id);
+        }
+      }
+    };
+    
+    fetchCurrentUserId();
+  }, [propUserId]);
+
+  useEffect(() => {
+    if (currentUserId) {
+      fetchCustomers();
+      fetchTags();
+    }
   }, [currentUserId]);
+
 
   const fetchTags = async () => {
     try {

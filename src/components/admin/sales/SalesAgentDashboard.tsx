@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLeads, Lead, LeadTag, AdminUser, LeadStatus } from '@/hooks/useLeads';
 import { useSalesStats } from '@/hooks/useSalesStats';
 import { SalesAgentLeadsTable } from './SalesAgentLeadsTable';
-import { SalesCustomerManagement } from './SalesCustomerManagement';
+import SalesCustomerManagement from './SalesCustomerManagement';
 import { 
   LayoutDashboard, Users, ShoppingBag, Bell,
   TrendingUp, Clock, AlertTriangle, Target, DollarSign
