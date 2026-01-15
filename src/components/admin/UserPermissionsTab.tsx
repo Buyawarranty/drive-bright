@@ -37,7 +37,7 @@ interface Permission {
 
 // Define all admin tabs that can be granted as permissions
 const ADMIN_TABS = [
-  { id: 'get-quote', label: 'Send a Quote', description: 'Generate and send quotes to customers' },
+  { id: 'get-quote', label: 'Quotes & Orders', description: 'Generate quotes and process manual orders' },
   { id: 'customers', label: 'Customers', description: 'Manage customer accounts and policies', hasGranular: true },
   { id: 'new-leads', label: 'New Leads', description: 'Manage sales pipeline and lead assignments', hasGranular: true },
   { id: 'plans', label: 'Standard Plans', description: 'Manage Basic, Gold, and Platinum plans' },
@@ -63,6 +63,7 @@ const ADMIN_TABS = [
 const GRANULAR_PERMISSIONS = {
   'customers': [
     { key: 'view', label: 'View', description: 'Can view customer data' },
+    { key: 'own-only', label: 'Own Customers Only', description: 'Only see customers from their own orders (via Quotes & Orders)' },
     { key: 'export', label: 'Export', description: 'Can export customer data to CSV/Excel' },
     { key: 'delete', label: 'Delete', description: 'Can delete customer records' },
   ],
