@@ -115,7 +115,7 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
       <Button
         onClick={handleGetQuote}
         disabled={!isRegValid || !hasSelection}
-        className="w-full bg-brand-orange hover:bg-orange-700 text-white font-bold py-6 sm:py-8 text-lg sm:text-xl rounded-xl shadow-lg transition-all duration-200 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 animate-breathing"
+        className="w-full bg-brand-orange hover:bg-orange-700 text-white font-bold py-6 sm:py-8 text-lg sm:text-xl rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:animate-none animate-breathing"
       >
         <span className="flex items-center justify-center gap-3">
           Get my instant quote
