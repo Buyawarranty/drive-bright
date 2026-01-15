@@ -290,6 +290,7 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
           policy_start_date: startDate.toISOString(),
           policy_end_date: endDate.toISOString(),
           policy_number: policyNumber,
+          warranty_number: policyNumber, // Use same reference to prevent trigger from generating a duplicate
           status: 'active',
           stripe_session_id: stripeSessionId || `manual_stripe_${Date.now()}`,
           is_manual_entry: true,

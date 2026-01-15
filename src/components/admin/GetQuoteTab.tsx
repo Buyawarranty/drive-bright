@@ -1247,6 +1247,7 @@ Questions? Call 0330 229 5040`;
           plan_type: 'platinum',
           payment_type: paymentType,
           policy_number: warrantyReference,
+          warranty_number: warrantyReference, // Use same reference to prevent trigger from generating a duplicate
           policy_start_date: startDate.toISOString(),
           policy_end_date: endDate.toISOString(),
           status: isFutureStartDate ? 'scheduled' : 'active',
