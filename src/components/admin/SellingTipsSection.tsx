@@ -35,15 +35,23 @@ interface SellingTip {
   };
 }
 
-const CATEGORIES = [
+// Selling Tips categories
+const SELLING_TIPS_CATEGORIES = [
   { value: 'selling_technique', label: 'Selling Technique', icon: Sparkles, color: 'bg-purple-100 text-purple-800' },
   { value: 'word_phrase', label: 'Words That Work', icon: MessageSquare, color: 'bg-blue-100 text-blue-800' },
-  { value: 'missing_product', label: 'Missing Product', icon: Package, color: 'bg-orange-100 text-orange-800' },
-  { value: 'missing_service', label: 'Missing Service', icon: AlertCircle, color: 'bg-red-100 text-red-800' },
-  { value: 'website_feedback', label: 'Website Feedback', icon: Globe, color: 'bg-green-100 text-green-800' },
-  { value: 'user_need', label: 'User Need', icon: Users, color: 'bg-cyan-100 text-cyan-800' },
-  { value: 'other', label: 'Other', icon: Lightbulb, color: 'bg-gray-100 text-gray-800' },
+  { value: 'objection_handling', label: 'Objection Handling', icon: AlertCircle, color: 'bg-amber-100 text-amber-800' },
 ];
+
+// Customer Feedback categories
+const CUSTOMER_FEEDBACK_CATEGORIES = [
+  { value: 'service_improvement', label: 'Service Improvement', icon: Users, color: 'bg-cyan-100 text-cyan-800' },
+  { value: 'missing_product', label: 'Missing Product', icon: Package, color: 'bg-orange-100 text-orange-800' },
+  { value: 'website_feedback', label: 'Website Feedback', icon: Globe, color: 'bg-green-100 text-green-800' },
+  { value: 'other', label: 'Other Feedback', icon: Lightbulb, color: 'bg-gray-100 text-gray-800' },
+];
+
+// All categories combined for backwards compatibility
+const CATEGORIES = [...SELLING_TIPS_CATEGORIES, ...CUSTOMER_FEEDBACK_CATEGORIES];
 
 export const SellingTipsSection: React.FC = () => {
   const [tips, setTips] = useState<SellingTip[]>([]);
@@ -198,13 +206,15 @@ export const SellingTipsSection: React.FC = () => {
   };
 
   const getCategoryInfo = (category: string) => {
-    return CATEGORIES.find(c => c.value === category) || CATEGORIES[6];
+    return CATEGORIES.find(c => c.value === category) || CUSTOMER_FEEDBACK_CATEGORIES[CUSTOMER_FEEDBACK_CATEGORIES.length - 1];
   };
 
   const filteredTips = tips.filter(tip => {
     if (activeTab === 'all') return true;
     if (activeTab === 'resolved') return tip.is_resolved;
     if (activeTab === 'open') return !tip.is_resolved;
+    if (activeTab === 'selling_tips') return SELLING_TIPS_CATEGORIES.some(c => c.value === tip.category);
+    if (activeTab === 'customer_feedback') return CUSTOMER_FEEDBACK_CATEGORIES.some(c => c.value === tip.category);
     return tip.category === activeTab;
   });
 
@@ -228,10 +238,10 @@ export const SellingTipsSection: React.FC = () => {
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Lightbulb className="h-6 w-6 text-yellow-500" />
-            Selling Tips & User Needs
+            Tips & Feedback
           </h2>
           <p className="text-muted-foreground text-sm">
-            Share techniques, feedback, and ideas to help the team sell better
+            Sales techniques that work and customer suggestions to improve our service
           </p>
         </div>
         <Button 
@@ -240,7 +250,7 @@ export const SellingTipsSection: React.FC = () => {
           size="lg"
         >
           <Plus className="h-5 w-5" />
-          Quick Add
+          Add New
         </Button>
       </div>
 
@@ -253,26 +263,61 @@ export const SellingTipsSection: React.FC = () => {
               <span className="font-semibold">Add New Tip or Feedback</span>
             </div>
             
-            {/* Category Selection - Visual Buttons */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
-              {CATEGORIES.map((cat) => {
-                const Icon = cat.icon;
-                return (
-                  <button
-                    key={cat.value}
-                    onClick={() => setNewCategory(cat.value)}
-                    className={cn(
-                      "flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all text-xs",
-                      newCategory === cat.value 
-                        ? "border-primary bg-primary/10 shadow-md" 
-                        : "border-muted hover:border-primary/50 hover:bg-muted"
-                    )}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span className="font-medium text-center leading-tight">{cat.label}</span>
-                  </button>
-                );
-              })}
+            {/* Category Selection - Two Sections */}
+            <div className="space-y-3">
+              {/* Selling Tips Section */}
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1">
+                  <Sparkles className="h-3 w-3" /> Selling Tips That Work
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {SELLING_TIPS_CATEGORIES.map((cat) => {
+                    const Icon = cat.icon;
+                    return (
+                      <button
+                        key={cat.value}
+                        onClick={() => setNewCategory(cat.value)}
+                        className={cn(
+                          "flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all text-xs",
+                          newCategory === cat.value 
+                            ? "border-primary bg-primary/10 shadow-md" 
+                            : "border-muted hover:border-primary/50 hover:bg-muted"
+                        )}
+                      >
+                        <Icon className="h-5 w-5" />
+                        <span className="font-medium text-center leading-tight">{cat.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              
+              {/* Customer Feedback Section */}
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1">
+                  <Users className="h-3 w-3" /> Customer Feedback on Improving Service
+                </p>
+                <div className="grid grid-cols-4 gap-2">
+                  {CUSTOMER_FEEDBACK_CATEGORIES.map((cat) => {
+                    const Icon = cat.icon;
+                    return (
+                      <button
+                        key={cat.value}
+                        onClick={() => setNewCategory(cat.value)}
+                        className={cn(
+                          "flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all text-xs",
+                          newCategory === cat.value 
+                            ? "border-primary bg-primary/10 shadow-md" 
+                            : "border-muted hover:border-primary/50 hover:bg-muted"
+                        )}
+                      >
+                        <Icon className="h-5 w-5" />
+                        <span className="font-medium text-center leading-tight">{cat.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
             {/* Title */}
@@ -318,12 +363,22 @@ Examples:
         </Card>
       )}
 
-      {/* Filter Tabs */}
+      {/* Filter Tabs - Two main sections */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="flex-wrap h-auto gap-1 p-1">
           <TabsTrigger value="all" className="gap-1">
             All ({tips.length})
           </TabsTrigger>
+          <div className="w-px h-6 bg-border mx-1" />
+          <TabsTrigger value="selling_tips" className="gap-1">
+            <Sparkles className="h-3 w-3" />
+            Selling Tips ({tips.filter(t => SELLING_TIPS_CATEGORIES.some(c => c.value === t.category)).length})
+          </TabsTrigger>
+          <TabsTrigger value="customer_feedback" className="gap-1">
+            <Users className="h-3 w-3" />
+            Customer Feedback ({tips.filter(t => CUSTOMER_FEEDBACK_CATEGORIES.some(c => c.value === t.category)).length})
+          </TabsTrigger>
+          <div className="w-px h-6 bg-border mx-1" />
           <TabsTrigger value="open" className="gap-1">
             <AlertCircle className="h-3 w-3" />
             Open ({tips.filter(t => !t.is_resolved).length})
@@ -332,17 +387,6 @@ Examples:
             <CheckCircle2 className="h-3 w-3" />
             Resolved ({tips.filter(t => t.is_resolved).length})
           </TabsTrigger>
-          <div className="w-px h-6 bg-border mx-1" />
-          {CATEGORIES.slice(0, 4).map((cat) => {
-            const Icon = cat.icon;
-            const count = tips.filter(t => t.category === cat.value).length;
-            return (
-              <TabsTrigger key={cat.value} value={cat.value} className="gap-1">
-                <Icon className="h-3 w-3" />
-                {count > 0 && <span className="text-xs">({count})</span>}
-              </TabsTrigger>
-            );
-          })}
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-4 space-y-3">
