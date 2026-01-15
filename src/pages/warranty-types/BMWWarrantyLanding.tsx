@@ -18,6 +18,7 @@ const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
 const VehicleCoverageSection = lazy(() => import('@/components/homepage/VehicleCoverageSection'));
 const CoverClaritySection = lazy(() => import('@/components/homepage/CoverClaritySection'));
 const VideoSection = lazy(() => import('@/components/homepage/VideoSection'));
+const WarrantyBenefitsSection = lazy(() => import('@/components/homepage/WarrantyBenefitsSection'));
 
 // Assets
 import bmwLogo from '@/assets/logos/bmw.webp';
@@ -605,50 +606,10 @@ const BMWWarrantyLanding: React.FC = () => {
         </section>
 
 
-        {/* Complete BMW Car Warranty Section */}
-        <section className="py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                Complete BMW Car Warranty.
-              </h2>
-              <h3 className="text-2xl sm:text-3xl font-bold text-brand-orange mb-3">
-                Peace of Mind.
-              </h3>
-              <p className="text-lg text-gray-600">
-                Superior Protection. Affordable Prices. Instant Cover.
-              </p>
-            </div>
-
-            <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                One Comprehensive Plan, Everything Included
-              </h2>
-              <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-                No confusing tiers or hidden extras. Our BMW warranty covers all major mechanical and electrical components, plus roadside assistance and recovery.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                { icon: Car, title: 'Engine & Gearbox', desc: 'Complete powertrain cover including turbos, timing chains, and dual-clutch systems' },
-                { icon: Zap, title: 'Electrics & iDrive', desc: 'ECUs, sensors, infotainment, digital dash, and all electronic systems' },
-                { icon: Shield, title: 'Hybrid & EV Systems', desc: 'Electric motors, battery management, inverters, and charging components' },
-                { icon: Wrench, title: 'Suspension & Steering', desc: 'Air suspension, power steering, control arms, and wheel bearings' },
-                { icon: Phone, title: '24/7 Roadside Assistance', desc: 'Breakdown recovery anywhere in the UK, day or night' },
-                { icon: FileCheck, title: 'Labour Costs Included', desc: 'We pay the garage directly - no upfront costs for you' },
-              ].map((item, index) => (
-                <div key={index} className="bg-gray-50 rounded-xl p-6 border border-gray-100 hover:shadow-lg transition-shadow">
-                  <div className="w-12 h-12 bg-brand-orange/10 rounded-xl flex items-center justify-center mb-4">
-                    <item.icon className="w-6 h-6 text-brand-orange" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
-                  <p className="text-gray-600">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* Warranty Benefits Section - Matching Homepage Design */}
+        <Suspense fallback={<div className="py-12 md:py-20 bg-gray-50 min-h-[300px]" />}>
+          <WarrantyBenefitsSection />
+        </Suspense>
 
         {/* Vehicle Coverage Accordion Section - Matching Homepage */}
         <Suspense fallback={<div className="py-12 md:py-16 bg-gray-50 min-h-[300px]" />}>
