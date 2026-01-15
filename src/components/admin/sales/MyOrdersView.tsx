@@ -7,10 +7,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { OrderCommunicationTimeline } from './OrderCommunicationTimeline';
 import { SendToAlternateEmailDialog } from '../SendToAlternateEmailDialog';
 import { PrintableWarrantyLetter } from '../PrintableWarrantyLetter';
+import { EditCustomerDetailsDialog } from '../EditCustomerDetailsDialog';
 import { 
   Search, ChevronDown, ChevronUp, Phone, Mail, 
   FileText, RotateCcw, Upload, MessageSquare,
-  CheckCircle, Clock, AlertCircle, DollarSign, Forward, Printer
+  CheckCircle, Clock, AlertCircle, DollarSign, Forward, Printer, UserPen
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -42,20 +43,22 @@ interface Order {
   warranty_number: string | null;
   claim_limit: number | null;
   voluntary_excess: number | null;
-  // Customer details for letter
+  // Customer details for letter and editing
   customer?: {
-    registration_plate: string | null;
-    vehicle_make: string | null;
-    vehicle_model: string | null;
-    vehicle_year: string | null;
-    mileage: string | null;
-    flat_number: string | null;
-    building_name: string | null;
-    building_number: string | null;
-    street: string | null;
-    town: string | null;
-    county: string | null;
-    postcode: string | null;
+    name?: string | null;
+    phone?: string | null;
+    registration_plate?: string | null;
+    vehicle_make?: string | null;
+    vehicle_model?: string | null;
+    vehicle_year?: string | null;
+    mileage?: string | null;
+    flat_number?: string | null;
+    building_name?: string | null;
+    building_number?: string | null;
+    street?: string | null;
+    town?: string | null;
+    county?: string | null;
+    postcode?: string | null;
   };
 }
 
@@ -73,6 +76,10 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
     order: Order | null;
   }>({ open: false, order: null });
   const [printLetterDialog, setPrintLetterDialog] = useState<{
+    open: boolean;
+    order: Order | null;
+  }>({ open: false, order: null });
+  const [editDetailsDialog, setEditDetailsDialog] = useState<{
     open: boolean;
     order: Order | null;
   }>({ open: false, order: null });
@@ -106,7 +113,7 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
         .select(`
           *,
           customers!customer_id (
-            registration_plate, vehicle_make, vehicle_model, vehicle_year, mileage,
+            name, phone, registration_plate, vehicle_make, vehicle_model, vehicle_year, mileage,
             flat_number, building_name, building_number, street, town, county, postcode
           )
         `)
@@ -116,11 +123,26 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
 
       if (policiesError) throw policiesError;
 
-      // Map the nested customer data
-      const ordersWithCustomer = (policies || []).map(p => ({
+      // Map the nested customer data - cast as Order to handle Supabase type inference
+      const ordersWithCustomer: Order[] = (policies || []).map(p => ({
         ...p,
-        customer: p.customers || undefined
-      }));
+        customer: p.customers ? {
+          name: p.customers.name,
+          phone: p.customers.phone,
+          registration_plate: p.customers.registration_plate,
+          vehicle_make: p.customers.vehicle_make,
+          vehicle_model: p.customers.vehicle_model,
+          vehicle_year: p.customers.vehicle_year,
+          mileage: p.customers.mileage,
+          flat_number: p.customers.flat_number,
+          building_name: p.customers.building_name,
+          building_number: p.customers.building_number,
+          street: p.customers.street,
+          town: p.customers.town,
+          county: p.customers.county,
+          postcode: p.customers.postcode,
+        } : undefined
+      } as Order));
 
       setOrders(ordersWithCustomer);
     } catch (error) {
@@ -313,6 +335,18 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
                           <Upload className="h-4 w-4" />
                           Upload Document
                         </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="gap-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditDetailsDialog({ open: true, order });
+                          }}
+                        >
+                          <UserPen className="h-4 w-4" />
+                          Edit Customer Details
+                        </Button>
                       </div>
                     </CardContent>
                   </CollapsibleContent>
@@ -367,6 +401,19 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
             claimLimit: printLetterDialog.order.claim_limit || undefined,
             voluntaryExcess: printLetterDialog.order.voluntary_excess || undefined,
           }}
+        />
+      )}
+
+      {/* Edit Customer Details Dialog */}
+      {editDetailsDialog.order && editDetailsDialog.order.customer_id && (
+        <EditCustomerDetailsDialog
+          open={editDetailsDialog.open}
+          onOpenChange={(open) => setEditDetailsDialog({ open, order: open ? editDetailsDialog.order : null })}
+          customerId={editDetailsDialog.order.customer_id}
+          currentEmail={editDetailsDialog.order.email}
+          currentPhone={editDetailsDialog.order.customer?.phone}
+          currentName={editDetailsDialog.order.customer?.name || editDetailsDialog.order.customer_full_name}
+          onSaved={fetchMyOrders}
         />
       )}
     </div>

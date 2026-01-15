@@ -1490,6 +1490,17 @@ const CustomerDashboard = () => {
                               </div>
                             </div>
                             <div>
+                              <Label htmlFor="editEmail">Email Address</Label>
+                              <Input
+                                id="editEmail"
+                                type="email"
+                                value={user?.email || ''}
+                                disabled
+                                className="bg-gray-100"
+                              />
+                              <p className="text-xs text-gray-500 mt-1">Contact support to change your email address</p>
+                            </div>
+                            <div>
                               <Label htmlFor="phone">Phone Number</Label>
                               <Input
                                 id="phone"
