@@ -6,10 +6,11 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { OrderCommunicationTimeline } from './OrderCommunicationTimeline';
 import { SendToAlternateEmailDialog } from '../SendToAlternateEmailDialog';
+import { PrintableWarrantyLetter } from '../PrintableWarrantyLetter';
 import { 
   Search, ChevronDown, ChevronUp, Phone, Mail, 
   FileText, RotateCcw, Upload, MessageSquare,
-  CheckCircle, Clock, AlertCircle, DollarSign, Forward
+  CheckCircle, Clock, AlertCircle, DollarSign, Forward, Printer
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -38,6 +39,24 @@ interface Order {
   warranties_2000_sent_at: string | null;
   is_manual_entry: boolean | null;
   customer_id: string | null;
+  warranty_number: string | null;
+  claim_limit: number | null;
+  voluntary_excess: number | null;
+  // Customer details for letter
+  customer?: {
+    registration_plate: string | null;
+    vehicle_make: string | null;
+    vehicle_model: string | null;
+    vehicle_year: string | null;
+    mileage: string | null;
+    flat_number: string | null;
+    building_name: string | null;
+    building_number: string | null;
+    street: string | null;
+    town: string | null;
+    county: string | null;
+    postcode: string | null;
+  };
 }
 
 interface MyOrdersViewProps {
@@ -50,6 +69,10 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [alternateEmailDialog, setAlternateEmailDialog] = useState<{
+    open: boolean;
+    order: Order | null;
+  }>({ open: false, order: null });
+  const [printLetterDialog, setPrintLetterDialog] = useState<{
     open: boolean;
     order: Order | null;
   }>({ open: false, order: null });
@@ -77,17 +100,29 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
 
       const customerIds = customers.map(c => c.id);
 
-      // Get policies for those customers
+      // Get policies for those customers with customer details
       const { data: policies, error: policiesError } = await supabase
         .from('customer_policies')
-        .select('*')
+        .select(`
+          *,
+          customers!customer_id (
+            registration_plate, vehicle_make, vehicle_model, vehicle_year, mileage,
+            flat_number, building_name, building_number, street, town, county, postcode
+          )
+        `)
         .in('customer_id', customerIds)
         .eq('is_deleted', false)
         .order('created_at', { ascending: false });
 
       if (policiesError) throw policiesError;
 
-      setOrders(policies || []);
+      // Map the nested customer data
+      const ordersWithCustomer = (policies || []).map(p => ({
+        ...p,
+        customer: p.customers || undefined
+      }));
+
+      setOrders(ordersWithCustomer);
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast.error('Failed to load orders');
@@ -250,6 +285,18 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
                           <Forward className="h-4 w-4" />
                           Send to Different Email
                         </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="gap-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPrintLetterDialog({ open: true, order });
+                          }}
+                        >
+                          <Printer className="h-4 w-4" />
+                          Print Confirmation Letter
+                        </Button>
                         <Button size="sm" variant="outline" className="gap-2">
                           <RotateCcw className="h-4 w-4" />
                           Resend Payment Link
@@ -287,6 +334,39 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
           customerName={alternateEmailDialog.order.customer_full_name || ''}
           policyNumber={alternateEmailDialog.order.policy_number}
           onEmailSent={fetchMyOrders}
+        />
+      )}
+
+      {/* Print Confirmation Letter Dialog */}
+      {printLetterDialog.order && (
+        <PrintableWarrantyLetter
+          open={printLetterDialog.open}
+          onOpenChange={(open) => setPrintLetterDialog({ open, order: open ? printLetterDialog.order : null })}
+          policy={{
+            customerName: printLetterDialog.order.customer_full_name || '',
+            customerEmail: printLetterDialog.order.email,
+            customerAddress: printLetterDialog.order.customer ? {
+              flatNumber: printLetterDialog.order.customer.flat_number || undefined,
+              buildingName: printLetterDialog.order.customer.building_name || undefined,
+              buildingNumber: printLetterDialog.order.customer.building_number || undefined,
+              street: printLetterDialog.order.customer.street || undefined,
+              town: printLetterDialog.order.customer.town || undefined,
+              county: printLetterDialog.order.customer.county || undefined,
+              postcode: printLetterDialog.order.customer.postcode || undefined,
+            } : undefined,
+            vehicleReg: printLetterDialog.order.customer?.registration_plate || '',
+            vehicleMake: printLetterDialog.order.customer?.vehicle_make || undefined,
+            vehicleModel: printLetterDialog.order.customer?.vehicle_model || undefined,
+            vehicleYear: printLetterDialog.order.customer?.vehicle_year || undefined,
+            mileage: printLetterDialog.order.customer?.mileage || undefined,
+            warrantyNumber: printLetterDialog.order.warranty_number || '',
+            policyNumber: printLetterDialog.order.policy_number,
+            planType: printLetterDialog.order.plan_type,
+            policyStartDate: printLetterDialog.order.policy_start_date,
+            policyEndDate: printLetterDialog.order.policy_end_date,
+            claimLimit: printLetterDialog.order.claim_limit || undefined,
+            voluntaryExcess: printLetterDialog.order.voluntary_excess || undefined,
+          }}
         />
       )}
     </div>
