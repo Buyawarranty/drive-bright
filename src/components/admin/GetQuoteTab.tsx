@@ -127,6 +127,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   // Warranty Start Date (separate from payment date)
   const [warrantyStartDate, setWarrantyStartDate] = useState<Date>(new Date());
   const [isStartDateCalendarOpen, setIsStartDateCalendarOpen] = useState(false);
+  const [isQuickConfirming, setIsQuickConfirming] = useState(false);
   
   // Completion status tracking
   const [completionStatus, setCompletionStatus] = useState<{
@@ -443,6 +444,108 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       });
     } finally {
       setIsLookingUp(false);
+    }
+  };
+
+  // Quick Confirm Order - skips Step 2 and goes directly to Confirm External Payment
+  const handleQuickConfirmOrder = async () => {
+    if (!regNumber.trim() || !mileage.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter both registration number and mileage",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!customerName.trim() || !customerEmail.trim()) {
+      toast({
+        title: "Missing Customer Info",
+        description: "Please import a lead with customer name and email first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsQuickConfirming(true);
+    try {
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Lookup timeout - please try again')), 15000);
+      });
+      
+      const lookupPromise = supabase.functions.invoke('dvla-vehicle-lookup', {
+        body: { registrationNumber: regNumber }
+      });
+      
+      const { data, error } = await Promise.race([lookupPromise, timeoutPromise]) as any;
+
+      if (error || data?.error || !data?.make || !data?.model) {
+        toast({
+          title: "Vehicle Not Found",
+          description: data?.error || "Unable to find vehicle details. Please check the registration number and try again.",
+          variant: "destructive",
+        });
+        setIsQuickConfirming(false);
+        return;
+      }
+
+      if (data.yearOfManufacture || data.year) {
+        const currentYear = new Date().getFullYear();
+        const vehicleYear = parseInt(data.yearOfManufacture || data.year, 10);
+        if (!isNaN(vehicleYear) && vehicleYear > 0) {
+          const vehicleAge = currentYear - vehicleYear;
+          if (vehicleAge > 15) {
+            toast({
+              title: "Vehicle Too Old",
+              description: `This vehicle is ${vehicleAge} years old. We only cover vehicles up to 15 years old.`,
+              variant: "destructive",
+            });
+            setIsQuickConfirming(false);
+            return;
+          }
+        }
+      }
+
+      // Set vehicle data
+      setVehicleData({
+        regNumber: regNumber.toUpperCase(),
+        mileage: mileage,
+        make: data.make,
+        model: data.model,
+        fuelType: data.fuelType || '',
+        transmission: data.transmission || '',
+        year: data.yearOfManufacture || data.year || '',
+        vehicleType: data.vehicleType || '',
+      });
+      
+      // Reset payment dialog state for fresh entry
+      setPaymentSource('');
+      setPaymentReference('');
+      setPaymentAmount('');
+      setPaymentDate(new Date().toISOString().split('T')[0]);
+      setPaymentConfirmed(false);
+      setPaymentNotes('');
+      setWarrantyStartDate(new Date());
+      setExternalPaymentStep('details');
+      setCompletionStatus(null);
+      
+      // Open the Confirm External Payment dialog directly
+      setShowConfirmPaymentDialog(true);
+      
+      toast({
+        title: "Vehicle Found",
+        description: `${data.make} ${data.model} (${data.yearOfManufacture || data.year}) - Ready to confirm order`,
+      });
+    } catch (error) {
+      console.error('Error looking up vehicle:', error);
+      toast({
+        title: "Lookup Failed",
+        description: "Unable to connect to vehicle database. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsQuickConfirming(false);
     }
   };
 
@@ -1454,24 +1557,56 @@ Questions? Call 0330 229 5040`;
                   />
                 </div>
 
-                <Button 
-                  onClick={handleVehicleLookup}
-                  disabled={isLookingUp}
-                  className="w-full"
-                  size="lg"
-                >
-                  {isLookingUp ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Looking up vehicle...
-                    </>
-                  ) : (
-                    <>
-                      Continue
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </>
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={handleVehicleLookup}
+                    disabled={isLookingUp || isQuickConfirming}
+                    className="flex-1"
+                    size="lg"
+                  >
+                    {isLookingUp ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Looking up vehicle...
+                      </>
+                    ) : (
+                      <>
+                        Continue to Quote
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </>
+                    )}
+                  </Button>
+                  
+                  {/* Quick Confirm Order - Only show when lead is imported */}
+                  {selectedLeadId && customerName && customerEmail && (
+                    <Button 
+                      onClick={handleQuickConfirmOrder}
+                      disabled={isLookingUp || isQuickConfirming}
+                      variant="default"
+                      size="lg"
+                      className="bg-green-600 hover:bg-green-700 text-white gap-2"
+                    >
+                      {isQuickConfirming ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-4 h-4" />
+                          Confirm Order
+                        </>
+                      )}
+                    </Button>
                   )}
-                </Button>
+                </div>
+                
+                {/* Help text for quick confirm */}
+                {selectedLeadId && customerName && customerEmail && (
+                  <p className="text-xs text-muted-foreground text-center mt-2">
+                    <span className="text-green-600 font-medium">Confirm Order</span> skips quote configuration and opens payment confirmation directly
+                  </p>
+                )}
               </CardContent>
             </Card>
           )}
