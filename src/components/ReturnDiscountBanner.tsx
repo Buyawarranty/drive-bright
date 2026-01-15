@@ -34,12 +34,12 @@ export const ReturnDiscountBanner: React.FC<ReturnDiscountBannerProps> = ({
       return;
     }
 
-    // Calculate if within 30 days
+    // Calculate if within 7 days (shorter urgency window)
     const purchaseDate = new Date(firstPurchaseDate);
     const now = new Date();
     const diffTime = now.getTime() - purchaseDate.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    const remaining = 30 - diffDays;
+    const remaining = 7 - diffDays;
 
     if (remaining > 0) {
       setIsEligible(true);
@@ -65,7 +65,7 @@ export const ReturnDiscountBanner: React.FC<ReturnDiscountBannerProps> = ({
       // Store in Supabase
       const validFrom = new Date();
       const validTo = new Date();
-      validTo.setDate(validTo.getDate() + daysRemaining);
+      validTo.setDate(validTo.getDate() + 7); // 7-day validity window
 
       const { error } = await supabase.functions.invoke('create-discount-code', {
         body: {
@@ -139,6 +139,9 @@ export const ReturnDiscountBanner: React.FC<ReturnDiscountBannerProps> = ({
             <p className="font-bold text-lg">Got Another Vehicle?</p>
             <p className="text-sm text-orange-100">
               Enjoy 20% off your next warranty — offer ends in {daysRemaining} {daysRemaining === 1 ? 'day' : 'days'}.
+            </p>
+            <p className="text-xs text-orange-200 mt-1">
+              Cannot be used with other offers or for the same vehicle.
             </p>
             {discountCode && (
               <p className="text-xs text-orange-100 mt-1">
