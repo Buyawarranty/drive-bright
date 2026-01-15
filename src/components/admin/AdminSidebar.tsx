@@ -248,6 +248,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
           const permKey = `tab_${tab.id}`;
           // Always show account settings
           if (tab.id === 'account') return true;
+          // Always show selling-tips for sales staff
+          if (tab.id === 'selling-tips') return true;
           return userPermissions[permKey] === true;
         });
         
