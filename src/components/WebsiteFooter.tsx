@@ -19,7 +19,7 @@ const WebsiteFooter = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button 
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="bg-[#eb4b00] hover:bg-[#d63f00] text-white font-semibold px-8 py-3 rounded-lg transition-colors animate-cta-enhanced"
+              className="bg-[#eb4b00] hover:bg-[#d63f00] text-white font-semibold px-8 py-3 rounded-lg transition-colors animate-breathing"
             >
               Get your free quote
             </button>
