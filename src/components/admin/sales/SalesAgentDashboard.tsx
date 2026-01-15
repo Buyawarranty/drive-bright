@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { Lead, LeadTag, AdminUser, LeadStatus } from '@/hooks/useLeads';
+import { useLeads, Lead, LeadTag, AdminUser, LeadStatus } from '@/hooks/useLeads';
 import { useSalesStats } from '@/hooks/useSalesStats';
 import { SalesAgentLeadsTable } from './SalesAgentLeadsTable';
 import { MyOrdersView } from './MyOrdersView';
@@ -15,38 +15,42 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { format, isToday, isPast } from 'date-fns';
 
-interface LeadHandlers {
-  updateLeadStatus: (leadId: string, status: LeadStatus) => Promise<void>;
-  assignLead: (leadId: string, userId: string | null) => Promise<void>;
-  autoAssignLead: (leadId: string) => Promise<void>;
-  updateLeadPriority: (leadId: string, priority: string) => Promise<void>;
-  scheduleFollowUp: (leadId: string, date: string, actionType: string) => Promise<void>;
-  addTagToLead: (leadId: string, tagId: string) => Promise<void>;
-  removeTagFromLead: (leadId: string, tagId: string) => Promise<void>;
-  updateLeadNotes: (leadId: string, notes: string) => Promise<void>;
-  markContactedAt: (leadId: string) => Promise<void>;
-  logActivity: (leadId: string, activityType: string, description: string) => Promise<void>;
-  deleteLeads: (leadIds: string[]) => Promise<void>;
-}
-
 interface SalesAgentDashboardProps {
-  leads: Lead[];
-  tags: LeadTag[];
-  salesUsers: AdminUser[];
-  handlers: LeadHandlers;
   onNavigateToTab?: (tab: string, leadData?: any) => void;
+  // Optional overrides - if not provided, will fetch own data
+  leads?: Lead[];
+  tags?: LeadTag[];
+  salesUsers?: AdminUser[];
+  handlers?: any;
 }
 
 export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
-  leads,
-  tags,
-  salesUsers,
-  handlers,
-  onNavigateToTab
+  onNavigateToTab,
+  leads: propLeads,
+  tags: propTags,
+  salesUsers: propSalesUsers,
+  handlers: propHandlers
 }) => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  // Use own data fetching for sales agents
+  const {
+    leads: fetchedLeads,
+    tags: fetchedTags,
+    salesUsers: fetchedSalesUsers,
+    loading,
+    updateLeadStatus,
+    scheduleFollowUp,
+    updateLeadNotes,
+    markContactedAt,
+    logActivity,
+  } = useLeads();
+
+  // Use fetched data or props
+  const leads = propLeads?.length ? propLeads : fetchedLeads;
+  const tags = propTags?.length ? propTags : fetchedTags;
 
   const { personalStats, loading: statsLoading } = useSalesStats(currentUserId || undefined);
 
@@ -68,7 +72,7 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
     getCurrentUser();
   }, []);
 
-  // Filter leads to only show those assigned to current user
+  // Filter leads to only show those assigned to current user - CRITICAL SECURITY
   const myLeads = useMemo(() => {
     if (!currentUserId) return [];
     return leads.filter(l => l.assigned_to === currentUserId);
@@ -98,7 +102,16 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
     ? Math.min((personalStats.totalRevenue / monthlyTarget) * 100, 100) 
     : 0;
 
-  if (statsLoading || !currentUserId) {
+  // Create handlers object for the table
+  const leadHandlers = useMemo(() => ({
+    updateLeadStatus: propHandlers?.updateLeadStatus || updateLeadStatus,
+    scheduleFollowUp: propHandlers?.scheduleFollowUp || scheduleFollowUp,
+    updateLeadNotes: propHandlers?.updateLeadNotes || updateLeadNotes,
+    markContactedAt: propHandlers?.markContactedAt || markContactedAt,
+    logActivity: propHandlers?.logActivity || logActivity,
+  }), [propHandlers, updateLeadStatus, scheduleFollowUp, updateLeadNotes, markContactedAt, logActivity]);
+
+  if (loading || statsLoading || !currentUserId) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
@@ -267,7 +280,7 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
                       <Button 
                         size="sm" 
                         variant="outline"
-                        onClick={() => handlers.markContactedAt(lead.id)}
+                        onClick={() => leadHandlers.markContactedAt(lead.id)}
                       >
                         Mark Contacted
                       </Button>
@@ -285,7 +298,7 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
             leads={myLeads}
             tags={tags}
             currentUserId={currentUserId}
-            handlers={handlers}
+            handlers={leadHandlers}
             onSendQuote={(lead) => onNavigateToTab?.('get-quote', {
               id: lead.id,
               first_name: lead.first_name,

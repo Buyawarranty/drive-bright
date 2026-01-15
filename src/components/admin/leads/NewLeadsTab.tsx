@@ -9,6 +9,7 @@ import { LeadsTableFooter } from './LeadsTableFooter';
 import { SalespersonDashboard } from './SalespersonDashboard';
 import { ManagerDashboard } from './ManagerDashboard';
 import { AgentsLeadsView } from './AgentsLeadsView';
+import { SalesAgentDashboard } from '../sales/SalesAgentDashboard';
 import { ManualOrderEntry } from '../ManualOrderEntry';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
 import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Trash2, UsersRound } from 'lucide-react';
@@ -55,8 +56,37 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const { canExportTab, hasGranularPermission } = usePermissions();
   const { exportToCSV, exportToExcel } = useDataExport();
   
-  // Delete permission - admin role OR explicit delete permission
+  // Role-based restrictions
   const isAdmin = userRole === 'admin';
+  const isSalesAgent = userRole === 'sales';
+  
+  // Sales agents get a completely restricted view - use SalesAgentDashboard
+  // They cannot see All Leads, Export, See Agents, or any other admin features
+  if (isSalesAgent) {
+    return (
+      <SalesAgentDashboard
+        leads={[]} // Will be filtered internally
+        tags={[]}
+        salesUsers={[]}
+        handlers={{
+          updateLeadStatus: async () => {},
+          assignLead: async () => {},
+          autoAssignLead: async () => {},
+          updateLeadPriority: async () => {},
+          scheduleFollowUp: async () => {},
+          addTagToLead: async () => {},
+          removeTagFromLead: async () => {},
+          updateLeadNotes: async () => {},
+          markContactedAt: async () => {},
+          logActivity: async () => {},
+          deleteLeads: async () => {},
+        }}
+        onNavigateToTab={onNavigateToTab}
+      />
+    );
+  }
+  
+  // Delete permission - admin role OR explicit delete permission
   const canDelete = isAdmin || hasGranularPermission('new-leads', 'delete');
   
   // Export permission - admins always can, others need explicit permission
