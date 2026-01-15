@@ -1325,7 +1325,7 @@ Questions? Call 0330 229 5040`;
         try {
           const { error: w2kError } = await supabase.functions.invoke('send-to-warranties-2000', {
             body: { 
-              email: customerEmail.toLowerCase(),
+              policyId: newPolicy.id,
               customerId: customerId,
               force: true,
               additionalNotes: additionalNotes ? `External payment via ${paymentSource}. Ref: ${paymentReference}. ${additionalNotes}`.trim() : `External payment via ${paymentSource}. Ref: ${paymentReference}`.trim()
@@ -1347,14 +1347,8 @@ Questions? Call 0330 229 5040`;
         try {
           const { error: emailError } = await supabase.functions.invoke('send-welcome-email-manual', {
             body: { 
-              customerEmail: customerEmail.toLowerCase(),
-              customerName,
-              warrantyReference,
-              planType: 'Platinum',
-              vehicleReg: vehicleData.regNumber,
-              policyStartDate: startDate.toISOString(),
-              policyEndDate: endDate.toISOString(),
-              createDashboardLogin: true
+              policyId: newPolicy.id,
+              customerId: customerId
             }
           });
           emailSentSuccess = !emailError;
