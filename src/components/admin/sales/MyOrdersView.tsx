@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { OrderCommunicationTimeline } from './OrderCommunicationTimeline';
+import { SendToAlternateEmailDialog } from '../SendToAlternateEmailDialog';
 import { 
   Search, ChevronDown, ChevronUp, Phone, Mail, 
   FileText, RotateCcw, Upload, MessageSquare,
-  CheckCircle, Clock, AlertCircle, DollarSign
+  CheckCircle, Clock, AlertCircle, DollarSign, Forward
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -48,6 +49,10 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  const [alternateEmailDialog, setAlternateEmailDialog] = useState<{
+    open: boolean;
+    order: Order | null;
+  }>({ open: false, order: null });
 
   useEffect(() => {
     fetchMyOrders();
@@ -233,6 +238,18 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
                           <Mail className="h-4 w-4" />
                           Resend Invoice
                         </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="gap-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setAlternateEmailDialog({ open: true, order });
+                          }}
+                        >
+                          <Forward className="h-4 w-4" />
+                          Send to Different Email
+                        </Button>
                         <Button size="sm" variant="outline" className="gap-2">
                           <RotateCcw className="h-4 w-4" />
                           Resend Payment Link
@@ -257,6 +274,20 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
             );
           })}
         </div>
+      )}
+
+      {/* Send to Alternate Email Dialog */}
+      {alternateEmailDialog.order && (
+        <SendToAlternateEmailDialog
+          open={alternateEmailDialog.open}
+          onOpenChange={(open) => setAlternateEmailDialog({ open, order: open ? alternateEmailDialog.order : null })}
+          policyId={alternateEmailDialog.order.id}
+          customerId={alternateEmailDialog.order.customer_id || ''}
+          customerEmail={alternateEmailDialog.order.email}
+          customerName={alternateEmailDialog.order.customer_full_name || ''}
+          policyNumber={alternateEmailDialog.order.policy_number}
+          onEmailSent={fetchMyOrders}
+        />
       )}
     </div>
   );
