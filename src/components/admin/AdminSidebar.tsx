@@ -242,11 +242,11 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     }
     
     if (userRole === 'sales') {
-      // Sales agents get restricted view - only their dashboard and quotes
+      // Sales agents get restricted view - only their dashboard, quotes, and tips
       // NO customers tab (they see their orders within the dashboard)
       // NO abandoned-carts tab (integrated into leads)
       // NO discount-codes (admin only)
-      const salesTabIds = ['new-leads', 'get-quote'];
+      const salesTabIds = ['new-leads', 'get-quote', 'selling-tips'];
       return defaultTabs.filter(tab => salesTabIds.includes(tab.id));
     }
     
