@@ -86,6 +86,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view'>(getDefaultView());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({ from: undefined, to: undefined });
 
   const {
     leads,
@@ -113,18 +114,37 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const filteredLeads = useMemo(() => {
-    if (!debouncedSearchTerm) return leads;
+    let result = leads;
     
-    const term = debouncedSearchTerm.toLowerCase();
-    return leads.filter(lead => 
-      lead.email.toLowerCase().includes(term) ||
-      (lead.first_name?.toLowerCase().includes(term)) ||
-      (lead.last_name?.toLowerCase().includes(term)) ||
-      (lead.phone?.toLowerCase().includes(term)) ||
-      (lead.vehicle_reg?.toLowerCase().includes(term)) ||
-      (lead.plan_interest?.toLowerCase().includes(term))
-    );
-  }, [leads, debouncedSearchTerm]);
+    // Apply date range filter first (most selective)
+    if (dateRange.from || dateRange.to) {
+      result = result.filter(lead => {
+        const leadDate = new Date(lead.created_at);
+        if (dateRange.from && leadDate < dateRange.from) return false;
+        if (dateRange.to) {
+          const endOfToday = new Date(dateRange.to);
+          endOfToday.setHours(23, 59, 59, 999);
+          if (leadDate > endOfToday) return false;
+        }
+        return true;
+      });
+    }
+    
+    // Apply search filter
+    if (debouncedSearchTerm) {
+      const term = debouncedSearchTerm.toLowerCase();
+      result = result.filter(lead => 
+        lead.email.toLowerCase().includes(term) ||
+        (lead.first_name?.toLowerCase().includes(term)) ||
+        (lead.last_name?.toLowerCase().includes(term)) ||
+        (lead.phone?.toLowerCase().includes(term)) ||
+        (lead.vehicle_reg?.toLowerCase().includes(term)) ||
+        (lead.plan_interest?.toLowerCase().includes(term))
+      );
+    }
+    
+    return result;
+  }, [leads, debouncedSearchTerm, dateRange]);
 
   // Pagination for leads table
   const pagination = usePagination(filteredLeads, { initialPageSize: 50 });
@@ -400,6 +420,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             onMigrate={migrateFromAbandonedCarts}
             onExport={handleExport}
             leadCounts={leadCounts}
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
           />
           
           <Card className="overflow-hidden">
