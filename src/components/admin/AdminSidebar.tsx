@@ -242,10 +242,22 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     }
     
     if (userRole === 'sales') {
-      // Sales agents get restricted view - only their dashboard, quotes, and tips
-      // NO customers tab (they see their orders within the dashboard)
-      // NO abandoned-carts tab (integrated into leads)
-      // NO discount-codes (admin only)
+      // Sales agents: check if they have custom permissions first
+      if (userPermissions && Object.keys(userPermissions).length > 0) {
+        const allowedTabs = defaultTabs.filter(tab => {
+          const permKey = `tab_${tab.id}`;
+          // Always show account settings
+          if (tab.id === 'account') return true;
+          return userPermissions[permKey] === true;
+        });
+        
+        if (allowedTabs.length > 1) { // More than just account
+          return allowedTabs;
+        }
+      }
+      
+      // Fallback: restricted view for sales without custom permissions
+      // Only their dashboard, quotes, and tips
       const salesTabIds = ['new-leads', 'get-quote', 'selling-tips'];
       return defaultTabs.filter(tab => salesTabIds.includes(tab.id));
     }
@@ -256,6 +268,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         const permKey = `tab_${tab.id}`;
         // Always show account settings
         if (tab.id === 'account') return true;
+        // Check specific permission for the tab
         return userPermissions[permKey] === true;
       });
       
@@ -263,7 +276,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
       return allowedTabs.length > 0 ? allowedTabs : defaultTabs.filter(tab => tab.id === 'account');
     }
     
-    // Fallback: show all tabs for legacy users without permissions set
+    // Fallback for member/viewer/guest without specific permissions - show common tabs
+    // Admin role already returns all tabs above
     return defaultTabs;
   };
 
