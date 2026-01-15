@@ -608,7 +608,7 @@ const BMWWarrantyLanding: React.FC = () => {
 
         {/* Warranty Benefits Section - Matching Homepage Design */}
         <Suspense fallback={<div className="py-12 md:py-20 bg-gray-50 min-h-[300px]" />}>
-          <WarrantyBenefitsSection />
+          <WarrantyBenefitsSection headline="The Ultimate BMW Warranty." />
         </Suspense>
 
         {/* Vehicle Coverage Accordion Section - Matching Homepage */}
