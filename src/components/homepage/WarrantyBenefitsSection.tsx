@@ -3,7 +3,13 @@ import { Check, ArrowRight, Settings, Cpu, Zap, Wrench, Lock } from 'lucide-reac
 import warrantyPandaMascot from '@/assets/warranty-panda-mascot.png';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 
-const WarrantyBenefitsSection: React.FC = () => {
+interface WarrantyBenefitsSectionProps {
+  headline?: string;
+}
+
+const WarrantyBenefitsSection: React.FC<WarrantyBenefitsSectionProps> = ({ 
+  headline = "Complete Car Warranty." 
+}) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -50,7 +56,7 @@ const WarrantyBenefitsSection: React.FC = () => {
             <div className="mb-6">
               <div className="text-center lg:text-left">
                 <h2 className="text-2xl md:text-4xl font-bold text-brand-dark-text mb-1">
-                  Complete Car Warranty.
+                  {headline}
                 </h2>
                 <h2 className="text-2xl md:text-4xl font-bold text-brand-orange mb-3">
                   Peace of Mind.
