@@ -861,22 +861,20 @@ const CustomerDashboard = () => {
           description="Access your warranty policies, download documents, manage your account details, and get support for your vehicle warranty coverage."
           keywords="customer dashboard, warranty portal, policy documents, account management, vehicle warranty"
         />
-        <div className="bg-white shadow">
+        {/* Minimal Header */}
+        <div className="bg-white border-b border-gray-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 sm:py-6 gap-4">
-              <div className="flex items-center">
-                <button 
-                  onClick={() => navigate('/')}
-                  className="flex items-center hover:opacity-80 transition-opacity"
-                >
-                  <img 
-                    src="/lovable-uploads/baw_logo_new_2025_copy_2-2.png" 
-                    alt="BuyAWarranty" 
-                    className="h-6 sm:h-8 w-auto mr-3 sm:mr-4"
-                  />
-                </button>
-                <h1 className="text-base sm:text-xl font-bold text-gray-900">Customer Login</h1>
-              </div>
+            <div className="flex justify-between items-center py-4">
+              <button 
+                onClick={() => navigate('/')}
+                className="flex items-center hover:opacity-80 transition-opacity"
+              >
+                <img 
+                  src="/lovable-uploads/baw_logo_new_2025_copy_2-2.png" 
+                  alt="BuyAWarranty" 
+                  className="h-7 sm:h-9 w-auto"
+                />
+              </button>
               <div className="hidden sm:block">
                 <TrustpilotHeader />
               </div>
@@ -884,110 +882,158 @@ const CustomerDashboard = () => {
           </div>
         </div>
 
-        <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Button
-            variant="ghost"
-            onClick={() => window.location.href = '/'}
-            className="mb-4 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to homepage
-          </Button>
-          <Card>
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold">Welcome</CardTitle>
-              <CardDescription>
-                Sign in to your customer dashboard to view your warranty details
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
-                      required
-                      disabled={loginLoading}
-                    />
-                  </div>
+        {/* Main Login Content */}
+        <div className="flex-1 flex items-center justify-center px-4 py-8 sm:py-12">
+          <div className="w-full max-w-md">
+            {/* Back Link */}
+            <Button
+              variant="ghost"
+              onClick={() => window.location.href = '/'}
+              className="mb-6 text-gray-500 hover:text-gray-700 hover:bg-gray-50 px-0 -ml-1"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to homepage
+            </Button>
+
+            {/* Login Card */}
+            <Card className="border-0 shadow-xl shadow-gray-200/50 rounded-2xl overflow-hidden">
+              <CardHeader className="text-center pb-2 pt-8 px-6 sm:px-8">
+                <div className="mx-auto w-14 h-14 bg-gradient-to-br from-orange-50 to-amber-100 rounded-full flex items-center justify-center mb-5 shadow-sm">
+                  <User className="w-7 h-7 text-orange-500" />
                 </div>
+                <CardTitle className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                  Welcome Back
+                </CardTitle>
+                <CardDescription className="text-gray-600 text-base leading-relaxed max-w-sm mx-auto">
+                  Sign in to view your warranty details, download documents and manage your cover
+                </CardDescription>
+              </CardHeader>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 pr-10"
-                      required
-                      disabled={loginLoading}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() => setShowPassword(!showPassword)}
-                      disabled={loginLoading}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </Button>
+              <CardContent className="px-6 sm:px-8 pb-8 pt-6">
+                <form onSubmit={handleLogin} className="space-y-5">
+                  {/* Email Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                      Email Address
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="pl-11 h-12 rounded-xl border-gray-200 focus:border-orange-300 focus:ring-orange-200 transition-colors"
+                        required
+                        disabled={loginLoading}
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={loginLoading || !email || !password}
-                >
-                  {loginLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Signing In...
-                    </>
-                  ) : (
-                    'Sign In'
-                  )}
-                </Button>
-              </form>
+                  {/* Password Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                      Password
+                    </Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="pl-11 pr-11 h-12 rounded-xl border-gray-200 focus:border-orange-300 focus:ring-orange-200 transition-colors"
+                        required
+                        disabled={loginLoading}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 p-0 hover:bg-gray-100 rounded-lg"
+                        onClick={() => setShowPassword(!showPassword)}
+                        disabled={loginLoading}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-gray-400" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-gray-400" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
 
-              <div className="mt-6 text-center">
-                <p className="text-sm text-gray-600">
-                  Need help accessing your account?{' '}
+                  {/* Sign In Button */}
                   <Button 
-                    variant="link" 
-                    className="p-0 h-auto font-normal text-blue-600 hover:text-blue-800"
-                    onClick={() => navigate('/forgot-password')}
+                    type="submit" 
+                    className="w-full h-12 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-base shadow-lg shadow-orange-200/50 mt-2" 
+                    disabled={loginLoading || !email || !password}
                   >
-                    Get login credentials resent
+                    {loginLoading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                        Signing In...
+                      </>
+                    ) : (
+                      'Sign In'
+                    )}
                   </Button>
-                </p>
-              </div>
 
-              <div className="mt-4 text-center">
-                  <div className="text-center space-y-2">
-                    <p className="text-xs text-gray-500">
-                      First time logging in? Use the temporary password from your welcome email.
+                  {/* Secure Login Badge */}
+                  <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400 pt-1">
+                    <Lock className="w-3 h-3" />
+                    <span>Secure Login</span>
+                  </div>
+                </form>
+
+                {/* Help Section */}
+                <div className="mt-8 pt-6 border-t border-gray-100 space-y-4">
+                  <div className="text-center space-y-3">
+                    {/* Forgot Password */}
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium text-gray-700">Forgot your password?</span>{' '}
+                      <Button 
+                        variant="link" 
+                        className="p-0 h-auto font-medium text-orange-500 hover:text-orange-600"
+                        onClick={() => navigate('/forgot-password')}
+                      >
+                        Reset it here
+                      </Button>
+                    </p>
+
+                    {/* Resend Credentials */}
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium text-gray-700">Still can't log in?</span>{' '}
+                      <Button 
+                        variant="link" 
+                        className="p-0 h-auto font-medium text-orange-500 hover:text-orange-600"
+                        onClick={() => navigate('/forgot-password')}
+                      >
+                        Resend your login details
+                      </Button>
                     </p>
                   </div>
-              </div>
-            </CardContent>
-          </Card>
+
+                  {/* First Time User Notice */}
+                  <div className="bg-amber-50/70 rounded-xl p-4 mt-4">
+                    <p className="text-sm text-amber-800 text-center leading-relaxed">
+                      <span className="font-medium">First time here?</span> Use the temporary password we emailed you when your warranty was set up.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Support Contact */}
+            <p className="text-center text-sm text-gray-500 mt-6">
+              Need help? Contact us at{' '}
+              <a href="mailto:support@buyawarranty.co.uk" className="text-orange-500 hover:text-orange-600 font-medium">
+                support@buyawarranty.co.uk
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     );
