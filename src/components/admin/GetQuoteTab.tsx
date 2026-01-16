@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users } from 'lucide-react';
+import { PaidOrdersTab } from './PaidOrdersTab';
 import { format, addDays, isBefore, startOfDay, isToday } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -105,6 +106,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [selectedHistoryQuote, setSelectedHistoryQuote] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('new');
   const [historySubTab, setHistorySubTab] = useState<'sent' | 'saved'>('sent');
+  const [paidOrdersCount, setPaidOrdersCount] = useState(0);
   const [adminEmail, setAdminEmail] = useState<string | null>(null);
   const [additionalEmails, setAdditionalEmails] = useState<string[]>([]);
   const [newEmailInput, setNewEmailInput] = useState('');
@@ -200,7 +202,21 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     getAdminEmail();
     loadSentQuotesHistory();
     loadSavedQuotes();
+    loadPaidOrdersCount();
   }, []);
+
+  // Load paid orders count
+  const loadPaidOrdersCount = async () => {
+    try {
+      const { count } = await supabase
+        .from('live_quotes')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['paid', 'paid_externally']);
+      setPaidOrdersCount(count || 0);
+    } catch (e) {
+      console.error('Error loading paid orders count:', e);
+    }
+  };
 
   // Load saved quotes from localStorage
   const loadSavedQuotes = () => {
@@ -1515,11 +1531,21 @@ Questions? Call 0330 229 5040`;
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="new">New Quote/Order</TabsTrigger>
-          <TabsTrigger value="history">
-            <History className="w-4 h-4 mr-2" />
-            History & Saved ({sentQuotes.length + savedQuotes.length})
+        <TabsList className="grid w-full grid-cols-3 h-auto">
+          <TabsTrigger value="new" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+            New Quote/Order
+          </TabsTrigger>
+          <TabsTrigger value="history" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+            <History className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">History & Saved</span>
+            <span className="sm:hidden">History</span>
+            <span className="ml-1">({sentQuotes.length + savedQuotes.length})</span>
+          </TabsTrigger>
+          <TabsTrigger value="paid" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+            <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Paid Orders / Edit</span>
+            <span className="sm:hidden">Paid</span>
+            {paidOrdersCount > 0 && <span className="ml-1">({paidOrdersCount})</span>}
           </TabsTrigger>
         </TabsList>
 
@@ -3738,6 +3764,11 @@ Questions? Call 0330 229 5040`;
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        {/* Paid Orders Tab */}
+        <TabsContent value="paid" className="space-y-6 mt-6">
+          <PaidOrdersTab onRefresh={loadPaidOrdersCount} />
         </TabsContent>
       </Tabs>
     </div>
