@@ -1168,7 +1168,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             <Button
               onClick={processPayment}
               disabled={isLoading}
-              className={`w-full py-6 text-lg font-bold rounded-xl shadow-lg animate-breathing ${
+              className={`w-full py-3 md:py-4 text-lg font-bold rounded-lg shadow-lg animate-breathing ${
                 selectedPayment === 'monthly'
                   ? 'bg-orange-500 hover:bg-orange-600 text-white'
                   : 'bg-green-600 hover:bg-green-700 text-white'
