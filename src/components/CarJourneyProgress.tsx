@@ -16,7 +16,7 @@ const steps = [
   { id: 1, title: 'Enter reg plate', description: 'Enter your vehicle details' },
   { id: 2, title: 'Receive quote', description: 'Get your personalized quote' },
   { id: 3, title: 'Choose your plan', description: 'Select your coverage options' },
-  { id: 4, title: 'Review & Confirm', description: 'Complete your purchase' }
+  { id: 4, title: 'Review & Pay', description: 'Complete in one step' }
 ];
 
 const CarJourneyProgress: React.FC<CarJourneyProgressProps> = ({ 
