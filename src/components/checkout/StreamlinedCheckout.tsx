@@ -1120,47 +1120,52 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   setSelectedPayment('monthly');
                   setPaymentError('');
                 }}
-                className={`relative text-left p-5 rounded-2xl border-2 transition-all duration-200 ${
+                className={`relative text-left p-5 sm:p-6 rounded-2xl border-2 transition-all duration-200 ${
                   selectedPayment === 'monthly'
-                    ? 'border-orange-500 bg-orange-50 shadow-lg ring-2 ring-orange-200'
+                    ? 'border-orange-500 bg-orange-50/50 shadow-lg ring-2 ring-orange-200'
                     : 'border-slate-200 bg-white hover:border-orange-300 hover:shadow-md'
                 }`}
               >
                 {/* Badge */}
-                <span className="absolute -top-3 left-4 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                <span className="absolute -top-3 left-4 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
                   0% APR
                 </span>
 
                 <div className="flex items-start gap-3 mt-1">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-all ${
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-all ${
                     selectedPayment === 'monthly' 
                       ? 'border-orange-500 bg-orange-500' 
                       : 'border-slate-300 bg-white'
                   }`}>
                     {selectedPayment === 'monthly' && (
-                      <Check className="w-3 h-3 text-white" />
+                      <Check className="w-3.5 h-3.5 text-white" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-bold text-slate-900">Pay Monthly</h3>
-                    <p className="text-2xl font-bold text-slate-900 mt-1">
-                      £{Math.floor(discountedBumperPrice / 12)}<span className="text-sm font-normal text-slate-500">/mo</span>
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">12 payments • Total £{discountedBumperPrice}</p>
                     
-                    <div className="mt-3 space-y-1.5">
-                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                    {/* Price Display - Improved hierarchy */}
+                    <div className="mt-3 mb-3">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl sm:text-4xl font-bold text-slate-900">£{Math.floor(discountedBumperPrice / 12)}</span>
+                        <span className="text-base font-medium text-slate-400">/mo</span>
+                      </div>
+                      <p className="text-sm text-slate-500 mt-1.5 font-medium">12 payments • Total £{discountedBumperPrice}</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2.5 text-sm text-slate-700">
                         <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                         <span>No credit impact</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <div className="flex items-center gap-2.5 text-sm text-slate-700">
                         <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                         <span>Spread the cost</span>
                       </div>
                     </div>
                     
                     <div className="mt-4 pt-3 border-t border-slate-100">
-                      <img src={bumperLogo} alt="Bumper" className="h-4 opacity-60" />
+                      <img src={bumperLogo} alt="Bumper" className="h-5 opacity-70" />
                     </div>
                   </div>
                 </div>
@@ -1173,48 +1178,57 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   setSelectedPayment('full');
                   setPaymentError('');
                 }}
-                className={`relative text-left p-5 rounded-2xl border-2 transition-all duration-200 ${
+                className={`relative text-left p-5 sm:p-6 rounded-2xl border-2 transition-all duration-200 ${
                   selectedPayment === 'full'
-                    ? 'border-green-500 bg-green-50 shadow-lg ring-2 ring-green-200'
+                    ? 'border-green-500 bg-green-50/50 shadow-lg ring-2 ring-green-200'
                     : 'border-slate-200 bg-white hover:border-green-300 hover:shadow-md'
                 }`}
               >
                 {/* Badge */}
-                <span className="absolute -top-3 left-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                <span className="absolute -top-3 left-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
                   SAVE 10%
                 </span>
 
                 <div className="flex items-start gap-3 mt-1">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-all ${
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-all ${
                     selectedPayment === 'full' 
                       ? 'border-green-500 bg-green-500' 
                       : 'border-slate-300 bg-white'
                   }`}>
                     {selectedPayment === 'full' && (
-                      <Check className="w-3 h-3 text-white" />
+                      <Check className="w-3.5 h-3.5 text-white" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-bold text-slate-900">Pay in Full</h3>
-                    <p className="text-xs text-slate-400 line-through mt-1">Was £{bumperTotalPrice}</p>
-                    <p className="text-2xl font-bold text-slate-900">
-                      £{discountedStripePrice}
-                    </p>
-                    <p className="text-xs text-green-600 font-semibold mt-1">You save £{savings}!</p>
                     
-                    <div className="mt-3 space-y-1.5">
-                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                    {/* Price Display - Improved hierarchy with Was/Now/Save */}
+                    <div className="mt-3 mb-3">
+                      {/* Was price - muted with clear strikethrough */}
+                      <p className="text-sm font-medium text-slate-400">
+                        <span className="line-through decoration-2 decoration-slate-400">Was £{bumperTotalPrice}</span>
+                      </p>
+                      {/* Main price - bold and prominent */}
+                      <div className="flex items-baseline gap-1 mt-1">
+                        <span className="text-3xl sm:text-4xl font-bold text-slate-900">£{discountedStripePrice}</span>
+                      </div>
+                      {/* Savings - green and encouraging */}
+                      <p className="text-sm font-semibold text-green-600 mt-1.5">You save £{savings}!</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2.5 text-sm text-slate-700">
                         <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                         <span>Instant 10% off</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <div className="flex items-center gap-2.5 text-sm text-slate-700">
                         <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                         <span>One simple payment</span>
                       </div>
                     </div>
                     
                     <div className="mt-4 pt-3 border-t border-slate-100">
-                      <img src={stripeLogo} alt="Stripe" className="h-4 opacity-60" />
+                      <img src={stripeLogo} alt="Stripe" className="h-5 opacity-70" />
                     </div>
                   </div>
                 </div>
