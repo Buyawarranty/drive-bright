@@ -2626,8 +2626,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 >
                   <TrustpilotHeader className="scale-90" />
                   <div>
-                    <span className="font-bold text-gray-800 text-sm">Excellent</span>
-                    <p className="text-xs text-gray-500">Thousands of UK drivers</p>
+                    <span className="font-bold text-gray-800 text-sm">Five‑Star Service</span>
+                    <p className="text-xs text-gray-500">Rated Excellent by UK drivers</p>
                   </div>
                 </a>
               </div>
