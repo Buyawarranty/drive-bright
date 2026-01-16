@@ -368,14 +368,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       if (!validateField(field)) allValid = false;
     });
     
-    if (!customerData.privacy_policy_accepted) {
-      toast.error('Please accept the privacy policy');
-      allValid = false;
-    }
-    if (!customerData.terms_conditions_accepted) {
-      toast.error('Please accept the terms and conditions');
-      allValid = false;
-    }
+    
     
     return allValid;
   };
@@ -1095,43 +1088,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         </div>
                         {fieldErrors.city && <p className="text-red-500 text-xs mt-1">{fieldErrors.city}</p>}
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Terms & Conditions */}
-                  <div className="space-y-3 pt-4 border-t border-gray-200">
-                    <div className="flex items-start gap-3">
-                      <Checkbox
-                        id="privacy"
-                        checked={customerData.privacy_policy_accepted}
-                        onCheckedChange={(checked) => handleInputChange('privacy_policy_accepted', checked === true)}
-                        className="mt-0.5"
-                      />
-                      <Label htmlFor="privacy" className="text-sm text-gray-600 cursor-pointer leading-relaxed">
-                        I accept the <a href="/privacy-policy" className="text-orange-600 hover:underline" target="_blank">Privacy Policy</a> *
-                      </Label>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <Checkbox
-                        id="terms"
-                        checked={customerData.terms_conditions_accepted}
-                        onCheckedChange={(checked) => handleInputChange('terms_conditions_accepted', checked === true)}
-                        className="mt-0.5"
-                      />
-                      <Label htmlFor="terms" className="text-sm text-gray-600 cursor-pointer leading-relaxed">
-                        I accept the <a href="/terms-and-conditions" className="text-orange-600 hover:underline" target="_blank">Terms and Conditions</a> *
-                      </Label>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <Checkbox
-                        id="marketing"
-                        checked={customerData.marketing_opt_in}
-                        onCheckedChange={(checked) => handleInputChange('marketing_opt_in', checked === true)}
-                        className="mt-0.5"
-                      />
-                      <Label htmlFor="marketing" className="text-sm text-gray-600 cursor-pointer leading-relaxed">
-                        Keep me updated with offers and news (optional)
-                      </Label>
                     </div>
                   </div>
 
