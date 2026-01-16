@@ -74,47 +74,63 @@ const CompactProgressBar: React.FC<CompactProgressBarProps> = ({ currentStep }) 
         </div>
         
         <div className="flex items-center justify-between">
-          {steps.map((step) => {
+          {steps.map((step, index) => {
             const status = getStepStatus(step.id);
             const isCompleted = status === 'completed';
             const isCurrent = status === 'current';
+            const isLastStep = index === steps.length - 1;
+            const nextStepCompleted = index < steps.length - 1 && getStepStatus(steps[index + 1].id) === 'completed';
+            const lineIsGreen = isCompleted;
 
             return (
-              <div key={step.id} className="flex flex-col items-center flex-shrink-0">
-                {/* Circle */}
-                <div 
-                  className={`
-                    w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold transition-all duration-300
-                    ${isCompleted 
-                      ? 'bg-green-500 text-white shadow-sm' 
-                      : isCurrent 
-                        ? 'bg-orange-500 text-white shadow-md ring-2 ring-orange-200' 
-                        : 'bg-slate-100 text-slate-400 border border-slate-200'
-                    }
-                  `}
-                >
-                  {isCompleted ? (
-                    <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" strokeWidth={3} />
-                  ) : (
-                    <span>{step.id}</span>
-                  )}
+              <React.Fragment key={step.id}>
+                <div className="flex flex-col items-center flex-shrink-0">
+                  {/* Circle */}
+                  <div 
+                    className={`
+                      w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold transition-all duration-300
+                      ${isCompleted 
+                        ? 'bg-green-500 text-white shadow-sm' 
+                        : isCurrent 
+                          ? 'bg-orange-500 text-white shadow-md ring-2 ring-orange-200' 
+                          : 'bg-slate-100 text-slate-400 border border-slate-200'
+                      }
+                    `}
+                  >
+                    {isCompleted ? (
+                      <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" strokeWidth={3} />
+                    ) : (
+                      <span>{step.id}</span>
+                    )}
+                  </div>
+                  
+                  {/* Label */}
+                  <span 
+                    className={`
+                      mt-1.5 sm:mt-2 text-[10px] sm:text-xs font-medium text-center leading-tight max-w-[70px] sm:max-w-[90px] transition-colors duration-300
+                      ${isCurrent 
+                        ? 'text-orange-600 font-semibold' 
+                        : isCompleted 
+                          ? 'text-green-600' 
+                          : 'text-slate-400'
+                      }
+                    `}
+                  >
+                    {step.title}
+                  </span>
                 </div>
                 
-                {/* Label */}
-                <span 
-                  className={`
-                    mt-1.5 sm:mt-2 text-[10px] sm:text-xs font-medium text-center leading-tight max-w-[70px] sm:max-w-[90px] transition-colors duration-300
-                    ${isCurrent 
-                      ? 'text-orange-600 font-semibold' 
-                      : isCompleted 
-                        ? 'text-green-600' 
-                        : 'text-slate-400'
-                    }
-                  `}
-                >
-                  {step.title}
-                </span>
-              </div>
+                {/* Connecting line between circles - mobile only with broken segments */}
+                {!isLastStep && (
+                  <div className="flex-1 flex items-center justify-center px-1 sm:hidden self-start mt-3.5">
+                    <div className="flex items-center gap-1 w-full">
+                      <div className={`flex-1 h-0.5 ${lineIsGreen ? 'bg-green-500' : 'bg-slate-200'}`} />
+                      <div className="w-1" />
+                      <div className={`flex-1 h-0.5 ${lineIsGreen ? 'bg-green-500' : 'bg-slate-200'}`} />
+                    </div>
+                  </div>
+                )}
+              </React.Fragment>
             );
           })}
         </div>
