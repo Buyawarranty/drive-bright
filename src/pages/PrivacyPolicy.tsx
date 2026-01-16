@@ -155,11 +155,45 @@ const PrivacyPolicy = () => {
           </p>
         </section>
 
-        {/* What Information We Collect */}
+        {/* Sharing Your Information - Now Section 2 */}
+        <section className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center">
+            <Users className="w-8 h-8 text-[#eb4b00] mr-3" />
+            2. Sharing Your Information
+          </h2>
+          <p className="text-lg text-gray-700 leading-relaxed mb-6">
+            We may share your data with:
+          </p>
+          <ul className="space-y-3 text-gray-700 mb-6">
+            <li className="flex items-start">
+              <span className="w-2 h-2 bg-[#eb4b00] rounded-full mt-2 mr-3 flex-shrink-0"></span>
+              Warranty providers and underwriters
+            </li>
+            <li className="flex items-start">
+              <span className="w-2 h-2 bg-[#eb4b00] rounded-full mt-2 mr-3 flex-shrink-0"></span>
+              Payment processors
+            </li>
+            <li className="flex items-start">
+              <span className="w-2 h-2 bg-[#eb4b00] rounded-full mt-2 mr-3 flex-shrink-0"></span>
+              IT and analytics service providers
+            </li>
+            <li className="flex items-start">
+              <span className="w-2 h-2 bg-[#eb4b00] rounded-full mt-2 mr-3 flex-shrink-0"></span>
+              Regulatory authorities where required by law
+            </li>
+          </ul>
+          <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg">
+            <p className="text-red-800 font-medium">
+              <strong>Important:</strong> We do not sell your personal data to third parties.
+            </p>
+          </div>
+        </section>
+
+        {/* What Information We Collect - Now Section 3 */}
         <section className="bg-white rounded-2xl shadow-lg p-8 mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center">
             <FileText className="w-8 h-8 text-[#eb4b00] mr-3" />
-            2. What Information We Collect
+            3. What Information We Collect
           </h2>
           <p className="text-lg text-gray-700 leading-relaxed mb-6">
             We may collect and process the following types of personal data:
@@ -196,7 +230,7 @@ const PrivacyPolicy = () => {
           </div>
         </section>
 
-        {/* How We Use Your Information */}
+        {/* How We Use Your Information - Now Section 4 */}
         <section className="bg-gradient-to-r from-blue-50 to-green-50 rounded-2xl p-8 mb-8">
           <div className="flex items-start space-x-6">
             <img 
@@ -205,7 +239,7 @@ const PrivacyPolicy = () => {
               className="h-20 w-auto flex-shrink-0"
             />
             <div className="flex-1">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">3. How We Use Your Information</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">4. How We Use Your Information</h2>
               <p className="text-lg text-gray-700 leading-relaxed mb-4">
                 We use your personal data to:
               </p>
@@ -235,11 +269,11 @@ const PrivacyPolicy = () => {
           </div>
         </section>
 
-        {/* Legal Basis for Processing */}
+        {/* Legal Basis for Processing - Now Section 5 */}
         <section className="bg-white rounded-2xl shadow-lg p-8 mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center">
             <Shield className="w-8 h-8 text-[#eb4b00] mr-3" />
-            4. Legal Basis for Processing
+            5. Legal Basis for Processing
           </h2>
           <p className="text-lg text-gray-700 leading-relaxed mb-6">
             We process your data under the following legal bases:
@@ -264,39 +298,6 @@ const PrivacyPolicy = () => {
           </div>
         </section>
 
-        {/* Sharing Your Information */}
-        <section className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center">
-            <Users className="w-8 h-8 text-[#eb4b00] mr-3" />
-            5. Sharing Your Information
-          </h2>
-          <p className="text-lg text-gray-700 leading-relaxed mb-6">
-            We may share your data with:
-          </p>
-          <ul className="space-y-3 text-gray-700 mb-6">
-            <li className="flex items-start">
-              <span className="w-2 h-2 bg-[#eb4b00] rounded-full mt-2 mr-3 flex-shrink-0"></span>
-              Warranty providers and underwriters
-            </li>
-            <li className="flex items-start">
-              <span className="w-2 h-2 bg-[#eb4b00] rounded-full mt-2 mr-3 flex-shrink-0"></span>
-              Payment processors
-            </li>
-            <li className="flex items-start">
-              <span className="w-2 h-2 bg-[#eb4b00] rounded-full mt-2 mr-3 flex-shrink-0"></span>
-              IT and analytics service providers
-            </li>
-            <li className="flex items-start">
-              <span className="w-2 h-2 bg-[#eb4b00] rounded-full mt-2 mr-3 flex-shrink-0"></span>
-              Regulatory authorities where required by law
-            </li>
-          </ul>
-          <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg">
-            <p className="text-red-800 font-medium">
-              <strong>Important:</strong> We do not sell your personal data to third parties.
-            </p>
-          </div>
-        </section>
 
         {/* Data Retention & Your Rights */}
         <div className="grid md:grid-cols-2 gap-8 mb-8">
@@ -381,44 +382,44 @@ const PrivacyPolicy = () => {
 
         {/* Contact Information */}
         <section className="bg-gradient-to-r from-blue-900 to-blue-800 text-white rounded-2xl p-8">
-          <h2 className="text-3xl font-bold mb-6">Need Help with Your Privacy Rights?</h2>
+          <h2 className="text-3xl font-bold mb-6 text-white">Need Help with Your Privacy Rights?</h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div>
-              <h3 className="text-xl font-semibold mb-4">Contact Our Data Protection Team</h3>
+              <h3 className="text-xl font-semibold mb-4 text-white">Contact Our Data Protection Team</h3>
               <div className="space-y-3">
-                <p className="flex items-center">
-                  <Phone className="w-5 h-5 mr-3" />
-                  <span className="font-medium mr-2">Phone:</span>
-                  <a href="tel:03302295040" className="text-orange-300 hover:text-orange-200 transition-colors">
+                <p className="flex items-center text-white">
+                  <Phone className="w-5 h-5 mr-3 text-white" />
+                  <span className="font-medium mr-2 text-white">Phone:</span>
+                  <a href="tel:03302295040" className="text-white hover:text-gray-200 transition-colors">
                     0330 229 5040
                   </a>
                 </p>
-                <p className="flex items-center">
-                  <Mail className="w-5 h-5 mr-3" />
-                  <span className="font-medium mr-2">Email:</span>
-                  <a href="mailto:support@buyawarranty.co.uk" className="text-orange-300 hover:text-orange-200 transition-colors">
+                <p className="flex items-center text-white">
+                  <Mail className="w-5 h-5 mr-3 text-white" />
+                  <span className="font-medium mr-2 text-white">Email:</span>
+                  <a href="mailto:support@buyawarranty.co.uk" className="text-white hover:text-gray-200 transition-colors">
                     support@buyawarranty.co.uk
                   </a>
                 </p>
               </div>
             </div>
             <div>
-              <h3 className="text-xl font-semibold mb-4">Related Policies</h3>
+              <h3 className="text-xl font-semibold mb-4 text-white">Related Policies</h3>
               <div className="space-y-2">
-                <Link to="/cookies" className="block text-blue-200 hover:text-white transition-colors">
+                <Link to="/cookies" className="block text-white hover:text-gray-200 transition-colors">
                   Cookie Policy
                 </Link>
-                <Link to="/terms" className="block text-blue-200 hover:text-white transition-colors">
+                <Link to="/terms" className="block text-white hover:text-gray-200 transition-colors">
                   Terms & Conditions
                 </Link>
-                <Link to="/contact-us" className="block text-blue-200 hover:text-white transition-colors">
+                <Link to="/contact-us" className="block text-white hover:text-gray-200 transition-colors">
                   Contact Us
                 </Link>
                 <a 
                   href="https://ico.org.uk/" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="block text-blue-200 hover:text-white transition-colors"
+                  className="block text-white hover:text-gray-200 transition-colors"
                 >
                   ICO (Information Commissioner's Office)
                 </a>
