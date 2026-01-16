@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronDown, Phone, Mail, Shield, FileText, Clock, Users, Menu } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ChevronDown, Phone, Mail, Shield, FileText, Clock, Users, Menu, ArrowLeft } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -10,7 +10,7 @@ const Terms = () => {
   const [openItems, setOpenItems] = useState<{ [key: string]: boolean }>({});
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [termsDocUrl, setTermsDocUrl] = useState<string>('');
-
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchTermsDoc = async () => {
       const { data, error } = await supabase
@@ -128,9 +128,13 @@ const Terms = () => {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="flex items-center mb-4">
-            <Link to="/" className="text-brand-orange hover:text-orange-600 transition-colors text-sm font-medium">
-              ← Back to Home
-            </Link>
+            <button 
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-sm font-medium py-2 px-3 rounded-lg transition-all duration-200 bg-gray-100 hover:bg-gray-200 text-gray-700"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </button>
           </div>
           
           <div className="text-center">

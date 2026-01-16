@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X, Shield, Eye, Settings, Target } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Menu, X, Shield, Eye, Settings, Target, ArrowLeft } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import pandaService from '@/assets/panda-service.png';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
@@ -8,6 +8,7 @@ import pandaSavings from '@/assets/panda-savings.png';
 
 const CookiePolicy = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white">
@@ -17,6 +18,17 @@ const CookiePolicy = () => {
         keywords="cookie policy, privacy, Buy A Warranty, cookies, website tracking, data protection"
         canonical="https://buyawarranty.co.uk/cookies"
       />
+
+      {/* Back Button */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <button 
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-sm font-medium py-2 px-3 rounded-lg transition-all duration-200 bg-gray-100 hover:bg-gray-200 text-gray-700"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </button>
+      </div>
 
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-blue-900 to-blue-800 text-white py-20">
