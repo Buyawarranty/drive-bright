@@ -1052,29 +1052,31 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-4 items-start">
                       <div>
                         <Label htmlFor="postcode" className="text-sm font-medium text-gray-700">Postcode *</Label>
-                        <PostcodeAutocomplete
-                          value={customerData.postcode}
-                          onChange={(value) => handleInputChange('postcode', value)}
-                          onBlur={() => handleFieldBlur('postcode')}
-                          onAddressSelect={(address) => {
-                            if (address.town) handleInputChange('city', address.town);
-                            if (address.street && !customerData.address_line_1) {
-                              handleInputChange('address_line_1', address.street);
-                            }
-                          }}
-                          placeholder="SW1A 1AA"
-                          required
-                          className={showValidation && fieldErrors.postcode ? 'border-red-500' : ''}
-                          error={fieldErrors.postcode}
-                          showCheckmark={validatedFields.postcode}
-                        />
+                        <div className="mt-1">
+                          <PostcodeAutocomplete
+                            value={customerData.postcode}
+                            onChange={(value) => handleInputChange('postcode', value)}
+                            onBlur={() => handleFieldBlur('postcode')}
+                            onAddressSelect={(address) => {
+                              if (address.town) handleInputChange('city', address.town);
+                              if (address.street && !customerData.address_line_1) {
+                                handleInputChange('address_line_1', address.street);
+                              }
+                            }}
+                            placeholder="SW1A 1AA"
+                            required
+                            className={showValidation && fieldErrors.postcode ? 'border-red-500' : ''}
+                            error={fieldErrors.postcode}
+                            showCheckmark={validatedFields.postcode}
+                          />
+                        </div>
                       </div>
                       <div>
                         <Label htmlFor="city" className="text-sm font-medium text-gray-700">City/Town *</Label>
-                        <div className="relative">
+                        <div className="relative mt-1">
                           <Input
                             id="city"
                             placeholder="City"
@@ -1082,7 +1084,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             onChange={(e) => handleInputChange('city', e.target.value)}
                             onBlur={() => handleFieldBlur('city')}
                             required
-                            className={`mt-1 ${showValidation && fieldErrors.city ? 'border-red-500' : ''}`}
+                            className={showValidation && fieldErrors.city ? 'border-red-500' : ''}
                           />
                           {validatedFields.city && <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />}
                         </div>
