@@ -608,22 +608,22 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
                 {/* Pre-populated Data Display (if from Step 2) */}
                 {hasPrePopulatedData && !editingPrePopulated && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-semibold text-blue-900">Your Details</span>
+                      <span className="text-sm font-semibold text-amber-900">Your Details</span>
                       <button
                         type="button"
                         onClick={() => setEditingPrePopulated(true)}
-                        className="text-xs font-medium text-blue-700 hover:text-blue-800 underline flex items-center gap-1"
+                        className="text-xs font-medium text-amber-700 hover:text-amber-800 underline flex items-center gap-1"
                       >
                         <Edit className="w-3 h-3" />
                         Edit
                       </button>
                     </div>
-                    <div className="space-y-1 text-sm text-blue-800">
-                      {customerData.first_name && <p><span className="text-blue-600">Name:</span> {customerData.first_name} {customerData.last_name}</p>}
-                      {customerData.email && <p><span className="text-blue-600">Email:</span> {customerData.email}</p>}
-                      {customerData.phone && <p><span className="text-blue-600">Phone:</span> {customerData.phone}</p>}
+                    <div className="space-y-1 text-sm text-amber-800">
+                      {customerData.first_name && <p><span className="text-amber-600">Name:</span> {customerData.first_name} {customerData.last_name}</p>}
+                      {customerData.email && <p><span className="text-amber-600">Email:</span> {customerData.email}</p>}
+                      {customerData.phone && <p><span className="text-amber-600">Phone:</span> {customerData.phone}</p>}
                     </div>
                   </div>
                 )}
@@ -962,7 +962,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 }`}
               >
                 {/* 0% APR Badge */}
-                <span className="absolute -top-3 left-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-md">
+                <span className="absolute -top-3 left-4 bg-orange-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-md">
                   0% APR
                 </span>
 
@@ -987,21 +987,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     {/* Benefits */}
                     <div className="space-y-2.5">
                       <div className="flex items-center gap-2.5 text-sm text-gray-700">
-                        <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-3 h-3 text-green-600" />
-                        </div>
+                        <Check className="w-5 h-5 text-green-500 flex-shrink-0" strokeWidth={3} />
                         <span>Soft search only — no credit impact</span>
                       </div>
                       <div className="flex items-center gap-2.5 text-sm text-gray-700">
-                        <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-3 h-3 text-green-600" />
-                        </div>
+                        <Check className="w-5 h-5 text-green-500 flex-shrink-0" strokeWidth={3} />
                         <span>No hidden fees or surprises</span>
                       </div>
                       <div className="flex items-center gap-2.5 text-sm text-gray-700">
-                        <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-3 h-3 text-green-600" />
-                        </div>
+                        <Check className="w-5 h-5 text-green-500 flex-shrink-0" strokeWidth={3} />
                         <span>Spread the cost easily</span>
                       </div>
                     </div>
@@ -1052,21 +1046,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     {/* Benefits */}
                     <div className="space-y-2.5">
                       <div className="flex items-center gap-2.5 text-sm text-gray-700">
-                        <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-3 h-3 text-green-600" />
-                        </div>
+                        <Check className="w-5 h-5 text-green-500 flex-shrink-0" strokeWidth={3} />
                         <span>Instant 10% discount applied</span>
                       </div>
                       <div className="flex items-center gap-2.5 text-sm text-gray-700">
-                        <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-3 h-3 text-green-600" />
-                        </div>
+                        <Check className="w-5 h-5 text-green-500 flex-shrink-0" strokeWidth={3} />
                         <span>Cover starts immediately</span>
                       </div>
                       <div className="flex items-center gap-2.5 text-sm text-gray-700">
-                        <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-3 h-3 text-green-600" />
-                        </div>
+                        <Check className="w-5 h-5 text-green-500 flex-shrink-0" strokeWidth={3} />
                         <span>One simple payment — done!</span>
                       </div>
                     </div>
@@ -1157,7 +1145,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               <Button
                 onClick={processPayment}
                 disabled={isLoading}
-                className={`w-full py-4 md:py-5 text-base sm:text-lg font-bold rounded-xl shadow-lg animate-breathing transition-all duration-300 ${
+                className={`w-full py-4 md:py-5 text-base sm:text-lg font-bold rounded-xl shadow-lg animate-breathing ${
                   selectedPayment === 'monthly'
                     ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-orange-200/50'
                     : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-green-200/50'
