@@ -26,6 +26,7 @@ import { CarDrivingLoader } from '@/components/ui/car-driving-loader';
 const RegistrationForm = lazy(() => import('@/components/RegistrationForm'));
 const PricingTable = lazy(() => import('@/components/PricingTable'));
 // Step3Mobile removed - using PricingTable for now
+const CompactProgressBar = lazy(() => import('@/components/CompactProgressBar'));
 const CarJourneyProgress = lazy(() => import('@/components/CarJourneyProgress'));
 const CustomerDetailsStep = lazy(() => import('@/components/CustomerDetailsStep'));
 const MaintenanceBanner = lazy(() => import('@/components/MaintenanceBanner'));
@@ -1011,42 +1012,10 @@ const Index = () => {
         ]}
       />
       
-      {/* Progress Bar with Moving Car - Steps 2, 3, and 4 */}
+      {/* Compact Progress Bar - Steps 2, 3, and 4 */}
       {currentStep >= 2 && currentStep <= 4 && (
-        <PerformanceOptimizedSuspense height="120px">
-          <CarJourneyProgress 
-            currentStep={currentStep}
-            onLogoClick={() => {
-              // Clear all saved data
-              safeLocalStorageRemove([
-                'buyawarranty_vehicleData',
-                'buyawarranty_selectedPlan',
-                'buyawarranty_formData',
-                'buyawarranty_currentStep',
-                'warrantyJourneyState'
-              ]);
-              // Reset state
-              setVehicleData(null);
-              setSelectedPlan(null);
-              setFormData({
-                regNumber: '',
-                mileage: '',
-                email: '',
-                phone: '',
-                firstName: '',
-                lastName: '',
-                address: '',
-                make: '',
-                model: '',
-                fuelType: '',
-                transmission: '',
-                year: '',
-                vehicleType: ''
-              });
-              // Go to step 1
-              handleStepChange(1);
-            }}
-          />
+        <PerformanceOptimizedSuspense height="80px">
+          <CompactProgressBar currentStep={currentStep} />
         </PerformanceOptimizedSuspense>
       )}
       
