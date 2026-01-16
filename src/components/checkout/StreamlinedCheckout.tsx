@@ -1148,7 +1148,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <div className="mt-3 mb-3">
                       <div className="flex items-baseline gap-1">
                         <span className="text-3xl sm:text-4xl font-bold text-slate-900">£{Math.floor(discountedBumperPrice / 12)}</span>
-                        <span className="text-base font-medium text-slate-400">/mo</span>
+                        <span className="text-base font-normal text-slate-600">/mo</span>
                       </div>
                       <p className="text-sm text-slate-500 mt-1.5 font-medium">12 payments • Total £{discountedBumperPrice}</p>
                     </div>
@@ -1273,7 +1273,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           setPromoCodeInput(e.target.value.toUpperCase());
                           setPromoCodeError('');
                         }}
-                        className="flex-1 h-10"
+                        className="flex-1 h-10 placeholder:text-slate-500 placeholder:font-normal"
                         disabled={isValidatingPromoCode}
                       />
                       <Button
@@ -1281,7 +1281,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         variant="outline"
                         size="sm"
                         disabled={!promoCodeInput.trim() || isValidatingPromoCode}
-                        className="h-10 px-4"
+                        className="h-10 px-4 bg-[#DFF5E3] border-[#A7DEB4] text-[#2F6F3A] hover:bg-[#d0f0d6] hover:border-[#8fd4a0]"
                       >
                         Apply
                       </Button>
