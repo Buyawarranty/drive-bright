@@ -51,87 +51,70 @@ const CompactProgressBar: React.FC<CompactProgressBarProps> = ({ currentStep }) 
   return (
     <div className="w-full bg-white border-b border-slate-100">
       <div className="max-w-3xl mx-auto px-4 py-4">
-        {/* Desktop car animation with blue progress line - hidden on mobile */}
-        <div className="hidden sm:block relative mb-4">
-          {/* Blue progress line */}
-          <div className="relative h-2 bg-gray-200 rounded-full">
+        {/* Desktop car animation with green progress line - hidden on mobile */}
+        <div className="hidden sm:block relative h-10 mb-1">
+          {/* Green progress line */}
+          <div className="absolute bottom-0 left-0 right-0 h-2 bg-gray-200 rounded-full">
             <div 
-              className="h-full bg-[#1e40af] rounded-full transition-all duration-1000 ease-in-out"
+              className="h-full bg-green-500 rounded-full transition-all duration-1000 ease-in-out"
               style={{ width: `${Math.max(12.5 + (currentStep - 1) / 3 * 75, 12.5)}%` }}
             />
           </div>
           
-          {/* Moving car with bounce animation */}
+          {/* Moving car with bounce animation - positioned above line */}
           <div 
-            className="absolute -top-6 transition-all duration-1000 ease-in-out"
+            className="absolute bottom-1 transition-all duration-1000 ease-in-out"
             style={{ 
               left: getCarPosition(),
               animation: 'gentle-bounce 4s ease-in-out infinite'
             }}
           >
-            <CarIcon className="w-10 h-7 sm:w-12 sm:h-8 drop-shadow-md" />
+            <CarIcon className="w-12 h-8 drop-shadow-md" />
           </div>
         </div>
         
         <div className="flex items-center justify-between">
-          {steps.map((step, index) => {
+          {steps.map((step) => {
             const status = getStepStatus(step.id);
             const isCompleted = status === 'completed';
             const isCurrent = status === 'current';
-            const isLast = index === steps.length - 1;
 
             return (
-              <React.Fragment key={step.id}>
-                {/* Step Item */}
-                <div className="flex flex-col items-center flex-shrink-0">
-                  {/* Circle */}
-                  <div 
-                    className={`
-                      w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold transition-all duration-300
-                      ${isCompleted 
-                        ? 'bg-green-500 text-white shadow-sm' 
-                        : isCurrent 
-                          ? 'bg-orange-500 text-white shadow-md ring-2 ring-orange-200' 
-                          : 'bg-slate-100 text-slate-400 border border-slate-200'
-                      }
-                    `}
-                  >
-                    {isCompleted ? (
-                      <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" strokeWidth={3} />
-                    ) : (
-                      <span>{step.id}</span>
-                    )}
-                  </div>
-                  
-                  {/* Label */}
-                  <span 
-                    className={`
-                      mt-1.5 sm:mt-2 text-[10px] sm:text-xs font-medium text-center leading-tight max-w-[70px] sm:max-w-[90px] transition-colors duration-300
-                      ${isCurrent 
-                        ? 'text-orange-600 font-semibold' 
-                        : isCompleted 
-                          ? 'text-green-600' 
-                          : 'text-slate-400'
-                      }
-                    `}
-                  >
-                    {step.title}
-                  </span>
+              <div key={step.id} className="flex flex-col items-center flex-shrink-0">
+                {/* Circle */}
+                <div 
+                  className={`
+                    w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold transition-all duration-300
+                    ${isCompleted 
+                      ? 'bg-green-500 text-white shadow-sm' 
+                      : isCurrent 
+                        ? 'bg-orange-500 text-white shadow-md ring-2 ring-orange-200' 
+                        : 'bg-slate-100 text-slate-400 border border-slate-200'
+                    }
+                  `}
+                >
+                  {isCompleted ? (
+                    <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" strokeWidth={3} />
+                  ) : (
+                    <span>{step.id}</span>
+                  )}
                 </div>
-
-                {/* Connector Line */}
-                {!isLast && (
-                  <div className="flex-1 mx-1.5 sm:mx-3 h-0.5 relative -mt-6 sm:-mt-7">
-                    <div className="absolute inset-0 bg-slate-200 rounded-full" />
-                    <div 
-                      className={`
-                        absolute inset-y-0 left-0 rounded-full transition-all duration-500
-                        ${isCompleted ? 'bg-green-500 w-full' : 'bg-slate-200 w-0'}
-                      `}
-                    />
-                  </div>
-                )}
-              </React.Fragment>
+                
+                {/* Label */}
+                <span 
+                  className={`
+                    mt-1.5 sm:mt-2 text-[10px] sm:text-xs font-medium text-center leading-tight max-w-[70px] sm:max-w-[90px] transition-colors duration-300
+                    ${isCurrent 
+                      ? 'text-orange-600 font-semibold' 
+                      : isCompleted 
+                        ? 'text-green-600' 
+                        : 'text-slate-400'
+                    }
+                  `}
+                >
+                  {step.title}
+                </span>
+              </div>
             );
           })}
         </div>
