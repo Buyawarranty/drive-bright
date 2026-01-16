@@ -368,9 +368,18 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       if (!validateField(field)) allValid = false;
     });
     
-    
-    
     return allValid;
+  };
+
+  // Helper function for input validation styling - makes errors very visible
+  const getInputValidationClass = (field: string) => {
+    if (showValidation && fieldErrors[field]) {
+      return 'border-red-500 ring-2 ring-red-200 bg-red-50/50 focus:ring-red-300 focus:border-red-500';
+    }
+    if (validatedFields[field]) {
+      return 'border-green-500 bg-green-50/30';
+    }
+    return '';
   };
 
   const applyPromoCode = async () => {
@@ -662,11 +671,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                               onChange={(e) => handleInputChange('first_name', e.target.value)}
                               onBlur={() => handleFieldBlur('first_name')}
                               required
-                              className={`mt-1 ${showValidation && fieldErrors.first_name ? 'border-red-500' : ''}`}
+                              className={`mt-1 ${getInputValidationClass('first_name')}`}
                             />
-                            {validatedFields.first_name && <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />}
+                            {validatedFields.first_name && !fieldErrors.first_name && <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />}
                           </div>
-                          {fieldErrors.first_name && <p className="text-red-500 text-xs mt-1">{fieldErrors.first_name}</p>}
+                          {showValidation && fieldErrors.first_name && (
+                            <p className="text-red-600 text-xs mt-1 font-medium">{fieldErrors.first_name}</p>
+                          )}
                         </div>
                         <div>
                           <Label htmlFor="last_name" className="text-sm font-medium text-gray-700">Last Name *</Label>
@@ -678,11 +689,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                               onChange={(e) => handleInputChange('last_name', e.target.value)}
                               onBlur={() => handleFieldBlur('last_name')}
                               required
-                              className={`mt-1 ${showValidation && fieldErrors.last_name ? 'border-red-500' : ''}`}
+                              className={`mt-1 ${getInputValidationClass('last_name')}`}
                             />
-                            {validatedFields.last_name && <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />}
+                            {validatedFields.last_name && !fieldErrors.last_name && <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />}
                           </div>
-                          {fieldErrors.last_name && <p className="text-red-500 text-xs mt-1">{fieldErrors.last_name}</p>}
+                          {showValidation && fieldErrors.last_name && (
+                            <p className="text-red-600 text-xs mt-1 font-medium">{fieldErrors.last_name}</p>
+                          )}
                         </div>
                       </div>
 
@@ -699,11 +712,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             onChange={(e) => handleInputChange('email', e.target.value)}
                             onBlur={() => handleFieldBlur('email')}
                             required
-                            className={showValidation && fieldErrors.email ? 'border-red-500' : ''}
+                            className={getInputValidationClass('email')}
                           />
-                          {validatedFields.email && <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />}
+                          {validatedFields.email && !fieldErrors.email && <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />}
                         </div>
-                        {fieldErrors.email && <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>}
+                        {showValidation && fieldErrors.email && (
+                          <p className="text-red-600 text-xs mt-1 font-medium">{fieldErrors.email}</p>
+                        )}
                       </div>
 
                       {/* Phone */}
@@ -719,11 +734,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             onChange={(e) => handleInputChange('phone', e.target.value)}
                             onBlur={() => handleFieldBlur('phone')}
                             required
-                            className={showValidation && fieldErrors.phone ? 'border-red-500' : ''}
+                            className={getInputValidationClass('phone')}
                           />
-                          {validatedFields.phone && <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />}
+                          {validatedFields.phone && !fieldErrors.phone && <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />}
                         </div>
-                        {fieldErrors.phone && <p className="text-red-500 text-xs mt-1">{fieldErrors.phone}</p>}
+                        {showValidation && fieldErrors.phone && (
+                          <p className="text-red-600 text-xs mt-1 font-medium">{fieldErrors.phone}</p>
+                        )}
                       </div>
                     </>
                   )}
@@ -746,9 +763,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           }}
                           onBlur={() => handleFieldBlur('mileage')}
                           required
-                          className={showValidation && fieldErrors.mileage ? 'border-red-500' : ''}
+                          className={getInputValidationClass('mileage')}
                         />
-                        {validatedFields.mileage && <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />}
+                        {validatedFields.mileage && !fieldErrors.mileage && <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />}
                       </div>
                       <select
                         value=""
@@ -774,7 +791,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         </p>
                       </div>
                     )}
-                    {fieldErrors.mileage && <p className="text-red-500 text-xs mt-1">{fieldErrors.mileage}</p>}
+                    {showValidation && fieldErrors.mileage && (
+                      <p className="text-red-600 text-xs mt-1 font-medium">{fieldErrors.mileage}</p>
+                    )}
                   </div>
 
                   {/* Address Section */}
@@ -794,11 +813,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           onChange={(e) => handleInputChange('address_line_1', e.target.value)}
                           onBlur={() => handleFieldBlur('address_line_1')}
                           required
-                          className={`mt-1 ${showValidation && fieldErrors.address_line_1 ? 'border-red-500' : ''}`}
+                          className={`mt-1 ${getInputValidationClass('address_line_1')}`}
                         />
-                        {validatedFields.address_line_1 && <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />}
+                        {validatedFields.address_line_1 && !fieldErrors.address_line_1 && <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />}
                       </div>
-                      {fieldErrors.address_line_1 && <p className="text-red-500 text-xs mt-1">{fieldErrors.address_line_1}</p>}
+                      {showValidation && fieldErrors.address_line_1 && (
+                        <p className="text-red-600 text-xs mt-1 font-medium">{fieldErrors.address_line_1}</p>
+                      )}
                     </div>
 
                     <div>
@@ -828,9 +849,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             }}
                             placeholder="SW1A 1AA"
                             required
-                            className={showValidation && fieldErrors.postcode ? 'border-red-500' : ''}
-                            error={fieldErrors.postcode}
-                            showCheckmark={validatedFields.postcode}
+                            className={showValidation && fieldErrors.postcode ? 'border-red-500 ring-2 ring-red-200 bg-red-50/50' : validatedFields.postcode ? 'border-green-500 bg-green-50/30' : ''}
+                            error={showValidation ? fieldErrors.postcode : ''}
+                            showCheckmark={validatedFields.postcode && !fieldErrors.postcode}
                           />
                         </div>
                       </div>
@@ -844,11 +865,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             onChange={(e) => handleInputChange('city', e.target.value)}
                             onBlur={() => handleFieldBlur('city')}
                             required
-                            className={showValidation && fieldErrors.city ? 'border-red-500' : ''}
+                            className={getInputValidationClass('city')}
                           />
-                          {validatedFields.city && <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />}
+                          {validatedFields.city && !fieldErrors.city && <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />}
                         </div>
-                        {fieldErrors.city && <p className="text-red-500 text-xs mt-1">{fieldErrors.city}</p>}
+                        {showValidation && fieldErrors.city && (
+                          <p className="text-red-600 text-xs mt-1 font-medium">{fieldErrors.city}</p>
+                        )}
                       </div>
                     </div>
                   </div>
