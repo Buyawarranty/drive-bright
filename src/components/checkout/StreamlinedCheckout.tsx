@@ -1281,7 +1281,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         variant="outline"
                         size="sm"
                         disabled={!promoCodeInput.trim() || isValidatingPromoCode}
-                        className="h-10 px-4 bg-[#DFF5E3] border-[#A7DEB4] text-[#2F6F3A] hover:bg-[#d0f0d6] hover:border-[#8fd4a0]"
+                        className="h-10 px-4 bg-[#DFF5E3] border-[#6BBF7B] text-[#1a4d24] font-semibold hover:bg-[#c8ebd0] hover:border-[#4da85f]"
                       >
                         Apply
                       </Button>
