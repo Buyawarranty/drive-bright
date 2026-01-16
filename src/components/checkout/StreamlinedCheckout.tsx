@@ -592,249 +592,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           <MobileNavigation />
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-          {/* ORDER SUMMARY (visually second on all devices via order-2) */}
-          <div className="lg:w-[380px] lg:flex-shrink-0 order-2">
-            <div className="lg:sticky lg:top-4">
-              <Card className="border-2 border-gray-200 shadow-lg overflow-hidden">
-                <CardContent className="p-4 sm:p-6">
-                  {/* Plan Header */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h2 className="text-lg sm:text-xl font-bold text-gray-900">
-                        🛡️ Your {formatPlanName()} Plan
-                      </h2>
-                      <p className="text-sm text-gray-600 mt-1">{getDurationText()} Coverage</p>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={onBack}
-                      className="flex items-center gap-1 text-xs"
-                    >
-                      <Edit className="w-3 h-3" />
-                      Change
-                    </Button>
-                  </div>
-
-                  {/* Start Date - Compact */}
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                        <span className="text-sm font-medium text-green-800">
-                          Cover starts: {startDate && isToday(startDate) ? 'Today' : startDate ? format(startDate, 'd MMM yyyy') : 'Today'}
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const picker = document.getElementById('start-date-picker');
-                          picker?.scrollIntoView({ behavior: 'smooth' });
-                        }}
-                        className="text-xs font-medium text-green-700 hover:text-green-800 underline"
-                      >
-                        Change
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Vehicle Details */}
-                  <div className="space-y-2 mb-4 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Vehicle:</span>
-                      <span className="font-semibold text-gray-900 uppercase">{vehicleData.make} {vehicleData.model}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Registration:</span>
-                      <span className="font-semibold text-gray-900 uppercase">{vehicleData.regNumber}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Claim Limit:</span>
-                      <span className="font-semibold text-gray-900">£{(updatedPricingData.claimLimit || 1250).toLocaleString()}</span>
-                    </div>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="border-t border-gray-200 my-4" />
-
-                  {/* Payment Toggle */}
-                  <div className="mb-4">
-                    <p className="text-sm font-semibold text-gray-700 mb-3">Choose Payment</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedPayment('monthly')}
-                        className={`p-3 rounded-lg border-2 transition-all text-center ${
-                          selectedPayment === 'monthly'
-                            ? 'border-orange-500 bg-orange-50 shadow-md'
-                            : 'border-gray-200 bg-white hover:border-gray-300'
-                        }`}
-                      >
-                        <span className="text-xs text-gray-500 block mb-1">0% APR</span>
-                        <span className="text-lg font-bold text-gray-900">£{Math.floor(discountedBumperPrice / 12)}</span>
-                        <span className="text-xs text-gray-600 block">/month</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedPayment('full')}
-                        className={`p-3 rounded-lg border-2 transition-all text-center relative ${
-                          selectedPayment === 'full'
-                            ? 'border-green-500 bg-green-50 shadow-md'
-                            : 'border-gray-200 bg-white hover:border-gray-300'
-                        }`}
-                      >
-                        <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                          SAVE £{savings}
-                        </span>
-                        <span className="text-xs text-gray-500 block mb-1">Best Value</span>
-                        <span className="text-lg font-bold text-gray-900">£{discountedStripePrice}</span>
-                        <span className="text-xs text-gray-600 block">one-time</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Promo Code - Collapsible */}
-                  <Collapsible open={promoOpen} onOpenChange={setPromoOpen}>
-                    <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm text-gray-600 hover:text-gray-900">
-                      <div className="flex items-center gap-2">
-                        <Tag className="w-4 h-4" />
-                        <span>Have a promo code?</span>
-                      </div>
-                      {promoOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="pt-2">
-                      {appliedDiscountCodes.length > 0 ? (
-                        <div className="space-y-2">
-                          {appliedDiscountCodes.map(discount => (
-                            <div key={discount.code} className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-2">
-                              <div>
-                                <span className="font-semibold text-green-800 text-sm">{discount.code}</span>
-                                <span className="text-xs text-green-600 ml-2">
-                                  {discount.type === 'percentage' ? `${discount.value}% OFF` : `£${discount.value} OFF`}
-                                </span>
-                              </div>
-                              <button
-                                onClick={() => removePromoCode(discount.code)}
-                                className="text-xs text-red-600 hover:text-red-800 font-medium"
-                              >
-                                Remove
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Enter code"
-                            value={promoCodeInput}
-                            onChange={(e) => {
-                              setPromoCodeInput(e.target.value.toUpperCase());
-                              setPromoCodeError('');
-                            }}
-                            className="flex-1 text-sm"
-                            disabled={isValidatingPromoCode}
-                          />
-                          <Button
-                            onClick={applyPromoCode}
-                            variant="outline"
-                            size="sm"
-                            disabled={!promoCodeInput.trim() || isValidatingPromoCode}
-                          >
-                            Apply
-                          </Button>
-                        </div>
-                      )}
-                      {promoCodeError && (
-                        <p className="text-red-500 text-xs mt-1">{promoCodeError}</p>
-                      )}
-                    </CollapsibleContent>
-                  </Collapsible>
-
-                  {/* Discount Applied Banner */}
-                  {hasValidDiscountCodes && (
-                    <div className="mt-3 bg-green-50 border border-green-200 rounded-lg p-2">
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="font-medium text-gray-700">Discount Applied:</span>
-                        <span className="font-bold text-green-600">-£{Math.floor(totalDiscountAmount)}</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Divider */}
-                  <div className="border-t border-gray-200 my-4" />
-
-                  {/* Total & CTA */}
-                  <div className="mb-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-gray-600 font-medium">Total:</span>
-                      <div className="text-right">
-                        {selectedPayment === 'monthly' ? (
-                          <>
-                            <span className="text-2xl font-bold text-gray-900">£{Math.floor(discountedBumperPrice / 12)}</span>
-                            <span className="text-gray-600">/mo</span>
-                            <p className="text-xs text-gray-500">12 payments of £{Math.floor(discountedBumperPrice / 12)}</p>
-                          </>
-                        ) : (
-                          <>
-                            <span className="text-2xl font-bold text-gray-900">£{discountedStripePrice}</span>
-                            <p className="text-xs text-green-600 font-medium">Save £{savings} vs monthly</p>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Complete Checkout Button */}
-                  <Button
-                    onClick={processPayment}
-                    disabled={isLoading}
-                    className={`w-full py-4 text-base font-bold rounded-lg shadow-lg animate-breathing ${
-                      selectedPayment === 'monthly'
-                        ? 'bg-orange-500 hover:bg-orange-600 text-white'
-                        : 'bg-green-600 hover:bg-green-700 text-white'
-                    }`}
-                  >
-                    {isLoading ? 'Processing...' : 'Complete Checkout'}
-                  </Button>
-
-                  {/* Payment Provider Logo */}
-                  <div className="text-center mt-3">
-                    <span className="text-xs text-gray-500 block mb-1">Powered by</span>
-                    <img 
-                      src={selectedPayment === 'monthly' ? bumperLogo : stripeLogo} 
-                      alt={selectedPayment === 'monthly' ? 'Bumper' : 'Stripe'} 
-                      className="h-5 mx-auto" 
-                    />
-                  </div>
-
-                  {/* Trust Badges - Grouped */}
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <div className="flex items-center justify-center gap-4 flex-wrap text-xs text-gray-600">
-                      <div className="flex items-center gap-1">
-                        <Lock className="w-3 h-3 text-green-600" />
-                        <span>SSL Encrypted</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <CreditCard className="w-3 h-3 text-green-600" />
-                        <span>Visa & Mastercard</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Check className="w-3 h-3 text-green-600" />
-                        <span>14-day refund</span>
-                      </div>
-                    </div>
-                    <div className="flex justify-center mt-3">
-                      <TrustpilotHeader className="h-6" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* CUSTOMER FORM (visually first on all devices via order-1) */}
-          <div className="flex-1 min-w-0 order-1">
+        <div className="flex flex-col gap-6 lg:gap-8 max-w-3xl mx-auto">
+          {/* SECTION 1: CONFIRM YOUR DETAILS */}
+          <div className="w-full">
             <Card id="customer-form" className="border border-gray-200 shadow-sm">
               <CardContent className="p-4 sm:p-6">
                 {/* Form Header */}
@@ -1092,29 +852,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       </div>
                     </div>
                   </div>
-
-                  {/* Mobile CTA (visible only on mobile) */}
-                  <div className="lg:hidden pt-4">
-                    <Button
-                      type="submit"
-                      disabled={isLoading}
-                      className={`w-full py-4 text-base font-bold rounded-lg shadow-lg animate-breathing ${
-                        selectedPayment === 'monthly'
-                          ? 'bg-orange-500 hover:bg-orange-600 text-white'
-                          : 'bg-green-600 hover:bg-green-700 text-white'
-                      }`}
-                    >
-                      {isLoading ? 'Processing...' : `Complete Checkout - £${selectedPayment === 'monthly' ? Math.floor(discountedBumperPrice / 12) + '/mo' : discountedStripePrice}`}
-                    </Button>
-                    <div className="text-center mt-3">
-                      <span className="text-xs text-gray-500">Powered by </span>
-                      <img 
-                        src={selectedPayment === 'monthly' ? bumperLogo : stripeLogo} 
-                        alt={selectedPayment === 'monthly' ? 'Bumper' : 'Stripe'} 
-                        className="h-4 inline-block ml-1" 
-                      />
-                    </div>
-                  </div>
                 </form>
 
                 {/* Help Text */}
@@ -1127,6 +864,257 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 </div>
               </CardContent>
             </Card>
+          </div>
+
+          {/* SECTION 2: PLAN SUMMARY */}
+          <div className="w-full">
+            <Card className="border-2 border-gray-200 shadow-lg overflow-hidden">
+              <CardContent className="p-4 sm:p-6">
+                {/* Plan Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+                      🛡️ Your {formatPlanName()} Plan
+                    </h2>
+                    <p className="text-sm text-gray-600 mt-1">{getDurationText()} Coverage</p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={onBack}
+                    className="flex items-center gap-1 text-xs"
+                  >
+                    <Edit className="w-3 h-3" />
+                    Change
+                  </Button>
+                </div>
+
+                {/* Start Date - Compact */}
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span className="text-sm font-medium text-green-800">
+                        Cover starts: {startDate && isToday(startDate) ? 'Today' : startDate ? format(startDate, 'd MMM yyyy') : 'Today'}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const picker = document.getElementById('start-date-picker');
+                        picker?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className="text-xs font-medium text-green-700 hover:text-green-800 underline"
+                    >
+                      Change
+                    </button>
+                  </div>
+                </div>
+
+                {/* Vehicle Details */}
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Vehicle:</span>
+                    <span className="font-semibold text-gray-900 uppercase">{vehicleData.make} {vehicleData.model}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Registration:</span>
+                    <span className="font-semibold text-gray-900 uppercase">{vehicleData.regNumber}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Claim Limit:</span>
+                    <span className="font-semibold text-gray-900">£{(updatedPricingData.claimLimit || 1250).toLocaleString()}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* SECTION 3: CHOOSE PAYMENT */}
+          <div className="w-full">
+            <Card className="border-2 border-gray-200 shadow-lg overflow-hidden">
+              <CardContent className="p-4 sm:p-6">
+                <p className="text-lg font-bold text-gray-900 mb-4">Choose Payment</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPayment('monthly')}
+                    className={`p-4 rounded-lg border-2 transition-all text-center ${
+                      selectedPayment === 'monthly'
+                        ? 'border-orange-500 bg-orange-50 shadow-md'
+                        : 'border-gray-200 bg-white hover:border-gray-300'
+                    }`}
+                  >
+                    <span className="text-xs text-gray-500 block mb-1">0% APR</span>
+                    <span className="text-xl font-bold text-gray-900">£{Math.floor(discountedBumperPrice / 12)}</span>
+                    <span className="text-sm text-gray-600 block">/month</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPayment('full')}
+                    className={`p-4 rounded-lg border-2 transition-all text-center relative ${
+                      selectedPayment === 'full'
+                        ? 'border-green-500 bg-green-50 shadow-md'
+                        : 'border-gray-200 bg-white hover:border-gray-300'
+                    }`}
+                  >
+                    <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      SAVE £{savings}
+                    </span>
+                    <span className="text-xs text-gray-500 block mb-1">Best Value</span>
+                    <span className="text-xl font-bold text-gray-900">£{discountedStripePrice}</span>
+                    <span className="text-sm text-gray-600 block">one-time</span>
+                  </button>
+                </div>
+
+                {/* Promo Code - Collapsible */}
+                <div className="mt-4">
+                  <Collapsible open={promoOpen} onOpenChange={setPromoOpen}>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm text-gray-600 hover:text-gray-900">
+                      <div className="flex items-center gap-2">
+                        <Tag className="w-4 h-4" />
+                        <span>Have a promo code?</span>
+                      </div>
+                      {promoOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pt-2">
+                      {appliedDiscountCodes.length > 0 ? (
+                        <div className="space-y-2">
+                          {appliedDiscountCodes.map(discount => (
+                            <div key={discount.code} className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-2">
+                              <div>
+                                <span className="font-semibold text-green-800 text-sm">{discount.code}</span>
+                                <span className="text-xs text-green-600 ml-2">
+                                  {discount.type === 'percentage' ? `${discount.value}% OFF` : `£${discount.value} OFF`}
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => removePromoCode(discount.code)}
+                                className="text-xs text-red-600 hover:text-red-800 font-medium"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Enter code"
+                            value={promoCodeInput}
+                            onChange={(e) => {
+                              setPromoCodeInput(e.target.value.toUpperCase());
+                              setPromoCodeError('');
+                            }}
+                            className="flex-1 text-sm"
+                            disabled={isValidatingPromoCode}
+                          />
+                          <Button
+                            onClick={applyPromoCode}
+                            variant="outline"
+                            size="sm"
+                            disabled={!promoCodeInput.trim() || isValidatingPromoCode}
+                          >
+                            Apply
+                          </Button>
+                        </div>
+                      )}
+                      {promoCodeError && (
+                        <p className="text-red-500 text-xs mt-1">{promoCodeError}</p>
+                      )}
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
+
+                {/* Discount Applied Banner */}
+                {hasValidDiscountCodes && (
+                  <div className="mt-3 bg-green-50 border border-green-200 rounded-lg p-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="font-medium text-gray-700">Discount Applied:</span>
+                      <span className="font-bold text-green-600">-£{Math.floor(totalDiscountAmount)}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Divider */}
+                <div className="border-t border-gray-200 my-4" />
+
+                {/* Total */}
+                <div className="mb-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600 font-medium">Total:</span>
+                    <div className="text-right">
+                      {selectedPayment === 'monthly' ? (
+                        <>
+                          <span className="text-2xl font-bold text-gray-900">£{Math.floor(discountedBumperPrice / 12)}</span>
+                          <span className="text-gray-600">/mo</span>
+                          <p className="text-xs text-gray-500">12 payments of £{Math.floor(discountedBumperPrice / 12)}</p>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-2xl font-bold text-gray-900">£{discountedStripePrice}</span>
+                          <p className="text-xs text-green-600 font-medium">Save £{savings} vs monthly</p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* SECTION 4: SINGLE CTA */}
+          <div className="w-full">
+            <Button
+              onClick={processPayment}
+              disabled={isLoading}
+              className={`w-full py-5 text-lg font-bold rounded-lg shadow-lg animate-breathing ${
+                selectedPayment === 'monthly'
+                  ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                  : 'bg-green-600 hover:bg-green-700 text-white'
+              }`}
+            >
+              {isLoading ? 'Processing...' : 'Complete Checkout'}
+            </Button>
+
+            {/* Legal Text */}
+            <p className="text-xs text-gray-500 text-center mt-3">
+              By completing your purchase, you agree to our{' '}
+              <a href="/terms" className="underline hover:text-gray-700">Terms & Conditions</a>
+              {' '}and{' '}
+              <a href="/privacy" className="underline hover:text-gray-700">Privacy Policy</a>.
+            </p>
+
+            {/* Payment Provider Logo */}
+            <div className="text-center mt-4">
+              <span className="text-xs text-gray-500 block mb-1">Powered by</span>
+              <img 
+                src={selectedPayment === 'monthly' ? bumperLogo : stripeLogo} 
+                alt={selectedPayment === 'monthly' ? 'Bumper' : 'Stripe'} 
+                className="h-5 mx-auto" 
+              />
+            </div>
+
+            {/* Trust Badges */}
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="flex items-center justify-center gap-4 flex-wrap text-xs text-gray-600">
+                <div className="flex items-center gap-1">
+                  <Lock className="w-3 h-3 text-green-600" />
+                  <span>SSL Encrypted</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <CreditCard className="w-3 h-3 text-green-600" />
+                  <span>Visa & Mastercard</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Check className="w-3 h-3 text-green-600" />
+                  <span>14-day refund</span>
+                </div>
+              </div>
+              <div className="flex justify-center mt-3">
+                <TrustpilotHeader className="h-6" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
