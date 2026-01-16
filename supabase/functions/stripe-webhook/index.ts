@@ -282,6 +282,19 @@ serve(async (req) => {
 
             logStep("Payment processed successfully via webhook", processData);
             
+            // If this is from a live quote, update the quote status
+            if (fullSession.metadata?.source === 'live_quote' && fullSession.metadata?.quote_id) {
+              logStep("Updating live quote status to paid", { quoteId: fullSession.metadata.quote_id });
+              await supabaseClient
+                .from('live_quotes')
+                .update({ 
+                  status: 'paid',
+                  paid_at: new Date().toISOString(),
+                  policy_number: processData?.warrantyNumber || processData?.policyNumber
+                })
+                .eq('id', fullSession.metadata.quote_id);
+            }
+            
             // Fire server-side Google Ads conversion
             await fireServerSideConversion(
               fullSession,

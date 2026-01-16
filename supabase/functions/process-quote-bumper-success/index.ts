@@ -1,0 +1,310 @@
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+const logStep = (step: string, details?: any) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  console.log(`[PROCESS-QUOTE-BUMPER-SUCCESS] ${step}${detailsStr}`);
+};
+
+serve(async (req) => {
+  const url = new URL(req.url);
+  logStep(`Incoming request: ${req.method} ${url.pathname}${url.search}`);
+  
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    logStep("Function started");
+
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
+    // Get quote token from URL
+    const quoteToken = url.searchParams.get('quote_token');
+    
+    if (!quoteToken) {
+      logStep("No quote token provided");
+      return new Response(JSON.stringify({ error: 'Missing quote token' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    logStep("Fetching quote data", { quoteToken: quoteToken.substring(0, 8) + '...' });
+
+    // Fetch the quote
+    const { data: quote, error: quoteError } = await supabaseClient
+      .from('live_quotes')
+      .select('*')
+      .eq('access_token', quoteToken)
+      .single();
+
+    if (quoteError || !quote) {
+      logStep("Quote not found", { error: quoteError?.message });
+      return new Response(JSON.stringify({ error: 'Quote not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Check if already paid
+    if (quote.status === 'paid') {
+      logStep("Quote already paid, redirecting to thank you page");
+      
+      const thankYouUrl = buildThankYouUrl(quote);
+      return new Response(null, {
+        status: 302,
+        headers: { ...corsHeaders, 'Location': thankYouUrl }
+      });
+    }
+
+    logStep("Quote found", { 
+      quoteId: quote.id, 
+      status: quote.status,
+      planType: quote.plan_type,
+      monthlyPrice: quote.monthly_price,
+      upfrontPrice: quote.upfront_price
+    });
+
+    // Update quote status to paid
+    const { error: updateError } = await supabaseClient
+      .from('live_quotes')
+      .update({ 
+        status: 'paid',
+        paid_at: new Date().toISOString()
+      })
+      .eq('id', quote.id);
+
+    if (updateError) {
+      logStep("Error updating quote status", { error: updateError.message });
+      throw new Error(`Failed to update quote status: ${updateError.message}`);
+    }
+
+    logStep("Quote marked as paid, now creating warranty...");
+
+    // Calculate total amount (Bumper = 12 months of monthly payments)
+    const totalAmount = quote.monthly_price * 12;
+    const totalMonths = quote.duration_months + (quote.bonus_months || 0);
+
+    // Parse customer name
+    const customerName = quote.customer_name || '';
+    const nameParts = customerName.split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    // Build customer data for handle-successful-payment
+    const customerData = {
+      email: quote.customer_email,
+      first_name: firstName,
+      last_name: lastName,
+      fullName: customerName,
+      phone: quote.customer_phone || '',
+      mobile: quote.customer_phone || '',
+      address_line1: quote.customer_address?.street || '',
+      city: quote.customer_address?.town || '',
+      postcode: quote.customer_address?.postcode || ''
+    };
+
+    // Build vehicle data
+    const vehicleData = {
+      regNumber: quote.vehicle_reg,
+      make: quote.vehicle_make,
+      model: quote.vehicle_model,
+      year: quote.vehicle_year,
+      mileage: quote.vehicle_mileage || '',
+      fuelType: quote.vehicle_fuel_type || '',
+      transmission: quote.vehicle_transmission || ''
+    };
+
+    // Map duration to payment type format
+    const paymentType = `${totalMonths}months`;
+
+    // Build add-ons from quote
+    const protectionAddOns = {
+      breakdown: quote.breakdown_included || false,
+      rental: quote.rental_included || false,
+      tyre: false,
+      wearAndTear: false,
+      european: false,
+      transfer: false,
+      motRepair: false,
+      motFee: false
+    };
+
+    // Generate bumper order ID
+    const bumperOrderId = `LQ-${quote.id.substring(0, 8)}-${Date.now()}`;
+
+    logStep("Invoking handle-successful-payment", {
+      customerEmail: customerData.email,
+      planId: quote.plan_type,
+      paymentType,
+      finalAmount: totalAmount,
+      vehicleReg: vehicleData.regNumber,
+      bumperOrderId
+    });
+
+    // Call handle-successful-payment to create the warranty
+    const { data: paymentResult, error: paymentError } = await supabaseClient.functions.invoke('handle-successful-payment', {
+      body: {
+        customerData,
+        vehicleData,
+        planId: quote.plan_type,
+        paymentType,
+        finalAmount: totalAmount,
+        discountCode: null,
+        protectionAddOns,
+        source: 'bumper',
+        bumperOrderId,
+        labourRate: quote.labour_rate || 50,
+        claimLimit: quote.claim_limit || 1250,
+        voluntaryExcess: quote.excess_amount || 75
+      }
+    });
+
+    if (paymentError) {
+      logStep("Error from handle-successful-payment", { error: paymentError.message });
+      throw new Error(`Failed to create warranty: ${paymentError.message}`);
+    }
+
+    logStep("Warranty created successfully", { 
+      policyNumber: paymentResult?.policyNumber,
+      warrantyNumber: paymentResult?.warrantyNumber 
+    });
+
+    // Update quote with policy number
+    const policyNumber = paymentResult?.policyNumber || paymentResult?.warrantyNumber;
+    if (policyNumber) {
+      await supabaseClient
+        .from('live_quotes')
+        .update({ policy_number: policyNumber })
+        .eq('id', quote.id);
+    }
+
+    // Send welcome email
+    try {
+      logStep("Sending welcome email...");
+      
+      const { error: emailError } = await supabaseClient.functions.invoke('send-welcome-email-manual', {
+        body: {
+          policyId: paymentResult?.policyId,
+          customerEmail: customerData.email
+        }
+      });
+
+      if (emailError) {
+        logStep("Warning: Welcome email failed", { error: emailError.message });
+      } else {
+        logStep("Welcome email sent successfully");
+      }
+    } catch (emailErr) {
+      logStep("Warning: Welcome email error", { error: String(emailErr) });
+    }
+
+    // Build thank you URL with all parameters
+    const thankYouUrl = buildThankYouUrl(quote, policyNumber, totalAmount, customerData, vehicleData);
+    
+    logStep("Redirecting to thank you page", { url: thankYouUrl });
+
+    return new Response(null, {
+      status: 302,
+      headers: {
+        ...corsHeaders,
+        'Location': thankYouUrl
+      }
+    });
+
+  } catch (error) {
+    logStep("Error processing quote payment", { error: String(error) });
+    
+    // Redirect to quote page with error
+    const url = new URL(req.url);
+    const quoteToken = url.searchParams.get('quote_token');
+    const errorUrl = quoteToken 
+      ? `https://buyawarranty.co.uk/quote/${quoteToken}?failed=1`
+      : 'https://buyawarranty.co.uk/?error=payment_failed';
+    
+    return new Response(null, {
+      status: 302,
+      headers: {
+        ...corsHeaders,
+        'Location': errorUrl
+      }
+    });
+  }
+});
+
+function buildThankYouUrl(
+  quote: any, 
+  policyNumber?: string, 
+  totalAmount?: number,
+  customerData?: any,
+  vehicleData?: any
+): string {
+  const baseUrl = 'https://buyawarranty.co.uk/thank-you';
+  const params = new URLSearchParams();
+  
+  // Source and payment info
+  params.set('source', 'bumper');
+  params.set('plan', quote.plan_type || 'Platinum');
+  params.set('duration', `${quote.duration_months + (quote.bonus_months || 0)}months`);
+  params.set('payment', 'bumper');
+  
+  // Amount - use monthly price * 12 for Bumper total
+  const amount = totalAmount || (quote.monthly_price * 12);
+  params.set('final_amount', amount.toString());
+  params.set('monthly_price', quote.monthly_price?.toString() || '');
+  
+  // Policy number
+  if (policyNumber || quote.policy_number) {
+    params.set('policy_number', policyNumber || quote.policy_number);
+  }
+  
+  // Customer details for conversion tracking
+  if (customerData) {
+    params.set('email', customerData.email || quote.customer_email || '');
+    params.set('first_name', customerData.first_name || '');
+    params.set('last_name', customerData.last_name || '');
+    params.set('mobile', customerData.phone || quote.customer_phone || '');
+    params.set('street', customerData.address_line1 || '');
+    params.set('postcode', customerData.postcode || '');
+  } else {
+    params.set('email', quote.customer_email || '');
+  }
+  
+  // Vehicle details
+  if (vehicleData) {
+    params.set('vehicle_reg', vehicleData.regNumber || quote.vehicle_reg || '');
+    params.set('vehicle_make', vehicleData.make || quote.vehicle_make || '');
+    params.set('vehicle_model', vehicleData.model || quote.vehicle_model || '');
+    params.set('mileage', vehicleData.mileage || quote.vehicle_mileage || '');
+  } else {
+    params.set('vehicle_reg', quote.vehicle_reg || '');
+    params.set('vehicle_make', quote.vehicle_make || '');
+    params.set('vehicle_model', quote.vehicle_model || '');
+  }
+  
+  // Cover details
+  params.set('claim_limit', quote.claim_limit?.toString() || '1250');
+  params.set('excess', quote.excess_amount?.toString() || '75');
+  params.set('labour_rate', quote.labour_rate?.toString() || '50');
+  
+  // Add-ons
+  const addons = [];
+  if (quote.breakdown_included) addons.push('breakdown');
+  if (quote.rental_included) addons.push('rental');
+  if (quote.boost_addon) addons.push('boost');
+  if (addons.length > 0) {
+    params.set('addons', addons.join(','));
+  }
+  
+  return `${baseUrl}?${params.toString()}`;
+}

@@ -187,6 +187,9 @@ verify_jwt = false
 [functions.quote-payment]
 verify_jwt = false
 
+[functions.process-quote-bumper-success]
+verify_jwt = false
+
 [functions.send-trustpilot-review-request]
 verify_jwt = false
 

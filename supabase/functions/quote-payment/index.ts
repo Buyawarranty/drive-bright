@@ -165,6 +165,36 @@ serve(async (req) => {
       // Calculate amount in pence
       const amountInPence = Math.round(quote.upfront_price * 100);
 
+      // Calculate total months for display
+      const totalMonths = quote.duration_months + (quote.bonus_months || 0);
+      
+      // Parse customer name
+      const customerName = quote.customer_name || '';
+      const nameParts = customerName.split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      // Build thank you URL with all parameters for conversion tracking and display
+      const thankYouParams = new URLSearchParams({
+        source: 'stripe',
+        plan: quote.plan_type || 'Platinum',
+        duration: `${totalMonths}months`,
+        payment: 'full',
+        final_amount: quote.upfront_price.toString(),
+        email: quote.customer_email || '',
+        first_name: firstName,
+        last_name: lastName,
+        mobile: quote.customer_phone || '',
+        vehicle_reg: quote.vehicle_reg || '',
+        vehicle_make: quote.vehicle_make || '',
+        vehicle_model: quote.vehicle_model || '',
+        mileage: quote.vehicle_mileage || '',
+        claim_limit: (quote.claim_limit || 1250).toString(),
+        excess: (quote.excess_amount || 75).toString(),
+        labour_rate: (quote.labour_rate || 50).toString(),
+        session_id: '{CHECKOUT_SESSION_ID}'
+      });
+
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: [
@@ -172,7 +202,7 @@ serve(async (req) => {
             price_data: {
               currency: 'gbp',
               product_data: {
-                name: `${quote.plan_type} Vehicle Warranty - ${quote.duration_months + quote.bonus_months} Months`,
+                name: `${quote.plan_type} Vehicle Warranty - ${totalMonths} Months`,
                 description: `${quote.vehicle_make} ${quote.vehicle_model} (${quote.vehicle_reg})`,
               },
               unit_amount: amountInPence,
@@ -182,13 +212,26 @@ serve(async (req) => {
         ],
         mode: 'payment',
         customer_email: quote.customer_email,
-        success_url: `${origin}/quote/${accessToken}/success?method=stripe&session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${origin}/thank-you?${thankYouParams.toString()}`,
         cancel_url: `${origin}/quote/${accessToken}?cancelled=1`,
         metadata: {
           quote_id: quote.id,
           access_token: accessToken,
           vehicle_reg: quote.vehicle_reg,
-          source: 'live_quote'
+          source: 'live_quote',
+          plan_type: quote.plan_type,
+          payment_type: `${totalMonths}months`,
+          final_amount: quote.upfront_price.toString(),
+          customer_email: quote.customer_email,
+          customer_name: customerName,
+          customer_phone: quote.customer_phone || '',
+          vehicle_make: quote.vehicle_make,
+          vehicle_model: quote.vehicle_model,
+          vehicle_year: quote.vehicle_year,
+          vehicle_mileage: quote.vehicle_mileage || '',
+          claim_limit: (quote.claim_limit || 1250).toString(),
+          excess_amount: (quote.excess_amount || 75).toString(),
+          labour_rate: (quote.labour_rate || 50).toString()
         }
       });
 
@@ -239,6 +282,20 @@ serve(async (req) => {
         postcode,
         hasProvidedData: !!providedCustomerData
       });
+
+      // Store customer address data in the quote for later processing
+      await supabaseClient
+        .from('live_quotes')
+        .update({ 
+          customer_address: {
+            street: street,
+            town: town,
+            postcode: postcode,
+            addressLine2: addressLine2
+          },
+          customer_phone: phone
+        })
+        .eq('id', quote.id);
 
       const successUrl = `https://mzlpuxzwyrcyrgrongeb.supabase.co/functions/v1/process-quote-bumper-success?quote_token=${accessToken}`;
       const failureUrl = `${origin}/quote/${accessToken}?failed=1`;
