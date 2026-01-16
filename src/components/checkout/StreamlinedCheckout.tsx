@@ -216,6 +216,43 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     trackStripeCheckoutPageLoad();
   }, []);
 
+  // Auto-validate pre-filled fields from Step 2 (First Name, Email, Phone)
+  useEffect(() => {
+    const autoValidatePrefilledFields = () => {
+      const fieldsToCheck = ['first_name', 'email', 'phone'];
+      const newValidatedFields: { [key: string]: boolean } = {};
+
+      fieldsToCheck.forEach(field => {
+        const value = customerData[field as keyof typeof customerData];
+        if (value && typeof value === 'string' && value.trim()) {
+          let isValid = false;
+          switch (field) {
+            case 'first_name':
+              isValid = value.trim().length > 0;
+              break;
+            case 'email':
+              isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+              break;
+            case 'phone':
+              const cleanedPhone = value.replace(/\s/g, '');
+              isValid = /^(?:(?:\+44)|(?:0))(?:\d{10}|\d{9})$/.test(cleanedPhone);
+              break;
+          }
+          if (isValid) {
+            newValidatedFields[field] = true;
+          }
+        }
+      });
+
+      if (Object.keys(newValidatedFields).length > 0) {
+        setValidatedFields(prev => ({ ...prev, ...newValidatedFields }));
+      }
+    };
+
+    // Run on mount if we have pre-filled data
+    autoValidatePrefilledFields();
+  }, []); // Run once on mount
+
   // Reset loading on mount
   useEffect(() => {
     setIsLoading(false);
