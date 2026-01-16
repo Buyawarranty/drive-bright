@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ArrowLeft, CheckCircle, Edit, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, Tag } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Edit, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, Tag, Shield } from 'lucide-react';
 import { PostcodeAutocomplete } from '@/components/ui/uk-postcode-autocomplete';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -930,97 +930,88 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </Card>
           </div>
 
-          {/* SECTION 3: CHOOSE PAYMENT - Premium Design */}
+          {/* SECTION 3: CHOOSE PAYMENT - Warm, Friendly Design */}
           <div className="w-full">
             {/* Header with Trust Signals */}
-            <div className="text-center mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">
-                Choose how you'd like to pay 🔒
+            <div className="text-center mb-6 px-2">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+                How would you like to pay?
               </h2>
-              <div className="flex items-center justify-center gap-2 text-sm text-gray-600 mb-3">
-                <Lock className="w-4 h-4 text-green-600" />
-                <span>Secure Checkout</span>
+              <p className="text-sm text-gray-500 mb-4">Choose the option that works best for you</p>
+              <div className="flex items-center justify-center gap-4 flex-wrap">
+                <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                  <Lock className="w-4 h-4 text-green-600" />
+                  <span>Secure Checkout</span>
+                </div>
+                <div className="flex items-center">
+                  <TrustpilotHeader className="h-6" />
+                </div>
               </div>
-              <div className="flex justify-center">
-                <TrustpilotHeader className="h-7" />
-              </div>
-            </div>
-
-            {/* Savings Banner */}
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-6 flex items-center justify-center gap-2">
-              <span className="text-lg">💷</span>
-              <span className="text-sm font-medium text-green-800">
-                <span className="font-bold text-green-700">Pay in Full</span> for extra savings
-              </span>
             </div>
 
             {/* Payment Cards - Side by Side */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-6 px-1 sm:px-0">
               {/* Pay Monthly Card */}
               <button
                 type="button"
                 onClick={() => setSelectedPayment('monthly')}
-                className={`relative text-left p-5 rounded-xl border-2 transition-all ${
+                className={`relative text-left p-5 sm:p-6 rounded-2xl border-2 transition-all duration-300 ${
                   selectedPayment === 'monthly'
-                    ? 'border-orange-500 bg-orange-50/50 shadow-lg ring-2 ring-orange-200'
-                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
+                    ? 'border-orange-400 bg-gradient-to-br from-orange-50 to-amber-50 shadow-xl shadow-orange-100/50'
+                    : 'border-gray-200 bg-white hover:border-orange-200 hover:shadow-lg'
                 }`}
               >
                 {/* 0% APR Badge */}
-                <span className="absolute -top-3 left-4 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                <span className="absolute -top-3 left-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-md">
                   0% APR
                 </span>
 
-                {/* Radio Circle */}
+                {/* Selection Indicator */}
                 <div className="flex items-start gap-3 mt-2">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
-                    selectedPayment === 'monthly' ? 'border-orange-500 bg-orange-500' : 'border-gray-300'
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mt-0.5 transition-all ${
+                    selectedPayment === 'monthly' 
+                      ? 'border-orange-500 bg-orange-500 shadow-md shadow-orange-200' 
+                      : 'border-gray-300 bg-white'
                   }`}>
                     {selectedPayment === 'monthly' && (
-                      <div className="w-2 h-2 rounded-full bg-white" />
+                      <Check className="w-4 h-4 text-white" />
                     )}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">Pay Monthly</h3>
-                    <p className="text-sm text-gray-600 mb-2">Total: £{discountedBumperPrice.toLocaleString()}</p>
-                    <p className="text-3xl font-bold text-gray-900 mb-1">
-                      £{Math.floor(discountedBumperPrice / 12)}<span className="text-lg font-normal text-gray-600">/month</span>
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Pay Monthly</h3>
+                    <p className="text-3xl sm:text-4xl font-bold text-gray-900 mb-1">
+                      £{Math.floor(discountedBumperPrice / 12)}<span className="text-base sm:text-lg font-normal text-gray-500">/month</span>
                     </p>
-                    <p className="text-sm text-gray-500 mb-4">Only 12 payments</p>
+                    <p className="text-sm text-gray-500 mb-4">12 easy payments • Total: £{discountedBumperPrice.toLocaleString()}</p>
 
                     {/* Benefits */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-gray-700">
-                        <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                        <span>Soft search only</span>
+                    <div className="space-y-2.5">
+                      <div className="flex items-center gap-2.5 text-sm text-gray-700">
+                        <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                          <Check className="w-3 h-3 text-green-600" />
+                        </div>
+                        <span>Soft search only — no credit impact</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-700">
-                        <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                        <span>No impact on credit score</span>
+                      <div className="flex items-center gap-2.5 text-sm text-gray-700">
+                        <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                          <Check className="w-3 h-3 text-green-600" />
+                        </div>
+                        <span>No hidden fees or surprises</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-700">
-                        <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                        <span>No hidden fees</span>
+                      <div className="flex items-center gap-2.5 text-sm text-gray-700">
+                        <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                          <Check className="w-3 h-3 text-green-600" />
+                        </div>
+                        <span>Spread the cost easily</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* CTA Button */}
-                <div className="mt-5">
-                  <div className={`w-full py-3 rounded-lg font-bold text-center transition-colors ${
-                    selectedPayment === 'monthly'
-                      ? 'bg-orange-500 text-white'
-                      : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    Complete checkout
-                  </div>
-                </div>
-
                 {/* Powered By */}
-                <div className="mt-3 pt-3 border-t border-gray-200 text-center">
+                <div className="mt-5 pt-4 border-t border-gray-100 text-center">
                   <span className="text-xs text-gray-400">Powered by</span>
-                  <img src={bumperLogo} alt="Bumper" className="h-5 mx-auto mt-1" />
+                  <img src={bumperLogo} alt="Bumper" className="h-5 mx-auto mt-1.5 opacity-80" />
                 </div>
               </button>
 
@@ -1028,67 +1019,64 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedPayment('full')}
-                className={`relative text-left p-5 rounded-xl border-2 transition-all ${
+                className={`relative text-left p-5 sm:p-6 rounded-2xl border-2 transition-all duration-300 ${
                   selectedPayment === 'full'
-                    ? 'border-green-500 bg-green-50/50 shadow-lg ring-2 ring-green-200'
-                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
+                    ? 'border-green-400 bg-gradient-to-br from-green-50 to-emerald-50 shadow-xl shadow-green-100/50'
+                    : 'border-gray-200 bg-white hover:border-green-200 hover:shadow-lg'
                 }`}
               >
                 {/* Best Value Badge */}
-                <span className="absolute -top-3 left-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                  BEST VALUE
+                <span className="absolute -top-3 left-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-md">
+                  ✨ BEST VALUE
                 </span>
 
-                {/* Radio Circle */}
+                {/* Selection Indicator */}
                 <div className="flex items-start gap-3 mt-2">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
-                    selectedPayment === 'full' ? 'border-green-500 bg-green-500' : 'border-gray-300'
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mt-0.5 transition-all ${
+                    selectedPayment === 'full' 
+                      ? 'border-green-500 bg-green-500 shadow-md shadow-green-200' 
+                      : 'border-gray-300 bg-white'
                   }`}>
                     {selectedPayment === 'full' && (
-                      <div className="w-2 h-2 rounded-full bg-white" />
+                      <Check className="w-4 h-4 text-white" />
                     )}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">Pay in Full</h3>
-                    <p className="text-sm text-gray-500 mb-2 line-through">Was: £{bumperTotalPrice.toLocaleString()}</p>
-                    <p className="text-3xl font-bold text-gray-900 mb-1">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Pay in Full</h3>
+                    <p className="text-sm text-gray-400 line-through mb-1">Was £{bumperTotalPrice.toLocaleString()}</p>
+                    <p className="text-3xl sm:text-4xl font-bold text-gray-900 mb-1">
                       £{discountedStripePrice.toLocaleString()}
                     </p>
-                    <p className="text-sm text-green-600 font-semibold mb-4">You save £{savings}</p>
+                    <p className="text-sm text-green-600 font-semibold mb-4">🎉 You save £{savings}!</p>
 
                     {/* Benefits */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-gray-700">
-                        <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                        <span>Instant 10% discount</span>
+                    <div className="space-y-2.5">
+                      <div className="flex items-center gap-2.5 text-sm text-gray-700">
+                        <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                          <Check className="w-3 h-3 text-green-600" />
+                        </div>
+                        <span>Instant 10% discount applied</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-700">
-                        <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                        <span>Immediate cover</span>
+                      <div className="flex items-center gap-2.5 text-sm text-gray-700">
+                        <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                          <Check className="w-3 h-3 text-green-600" />
+                        </div>
+                        <span>Cover starts immediately</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-700">
-                        <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                        <span>No monthly payments</span>
+                      <div className="flex items-center gap-2.5 text-sm text-gray-700">
+                        <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                          <Check className="w-3 h-3 text-green-600" />
+                        </div>
+                        <span>One simple payment — done!</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* CTA Button */}
-                <div className="mt-5">
-                  <div className={`w-full py-3 rounded-lg font-bold text-center transition-colors ${
-                    selectedPayment === 'full'
-                      ? 'bg-green-600 text-white'
-                      : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    Complete checkout
-                  </div>
-                </div>
-
                 {/* Powered By */}
-                <div className="mt-3 pt-3 border-t border-gray-200 text-center">
+                <div className="mt-5 pt-4 border-t border-gray-100 text-center">
                   <span className="text-xs text-gray-400">Powered by</span>
-                  <img src={stripeLogo} alt="Stripe" className="h-5 mx-auto mt-1" />
+                  <img src={stripeLogo} alt="Stripe" className="h-5 mx-auto mt-1.5 opacity-80" />
                 </div>
               </button>
             </div>
@@ -1165,57 +1153,64 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </Card>
 
             {/* Primary CTA Button */}
-            <Button
-              onClick={processPayment}
-              disabled={isLoading}
-              className={`w-full py-3 md:py-4 text-lg font-bold rounded-lg shadow-lg animate-breathing ${
-                selectedPayment === 'monthly'
-                  ? 'bg-orange-500 hover:bg-orange-600 text-white'
-                  : 'bg-green-600 hover:bg-green-700 text-white'
-              }`}
-            >
-              {isLoading ? 'Processing...' : selectedPayment === 'monthly' ? 'Complete Monthly Checkout' : 'Complete Full Payment'}
-            </Button>
+            <div className="px-1 sm:px-0">
+              <Button
+                onClick={processPayment}
+                disabled={isLoading}
+                className={`w-full py-4 md:py-5 text-base sm:text-lg font-bold rounded-xl shadow-lg animate-breathing transition-all duration-300 ${
+                  selectedPayment === 'monthly'
+                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-orange-200/50'
+                    : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-green-200/50'
+                }`}
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Processing...
+                  </span>
+                ) : (
+                  selectedPayment === 'monthly' ? 'Complete Monthly Checkout' : 'Complete One-Time Payment'
+                )}
+              </Button>
+            </div>
 
             {/* Legal Text */}
-            <p className="text-xs text-gray-500 text-center mt-3 mb-6">
+            <p className="text-xs text-gray-400 text-center mt-4 mb-6 px-4">
               By completing your purchase, you're agreeing to our Terms & Conditions.
             </p>
 
             {/* Footer Trust Section */}
-            <Card className="border border-gray-200 shadow-sm">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-center gap-4 sm:gap-6 flex-wrap text-xs text-gray-600 mb-4">
-                  <div className="flex items-center gap-1.5">
-                    <Lock className="w-4 h-4 text-green-600" />
-                    <span>SSL Encrypted</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <CreditCard className="w-4 h-4 text-blue-600" />
-                    <span>Visa & Mastercard</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Check className="w-4 h-4 text-green-600" />
-                    <span>Secure Payments</span>
-                  </div>
+            <div className="bg-gray-50 rounded-xl p-4 sm:p-5 mx-1 sm:mx-0">
+              <div className="flex items-center justify-center gap-3 sm:gap-6 flex-wrap text-xs sm:text-sm text-gray-600 mb-4">
+                <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full shadow-sm">
+                  <Lock className="w-4 h-4 text-green-600" />
+                  <span>SSL Encrypted</span>
                 </div>
-                <div className="text-center text-sm text-gray-600">
-                  Need help?{' '}
-                  <a href="tel:03302295040" className="text-orange-600 hover:text-orange-700 font-medium">
-                    Call us on 0330 229 5040
-                  </a>
-                  {' '}or{' '}
-                  <a 
-                    href="https://wa.me/447960128083" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-green-600 hover:text-green-700 font-medium"
-                  >
-                    WhatsApp us
-                  </a>
+                <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full shadow-sm">
+                  <CreditCard className="w-4 h-4 text-blue-600" />
+                  <span>Visa & Mastercard</span>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full shadow-sm">
+                  <Shield className="w-4 h-4 text-green-600" />
+                  <span>Secure</span>
+                </div>
+              </div>
+              <div className="text-center text-sm text-gray-600">
+                <span className="text-gray-500">Questions?</span>{' '}
+                <a href="tel:03302295040" className="text-orange-600 hover:text-orange-700 font-medium">
+                  Call 0330 229 5040
+                </a>
+                {' '}or{' '}
+                <a 
+                  href="https://wa.me/447960128083" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-green-600 hover:text-green-700 font-medium"
+                >
+                  WhatsApp us
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
