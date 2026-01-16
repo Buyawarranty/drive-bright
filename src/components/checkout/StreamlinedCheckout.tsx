@@ -930,101 +930,227 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </Card>
           </div>
 
-          {/* SECTION 3: CHOOSE PAYMENT */}
+          {/* SECTION 3: CHOOSE PAYMENT - Premium Design */}
           <div className="w-full">
-            <Card className="border-2 border-gray-200 shadow-lg overflow-hidden">
-              <CardContent className="p-4 sm:p-6">
-                <p className="text-lg font-bold text-gray-900 mb-4">Choose Payment</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPayment('monthly')}
-                    className={`p-4 rounded-lg border-2 transition-all text-center ${
-                      selectedPayment === 'monthly'
-                        ? 'border-orange-500 bg-orange-50 shadow-md'
-                        : 'border-gray-200 bg-white hover:border-gray-300'
-                    }`}
-                  >
-                    <span className="text-xs text-gray-500 block mb-1">0% APR</span>
-                    <span className="text-xl font-bold text-gray-900">£{Math.floor(discountedBumperPrice / 12)}</span>
-                    <span className="text-sm text-gray-600 block">/month</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPayment('full')}
-                    className={`p-4 rounded-lg border-2 transition-all text-center relative ${
-                      selectedPayment === 'full'
-                        ? 'border-green-500 bg-green-50 shadow-md'
-                        : 'border-gray-200 bg-white hover:border-gray-300'
-                    }`}
-                  >
-                    <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                      SAVE £{savings}
-                    </span>
-                    <span className="text-xs text-gray-500 block mb-1">Best Value</span>
-                    <span className="text-xl font-bold text-gray-900">£{discountedStripePrice}</span>
-                    <span className="text-sm text-gray-600 block">one-time</span>
-                  </button>
+            {/* Header with Trust Signals */}
+            <div className="text-center mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">
+                Choose how you'd like to pay 🔒
+              </h2>
+              <div className="flex items-center justify-center gap-2 text-sm text-gray-600 mb-3">
+                <Lock className="w-4 h-4 text-green-600" />
+                <span>Secure Checkout</span>
+              </div>
+              <div className="flex justify-center">
+                <TrustpilotHeader className="h-7" />
+              </div>
+            </div>
+
+            {/* Savings Banner */}
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-6 flex items-center justify-center gap-2">
+              <span className="text-lg">💷</span>
+              <span className="text-sm font-medium text-green-800">
+                <span className="font-bold text-green-700">Pay in Full</span> for extra savings
+              </span>
+            </div>
+
+            {/* Payment Cards - Side by Side */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              {/* Pay Monthly Card */}
+              <button
+                type="button"
+                onClick={() => setSelectedPayment('monthly')}
+                className={`relative text-left p-5 rounded-xl border-2 transition-all ${
+                  selectedPayment === 'monthly'
+                    ? 'border-orange-500 bg-orange-50/50 shadow-lg ring-2 ring-orange-200'
+                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
+                }`}
+              >
+                {/* 0% APR Badge */}
+                <span className="absolute -top-3 left-4 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                  0% APR
+                </span>
+
+                {/* Radio Circle */}
+                <div className="flex items-start gap-3 mt-2">
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
+                    selectedPayment === 'monthly' ? 'border-orange-500 bg-orange-500' : 'border-gray-300'
+                  }`}>
+                    {selectedPayment === 'monthly' && (
+                      <div className="w-2 h-2 rounded-full bg-white" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">Pay Monthly</h3>
+                    <p className="text-sm text-gray-600 mb-2">Total: £{discountedBumperPrice.toLocaleString()}</p>
+                    <p className="text-3xl font-bold text-gray-900 mb-1">
+                      £{Math.floor(discountedBumperPrice / 12)}<span className="text-lg font-normal text-gray-600">/month</span>
+                    </p>
+                    <p className="text-sm text-gray-500 mb-4">Only 12 payments</p>
+
+                    {/* Benefits */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <span>Soft search only</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <span>No impact on credit score</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <span>No hidden fees</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Promo Code - Collapsible */}
-                <div className="mt-4">
-                  <Collapsible open={promoOpen} onOpenChange={setPromoOpen}>
-                    <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm text-gray-600 hover:text-gray-900">
-                      <div className="flex items-center gap-2">
-                        <Tag className="w-4 h-4" />
-                        <span>Have a promo code?</span>
-                      </div>
-                      {promoOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="pt-2">
-                      {appliedDiscountCodes.length > 0 ? (
-                        <div className="space-y-2">
-                          {appliedDiscountCodes.map(discount => (
-                            <div key={discount.code} className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-2">
-                              <div>
-                                <span className="font-semibold text-green-800 text-sm">{discount.code}</span>
-                                <span className="text-xs text-green-600 ml-2">
-                                  {discount.type === 'percentage' ? `${discount.value}% OFF` : `£${discount.value} OFF`}
-                                </span>
-                              </div>
-                              <button
-                                onClick={() => removePromoCode(discount.code)}
-                                className="text-xs text-red-600 hover:text-red-800 font-medium"
-                              >
-                                Remove
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Enter code"
-                            value={promoCodeInput}
-                            onChange={(e) => {
-                              setPromoCodeInput(e.target.value.toUpperCase());
-                              setPromoCodeError('');
-                            }}
-                            className="flex-1 text-sm"
-                            disabled={isValidatingPromoCode}
-                          />
-                          <Button
-                            onClick={applyPromoCode}
-                            variant="outline"
-                            size="sm"
-                            disabled={!promoCodeInput.trim() || isValidatingPromoCode}
-                          >
-                            Apply
-                          </Button>
-                        </div>
-                      )}
-                      {promoCodeError && (
-                        <p className="text-red-500 text-xs mt-1">{promoCodeError}</p>
-                      )}
-                    </CollapsibleContent>
-                  </Collapsible>
+                {/* CTA Button */}
+                <div className="mt-5">
+                  <div className={`w-full py-3 rounded-lg font-bold text-center transition-colors ${
+                    selectedPayment === 'monthly'
+                      ? 'bg-orange-500 text-white'
+                      : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    Complete checkout
+                  </div>
                 </div>
+
+                {/* Powered By */}
+                <div className="mt-3 pt-3 border-t border-gray-200 text-center">
+                  <span className="text-xs text-gray-400">Powered by</span>
+                  <img src={bumperLogo} alt="Bumper" className="h-5 mx-auto mt-1" />
+                </div>
+              </button>
+
+              {/* Pay in Full Card */}
+              <button
+                type="button"
+                onClick={() => setSelectedPayment('full')}
+                className={`relative text-left p-5 rounded-xl border-2 transition-all ${
+                  selectedPayment === 'full'
+                    ? 'border-green-500 bg-green-50/50 shadow-lg ring-2 ring-green-200'
+                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
+                }`}
+              >
+                {/* Best Value Badge */}
+                <span className="absolute -top-3 left-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                  BEST VALUE
+                </span>
+
+                {/* Radio Circle */}
+                <div className="flex items-start gap-3 mt-2">
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
+                    selectedPayment === 'full' ? 'border-green-500 bg-green-500' : 'border-gray-300'
+                  }`}>
+                    {selectedPayment === 'full' && (
+                      <div className="w-2 h-2 rounded-full bg-white" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">Pay in Full</h3>
+                    <p className="text-sm text-gray-500 mb-2 line-through">Was: £{bumperTotalPrice.toLocaleString()}</p>
+                    <p className="text-3xl font-bold text-gray-900 mb-1">
+                      £{discountedStripePrice.toLocaleString()}
+                    </p>
+                    <p className="text-sm text-green-600 font-semibold mb-4">You save £{savings}</p>
+
+                    {/* Benefits */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <span>Instant 10% discount</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <span>Immediate cover</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <span>No monthly payments</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CTA Button */}
+                <div className="mt-5">
+                  <div className={`w-full py-3 rounded-lg font-bold text-center transition-colors ${
+                    selectedPayment === 'full'
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    Complete checkout
+                  </div>
+                </div>
+
+                {/* Powered By */}
+                <div className="mt-3 pt-3 border-t border-gray-200 text-center">
+                  <span className="text-xs text-gray-400">Powered by</span>
+                  <img src={stripeLogo} alt="Stripe" className="h-5 mx-auto mt-1" />
+                </div>
+              </button>
+            </div>
+
+            {/* Promo Code Section */}
+            <Card className="border border-gray-200 shadow-sm mb-6">
+              <CardContent className="p-4">
+                <Collapsible open={promoOpen} onOpenChange={setPromoOpen}>
+                  <CollapsibleTrigger className="flex items-center justify-between w-full py-1 text-sm text-gray-600 hover:text-gray-900">
+                    <div className="flex items-center gap-2">
+                      <Tag className="w-4 h-4" />
+                      <span>Have a promo code?</span>
+                    </div>
+                    {promoOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pt-3">
+                    {appliedDiscountCodes.length > 0 ? (
+                      <div className="space-y-2">
+                        {appliedDiscountCodes.map(discount => (
+                          <div key={discount.code} className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-2">
+                            <div>
+                              <span className="font-semibold text-green-800 text-sm">{discount.code}</span>
+                              <span className="text-xs text-green-600 ml-2">
+                                {discount.type === 'percentage' ? `${discount.value}% OFF` : `£${discount.value} OFF`}
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => removePromoCode(discount.code)}
+                              className="text-xs text-red-600 hover:text-red-800 font-medium"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter code"
+                          value={promoCodeInput}
+                          onChange={(e) => {
+                            setPromoCodeInput(e.target.value.toUpperCase());
+                            setPromoCodeError('');
+                          }}
+                          className="flex-1 text-sm"
+                          disabled={isValidatingPromoCode}
+                        />
+                        <Button
+                          onClick={applyPromoCode}
+                          variant="outline"
+                          size="sm"
+                          disabled={!promoCodeInput.trim() || isValidatingPromoCode}
+                        >
+                          Apply
+                        </Button>
+                      </div>
+                    )}
+                    {promoCodeError && (
+                      <p className="text-red-500 text-xs mt-1">{promoCodeError}</p>
+                    )}
+                  </CollapsibleContent>
+                </Collapsible>
 
                 {/* Discount Applied Banner */}
                 {hasValidDiscountCodes && (
@@ -1035,86 +1161,64 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     </div>
                   </div>
                 )}
-
-                {/* Divider */}
-                <div className="border-t border-gray-200 my-4" />
-
-                {/* Total */}
-                <div className="mb-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 font-medium">Total:</span>
-                    <div className="text-right">
-                      {selectedPayment === 'monthly' ? (
-                        <>
-                          <span className="text-2xl font-bold text-gray-900">£{Math.floor(discountedBumperPrice / 12)}</span>
-                          <span className="text-gray-600">/mo</span>
-                          <p className="text-xs text-gray-500">12 payments of £{Math.floor(discountedBumperPrice / 12)}</p>
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-2xl font-bold text-gray-900">£{discountedStripePrice}</span>
-                          <p className="text-xs text-green-600 font-medium">Save £{savings} vs monthly</p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
               </CardContent>
             </Card>
-          </div>
 
-          {/* SECTION 4: SINGLE CTA */}
-          <div className="w-full">
+            {/* Primary CTA Button */}
             <Button
               onClick={processPayment}
               disabled={isLoading}
-              className={`w-full py-5 text-lg font-bold rounded-lg shadow-lg animate-breathing ${
+              className={`w-full py-6 text-lg font-bold rounded-xl shadow-lg animate-breathing ${
                 selectedPayment === 'monthly'
                   ? 'bg-orange-500 hover:bg-orange-600 text-white'
                   : 'bg-green-600 hover:bg-green-700 text-white'
               }`}
             >
-              {isLoading ? 'Processing...' : 'Complete Checkout'}
+              {isLoading ? 'Processing...' : selectedPayment === 'monthly' ? 'Complete Monthly Checkout' : 'Complete Full Payment'}
             </Button>
 
             {/* Legal Text */}
-            <p className="text-xs text-gray-500 text-center mt-3">
+            <p className="text-xs text-gray-500 text-center mt-3 mb-6">
               By completing your purchase, you agree to our{' '}
               <a href="/terms" className="underline hover:text-gray-700">Terms & Conditions</a>
               {' '}and{' '}
               <a href="/privacy" className="underline hover:text-gray-700">Privacy Policy</a>.
             </p>
 
-            {/* Payment Provider Logo */}
-            <div className="text-center mt-4">
-              <span className="text-xs text-gray-500 block mb-1">Powered by</span>
-              <img 
-                src={selectedPayment === 'monthly' ? bumperLogo : stripeLogo} 
-                alt={selectedPayment === 'monthly' ? 'Bumper' : 'Stripe'} 
-                className="h-5 mx-auto" 
-              />
-            </div>
-
-            {/* Trust Badges */}
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <div className="flex items-center justify-center gap-4 flex-wrap text-xs text-gray-600">
-                <div className="flex items-center gap-1">
-                  <Lock className="w-3 h-3 text-green-600" />
-                  <span>SSL Encrypted</span>
+            {/* Footer Trust Section */}
+            <Card className="border border-gray-200 shadow-sm">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-center gap-4 sm:gap-6 flex-wrap text-xs text-gray-600 mb-4">
+                  <div className="flex items-center gap-1.5">
+                    <Lock className="w-4 h-4 text-green-600" />
+                    <span>SSL Encrypted</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <CreditCard className="w-4 h-4 text-blue-600" />
+                    <span>Visa & Mastercard</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Check className="w-4 h-4 text-green-600" />
+                    <span>Secure Payments</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <CreditCard className="w-3 h-3 text-green-600" />
-                  <span>Visa & Mastercard</span>
+                <div className="text-center text-sm text-gray-600">
+                  Need help?{' '}
+                  <a href="tel:03302295040" className="text-orange-600 hover:text-orange-700 font-medium">
+                    Call us on 0330 229 5040
+                  </a>
+                  {' '}or{' '}
+                  <a 
+                    href="https://wa.me/447960128083" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-green-600 hover:text-green-700 font-medium"
+                  >
+                    WhatsApp us
+                  </a>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Check className="w-3 h-3 text-green-600" />
-                  <span>14-day refund</span>
-                </div>
-              </div>
-              <div className="flex justify-center mt-3">
-                <TrustpilotHeader className="h-6" />
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
