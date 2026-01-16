@@ -593,8 +593,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-          {/* LEFT COLUMN: Sticky Order Summary */}
-          <div className="lg:w-[380px] lg:flex-shrink-0">
+          {/* ORDER SUMMARY (visually second on all devices via order-2) */}
+          <div className="lg:w-[380px] lg:flex-shrink-0 order-2">
             <div className="lg:sticky lg:top-4">
               <Card className="border-2 border-gray-200 shadow-lg overflow-hidden">
                 <CardContent className="p-4 sm:p-6">
@@ -833,8 +833,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Customer Form */}
-          <div className="flex-1 min-w-0">
+          {/* CUSTOMER FORM (visually first on all devices via order-1) */}
+          <div className="flex-1 min-w-0 order-1">
             <Card id="customer-form" className="border border-gray-200 shadow-sm">
               <CardContent className="p-4 sm:p-6">
                 {/* Form Header */}
