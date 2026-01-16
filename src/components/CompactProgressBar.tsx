@@ -12,52 +12,26 @@ const steps = [
   { id: 4, title: 'Review & Pay' }
 ];
 
-// Lovable, minimal car icon component
+// Original car icon with gentle bounce animation
 const CarIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg 
-    viewBox="0 0 48 24" 
-    className={className}
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    {/* Car body - warm, friendly shape */}
-    <path 
-      d="M8 16C8 16 10 8 16 8H32C36 8 40 12 42 16H8Z" 
-      fill="#F97316" 
-      stroke="#EA580C" 
-      strokeWidth="1"
-    />
-    {/* Car roof - soft curve */}
-    <path 
-      d="M14 8C14 8 16 4 22 4H28C32 4 34 8 34 8" 
-      fill="#FB923C" 
-      stroke="#EA580C" 
-      strokeWidth="1"
-    />
+  <svg width="40" height="28" viewBox="0 0 48 32" className={className}>
+    {/* Car Body */}
+    <rect x="3" y="12" width="42" height="12" rx="3" fill="#ea580c" />
+    <rect x="9" y="6" width="30" height="9" rx="3" fill="#fb923c" />
+    
     {/* Windows */}
-    <path 
-      d="M16 7C16 7 17 5 22 5H27C30 5 31 7 31 7L30 8H17L16 7Z" 
-      fill="#BAE6FD" 
-      stroke="#7DD3FC" 
-      strokeWidth="0.5"
-    />
-    {/* Car base */}
-    <rect x="6" y="15" width="38" height="4" rx="1" fill="#EA580C" />
-    {/* Front headlight */}
-    <ellipse cx="41" cy="14" rx="2" ry="1.5" fill="#FEF3C7" stroke="#FCD34D" strokeWidth="0.5" />
-    {/* Rear light */}
-    <ellipse cx="8" cy="14" rx="1.5" ry="1" fill="#FCA5A5" stroke="#EF4444" strokeWidth="0.5" />
-    {/* Front wheel */}
-    <circle cx="34" cy="19" r="4" fill="#374151" stroke="#1F2937" strokeWidth="1" />
-    <circle cx="34" cy="19" r="2" fill="#6B7280" />
-    <circle cx="34" cy="19" r="0.8" fill="#9CA3AF" />
-    {/* Rear wheel */}
-    <circle cx="14" cy="19" r="4" fill="#374151" stroke="#1F2937" strokeWidth="1" />
-    <circle cx="14" cy="19" r="2" fill="#6B7280" />
-    <circle cx="14" cy="19" r="0.8" fill="#9CA3AF" />
-    {/* Wheel shine effect */}
-    <path d="M32 17.5C32.5 17 33.5 17 34 17.5" stroke="#9CA3AF" strokeWidth="0.5" strokeLinecap="round" />
-    <path d="M12 17.5C12.5 17 13.5 17 14 17.5" stroke="#9CA3AF" strokeWidth="0.5" strokeLinecap="round" />
+    <rect x="12" y="7" width="9" height="6" rx="1.5" fill="#fef3c7" opacity="0.9" />
+    <rect x="27" y="7" width="9" height="6" rx="1.5" fill="#fef3c7" opacity="0.9" />
+    
+    {/* Wheels */}
+    <circle cx="12" cy="22" r="4.5" fill="#374151" />
+    <circle cx="36" cy="22" r="4.5" fill="#374151" />
+    <circle cx="12" cy="22" r="3" fill="#6b7280" />
+    <circle cx="36" cy="22" r="3" fill="#6b7280" />
+    
+    {/* Headlights */}
+    <circle cx="42" cy="16" r="2" fill="#fef3c7" opacity="0.9" />
+    <circle cx="42" cy="20" r="2" fill="#fef3c7" opacity="0.9" />
   </svg>
 );
 
@@ -68,32 +42,34 @@ const CompactProgressBar: React.FC<CompactProgressBarProps> = ({ currentStep }) 
     return 'upcoming';
   };
 
-  // Calculate car position based on current step (0% to 100%)
+  // Calculate car position based on current step (matches original progress bar)
   const getCarPosition = () => {
-    // Position the car at the current step's circle position
-    const stepPercentages = [0, 33.33, 66.66, 100];
-    return stepPercentages[currentStep - 1] || 0;
+    const progress = Math.min(Math.max((currentStep - 1) / 3, 0), 1);
+    return `calc(${progress * 80 + 10}% - 24px)`;
   };
 
   return (
     <div className="w-full bg-white border-b border-slate-100">
       <div className="max-w-3xl mx-auto px-4 py-4">
-        {/* Desktop car animation - hidden on mobile */}
-        <div className="hidden sm:block relative h-8 mb-2">
+        {/* Desktop car animation with blue progress line - hidden on mobile */}
+        <div className="hidden sm:block relative mb-4">
+          {/* Blue progress line */}
+          <div className="relative h-2 bg-gray-200 rounded-full">
+            <div 
+              className="h-full bg-[#1e40af] rounded-full transition-all duration-1000 ease-in-out"
+              style={{ width: `${Math.max(12.5 + (currentStep - 1) / 3 * 75, 12.5)}%` }}
+            />
+          </div>
+          
+          {/* Moving car with bounce animation */}
           <div 
-            className="absolute transition-all duration-700 ease-out"
+            className="absolute -top-6 transition-all duration-1000 ease-in-out"
             style={{ 
-              left: `calc(${getCarPosition()}% - 24px)`,
-              top: '0'
+              left: getCarPosition(),
+              animation: 'gentle-bounce 4s ease-in-out infinite'
             }}
           >
-            <CarIcon className="w-12 h-6 drop-shadow-sm" />
-            {/* Motion lines for animation effect */}
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 flex flex-col gap-0.5 opacity-60">
-              <div className="w-2 h-0.5 bg-slate-300 rounded-full" />
-              <div className="w-3 h-0.5 bg-slate-300 rounded-full" />
-              <div className="w-2 h-0.5 bg-slate-300 rounded-full" />
-            </div>
+            <CarIcon className="w-10 h-7 sm:w-12 sm:h-8 drop-shadow-md" />
           </div>
         </div>
         
