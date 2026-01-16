@@ -1179,10 +1179,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Legal Text */}
             <p className="text-xs text-gray-500 text-center mt-3 mb-6">
-              By completing your purchase, you agree to our{' '}
-              <a href="/terms" className="underline hover:text-gray-700">Terms & Conditions</a>
-              {' '}and{' '}
-              <a href="/privacy" className="underline hover:text-gray-700">Privacy Policy</a>.
+              By completing your purchase, you're agreeing to our Terms & Conditions.
             </p>
 
             {/* Footer Trust Section */}
