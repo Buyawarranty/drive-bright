@@ -137,21 +137,13 @@ const PrivacyPolicy = () => {
               className="h-20 w-auto flex-shrink-0"
             />
             <div>
-              <p className="text-lg text-gray-700 leading-relaxed mb-4">
+              <p className="text-lg text-gray-700 leading-relaxed">
                 Buy A Warranty ("we", "us", or "our") is committed to protecting your privacy. This policy outlines how we collect, use, and safeguard your personal data when you visit our website{' '}
                 <a href="https://buyawarranty.co.uk" className="text-[#eb4b00] hover:underline">
                   https://buyawarranty.co.uk
                 </a>{' '}
                 or interact with our services.
               </p>
-              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
-                <p className="text-blue-800 font-medium">
-                  <strong>PDF Version:</strong> You can also download our complete Privacy Policy as a{' '}
-                  <a href="https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/Terms-and-Conditions-v2.3.pdf" target="_blank" className="text-[#eb4b00] hover:underline">
-                    PDF document
-                  </a>.
-                </p>
-              </div>
             </div>
           </div>
         </div>
