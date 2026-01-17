@@ -8,19 +8,21 @@ const corsHeaders = {
 
 // Response messages
 const MESSAGES = {
-  OPT_IN: (name?: string) => `Thanks for confirming${name ? `, ${name}` : ''}!
+  OPT_IN: (name?: string) => `Thanks for confirming${name ? `, ${name}` : ''}.
 
-A BuyaWarranty specialist will call you shortly with your personalised cover options.
+A BuyaWarranty expert will call you shortly to get your warranty cover set up.
 
-For anything urgent, call 0330 229 5040.`,
+If you would like to speak to us sooner, call 0330 229 5040.`,
   
-  OPT_OUT: `BuyaWarranty: You're now opted out and won't receive further messages.
+  OPT_OUT: `BuyaWarranty: You are now opted out and will not receive further messages.
 
-If this was a mistake, reply START to re-subscribe anytime.`,
+If you want to hear from us again, reply BACK at any time.`,
   
-  RE_SUBSCRIBE: `Welcome back! A BuyaWarranty specialist will contact you shortly to discuss your cover options.
+  RE_SUBSCRIBE: `Thanks for reconnecting with us.
 
-Tel: 0330 229 5040`,
+A BuyaWarranty expert will be in touch shortly to help you with your warranty options.
+
+If you would like to speak to us now, call 0330 229 5040.`,
 };
 
 // Helper to send SMS via ClickSend
@@ -183,7 +185,7 @@ serve(async (req) => {
       };
       console.log('Customer opted OUT');
       
-    } else if (messageUpper === 'START') {
+    } else if (messageUpper === 'BACK') {
       responseMessage = MESSAGES.RE_SUBSCRIBE;
       newStatus = 'opted_in';
       updateData = {
