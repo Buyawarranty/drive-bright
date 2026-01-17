@@ -29,6 +29,7 @@ interface LeadHandlers {
   markContactedAt: (leadId: string) => Promise<void>;
   logActivity: (leadId: string, activityType: string, description: string) => Promise<void>;
   deleteLeads: (leadIds: string[]) => Promise<void>;
+  updateCallCount: (leadId: string, increment: number) => Promise<void>;
 }
 
 interface SalespersonDashboardProps {
@@ -259,6 +260,7 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
               onUpdateNotes={handlers.updateLeadNotes}
               onMarkContacted={handlers.markContactedAt}
               onLogActivity={handlers.logActivity}
+              onUpdateCallCount={handlers.updateCallCount}
             />
           </CardContent>
         </Card>
@@ -352,6 +354,7 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
               onUpdateNotes={handlers.updateLeadNotes}
               onMarkContacted={handlers.markContactedAt}
               onLogActivity={handlers.logActivity}
+              onUpdateCallCount={handlers.updateCallCount}
             />
           ) : (
             <div className="text-center py-8 text-muted-foreground">
