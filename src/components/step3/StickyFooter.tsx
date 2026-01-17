@@ -62,7 +62,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             </div>
             <div className="flex items-center gap-1.5 text-xs text-gray-500">
               <Shield className="w-3.5 h-3.5" />
-              <span>14 days to cancel</span>
+              <span>12 payments only</span>
             </div>
           </div>
 
@@ -123,7 +123,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             </Button>
             <div className="flex items-center gap-1.5 text-xs text-gray-500">
               <Lock className="w-3.5 h-3.5" />
-              <span>Secure checkout – No hidden fees</span>
+              <span>Secure checkout – 14 days to cancel</span>
             </div>
           </div>
         </div>

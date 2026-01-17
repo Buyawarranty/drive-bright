@@ -2867,7 +2867,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                               {paymentType === '36months' && '3-Year Cover'}
                             </span>
                             <span className="text-gray-400">·</span>
-                            <span className="text-gray-500">14 days to cancel</span>
+                            <span className="text-gray-500">12 payments only</span>
                           </div>
                         </div>
                         
@@ -2913,7 +2913,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </Button>
                       <div className="flex items-center justify-center gap-1.5 text-[10px] text-gray-500">
                         <Lock className="h-3 w-3" />
-                        <span>Secure checkout – No hidden fees</span>
+                        <span>Secure checkout – 14 days to cancel</span>
                       </div>
                     </div>
                   );
@@ -2938,7 +2938,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         >
                           <TrustpilotHeader className="flex-shrink-0 scale-[0.7] origin-center" />
                         </a>
-                        <div className="text-xs text-gray-500 mt-1.5 whitespace-nowrap">14 days to cancel</div>
+                        <div className="text-xs text-gray-500 mt-1.5 whitespace-nowrap">12 payments only</div>
                       </div>
                       
                       {/* SECTION 2: Price */}
@@ -2984,7 +2984,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         </Button>
                         <div className="flex items-center gap-1.5 mt-2 text-xs text-gray-500 whitespace-nowrap">
                           <Lock className="h-3 w-3 flex-shrink-0" />
-                          <span>Secure checkout – No hidden fees</span>
+                          <span>Secure checkout – 14 days to cancel</span>
                         </div>
                       </div>
                     </div>
