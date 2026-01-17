@@ -7,9 +7,9 @@ const corsHeaders = {
 };
 
 // Welcome message for new leads
-const WELCOME_MESSAGE = `BuyaWarranty: Final step to protect your car from unexpected repair bills with vehicle warranty suited to you.
+const WELCOME_MESSAGE = `BuyaWarranty: Your personalised warranty quote is ready - avoid expensive repair bills on your vehicle.
 
-Reply YES to see your options, NO to opt out.`;
+Reply YES to view your options, or NO to opt out.`;
 
 serve(async (req) => {
   // Handle CORS preflight requests
