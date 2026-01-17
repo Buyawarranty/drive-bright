@@ -105,6 +105,7 @@ export type Database = {
       }
       abandoned_carts: {
         Row: {
+          call_count: number | null
           cart_metadata: Json | null
           contact_notes: string | null
           contact_status: string | null
@@ -130,6 +131,7 @@ export type Database = {
           vehicle_year: string | null
         }
         Insert: {
+          call_count?: number | null
           cart_metadata?: Json | null
           contact_notes?: string | null
           contact_status?: string | null
@@ -155,6 +157,7 @@ export type Database = {
           vehicle_year?: string | null
         }
         Update: {
+          call_count?: number | null
           cart_metadata?: Json | null
           contact_notes?: string | null
           contact_status?: string | null
@@ -3401,6 +3404,7 @@ export type Database = {
           abandoned_cart_id: string | null
           assigned_at: string | null
           assigned_to: string | null
+          call_count: number | null
           cart_value: number | null
           converted_at: string | null
           created_at: string
@@ -3440,6 +3444,7 @@ export type Database = {
           abandoned_cart_id?: string | null
           assigned_at?: string | null
           assigned_to?: string | null
+          call_count?: number | null
           cart_value?: number | null
           converted_at?: string | null
           created_at?: string
@@ -3479,6 +3484,7 @@ export type Database = {
           abandoned_cart_id?: string | null
           assigned_at?: string | null
           assigned_to?: string | null
+          call_count?: number | null
           cart_value?: number | null
           converted_at?: string | null
           created_at?: string
