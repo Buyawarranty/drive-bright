@@ -14,9 +14,9 @@ A BuyaWarranty specialist will call you shortly with your personalised cover opt
 
 For anything urgent, call 0330 229 5040.`,
   
-  OPT_OUT: `BuyaWarranty: You've been opted out and will no longer receive messages from us.
+  OPT_OUT: `BuyaWarranty: You're now opted out and won't receive further messages.
 
-If this was a mistake, reply START to re-subscribe.`,
+If this was a mistake, reply START to re-subscribe anytime.`,
   
   RE_SUBSCRIBE: `Welcome back! A BuyaWarranty specialist will contact you shortly to discuss your cover options.
 
