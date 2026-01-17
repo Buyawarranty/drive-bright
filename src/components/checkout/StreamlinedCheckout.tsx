@@ -707,29 +707,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           <MobileNavigation />
         </div>
 
-        {/* Progress Indicator */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="flex items-center gap-1.5 text-sm text-slate-500">
-            <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-semibold">
-              <Check className="w-3.5 h-3.5" />
-            </div>
-            <span className="hidden sm:inline">Plan</span>
-          </div>
-          <div className="w-8 h-0.5 bg-green-500" />
-          <div className="flex items-center gap-1.5 text-sm text-slate-500">
-            <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-semibold">
-              <Check className="w-3.5 h-3.5" />
-            </div>
-            <span className="hidden sm:inline">Options</span>
-          </div>
-          <div className="w-8 h-0.5 bg-green-500" />
-          <div className="flex items-center gap-1.5 text-sm font-medium text-slate-900">
-            <div className="w-6 h-6 rounded-full bg-orange-500 text-white flex items-center justify-center text-xs font-semibold">
-              4
-            </div>
-            <span>Checkout</span>
-          </div>
-        </div>
 
         <div className="space-y-4">
           {/* SECTION 1: PLAN SUMMARY - Compact */}
