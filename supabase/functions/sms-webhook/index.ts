@@ -8,11 +8,11 @@ const corsHeaders = {
 
 // Response messages
 const MESSAGES = {
-  OPT_IN: `Thanks for confirming!
+  OPT_IN: (name?: string) => `Thanks for confirming${name ? `, ${name}` : ''}!
 
-A BuyaWarranty specialist will contact you shortly to discuss your cover options.
+A BuyaWarranty specialist will call you shortly with your personalised cover options.
 
-Tel: 0330 229 5040`,
+For anything urgent, call 0330 229 5040.`,
   
   OPT_OUT: `BuyaWarranty: You've been opted out and will no longer receive messages from us.
 
@@ -38,7 +38,7 @@ async function sendSms(phone: string, message: string, authString: string): Prom
             source: 'webhook',
             body: message,
             to: phone,
-            from: 'BuyWarranty',
+            from: '+447344286145',
           }
         ]
       }),
@@ -158,7 +158,9 @@ serve(async (req) => {
 
     // Determine response based on message content
     if (messageUpper === 'YES' || messageUpper === 'Y') {
-      responseMessage = MESSAGES.OPT_IN;
+      // Get customer name from consent record if available
+      const customerName = consentRecord?.customer_name || null;
+      responseMessage = MESSAGES.OPT_IN(customerName);
       newStatus = 'opted_in';
       updateData = {
         consent_status: newStatus,
