@@ -136,7 +136,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     markContactedAt,
     logActivity,
     migrateFromAbandonedCarts,
-    deleteLeads
+    deleteLeads,
+    updateCallCount
   } = useLeads();
 
   // Debounce search term to avoid filtering on every keystroke
@@ -286,6 +287,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     markContactedAt,
     logActivity,
     deleteLeads,
+    updateCallCount,
   }), [
     updateLeadStatus,
     assignLead,
@@ -298,6 +300,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     markContactedAt,
     logActivity,
     deleteLeads,
+    updateCallCount,
   ]);
 
   if (loading) {
@@ -480,6 +483,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 onUpdateNotes={updateLeadNotes}
                 onMarkContacted={markContactedAt}
                 onLogActivity={logActivity}
+                onUpdateCallCount={updateCallCount}
                 onRefresh={fetchLeads}
                 onSendQuote={handleSendQuote}
               />

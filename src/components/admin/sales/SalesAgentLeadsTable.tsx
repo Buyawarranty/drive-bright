@@ -17,7 +17,7 @@ import {
 import { Lead, LeadTag, LeadStatus } from '@/hooks/useLeads';
 import { 
   Phone, Mail, MessageSquare, FileText, 
-  Clock, AlertTriangle, Search, Users
+  Clock, AlertTriangle, Search, Users, Minus, Plus
 } from 'lucide-react';
 import { format, isToday, isPast, formatDistanceToNow } from 'date-fns';
 
@@ -27,6 +27,7 @@ interface LeadHandlers {
   updateLeadNotes: (leadId: string, notes: string) => Promise<void>;
   markContactedAt: (leadId: string) => Promise<void>;
   logActivity: (leadId: string, activityType: string, description: string) => Promise<void>;
+  updateCallCount?: (leadId: string, increment: number) => Promise<void>;
 }
 
 interface SalesAgentLeadsTableProps {
@@ -141,6 +142,7 @@ export const SalesAgentLeadsTable: React.FC<SalesAgentLeadsTableProps> = ({
                 <TableHead>Customer</TableHead>
                 <TableHead>Contact</TableHead>
                 <TableHead>Vehicle</TableHead>
+                <TableHead className="text-center">Calls</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Urgency</TableHead>
                 <TableHead>Actions</TableHead>
@@ -178,6 +180,30 @@ export const SalesAgentLeadsTable: React.FC<SalesAgentLeadsTableProps> = ({
                     ) : (
                       <span className="text-muted-foreground">-</span>
                     )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-center gap-1">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6"
+                        onClick={() => handlers.updateCallCount?.(lead.id, -1)}
+                        disabled={!lead.call_count || lead.call_count <= 0}
+                      >
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <span className="w-6 text-center font-medium text-sm">
+                        {lead.call_count || 0}
+                      </span>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6 text-green-600 hover:text-green-700 hover:bg-green-50"
+                        onClick={() => handlers.updateCallCount?.(lead.id, 1)}
+                      >
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Select 
