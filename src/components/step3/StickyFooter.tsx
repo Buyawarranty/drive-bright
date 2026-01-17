@@ -50,63 +50,70 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
       {/* Desktop Layout */}
       <div className="hidden md:block max-w-6xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between gap-6">
-          {/* Left Section - Trust Signals */}
-          <div className="flex flex-col items-start gap-1 min-w-[160px]">
-            <div className="flex items-center gap-1">
-              <span className="text-sm font-medium text-gray-700">Trustpilot</span>
+          {/* Left Section - Trustpilot */}
+          <a 
+            href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex flex-col items-start gap-1 min-w-[160px] hover:opacity-80 transition-opacity"
+          >
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-semibold text-gray-800">Rated Excellent</span>
               <div className="flex">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-[#00b67a] text-[#00b67a]" />
                 ))}
               </div>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-gray-500">
-              <Shield className="w-3.5 h-3.5" />
-              <span>12 easy payments</span>
-            </div>
-          </div>
+            <span className="text-xs text-gray-500">Trusted by UK drivers</span>
+          </a>
 
-          {/* Middle Section - Pricing */}
-          <div className="flex flex-col items-center gap-1 flex-1">
+          {/* Centre Section - Pricing */}
+          <div className="flex flex-col items-center gap-1.5 flex-1">
+            {/* Top: Monthly Price + APR */}
             <div className="flex flex-col items-center">
               <div className={cn(
                 "flex items-baseline gap-2 transition-all duration-300",
                 isPulsing && "animate-pulse scale-105"
               )}>
-                <span className="text-xl font-bold text-gray-900">
-                  {hasAddOnsSelected ? 'Total incl. add-ons:' : 'Total:'}
+                <span className="text-lg font-medium text-gray-700">
+                  {hasAddOnsSelected ? 'Your monthly price incl. add-ons:' : 'Your monthly price:'}
                 </span>
                 <span className="text-2xl font-bold text-gray-900">£{monthlyPrice}/month</span>
+                <span className="text-sm font-medium text-green-600">· 0% APR</span>
               </div>
-              <span className="text-sm text-gray-500">(12 easy payments)</span>
+              {/* Middle: 12 payments */}
+              <span className="text-sm text-gray-500">Just 12 monthly payments, nothing more</span>
             </div>
-            <div className="flex items-center gap-2 text-sm mt-1">
-              <span className="text-gray-500">Or pay in full:</span>
-              {savings > 0 && (
-                <span className="line-through text-red-500">£{wasPrice}</span>
-              )}
-              <span className="font-bold text-green-600">£{payInFull}</span>
-              {savings > 0 && (
-                <span className="text-gray-600">(Save £{savings})</span>
-              )}
-            </div>
+            
+            {/* Bottom: Savings */}
             <div className="flex items-center gap-2 text-sm">
-              {paymentPeriod === '24months' && (
-                <>
-                  <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-medium">
-                    Year 2 FREE 🎉
-                  </span>
-                  <span className="text-gray-300">|</span>
-                </>
+              <span className="text-gray-500">Or pay upfront:</span>
+              {savings > 0 && (
+                <span className="line-through text-gray-400">Was £{wasPrice}</span>
               )}
-              <span className="font-medium text-gray-700">
-                {paymentPeriod === '12months' ? '1-Year' : paymentPeriod === '24months' ? '2-Year' : '3-Year'} Cover
+              <span className="font-bold text-gray-900">Now £{payInFull}</span>
+              {savings > 0 && (
+                <span className="text-green-600 font-medium">— You save £{savings}</span>
+              )}
+            </div>
+            
+            {/* Cover Duration + Benefits */}
+            <div className="flex flex-col items-center gap-0.5">
+              <span className="font-medium text-gray-700 text-sm">
+                {paymentPeriod === '12months' ? '1-Year' : paymentPeriod === '24months' ? '2-Year' : '3-Year'} Cover included
               </span>
+              <span className="text-xs text-gray-500">Easy claims, Fast payouts</span>
+              {paymentPeriod === '24months' && (
+                <span className="bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full text-xs font-medium mt-1">
+                  Year 2 FREE
+                </span>
+              )}
             </div>
           </div>
 
           {/* Right Section - CTA */}
-          <div className="flex flex-col items-end gap-1.5 min-w-[200px]">
+          <div className="flex flex-col items-end gap-2 min-w-[200px]">
             <Button
               onClick={onContinue}
               disabled={isLoading || !isValid}
@@ -123,7 +130,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             </Button>
             <div className="flex items-center gap-1.5 text-xs text-gray-500">
               <Lock className="w-3.5 h-3.5" />
-              <span>Secure checkout – 14 days to cancel</span>
+              <span>Secure checkout — You have 14 days to cancel</span>
             </div>
           </div>
         </div>
