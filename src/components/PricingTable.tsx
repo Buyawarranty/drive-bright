@@ -2650,7 +2650,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col md:flex-row md:items-stretch gap-3">
                   <div className="flex-1">
-                    <p className="text-sm text-gray-500 mb-1">Your Platinum Plan</p>
+                    <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">
+                      Your Platinum Plan – {paymentType === '12months' ? '1-Year' : paymentType === '24months' ? '2-Year' : '3-Year'} Cover
+                    </h3>
                     <div className="flex flex-col">
                       <div className="flex items-baseline gap-2">
                         <span className="text-xl font-bold text-gray-900">
