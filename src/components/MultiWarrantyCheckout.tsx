@@ -653,16 +653,7 @@ const MultiWarrantyCheckout: React.FC<MultiWarrantyCheckoutProps> = ({ items, on
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      {/* Back Button */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4">
-        <div className="max-w-6xl mx-auto">
-          <Button variant="outline" onClick={onBack} className="mb-0">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Cart
-          </Button>
-        </div>
-      </div>
-
+      {/* Main content starts directly - no duplicate back button row */}
       <div className="max-w-6xl mx-auto p-6">
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Personal Details Form */}

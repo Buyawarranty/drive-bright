@@ -120,14 +120,10 @@ const CompactProgressBar: React.FC<CompactProgressBarProps> = ({ currentStep }) 
                   </span>
                 </div>
                 
-                {/* Connecting line between circles - mobile only with broken segments */}
+                {/* Connecting line between circles - mobile only with solid line */}
                 {!isLastStep && (
                   <div className="flex-1 flex items-center justify-center px-1 sm:hidden self-start mt-3.5">
-                    <div className="flex items-center gap-1 w-full">
-                      <div className={`flex-1 h-0.5 ${lineIsGreen ? 'bg-green-500' : 'bg-slate-200'}`} />
-                      <div className="w-1" />
-                      <div className={`flex-1 h-0.5 ${lineIsGreen ? 'bg-green-500' : 'bg-slate-200'}`} />
-                    </div>
+                    <div className={`w-full h-0.5 ${lineIsGreen ? 'bg-green-500' : 'bg-slate-200'}`} />
                   </div>
                 )}
               </React.Fragment>
