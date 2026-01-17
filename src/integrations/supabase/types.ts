@@ -1751,6 +1751,7 @@ export type Database = {
           phone: string | null
           plan_type: string
           postcode: string | null
+          purchase_source: string | null
           registration_plate: string | null
           review_email_sent_at: string | null
           seasonal_bonus_months: number | null
@@ -1823,6 +1824,7 @@ export type Database = {
           phone?: string | null
           plan_type: string
           postcode?: string | null
+          purchase_source?: string | null
           registration_plate?: string | null
           review_email_sent_at?: string | null
           seasonal_bonus_months?: number | null
@@ -1895,6 +1897,7 @@ export type Database = {
           phone?: string | null
           plan_type?: string
           postcode?: string | null
+          purchase_source?: string | null
           registration_plate?: string | null
           review_email_sent_at?: string | null
           seasonal_bonus_months?: number | null
