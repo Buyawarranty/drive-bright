@@ -13,7 +13,7 @@ import { CopyButton } from './CopyButton';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, 
   Tag, AlertTriangle, FileText, StickyNote,
-  CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User
+  CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User, Minus
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -36,6 +36,7 @@ interface LeadTableRowProps {
   onAddTag: (tagId: string) => void;
   onRemoveTag: (tagId: string) => void;
   onLogActivity: (type: string, description: string) => void;
+  onUpdateCallCount: (increment: number) => void;
   onSendQuote?: () => void;
 }
 
@@ -201,6 +202,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   onAddTag,
   onRemoveTag,
   onLogActivity,
+  onUpdateCallCount,
   onSendQuote
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
@@ -335,6 +337,35 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             <SelectItem value="fake_lead">Fake Lead</SelectItem>
           </SelectContent>
         </Select>
+      </TableCell>
+
+      {/* Call Count - Quick increment/decrement */}
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-center gap-0.5">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 text-muted-foreground hover:text-red-600 hover:bg-red-50"
+            onClick={() => onUpdateCallCount(-1)}
+            disabled={lead.call_count <= 0}
+          >
+            <Minus className="h-3 w-3" />
+          </Button>
+          <span className={cn(
+            "min-w-[24px] text-center text-sm font-medium",
+            lead.call_count > 0 ? "text-primary" : "text-muted-foreground"
+          )}>
+            {lead.call_count || 0}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 text-muted-foreground hover:text-green-600 hover:bg-green-50"
+            onClick={() => onUpdateCallCount(1)}
+          >
+            <Plus className="h-3 w-3" />
+          </Button>
+        </div>
       </TableCell>
 
       {/* Quick Actions */}

@@ -52,6 +52,8 @@ export interface Lead {
   step_abandoned: number | null;
   contact_status: string | null;
   is_from_abandoned_cart: boolean;
+  // Call tracking
+  call_count: number;
   // Cart metadata for plan selections
   cart_metadata: {
     claim_limit?: number;
@@ -154,6 +156,7 @@ export const useLeads = () => {
               vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status,
               last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
               created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
+              call_count,
               assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email)
             `)
             .order('created_at', { ascending: false })
@@ -175,7 +178,7 @@ export const useLeads = () => {
             id, full_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
             vehicle_type, mileage, plan_name, payment_type, step_abandoned, contact_status,
             contacted_by, last_contacted_at, contact_notes, cart_metadata, is_converted,
-            created_at, updated_at
+            call_count, created_at, updated_at
           `)
           .eq('is_converted', false)
           .order('created_at', { ascending: false })
@@ -255,6 +258,7 @@ export const useLeads = () => {
           payment_method: null,
           payment_date: null,
           step_two_completed_at: null,
+          call_count: cart.call_count || 0,
           cart_metadata: cart.cart_metadata || null,
           assigned_user: null,
           tags: []
@@ -278,6 +282,7 @@ export const useLeads = () => {
           step_abandoned: null,
           contact_status: null,
           is_from_abandoned_cart: false,
+          call_count: lead.call_count || 0,
           cart_metadata: null
         };
       });
@@ -746,6 +751,57 @@ export const useLeads = () => {
     }
   }, []);
 
+  // OPTIMISTIC UPDATE: Update call count instantly
+  const updateCallCount = useCallback(async (leadId: string, increment: number = 1) => {
+    const now = new Date().toISOString();
+    const isAbandonedCart = leadId.startsWith('cart_');
+    const actualId = isAbandonedCart ? leadId.replace('cart_', '') : leadId;
+    
+    // Get current call count
+    const currentLead = leads.find(l => l.id === leadId);
+    const newCount = Math.max(0, (currentLead?.call_count || 0) + increment);
+    
+    // Optimistic update
+    setLeads(prev => prev.map(lead => 
+      lead.id === leadId 
+        ? { ...lead, call_count: newCount, updated_at: now } 
+        : lead
+    ));
+
+    try {
+      if (isAbandonedCart) {
+        const { error } = await supabase
+          .from('abandoned_carts')
+          .update({
+            call_count: newCount,
+            updated_at: now
+          })
+          .eq('id', actualId);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('sales_leads')
+          .update({
+            call_count: newCount,
+            updated_at: now
+          })
+          .eq('id', actualId);
+
+        if (error) throw error;
+
+        // Log activity for call tracking
+        if (increment > 0) {
+          logActivity(leadId, 'call', `Call attempt #${newCount}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating call count:', error);
+      toast.error('Failed to update call count');
+      fetchLeads();
+    }
+  }, [leads, logActivity, fetchLeads]);
+
   const migrateFromAbandonedCarts = useCallback(async () => {
     try {
       const { data: carts, error: fetchError } = await supabase
@@ -859,6 +915,7 @@ export const useLeads = () => {
     logActivity,
     updateLeadNotes,
     markContactedAt,
+    updateCallCount,
     migrateFromAbandonedCarts,
     deleteLeads
   };

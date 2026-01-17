@@ -24,6 +24,7 @@ interface LeadsTableProps {
   onUpdateNotes: (leadId: string, notes: string) => void;
   onMarkContacted: (leadId: string) => void;
   onLogActivity: (leadId: string, type: string, description: string) => void;
+  onUpdateCallCount: (leadId: string, increment: number) => void;
   onSendQuote?: (lead: Lead) => void;
   onRefresh?: () => void;
 }
@@ -45,6 +46,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   onUpdateNotes,
   onMarkContacted,
   onLogActivity,
+  onUpdateCallCount,
   onSendQuote,
   onRefresh
 }) => {
@@ -66,6 +68,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
               </TableHead>
               <TableHead className="sticky left-0 bg-muted/30 z-10 w-[120px] min-w-[120px]">Assigned To</TableHead>
               <TableHead className="w-[100px]">Status</TableHead>
+              <TableHead className="w-[70px] text-center">Calls</TableHead>
               <TableHead className="w-[120px]">Actions</TableHead>
               <TableHead className="w-[90px]">Payment</TableHead>
               <TableHead className="w-[100px]">Next Action</TableHead>
@@ -101,6 +104,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   onAddTag={(tagId) => onAddTag(lead.id, tagId)}
                   onRemoveTag={(tagId) => onRemoveTag(lead.id, tagId)}
                   onLogActivity={(type, desc) => onLogActivity(lead.id, type, desc)}
+                  onUpdateCallCount={(increment) => onUpdateCallCount(lead.id, increment)}
                   onSendQuote={onSendQuote ? () => onSendQuote(lead) : undefined}
                 />
                 
