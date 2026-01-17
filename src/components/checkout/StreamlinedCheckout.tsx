@@ -1150,7 +1150,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         <span className="text-3xl sm:text-4xl font-bold text-slate-900">£{Math.floor(discountedBumperPrice / 12)}</span>
                         <span className="text-base font-normal text-slate-600">/mo</span>
                       </div>
-                      <p className="text-sm text-slate-500 mt-1.5 font-medium">12 payments • Total £{discountedBumperPrice}</p>
+                      <p className="text-sm text-slate-500 mt-1.5 font-medium">12 easy payments • Total £{discountedBumperPrice}</p>
                     </div>
                     
                     <div className="space-y-2">

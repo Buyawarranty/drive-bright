@@ -518,7 +518,7 @@ const WarrantyDurationStep: React.FC<WarrantyDurationStepProps> = ({
                 <div className="space-y-2 mt-6 mb-4">
                   {/* Monthly price × 12 payments */}
                   <div className="text-2xl font-bold text-gray-900">
-                    £{option.monthlyPrice} <span className="text-gray-600">× 12 payments only</span>
+                    £{option.monthlyPrice} <span className="text-gray-600">× 12 easy payments</span>
                   </div>
                   
                   {/* Pay in full price */}

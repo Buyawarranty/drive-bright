@@ -486,7 +486,7 @@ export default function LiveQuotePage() {
               <div className="mb-4">
                 <div className="text-sm text-gray-600 font-bold">Total: £{bumperMonthlyTotal}</div>
                 <div className="text-2xl font-bold text-gray-900">£{quote.pricing.monthlyPrice}/month</div>
-                <div className="text-sm text-gray-600 font-bold">Only 12 payments</div>
+                <div className="text-sm text-gray-600 font-bold">12 easy payments</div>
               </div>
 
               <div className="space-y-2 mb-4 flex-grow">

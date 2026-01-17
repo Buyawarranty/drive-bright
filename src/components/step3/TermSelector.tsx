@@ -154,7 +154,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                   {/* Price Headline */}
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold text-foreground">£{term.monthlyPrice}/month</span>
-                    <span className="text-sm font-bold text-muted-foreground">(12 payments only)</span>
+                    <span className="text-sm font-bold text-muted-foreground">(12 easy payments)</span>
                   </div>
                   
                   {/* Free year benefit line with tick */}
