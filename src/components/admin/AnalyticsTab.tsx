@@ -114,10 +114,53 @@ export const AnalyticsTab = () => {
     });
   }, [customers, dateRange, sourceFilter]);
 
+  // Helper function to categorize customer by source
+  const getCustomerSource = (customer: Customer): 'website' | 'sales_team' | 'unknown' => {
+    const ref = customer.warranty_reference_number?.toUpperCase() || '';
+    const source = customer.purchase_source?.toLowerCase() || '';
+    if (ref.startsWith('BAW-') || source === 'website') return 'website';
+    if (ref.startsWith('ADM-') || source === 'quote_link' || source === 'external') return 'sales_team';
+    return 'unknown';
+  };
+
   // Calculate metrics with safe defaults
   const totalCustomers = filteredCustomers.length;
   const activeCustomers = filteredCustomers.filter(c => c.status === 'Active').length;
   const totalRevenue = filteredCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
+  const paidOrders = filteredCustomers.filter(c => c.final_amount && Number(c.final_amount) > 0);
+  const overallAOV = paidOrders.length > 0 ? Math.round(totalRevenue / paidOrders.length) : 0;
+
+  // Calculate AOV by source (using all customers, respecting date filter only)
+  const sourceMetrics = useMemo(() => {
+    // Filter by date only for source breakdown
+    const dateFilteredCustomers = customers.filter(customer => {
+      if (dateRange?.from) {
+        const signupDate = new Date(customer.signup_date);
+        if (signupDate < dateRange.from) return false;
+        if (dateRange.to && signupDate > dateRange.to) return false;
+      }
+      return true;
+    });
+
+    const websiteCustomers = dateFilteredCustomers.filter(c => getCustomerSource(c) === 'website' && c.final_amount && Number(c.final_amount) > 0);
+    const salesTeamCustomers = dateFilteredCustomers.filter(c => getCustomerSource(c) === 'sales_team' && c.final_amount && Number(c.final_amount) > 0);
+    
+    const websiteRevenue = websiteCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
+    const salesTeamRevenue = salesTeamCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
+    
+    return {
+      website: {
+        count: websiteCustomers.length,
+        revenue: websiteRevenue,
+        aov: websiteCustomers.length > 0 ? Math.round(websiteRevenue / websiteCustomers.length) : 0
+      },
+      salesTeam: {
+        count: salesTeamCustomers.length,
+        revenue: salesTeamRevenue,
+        aov: salesTeamCustomers.length > 0 ? Math.round(salesTeamRevenue / salesTeamCustomers.length) : 0
+      }
+    };
+  }, [customers, dateRange]);
 
   // Plan distribution data
   const planDistribution = filteredCustomers.reduce((acc: Record<string, number>, customer) => {
@@ -262,7 +305,7 @@ export const AnalyticsTab = () => {
           <CardContent>
             <div className="text-2xl font-bold">£{totalRevenue.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
             <p className="text-xs text-muted-foreground">
-              From {customers.filter(c => c.final_amount).length} paid orders
+              From {paidOrders.length} paid orders
             </p>
           </CardContent>
         </Card>
@@ -273,14 +316,63 @@ export const AnalyticsTab = () => {
             <PoundSterling className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              £{customers.filter(c => c.final_amount).length > 0 
-                ? Math.round(totalRevenue / customers.filter(c => c.final_amount).length)
-                : 0}
-            </div>
+            <div className="text-2xl font-bold">£{overallAOV}</div>
             <p className="text-xs text-muted-foreground">
-              Per warranty sale
+              Per warranty sale {dateRange ? '(filtered)' : '(all time)'}
             </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* AOV Breakdown by Source */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="border-l-4 border-l-blue-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Globe className="h-4 w-4 text-blue-500" />
+              Website Sales (BAW)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Orders</span>
+                <span className="font-semibold">{sourceMetrics.website.count}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Revenue</span>
+                <span className="font-semibold">£{sourceMetrics.website.revenue.toLocaleString('en-GB')}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t">
+                <span className="text-sm font-medium">Average Order Value</span>
+                <span className="text-xl font-bold text-blue-600">£{sourceMetrics.website.aov}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-orange-500">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Phone className="h-4 w-4 text-orange-500" />
+              Sales Team (ADM)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Orders</span>
+                <span className="font-semibold">{sourceMetrics.salesTeam.count}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Revenue</span>
+                <span className="font-semibold">£{sourceMetrics.salesTeam.revenue.toLocaleString('en-GB')}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t">
+                <span className="text-sm font-medium">Average Order Value</span>
+                <span className="text-xl font-bold text-orange-600">£{sourceMetrics.salesTeam.aov}</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
