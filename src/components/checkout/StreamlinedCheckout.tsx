@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ArrowLeft, CheckCircle, Edit, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, Tag, Shield, AlertCircle, User, Car, X } from 'lucide-react';
-import { PostcodeAutocomplete } from '@/components/ui/uk-postcode-autocomplete';
+import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { trackFormSubmission, trackBumperCheckoutClick, trackStripeCheckoutClick, trackStripeCheckoutPageLoad, trackStep4EmailEntry } from '@/utils/analytics';
@@ -982,6 +982,28 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               
               <CollapsibleContent>
                 <div className="px-4 sm:px-5 pb-5 space-y-4 border-t border-slate-100 pt-4">
+                  {/* Address Lookup */}
+                  <div>
+                    <Label className="text-sm font-medium text-slate-700">Find Address</Label>
+                    <div className="mt-1.5">
+                      <AddressAutocomplete
+                        placeholder="Start typing postcode or address..."
+                        onAddressSelect={(address: AddressData) => {
+                          handleInputChange('address_line_1', address.line_1);
+                          handleInputChange('address_line_2', address.line_2);
+                          handleInputChange('city', address.town);
+                          handleInputChange('postcode', address.postcode);
+                          // Mark fields as validated
+                          handleFieldBlur('address_line_1');
+                          handleFieldBlur('city');
+                          handleFieldBlur('postcode');
+                        }}
+                        className="h-12"
+                      />
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1">Or enter your address manually below</p>
+                  </div>
+
                   <div>
                     <Label htmlFor="address_line_1" className="text-sm font-medium text-slate-700">Address Line 1 *</Label>
                     <div className="relative mt-1.5">
@@ -1020,24 +1042,26 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="postcode" className="text-sm font-medium text-slate-700">Postcode *</Label>
-                      <div className="mt-1.5">
-                        <PostcodeAutocomplete
-                          value={customerData.postcode}
-                          onChange={(value) => handleInputChange('postcode', value)}
-                          onBlur={() => handleFieldBlur('postcode')}
-                          onAddressSelect={(address) => {
-                            if (address.town) handleInputChange('city', address.town);
-                            if (address.street && !customerData.address_line_1) {
-                              handleInputChange('address_line_1', address.street);
-                            }
-                          }}
+                      <div className="relative mt-1.5">
+                        <Input
+                          id="postcode"
                           placeholder="SW1A 1AA"
+                          value={customerData.postcode}
+                          onChange={(e) => handleInputChange('postcode', e.target.value.toUpperCase())}
+                          onBlur={() => handleFieldBlur('postcode')}
                           required
-                          className={`h-12 ${showValidation && fieldErrors.postcode ? 'border-red-500 ring-2 ring-red-200 bg-red-50/50' : validatedFields.postcode ? 'border-green-500 bg-green-50/30' : ''}`}
-                          error={showValidation ? fieldErrors.postcode : ''}
-                          showCheckmark={validatedFields.postcode && !fieldErrors.postcode}
+                          className={`h-12 text-base ${getInputValidationClass('postcode')}`}
                         />
+                        {validatedFields.postcode && !fieldErrors.postcode && (
+                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                        )}
                       </div>
+                      {showValidation && fieldErrors.postcode && (
+                        <p className="text-red-600 text-sm mt-1.5 flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5" />
+                          {fieldErrors.postcode}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="city" className="text-sm font-medium text-slate-700">City/Town *</Label>

@@ -1,7 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft, Check } from 'lucide-react';
 import { trackFormSubmission, trackStepCompletion } from '@/utils/analytics';
+import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 
 interface ContactDetailsStepProps {
   onNext: (data: { email: string; phone: string; firstName: string; lastName: string; address: string }) => void;
@@ -24,45 +25,17 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
   const [lastName, setLastName] = useState(initialData?.lastName || '');
   const [address, setAddress] = useState(initialData?.address || '');
 
-  useEffect(() => {
-    // Load Google Places API
-    const loadGooglePlaces = () => {
-      if (window.google && window.google.maps && window.google.maps.places) {
-        initializeAutocomplete();
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBeDTodaQuqY9MdfKBSJK1Y1ieyfn3HoTs&libraries=places`;
-      script.async = true;
-      script.onload = initializeAutocomplete;
-      document.head.appendChild(script);
-    };
-
-    const initializeAutocomplete = () => {
-      const addressInput = document.getElementById('address-input') as HTMLInputElement;
-      if (addressInput && window.google) {
-        const autocomplete = new window.google.maps.places.Autocomplete(addressInput, {
-          types: ['address'],
-          componentRestrictions: { country: 'GB' }
-        });
-
-        autocomplete.addListener('place_changed', () => {
-          const place = autocomplete.getPlace() as any; // Cast to any for full Google Places API access
-          console.log('Google Places API response:', place);
-          
-          if (place.formatted_address) {
-            setAddress(place.formatted_address);
-          } else if (place.name && place.vicinity) {
-            // Fallback for partial matches
-            setAddress(`${place.name}, ${place.vicinity}`);
-          }
-        });
-      }
-    };
-
-    loadGooglePlaces();
-  }, []);
+  const handleAddressSelect = (addressData: AddressData) => {
+    // Format the full address from components
+    const parts = [
+      addressData.line_1,
+      addressData.line_2,
+      addressData.town,
+      addressData.county,
+      addressData.postcode,
+    ].filter(Boolean);
+    setAddress(parts.join(', '));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,7 +124,7 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
             </div>
           </div>
 
-          {/* Address Field */}
+          {/* Address Field with getaddress.io autocomplete */}
           <div className="mb-6">
             <div className="flex items-center mb-3">
               <label className="block font-semibold mb-2 text-gray-700 text-xl">Address</label>
@@ -163,13 +136,20 @@ const ContactDetailsStep: React.FC<ContactDetailsStepProps> = ({ onNext, onBack,
                 ?
               </span>
             </div>
-            <div className="relative">
+            <AddressAutocomplete
+              placeholder="Start typing postcode or address..."
+              onAddressSelect={handleAddressSelect}
+              initialValue={address}
+              className="w-full border-2 border-gray-300 rounded-[6px] px-[16px] py-[12px] focus:outline-none transition-all duration-200 focus:border-[#224380]"
+            />
+            <p className="text-sm text-gray-500 mt-1">Or type your full address manually below</p>
+            <div className="relative mt-2">
               <input
                 id="address-input"
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="Start typing your address..."
+                placeholder="Full address (e.g., 10 Downing Street, London, SW1A 2AA)"
                 className="w-full border-2 border-gray-300 rounded-[6px] px-[16px] py-[12px] pr-[50px] focus:outline-none transition-all duration-200"
                 onFocus={(e) => {
                   e.target.style.borderColor = '#224380';

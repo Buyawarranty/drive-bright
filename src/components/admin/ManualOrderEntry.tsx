@@ -9,7 +9,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PostcodeAutocomplete } from '@/components/ui/uk-postcode-autocomplete';
+import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Plus, User, Car, CreditCard, FileText, MapPin, Search, Sparkles, Edit } from 'lucide-react';
@@ -1066,6 +1066,24 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
               <MapPin className="h-5 w-5" />
               <h3 className="text-lg font-semibold">Address Details</h3>
             </div>
+            
+            {/* Address Lookup */}
+            <div>
+              <Label>Find Address</Label>
+              <AddressAutocomplete
+                placeholder="Start typing postcode or address..."
+                onAddressSelect={(address: AddressData) => {
+                  if (address.line_1) updateOrderData('street', address.line_1);
+                  if (address.building_name) updateOrderData('buildingName', address.building_name);
+                  if (address.building_number) updateOrderData('buildingNumber', address.building_number);
+                  if (address.town) updateOrderData('town', address.town);
+                  if (address.county) updateOrderData('county', address.county);
+                  if (address.postcode) updateOrderData('postcode', address.postcode);
+                }}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Or enter address manually below</p>
+            </div>
+            
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="flatNumber">Flat Number</Label>
@@ -1123,25 +1141,11 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
               </div>
               <div>
                 <Label htmlFor="postcode">Postcode</Label>
-                <PostcodeAutocomplete
+                <Input
+                  id="postcode"
                   value={orderData.postcode}
-                  onChange={(value) => updateOrderData('postcode', value)}
-                  onAddressSelect={(address) => {
-                    // Auto-populate address fields when postcode is selected
-                    if (address.town && !orderData.town) {
-                      updateOrderData('town', address.town);
-                    }
-                    if (address.county && !orderData.county) {
-                      updateOrderData('county', address.county);
-                    }
-                    if (address.street && !orderData.street) {
-                      updateOrderData('street', address.street);
-                    }
-                    if (address.building_name && !orderData.buildingName) {
-                      updateOrderData('buildingName', address.building_name);
-                    }
-                  }}
-                  placeholder="Enter UK postcode"
+                  onChange={(e) => updateOrderData('postcode', e.target.value.toUpperCase())}
+                  placeholder="SW1A 1AA"
                   required
                 />
               </div>
