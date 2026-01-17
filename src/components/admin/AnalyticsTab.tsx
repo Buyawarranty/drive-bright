@@ -1,11 +1,15 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Users, CreditCard, PoundSterling } from 'lucide-react';
+import { Users, CreditCard, PoundSterling, Globe, Phone } from 'lucide-react';
 import { toast } from 'sonner';
 import { ApiConnectivityTest } from './ApiConnectivityTest';
+import { DateRangeFilter } from './DateRangeFilter';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { DateRange } from 'react-day-picker';
 
 interface Customer {
   id: string;
@@ -15,6 +19,8 @@ interface Customer {
   signup_date: string;
   status: string;
   final_amount: number | null;
+  warranty_reference_number: string | null;
+  purchase_source: string | null;
 }
 
 // Test names to exclude from analytics (matching CustomersTab filtering)
@@ -38,6 +44,8 @@ const isTestOrder = (name: string, email: string): boolean => {
 export const AnalyticsTab = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [sourceFilter, setSourceFilter] = useState<string>('all');
 
   useEffect(() => {
     fetchAnalyticsData();
@@ -50,7 +58,7 @@ export const AnalyticsTab = () => {
       // Match CustomersTab filtering exactly
       const { data, error } = await supabase
         .from('customers')
-        .select('id, name, email, plan_type, signup_date, status, final_amount')
+        .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source')
         .not('email', 'ilike', '%@test.com%')
         .not('email', 'ilike', '%testuser%')
         .not('email', 'ilike', '%guest@%')
@@ -76,13 +84,43 @@ export const AnalyticsTab = () => {
     }
   };
 
+  // Filter customers based on date range and source
+  const filteredCustomers = useMemo(() => {
+    return customers.filter(customer => {
+      // Date filter
+      if (dateRange?.from) {
+        const signupDate = new Date(customer.signup_date);
+        if (signupDate < dateRange.from) return false;
+        if (dateRange.to && signupDate > dateRange.to) return false;
+      }
+
+      // Source filter
+      if (sourceFilter !== 'all') {
+        const ref = customer.warranty_reference_number?.toUpperCase() || '';
+        const source = customer.purchase_source?.toLowerCase() || '';
+        
+        if (sourceFilter === 'website') {
+          // Website sales: BAW reference OR purchase_source is 'website'
+          const isWebsite = ref.startsWith('BAW-') || source === 'website';
+          if (!isWebsite) return false;
+        } else if (sourceFilter === 'sales_team') {
+          // Sales team: ADM reference OR purchase_source is 'quote_link' or 'external'
+          const isSalesTeam = ref.startsWith('ADM-') || source === 'quote_link' || source === 'external';
+          if (!isSalesTeam) return false;
+        }
+      }
+
+      return true;
+    });
+  }, [customers, dateRange, sourceFilter]);
+
   // Calculate metrics with safe defaults
-  const totalCustomers = customers.length;
-  const activeCustomers = customers.filter(c => c.status === 'Active').length;
-  const totalRevenue = customers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
+  const totalCustomers = filteredCustomers.length;
+  const activeCustomers = filteredCustomers.filter(c => c.status === 'Active').length;
+  const totalRevenue = filteredCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
 
   // Plan distribution data
-  const planDistribution = customers.reduce((acc: Record<string, number>, customer) => {
+  const planDistribution = filteredCustomers.reduce((acc: Record<string, number>, customer) => {
     acc[customer.plan_type] = (acc[customer.plan_type] || 0) + 1;
     return acc;
   }, {});
@@ -93,7 +131,7 @@ export const AnalyticsTab = () => {
   }));
 
   // Monthly signup data (last 6 months)
-  const monthlySignups = React.useMemo(() => {
+  const monthlySignups = useMemo(() => {
     const months = Array.from({ length: 6 }, (_, i) => {
       const date = new Date();
       date.setMonth(date.getMonth() - i);
@@ -103,7 +141,7 @@ export const AnalyticsTab = () => {
       };
     }).reverse();
 
-    customers.forEach(customer => {
+    filteredCustomers.forEach(customer => {
       const signupDate = new Date(customer.signup_date);
       const monthKey = signupDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
       const monthData = months.find(m => m.month === monthKey);
@@ -113,10 +151,10 @@ export const AnalyticsTab = () => {
     });
 
     return months;
-  }, [customers]);
+  }, [filteredCustomers]);
 
   // Monthly revenue data (last 12 months)
-  const monthlyRevenue = React.useMemo(() => {
+  const monthlyRevenue = useMemo(() => {
     const months = Array.from({ length: 12 }, (_, i) => {
       const date = new Date();
       date.setMonth(date.getMonth() - i);
@@ -127,7 +165,7 @@ export const AnalyticsTab = () => {
       };
     }).reverse();
 
-    customers.forEach(customer => {
+    filteredCustomers.forEach(customer => {
       if (customer.final_amount && customer.signup_date) {
         const signupDate = new Date(customer.signup_date);
         const monthKey = `${signupDate.getFullYear()}-${String(signupDate.getMonth() + 1).padStart(2, '0')}`;
@@ -139,7 +177,7 @@ export const AnalyticsTab = () => {
     });
 
     return months;
-  }, [customers]);
+  }, [filteredCustomers]);
 
   const COLORS = ['#f97316', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
@@ -153,9 +191,52 @@ export const AnalyticsTab = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h2>
-        <p className="text-sm text-gray-600">Overview of your warranty business (excludes test orders)</p>
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h2>
+          <p className="text-sm text-gray-600">Overview of your warranty business (excludes test orders)</p>
+        </div>
+        
+        {/* Filters Row */}
+        <div className="flex flex-wrap gap-4 items-end p-4 bg-muted/30 rounded-lg border">
+          <DateRangeFilter 
+            dateRange={dateRange} 
+            onDateRangeChange={setDateRange}
+            className="min-w-[280px]"
+          />
+          
+          <div className="space-y-1 min-w-[200px]">
+            <Label className="text-sm font-medium">Sales Source</Label>
+            <Select value={sourceFilter} onValueChange={setSourceFilter}>
+              <SelectTrigger className="h-10">
+                <SelectValue placeholder="All Sources" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  <span className="flex items-center gap-2">All Sources</span>
+                </SelectItem>
+                <SelectItem value="website">
+                  <span className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-blue-500" />
+                    Website (BAW)
+                  </span>
+                </SelectItem>
+                <SelectItem value="sales_team">
+                  <span className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-orange-500" />
+                    Sales Team (ADM)
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {(dateRange || sourceFilter !== 'all') && (
+            <div className="text-sm text-muted-foreground">
+              Showing <span className="font-semibold text-foreground">{filteredCustomers.length}</span> of {customers.length} customers
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Key Metrics */}
@@ -287,16 +368,24 @@ export const AnalyticsTab = () => {
           <CardTitle>Recent Customer Activity</CardTitle>
         </CardHeader>
         <CardContent>
-          {customers.length > 0 ? (
+          {filteredCustomers.length > 0 ? (
             <div className="space-y-4">
-              {customers.slice(0, 5).map((customer) => (
+              {filteredCustomers.slice(0, 5).map((customer) => (
                 <div key={customer.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div>
                     <p className="font-medium">{customer.name}</p>
                     <p className="text-sm text-gray-600">{customer.email}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium">{customer.plan_type}</p>
+                    <div className="flex items-center gap-2 justify-end">
+                      <p className="text-sm font-medium">{customer.plan_type}</p>
+                      {customer.warranty_reference_number?.startsWith('BAW-') && (
+                        <Globe className="h-3 w-3 text-blue-500" />
+                      )}
+                      {customer.warranty_reference_number?.startsWith('ADM-') && (
+                        <Phone className="h-3 w-3 text-orange-500" />
+                      )}
+                    </div>
                     <p className="text-xs text-gray-500">
                       {new Date(customer.signup_date).toLocaleDateString()}
                     </p>
@@ -311,7 +400,7 @@ export const AnalyticsTab = () => {
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500">
-              No customer activity yet
+              {customers.length > 0 ? 'No customers match the current filters' : 'No customer activity yet'}
             </div>
           )}
         </CardContent>
