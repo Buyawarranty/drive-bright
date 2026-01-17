@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { PurchaseSourceBadge } from '../PurchaseSourceBadge';
 
 interface CustomerTag {
   id: string;
@@ -58,6 +59,8 @@ interface Customer {
   town: string | null;
   county: string | null;
   postcode: string | null;
+  // Purchase source tracking
+  purchase_source?: string | null;
   // Policy info
   policy?: {
     policy_number: string;
@@ -515,6 +518,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                 <TableHead>Vol. Excess</TableHead>
                 <TableHead>Claim Limit</TableHead>
                 <TableHead>Tags</TableHead>
+                <TableHead className="bg-purple-50">Source</TableHead>
                 <TableHead>Warranties2000</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
@@ -675,6 +679,11 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                           </Badge>
                         )}
                       </div>
+                    </TableCell>
+                    
+                    {/* Purchase Source */}
+                    <TableCell className="bg-purple-50/30">
+                      <PurchaseSourceBadge source={customer.purchase_source} />
                     </TableCell>
                     
                     {/* Warranties2000 */}

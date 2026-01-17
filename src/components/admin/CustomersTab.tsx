@@ -52,6 +52,7 @@ import { InlineWarrantyUpgrade } from './InlineWarrantyUpgrade';
 import { InlineFutureActivationEdit } from './InlineFutureActivationEdit';
 import { InlineUpgradeCell } from './InlineUpgradeCell';
 import { TrustpilotReviewDialog } from './TrustpilotReviewDialog';
+import { PurchaseSourceBadge } from './PurchaseSourceBadge';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
@@ -185,6 +186,8 @@ interface Customer {
   // Payment verification fields
   is_manual_entry?: boolean;
   payment_verified?: boolean;
+  // Purchase source tracking
+  purchase_source?: string | null;
   admin_users?: {
     id: string;
     email: string;
@@ -713,7 +716,9 @@ export const CustomersTab = () => {
           google_review_completed_at: null,
           // Payment verification columns
           is_manual_entry: true,
-          payment_verified: false
+          payment_verified: false,
+          // Purchase source tracking
+          purchase_source: 'external' as const
         }));
         
         directData = [...directData, ...orphanedAsCustomers];
@@ -2374,6 +2379,7 @@ export const CustomersTab = () => {
               <TableHead className="bg-gradient-to-r from-amber-50 to-orange-50">Upgrade</TableHead>
               <TableHead>Expiry Date</TableHead>
               <TableHead>Payment Method</TableHead>
+              <TableHead className="bg-purple-50">Source</TableHead>
               <TableHead>Vol. Excess</TableHead>
               <TableHead>Claim Limit</TableHead>
               <TableHead>Claims Made</TableHead>
@@ -3605,6 +3611,10 @@ Please log in and change your password after first login.`;
                            </span>
                          )}
                        </div>
+                     </TableCell>
+                     {/* Purchase Source */}
+                     <TableCell className="bg-purple-50/30">
+                       <PurchaseSourceBadge source={customer.purchase_source} />
                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
