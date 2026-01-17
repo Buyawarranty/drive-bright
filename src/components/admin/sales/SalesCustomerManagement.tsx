@@ -27,6 +27,8 @@ import {
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { PurchaseSourceBadge } from '../PurchaseSourceBadge';
+import { DateRangeFilter } from '../DateRangeFilter';
+import { DateRange } from 'react-day-picker';
 
 interface CustomerTag {
   id: string;
@@ -89,6 +91,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
   const [filterByPlan, setFilterByPlan] = useState('all');
   const [filterByStatus, setFilterByStatus] = useState('all');
   const [filterByTag, setFilterByTag] = useState('all');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [activeTab, setActiveTab] = useState('active');
   const [currentUserId, setCurrentUserId] = useState<string | null>(propUserId || null);
   
@@ -256,6 +259,22 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
       );
     }
 
+    // Date range filter
+    if (dateRange?.from) {
+      filtered = filtered.filter(c => {
+        const signupDate = new Date(c.signup_date || c.created_at);
+        const fromDate = new Date(dateRange.from!);
+        fromDate.setHours(0, 0, 0, 0);
+        
+        if (dateRange.to) {
+          const toDate = new Date(dateRange.to);
+          toDate.setHours(23, 59, 59, 999);
+          return signupDate >= fromDate && signupDate <= toDate;
+        }
+        return signupDate >= fromDate;
+      });
+    }
+
     // Sorting
     switch (sortBy) {
       case 'oldest':
@@ -277,7 +296,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
     }
 
     return filtered;
-  }, [customers, searchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, activeTab]);
+  }, [customers, searchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, dateRange, activeTab]);
 
   const formatAddress = (customer: Customer) => {
     const parts = [
@@ -358,7 +377,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
 
       {/* Filters */}
       <div className="bg-muted/30 p-4 rounded-lg space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
           {/* Search */}
           <div className="space-y-1">
             <Label className="text-sm font-medium">Search</Label>
@@ -472,6 +491,12 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
               </SelectContent>
             </Select>
           </div>
+
+          {/* Date Range Filter */}
+          <DateRangeFilter
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
+          />
         </div>
 
         {/* Results count and clear */}
@@ -488,6 +513,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
               setFilterByPlan('all');
               setFilterByStatus('all');
               setFilterByTag('all');
+              setDateRange(undefined);
             }}
             className="text-xs"
           >

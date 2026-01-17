@@ -53,7 +53,9 @@ import { InlineFutureActivationEdit } from './InlineFutureActivationEdit';
 import { InlineUpgradeCell } from './InlineUpgradeCell';
 import { TrustpilotReviewDialog } from './TrustpilotReviewDialog';
 import { PurchaseSourceBadge } from './PurchaseSourceBadge';
+import { DateRangeFilter } from './DateRangeFilter';
 import { format } from 'date-fns';
+import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -305,6 +307,7 @@ export const CustomersTab = () => {
   const [filterByPlan, setFilterByPlan] = useState('all');
   const [filterByStatus, setFilterByStatus] = useState('all');
   const [filterByTag, setFilterByTag] = useState('all');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [availableTags, setAvailableTags] = useState<any[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -471,6 +474,22 @@ export const CustomersTab = () => {
       }
     }
 
+    // Apply date range filter
+    if (dateRange?.from) {
+      filtered = filtered.filter(customer => {
+        const signupDate = new Date(customer.signup_date);
+        const fromDate = new Date(dateRange.from!);
+        fromDate.setHours(0, 0, 0, 0);
+        
+        if (dateRange.to) {
+          const toDate = new Date(dateRange.to);
+          toDate.setHours(23, 59, 59, 999);
+          return signupDate >= fromDate && signupDate <= toDate;
+        }
+        return signupDate >= fromDate;
+      });
+    }
+
     // Apply sorting
     filtered.sort((a, b) => {
       const dateA = new Date(a.signup_date).getTime();
@@ -493,7 +512,7 @@ export const CustomersTab = () => {
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag]);
+  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, dateRange]);
 
   const getCurrentUser = async () => {
     try {
@@ -2225,7 +2244,7 @@ export const CustomersTab = () => {
               </div>
             </div>
 
-            {/* Second row for tag filter */}
+            {/* Second row for tag filter and date range */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Filter by Tag */}
               <div className="space-y-1">
@@ -2277,6 +2296,12 @@ export const CustomersTab = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Date Range Filter */}
+              <DateRangeFilter
+                dateRange={dateRange}
+                onDateRangeChange={setDateRange}
+              />
             </div>
 
             {/* Results Summary and Bulk Actions */}
@@ -2288,6 +2313,7 @@ export const CustomersTab = () => {
                   {filterByPlan !== 'all' && ` • ${filterByPlan} plan`}
                   {filterByStatus !== 'all' && ` • ${filterByStatus} status`}
                   {filterByTag !== 'all' && ` • filtered by tag`}
+                  {dateRange?.from && ` • ${format(dateRange.from, 'dd MMM yyyy')}${dateRange.to ? ` - ${format(dateRange.to, 'dd MMM yyyy')}` : ''}`}
                 </span>
                 {selectedCustomers.size > 0 && (
                   <Badge variant="secondary" className="bg-blue-50 text-blue-700">
