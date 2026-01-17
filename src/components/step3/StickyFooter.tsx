@@ -62,7 +62,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             </div>
             <div className="flex items-center gap-1.5 text-xs text-gray-500">
               <Shield className="w-3.5 h-3.5" />
-              <span>12 payments only</span>
+              <span>12 easy payments</span>
             </div>
           </div>
 
@@ -78,7 +78,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
                 </span>
                 <span className="text-2xl font-bold text-gray-900">£{monthlyPrice}/month</span>
               </div>
-              <span className="text-sm text-gray-500">(Only 12 payments)</span>
+              <span className="text-sm text-gray-500">(12 easy payments)</span>
             </div>
             <div className="flex items-center gap-2 text-sm mt-1">
               <span className="text-gray-500">Or pay in full:</span>

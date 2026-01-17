@@ -1621,7 +1621,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     {/* Price Headline */}
                     <div className="flex items-baseline gap-2">
                       <span className="text-2xl font-bold text-black">£{displayedMonthlyPrice}/month</span>
-                      <span className="text-sm font-bold text-gray-400">(12 payments only)</span>
+                      <span className="text-sm font-bold text-gray-400">(12 easy payments)</span>
                     </div>
                     
                     {/* Free year benefit line with tick */}
@@ -2658,7 +2658,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         </span>
                         <span className="text-3xl font-bold text-gray-900">£{displayMonthlyPrice}/month</span>
                       </div>
-                      <span className="text-sm text-black">(Only 12 payments)</span>
+                      <span className="text-sm text-black">(12 easy payments)</span>
                     </div>
                     {(() => {
                       const payInFull = displayMonthlyPrice * 12; // monthly × 12
@@ -2867,7 +2867,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                               {paymentType === '36months' && '3-Year Cover'}
                             </span>
                             <span className="text-gray-400">·</span>
-                            <span className="text-gray-500">12 payments only</span>
+                            <span className="text-gray-500">12 easy payments</span>
                           </div>
                         </div>
                         
@@ -2938,7 +2938,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         >
                           <TrustpilotHeader className="flex-shrink-0 scale-[0.7] origin-center" />
                         </a>
-                        <div className="text-xs text-gray-500 mt-1.5 whitespace-nowrap">12 payments only</div>
+                        <div className="text-xs text-gray-500 mt-1.5 whitespace-nowrap">12 easy payments</div>
                       </div>
                       
                       {/* SECTION 2: Price */}
@@ -2947,7 +2947,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           Total: £{displayMonthlyPrice}/Month <span className="text-sm lg:text-base font-normal text-gray-600">– 0% APR</span>
                         </div>
                         <div className="text-xs lg:text-sm text-gray-500 mt-0.5 whitespace-nowrap">
-                          Only 12 payments
+                          12 easy payments
                         </div>
                         <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm mt-0.5 flex-wrap justify-center">
                           {savings > 0 && <span className="line-through text-red-500">£{wasPrice}</span>}
@@ -3068,7 +3068,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       return Math.floor(total / 12);
                     })()}/month
                   </span>
-                  <div className="text-xs text-gray-500">(12 payments only)</div>
+                  <div className="text-xs text-gray-500">(12 easy payments)</div>
                 </div>
               </div>
               <div className="flex justify-between items-center">

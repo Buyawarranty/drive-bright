@@ -751,7 +751,7 @@ const CustomerDetailsStepTest: React.FC<CustomerDetailsStepTestProps> = ({
                           <div className="text-2xl font-bold text-black">
                             £{Math.floor(discountedPaymentAssistPrice / 12)}/month
                           </div>
-                          <div className="text-sm text-gray-600 font-bold">Only 12 payments</div>
+                          <div className="text-sm text-gray-600 font-bold">12 easy payments</div>
                         </div>
 
                         <div className="space-y-2 mb-4 min-h-[84px] flex-grow">
