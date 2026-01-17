@@ -59,6 +59,9 @@ export const SellingTipsSection: React.FC = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingTip, setEditingTip] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [editCategory, setEditCategory] = useState('');
   
   // Quick add form state
   const [newCategory, setNewCategory] = useState('selling_technique');
@@ -202,6 +205,50 @@ export const SellingTipsSection: React.FC = () => {
     } catch (error) {
       console.error('Error deleting tip:', error);
       toast.error('Failed to delete');
+    }
+  };
+
+  const handleStartEdit = (tip: SellingTip) => {
+    setEditingTip(tip.id);
+    setEditTitle(tip.title);
+    setEditContent(tip.content);
+    setEditCategory(tip.category);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTip(null);
+    setEditTitle('');
+    setEditContent('');
+    setEditCategory('');
+  };
+
+  const handleUpdateTip = async () => {
+    if (!editingTip || !editTitle.trim() || !editContent.trim()) {
+      toast.error('Please fill in title and content');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('selling_tips')
+        .update({
+          title: editTitle.trim(),
+          content: editContent.trim(),
+          category: editCategory
+        })
+        .eq('id', editingTip);
+
+      if (error) throw error;
+
+      toast.success('Tip updated successfully!');
+      handleCancelEdit();
+      fetchTips();
+    } catch (error) {
+      console.error('Error updating tip:', error);
+      toast.error('Failed to update tip');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -405,6 +452,17 @@ Examples:
                   onTogglePin={handleTogglePin}
                   onToggleResolved={handleToggleResolved}
                   onDelete={handleDelete}
+                  isEditing={editingTip === tip.id}
+                  onStartEdit={handleStartEdit}
+                  onCancelEdit={handleCancelEdit}
+                  onSaveEdit={handleUpdateTip}
+                  editTitle={editTitle}
+                  setEditTitle={setEditTitle}
+                  editContent={editContent}
+                  setEditContent={setEditContent}
+                  editCategory={editCategory}
+                  setEditCategory={setEditCategory}
+                  saving={saving}
                 />
               ))}
             </div>
@@ -424,6 +482,17 @@ Examples:
                   onTogglePin={handleTogglePin}
                   onToggleResolved={handleToggleResolved}
                   onDelete={handleDelete}
+                  isEditing={editingTip === tip.id}
+                  onStartEdit={handleStartEdit}
+                  onCancelEdit={handleCancelEdit}
+                  onSaveEdit={handleUpdateTip}
+                  editTitle={editTitle}
+                  setEditTitle={setEditTitle}
+                  editContent={editContent}
+                  setEditContent={setEditContent}
+                  editCategory={editCategory}
+                  setEditCategory={setEditCategory}
+                  saving={saving}
                 />
               ))}
             </div>
@@ -457,6 +526,17 @@ interface TipCardProps {
   onTogglePin: (id: string, current: boolean) => void;
   onToggleResolved: (id: string, current: boolean) => void;
   onDelete: (id: string) => void;
+  isEditing: boolean;
+  onStartEdit: (tip: SellingTip) => void;
+  onCancelEdit: () => void;
+  onSaveEdit: () => void;
+  editTitle: string;
+  setEditTitle: (value: string) => void;
+  editContent: string;
+  setEditContent: (value: string) => void;
+  editCategory: string;
+  setEditCategory: (value: string) => void;
+  saving: boolean;
 }
 
 const TipCard: React.FC<TipCardProps> = ({ 
@@ -464,7 +544,18 @@ const TipCard: React.FC<TipCardProps> = ({
   getCategoryInfo, 
   onTogglePin, 
   onToggleResolved, 
-  onDelete 
+  onDelete,
+  isEditing,
+  onStartEdit,
+  onCancelEdit,
+  onSaveEdit,
+  editTitle,
+  setEditTitle,
+  editContent,
+  setEditContent,
+  editCategory,
+  setEditCategory,
+  saving
 }) => {
   const catInfo = getCategoryInfo(tip.category);
   const Icon = catInfo.icon;
@@ -473,6 +564,78 @@ const TipCard: React.FC<TipCardProps> = ({
     ? `${tip.creator.first_name || ''} ${tip.creator.last_name || ''}`.trim() || tip.creator.email?.split('@')[0]
     : 'Unknown';
 
+  // Edit mode view
+  if (isEditing) {
+    return (
+      <Card className="border-primary/50 bg-primary/5">
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">Editing Tip</span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onCancelEdit}
+                disabled={saving}
+              >
+                <X className="h-4 w-4 mr-1" />
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={onSaveEdit}
+                disabled={saving}
+              >
+                <Save className="h-4 w-4 mr-1" />
+                {saving ? 'Saving...' : 'Save'}
+              </Button>
+            </div>
+          </div>
+          
+          <Select value={editCategory} onValueChange={setEditCategory}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Selling Tips</div>
+              {SELLING_TIPS_CATEGORIES.map((cat) => (
+                <SelectItem key={cat.value} value={cat.value}>
+                  <div className="flex items-center gap-2">
+                    <cat.icon className="h-4 w-4" />
+                    {cat.label}
+                  </div>
+                </SelectItem>
+              ))}
+              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1">Customer Feedback</div>
+              {CUSTOMER_FEEDBACK_CATEGORIES.map((cat) => (
+                <SelectItem key={cat.value} value={cat.value}>
+                  <div className="flex items-center gap-2">
+                    <cat.icon className="h-4 w-4" />
+                    {cat.label}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Input
+            placeholder="Title"
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+          />
+          
+          <Textarea
+            placeholder="Content"
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            rows={3}
+          />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Normal view
   return (
     <Card className={cn(
       "transition-all hover:shadow-md",
@@ -519,6 +682,15 @@ const TipCard: React.FC<TipCardProps> = ({
 
               {/* Actions */}
               <div className="flex items-center gap-1 flex-shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => onStartEdit(tip)}
+                  title="Edit"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
