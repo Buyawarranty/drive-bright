@@ -10,7 +10,6 @@ import { SalespersonDashboard } from './SalespersonDashboard';
 import { ManagerDashboard } from './ManagerDashboard';
 import { AgentsLeadsView } from './AgentsLeadsView';
 import { SalesAgentDashboard } from '../sales/SalesAgentDashboard';
-import { ManualOrderEntry } from '../ManualOrderEntry';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
 import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Trash2, UsersRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -383,9 +382,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
               </AlertDialogContent>
             </AlertDialog>
           )}
-          
-          {/* Add Manual Order Button */}
-          <ManualOrderEntry />
           
           {/* View Toggle - Optimized with useCallback */}
           <div className="flex items-center border rounded-lg bg-muted/50 p-1">

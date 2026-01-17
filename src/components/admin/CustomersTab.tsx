@@ -29,7 +29,6 @@ import { CustomerNotesSection } from './CustomerNotesSection';
 import { StructuredNotesSection } from './StructuredNotesSection';
 import { CustomerServiceNotes } from './CustomerServiceNotes';
 import { WarrantyActions } from './WarrantyActions';
-import { ManualOrderEntry } from './ManualOrderEntry';
 import { EditOrderButton } from './EditOrderButton';
 import { MOTHistorySection } from './MOTHistorySection';
 import { W2000DataPreview } from './W2000DataPreview';
@@ -307,6 +306,7 @@ export const CustomersTab = () => {
   const [filterByPlan, setFilterByPlan] = useState('all');
   const [filterByStatus, setFilterByStatus] = useState('all');
   const [filterByTag, setFilterByTag] = useState('all');
+  const [filterBySource, setFilterBySource] = useState('all');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [availableTags, setAvailableTags] = useState<any[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -474,6 +474,25 @@ export const CustomersTab = () => {
       }
     }
 
+    // Apply source filter (Website = BAW, Quote/Order = ADM)
+    if (filterBySource !== 'all') {
+      filtered = filtered.filter(customer => {
+        if (filterBySource === 'website') {
+          // Website purchases: purchase_source is 'website' or warranty starts with BAW
+          return customer.purchase_source === 'website' || 
+                 customer.warranty_reference_number?.startsWith('BAW') ||
+                 (!customer.is_manual_entry && !customer.purchase_source);
+        } else if (filterBySource === 'quote_order') {
+          // Quote/Order link or External: purchase_source is 'quote_link' or 'external', or warranty starts with ADM
+          return customer.purchase_source === 'quote_link' || 
+                 customer.purchase_source === 'external' ||
+                 customer.warranty_reference_number?.startsWith('ADM') ||
+                 customer.is_manual_entry;
+        }
+        return true;
+      });
+    }
+
     // Apply date range filter
     if (dateRange?.from) {
       filtered = filtered.filter(customer => {
@@ -512,7 +531,7 @@ export const CustomersTab = () => {
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, dateRange]);
+  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, dateRange]);
 
   const getCurrentUser = async () => {
     try {
@@ -2067,7 +2086,6 @@ export const CustomersTab = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <ManualOrderEntry />
           <h2 className="text-2xl font-bold text-gray-900">Customer Management</h2>
         </div>
         <div className="flex space-x-2">
@@ -2302,6 +2320,31 @@ export const CustomersTab = () => {
                 dateRange={dateRange}
                 onDateRangeChange={setDateRange}
               />
+
+              {/* Filter by Source */}
+              <div className="space-y-1">
+                <Label htmlFor="sourceFilter" className="text-sm font-medium">Purchase Source</Label>
+                <Select value={filterBySource} onValueChange={setFilterBySource}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Sources</SelectItem>
+                    <SelectItem value="website">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-blue-500" />
+                        Website (BAW)
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="quote_order">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-purple-500" />
+                        Quote & Orders (ADM)
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Results Summary and Bulk Actions */}
@@ -2313,6 +2356,7 @@ export const CustomersTab = () => {
                   {filterByPlan !== 'all' && ` • ${filterByPlan} plan`}
                   {filterByStatus !== 'all' && ` • ${filterByStatus} status`}
                   {filterByTag !== 'all' && ` • filtered by tag`}
+                  {filterBySource !== 'all' && ` • ${filterBySource === 'website' ? 'Website (BAW)' : 'Quote & Orders (ADM)'}`}
                   {dateRange?.from && ` • ${format(dateRange.from, 'dd MMM yyyy')}${dateRange.to ? ` - ${format(dateRange.to, 'dd MMM yyyy')}` : ''}`}
                 </span>
                 {selectedCustomers.size > 0 && (
