@@ -80,7 +80,7 @@ serve(async (req) => {
             source: 'sdk',
             body: WELCOME_MESSAGE,
             to: formattedPhone,
-            from: 'BuyWarranty',
+            from: 'BAW',
           }
         ]
       }),
