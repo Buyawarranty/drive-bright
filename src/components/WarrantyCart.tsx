@@ -139,23 +139,22 @@ const WarrantyCart: React.FC<WarrantyCartProps> = ({ onAddMore, onProceedToCheck
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      {/* Back Button */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4">
-        <div className="max-w-6xl mx-auto">
-          <Button variant="outline" onClick={onAddMore} className="mb-0">
+    <div className="bg-gray-50 min-h-screen pt-2 sm:pt-0">
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+        {/* Back button - inline with content */}
+        <div className="mb-4">
+          <Button variant="ghost" onClick={onAddMore} className="text-gray-600 hover:text-gray-900 -ml-2 px-2">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Plans
           </Button>
         </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto p-6">
+        
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Left Column - Cart Items */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                 Your Warranty Cart ({getItemCount()} {getItemCount() === 1 ? 'item' : 'items'})
               </h1>
               
