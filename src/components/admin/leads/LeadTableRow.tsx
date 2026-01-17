@@ -10,10 +10,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Checkbox } from '@/components/ui/checkbox';
 import { RemindMePopover } from './RemindMePopover';
 import { CopyButton } from './CopyButton';
+import { CallCountCell } from './CallCountCell';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, 
   Tag, AlertTriangle, FileText, StickyNote,
-  CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User, Minus
+  CheckCircle, ChevronDown, Send, ExternalLink, Flame, X, Plus, User
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -339,33 +340,15 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         </Select>
       </TableCell>
 
-      {/* Call Count - Quick increment/decrement */}
+      {/* Call Count - Enhanced with dialog and guardrails */}
       <TableCell onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-center gap-0.5">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 text-muted-foreground hover:text-red-600 hover:bg-red-50"
-            onClick={() => onUpdateCallCount(-1)}
-            disabled={lead.call_count <= 0}
-          >
-            <Minus className="h-3 w-3" />
-          </Button>
-          <span className={cn(
-            "min-w-[24px] text-center text-sm font-medium",
-            lead.call_count > 0 ? "text-primary" : "text-muted-foreground"
-          )}>
-            {lead.call_count || 0}
-          </span>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 text-muted-foreground hover:text-green-600 hover:bg-green-50"
-            onClick={() => onUpdateCallCount(1)}
-          >
-            <Plus className="h-3 w-3" />
-          </Button>
-        </div>
+        <CallCountCell
+          lead={lead}
+          onUpdateCallCount={onUpdateCallCount}
+          onUpdateStatus={onUpdateStatus}
+          onScheduleFollowUp={onScheduleFollowUp}
+          onLogActivity={onLogActivity}
+        />
       </TableCell>
 
       {/* Quick Actions */}
@@ -731,6 +714,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.lead.next_action_date === nextProps.lead.next_action_date &&
     prevProps.lead.next_action_type === nextProps.lead.next_action_type &&
     prevProps.lead.is_paid === nextProps.lead.is_paid &&
+    prevProps.lead.call_count === nextProps.lead.call_count &&
     prevProps.lead.tags?.length === nextProps.lead.tags?.length &&
     prevProps.isSelected === nextProps.isSelected &&
     prevProps.isExpanded === nextProps.isExpanded

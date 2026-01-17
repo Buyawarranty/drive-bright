@@ -2621,6 +2621,53 @@ export type Database = {
           },
         ]
       }
+      lead_call_logs: {
+        Row: {
+          agent_id: string | null
+          agent_name: string | null
+          attempt_number: number
+          created_at: string
+          id: string
+          lead_id: string
+          lead_type: string
+          next_follow_up_date: string | null
+          notes: string | null
+          outcome: string
+        }
+        Insert: {
+          agent_id?: string | null
+          agent_name?: string | null
+          attempt_number: number
+          created_at?: string
+          id?: string
+          lead_id: string
+          lead_type?: string
+          next_follow_up_date?: string | null
+          notes?: string | null
+          outcome: string
+        }
+        Update: {
+          agent_id?: string | null
+          agent_name?: string | null
+          attempt_number?: number
+          created_at?: string
+          id?: string
+          lead_id?: string
+          lead_type?: string
+          next_follow_up_date?: string | null
+          notes?: string | null
+          outcome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_call_logs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_quick_notes: {
         Row: {
           created_at: string | null
@@ -2699,6 +2746,33 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      lead_settings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key: string
+          setting_value: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string
         }
         Relationships: []
       }
