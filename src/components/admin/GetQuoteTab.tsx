@@ -1955,7 +1955,7 @@ Questions? Call 0330 229 5040`;
                   {/* Selectable Add-ons Grid */}
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                     {getAddOnInfo(paymentType, DURATION_MONTHS[paymentType])
-                      .filter((addon) => !['motFee', 'lostKey', 'consequential'].includes(addon.key))
+                      .filter((addon) => !['motFee', 'lostKey', 'consequential', 'motRepair'].includes(addon.key))
                       .map((addon) => {
                       const isAutoIncluded = addon.isAutoIncluded;
                       const isSelected = selectedAddOns[addon.key] || isAutoIncluded;
