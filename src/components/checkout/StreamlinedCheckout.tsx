@@ -4,8 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ArrowLeft, CheckCircle, Edit, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, Tag, Shield, AlertCircle, User, Car, X } from 'lucide-react';
-import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
+import { ArrowLeft, CheckCircle, Edit, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, Tag, Shield, AlertCircle, User, Car, X, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { trackFormSubmission, trackBumperCheckoutClick, trackStripeCheckoutClick, trackStripeCheckoutPageLoad, trackStep4EmailEntry } from '@/utils/analytics';
@@ -86,12 +85,18 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       if (savedCustomerData) {
         const parsed = JSON.parse(savedCustomerData);
         console.log('✅ Restored customer data from localStorage:', parsed);
-        return parsed;
+        // Combine first_name and last_name into full_name if they exist
+        const fullName = [parsed.first_name, parsed.last_name].filter(Boolean).join(' ').trim();
+        return {
+          ...parsed,
+          full_name: fullName || parsed.full_name || '',
+        };
       }
     } catch (error) {
       console.error('❌ Error restoring customer data:', error);
     }
     return {
+      full_name: '',
       first_name: '',
       last_name: '',
       email: '',
@@ -112,7 +117,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   
   // Section states for collapsible accordion
   const [detailsOpen, setDetailsOpen] = useState(true);
-  const [addressOpen, setAddressOpen] = useState(true);
   
   // Form states
   const [showValidation, setShowValidation] = useState(false);
@@ -172,42 +176,24 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const discountedStripePrice = Math.floor(stripeTotalPrice - totalDiscountAmount);
   const savings = bumperTotalPrice - stripeTotalPrice;
 
-  // Check section completion status
+  // Check section completion status - simplified for new form
   const personalDetailsComplete = useMemo(() => {
     return !!(
-      customerData.first_name?.trim() &&
-      customerData.last_name?.trim() &&
+      customerData.full_name?.trim() &&
       customerData.email?.trim() &&
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email) &&
       customerData.phone?.trim() &&
       customerData.mileage
     );
-  }, [customerData.first_name, customerData.last_name, customerData.email, customerData.phone, customerData.mileage]);
+  }, [customerData.full_name, customerData.email, customerData.phone, customerData.mileage]);
 
-  const addressComplete = useMemo(() => {
-    return !!(
-      customerData.address_line_1?.trim() &&
-      customerData.postcode?.trim() &&
-      customerData.city?.trim()
-    );
-  }, [customerData.address_line_1, customerData.postcode, customerData.city]);
-
-  // Count missing fields for each section
+  // Count missing fields for the simplified section
   const personalDetailsMissing = useMemo(() => {
     let count = 0;
-    if (!customerData.first_name?.trim()) count++;
-    if (!customerData.last_name?.trim()) count++;
+    if (!customerData.full_name?.trim()) count++;
     if (!customerData.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email)) count++;
     if (!customerData.phone?.trim()) count++;
     if (!customerData.mileage) count++;
-    return count;
-  }, [customerData]);
-
-  const addressMissing = useMemo(() => {
-    let count = 0;
-    if (!customerData.address_line_1?.trim()) count++;
-    if (!customerData.postcode?.trim()) count++;
-    if (!customerData.city?.trim()) count++;
     return count;
   }, [customerData]);
 
@@ -216,10 +202,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     trackStripeCheckoutPageLoad();
   }, []);
 
-  // Auto-validate pre-filled fields from Step 2 (First Name, Email, Phone)
+  // Auto-validate pre-filled fields from Step 2 (Full Name, Email, Phone)
   useEffect(() => {
     const autoValidatePrefilledFields = () => {
-      const fieldsToCheck = ['first_name', 'email', 'phone'];
+      const fieldsToCheck = ['full_name', 'email', 'phone'];
       const newValidatedFields: { [key: string]: boolean } = {};
 
       fieldsToCheck.forEach(field => {
@@ -227,7 +213,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         if (value && typeof value === 'string' && value.trim()) {
           let isValid = false;
           switch (field) {
-            case 'first_name':
+            case 'full_name':
               isValid = value.trim().length > 0;
               break;
             case 'email':
@@ -315,7 +301,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         await supabase.functions.invoke('track-abandoned-cart', {
           body: {
             email: customerData.email,
-            full_name: `${customerData.first_name || ''} ${customerData.last_name || ''}`.trim() || customerData.email,
+            full_name: customerData.full_name?.trim() || customerData.email,
             phone: customerData.phone || '',
             vehicle_reg: vehicleData.regNumber || '',
             vehicle_make: vehicleData.make || '',
@@ -334,12 +320,19 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     }, 2000);
 
     return () => clearTimeout(timeoutId);
-  }, [customerData.email, customerData.first_name, customerData.last_name, customerData.phone, vehicleData, planName, paymentType]);
+  }, [customerData.email, customerData.full_name, customerData.phone, vehicleData, planName, paymentType]);
 
   // Save customer data to localStorage
   useEffect(() => {
     try {
-      localStorage.setItem('buyawarranty_customerData', JSON.stringify(customerData));
+      // Also save first_name and last_name for backwards compatibility
+      const nameParts = customerData.full_name?.trim().split(' ') || [];
+      const dataToSave = {
+        ...customerData,
+        first_name: nameParts[0] || '',
+        last_name: nameParts.slice(1).join(' ') || '',
+      };
+      localStorage.setItem('buyawarranty_customerData', JSON.stringify(dataToSave));
     } catch (error) {
       console.error('Error saving customer data:', error);
     }
@@ -363,15 +356,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     let error = '';
 
     switch (field) {
-      case 'first_name':
-        if (!customerData.first_name?.trim()) {
-          error = 'First name is required';
+      case 'full_name':
+        if (!customerData.full_name?.trim()) {
+          error = 'Full name is required';
           isValid = false;
-        }
-        break;
-      case 'last_name':
-        if (!customerData.last_name?.trim()) {
-          error = 'Last name is required';
+        } else if (customerData.full_name.trim().length < 2) {
+          error = 'Please enter your full name';
           isValid = false;
         }
         break;
@@ -396,28 +386,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           isValid = false;
         }
         break;
-      case 'address_line_1':
-        if (!customerData.address_line_1?.trim()) {
-          error = 'Address is required';
-          isValid = false;
-        }
-        break;
-      case 'postcode':
-        const postcodeRegex = /^[A-Z]{1,2}[0-9][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
-        if (!customerData.postcode?.trim()) {
-          error = 'Postcode is required';
-          isValid = false;
-        } else if (!postcodeRegex.test(customerData.postcode.trim())) {
-          error = 'Please enter a valid UK postcode';
-          isValid = false;
-        }
-        break;
-      case 'city':
-        if (!customerData.city?.trim()) {
-          error = 'City is required';
-          isValid = false;
-        }
-        break;
       case 'mileage':
         const mileage = parseInt(customerData.mileage || '0');
         if (!customerData.mileage) {
@@ -439,7 +407,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   };
 
   const validateForm = (): boolean => {
-    const requiredFields = ['first_name', 'last_name', 'email', 'phone', 'address_line_1', 'postcode', 'city', 'mileage'];
+    const requiredFields = ['full_name', 'email', 'phone', 'mileage'];
     let allValid = true;
     
     requiredFields.forEach(field => {
@@ -517,7 +485,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     if (!validateForm()) {
       // Open sections with errors
       if (!personalDetailsComplete) setDetailsOpen(true);
-      if (!addressComplete) setAddressOpen(true);
       
       const formSection = document.getElementById('customer-form');
       formSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -541,6 +508,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     try {
       const finalPrice = discountedBumperPrice;
       
+      // Split full_name for API compatibility
+      const nameParts = customerData.full_name?.trim().split(' ') || [];
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-bumper-checkout', {
         body: {
           planId,
@@ -549,7 +521,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           voluntaryExcess: updatedPricingData.voluntaryExcess,
           claimLimit: updatedPricingData.claimLimit || 1250,
           labourRate: pricingData.labourRate || 50,
-          customerData: { ...customerData, final_amount: finalPrice },
+          customerData: { 
+            ...customerData, 
+            first_name: firstName,
+            last_name: lastName,
+            final_amount: finalPrice 
+          },
           discountCode: appliedDiscountCodes.map(code => code.code).join(', '),
           finalAmount: finalPrice,
           protectionAddOns: {
@@ -605,6 +582,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     try {
       const finalPrice = discountedStripePrice;
       
+      // Split full_name for API compatibility
+      const nameParts = customerData.full_name?.trim().split(' ') || [];
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
         body: {
           planId,
@@ -613,7 +595,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           voluntaryExcess: updatedPricingData.voluntaryExcess,
           claimLimit: updatedPricingData.claimLimit || 1250,
           labourRate: pricingData.labourRate || 50,
-          customerData: { ...customerData, final_amount: finalPrice },
+          customerData: { 
+            ...customerData, 
+            first_name: firstName,
+            last_name: lastName,
+            final_amount: finalPrice 
+          },
           discountCode: appliedDiscountCodes.map(code => code.code).join(', '),
           finalAmount: finalPrice,
           protectionAddOns: {
@@ -754,7 +741,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </CardContent>
           </Card>
 
-          {/* SECTION 2: YOUR DETAILS - Collapsible */}
+          {/* SECTION 2: YOUR DETAILS - Simplified */}
           <Card id="customer-form" className="border border-slate-200 shadow-sm overflow-hidden">
             <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
               <CollapsibleTrigger className="w-full">
@@ -769,7 +756,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     </div>
                     <div className="text-left">
                       <h3 className="font-semibold text-slate-900">Your Details</h3>
-                      <p className="text-sm text-slate-500">Name, email, phone & mileage</p>
+                      <p className="text-sm text-slate-500">Just 4 quick fields to complete</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -787,54 +774,29 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               
               <CollapsibleContent>
                 <div className="px-4 sm:px-5 pb-5 space-y-4 border-t border-slate-100 pt-4">
-                  {/* Name Fields */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="first_name" className="text-sm font-medium text-slate-700">First Name *</Label>
-                      <div className="relative mt-1.5">
-                        <Input
-                          id="first_name"
-                          placeholder="John"
-                          value={customerData.first_name}
-                          onChange={(e) => handleInputChange('first_name', e.target.value)}
-                          onBlur={() => handleFieldBlur('first_name')}
-                          required
-                          className={`h-12 text-base ${getInputValidationClass('first_name')}`}
-                        />
-                        {validatedFields.first_name && !fieldErrors.first_name && (
-                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
-                        )}
-                      </div>
-                      {showValidation && fieldErrors.first_name && (
-                        <p className="text-red-600 text-sm mt-1.5 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          {fieldErrors.first_name}
-                        </p>
+                  {/* Full Name - Single Field */}
+                  <div>
+                    <Label htmlFor="full_name" className="text-sm font-medium text-slate-700">Full Name *</Label>
+                    <div className="relative mt-1.5">
+                      <Input
+                        id="full_name"
+                        placeholder="John Smith"
+                        value={customerData.full_name}
+                        onChange={(e) => handleInputChange('full_name', e.target.value)}
+                        onBlur={() => handleFieldBlur('full_name')}
+                        required
+                        className={`h-12 text-base ${getInputValidationClass('full_name')}`}
+                      />
+                      {validatedFields.full_name && !fieldErrors.full_name && (
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
                       )}
                     </div>
-                    <div>
-                      <Label htmlFor="last_name" className="text-sm font-medium text-slate-700">Last Name *</Label>
-                      <div className="relative mt-1.5">
-                        <Input
-                          id="last_name"
-                          placeholder="Smith"
-                          value={customerData.last_name}
-                          onChange={(e) => handleInputChange('last_name', e.target.value)}
-                          onBlur={() => handleFieldBlur('last_name')}
-                          required
-                          className={`h-12 text-base ${getInputValidationClass('last_name')}`}
-                        />
-                        {validatedFields.last_name && !fieldErrors.last_name && (
-                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
-                        )}
-                      </div>
-                      {showValidation && fieldErrors.last_name && (
-                        <p className="text-red-600 text-sm mt-1.5 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          {fieldErrors.last_name}
-                        </p>
-                      )}
-                    </div>
+                    {showValidation && fieldErrors.full_name && (
+                      <p className="text-red-600 text-sm mt-1.5 flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        {fieldErrors.full_name}
+                      </p>
+                    )}
                   </div>
 
                   {/* Email */}
@@ -944,147 +906,19 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       </p>
                     )}
                   </div>
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          </Card>
 
-          {/* SECTION 3: ADDRESS - Collapsible */}
-          <Card className="border border-slate-200 shadow-sm overflow-hidden">
-            <Collapsible open={addressOpen} onOpenChange={setAddressOpen}>
-              <CollapsibleTrigger className="w-full">
-                <div className="flex items-center justify-between p-4 sm:p-5 hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      addressComplete ? 'bg-green-100' : showValidation && !addressComplete ? 'bg-red-100' : 'bg-slate-100'
-                    }`}>
-                      <MapPin className={`w-5 h-5 ${
-                        addressComplete ? 'text-green-600' : showValidation && !addressComplete ? 'text-red-600' : 'text-slate-600'
-                      }`} />
-                    </div>
-                    <div className="text-left">
-                      <h3 className="font-semibold text-slate-900">Your Address</h3>
-                      <p className="text-sm text-slate-500">For policy documentation</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {!addressOpen && (
-                      showValidation && addressMissing > 0 
-                        ? <SectionErrorBadge count={addressMissing} />
-                        : addressComplete && <SectionCompleteBadge />
-                    )}
-                    <div className="text-slate-400">
-                      {addressOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                    </div>
-                  </div>
-                </div>
-              </CollapsibleTrigger>
-              
-              <CollapsibleContent>
-                <div className="px-4 sm:px-5 pb-5 space-y-4 border-t border-slate-100 pt-4">
-                  {/* Address Lookup */}
-                  <div>
-                    <Label className="text-sm font-medium text-slate-700">Find Address</Label>
-                    <div className="mt-1.5">
-                      <AddressAutocomplete
-                        placeholder="Start typing postcode or address..."
-                        onAddressSelect={(address: AddressData) => {
-                          handleInputChange('address_line_1', address.line_1);
-                          handleInputChange('address_line_2', address.line_2);
-                          handleInputChange('city', address.town);
-                          handleInputChange('postcode', address.postcode);
-                          // Mark fields as validated
-                          handleFieldBlur('address_line_1');
-                          handleFieldBlur('city');
-                          handleFieldBlur('postcode');
-                        }}
-                        className="h-12"
-                      />
-                    </div>
-                    <p className="text-xs text-slate-500 mt-1">Or enter your address manually below</p>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="address_line_1" className="text-sm font-medium text-slate-700">Address Line 1 *</Label>
-                    <div className="relative mt-1.5">
-                      <Input
-                        id="address_line_1"
-                        placeholder="123 Example Street"
-                        value={customerData.address_line_1}
-                        onChange={(e) => handleInputChange('address_line_1', e.target.value)}
-                        onBlur={() => handleFieldBlur('address_line_1')}
-                        required
-                        className={`h-12 text-base ${getInputValidationClass('address_line_1')}`}
-                      />
-                      {validatedFields.address_line_1 && !fieldErrors.address_line_1 && (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
-                      )}
-                    </div>
-                    {showValidation && fieldErrors.address_line_1 && (
-                      <p className="text-red-600 text-sm mt-1.5 flex items-center gap-1">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        {fieldErrors.address_line_1}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="address_line_2" className="text-sm font-medium text-slate-700">Address Line 2 <span className="text-slate-400 font-normal">(optional)</span></Label>
-                    <Input
-                      id="address_line_2"
-                      placeholder="Flat 2, Building name..."
-                      value={customerData.address_line_2}
-                      onChange={(e) => handleInputChange('address_line_2', e.target.value)}
-                      className="h-12 text-base mt-1.5"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="postcode" className="text-sm font-medium text-slate-700">Postcode *</Label>
-                      <div className="relative mt-1.5">
-                        <Input
-                          id="postcode"
-                          placeholder="SW1A 1AA"
-                          value={customerData.postcode}
-                          onChange={(e) => handleInputChange('postcode', e.target.value.toUpperCase())}
-                          onBlur={() => handleFieldBlur('postcode')}
-                          required
-                          className={`h-12 text-base ${getInputValidationClass('postcode')}`}
-                        />
-                        {validatedFields.postcode && !fieldErrors.postcode && (
-                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
-                        )}
+                  {/* Address Info Message */}
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mt-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Info className="w-4 h-4 text-slate-500" />
                       </div>
-                      {showValidation && fieldErrors.postcode && (
-                        <p className="text-red-600 text-sm mt-1.5 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          {fieldErrors.postcode}
+                      <div>
+                        <p className="text-sm font-medium text-slate-700">No address needed at checkout</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          You can update your address later in your customer dashboard. We only need it if you ever make a claim or update your policy.
                         </p>
-                      )}
-                    </div>
-                    <div>
-                      <Label htmlFor="city" className="text-sm font-medium text-slate-700">City/Town *</Label>
-                      <div className="relative mt-1.5">
-                        <Input
-                          id="city"
-                          placeholder="London"
-                          value={customerData.city}
-                          onChange={(e) => handleInputChange('city', e.target.value)}
-                          onBlur={() => handleFieldBlur('city')}
-                          required
-                          className={`h-12 text-base ${getInputValidationClass('city')}`}
-                        />
-                        {validatedFields.city && !fieldErrors.city && (
-                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
-                        )}
                       </div>
-                      {showValidation && fieldErrors.city && (
-                        <p className="text-red-600 text-sm mt-1.5 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          {fieldErrors.city}
-                        </p>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -1092,7 +926,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </Collapsible>
           </Card>
 
-          {/* SECTION 4: PAYMENT SELECTION */}
+          {/* SECTION 3: PAYMENT SELECTION */}
           <div id="payment-section" className="space-y-4">
             <div className="text-center pt-2">
               <h2 className="text-xl font-bold text-slate-900">Choose Payment</h2>
@@ -1340,50 +1174,32 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </Button>
             
             {/* Form error indicator on CTA */}
-            {showValidation && (!personalDetailsComplete || !addressComplete) && (
+            {showValidation && !personalDetailsComplete && (
               <p className="text-center text-sm text-red-600 mt-3 flex items-center justify-center gap-1.5">
                 <AlertCircle className="w-4 h-4" />
-                Please complete the highlighted sections above
+                Please complete all required fields above
               </p>
             )}
+            
+            {/* Security text */}
+            <p className="text-center text-xs text-slate-400 mt-3">
+              Secure checkout — You have 14 days to cancel
+            </p>
           </div>
 
-          {/* Legal & Trust */}
-          <div className="text-center space-y-4 pb-8">
-            <p className="text-xs text-slate-400 px-4">
-              By completing your purchase, you agree to our{' '}
-              <a href="/terms" className="underline hover:text-slate-600">Terms & Conditions</a>.
-            </p>
-            
-            <div className="flex items-center justify-center gap-4 flex-wrap text-xs text-slate-500">
-              <div className="flex items-center gap-1.5 bg-white px-3 py-2 rounded-full shadow-sm border border-slate-100">
-                <Lock className="w-4 h-4 text-green-600" />
-                <span>SSL Encrypted</span>
-              </div>
-              <div className="flex items-center gap-1.5 bg-white px-3 py-2 rounded-full shadow-sm border border-slate-100">
-                <CreditCard className="w-4 h-4 text-blue-600" />
-                <span>Visa & Mastercard</span>
-              </div>
-              <div className="flex items-center gap-1.5 bg-white px-3 py-2 rounded-full shadow-sm border border-slate-100">
-                <Shield className="w-4 h-4 text-green-600" />
-                <span>Secure</span>
-              </div>
+          {/* Trust signals */}
+          <div className="flex flex-wrap justify-center gap-4 py-4 text-xs text-slate-500">
+            <div className="flex items-center gap-1.5">
+              <Lock className="w-3.5 h-3.5 text-green-600" />
+              <span>256-bit encryption</span>
             </div>
-            
-            <div className="text-sm text-slate-500">
-              <span>Questions?</span>{' '}
-              <a href="tel:03302295040" className="text-orange-600 hover:text-orange-700 font-medium">
-                0330 229 5040
-              </a>
-              {' '}or{' '}
-              <a 
-                href="https://wa.me/447960128083" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-green-600 hover:text-green-700 font-medium"
-              >
-                WhatsApp
-              </a>
+            <div className="flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5 text-green-600" />
+              <span>FCA regulated</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle className="w-3.5 h-3.5 text-green-600" />
+              <span>Trusted by 10,000+ UK drivers</span>
             </div>
           </div>
         </div>
