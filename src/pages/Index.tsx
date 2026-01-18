@@ -192,6 +192,24 @@ const Index = () => {
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(completeVehicleData));
         saveWithTimestamp('buyawarranty_formData', JSON.stringify(completeVehicleData));
         
+        // Save Step 3 pricing selections if present (for PricingTable restoration)
+        if (restoredData.paymentType || restoredData.claimLimit || restoredData.labourRate || restoredData.voluntaryExcess !== undefined) {
+          const planSettings = {
+            paymentType: restoredData.paymentType || '24months',
+            claimLimit: restoredData.claimLimit || 1250,
+            labourRate: restoredData.labourRate || 70,
+            voluntaryExcess: restoredData.voluntaryExcess ?? 100,
+            boostAddon: restoredData.boostAddon || false,
+            addOns: restoredData.protectionAddons 
+              ? Object.entries(restoredData.protectionAddons)
+                  .filter(([_, enabled]) => enabled)
+                  .map(([key]) => key)
+              : []
+          };
+          console.log('🔗 Saving restored plan settings to localStorage:', planSettings);
+          localStorage.setItem('buyawarranty_quotePlanSettings', JSON.stringify(planSettings));
+        }
+        
         console.log('✅ Successfully restored vehicle data from email:', completeVehicleData);
         return completeVehicleData;
       } catch (error) {

@@ -488,10 +488,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
             vehicle_year: vehicleData?.year,
             vehicle_type: vehicleData?.vehicleType,
             mileage: vehicleData?.mileage,
-            step_abandoned: 3
+            step_abandoned: 3,
+            payment_type: paymentType,
+            // Include Step 3 pricing selections for email restoration
+            voluntary_excess: voluntaryExcess,
+            claim_limit: selectedClaimLimit,
+            labour_rate: selectedLabourRate,
+            boost_addon: boostAddon,
+            protection_addons: selectedProtectionAddOns
           }
         });
-        console.log('✅ Tracked abandoned cart at Step 3 (Pricing Page) for:', vehicleData.email);
+        console.log('✅ Tracked abandoned cart at Step 3 (Pricing Page) with pricing selections for:', vehicleData.email);
       } catch (error) {
         console.error('Error tracking abandoned cart on pricing page:', error);
       }
