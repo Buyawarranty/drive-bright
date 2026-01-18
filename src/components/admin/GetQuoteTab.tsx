@@ -7,8 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound } from 'lucide-react';
 import { PaidOrdersTab } from './PaidOrdersTab';
+import CustomerLoginsTab from './CustomerLoginsTab';
 import { format, addDays, isBefore, startOfDay, isToday } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -1553,7 +1554,7 @@ Questions? Call 0330 229 5040`;
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3 h-auto">
+        <TabsList className="grid w-full grid-cols-4 h-auto">
           <TabsTrigger value="new" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
             <Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Quote / Confirm</span>
@@ -1570,6 +1571,11 @@ Questions? Call 0330 229 5040`;
             <span className="hidden sm:inline">Paid Orders</span>
             <span className="sm:hidden">Orders</span>
             {paidOrdersCount > 0 && <span className="ml-1">({paidOrdersCount})</span>}
+          </TabsTrigger>
+          <TabsTrigger value="logins" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+            <KeyRound className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Customer Logins</span>
+            <span className="sm:hidden">Logins</span>
           </TabsTrigger>
         </TabsList>
 
@@ -3817,6 +3823,11 @@ Questions? Call 0330 229 5040`;
         {/* Paid Orders Tab */}
         <TabsContent value="paid" className="space-y-6 mt-6">
           <PaidOrdersTab onRefresh={loadPaidOrdersCount} />
+        </TabsContent>
+
+        {/* Customer Logins Tab */}
+        <TabsContent value="logins" className="space-y-6 mt-6">
+          <CustomerLoginsTab />
         </TabsContent>
       </Tabs>
     </div>
