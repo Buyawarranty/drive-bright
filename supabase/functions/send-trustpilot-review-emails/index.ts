@@ -9,6 +9,15 @@ const corsHeaders = {
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
 
+const TRUSTPILOT_REVIEW_LINK = "https://uk.trustpilot.com/evaluate/buyawarranty.co.uk";
+
+// Email timing configuration (in days)
+const EMAIL_TIMING = {
+  email1_after_purchase: { min: 3, max: 7 },      // 3-7 days after purchase
+  email2_after_email1: { min: 5, max: 7 },        // 5-7 days after Email 1
+  email3_after_email2: { min: 7, max: 10 },       // 7-10 days after Email 2
+};
+
 interface PolicyData {
   id: string;
   email: string;
@@ -17,9 +26,307 @@ interface PolicyData {
   policy_number: string;
 }
 
-interface CustomerData {
-  first_name: string;
-  last_name: string;
+interface ReviewEmailRecord {
+  id: string;
+  policy_id: string;
+  customer_id: string | null;
+  email: string;
+  sent_at: string;
+  email_sequence_number: number;
+  email_opened: boolean;
+  email_clicked: boolean;
+  review_completed: boolean;
+  next_email_scheduled_for: string | null;
+}
+
+// Email 1 Template - Warm Welcome Check-In
+function getEmail1Html(firstName: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How was your experience?</title>
+  <style>
+    @media only screen and (max-width: 600px) {
+      .container { width: 100% !important; padding: 20px !important; }
+      .content { padding: 25px 20px !important; }
+      .cta-button { padding: 16px 32px !important; font-size: 16px !important; display: block !important; text-align: center !important; }
+      .text { font-size: 15px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0; padding:0; background:#f5f5f5; font-family:Arial, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5; padding:30px 0;">
+    <tr>
+      <td align="center">
+        <table class="container" width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; padding:40px; border-radius:8px;">
+          <!-- Logo -->
+          <tr>
+            <td style="text-align:center; padding-bottom:30px;">
+              <img src="https://buyawarranty.co.uk/images/buyawarranty-logo.png" alt="Buy A Warranty" style="max-width:200px; height:auto;" />
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="text" style="font-size:18px; color:#222;">
+              Hi ${firstName},
+            </td>
+          </tr>
+
+          <tr><td style="height:20px;"></td></tr>
+
+          <tr>
+            <td class="text" style="font-size:16px; color:#444; line-height:1.6;">
+              Thanks again for choosing <strong>BuyAWarranty.co.uk</strong>. We hope everything with your new warranty has been clear and straightforward so far.
+              <br><br>
+              We're always working to improve our service, and your experience helps other drivers choose protection they can rely on.
+              <br><br>
+              <strong>Could you spare 60 seconds to share your experience?</strong>
+            </td>
+          </tr>
+
+          <tr><td style="height:25px;"></td></tr>
+
+          <tr>
+            <td align="center">
+              <a href="${TRUSTPILOT_REVIEW_LINK}" class="cta-button" style="background:#00b67a; color:#ffffff; text-decoration:none; font-size:16px; padding:16px 40px; border-radius:6px; display:inline-block; font-weight:600;">
+                Share Your Experience on Trustpilot
+              </a>
+            </td>
+          </tr>
+
+          <tr><td style="height:30px;"></td></tr>
+
+          <tr>
+            <td class="text" style="font-size:16px; color:#444; line-height:1.6;">
+              Thanks so much for your time and support,<br>
+              <strong>The BuyAWarranty.co.uk Team</strong>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr><td style="height:30px;"></td></tr>
+          <tr>
+            <td style="border-top:1px solid #e5e5e5; padding-top:25px; text-align:center;">
+              <p style="margin:0; color:#888888; font-size:13px;">Your trusted warranty partner</p>
+              <p style="margin:5px 0 0 0; color:#888888; font-size:13px;">BuyAWarranty.co.uk</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+// Email 2 Template - Polite Reminder
+function getEmail2Html(firstName: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your quick reminder</title>
+  <style>
+    @media only screen and (max-width: 600px) {
+      .container { width: 100% !important; padding: 20px !important; }
+      .content { padding: 25px 20px !important; }
+      .cta-button { padding: 16px 32px !important; font-size: 16px !important; display: block !important; text-align: center !important; }
+      .text { font-size: 15px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0; padding:0; background:#f5f5f5; font-family:Arial, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5; padding:30px 0;">
+    <tr>
+      <td align="center">
+        <table class="container" width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; padding:40px; border-radius:8px;">
+          <!-- Logo -->
+          <tr>
+            <td style="text-align:center; padding-bottom:30px;">
+              <img src="https://buyawarranty.co.uk/images/buyawarranty-logo.png" alt="Buy A Warranty" style="max-width:200px; height:auto;" />
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="text" style="font-size:18px; color:#222;">
+              Hi ${firstName},
+            </td>
+          </tr>
+
+          <tr><td style="height:20px;"></td></tr>
+
+          <tr>
+            <td class="text" style="font-size:16px; color:#444; line-height:1.6;">
+              Just a gentle reminder in case you didn't get a moment to see our last message.
+              <br><br>
+              If you can spare a minute, we'd really appreciate your thoughts on your recent experience with <strong>BuyAWarranty.co.uk</strong>.
+              <br><br>
+              Your feedback helps other drivers choose trusted warranty protection.
+            </td>
+          </tr>
+
+          <tr><td style="height:25px;"></td></tr>
+
+          <tr>
+            <td align="center">
+              <a href="${TRUSTPILOT_REVIEW_LINK}" class="cta-button" style="background:#00b67a; color:#ffffff; text-decoration:none; font-size:16px; padding:16px 40px; border-radius:6px; display:inline-block; font-weight:600;">
+                Share Your Experience on Trustpilot
+              </a>
+            </td>
+          </tr>
+
+          <tr><td style="height:30px;"></td></tr>
+
+          <tr>
+            <td class="text" style="font-size:16px; color:#444; line-height:1.6;">
+              Thanks again — we truly appreciate it,<br>
+              <strong>The BuyAWarranty.co.uk Team</strong>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr><td style="height:30px;"></td></tr>
+          <tr>
+            <td style="border-top:1px solid #e5e5e5; padding-top:25px; text-align:center;">
+              <p style="margin:0; color:#888888; font-size:13px;">Your trusted warranty partner</p>
+              <p style="margin:5px 0 0 0; color:#888888; font-size:13px;">BuyAWarranty.co.uk</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+// Email 3 Template - Final Short Nudge
+function getEmail3Html(firstName: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Before we close your request…</title>
+  <style>
+    @media only screen and (max-width: 600px) {
+      .container { width: 100% !important; padding: 20px !important; }
+      .content { padding: 25px 20px !important; }
+      .cta-button { padding: 16px 32px !important; font-size: 16px !important; display: block !important; text-align: center !important; }
+      .text { font-size: 15px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0; padding:0; background:#f5f5f5; font-family:Arial, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5; padding:30px 0;">
+    <tr>
+      <td align="center">
+        <table class="container" width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; padding:40px; border-radius:8px;">
+          <!-- Logo -->
+          <tr>
+            <td style="text-align:center; padding-bottom:30px;">
+              <img src="https://buyawarranty.co.uk/images/buyawarranty-logo.png" alt="Buy A Warranty" style="max-width:200px; height:auto;" />
+            </td>
+          </tr>
+          
+          <tr>
+            <td class="text" style="font-size:18px; color:#222;">
+              Hi ${firstName},
+            </td>
+          </tr>
+
+          <tr><td style="height:20px;"></td></tr>
+
+          <tr>
+            <td class="text" style="font-size:16px; color:#444; line-height:1.6;">
+              This is just a quick final reminder.
+              <br><br>
+              If you haven't had the chance yet, we'd be grateful if you could share a brief review of your experience with <strong>BuyAWarranty.co.uk</strong>.
+              <br><br>
+              Even a few words help other drivers make informed decisions.
+            </td>
+          </tr>
+
+          <tr><td style="height:25px;"></td></tr>
+
+          <tr>
+            <td align="center">
+              <a href="${TRUSTPILOT_REVIEW_LINK}" class="cta-button" style="background:#00b67a; color:#ffffff; text-decoration:none; font-size:16px; padding:16px 40px; border-radius:6px; display:inline-block; font-weight:600;">
+                Share Your Experience on Trustpilot
+              </a>
+            </td>
+          </tr>
+
+          <tr><td style="height:30px;"></td></tr>
+
+          <tr>
+            <td class="text" style="font-size:16px; color:#444; line-height:1.6;">
+              Thanks for taking the time,<br>
+              <strong>The BuyAWarranty.co.uk Team</strong>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr><td style="height:30px;"></td></tr>
+          <tr>
+            <td style="border-top:1px solid #e5e5e5; padding-top:25px; text-align:center;">
+              <p style="margin:0; color:#888888; font-size:13px;">Your trusted warranty partner</p>
+              <p style="margin:5px 0 0 0; color:#888888; font-size:13px;">BuyAWarranty.co.uk</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+// Get email content based on sequence number
+function getEmailContent(sequenceNumber: number, firstName: string): { subject: string; html: string } {
+  switch (sequenceNumber) {
+    case 1:
+      return {
+        subject: "How was your experience with BuyAWarranty.co.uk?",
+        html: getEmail1Html(firstName),
+      };
+    case 2:
+      return {
+        subject: "Your quick reminder from BuyAWarranty.co.uk",
+        html: getEmail2Html(firstName),
+      };
+    case 3:
+      return {
+        subject: "Before we close your request…",
+        html: getEmail3Html(firstName),
+      };
+    default:
+      throw new Error(`Invalid sequence number: ${sequenceNumber}`);
+  }
+}
+
+// Calculate next email scheduled date
+function calculateNextEmailDate(sequenceNumber: number): Date | null {
+  const now = new Date();
+  
+  switch (sequenceNumber) {
+    case 1:
+      // Schedule Email 2 for 5-7 days after Email 1 (use 5 days)
+      now.setDate(now.getDate() + EMAIL_TIMING.email2_after_email1.min);
+      return now;
+    case 2:
+      // Schedule Email 3 for 7-10 days after Email 2 (use 7 days)
+      now.setDate(now.getDate() + EMAIL_TIMING.email3_after_email2.min);
+      return now;
+    case 3:
+      // No more emails after Email 3
+      return null;
+    default:
+      return null;
+  }
 }
 
 serve(async (req: Request) => {
@@ -29,7 +336,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    console.log("[TRUSTPILOT-REVIEW] Starting Trustpilot review email batch...");
+    console.log("[TRUSTPILOT-REVIEW] Starting Trustpilot review email sequence batch...");
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -40,358 +347,287 @@ serve(async (req: Request) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get the email template
-    const { data: template, error: templateError } = await supabase
-      .from("email_templates")
-      .select("*")
-      .eq("name", "trustpilot_review_request")
-      .eq("is_active", true)
-      .single();
+    const now = new Date();
+    let successCount = 0;
+    let failCount = 0;
+    const results: { email1: number; email2: number; email3: number } = { email1: 0, email2: 0, email3: 0 };
 
-    if (templateError || !template) {
-      console.error("[TRUSTPILOT-REVIEW] Email template not found:", templateError);
-      throw new Error("Trustpilot review email template not found");
-    }
+    // ============================================
+    // PART 1: Send Email 1 to new customers
+    // ============================================
+    console.log("[TRUSTPILOT-REVIEW] Checking for Email 1 candidates (3-7 days after purchase)...");
 
-    console.log("[TRUSTPILOT-REVIEW] Template loaded:", template.name);
+    // Calculate date range for policies purchased 3-7 days ago
+    const email1StartDate = new Date();
+    email1StartDate.setDate(email1StartDate.getDate() - EMAIL_TIMING.email1_after_purchase.max);
+    email1StartDate.setHours(0, 0, 0, 0);
 
-    // Calculate the date range for policies purchased 2 days ago
-    const twoDaysAgo = new Date();
-    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-    twoDaysAgo.setHours(0, 0, 0, 0); // Start of day
+    const email1EndDate = new Date();
+    email1EndDate.setDate(email1EndDate.getDate() - EMAIL_TIMING.email1_after_purchase.min);
+    email1EndDate.setHours(23, 59, 59, 999);
 
-    const twoDaysAgoEnd = new Date(twoDaysAgo);
-    twoDaysAgoEnd.setHours(23, 59, 59, 999); // End of day
-
-    console.log("[TRUSTPILOT-REVIEW] Searching for policies created between:", {
-      start: twoDaysAgo.toISOString(),
-      end: twoDaysAgoEnd.toISOString(),
+    console.log("[TRUSTPILOT-REVIEW] Email 1 date range:", {
+      start: email1StartDate.toISOString(),
+      end: email1EndDate.toISOString(),
     });
 
-    // Get policies created exactly 2 days ago that haven't received the review email yet
-    const { data: policies, error: policiesError } = await supabase
+    // Get policies that haven't received any review emails yet
+    const { data: newPolicies, error: newPoliciesError } = await supabase
       .from("customer_policies")
       .select("id, email, customer_id, created_at, policy_number")
-      .gte("created_at", twoDaysAgo.toISOString())
-      .lte("created_at", twoDaysAgoEnd.toISOString())
+      .gte("created_at", email1StartDate.toISOString())
+      .lte("created_at", email1EndDate.toISOString())
       .eq("status", "active")
       .not("email", "is", null);
 
-    if (policiesError) {
-      console.error("[TRUSTPILOT-REVIEW] Error fetching policies:", policiesError);
-      throw policiesError;
+    if (newPoliciesError) {
+      console.error("[TRUSTPILOT-REVIEW] Error fetching new policies:", newPoliciesError);
     }
 
-    if (!policies || policies.length === 0) {
-      console.log("[TRUSTPILOT-REVIEW] No policies found for review emails");
-      return new Response(
-        JSON.stringify({ success: true, message: "No policies to process", sent: 0 }),
-        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
+    if (newPolicies && newPolicies.length > 0) {
+      // Filter out policies that have already received any email
+      const policyIds = newPolicies.map((p: PolicyData) => p.id);
+      const { data: alreadySent } = await supabase
+        .from("trustpilot_review_emails")
+        .select("policy_id")
+        .in("policy_id", policyIds);
 
-    console.log(`[TRUSTPILOT-REVIEW] Found ${policies.length} policies to process`);
+      const sentPolicyIds = new Set(alreadySent?.map((s: { policy_id: string }) => s.policy_id) || []);
+      const policiesToEmail = newPolicies.filter((p: PolicyData) => !sentPolicyIds.has(p.id));
 
-    // Filter out policies that have already received the review email
-    const policyIds = policies.map((p: PolicyData) => p.id);
-    const { data: alreadySent, error: sentError } = await supabase
-      .from("trustpilot_review_emails")
-      .select("policy_id")
-      .in("policy_id", policyIds);
+      console.log(`[TRUSTPILOT-REVIEW] ${policiesToEmail.length} policies need Email 1`);
 
-    if (sentError) {
-      console.error("[TRUSTPILOT-REVIEW] Error checking sent emails:", sentError);
-    }
-
-    const sentPolicyIds = new Set(alreadySent?.map((s: { policy_id: string }) => s.policy_id) || []);
-    const policiesToEmail = policies.filter((p: PolicyData) => !sentPolicyIds.has(p.id));
-
-    if (policiesToEmail.length === 0) {
-      console.log("[TRUSTPILOT-REVIEW] All eligible policies have already received the review email");
-      return new Response(
-        JSON.stringify({ success: true, message: "All policies already processed", sent: 0 }),
-        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
-
-    console.log(`[TRUSTPILOT-REVIEW] ${policiesToEmail.length} policies need review emails`);
-
-    let successCount = 0;
-    let failCount = 0;
-
-    // Process each policy
-    for (const policy of policiesToEmail) {
-      try {
-        console.log(`[TRUSTPILOT-REVIEW] Processing policy ${policy.policy_number}`);
-
-        // Get customer name if customer_id exists
-        let customerFirstName = "Valued Customer";
-        if (policy.customer_id) {
-          const { data: customer, error: customerError } = await supabase
+      for (const policy of policiesToEmail) {
+        try {
+          // Check if customer has already left a review
+          const { data: customer } = await supabase
             .from("customers")
-            .select("first_name, last_name")
+            .select("first_name, trustpilot_review_completed")
             .eq("id", policy.customer_id)
             .single();
 
-          if (!customerError && customer) {
-            customerFirstName = customer.first_name || "Valued Customer";
+          if (customer?.trustpilot_review_completed) {
+            console.log(`[TRUSTPILOT-REVIEW] Skipping ${policy.email} - review already completed`);
+            continue;
           }
-        }
 
-        // Prepare email content from template
-        const content = template.content as {
-          greeting: string;
-          body: string;
-          cta_text: string;
-          cta_url: string;
-          footer: string;
-        };
+          const firstName = customer?.first_name || "Valued Customer";
+          const { subject, html } = getEmailContent(1, firstName);
 
-        const greeting = content.greeting.replace("{{customerFirstName}}", customerFirstName);
+          const emailResult = await resend.emails.send({
+            from: "BuyAWarranty.co.uk <reviews@buyawarranty.co.uk>",
+            to: [policy.email],
+            subject,
+            html,
+          });
 
-        // Build HTML email with updated design
-        const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Thank You for Choosing BuyAWarranty.co.uk – We'd Love Your Feedback</title>
-  <style>
-    @media only screen and (max-width: 600px) {
-      .container { width: 100% !important; }
-      .logo { max-width: 200px !important; }
-      .content { padding: 30px 20px !important; }
-      .button { padding: 14px 30px !important; font-size: 15px !important; }
-    }
-  </style>
-</head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
-  <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f5f5f5;">
-    <tr>
-      <td style="padding: 40px 20px;">
-        <table role="presentation" class="container" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-          
-          <!-- Logo Header -->
-          <tr>
-            <td style="background-color: #ffffff; padding: 40px 40px 30px 40px; text-align: center;">
-              <img 
-                src="https://buyawarranty.co.uk/images/buyawarranty-logo.png" 
-                alt="Buy A Warranty" 
-                class="logo"
-                style="max-width: 280px; width: 100%; height: auto; display: block; margin: 0 auto;"
-              />
-            </td>
-          </tr>
-          
-          <!-- Body Content -->
-          <tr>
-            <td class="content" style="padding: 20px 40px 40px 40px;">
-              
-              <!-- Greeting -->
-              <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                Hi <strong>${customerFirstName}</strong>,
-              </p>
-              
-              <!-- Main Message -->
-              <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                Thank you for choosing <strong>BuyAWarranty.co.uk</strong>. We're so pleased you've secured reliable protection for your vehicle.
-              </p>
-              
-              <p style="margin: 0 0 30px 0; color: #555555; font-size: 15px; line-height: 1.6;">
-                Your peace of mind matters to us, and your feedback helps us improve while guiding other drivers to make confident choices.
-              </p>
-              
-              <!-- Call to Action Section -->
-              <div style="background-color: #f8f9fa; padding: 30px; border-radius: 8px; margin: 0 0 30px 0; text-align: center;">
-                <p style="margin: 0 0 8px 0; color: #333333; font-size: 18px; font-weight: 600;">
-                  🚗 Share Your Experience
-                </p>
-                <p style="margin: 0 0 25px 0; color: #666666; font-size: 15px;">
-                  It Only Takes 60 Seconds
-                </p>
-                <p style="margin: 0 0 25px 0; color: #555555; font-size: 15px; line-height: 1.6;">
-                  We'd be truly grateful if you could leave us a quick review on Trustpilot. Your opinion helps others find the best protection for their vehicles.
-                </p>
-                
-                <!-- CTA Button -->
-                <table role="presentation" style="margin: 0 auto;">
-                  <tr>
-                    <td style="border-radius: 6px; background-color: #00b67a;">
-                      <a 
-                        href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                        class="button"
-                        style="display: inline-block; padding: 16px 40px; background-color: #00b67a; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 600; transition: background-color 0.3s;"
-                      >
-                        👉 Leave Your Review on Trustpilot
-                      </a>
-                    </td>
-                  </tr>
-                </table>
-              </div>
-              
-              <!-- Support Section -->
-              <div style="background-color: #fafafa; padding: 25px; border-radius: 8px; border-left: 4px solid #eb4b00;">
-                <p style="margin: 0 0 15px 0; color: #333333; font-size: 16px; font-weight: 600;">
-                  Need help or have questions?
-                </p>
-                <p style="margin: 0 0 12px 0; color: #555555; font-size: 15px;">
-                  We're here for you.
-                </p>
-                <p style="margin: 0 0 6px 0; color: #555555; font-size: 14px;">
-                  <strong>Email:</strong> <a href="mailto:info@buyawarranty.co.uk" style="color: #eb4b00; text-decoration: none;">info@buyawarranty.co.uk</a>
-                </p>
-                <p style="margin: 0 0 6px 0; color: #555555; font-size: 14px;">
-                  <strong>Phone:</strong> <a href="tel:03302295040" style="color: #eb4b00; text-decoration: none;">0330 229 5040</a>
-                </p>
-                <p style="margin: 0; color: #555555; font-size: 14px;">
-                  <strong>Website:</strong> <a href="https://www.buyawarranty.co.uk" style="color: #eb4b00; text-decoration: none;">www.buyawarranty.co.uk</a>
-                </p>
-              </div>
-              
-              <!-- Closing Message -->
-              <p style="margin: 30px 0 0 0; color: #555555; font-size: 15px; line-height: 1.6; text-align: center;">
-                Thanks again for choosing us. We're proud to be your trusted warranty partner.
-              </p>
-              <p style="margin: 10px 0 0 0; color: #333333; font-size: 15px; font-weight: 600; text-align: center;">
-                The BuyAWarranty.co.uk Team
-              </p>
-              
-            </td>
-          </tr>
-          
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #f8f8f8; padding: 25px 40px; text-align: center; border-top: 1px solid #e5e5e5;">
-              <p style="margin: 0 0 8px 0; color: #888888; font-size: 13px; line-height: 1.5;">
-                <strong style="color: #666666;">Your trusted warranty partner</strong>
-              </p>
-              <p style="margin: 0; color: #888888; font-size: 13px;">
-                BuyAWarranty.co.uk
-              </p>
-            </td>
-          </tr>
-          
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-        `;
+          console.log(`[TRUSTPILOT-REVIEW] Email 1 sent to ${policy.email}:`, emailResult);
 
-        // Send email via Resend with updated subject
-        const emailResult = await resend.emails.send({
-          from: template.from_email,
-          to: [policy.email],
-          subject: "Thank You for Choosing BuyAWarranty.co.uk – We'd Love Your Feedback",
-          html: htmlContent,
-        });
+          // Calculate next email date
+          const nextEmailDate = calculateNextEmailDate(1);
 
-        console.log(`[TRUSTPILOT-REVIEW] Email sent to ${policy.email}:`, emailResult);
-
-        // Send Trustpilot invitation via API
-        try {
-          const trustpilotApiKey = Deno.env.get("TRUSTPILOT_API_KEY");
-          const trustpilotBusinessUnitId = Deno.env.get("TRUSTPILOT_BUSINESS_UNIT_ID");
-
-          if (trustpilotApiKey && trustpilotBusinessUnitId) {
-            const trustpilotResponse = await fetch(
-              `https://invitations-api.trustpilot.com/v1/private/business-units/${trustpilotBusinessUnitId}/email-invitations`,
-              {
-                method: "POST",
-                headers: {
-                  "Authorization": `ApiKey ${trustpilotApiKey}`,
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  recipientEmail: policy.email,
-                  recipientName: customerFirstName,
-                  referenceId: policy.policy_number,
-                  locale: "en-GB",
-                  serviceReviewInvitation: {
-                    preferredSendTime: new Date().toISOString(),
-                  },
-                }),
-              }
-            );
-
-            if (trustpilotResponse.ok) {
-              const trustpilotData = await trustpilotResponse.json();
-              console.log(`[TRUSTPILOT-REVIEW] Trustpilot invitation created:`, trustpilotData);
-            } else {
-              const errorText = await trustpilotResponse.text();
-              console.error(`[TRUSTPILOT-REVIEW] Trustpilot API error:`, errorText);
-            }
-          } else {
-            console.warn("[TRUSTPILOT-REVIEW] Trustpilot API credentials not configured");
-          }
-        } catch (trustpilotError) {
-          console.error("[TRUSTPILOT-REVIEW] Error sending Trustpilot invitation:", trustpilotError);
-          // Don't fail the whole process if Trustpilot API fails
-        }
-
-        // Log the email
-        const { data: emailLog, error: logError } = await supabase
-          .from("email_logs")
-          .insert({
-            template_id: template.id,
-            recipient_email: policy.email,
-            customer_id: policy.customer_id,
-            subject: template.subject,
-            status: "sent",
-            sent_at: new Date().toISOString(),
-            metadata: {
-              resend_id: emailResult.data?.id,
-              policy_number: policy.policy_number,
-              policy_id: policy.id,
-            },
-          })
-          .select()
-          .single();
-
-        if (logError) {
-          console.error(`[TRUSTPILOT-REVIEW] Error logging email for policy ${policy.policy_number}:`, logError);
-        }
-
-        // Track that this policy received the review email
-        await supabase.from("trustpilot_review_emails").insert({
-          policy_id: policy.id,
-          customer_id: policy.customer_id,
-          email: policy.email,
-          email_log_id: emailLog?.id || null,
-        });
-
-        successCount++;
-      } catch (error) {
-        console.error(`[TRUSTPILOT-REVIEW] Error processing policy ${policy.policy_number}:`, error);
-        failCount++;
-
-        // Log failed email
-        await supabase.from("email_logs").insert({
-          template_id: template.id,
-          recipient_email: policy.email,
-          customer_id: policy.customer_id,
-          subject: template.subject,
-          status: "failed",
-          error_message: error instanceof Error ? error.message : String(error),
-          metadata: {
-            policy_number: policy.policy_number,
+          // Track the email
+          await supabase.from("trustpilot_review_emails").insert({
             policy_id: policy.id,
-          },
-        });
+            customer_id: policy.customer_id,
+            email: policy.email,
+            email_sequence_number: 1,
+            email_subject: subject,
+            next_email_scheduled_for: nextEmailDate?.toISOString() || null,
+          });
+
+          successCount++;
+          results.email1++;
+        } catch (error) {
+          console.error(`[TRUSTPILOT-REVIEW] Error sending Email 1 to ${policy.email}:`, error);
+          failCount++;
+        }
       }
     }
 
-    console.log(`[TRUSTPILOT-REVIEW] Batch complete: ${successCount} sent, ${failCount} failed`);
+    // ============================================
+    // PART 2: Send Email 2 (follow-up)
+    // ============================================
+    console.log("[TRUSTPILOT-REVIEW] Checking for Email 2 candidates...");
+
+    const { data: email2Candidates, error: email2Error } = await supabase
+      .from("trustpilot_review_emails")
+      .select("*")
+      .eq("email_sequence_number", 1)
+      .eq("review_completed", false)
+      .lte("next_email_scheduled_for", now.toISOString())
+      .not("next_email_scheduled_for", "is", null);
+
+    if (email2Error) {
+      console.error("[TRUSTPILOT-REVIEW] Error fetching Email 2 candidates:", email2Error);
+    }
+
+    if (email2Candidates && email2Candidates.length > 0) {
+      console.log(`[TRUSTPILOT-REVIEW] ${email2Candidates.length} candidates for Email 2`);
+
+      for (const record of email2Candidates as ReviewEmailRecord[]) {
+        try {
+          // Check if they've already received Email 2
+          const { data: existingEmail2 } = await supabase
+            .from("trustpilot_review_emails")
+            .select("id")
+            .eq("policy_id", record.policy_id)
+            .eq("email_sequence_number", 2)
+            .single();
+
+          if (existingEmail2) {
+            console.log(`[TRUSTPILOT-REVIEW] Skipping ${record.email} - Email 2 already sent`);
+            continue;
+          }
+
+          // Check if customer completed review
+          if (record.customer_id) {
+            const { data: customer } = await supabase
+              .from("customers")
+              .select("first_name, trustpilot_review_completed")
+              .eq("id", record.customer_id)
+              .single();
+
+            if (customer?.trustpilot_review_completed) {
+              // Mark as completed and skip
+              await supabase
+                .from("trustpilot_review_emails")
+                .update({ review_completed: true })
+                .eq("policy_id", record.policy_id);
+              console.log(`[TRUSTPILOT-REVIEW] Skipping ${record.email} - review completed`);
+              continue;
+            }
+
+            const firstName = customer?.first_name || "Valued Customer";
+            const { subject, html } = getEmailContent(2, firstName);
+
+            const emailResult = await resend.emails.send({
+              from: "BuyAWarranty.co.uk <reviews@buyawarranty.co.uk>",
+              to: [record.email],
+              subject,
+              html,
+            });
+
+            console.log(`[TRUSTPILOT-REVIEW] Email 2 sent to ${record.email}:`, emailResult);
+
+            const nextEmailDate = calculateNextEmailDate(2);
+
+            await supabase.from("trustpilot_review_emails").insert({
+              policy_id: record.policy_id,
+              customer_id: record.customer_id,
+              email: record.email,
+              email_sequence_number: 2,
+              email_subject: subject,
+              next_email_scheduled_for: nextEmailDate?.toISOString() || null,
+            });
+
+            successCount++;
+            results.email2++;
+          }
+        } catch (error) {
+          console.error(`[TRUSTPILOT-REVIEW] Error sending Email 2 to ${record.email}:`, error);
+          failCount++;
+        }
+      }
+    }
+
+    // ============================================
+    // PART 3: Send Email 3 (final reminder)
+    // ============================================
+    console.log("[TRUSTPILOT-REVIEW] Checking for Email 3 candidates...");
+
+    const { data: email3Candidates, error: email3Error } = await supabase
+      .from("trustpilot_review_emails")
+      .select("*")
+      .eq("email_sequence_number", 2)
+      .eq("review_completed", false)
+      .lte("next_email_scheduled_for", now.toISOString())
+      .not("next_email_scheduled_for", "is", null);
+
+    if (email3Error) {
+      console.error("[TRUSTPILOT-REVIEW] Error fetching Email 3 candidates:", email3Error);
+    }
+
+    if (email3Candidates && email3Candidates.length > 0) {
+      console.log(`[TRUSTPILOT-REVIEW] ${email3Candidates.length} candidates for Email 3`);
+
+      for (const record of email3Candidates as ReviewEmailRecord[]) {
+        try {
+          // Check if they've already received Email 3
+          const { data: existingEmail3 } = await supabase
+            .from("trustpilot_review_emails")
+            .select("id")
+            .eq("policy_id", record.policy_id)
+            .eq("email_sequence_number", 3)
+            .single();
+
+          if (existingEmail3) {
+            console.log(`[TRUSTPILOT-REVIEW] Skipping ${record.email} - Email 3 already sent`);
+            continue;
+          }
+
+          // Check if customer completed review
+          if (record.customer_id) {
+            const { data: customer } = await supabase
+              .from("customers")
+              .select("first_name, trustpilot_review_completed")
+              .eq("id", record.customer_id)
+              .single();
+
+            if (customer?.trustpilot_review_completed) {
+              await supabase
+                .from("trustpilot_review_emails")
+                .update({ review_completed: true })
+                .eq("policy_id", record.policy_id);
+              console.log(`[TRUSTPILOT-REVIEW] Skipping ${record.email} - review completed`);
+              continue;
+            }
+
+            const firstName = customer?.first_name || "Valued Customer";
+            const { subject, html } = getEmailContent(3, firstName);
+
+            const emailResult = await resend.emails.send({
+              from: "BuyAWarranty.co.uk <reviews@buyawarranty.co.uk>",
+              to: [record.email],
+              subject,
+              html,
+            });
+
+            console.log(`[TRUSTPILOT-REVIEW] Email 3 sent to ${record.email}:`, emailResult);
+
+            // Email 3 is the final email - no next scheduled
+            await supabase.from("trustpilot_review_emails").insert({
+              policy_id: record.policy_id,
+              customer_id: record.customer_id,
+              email: record.email,
+              email_sequence_number: 3,
+              email_subject: subject,
+              next_email_scheduled_for: null,
+            });
+
+            successCount++;
+            results.email3++;
+          }
+        } catch (error) {
+          console.error(`[TRUSTPILOT-REVIEW] Error sending Email 3 to ${record.email}:`, error);
+          failCount++;
+        }
+      }
+    }
+
+    console.log(`[TRUSTPILOT-REVIEW] Batch complete:`, {
+      successCount,
+      failCount,
+      results,
+    });
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Trustpilot review emails processed`,
+        message: "Trustpilot review email sequence processed",
         sent: successCount,
         failed: failCount,
-        total: policiesToEmail.length,
+        breakdown: results,
       }),
       {
         status: 200,
