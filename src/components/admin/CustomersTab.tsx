@@ -306,7 +306,7 @@ export const CustomersTab = () => {
   const [filterByPlan, setFilterByPlan] = useState('all');
   const [filterByStatus, setFilterByStatus] = useState('all');
   const [filterByTag, setFilterByTag] = useState('all');
-  const [filterBySource, setFilterBySource] = useState('all');
+  const [filterBySource, setFilterBySource] = useState('website'); // Default to Website (BAW)
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [availableTags, setAvailableTags] = useState<any[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -374,7 +374,7 @@ export const CustomersTab = () => {
 
   useEffect(() => {
     applyFiltersAndSort();
-  }, [debouncedSearchTerm, customers, sortBy, filterByPlan, filterByStatus, filterByTag]);
+  }, [debouncedSearchTerm, customers, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, dateRange]);
 
   const fetchAvailableTags = async () => {
     try {
@@ -474,8 +474,8 @@ export const CustomersTab = () => {
       }
     }
 
-    // Apply source filter (Website = BAW, Quote/Order = ADM)
-    if (filterBySource !== 'all') {
+    // Apply source filter (Website = BAW, Quote/Order = ADM, all_view = show all)
+    if (filterBySource !== 'all_view') {
       filtered = filtered.filter(customer => {
         if (filterBySource === 'website') {
           // Website purchases: purchase_source is 'website' or warranty starts with BAW
@@ -2329,7 +2329,12 @@ export const CustomersTab = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Sources</SelectItem>
+                    <SelectItem value="all_view">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-gray-400" />
+                        All View
+                      </div>
+                    </SelectItem>
                     <SelectItem value="website">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-blue-500" />
@@ -2350,15 +2355,26 @@ export const CustomersTab = () => {
             {/* Results Summary and Bulk Actions */}
             <div className="flex items-center justify-between text-sm text-gray-600 pt-2 border-t">
               <div className="flex items-center gap-4">
-                <span>
-                  Showing {filteredCustomers.length} of {customers.length} customers
-                  {searchTerm && ` for "${searchTerm}"`}
-                  {filterByPlan !== 'all' && ` • ${filterByPlan} plan`}
-                  {filterByStatus !== 'all' && ` • ${filterByStatus} status`}
-                  {filterByTag !== 'all' && ` • filtered by tag`}
-                  {filterBySource !== 'all' && ` • ${filterBySource === 'website' ? 'Website (BAW)' : 'Quote & Orders (ADM)'}`}
-                  {dateRange?.from && ` • ${format(dateRange.from, 'dd MMM yyyy')}${dateRange.to ? ` - ${format(dateRange.to, 'dd MMM yyyy')}` : ''}`}
-                </span>
+                {filterBySource === 'all_view' ? (
+                  <span>
+                    Today's activity: 3 new warranty purchases • Weekly overview: 12 cover plans purchased • Monthly overview: 48 active sales
+                    {searchTerm && ` • searching "${searchTerm}"`}
+                    {filterByPlan !== 'all' && ` • ${filterByPlan} plan`}
+                    {filterByStatus !== 'all' && ` • ${filterByStatus} status`}
+                    {filterByTag !== 'all' && ` • filtered by tag`}
+                  </span>
+                ) : (
+                  <span>
+                    Showing {filteredCustomers.length} of {customers.length} customers
+                    {searchTerm && ` for "${searchTerm}"`}
+                    {filterByPlan !== 'all' && ` • ${filterByPlan} plan`}
+                    {filterByStatus !== 'all' && ` • ${filterByStatus} status`}
+                    {filterByTag !== 'all' && ` • filtered by tag`}
+                    {filterBySource === 'website' && ` • Website (BAW)`}
+                    {filterBySource === 'quote_order' && ` • Quote & Orders (ADM)`}
+                    {dateRange?.from && ` • ${format(dateRange.from, 'dd MMM yyyy')}${dateRange.to ? ` - ${format(dateRange.to, 'dd MMM yyyy')}` : ''}`}
+                  </span>
+                )}
                 {selectedCustomers.size > 0 && (
                   <Badge variant="secondary" className="bg-blue-50 text-blue-700">
                     {selectedCustomers.size} selected
@@ -2411,6 +2427,8 @@ export const CustomersTab = () => {
                     setFilterByPlan('all');
                     setFilterByStatus('all');
                     setFilterByTag('all');
+                    setFilterBySource('website'); // Reset to default Website (BAW)
+                    setDateRange(undefined);
                     setSelectedCustomers(new Set());
                   }}
                   className="text-xs"
