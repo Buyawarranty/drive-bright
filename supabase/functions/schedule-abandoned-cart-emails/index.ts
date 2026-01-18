@@ -113,7 +113,10 @@ const handler = async (req: Request): Promise<Response> => {
             continue;
           }
 
-            // Send the email
+            // Extract pricing metadata from cart_metadata if available
+            const metadata = cart.cart_metadata || {};
+            
+            // Send the email with pricing settings for restoration
             const emailPayload = {
               cartId: cart.id, // Include cart ID to track individual carts
               email: cart.email,
@@ -130,7 +133,13 @@ const handler = async (req: Request): Promise<Response> => {
               transmission: '', // Not stored in abandoned carts, will be empty
               triggerType,
               planName: cart.plan_name,
-              paymentType: cart.payment_type
+              paymentType: cart.payment_type,
+              // Step 3 pricing selections from cart_metadata for email restoration
+              voluntaryExcess: metadata.voluntary_excess ?? metadata.excess,
+              claimLimit: metadata.claim_limit ?? metadata.claimLimit,
+              labourRate: metadata.labourRate ?? metadata.labour_rate,
+              boostAddon: metadata.boostAddon ?? metadata.boost_addon,
+              protectionAddons: metadata.protection_addons
             };
 
             console.log('Sending abandoned cart email for:', emailPayload);

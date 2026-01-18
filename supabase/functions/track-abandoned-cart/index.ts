@@ -21,10 +21,12 @@ interface AbandonedCartData {
   payment_type?: string;
   step_abandoned: number;
   vehicle_type?: string;
-  // Pricing details for email
+  // Pricing details for email restoration
   total_price?: number;
   voluntary_excess?: number;
   claim_limit?: number;
+  labour_rate?: number;
+  boost_addon?: boolean;
   // Address for shipping/contact
   address?: {
     flat_number?: string;
@@ -116,6 +118,8 @@ const handler = async (req: Request): Promise<Response> => {
             total_price: cartData.total_price,
             voluntary_excess: cartData.voluntary_excess,
             claim_limit: cartData.claim_limit,
+            labour_rate: cartData.labour_rate,
+            boost_addon: cartData.boost_addon,
             address: cartData.address,
             protection_addons: cartData.protection_addons
           },
@@ -139,6 +143,8 @@ const handler = async (req: Request): Promise<Response> => {
             total_price: cartData.total_price,
             voluntary_excess: cartData.voluntary_excess,
             claim_limit: cartData.claim_limit,
+            labour_rate: cartData.labour_rate,
+            boost_addon: cartData.boost_addon,
             address: cartData.address,
             protection_addons: cartData.protection_addons
           }

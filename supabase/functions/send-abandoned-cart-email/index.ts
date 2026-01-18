@@ -67,6 +67,23 @@ interface SendEmailRequest {
   triggerType: 'pricing_page_view' | 'plan_selected' | 'pricing_page_view_24h' | 'pricing_page_view_72h' | 'checkout_abandoned';
   planName?: string;
   paymentType?: string;
+  // Step 3 pricing selections for restoration
+  voluntaryExcess?: number;
+  claimLimit?: number;
+  labourRate?: number;
+  boostAddon?: boolean;
+  protectionAddons?: {
+    breakdown?: boolean;
+    motFee?: boolean;
+    motRepair?: boolean;
+    wearTear?: boolean;
+    tyre?: boolean;
+    european?: boolean;
+    rental?: boolean;
+    transfer?: boolean;
+    lostKey?: boolean;
+    consequential?: boolean;
+  };
 }
 
 const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { html: string, subject: string } => {
@@ -271,7 +288,13 @@ const handler = async (req: Request): Promise<Response> => {
         planName: emailRequest.planName,
         paymentType: emailRequest.paymentType,
         mileage: emailRequest.mileage || '0',
-        address: ''
+        address: '',
+        // Step 3 pricing selections for restoration
+        voluntaryExcess: emailRequest.voluntaryExcess,
+        claimLimit: emailRequest.claimLimit,
+        labourRate: emailRequest.labourRate,
+        boostAddon: emailRequest.boostAddon,
+        protectionAddons: emailRequest.protectionAddons
       }));
       continueUrl = `${baseUrl}?restore=${encodeURIComponent(stateParam)}`;
     }
