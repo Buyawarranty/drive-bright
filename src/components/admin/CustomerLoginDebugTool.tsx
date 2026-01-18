@@ -118,26 +118,61 @@ const CustomerLoginDebugTool = () => {
 
       console.log('Generating new password for customer:', email);
       
-      // Call the reset password function
-      const { data, error } = await supabase.functions.invoke('reset-customer-password', {
+      // First try to reset password (for existing auth users)
+      const { data: resetData, error: resetError } = await supabase.functions.invoke('reset-customer-password', {
         body: {
           email: email,
           newPassword: tempPassword
         }
       });
 
-      if (error) {
-        console.error('Password reset error:', error);
+      // If user not found, create a new account instead
+      if (resetError || (resetData && !resetData.success && resetData.error === 'User not found')) {
+        console.log('User not found in auth, creating new account...');
+        
+        // Get customer name from search results if available
+        const firstName = searchResults?.customer?.first_name || searchResults?.customer?.name?.split(' ')[0] || '';
+        const lastName = searchResults?.customer?.last_name || searchResults?.customer?.name?.split(' ').slice(1).join(' ') || '';
+        const customerId = searchResults?.customer?.id;
+        
+        const { data: createData, error: createError } = await supabase.functions.invoke('create-customer-account', {
+          body: {
+            email: email,
+            password: tempPassword,
+            firstName,
+            lastName,
+            customerId
+          }
+        });
+
+        if (createError) {
+          console.error('Account creation error:', createError);
+          toast({
+            title: "Account Creation Failed",
+            description: createError.message || "Failed to create customer account",
+            variant: "destructive",
+          });
+          setNewPassword('');
+          return;
+        }
+
+        console.log('Account created successfully:', createData);
+        toast({
+          title: "✅ Account Created",
+          description: `New customer account created with password.`,
+        });
+      } else if (resetError) {
+        console.error('Password reset error:', resetError);
         toast({
           title: "Password Reset Failed",
-          description: error.message || "Failed to reset password",
+          description: resetError.message || "Failed to reset password",
           variant: "destructive",
         });
         setNewPassword('');
         return;
       }
 
-      console.log('Password reset result:', data);
+      console.log('Password operation completed successfully');
       
       // Immediately test the new password
       console.log('Testing new password...');
