@@ -62,6 +62,7 @@ interface CustomerPolicy {
   mot_repair?: boolean;
   lost_key?: boolean;
   consequential?: boolean;
+  customer_id?: string;
   customers?: {
     id: string;
     vehicle_make?: string;
@@ -541,39 +542,83 @@ const CustomerDashboard = () => {
   };
 
   const updateAddress = async () => {
-    if (!selectedPolicy) return;
+    if (!selectedPolicy) {
+      toast({
+        title: "Error",
+        description: "No policy selected. Please refresh and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       const addressJson = {
-        flat_number: address.flatNumber,
-        building_name: address.buildingName,
-        building_number: address.buildingNumber,
-        street: address.street,
-        city: address.city,
-        county: address.county,
-        postcode: address.postcode,
-        country: address.country
+        flat_number: address.flatNumber || '',
+        building_name: address.buildingName || '',
+        building_number: address.buildingNumber || '',
+        street: address.street || '',
+        city: address.city || '',
+        county: address.county || '',
+        postcode: address.postcode || '',
+        country: address.country || 'United Kingdom'
       };
 
-      // Also update customer data
-      await supabase
-        .from('customers')
-        .update({
-          first_name: address.firstName,
-          last_name: address.lastName,
-          phone: address.phone,
-          flat_number: address.flatNumber,
-          building_name: address.buildingName,
-          building_number: address.buildingNumber,
-          street: address.street,
-          town: address.city,
-          county: address.county,
-          postcode: address.postcode,
-          country: address.country
-        })
-        .eq('email', user?.email);
+      const effectiveEmail = isImpersonating ? impersonatedCustomer?.customerEmail : user?.email;
+      
+      console.log("=== UPDATE ADDRESS DEBUG ===");
+      console.log("Effective email:", effectiveEmail);
+      console.log("Customer ID:", selectedPolicy.customer_id);
+      console.log("Address data:", addressJson);
 
-      const { error } = await supabase
+      // Update customer data - use customer_id if available, fallback to email
+      let customerUpdateError = null;
+      
+      if (selectedPolicy.customer_id) {
+        // Use customer_id for more reliable matching
+        const { error } = await supabase
+          .from('customers')
+          .update({
+            phone: address.phone || '',
+            flat_number: address.flatNumber || '',
+            building_name: address.buildingName || '',
+            building_number: address.buildingNumber || '',
+            street: address.street || '',
+            town: address.city || '',
+            county: address.county || '',
+            postcode: address.postcode || '',
+            country: address.country || 'United Kingdom'
+          })
+          .eq('id', selectedPolicy.customer_id);
+        
+        customerUpdateError = error;
+        console.log("Customer update by ID result:", { error });
+      } else if (effectiveEmail) {
+        // Fallback to email matching (case-insensitive)
+        const { error } = await supabase
+          .from('customers')
+          .update({
+            phone: address.phone || '',
+            flat_number: address.flatNumber || '',
+            building_name: address.buildingName || '',
+            building_number: address.buildingNumber || '',
+            street: address.street || '',
+            town: address.city || '',
+            county: address.county || '',
+            postcode: address.postcode || '',
+            country: address.country || 'United Kingdom'
+          })
+          .ilike('email', effectiveEmail);
+        
+        customerUpdateError = error;
+        console.log("Customer update by email result:", { error });
+      }
+
+      if (customerUpdateError) {
+        console.error("Customer update error:", customerUpdateError);
+      }
+
+      // Update policy address
+      const { error: policyError } = await supabase
         .from('customer_policies')
         .update({ 
           address: addressJson,
@@ -581,18 +626,23 @@ const CustomerDashboard = () => {
         })
         .eq('id', selectedPolicy.id);
 
-      if (error) throw error;
+      console.log("Policy update result:", { error: policyError });
+
+      if (policyError) throw policyError;
 
       toast({
-        title: "Address updated",
-        description: "Your address has been successfully updated.",
+        title: "Details updated",
+        description: "Your address and contact details have been successfully saved.",
       });
       setEditingAddress(false);
-      fetchPolicies();
+      
+      // Refresh policies to show updated data
+      await fetchPolicies();
     } catch (error) {
+      console.error("Update address error:", error);
       toast({
         title: "Error",
-        description: "Failed to update address. Please try again.",
+        description: "Failed to update details. Please try again.",
         variant: "destructive",
       });
     }
@@ -1492,6 +1542,16 @@ const CustomerDashboard = () => {
                       )}
                     </CardContent>
                   </Card>
+
+                  {/* Address Update Banner */}
+                  {(!address.street || !address.city || !address.postcode) && (
+                    <Alert className="bg-amber-50 border-amber-200">
+                      <AlertCircle className="h-4 w-4 text-amber-600" />
+                      <AlertDescription className="text-amber-800">
+                        <strong>Please update your address and contact details.</strong> We need your current address to process any warranty claims effectively.
+                      </AlertDescription>
+                    </Alert>
+                  )}
 
                   {/* Address Management */}
                   <Card>
