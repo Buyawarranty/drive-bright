@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Search, Eye, RefreshCw, CreditCard, Users, Accessibility, Flag } from 'lucide-react';
+import { Loader2, Search, Eye, RefreshCw, CreditCard, Users, Accessibility, Flag, KeyRound, ChevronDown, ChevronUp } from 'lucide-react';
 import { format } from 'date-fns';
 import { PaidOrderEditDialog } from './PaidOrderEditDialog';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import CustomerLoginDebugTool from './CustomerLoginDebugTool';
 
 interface PaidOrder {
   id: string;
@@ -52,6 +54,30 @@ interface PaidOrder {
 interface PaidOrdersTabProps {
   onRefresh?: () => void;
 }
+
+// Collapsible Customer Login Debug Section
+const CustomerLoginDebugSection = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="mt-6 pt-6 border-t">
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger asChild>
+          <Button variant="outline" className="w-full justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <KeyRound className="h-4 w-4" />
+              <span>Customer Login Debug Tool</span>
+            </div>
+            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-4">
+          <CustomerLoginDebugTool />
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
+  );
+};
 
 export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
   const [paidOrders, setPaidOrders] = useState<PaidOrder[]>([]);
@@ -320,6 +346,9 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
             <span>Bumper: {paidOrders.filter(o => (o.payment_method || o.payment_source || '').toLowerCase().includes('bumper')).length}</span>
           </div>
         )}
+
+        {/* Customer Login Debug Tool */}
+        <CustomerLoginDebugSection />
       </CardContent>
 
       {/* Edit Dialog */}
