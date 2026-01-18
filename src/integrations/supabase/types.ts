@@ -4220,27 +4220,45 @@ export type Database = {
           created_at: string
           customer_id: string | null
           email: string
+          email_clicked: boolean | null
           email_log_id: string | null
+          email_opened: boolean | null
+          email_sequence_number: number | null
+          email_subject: string | null
           id: string
+          next_email_scheduled_for: string | null
           policy_id: string
+          review_completed: boolean | null
           sent_at: string
         }
         Insert: {
           created_at?: string
           customer_id?: string | null
           email: string
+          email_clicked?: boolean | null
           email_log_id?: string | null
+          email_opened?: boolean | null
+          email_sequence_number?: number | null
+          email_subject?: string | null
           id?: string
+          next_email_scheduled_for?: string | null
           policy_id: string
+          review_completed?: boolean | null
           sent_at?: string
         }
         Update: {
           created_at?: string
           customer_id?: string | null
           email?: string
+          email_clicked?: boolean | null
           email_log_id?: string | null
+          email_opened?: boolean | null
+          email_sequence_number?: number | null
+          email_subject?: string | null
           id?: string
+          next_email_scheduled_for?: string | null
           policy_id?: string
+          review_completed?: boolean | null
           sent_at?: string
         }
         Relationships: [
