@@ -42,14 +42,14 @@ const Step3Hero: React.FC<Step3HeroProps> = ({ vehicleData, onBack }) => {
         </div>
         
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Car className="w-4 h-4 text-primary" />
             <span className="font-semibold text-foreground">
               {vehicleData.year} {vehicleData.make} {vehicleData.model}
             </span>
             <span className="text-muted-foreground">•</span>
             <span className="text-muted-foreground text-sm">
-              {parseInt(vehicleData.mileage || '0').toLocaleString()} miles
+              {parseInt(vehicleData.mileage || '0') >= 120000 ? 'Over 120,000 miles' : 'Under 120,000 miles'}
             </span>
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
