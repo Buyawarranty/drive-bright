@@ -1,21 +1,22 @@
 /**
  * Centralized pricing matrix and utilities for warranty pricing.
  * 
- * PRICING RULES:
- * - BASE prices are from CURRENT_PRICE_DEC_2025.xlsx at £50/hr labour rate, £100 excess, £1250 claim limit
- * - Labour rate £40/hr = -£5/month for duration
- * - Labour rate £50/hr = base price (no adjustment)
- * - Labour rate £70/hr = +£4/month for duration
- * - Labour rate £100/hr = +£8/month for duration
+ * PRICING RULES (UPDATED JAN 2026):
+ * - BASE prices are from CURRENT_PRICE_JAN_2026.xlsx at £70/hr labour rate (DEFAULT), £100 excess, £1250 claim limit
+ * - Labour rate £50/hr = -£5/month for duration (BELOW base)
+ * - Labour rate £70/hr = base price (no adjustment) - DEFAULT
+ * - Labour rate £100/hr = +£4/month for duration
+ * - Labour rate £200/hr = +£24/month for duration
  * - Boost claim limit (+£1000) = +£5/month for duration
  * - All payments are ALWAYS 12 monthly installments
  * - Monthly = Math.floor(total / 12) - always round DOWN
  * - "Was" price = total + marketing savings (£100 for 2yr, £200 for 3yr) - display only
  * - Pay in full = exact Excel total price
+ * - Transfer Cover = +£19 one-off (not monthly)
  */
 
-// Base pricing matrix from CURRENT_PRICE_JAN_2026.xlsx (base price reduced by £50)
-// These are the base prices at £50/hr labour rate
+// Base pricing matrix from CURRENT_PRICE_JAN_2026.xlsx
+// These are the base prices at £70/hr labour rate (DEFAULT)
 export const BASE_PRICING_MATRIX = {
   '12months': {
     0: { 750: 517, 1250: 547, 2000: 637 },
@@ -51,16 +52,29 @@ export const DURATION_MONTHS = {
   '36months': 36
 } as const;
 
-// Labour rate adjustment per month (relative to £50/hr base)
+// Labour rate adjustment per month (relative to £70/hr base - DEFAULT)
+// £70/hr is now the default base rate
 export const LABOUR_RATE_MONTHLY_ADJUSTMENT: Record<number, number> = {
-  50: 0,   // Base rate, no adjustment
-  70: 4,   // £4 more per month
-  100: 8,  // £8 more per month
+  50: -5,  // £5 LESS per month (below base)
+  70: 0,   // Base rate, no adjustment (DEFAULT)
+  100: 4,  // £4 more per month
   200: 24  // £24 more per month (for main dealers and specialists)
 };
 
+// Default labour rate is now £70/hr
+export const DEFAULT_LABOUR_RATE = 70;
+
+// Default excess is £100
+export const DEFAULT_EXCESS = 100;
+
+// Default claim limit is £1250
+export const DEFAULT_CLAIM_LIMIT = 1250;
+
 // Boost claim limit adds £5/month
 export const BOOST_CLAIM_LIMIT_MONTHLY = 5;
+
+// Transfer Cover one-off price (not monthly)
+export const TRANSFER_COVER_PRICE = 19;
 
 export type PaymentPeriod = keyof typeof BASE_PRICING_MATRIX;
 export type ExcessAmount = keyof typeof BASE_PRICING_MATRIX['12months'];
@@ -75,21 +89,21 @@ export function getBasePrice(
   claimLimit: number
 ): number {
   const periodData = BASE_PRICING_MATRIX[paymentPeriod] || BASE_PRICING_MATRIX['12months'];
-  const excessData = periodData[voluntaryExcess as ExcessAmount] || periodData[100];
-  return excessData[claimLimit as ClaimLimit] || excessData[1250];
+  const excessData = periodData[voluntaryExcess as ExcessAmount] || periodData[DEFAULT_EXCESS];
+  return excessData[claimLimit as ClaimLimit] || excessData[DEFAULT_CLAIM_LIMIT];
 }
 
 /**
  * Calculate labour rate adjustment for the total price
- * @param labourRate The selected labour rate (40, 50, 70, or 100)
+ * @param labourRate The selected labour rate (50, 70, 100, or 200)
  * @param paymentPeriod The warranty duration
- * @returns Total adjustment amount (can be negative)
+ * @returns Total adjustment amount (can be negative for £50/hr)
  */
 export function calculateLabourRateAdjustment(
   labourRate: number,
   paymentPeriod: PaymentPeriod
 ): number {
-  const monthlyAdjustment = LABOUR_RATE_MONTHLY_ADJUSTMENT[labourRate] || 0;
+  const monthlyAdjustment = LABOUR_RATE_MONTHLY_ADJUSTMENT[labourRate] ?? LABOUR_RATE_MONTHLY_ADJUSTMENT[DEFAULT_LABOUR_RATE];
   const durationMonths = DURATION_MONTHS[paymentPeriod];
   return monthlyAdjustment * durationMonths;
 }
@@ -113,7 +127,7 @@ export function calculateBoostAdjustment(
  * Get the monthly price adjustment for labour rate
  */
 export function getLabourRateMonthlyAdjustment(labourRate: number): number {
-  return LABOUR_RATE_MONTHLY_ADJUSTMENT[labourRate] || 0;
+  return LABOUR_RATE_MONTHLY_ADJUSTMENT[labourRate] ?? LABOUR_RATE_MONTHLY_ADJUSTMENT[DEFAULT_LABOUR_RATE];
 }
 
 /**
@@ -134,25 +148,25 @@ export function calculateTotalWarrantyPrice(params: {
     paymentPeriod,
     voluntaryExcess,
     claimLimit,
-    labourRate = 50,
+    labourRate = DEFAULT_LABOUR_RATE,
     boostEnabled = false,
     vehicleAdjustment = 0,
     addOnPrice = 0
   } = params;
 
-  // 1. Get base price from matrix (EXACT Excel price)
+  // 1. Get base price from matrix (EXACT Excel price at £70/hr default)
   const basePrice = getBasePrice(paymentPeriod, voluntaryExcess, claimLimit);
   
   // 2. Apply vehicle adjustments (Range Rover, van, motorbike, mileage, age)
   const adjustedBasePrice = basePrice + vehicleAdjustment;
   
-  // 3. Add labour rate adjustment
+  // 3. Add labour rate adjustment (can be negative for £50/hr)
   const labourAdjustment = calculateLabourRateAdjustment(labourRate, paymentPeriod);
   
   // 4. Add boost claim limit adjustment
   const boostAdjustment = calculateBoostAdjustment(boostEnabled, paymentPeriod);
   
-  // 5. Add protection add-ons
+  // 5. Add protection add-ons (Transfer Cover is £19 one-off, handled by caller)
   const totalPrice = adjustedBasePrice + labourAdjustment + boostAdjustment + addOnPrice;
   
   // 6. Calculate monthly price (always 12 installments, FLOOR not round)
