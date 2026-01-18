@@ -1887,6 +1887,50 @@ Questions? Call 0330 229 5040`;
                   <p className="text-xs text-muted-foreground">Higher rate = more garage choice</p>
                 </div>
 
+                {/* Excess - Quick Select Chips */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">Excess Amount</Label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {excessOptions.map((excess) => (
+                      <button
+                        key={excess}
+                        onClick={() => setExcessAmount(excess)}
+                        className={cn(
+                          "py-3 px-2 rounded-lg border-2 text-center font-semibold transition-all",
+                          excessAmount === excess
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50"
+                        )}
+                      >
+                        £{excess}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Lower excess = higher monthly cost</p>
+                </div>
+
+                {/* Claim Limit - Quick Select Chips */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">Claim Limit 🚗</Label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {claimLimitOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => setClaimLimit(option.value)}
+                        className={cn(
+                          "py-3 px-2 rounded-lg border-2 text-center transition-all",
+                          claimLimit === option.value
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50"
+                        )}
+                      >
+                        <div className="font-semibold">{option.label}</div>
+                        <div className="text-xs text-muted-foreground">{option.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Optional Add-ons Section */}
                 <div className="space-y-3">
                   <Label className="text-base font-semibold">Optional Add-ons</Label>
@@ -1947,29 +1991,7 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
 
-                {/* Claim Limit - Quick Select Chips */}
-                <div className="space-y-3">
-                  <Label className="text-base font-semibold">Claim Limit 🚗</Label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {claimLimitOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => setClaimLimit(option.value)}
-                        className={cn(
-                          "py-3 px-2 rounded-lg border-2 text-center transition-all",
-                          claimLimit === option.value
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
-                        )}
-                      >
-                        <div className="font-semibold">{option.label}</div>
-                        <div className="text-xs text-muted-foreground">{option.description}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Boost Addon - directly below Claim Limit */}
+                {/* Boost Addon - directly below Optional Add-ons */}
                 <div className="flex items-center justify-between p-4 rounded-lg border-2 border-dashed border-amber-400 bg-amber-50">
                   <div className="flex items-center gap-3">
                     <Zap className="w-5 h-5 text-amber-500" />
@@ -1984,28 +2006,6 @@ Questions? Call 0330 229 5040`;
                     checked={boostAddon}
                     onCheckedChange={setBoostAddon}
                   />
-                </div>
-
-                {/* Excess - Quick Select Chips */}
-                <div className="space-y-3">
-                  <Label className="text-base font-semibold">Excess Amount</Label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {excessOptions.map((excess) => (
-                      <button
-                        key={excess}
-                        onClick={() => setExcessAmount(excess)}
-                        className={cn(
-                          "py-3 px-2 rounded-lg border-2 text-center font-semibold transition-all",
-                          excessAmount === excess
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
-                        )}
-                      >
-                        £{excess}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground">Lower excess = higher monthly cost</p>
                 </div>
 
                 {/* Free Extended Cover Option - PROMINENT */}
