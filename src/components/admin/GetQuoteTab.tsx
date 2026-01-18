@@ -9,7 +9,6 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users } from 'lucide-react';
 import { PaidOrdersTab } from './PaidOrdersTab';
-import { ConfirmExternalPaymentTab } from './ConfirmExternalPaymentTab';
 import { format, addDays, isBefore, startOfDay, isToday } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -105,7 +104,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [showHistoryDialog, setShowHistoryDialog] = useState(false);
   const [selectedHistoryQuote, setSelectedHistoryQuote] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState('confirm');
+  const [activeTab, setActiveTab] = useState('new');
   const [historySubTab, setHistorySubTab] = useState<'sent' | 'saved'>('sent');
   const [paidOrdersCount, setPaidOrdersCount] = useState(0);
   const [adminEmail, setAdminEmail] = useState<string | null>(null);
@@ -481,23 +480,17 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
 
   // Quick Confirm Order - skips Step 2 and goes directly to Confirm External Payment
   const handleQuickConfirmOrder = async () => {
-    if (!regNumber.trim() || !mileage.trim()) {
+    if (!regNumber.trim()) {
       toast({
-        title: "Missing Information",
-        description: "Please enter both registration number and mileage",
+        title: "Missing Registration",
+        description: "Please enter a registration number",
         variant: "destructive",
       });
       return;
     }
 
-    if (!customerName.trim() || !customerEmail.trim()) {
-      toast({
-        title: "Missing Customer Info",
-        description: "Please import a lead with customer name and email first",
-        variant: "destructive",
-      });
-      return;
-    }
+    // If no mileage, default to 0 - can be edited in dialog
+    const effectiveMileage = mileage.trim() || '0';
 
     setIsQuickConfirming(true);
     try {
@@ -542,7 +535,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       // Set vehicle data
       setVehicleData({
         regNumber: regNumber.toUpperCase(),
-        mileage: mileage,
+        mileage: effectiveMileage,
         make: data.make,
         model: data.model,
         fuelType: data.fuelType || '',
@@ -1532,14 +1525,11 @@ Questions? Call 0330 229 5040`;
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4 h-auto">
-          <TabsTrigger value="confirm" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
-            <CreditCard className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Confirm Payment</span>
-            <span className="sm:hidden">Confirm</span>
-          </TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 h-auto">
           <TabsTrigger value="new" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
-            New Quote
+            <Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Quote / Confirm</span>
+            <span className="sm:hidden">New</span>
           </TabsTrigger>
           <TabsTrigger value="history" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
             <History className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
@@ -1554,11 +1544,6 @@ Questions? Call 0330 229 5040`;
             {paidOrdersCount > 0 && <span className="ml-1">({paidOrdersCount})</span>}
           </TabsTrigger>
         </TabsList>
-
-        {/* Confirm External Payment Tab - First/Primary */}
-        <TabsContent value="confirm" className="space-y-6 mt-6">
-          <ConfirmExternalPaymentTab onPaymentConfirmed={loadPaidOrdersCount} />
-        </TabsContent>
 
         <TabsContent value="new" className="space-y-6 mt-6">
           {/* Step 1: Vehicle Details */}
@@ -1660,56 +1645,54 @@ Questions? Call 0330 229 5040`;
                   />
                 </div>
 
-                <div className="flex gap-3">
+                {/* Two Primary Actions Side by Side */}
+                <div className="grid grid-cols-2 gap-3 pt-2">
                   <Button 
                     onClick={handleVehicleLookup}
                     disabled={isLookingUp || isQuickConfirming}
-                    className="flex-1"
                     size="lg"
+                    className="gap-2 bg-blue-600 hover:bg-blue-700"
                   >
                     {isLookingUp ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Looking up vehicle...
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Looking up...
                       </>
                     ) : (
                       <>
-                        Continue to Quote
-                        <ArrowRight className="w-4 h-4 ml-2" />
+                        <Mail className="w-4 h-4" />
+                        Send Quote
+                        <ArrowRight className="w-4 h-4" />
                       </>
                     )}
                   </Button>
                   
-                  {/* Quick Confirm Order - Only show when lead is imported */}
-                  {selectedLeadId && customerName && customerEmail && (
-                    <Button 
-                      onClick={handleQuickConfirmOrder}
-                      disabled={isLookingUp || isQuickConfirming}
-                      variant="default"
-                      size="lg"
-                      className="bg-green-600 hover:bg-green-700 text-white gap-2"
-                    >
-                      {isQuickConfirming ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Processing...
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle2 className="w-4 h-4" />
-                          Confirm Order
-                        </>
-                      )}
-                    </Button>
-                  )}
+                  <Button 
+                    onClick={handleQuickConfirmOrder}
+                    disabled={isLookingUp || isQuickConfirming || !regNumber.trim()}
+                    size="lg"
+                    className="gap-2 bg-green-600 hover:bg-green-700"
+                  >
+                    {isQuickConfirming ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-4 h-4" />
+                        Confirm Payment
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </Button>
                 </div>
                 
-                {/* Help text for quick confirm */}
-                {selectedLeadId && customerName && customerEmail && (
-                  <p className="text-xs text-muted-foreground text-center mt-2">
-                    <span className="text-green-600 font-medium">Confirm Order</span> skips quote configuration and opens payment confirmation directly
-                  </p>
-                )}
+                {/* Help text */}
+                <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground text-center">
+                  <p><span className="text-blue-600 font-medium">Send Quote</span> — Configure & email a quote link</p>
+                  <p><span className="text-green-600 font-medium">Confirm Payment</span> — Already paid elsewhere</p>
+                </div>
               </CardContent>
             </Card>
           )}
