@@ -2228,7 +2228,7 @@ Questions? Call 0330 229 5040`;
                     </div>
                     <div className="text-gray-400 text-2xl">|</div>
                     <div className="text-sm text-gray-700 font-medium">
-                      <div>Total: £{currentPrice.totalPrice}</div>
+                      <div>Total: £{currentPrice.monthlyPrice * 12}</div>
                       <div>Claim: £{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()} | Labour: £{labourRate}/hr</div>
                     </div>
                   </div>
@@ -2344,7 +2344,7 @@ Questions? Call 0330 229 5040`;
                     <p><strong>Excess:</strong> £{excessAmount}</p>
                     <p><strong>Claim Limit:</strong> £{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}{boostAddon ? ' (boost)' : ''}</p>
                     <p><strong>Labour Rate:</strong> £{labourRate}/hr</p>
-                    <p><strong>Total Price:</strong> £{currentPrice.totalPrice}</p>
+                    <p><strong>Total Price:</strong> £{currentPrice.monthlyPrice * 12}</p>
                     {additionalNotes && <p className="col-span-2"><strong>Notes:</strong> {additionalNotes}</p>}
                   </div>
                   {freeExtendedCover !== 'none' && (
@@ -2697,7 +2697,7 @@ Questions? Call 0330 229 5040`;
                             </tr>
                             <tr>
                               <td className="py-3 text-gray-900 font-bold">Total price</td>
-                              <td className="py-3 text-right text-xl font-bold text-orange-600">£{currentPrice.totalPrice}</td>
+                              <td className="py-3 text-right text-xl font-bold text-orange-600">£{currentPrice.monthlyPrice * 12}</td>
                             </tr>
                           </tbody>
                         </table>
@@ -2788,7 +2788,7 @@ Questions? Call 0330 229 5040`;
                       <h4 className="font-semibold text-orange-900 mb-2">💰 Pricing</h4>
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <span className="text-orange-700">Total Price:</span>
-                        <span className="font-bold text-lg text-orange-600">£{currentPrice.totalPrice}</span>
+                        <span className="font-bold text-lg text-orange-600">£{currentPrice.monthlyPrice * 12}</span>
                         <span className="text-orange-700">Monthly Price:</span>
                         <span className="font-medium">£{currentPrice.monthlyPrice}/month</span>
                         <span className="text-orange-700">Pay in Full (10% off):</span>
