@@ -696,12 +696,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
 
         <div className="space-y-4">
-          {/* SECTION 1: PLAN SUMMARY - Compact */}
-          <Card className="border border-slate-200 shadow-sm overflow-hidden">
+          {/* SECTION 1: PLAN SUMMARY - With Pricing */}
+          <Card className="border border-slate-200 shadow-sm overflow-hidden bg-gradient-to-r from-slate-50 to-white">
             <CardContent className="p-4 sm:p-5">
-              <div className="flex items-center justify-between">
+              {/* Top Row: Plan Info + Pricing */}
+              <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
                     <Shield className="w-5 h-5 text-orange-600" />
                   </div>
                   <div>
@@ -709,12 +710,32 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <p className="text-sm text-slate-500">{getDurationText()} • {vehicleData.regNumber?.toUpperCase()}</p>
                   </div>
                 </div>
+                
+                {/* Pricing Summary - Right Side */}
+                <div className="text-right flex-shrink-0">
+                  <div className="text-2xl sm:text-3xl font-bold text-slate-900">
+                    £{monthlyPrice}<span className="text-base font-normal text-slate-500">/mo</span>
+                  </div>
+                  <p className="text-xs text-slate-500">12 monthly payments • 0% APR</p>
+                </div>
+              </div>
+              
+              {/* Pricing Details Bar */}
+              <div className="mt-4 pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-sm">
+                <div className="flex items-center gap-4">
+                  <span className="text-slate-600">
+                    Or pay in full: <span className="line-through text-slate-400">£{bumperTotalPrice}</span>{' '}
+                    <span className="font-semibold text-slate-900">£{stripeTotalPrice}</span>
+                  </span>
+                  <span className="text-green-600 font-medium">Save £{savings}!</span>
+                </div>
                 <Button 
                   variant="ghost" 
                   size="sm"
                   onClick={onBack}
-                  className="text-slate-500 hover:text-slate-700 text-xs"
+                  className="text-slate-500 hover:text-slate-700 text-xs -mr-2"
                 >
+                  <Edit className="w-3 h-3 mr-1" />
                   Change
                 </Button>
               </div>
