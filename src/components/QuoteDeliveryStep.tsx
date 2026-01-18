@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Zap, ArrowRight, Ban, BellOff, MessageCircle, Star, User, Car, Rocket } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
@@ -33,6 +33,22 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   const [emailError, setEmailError] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+
+  // Restore form fields from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedCustomerData = localStorage.getItem('buyawarranty_customerData');
+      if (savedCustomerData) {
+        const parsed = JSON.parse(savedCustomerData);
+        if (parsed.first_name) setFirstName(parsed.first_name);
+        if (parsed.email) setEmail(parsed.email);
+        if (parsed.phone) setPhone(parsed.phone);
+        console.log('✅ Restored Step 2 form data from localStorage');
+      }
+    } catch (error) {
+      console.error('Error restoring customer data:', error);
+    }
+  }, []);
 
   const isValidFirstName = firstName.trim().length >= 2;
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
