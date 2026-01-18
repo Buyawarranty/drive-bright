@@ -356,7 +356,7 @@ const SpecialVehiclePricing: React.FC<SpecialVehiclePricingProps> = ({ vehicleDa
                 {vehicleData.fuelType && <span><strong>Fuel:</strong> {vehicleData.fuelType}</span>}
                 {vehicleData.year && <span><strong>Year:</strong> {vehicleData.year}</span>}
                 {vehicleData.transmission && <span><strong>Transmission:</strong> {vehicleData.transmission}</span>}
-                <span><strong>Mileage:</strong> {parseInt(vehicleData.mileage).toLocaleString()} miles</span>
+                <span><strong>Mileage:</strong> {parseInt(vehicleData.mileage) >= 120000 ? 'Over 120,000 miles' : 'Under 120,000 miles'}</span>
               </div>
             </div>
           )}
