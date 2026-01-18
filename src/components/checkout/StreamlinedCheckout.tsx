@@ -85,18 +85,27 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       if (savedCustomerData) {
         const parsed = JSON.parse(savedCustomerData);
         console.log('✅ Restored customer data from localStorage:', parsed);
-        // Combine first_name and last_name into full_name if they exist
-        const fullName = [parsed.first_name, parsed.last_name].filter(Boolean).join(' ').trim();
+        // Handle both old full_name format and new first_name/last_name format
+        let firstName = parsed.first_name || '';
+        let lastName = parsed.last_name || '';
+        
+        // If we have full_name but not first/last, split it
+        if (parsed.full_name && (!firstName || !lastName)) {
+          const parts = parsed.full_name.trim().split(/\s+/).filter(Boolean);
+          firstName = parts[0] || '';
+          lastName = parts.slice(1).join(' ') || '';
+        }
+        
         return {
           ...parsed,
-          full_name: fullName || parsed.full_name || '',
+          first_name: firstName,
+          last_name: lastName,
         };
       }
     } catch (error) {
       console.error('❌ Error restoring customer data:', error);
     }
     return {
-      full_name: '',
       first_name: '',
       last_name: '',
       email: '',
@@ -179,18 +188,22 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Check section completion status - simplified for new form
   const personalDetailsComplete = useMemo(() => {
     return !!(
-      customerData.full_name?.trim() &&
+      customerData.first_name?.trim() &&
+      customerData.first_name.trim().length >= 2 &&
+      customerData.last_name?.trim() &&
+      customerData.last_name.trim().length >= 2 &&
       customerData.email?.trim() &&
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email) &&
       customerData.phone?.trim() &&
       customerData.mileage
     );
-  }, [customerData.full_name, customerData.email, customerData.phone, customerData.mileage]);
+  }, [customerData.first_name, customerData.last_name, customerData.email, customerData.phone, customerData.mileage]);
 
   // Count missing fields for the simplified section
   const personalDetailsMissing = useMemo(() => {
     let count = 0;
-    if (!customerData.full_name?.trim()) count++;
+    if (!customerData.first_name?.trim() || customerData.first_name.trim().length < 2) count++;
+    if (!customerData.last_name?.trim() || customerData.last_name.trim().length < 2) count++;
     if (!customerData.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email)) count++;
     if (!customerData.phone?.trim()) count++;
     if (!customerData.mileage) count++;
@@ -202,10 +215,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     trackStripeCheckoutPageLoad();
   }, []);
 
-  // Auto-validate pre-filled fields from Step 2 (Full Name, Email, Phone)
+  // Auto-validate pre-filled fields from Step 2 (First Name, Last Name, Email, Phone)
   useEffect(() => {
     const autoValidatePrefilledFields = () => {
-      const fieldsToCheck = ['full_name', 'email', 'phone'];
+      const fieldsToCheck = ['first_name', 'last_name', 'email', 'phone'];
       const newValidatedFields: { [key: string]: boolean } = {};
 
       fieldsToCheck.forEach(field => {
@@ -213,9 +226,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         if (value && typeof value === 'string' && value.trim()) {
           let isValid = false;
           switch (field) {
-            case 'full_name':
-              const parts = value.trim().split(/\s+/).filter(Boolean);
-              isValid = parts.length >= 2 && parts[0].length >= 2 && parts[parts.length - 1].length >= 2;
+            case 'first_name':
+              isValid = value.trim().length >= 2;
+              break;
+            case 'last_name':
+              isValid = value.trim().length >= 2;
               break;
             case 'email':
               isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -357,16 +372,21 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     let error = '';
 
     switch (field) {
-      case 'full_name':
-        const nameParts = customerData.full_name?.trim().split(/\s+/).filter(Boolean) || [];
-        if (!customerData.full_name?.trim()) {
-          error = 'Full name is required';
+      case 'first_name':
+        if (!customerData.first_name?.trim()) {
+          error = 'First name is required';
           isValid = false;
-        } else if (nameParts.length < 2) {
-          error = 'Please enter your first and last name';
+        } else if (customerData.first_name.trim().length < 2) {
+          error = 'First name must be at least 2 characters';
           isValid = false;
-        } else if (nameParts[0].length < 2 || nameParts[nameParts.length - 1].length < 2) {
-          error = 'Please enter your full name';
+        }
+        break;
+      case 'last_name':
+        if (!customerData.last_name?.trim()) {
+          error = 'Last name is required';
+          isValid = false;
+        } else if (customerData.last_name.trim().length < 2) {
+          error = 'Last name must be at least 2 characters';
           isValid = false;
         }
         break;
@@ -412,7 +432,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   };
 
   const validateForm = (): boolean => {
-    const requiredFields = ['full_name', 'email', 'phone', 'mileage'];
+    const requiredFields = ['first_name', 'last_name', 'email', 'phone', 'mileage'];
     let allValid = true;
     
     requiredFields.forEach(field => {
@@ -513,10 +533,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     try {
       const finalPrice = discountedBumperPrice;
       
-      // Split full_name for API compatibility - ensure lastName is never empty for Bumper
-      const nameParts = customerData.full_name?.trim().split(/\s+/).filter(Boolean) || [];
-      const firstName = nameParts[0] || 'Customer';
-      const lastName = nameParts.slice(1).join(' ') || firstName; // Fallback: use firstName as lastName if missing
+      // Use separate first_name and last_name fields directly
+      const firstName = customerData.first_name?.trim() || 'Customer';
+      const lastName = customerData.last_name?.trim() || firstName; // Fallback if somehow empty
       
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-bumper-checkout', {
         body: {
@@ -587,10 +606,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     try {
       const finalPrice = discountedStripePrice;
       
-      // Split full_name for API compatibility
-      const nameParts = customerData.full_name?.trim().split(' ') || [];
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
+      // Use separate first_name and last_name fields directly
+      const firstName = customerData.first_name?.trim() || '';
+      const lastName = customerData.last_name?.trim() || '';
       
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
         body: {
@@ -782,7 +800,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     </div>
                     <div className="text-left">
                       <h3 className="font-semibold text-slate-900">Your Details</h3>
-                      <p className="text-sm text-slate-500">Just 4 quick fields to complete</p>
+                      <p className="text-sm text-slate-500">Just 5 quick fields to complete</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -800,29 +818,57 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               
               <CollapsibleContent>
                 <div className="px-4 sm:px-5 pb-5 space-y-4 border-t border-slate-100 pt-4">
-                  {/* Full Name - Single Field */}
-                  <div>
-                    <Label htmlFor="full_name" className="text-sm font-medium text-slate-700">Full Name *</Label>
-                    <div className="relative mt-1.5">
-                      <Input
-                        id="full_name"
-                        placeholder="John Smith"
-                        value={customerData.full_name}
-                        onChange={(e) => handleInputChange('full_name', e.target.value)}
-                        onBlur={() => handleFieldBlur('full_name')}
-                        required
-                        className={`h-12 text-base ${getInputValidationClass('full_name')}`}
-                      />
-                      {validatedFields.full_name && !fieldErrors.full_name && (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                  {/* Name Fields - Side by Side */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* First Name */}
+                    <div>
+                      <Label htmlFor="first_name" className="text-sm font-medium text-slate-700">First Name *</Label>
+                      <div className="relative mt-1.5">
+                        <Input
+                          id="first_name"
+                          placeholder="John"
+                          value={customerData.first_name}
+                          onChange={(e) => handleInputChange('first_name', e.target.value)}
+                          onBlur={() => handleFieldBlur('first_name')}
+                          required
+                          className={`h-12 text-base ${getInputValidationClass('first_name')}`}
+                        />
+                        {validatedFields.first_name && !fieldErrors.first_name && (
+                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                        )}
+                      </div>
+                      {showValidation && fieldErrors.first_name && (
+                        <p className="text-red-600 text-sm mt-1.5 flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5" />
+                          {fieldErrors.first_name}
+                        </p>
                       )}
                     </div>
-                    {showValidation && fieldErrors.full_name && (
-                      <p className="text-red-600 text-sm mt-1.5 flex items-center gap-1">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        {fieldErrors.full_name}
-                      </p>
-                    )}
+
+                    {/* Last Name */}
+                    <div>
+                      <Label htmlFor="last_name" className="text-sm font-medium text-slate-700">Last Name *</Label>
+                      <div className="relative mt-1.5">
+                        <Input
+                          id="last_name"
+                          placeholder="Smith"
+                          value={customerData.last_name}
+                          onChange={(e) => handleInputChange('last_name', e.target.value)}
+                          onBlur={() => handleFieldBlur('last_name')}
+                          required
+                          className={`h-12 text-base ${getInputValidationClass('last_name')}`}
+                        />
+                        {validatedFields.last_name && !fieldErrors.last_name && (
+                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                        )}
+                      </div>
+                      {showValidation && fieldErrors.last_name && (
+                        <p className="text-red-600 text-sm mt-1.5 flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5" />
+                          {fieldErrors.last_name}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   {/* Email */}
