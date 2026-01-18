@@ -214,7 +214,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           let isValid = false;
           switch (field) {
             case 'full_name':
-              isValid = value.trim().length > 0;
+              const parts = value.trim().split(/\s+/).filter(Boolean);
+              isValid = parts.length >= 2 && parts[0].length >= 2 && parts[parts.length - 1].length >= 2;
               break;
             case 'email':
               isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -357,10 +358,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
     switch (field) {
       case 'full_name':
+        const nameParts = customerData.full_name?.trim().split(/\s+/).filter(Boolean) || [];
         if (!customerData.full_name?.trim()) {
           error = 'Full name is required';
           isValid = false;
-        } else if (customerData.full_name.trim().length < 2) {
+        } else if (nameParts.length < 2) {
+          error = 'Please enter your first and last name';
+          isValid = false;
+        } else if (nameParts[0].length < 2 || nameParts[nameParts.length - 1].length < 2) {
           error = 'Please enter your full name';
           isValid = false;
         }
@@ -508,10 +513,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     try {
       const finalPrice = discountedBumperPrice;
       
-      // Split full_name for API compatibility
-      const nameParts = customerData.full_name?.trim().split(' ') || [];
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
+      // Split full_name for API compatibility - ensure lastName is never empty for Bumper
+      const nameParts = customerData.full_name?.trim().split(/\s+/).filter(Boolean) || [];
+      const firstName = nameParts[0] || 'Customer';
+      const lastName = nameParts.slice(1).join(' ') || firstName; // Fallback: use firstName as lastName if missing
       
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-bumper-checkout', {
         body: {
