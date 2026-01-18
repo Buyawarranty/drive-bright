@@ -89,6 +89,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [selectedAddOns, setSelectedAddOns] = useState<{ [key: string]: boolean }>({});
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months'>('none');
+  const [includePayInFullDiscount, setIncludePayInFullDiscount] = useState(false); // Default OFF - must opt-in to give 10% discount
   
   // Validation state
   const [showNameError, setShowNameError] = useState(false);
@@ -297,8 +298,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       addOnPrice: addOnPrice
     });
     
-    // Calculate pay-in-full with 10% discount
-    const payInFullPrice = Math.floor(result.totalPrice * 0.90);
+    // Calculate pay-in-full - only apply 10% discount if toggle is ON
+    const payInFullPrice = includePayInFullDiscount 
+      ? Math.floor(result.totalPrice * 0.90)
+      : result.totalPrice;
     
     return { 
       totalPrice: result.totalPrice, 
@@ -318,7 +321,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         return { 
           totalPrice: fullPrice, 
           monthlyPrice: Math.floor(fullPrice / 12),
-          payInFullPrice: Math.floor(fullPrice * 0.90),
+          payInFullPrice: includePayInFullDiscount ? Math.floor(fullPrice * 0.90) : fullPrice,
           wasPrice: 0,
           savings: 0
         };
@@ -329,7 +332,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         return { 
           totalPrice: total, 
           monthlyPrice: monthly,
-          payInFullPrice: Math.floor(total * 0.90),
+          payInFullPrice: includePayInFullDiscount ? Math.floor(total * 0.90) : total,
           wasPrice: 0,
           savings: 0
         };
@@ -2158,6 +2161,23 @@ Questions? Call 0330 229 5040`;
                       </p>
                     </div>
                   </div>
+                  
+                  {/* Pay in Full Discount Toggle */}
+                  <div className="flex items-center justify-between p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="space-y-0.5">
+                      <Label className="text-sm font-medium text-amber-900">Include 10% Pay in Full Discount</Label>
+                      <p className="text-xs text-amber-700">
+                        {includePayInFullDiscount 
+                          ? `Discount applied: £${Math.floor(currentPrice.totalPrice * 0.1)} off` 
+                          : "Toggle ON to offer 10% off for upfront payment via Stripe"}
+                      </p>
+                    </div>
+                    <Switch
+                      checked={includePayInFullDiscount}
+                      onCheckedChange={setIncludePayInFullDiscount}
+                      className="data-[state=checked]:bg-amber-500"
+                    />
+                  </div>
                 </div>
 
                 {/* Sticky Price Summary Bar */}
@@ -2169,8 +2189,15 @@ Questions? Call 0330 229 5040`;
                     </div>
                     <div className="text-gray-400 text-2xl">|</div>
                     <div>
-                      <div className="text-sm text-gray-700 font-medium">Pay in Full (10% off via Stripe)</div>
-                      <div className="text-2xl font-bold text-gray-900">£{Math.floor(currentPrice.totalPrice * 0.9)}</div>
+                      <div className="text-sm text-gray-700 font-medium">
+                        Pay in Full {includePayInFullDiscount ? "(10% off)" : "(No discount)"} via Stripe
+                      </div>
+                      <div className="text-2xl font-bold text-gray-900">
+                        £{currentPrice.payInFullPrice}
+                        {includePayInFullDiscount && (
+                          <span className="text-sm text-green-600 ml-2">Save £{Math.floor(currentPrice.totalPrice * 0.1)}</span>
+                        )}
+                      </div>
                     </div>
                     <div className="text-gray-400 text-2xl">|</div>
                     <div className="text-sm text-gray-700 font-medium">
