@@ -28,6 +28,7 @@ import {
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
+import { calculateVehiclePriceAdjustment } from '@/lib/vehicleValidation';
 
 interface VehicleData {
   regNumber: string;
@@ -289,12 +290,36 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     // Calculate add-on price from selected add-ons (excluding auto-included)
     const addOnPrice = calculateAddOnPrice(selectedAddOns, paymentType, durationMonths);
     
+    // Calculate vehicle adjustment (high-mileage surcharge: +£200/+£400/+£600 for 1/2/3-year)
+    // This matches Step 3 pricing logic exactly
+    const warrantyYears = paymentType === '12months' ? 1 : paymentType === '24months' ? 2 : 3;
+    const vehicleMileage = parseInt(mileage.replace(/[^0-9]/g, '')) || 0;
+    const vehicleAdjustmentResult = calculateVehiclePriceAdjustment(
+      { 
+        mileage: vehicleMileage.toString(),
+        make: vehicleData?.make || '',
+        model: vehicleData?.model || '',
+        year: vehicleData?.year || '',
+        vehicleType: vehicleData?.vehicleType || '',
+        regNumber: vehicleData?.regNumber || regNumber || ''
+      }, 
+      warrantyYears
+    );
+    
+    console.log('🔍 Admin Quote - Vehicle Adjustment:', {
+      mileage: vehicleMileage,
+      warrantyYears,
+      adjustmentAmount: vehicleAdjustmentResult.adjustmentAmount,
+      adjustmentType: vehicleAdjustmentResult.adjustmentType
+    });
+    
     const result = calculateTotalWarrantyPrice({
       paymentPeriod: paymentType,
       voluntaryExcess: excessAmount,
       claimLimit: claimLimit,
       labourRate: labourRate,
       boostEnabled: boostAddon,
+      vehicleAdjustment: vehicleAdjustmentResult.adjustmentAmount,
       addOnPrice: addOnPrice
     });
     
