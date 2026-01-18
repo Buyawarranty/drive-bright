@@ -5,7 +5,7 @@
  * - BASE prices are from CURRENT_PRICE_JAN_2026.xlsx at £70/hr labour rate (DEFAULT), £100 excess, £1250 claim limit
  * - Labour rate £50/hr = -£5/month for duration (BELOW base)
  * - Labour rate £70/hr = base price (no adjustment) - DEFAULT
- * - Labour rate £100/hr = +£4/month for duration
+ * - Labour rate £100/hr = +£8/month for duration
  * - Labour rate £200/hr = +£24/month for duration
  * - Boost claim limit (+£1000) = +£5/month for duration
  * - All payments are ALWAYS 12 monthly installments
@@ -57,7 +57,7 @@ export const DURATION_MONTHS = {
 export const LABOUR_RATE_MONTHLY_ADJUSTMENT: Record<number, number> = {
   50: -5,  // £5 LESS per month (below base)
   70: 0,   // Base rate, no adjustment (DEFAULT)
-  100: 4,  // £4 more per month
+  100: 8,  // £8 more per month
   200: 24  // £24 more per month (for main dealers and specialists)
 };
 
