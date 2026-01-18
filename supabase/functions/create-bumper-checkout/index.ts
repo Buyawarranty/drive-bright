@@ -279,6 +279,24 @@ serve(async (req) => {
     const successUrl = `${baseSuccessUrl}?tx=${transactionId}`;
     const failureUrl = `${baseFailureUrl}?tx=${transactionId}`;
 
+    // Extract address fields with sensible defaults for Bumper (which requires non-empty town)
+    const customerTown = customerData.city || customerData.town || "London";
+    const customerStreet = customerData.address_line_1 || customerData.street || "TBC";
+    const customerPostcode = customerData.postcode || "SW1A 1AA";
+    const customerCounty = customerData.county || "";
+    const customerBuildingNumber = customerData.building_number || "1";
+    const customerBuildingName = customerData.building_name || "";
+    const customerFlatNumber = customerData.flat_number || "";
+    const customerCountry = customerData.country || "UK";
+
+    logStep("Address fields for Bumper", {
+      town: customerTown,
+      street: customerStreet,
+      postcode: customerPostcode,
+      hasOriginalTown: !!(customerData.city || customerData.town),
+      hasOriginalStreet: !!(customerData.address_line_1 || customerData.street)
+    });
+
     // Create payload for signature generation (with simple URLs)
     const signaturePayload = {
       amount: totalAmount.toString(),
@@ -291,14 +309,14 @@ serve(async (req) => {
       email: customerData.email || "",
       mobile: customerData.phone || customerData.mobile || "",
       vehicle_reg: customerData.vehicle_reg || vehicleData.regNumber || "",
-      flat_number: customerData.flat_number || "",
-      building_name: customerData.building_name || "",
-      building_number: customerData.building_number || "",
-      street: customerData.address_line_1 || customerData.street || "",
-      town: customerData.city || customerData.town || "",
-      county: customerData.county || "",
-      postcode: customerData.postcode || "",
-      country: customerData.country || "UK", // Default to UK as per Bumper example
+      flat_number: customerFlatNumber,
+      building_name: customerBuildingName,
+      building_number: customerBuildingNumber,
+      street: customerStreet,
+      town: customerTown,
+      county: customerCounty,
+      postcode: customerPostcode,
+      country: customerCountry,
       product_id: "4", // Use product_id for signature generation (Bumper's legacy field)
       send_sms: false, // Required by Bumper API
       send_email: false // Required by Bumper API
@@ -318,15 +336,15 @@ serve(async (req) => {
       email: customerData.email || "",
       mobile: customerData.phone || customerData.mobile || "",
       vehicle_reg: customerData.vehicle_reg || vehicleData.regNumber || "",
-      // Address fields directly (not nested in object) with proper defaults
-      flat_number: customerData.flat_number || "",
-      building_name: customerData.building_name || "",
-      building_number: customerData.building_number || "",
-      street: customerData.address_line_1 || customerData.street || "",
-      town: customerData.city || customerData.town || "",
-      county: customerData.county || "",
-      postcode: customerData.postcode || "",
-      country: customerData.country || "UK", // Default to UK as per Bumper requirements
+      // Address fields with proper defaults (Bumper requires non-empty town)
+      flat_number: customerFlatNumber,
+      building_name: customerBuildingName,
+      building_number: customerBuildingNumber,
+      street: customerStreet,
+      town: customerTown,
+      county: customerCounty,
+      postcode: customerPostcode,
+      country: customerCountry,
       product_id: "4", // Use product_id instead of instalments for API request
       send_sms: false, // Required by Bumper API
       send_email: false, // Required by Bumper API
