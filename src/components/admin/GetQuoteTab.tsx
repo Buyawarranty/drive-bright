@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users } from 'lucide-react';
 import { PaidOrdersTab } from './PaidOrdersTab';
+import { ConfirmExternalPaymentTab } from './ConfirmExternalPaymentTab';
 import { format, addDays, isBefore, startOfDay, isToday } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -104,7 +105,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [showHistoryDialog, setShowHistoryDialog] = useState(false);
   const [selectedHistoryQuote, setSelectedHistoryQuote] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState('new');
+  const [activeTab, setActiveTab] = useState('confirm');
   const [historySubTab, setHistorySubTab] = useState<'sent' | 'saved'>('sent');
   const [paidOrdersCount, setPaidOrdersCount] = useState(0);
   const [adminEmail, setAdminEmail] = useState<string | null>(null);
@@ -1531,23 +1532,33 @@ Questions? Call 0330 229 5040`;
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3 h-auto">
+        <TabsList className="grid w-full grid-cols-4 h-auto">
+          <TabsTrigger value="confirm" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+            <CreditCard className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Confirm Payment</span>
+            <span className="sm:hidden">Confirm</span>
+          </TabsTrigger>
           <TabsTrigger value="new" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
-            New Quote/Order
+            New Quote
           </TabsTrigger>
           <TabsTrigger value="history" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
             <History className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">History & Saved</span>
-            <span className="sm:hidden">History</span>
+            <span className="hidden sm:inline">History</span>
+            <span className="sm:hidden">Hist</span>
             <span className="ml-1">({sentQuotes.length + savedQuotes.length})</span>
           </TabsTrigger>
           <TabsTrigger value="paid" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
             <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Paid Orders / Edit</span>
-            <span className="sm:hidden">Paid</span>
+            <span className="hidden sm:inline">Paid Orders</span>
+            <span className="sm:hidden">Orders</span>
             {paidOrdersCount > 0 && <span className="ml-1">({paidOrdersCount})</span>}
           </TabsTrigger>
         </TabsList>
+
+        {/* Confirm External Payment Tab - First/Primary */}
+        <TabsContent value="confirm" className="space-y-6 mt-6">
+          <ConfirmExternalPaymentTab onPaymentConfirmed={loadPaidOrdersCount} />
+        </TabsContent>
 
         <TabsContent value="new" className="space-y-6 mt-6">
           {/* Step 1: Vehicle Details */}
