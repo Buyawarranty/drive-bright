@@ -14,7 +14,7 @@ const addOnPackages = [
     key: 'wearAndTear',
     icon: '🔧',
     title: 'Wear & Tear Cover',
-    price: 9,
+    price: 20,
     priceType: 'monthly',
     badge: 'BEST VALUE',
     badgeColor: 'blue',
