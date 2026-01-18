@@ -849,8 +849,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
   }, [totalPrice, marketingSavings]);
 
   // Memoized labour rate per-month adjustment (for display in UI)
+  // £50=-5, £70=0 (default), £100=+4, £200=+24
   const labourRateDisplayAdjustment = useMemo(() => {
-    return selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
+    return selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 4 : selectedLabourRate === 200 ? 24 : 0;
   }, [selectedLabourRate]);
 
   // Memoized boost display adjustment (£5/month)
@@ -866,7 +867,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
   // Memoized display total price - exact total including all add-ons
   const displayTotalPrice = useMemo(() => {
     return totalPrice;
-  }, [basePlanPrice, paymentType, labourRateDisplayAdjustment, boostDisplayAdjustment, recurringAddOnPrice, oneTimeAddOnPrice]);
+  }, [totalPrice]);
 
   // Memoized monthly price calculation - ALWAYS floor(total / 12)
   const monthlyPrice = useMemo(() => {
@@ -1529,8 +1530,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // The base price already includes multi-year pricing
               const finalBasePrice = adjustedBasePrice;
               
-              // Labour rate adjustment: £40=-£5/mo, £50=base, £70=+£4/mo, £100=+£8/mo, £200=+£24/mo
-              const labourMonthlyAdjust = selectedLabourRate === 40 ? -5 : selectedLabourRate === 70 ? 4 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
+              // Labour rate adjustment: £50=-£5/mo, £70=base(0), £100=+£4/mo, £200=+£24/mo
+              const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 4 : selectedLabourRate === 200 ? 24 : 0;
               const labourTotalAdjust = labourMonthlyAdjust * durationMonths;
               
               // Boost addon: +£5/month for duration
