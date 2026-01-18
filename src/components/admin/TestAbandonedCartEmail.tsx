@@ -182,12 +182,12 @@ export const TestAbandonedCartEmail = () => {
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Payment Type (Optional)</label>
-            <Select value={paymentType} onValueChange={setPaymentType}>
+            <Select value={paymentType || "none"} onValueChange={(val) => setPaymentType(val === "none" ? "" : val)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="none">None</SelectItem>
                 <SelectItem value="monthly">Monthly</SelectItem>
                 <SelectItem value="yearly">Yearly</SelectItem>
                 <SelectItem value="twoYear">Two Year</SelectItem>
