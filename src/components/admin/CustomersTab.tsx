@@ -2256,6 +2256,7 @@ export const CustomersTab = () => {
                     <SelectItem value="inactive">Inactive</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="cancelled">Cancelled</SelectItem>
+                    <SelectItem value="claim_made">Claim Made</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
