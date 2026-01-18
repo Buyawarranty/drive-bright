@@ -722,8 +722,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           {/* SECTION 1: PLAN SUMMARY - With Pricing */}
           <Card className="border border-slate-200 shadow-sm overflow-hidden bg-gradient-to-r from-slate-50 to-white">
             <CardContent className="p-4 sm:p-5">
-              {/* Top Row: Plan Info + Pricing */}
-              <div className="flex items-start justify-between gap-4">
+              {/* Top Row: Plan Info + Change Button */}
+              <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
                     <Shield className="w-5 h-5 text-orange-600" />
@@ -732,25 +732,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <h3 className="font-semibold text-slate-900">{formatPlanName()} Plan</h3>
                     <p className="text-sm text-slate-500">{getDurationText()} • {vehicleData.regNumber?.toUpperCase()}</p>
                   </div>
-                </div>
-                
-                {/* Pricing Summary - Right Side */}
-                <div className="text-right flex-shrink-0">
-                  <div className="text-2xl sm:text-3xl font-bold text-slate-900">
-                    £{monthlyPrice}<span className="text-base font-normal text-slate-500">/mo</span>
-                  </div>
-                  <p className="text-xs text-slate-500">12 monthly payments • 0% APR</p>
-                </div>
-              </div>
-              
-              {/* Pricing Details Bar */}
-              <div className="mt-4 pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-sm">
-                <div className="flex items-center gap-4">
-                  <span className="text-slate-600">
-                    Or pay in full: <span className="line-through text-slate-400">£{bumperTotalPrice}</span>{' '}
-                    <span className="font-semibold text-slate-900">£{stripeTotalPrice}</span>
-                  </span>
-                  <span className="text-green-600 font-medium">Save £{savings}!</span>
                 </div>
                 <Button 
                   variant="ghost" 
@@ -761,6 +742,34 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   <Edit className="w-3 h-3 mr-1" />
                   Change
                 </Button>
+              </div>
+              
+              {/* Unified Pricing Block */}
+              <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  {/* Monthly Price */}
+                  <div className="flex-1">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl sm:text-3xl font-bold text-slate-900">£{monthlyPrice}</span>
+                      <span className="text-base font-normal text-slate-500">/mo</span>
+                    </div>
+                    <p className="text-sm text-slate-500 mt-0.5">12 monthly payments • 0% APR</p>
+                  </div>
+                  
+                  {/* Divider */}
+                  <div className="hidden sm:block w-px h-12 bg-slate-200"></div>
+                  <div className="sm:hidden border-t border-slate-200 my-1"></div>
+                  
+                  {/* Pay in Full */}
+                  <div className="flex-1 sm:text-right">
+                    <p className="text-sm text-slate-600 mb-1">Or pay in full</p>
+                    <div className="flex items-baseline gap-2 sm:justify-end">
+                      <span className="text-slate-400 line-through text-sm">£{bumperTotalPrice}</span>
+                      <span className="text-xl font-bold text-slate-900">£{stripeTotalPrice}</span>
+                      <span className="text-green-600 font-medium text-sm">Save £{savings}!</span>
+                    </div>
+                  </div>
+                </div>
               </div>
               
               {/* Start Date */}
