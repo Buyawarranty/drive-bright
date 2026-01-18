@@ -91,10 +91,10 @@ export const getAddOnInfo = (paymentType: string, durationMonths: number = 12): 
     {
       key: 'wearAndTear',
       name: 'Wear & Tear',
-      monthlyPrice: 9,
+      monthlyPrice: 20,
       description: 'Coverage for general wear and tear items',
       isAutoIncluded: autoIncluded.includes('wearAndTear'),
-      displayPrice: autoIncluded.includes('wearAndTear') ? 'FREE' : `£${(9 * durationMonths)}`
+      displayPrice: autoIncluded.includes('wearAndTear') ? 'FREE' : `£${(20 * durationMonths)}`
     },
     {
       key: 'european',
@@ -163,7 +163,7 @@ export const calculateAddOnPrice = (
   if (selectedAddOns.breakdown && !autoIncluded.includes('breakdown')) total += 4 * durationMonths;
   if (selectedAddOns.rental && !autoIncluded.includes('rental')) total += 7 * durationMonths;
   if (selectedAddOns.tyre && !autoIncluded.includes('tyre')) total += 8 * durationMonths;
-  if (selectedAddOns.wearAndTear && !autoIncluded.includes('wearAndTear')) total += 9 * durationMonths;
+  if (selectedAddOns.wearAndTear && !autoIncluded.includes('wearAndTear')) total += 20 * durationMonths;
   if (selectedAddOns.european && !autoIncluded.includes('european')) total += 5 * durationMonths;
   if (selectedAddOns.motRepair && !autoIncluded.includes('motRepair')) total += 4 * durationMonths;
   if (selectedAddOns.motFee && !autoIncluded.includes('motFee')) total += 1 * durationMonths;
