@@ -16,8 +16,6 @@ const addOnPackages = [
     title: 'Wear & Tear Cover',
     price: 20,
     priceType: 'monthly',
-    badge: 'BEST VALUE',
-    badgeColor: 'blue',
     bulletPoints: [
       'Covers engine, gearbox, differential and drivetrain components',
       'Includes critical electrical parts like ECUs and alternators',
