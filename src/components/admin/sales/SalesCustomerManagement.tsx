@@ -416,12 +416,11 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Plans</SelectItem>
-                <SelectItem value="basic">Basic</SelectItem>
                 <SelectItem value="gold">Gold</SelectItem>
-                <SelectItem value="platinum">Platinum</SelectItem>
                 <SelectItem value="electric">Electric</SelectItem>
                 <SelectItem value="phev">PHEV</SelectItem>
                 <SelectItem value="motorbike">Motorbike</SelectItem>
+                <SelectItem value="van">Van</SelectItem>
               </SelectContent>
             </Select>
           </div>
