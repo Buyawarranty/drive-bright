@@ -518,6 +518,69 @@ serve(async (req) => {
         logStep("Error updating sales lead status", leadError);
       }
       
+      // AUTO-CREATE CUSTOMER DASHBOARD ACCOUNT
+      // This ensures every paying customer has immediate access to their dashboard
+      try {
+        logStep("Creating customer dashboard account", { email: userEmail });
+        
+        // Generate a secure random password
+        const generatePassword = () => {
+          const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+          let password = '';
+          for (let i = 0; i < 10; i++) {
+            password += charset.charAt(Math.floor(Math.random() * charset.length));
+          }
+          return password;
+        };
+        
+        const tempPassword = generatePassword();
+        const firstName = customerData?.firstName || customerData?.first_name || metadata?.first_name || '';
+        const lastName = customerData?.lastName || customerData?.last_name || metadata?.last_name || '';
+        
+        // Check if user already exists
+        const { data: existingUsers } = await supabaseClient.auth.admin.listUsers();
+        const existingUser = existingUsers?.users.find(u => u.email?.toLowerCase() === userEmail.toLowerCase());
+        
+        if (existingUser) {
+          logStep("Customer auth account already exists", { userId: existingUser.id, email: userEmail });
+        } else {
+          // Create new auth account
+          const { data: authData, error: authError } = await supabaseClient.auth.admin.createUser({
+            email: userEmail,
+            password: tempPassword,
+            email_confirm: true,
+            user_metadata: {
+              first_name: firstName,
+              last_name: lastName
+            }
+          });
+          
+          if (authError) {
+            logStep("Warning: Failed to create customer auth account", authError);
+          } else {
+            logStep("Customer auth account created successfully", { 
+              userId: authData.user.id, 
+              email: userEmail 
+            });
+            
+            // Store the temporary password in admin notes for reference
+            const { error: noteError } = await supabaseClient
+              .from('admin_notes')
+              .insert({
+                customer_id: customerData2.id,
+                note: `Dashboard credentials auto-created:\nEmail: ${userEmail}\nPassword: ${tempPassword}\nUser ID: ${authData.user.id}`
+              });
+            
+            if (noteError) {
+              logStep("Warning: Failed to create admin note for credentials", noteError);
+            }
+          }
+        }
+      } catch (authAccountError) {
+        logStep("Error creating customer auth account (non-fatal)", authAccountError);
+        // Don't throw - this is non-fatal, customer can still get credentials reset later
+      }
+      
       // Use the same final addon data that was calculated earlier
       const finalAddOnsData = finalAddOnsForCustomer;
       
