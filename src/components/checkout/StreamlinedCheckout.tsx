@@ -42,6 +42,7 @@ export interface StreamlinedCheckoutProps {
   pricingData: {
     basePrice: number;
     totalPrice: number;
+    monthlyPrice?: number;
     voluntaryExcess?: number;
     claimLimit?: number;
     labourRate?: number;
@@ -173,8 +174,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     return startOfDay(new Date());
   });
 
-  // Calculate prices
-  const monthlyPrice = (updatedPricingData as any).monthlyPrice || Math.floor(updatedPricingData.totalPrice / 12);
+  // Calculate prices - ALWAYS use monthlyPrice from Step 3 as source of truth
+  // Step 3 calculates: monthlyPrice = Math.floor(totalPrice / 12)
+  // This ensures Step 4 displays exactly what Step 3 showed
+  const monthlyPrice = updatedPricingData.monthlyPrice ?? Math.floor(updatedPricingData.totalPrice / 12);
   const bumperTotalPrice = monthlyPrice * 12;
   const stripeTotalPrice = Math.floor(bumperTotalPrice * 0.90);
 
