@@ -827,7 +827,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       }`} />
                     </div>
                     <div className="text-left">
-                      <h3 className="font-semibold text-foreground">Your Details</h3>
+                      <h3 className="font-semibold text-foreground flex items-center gap-2">
+                        <span>Almost there — just a few quick details</span>
+                      </h3>
                       <p className="text-sm text-muted-foreground">Just 5 quick fields to complete</p>
                     </div>
                   </div>
@@ -1029,8 +1031,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           {/* SECTION 4: CHOOSE PAYMENT (Radio-style selection) */}
           <div id="payment-section" className="space-y-4">
             <div className="text-center">
-              <h2 className="text-xl font-bold text-foreground">Choose Payment</h2>
-              <p className="text-sm text-muted-foreground mt-1">Select how you'd like to pay</p>
+              <h2 className="text-xl font-bold text-foreground">How would you like to pay?</h2>
             </div>
 
             {/* Payment Error Message */}
