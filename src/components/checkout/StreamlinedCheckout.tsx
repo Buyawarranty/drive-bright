@@ -4,18 +4,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ArrowLeft, CheckCircle, Edit, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, Tag, Shield, AlertCircle, User, Car, X, Info, Calendar } from 'lucide-react';
+import { ArrowLeft, CheckCircle, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, Tag, Shield, AlertCircle, User, X, Info, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { trackFormSubmission, trackBumperCheckoutClick, trackStripeCheckoutClick, trackStripeCheckoutPageLoad, trackStep4EmailEntry } from '@/utils/analytics';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { getAddOnInfo, normalizePaymentType, calculateAddOnPrice } from '@/lib/addOnsUtils';
 import MobileNavigation from '@/components/MobileNavigation';
-import TrustpilotHeader from '@/components/TrustpilotHeader';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
 import { StartDatePicker } from '@/components/checkout/StartDatePicker';
-
 import { startOfDay, format, isToday } from 'date-fns';
 
 // Import the props interface from main component
@@ -86,11 +84,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       if (savedCustomerData) {
         const parsed = JSON.parse(savedCustomerData);
         console.log('✅ Restored customer data from localStorage:', parsed);
-        // Handle both old full_name format and new first_name/last_name format
         let firstName = parsed.first_name || '';
         let lastName = parsed.last_name || '';
         
-        // If we have full_name but not first/last, split it
         if (parsed.full_name && (!firstName || !lastName)) {
           const parts = parsed.full_name.trim().split(/\s+/).filter(Boolean);
           firstName = parts[0] || '';
@@ -122,7 +118,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     };
   });
 
-  // Payment toggle state - null initially to require selection
+  // Payment toggle state
   const [selectedPayment, setSelectedPayment] = useState<'monthly' | 'full' | null>('monthly');
   
   // Section states for collapsible accordion
@@ -148,14 +144,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   }>>([]);
 
   // Pricing data state - ALWAYS use pricingData from Step 3 as source of truth
-  // This fixes the mobile pricing mismatch issue where old localStorage data was being used
   const [updatedPricingData, setUpdatedPricingData] = useState(() => {
-    // Always use fresh pricingData from Step 3, not cached localStorage
     localStorage.setItem('buyawarranty_originalPricingData', JSON.stringify(pricingData));
     return pricingData;
   });
 
-  // Sync updatedPricingData when pricingData prop changes (e.g., navigating back from Step 4 to Step 3 and returning)
+  // Sync updatedPricingData when pricingData prop changes
   useEffect(() => {
     console.log('📊 Step 4: Syncing pricing from Step 3:', pricingData);
     setUpdatedPricingData(pricingData);
@@ -163,8 +157,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   }, [pricingData.totalPrice, pricingData.monthlyPrice]);
 
   // Track if customer originally selected "under 120k" on homepage
-  const [originalMileageWasUnder120k, setOriginalMileageWasUnder120k] = useState(() => {
-    // Check if the vehicle mileage from step 1/2 was under 120k
+  const [originalMileageWasUnder120k] = useState(() => {
     const originalMileage = parseInt(vehicleData.mileage?.replace(/[^0-9]/g, '') || '0');
     return originalMileage <= 120000;
   });
@@ -176,7 +169,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Calculate high mileage surcharge based on warranty duration
   const getHighMileageSurcharge = (enteredMileage: number): number => {
     if (enteredMileage > 120000 && enteredMileage <= 150000) {
-      // Surcharge based on warranty duration: +£200/+£400/+£600 for 1/2/3-year
       if (paymentType === '12months') return 200;
       if (paymentType === '24months') return 400;
       if (paymentType === '36months') return 600;
@@ -188,9 +180,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   useEffect(() => {
     const enteredMileage = parseInt(customerData.mileage?.replace(/[^0-9]/g, '') || '0');
     
-    // Only apply surcharge if:
-    // 1. Customer originally selected "under 120k" on homepage
-    // 2. Now enters mileage between 120,001 and 150,000
     if (originalMileageWasUnder120k && enteredMileage > 120000 && enteredMileage <= 150000) {
       const surcharge = getHighMileageSurcharge(enteredMileage);
       
@@ -199,7 +188,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         setHighMileageSurchargeApplied(true);
         setHighMileageSurchargeAmount(surcharge);
         
-        // Recalculate pricing with surcharge
         setUpdatedPricingData(prev => ({
           ...prev,
           totalPrice: pricingData.totalPrice + surcharge,
@@ -207,7 +195,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         }));
       }
     } else if (highMileageSurchargeApplied && (enteredMileage <= 120000 || enteredMileage > 150000)) {
-      // Remove surcharge if mileage is back under 120k or over 150k
       console.log('📊 High mileage surcharge removed:', { enteredMileage });
       setHighMileageSurchargeApplied(false);
       setHighMileageSurchargeAmount(0);
@@ -229,8 +216,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   });
 
   // Calculate prices - ALWAYS use monthlyPrice from Step 3 as source of truth
-  // Step 3 calculates: monthlyPrice = Math.floor(totalPrice / 12)
-  // This ensures Step 4 displays exactly what Step 3 showed
   const monthlyPrice = updatedPricingData.monthlyPrice ?? Math.floor(updatedPricingData.totalPrice / 12);
   const bumperTotalPrice = monthlyPrice * 12;
   const stripeTotalPrice = Math.floor(bumperTotalPrice * 0.90);
@@ -242,7 +227,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const discountedStripePrice = Math.floor(stripeTotalPrice - totalDiscountAmount);
   const savings = bumperTotalPrice - stripeTotalPrice;
 
-  // Check section completion status - simplified for new form
+  // Check section completion status
   const personalDetailsComplete = useMemo(() => {
     return !!(
       customerData.first_name?.trim() &&
@@ -256,7 +241,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     );
   }, [customerData.first_name, customerData.last_name, customerData.email, customerData.phone, customerData.mileage]);
 
-  // Count missing fields for the simplified section
+  // Count missing fields
   const personalDetailsMissing = useMemo(() => {
     let count = 0;
     if (!customerData.first_name?.trim() || customerData.first_name.trim().length < 2) count++;
@@ -267,12 +252,23 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     return count;
   }, [customerData]);
 
+  // Auto-collapse details section when complete
+  useEffect(() => {
+    if (personalDetailsComplete && detailsOpen) {
+      // Small delay to show the complete state before collapsing
+      const timer = setTimeout(() => {
+        setDetailsOpen(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [personalDetailsComplete]);
+
   // Track page load
   useEffect(() => {
     trackStripeCheckoutPageLoad();
   }, []);
 
-  // Auto-validate pre-filled fields from Step 2 (First Name, Last Name, Email, Phone)
+  // Auto-validate pre-filled fields from Step 2
   useEffect(() => {
     const autoValidatePrefilledFields = () => {
       const fieldsToCheck = ['first_name', 'last_name', 'email', 'phone'];
@@ -308,9 +304,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       }
     };
 
-    // Run on mount if we have pre-filled data
     autoValidatePrefilledFields();
-  }, []); // Run once on mount
+  }, []);
 
   // Reset loading on mount
   useEffect(() => {
@@ -398,7 +393,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Save customer data to localStorage
   useEffect(() => {
     try {
-      // Also save first_name and last_name for backwards compatibility
       const nameParts = customerData.full_name?.trim().split(' ') || [];
       const dataToSave = {
         ...customerData,
@@ -416,7 +410,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     if (fieldErrors[field]) {
       setFieldErrors(prev => ({ ...prev, [field]: '' }));
     }
-    // Clear payment error when user interacts
     if (paymentError) setPaymentError('');
   };
 
@@ -499,7 +492,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     return allValid;
   };
 
-  // Helper function for input validation styling - makes errors very visible
   const getInputValidationClass = (field: string) => {
     if (showValidation && fieldErrors[field]) {
       return 'border-red-500 ring-2 ring-red-200 bg-red-50/50 focus:ring-red-300 focus:border-red-500';
@@ -556,7 +548,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     setShowValidation(true);
     setPaymentError('');
     
-    // Check if payment option is selected
     if (!selectedPayment) {
       setPaymentError('Please choose a payment option to continue.');
       const paymentSection = document.getElementById('payment-section');
@@ -565,7 +556,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     }
     
     if (!validateForm()) {
-      // Open sections with errors
       if (!personalDetailsComplete) setDetailsOpen(true);
       
       const formSection = document.getElementById('customer-form');
@@ -590,9 +580,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     try {
       const finalPrice = discountedBumperPrice;
       
-      // Use separate first_name and last_name fields directly
       const firstName = customerData.first_name?.trim() || 'Customer';
-      const lastName = customerData.last_name?.trim() || firstName; // Fallback if somehow empty
+      const lastName = customerData.last_name?.trim() || firstName;
       
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-bumper-checkout', {
         body: {
@@ -663,7 +652,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     try {
       const finalPrice = discountedStripePrice;
       
-      // Use separate first_name and last_name fields directly
       const firstName = customerData.first_name?.trim() || '';
       const lastName = customerData.last_name?.trim() || '';
       
@@ -751,96 +739,108 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const SectionCompleteBadge = () => (
     <div className="flex items-center gap-1.5 text-green-700 bg-green-50 px-2.5 py-1 rounded-full text-xs font-medium">
       <CheckCircle className="w-3.5 h-3.5" />
-      <span>Complete</span>
+      <span>Completed</span>
     </div>
   );
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
+      <div className="max-w-2xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
         {/* Back Link */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
           <Button
             variant="ghost"
             onClick={() => {
               localStorage.removeItem('buyawarranty_originalPricingData');
               onBack();
             }}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted px-3 py-2 -ml-2"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted px-2 sm:px-3 py-2 -ml-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back to Plan Selection</span>
+            <span className="hidden sm:inline">Back to Plan Selection</span>
+            <span className="sm:hidden">Back</span>
           </Button>
           <MobileNavigation />
         </div>
 
-        <div className="space-y-5">
-          {/* SECTION 1: PLAN SUMMARY - Premium Design */}
-          <Card className="border border-border shadow-lg overflow-hidden bg-card">
-            <CardContent className="p-4 sm:p-6">
-              {/* Compact Plan Header */}
-              <div className="flex items-center justify-between gap-3 mb-4 sm:mb-5">
-                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <Shield className="w-5 h-5 text-primary flex-shrink-0" />
-                    <span className="font-bold text-foreground text-base sm:text-lg">{formatPlanName()}</span>
-                  </div>
-                  <span className="text-muted-foreground text-sm">•</span>
-                  <span className="text-muted-foreground text-sm">{getDurationText()}</span>
-                  <span className="text-muted-foreground text-sm">•</span>
-                  <span className="font-medium text-foreground text-sm uppercase tracking-wide">{vehicleData.regNumber}</span>
-                </div>
-                <button 
-                  onClick={onBack}
-                  className="text-primary hover:text-primary/80 text-sm font-medium underline underline-offset-2 flex-shrink-0 transition-colors"
-                >
-                  Change
-                </button>
+        <div className="space-y-4 sm:space-y-5">
+          {/* TOP SECTION — Plan Summary Header */}
+          <div className="flex items-center justify-between py-2 sm:py-3 px-3 sm:px-4 bg-muted/40 rounded-xl border border-border">
+            <div className="flex items-center gap-2 flex-wrap text-sm sm:text-base">
+              <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+              <span className="font-bold text-foreground">{formatPlanName()}</span>
+              <span className="text-muted-foreground">•</span>
+              <span className="text-muted-foreground">{getDurationText()}</span>
+              <span className="text-muted-foreground">•</span>
+              <span className="font-semibold text-foreground uppercase tracking-wide">{vehicleData.regNumber}</span>
+            </div>
+            <button 
+              onClick={onBack}
+              className="text-primary hover:text-primary/80 text-sm font-medium underline underline-offset-2 flex-shrink-0"
+            >
+              Change
+            </button>
+          </div>
+
+          {/* PRICE SUMMARY CARD */}
+          <Card className="border border-border shadow-sm overflow-hidden bg-card">
+            <CardContent className="p-4 sm:p-5">
+              {/* Label with reassurance */}
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">Price Summary</p>
+                <p className="text-sm text-muted-foreground">Includes your comprehensive {formatPlanName()} cover.</p>
               </div>
 
-              {/* Price Summary Box */}
-              <div className="bg-muted/30 border border-border rounded-xl p-4 sm:p-5">
-                {/* Label with reassurance */}
-                <div className="mb-4">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Price Summary</p>
-                  <p className="text-xs text-muted-foreground">Includes your comprehensive {formatPlanName()} cover.</p>
+              {/* Two Column Pricing Layout */}
+              <div className="grid grid-cols-2 gap-3 sm:gap-6">
+                {/* Pay Monthly Column */}
+                <div className="space-y-0.5">
+                  <div className="flex items-baseline gap-1 flex-wrap">
+                    <span className="text-2xl sm:text-3xl font-bold text-foreground">£{monthlyPrice}</span>
+                    <span className="text-sm text-muted-foreground">/month</span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Total £{bumperTotalPrice}</p>
+                  <p className="text-xs text-muted-foreground">12 payments • 0% APR</p>
                 </div>
 
-                {/* Two Column Pricing Layout */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                  {/* Pay Monthly Column */}
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Pay Monthly</p>
-                    <div className="flex items-baseline gap-2 flex-wrap">
-                      <span className="text-2xl sm:text-3xl font-bold text-foreground">£{monthlyPrice}</span>
-                      <span className="text-sm text-muted-foreground font-medium">/month</span>
-                      <span className="text-sm text-muted-foreground">• Total £{bumperTotalPrice}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">Only 12 monthly payments • 0% APR</p>
+                {/* Pay in Full Column */}
+                <div className="space-y-0.5 text-right">
+                  <div className="flex items-baseline gap-2 justify-end flex-wrap">
+                    <span className="text-2xl sm:text-3xl font-bold text-foreground">£{stripeTotalPrice}</span>
+                    <span className="inline-flex items-center bg-[hsl(var(--success))] text-[hsl(var(--success-foreground))] text-xs font-bold px-2 py-0.5 rounded">
+                      Save £{savings}
+                    </span>
                   </div>
-
-                  {/* Pay in Full Column */}
-                  <div className="space-y-1 sm:text-right">
-                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Pay in Full</p>
-                    <div className="flex items-baseline gap-2 flex-wrap sm:justify-end">
-                      <span className="text-2xl sm:text-3xl font-bold text-foreground">£{stripeTotalPrice}</span>
-                      <span className="inline-flex items-center bg-[hsl(var(--success))] text-[hsl(var(--success-foreground))] text-xs font-bold px-2 py-0.5 rounded">
-                        Save £{savings}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      <span className="line-through">was £{bumperTotalPrice}</span>
-                      <span className="ml-1.5">• Extra 10% off</span>
-                    </p>
-                  </div>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    <span className="line-through">was £{bumperTotalPrice}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground">10% off</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* SECTION 2: COVER START DATE */}
-          <Card className="border border-border shadow-sm overflow-hidden bg-card">
-            <CardContent className="p-4 sm:p-5">
+          {/* 14-DAY MONEY-BACK GUARANTEE TRUST BAR */}
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 py-2.5 px-3 bg-[hsl(var(--success)/0.08)] rounded-lg border border-[hsl(var(--success)/0.2)] text-xs sm:text-sm text-foreground/80">
+            <span className="flex items-center gap-1.5">
+              <Check className="w-3.5 h-3.5 text-[hsl(var(--success))]" />
+              14-day money-back guarantee
+            </span>
+            <span className="text-muted-foreground hidden sm:inline">•</span>
+            <span className="flex items-center gap-1.5">
+              <Check className="w-3.5 h-3.5 text-[hsl(var(--success))]" />
+              No hidden fees
+            </span>
+            <span className="text-muted-foreground hidden sm:inline">•</span>
+            <span className="flex items-center gap-1.5">
+              <Lock className="w-3.5 h-3.5 text-[hsl(var(--success))]" />
+              Secure checkout
+            </span>
+          </div>
+
+          {/* COVER START BOX */}
+          <Card className="border border-[hsl(var(--success)/0.3)] bg-[hsl(var(--success)/0.05)] shadow-sm overflow-hidden">
+            <CardContent className="p-3 sm:p-4">
               <StartDatePicker
                 value={startDate}
                 onChange={(date) => {
@@ -858,20 +858,20 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </CardContent>
           </Card>
 
-          {/* SECTION 3: YOUR DETAILS (Collapsible) */}
+          {/* YOUR DETAILS SECTION (Collapsible) */}
           <Card id="customer-form" className="border border-border shadow-sm overflow-hidden bg-card">
             <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
               <CollapsibleTrigger className="w-full">
-                <div className="flex items-center justify-between p-4 sm:p-5 hover:bg-muted/30 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                <div className="flex items-center justify-between p-3 sm:p-4 hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-colors ${
                       personalDetailsComplete 
                         ? 'bg-[hsl(var(--success)/0.15)] border border-[hsl(var(--success)/0.3)]' 
                         : showValidation && !personalDetailsComplete 
                         ? 'bg-destructive/10 border border-destructive/20' 
                         : 'bg-muted border border-border'
                     }`}>
-                      <User className={`w-5 h-5 ${
+                      <User className={`w-4 h-4 sm:w-5 sm:h-5 ${
                         personalDetailsComplete 
                           ? 'text-[hsl(var(--success))]' 
                           : showValidation && !personalDetailsComplete 
@@ -879,13 +879,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           : 'text-muted-foreground'
                       }`} />
                     </div>
-                    <div className="text-left">
-                      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                        <span>Almost there — just two quick details</span>
-                      </h3>
-                    </div>
+                    <h3 className="text-sm font-semibold text-foreground text-left">
+                      Almost there — just two quick details
+                    </h3>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     {!detailsOpen && (
                       showValidation && personalDetailsMissing > 0 
                         ? <SectionErrorBadge count={personalDetailsMissing} />
@@ -899,9 +897,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               </CollapsibleTrigger>
               
               <CollapsibleContent>
-                <div className="px-4 sm:px-5 pb-5 space-y-4 border-t border-border/50 pt-4">
+                <div className="px-3 sm:px-4 pb-4 sm:pb-5 space-y-3 sm:space-y-4 border-t border-border/50 pt-3 sm:pt-4">
                   {/* Name Fields - Side by Side */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {/* First Name */}
                     <div>
                       <Label htmlFor="first_name" className="text-sm font-medium text-foreground/80">First Name *</Label>
@@ -913,7 +911,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           onChange={(e) => handleInputChange('first_name', e.target.value)}
                           onBlur={() => handleFieldBlur('first_name')}
                           required
-                          className={`h-12 text-base ${getInputValidationClass('first_name')}`}
+                          className={`h-11 sm:h-12 text-base ${getInputValidationClass('first_name')}`}
                         />
                         {validatedFields.first_name && !fieldErrors.first_name && (
                           <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
@@ -938,7 +936,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           onChange={(e) => handleInputChange('last_name', e.target.value)}
                           onBlur={() => handleFieldBlur('last_name')}
                           required
-                          className={`h-12 text-base ${getInputValidationClass('last_name')}`}
+                          className={`h-11 sm:h-12 text-base ${getInputValidationClass('last_name')}`}
                         />
                         {validatedFields.last_name && !fieldErrors.last_name && (
                           <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
@@ -966,7 +964,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         onBlur={() => handleFieldBlur('email')}
                         required
-                        className={`h-12 text-base ${getInputValidationClass('email')}`}
+                        className={`h-11 sm:h-12 text-base ${getInputValidationClass('email')}`}
                       />
                       {validatedFields.email && !fieldErrors.email && (
                         <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
@@ -992,7 +990,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         onChange={(e) => handleInputChange('phone', e.target.value)}
                         onBlur={() => handleFieldBlur('phone')}
                         required
-                        className={`h-12 text-base ${getInputValidationClass('phone')}`}
+                        className={`h-11 sm:h-12 text-base ${getInputValidationClass('phone')}`}
                       />
                       {validatedFields.phone && !fieldErrors.phone && (
                         <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
@@ -1023,7 +1021,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           }}
                           onBlur={() => handleFieldBlur('mileage')}
                           required
-                          className={`h-12 text-base ${getInputValidationClass('mileage')}`}
+                          className={`h-11 sm:h-12 text-base ${getInputValidationClass('mileage')}`}
                         />
                         {validatedFields.mileage && !fieldErrors.mileage && (
                           <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
@@ -1037,7 +1035,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             setValidatedFields(prev => ({ ...prev, mileage: true }));
                           }
                         }}
-                        className="h-12 px-3 rounded-lg border border-border bg-card text-sm cursor-pointer hover:border-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="h-11 sm:h-12 px-3 rounded-lg border border-border bg-card text-sm cursor-pointer hover:border-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary"
                       >
                         <option value="">Quick</option>
                         {Array.from({ length: 131 }, (_, i) => {
@@ -1053,16 +1051,16 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         </p>
                       </div>
                     )}
-                    {/* High Mileage Surcharge Banner - Friendly notification */}
+                    {/* High Mileage Surcharge Banner */}
                     {highMileageSurchargeApplied && (
-                      <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mt-2">
-                        <div className="flex items-start gap-3">
-                          <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 mt-2">
+                        <div className="flex items-start gap-2 sm:gap-3">
+                          <Info className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                           <div>
                             <p className="text-sm font-medium text-amber-800">
                               Higher mileage? No problem!
                             </p>
-                            <p className="text-xs text-amber-700 mt-1">
+                            <p className="text-xs text-amber-700 mt-0.5">
                               As your mileage is over 120,000 miles, we've updated your quote to include our higher mileage cover. Your new price is shown above.
                             </p>
                           </div>
@@ -1078,14 +1076,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   </div>
 
                   {/* Address Info Message */}
-                  <div className="bg-muted/50 border border-border rounded-xl p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <MapPin className="w-4 h-4 text-muted-foreground" />
+                  <div className="bg-muted/50 border border-border rounded-xl p-3 sm:p-4">
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-foreground/80">No address needed at checkout</p>
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-xs text-muted-foreground mt-0.5">
                           You can update your address later in your customer dashboard if required for claims.
                         </p>
                       </div>
@@ -1096,22 +1094,20 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </Collapsible>
           </Card>
 
-          {/* SECTION 4: CHOOSE PAYMENT (Radio-style selection) */}
-          <div id="payment-section" className="space-y-4">
-            <div className="text-left">
-              <h2 className="text-xl font-bold text-foreground">How would you like to pay?</h2>
-            </div>
+          {/* PAYMENT SELECTION SECTION */}
+          <div id="payment-section" className="space-y-3 sm:space-y-4">
+            <h2 className="text-lg sm:text-xl font-bold text-foreground text-left">How would you like to pay?</h2>
 
             {/* Payment Error Message */}
             {paymentError && (
-              <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 flex items-center gap-3">
+              <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-3 sm:p-4 flex items-center gap-3">
                 <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
                 <p className="text-destructive text-sm font-medium">{paymentError}</p>
               </div>
             )}
 
             {/* Payment Cards - Radio Style */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {/* Pay Monthly Card */}
               <button
                 type="button"
@@ -1119,52 +1115,52 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   setSelectedPayment('monthly');
                   setPaymentError('');
                 }}
-                className={`relative text-left p-5 sm:p-6 rounded-2xl border-2 transition-all duration-200 ${
+                className={`relative text-left p-4 sm:p-5 rounded-2xl border-2 transition-all ${
                   selectedPayment === 'monthly'
                     ? 'border-primary bg-primary/5 shadow-lg ring-1 ring-primary/20'
                     : 'border-border bg-card hover:border-primary/50 hover:shadow-md'
                 }`}
               >
                 {/* Badge */}
-                <span className="absolute -top-3 left-4 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                <span className="absolute -top-2.5 left-3 sm:left-4 bg-primary text-primary-foreground text-xs font-bold px-2.5 py-0.5 rounded-full shadow-sm">
                   0% APR
                 </span>
 
-                <div className="flex items-start gap-3 mt-1">
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-all ${
+                <div className="flex items-start gap-2.5 sm:gap-3 mt-1">
+                  <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-all ${
                     selectedPayment === 'monthly' 
                       ? 'border-primary bg-primary' 
                       : 'border-muted-foreground/30 bg-card'
                   }`}>
                     {selectedPayment === 'monthly' && (
-                      <Check className="w-3.5 h-3.5 text-primary-foreground" />
+                      <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary-foreground" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-bold text-foreground">Pay Monthly</h3>
+                    <h3 className="text-base sm:text-lg font-bold text-foreground">Monthly</h3>
                     
                     {/* Price Display */}
-                    <div className="mt-3 mb-3">
+                    <div className="mt-2 sm:mt-3 mb-2 sm:mb-3">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl sm:text-4xl font-bold text-foreground">£{Math.floor(discountedBumperPrice / 12)}</span>
-                        <span className="text-base font-medium text-muted-foreground">/mo</span>
+                        <span className="text-2xl sm:text-3xl font-bold text-foreground">£{Math.floor(discountedBumperPrice / 12)}</span>
+                        <span className="text-sm font-medium text-muted-foreground">/mo</span>
                       </div>
-                      <p className="text-sm text-foreground/70 mt-1.5">12 easy payments • Total £{discountedBumperPrice}</p>
+                      <p className="text-xs sm:text-sm text-foreground/70 mt-1">Total £{discountedBumperPrice}</p>
                     </div>
                     
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2.5 text-sm text-foreground/80">
-                        <Check className="w-4 h-4 text-[hsl(var(--success))] flex-shrink-0" />
+                    <div className="space-y-1.5 sm:space-y-2">
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-foreground/80">
+                        <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[hsl(var(--success))] flex-shrink-0" />
                         <span>No credit impact</span>
                       </div>
-                      <div className="flex items-center gap-2.5 text-sm text-foreground/80">
-                        <Check className="w-4 h-4 text-[hsl(var(--success))] flex-shrink-0" />
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-foreground/80">
+                        <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[hsl(var(--success))] flex-shrink-0" />
                         <span>Spread the cost</span>
                       </div>
                     </div>
                     
-                    <div className="mt-4 pt-3 border-t border-border/50">
-                      <img src={bumperLogo} alt="Bumper" className="h-5 opacity-70" />
+                    <div className="mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-border/50">
+                      <img src={bumperLogo} alt="Bumper" className="h-4 sm:h-5 opacity-70" />
                     </div>
                   </div>
                 </div>
@@ -1177,54 +1173,54 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   setSelectedPayment('full');
                   setPaymentError('');
                 }}
-                className={`relative text-left p-5 sm:p-6 rounded-2xl border-2 transition-all duration-200 ${
+                className={`relative text-left p-4 sm:p-5 rounded-2xl border-2 transition-all ${
                   selectedPayment === 'full'
                     ? 'border-[hsl(var(--success))] bg-[hsl(var(--success)/0.05)] shadow-lg ring-1 ring-[hsl(var(--success)/0.2)]'
                     : 'border-border bg-card hover:border-[hsl(var(--success)/0.5)] hover:shadow-md'
                 }`}
               >
                 {/* Badge */}
-                <span className="absolute -top-3 left-4 bg-[hsl(var(--success))] text-[hsl(var(--success-foreground))] text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                <span className="absolute -top-2.5 left-3 sm:left-4 bg-[hsl(var(--success))] text-[hsl(var(--success-foreground))] text-xs font-bold px-2.5 py-0.5 rounded-full shadow-sm">
                   SAVE 10%
                 </span>
 
-                <div className="flex items-start gap-3 mt-1">
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-all ${
+                <div className="flex items-start gap-2.5 sm:gap-3 mt-1">
+                  <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-all ${
                     selectedPayment === 'full' 
                       ? 'border-[hsl(var(--success))] bg-[hsl(var(--success))]' 
                       : 'border-muted-foreground/30 bg-card'
                   }`}>
                     {selectedPayment === 'full' && (
-                      <Check className="w-3.5 h-3.5 text-[hsl(var(--success-foreground))]" />
+                      <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[hsl(var(--success-foreground))]" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-bold text-foreground">Pay in Full</h3>
+                    <h3 className="text-base sm:text-lg font-bold text-foreground">Pay in Full</h3>
                     
                     {/* Price Display */}
-                    <div className="mt-3 mb-3">
-                      <p className="text-sm font-medium text-muted-foreground">
+                    <div className="mt-2 sm:mt-3 mb-2 sm:mb-3">
+                      <p className="text-xs sm:text-sm font-medium text-muted-foreground">
                         <span className="line-through decoration-2">Was £{bumperTotalPrice}</span>
                       </p>
-                      <div className="flex items-baseline gap-1 mt-1">
-                        <span className="text-3xl sm:text-4xl font-bold text-foreground">£{discountedStripePrice}</span>
+                      <div className="flex items-baseline gap-1 mt-0.5">
+                        <span className="text-2xl sm:text-3xl font-bold text-foreground">£{discountedStripePrice}</span>
                       </div>
-                      <p className="text-sm font-semibold text-[hsl(var(--success))] mt-1.5">You save £{savings}!</p>
+                      <p className="text-xs sm:text-sm font-semibold text-[hsl(var(--success))] mt-1">You save £{savings}!</p>
                     </div>
                     
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2.5 text-sm text-foreground/80">
-                        <Check className="w-4 h-4 text-[hsl(var(--success))] flex-shrink-0" />
+                    <div className="space-y-1.5 sm:space-y-2">
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-foreground/80">
+                        <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[hsl(var(--success))] flex-shrink-0" />
                         <span>Instant 10% off</span>
                       </div>
-                      <div className="flex items-center gap-2.5 text-sm text-foreground/80">
-                        <Check className="w-4 h-4 text-[hsl(var(--success))] flex-shrink-0" />
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-foreground/80">
+                        <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[hsl(var(--success))] flex-shrink-0" />
                         <span>One simple payment</span>
                       </div>
                     </div>
                     
-                    <div className="mt-4 pt-3 border-t border-border/50">
-                      <img src={stripeLogo} alt="Stripe" className="h-5 opacity-70" />
+                    <div className="mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-border/50">
+                      <img src={stripeLogo} alt="Stripe" className="h-4 sm:h-5 opacity-70" />
                     </div>
                   </div>
                 </div>
@@ -1232,7 +1228,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </div>
 
             {/* Promo Code - Collapsed */}
-            <div className="pt-2">
+            <div className="pt-1 sm:pt-2">
               <Collapsible open={promoOpen} onOpenChange={setPromoOpen}>
                 <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
                   <Tag className="w-4 h-4" />
@@ -1305,11 +1301,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           </div>
 
           {/* PRIMARY CTA BUTTON */}
-          <div className="sticky bottom-4 z-10 pt-4">
+          <div className="sticky bottom-3 sm:bottom-4 z-10 pt-3 sm:pt-4">
             <Button
               onClick={processPayment}
               disabled={isLoading}
-              className={`w-full py-6 text-lg font-bold rounded-xl shadow-xl transition-all ${
+              className={`w-full py-5 sm:py-6 text-base sm:text-lg font-bold rounded-xl shadow-xl animate-breathing ${
                 selectedPayment === 'monthly'
                   ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20'
                   : selectedPayment === 'full'
@@ -1324,7 +1320,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-2">
-                  <Lock className="w-5 h-5" />
+                  <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
                   {selectedPayment === 'monthly' 
                     ? 'Complete Monthly Checkout' 
                     : selectedPayment === 'full'
@@ -1336,31 +1332,31 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             
             {/* Form error indicator on CTA */}
             {showValidation && !personalDetailsComplete && (
-              <p className="text-center text-sm text-destructive mt-3 flex items-center justify-center gap-1.5">
+              <p className="text-center text-sm text-destructive mt-2 sm:mt-3 flex items-center justify-center gap-1.5">
                 <AlertCircle className="w-4 h-4" />
                 Please complete all required fields above
               </p>
             )}
             
             {/* Security text */}
-            <p className="text-center text-sm text-muted-foreground mt-3">
+            <p className="text-center text-xs sm:text-sm text-muted-foreground mt-2 sm:mt-3">
               Secure checkout — You have 14 days to cancel
             </p>
           </div>
 
           {/* TRUST SIGNALS */}
-          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 py-6 border-t border-border mt-6">
-            <div className="flex items-center gap-2 text-sm text-foreground/70">
-              <Lock className="w-4 h-4 text-[hsl(var(--success))]" />
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-6 py-4 sm:py-6 border-t border-border mt-4 sm:mt-6">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-foreground/70">
+              <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[hsl(var(--success))]" />
               <span>256-bit encryption</span>
             </div>
             <a 
               href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm text-foreground/70 hover:text-[hsl(var(--success))] transition-colors"
+              className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-foreground/70 hover:text-[hsl(var(--success))] transition-colors"
             >
-              <CheckCircle className="w-4 h-4 text-[hsl(var(--success))]" />
+              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[hsl(var(--success))]" />
               <span className="underline underline-offset-2">Rated Excellent on Trustpilot</span>
             </a>
           </div>
