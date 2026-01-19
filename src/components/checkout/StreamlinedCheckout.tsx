@@ -750,7 +750,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 {/* Label with reassurance */}
                 <div className="mb-4">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Price Summary</p>
-                  <p className="text-xs text-muted-foreground">Includes your full {formatPlanName()} cover. See details below.</p>
+                  <p className="text-xs text-muted-foreground">Includes your comprehensive {formatPlanName()} cover.</p>
                 </div>
 
                 {/* Two Column Pricing Layout */}
