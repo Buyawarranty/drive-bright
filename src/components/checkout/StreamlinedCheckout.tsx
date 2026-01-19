@@ -784,7 +784,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-2xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
         {/* Back Link */}
         <div className="flex items-center justify-between mb-4 sm:mb-6">
           <Button
@@ -802,342 +802,348 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           <MobileNavigation />
         </div>
 
-        <div className="space-y-4 sm:space-y-5">
-          {/* TOP SECTION — Plan Summary Header */}
-          <div className="flex items-center justify-between py-2 sm:py-3 px-3 sm:px-4 bg-muted/40 rounded-xl border border-border">
-            <div className="flex items-center gap-2 flex-wrap text-sm sm:text-base">
-              <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
-              <span className="font-bold text-foreground">{formatPlanName()}</span>
-              <span className="text-muted-foreground">•</span>
-              <span className="text-muted-foreground">{getDurationText()}</span>
-              <span className="text-muted-foreground">•</span>
-              <span className="font-semibold text-foreground uppercase tracking-wide">{vehicleData.regNumber}</span>
+        <div className="space-y-6 sm:space-y-8">
+          
+          {/* ==================== SECTION 1: VEHICLE PLAN DETAILS ==================== */}
+          <section>
+            <h2 className="text-base font-semibold text-foreground mb-3">Vehicle Plan Details</h2>
+            
+            {/* Plan Summary Card */}
+            <Card className="border border-border bg-card shadow-sm">
+              <CardContent className="p-4 sm:p-5">
+                {/* Plan Header with Change Link */}
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/50">
+                  <div className="flex items-center gap-2 flex-wrap text-sm">
+                    <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+                    <span className="font-bold text-foreground">{formatPlanName()}</span>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="text-muted-foreground">{getDurationText()}</span>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="font-semibold text-foreground uppercase tracking-wide">{vehicleData.regNumber}</span>
+                  </div>
+                  <button 
+                    onClick={onBack}
+                    className="text-primary hover:text-primary/80 text-sm font-medium underline underline-offset-2 flex-shrink-0"
+                  >
+                    Change
+                  </button>
+                </div>
+
+                {/* Price Summary Label */}
+                <div className="mb-3">
+                  <p className="text-sm font-semibold text-foreground mb-0.5">Price Summary</p>
+                  <p className="text-xs text-muted-foreground">Includes your comprehensive {formatPlanName()} cover.</p>
+                </div>
+
+                {/* Two Column Pricing Layout */}
+                <div className="grid grid-cols-2 gap-4 sm:gap-6">
+                  {/* Monthly Column */}
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Monthly</p>
+                    <div className="flex items-baseline gap-1 flex-wrap">
+                      <span className="text-2xl sm:text-3xl font-bold text-foreground">£{monthlyPrice}</span>
+                      <span className="text-sm text-muted-foreground">/mo</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Total £{bumperTotalPrice}</p>
+                    <p className="text-xs text-muted-foreground">12 payments • 0% APR</p>
+                  </div>
+
+                  {/* Pay in Full Column */}
+                  <div className="space-y-0.5 text-right">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pay in Full</p>
+                    <div className="flex items-baseline gap-2 justify-end flex-wrap">
+                      <span className="text-2xl sm:text-3xl font-bold text-foreground">£{stripeTotalPrice}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground line-through">Was £{bumperTotalPrice}</p>
+                    <p className="text-xs font-medium text-[hsl(var(--success))]">Save £{savings} (10% off)</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Reassurance Bar - Subtle, muted */}
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 py-2.5 px-3 mt-3 bg-muted/40 rounded-lg border border-border text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-muted-foreground" />
+                14-day money-back guarantee
+              </span>
+              <span className="hidden sm:inline">•</span>
+              <span className="flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-muted-foreground" />
+                No hidden fees
+              </span>
+              <span className="hidden sm:inline">•</span>
+              <span className="flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5 text-muted-foreground" />
+                Secure checkout
+              </span>
             </div>
-            <button 
-              onClick={onBack}
-              className="text-primary hover:text-primary/80 text-sm font-medium underline underline-offset-2 flex-shrink-0"
-            >
-              Change
-            </button>
-          </div>
 
-          {/* PRICE SUMMARY CARD */}
-          <Card className="border border-border shadow-sm overflow-hidden bg-card">
-            <CardContent className="p-4 sm:p-5">
-              {/* Label with reassurance */}
-              <div className="mb-4">
-                <p className="text-sm font-semibold text-muted-foreground tracking-wide mb-0.5">Price Summary</p>
-                <p className="text-sm text-muted-foreground">Includes your comprehensive {formatPlanName()} cover.</p>
-              </div>
-
-              {/* Two Column Pricing Layout */}
-              <div className="grid grid-cols-2 gap-3 sm:gap-6">
-                {/* Pay Monthly Column */}
-                <div className="space-y-0.5">
-                  <div className="flex items-baseline gap-1 flex-wrap">
-                    <span className="text-2xl sm:text-3xl font-bold text-foreground">£{monthlyPrice}</span>
-                    <span className="text-sm text-muted-foreground">/month</span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Total £{bumperTotalPrice}</p>
-                  <p className="text-xs text-muted-foreground">12 payments • 0% APR</p>
-                </div>
-
-                {/* Pay in Full Column */}
-                <div className="space-y-0.5 text-right">
-                  <div className="flex items-baseline gap-2 justify-end flex-wrap">
-                    <span className="text-2xl sm:text-3xl font-bold text-foreground">£{stripeTotalPrice}</span>
-                    <span className="inline-flex items-center bg-[hsl(var(--success))] text-[hsl(var(--success-foreground))] text-xs font-bold px-2 py-0.5 rounded">
-                      Save £{savings}
-                    </span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    <span className="line-through">was £{bumperTotalPrice}</span>
-                  </p>
-                  <p className="text-xs text-muted-foreground">10% off</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 14-DAY MONEY-BACK GUARANTEE TRUST BAR */}
-          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 py-2.5 px-3 bg-[hsl(var(--success)/0.08)] rounded-lg border border-[hsl(var(--success)/0.2)] text-xs sm:text-sm text-foreground/80">
-            <span className="flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-[hsl(var(--success))]" />
-              14-day money-back guarantee
-            </span>
-            <span className="text-muted-foreground hidden sm:inline">•</span>
-            <span className="flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5 text-[hsl(var(--success))]" />
-              No hidden fees
-            </span>
-            <span className="text-muted-foreground hidden sm:inline">•</span>
-            <span className="flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-[hsl(var(--success))]" />
-              Secure checkout
-            </span>
-          </div>
-
-          {/* COVER START BOX */}
-          <Card className="border border-[hsl(var(--success)/0.3)] bg-[hsl(var(--success)/0.05)] shadow-sm overflow-hidden">
-            <CardContent className="p-3 sm:p-4">
-              <StartDatePicker
-                value={startDate}
-                onChange={(date) => {
-                  setStartDate(date);
-                  if (date) {
-                    try {
-                      localStorage.setItem('buyawarranty_startDate', date.toISOString());
-                    } catch (error) {
-                      console.error('Error saving start date:', error);
+            {/* Cover Start Date */}
+            <Card className="border border-border bg-card shadow-sm mt-3">
+              <CardContent className="p-3 sm:p-4">
+                <StartDatePicker
+                  value={startDate}
+                  onChange={(date) => {
+                    setStartDate(date);
+                    if (date) {
+                      try {
+                        localStorage.setItem('buyawarranty_startDate', date.toISOString());
+                      } catch (error) {
+                        console.error('Error saving start date:', error);
+                      }
                     }
-                  }
-                }}
-                maxDaysAhead={365}
-              />
-            </CardContent>
-          </Card>
+                  }}
+                  maxDaysAhead={365}
+                />
+              </CardContent>
+            </Card>
+          </section>
 
-          {/* YOUR DETAILS SECTION (Collapsible) */}
-          <Card id="customer-form" className="border border-border shadow-sm overflow-hidden bg-card">
-            <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
-              <CollapsibleTrigger className="w-full">
-                <div className="flex items-center justify-between p-3 sm:p-4 hover:bg-muted/30 transition-colors">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-colors ${
-                      personalDetailsComplete 
-                        ? 'bg-[hsl(var(--success)/0.15)] border border-[hsl(var(--success)/0.3)]' 
-                        : showValidation && !personalDetailsComplete 
-                        ? 'bg-destructive/10 border border-destructive/20' 
-                        : 'bg-muted border border-border'
-                    }`}>
-                      <User className={`w-4 h-4 sm:w-5 sm:h-5 ${
+          {/* ==================== SECTION 2: CUSTOMER DETAILS ==================== */}
+          <section>
+            <Card id="customer-form" className="border border-border shadow-sm overflow-hidden bg-card">
+              <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
+                <CollapsibleTrigger className="w-full">
+                  <div className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-colors ${
                         personalDetailsComplete 
-                          ? 'text-[hsl(var(--success))]' 
+                          ? 'bg-[hsl(var(--success)/0.15)] border border-[hsl(var(--success)/0.3)]' 
                           : showValidation && !personalDetailsComplete 
-                          ? 'text-destructive' 
-                          : 'text-muted-foreground'
-                      }`} />
+                          ? 'bg-destructive/10 border border-destructive/20' 
+                          : 'bg-muted border border-border'
+                      }`}>
+                        <User className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                          personalDetailsComplete 
+                            ? 'text-[hsl(var(--success))]' 
+                            : showValidation && !personalDetailsComplete 
+                            ? 'text-destructive' 
+                            : 'text-muted-foreground'
+                        }`} />
+                      </div>
+                      <div className="text-left">
+                        <h2 className="text-base font-semibold text-foreground">Customer Details</h2>
+                        <p className="text-xs text-muted-foreground mt-0.5">Just a few quick fields to complete.</p>
+                      </div>
                     </div>
-                    <h3 className="text-sm font-semibold text-foreground text-left">
-                      Almost there, just two quick details
-                    </h3>
-                  </div>
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    {!detailsOpen && (
-                      showValidation && personalDetailsMissing > 0 
-                        ? <SectionErrorBadge count={personalDetailsMissing} />
-                        : personalDetailsComplete && <SectionCompleteBadge />
-                    )}
-                    <div className="text-muted-foreground">
-                      {detailsOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      {!detailsOpen && (
+                        showValidation && personalDetailsMissing > 0 
+                          ? <SectionErrorBadge count={personalDetailsMissing} />
+                          : personalDetailsComplete && <SectionCompleteBadge />
+                      )}
+                      <div className="text-muted-foreground">
+                        {detailsOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CollapsibleTrigger>
-              
-              <CollapsibleContent>
-                <div className="px-3 sm:px-4 pb-4 sm:pb-5 space-y-3 sm:space-y-4 border-t border-border/50 pt-3 sm:pt-4">
-                  {/* Name Fields - Side by Side */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    {/* First Name */}
+                </CollapsibleTrigger>
+                
+                <CollapsibleContent>
+                  <div className="px-4 pb-5 space-y-4 border-t border-border/50 pt-4">
+                    {/* Name Fields - Side by Side */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* First Name */}
+                      <div>
+                        <Label htmlFor="first_name" className="text-sm font-medium text-foreground/80">First Name *</Label>
+                        <div className="relative mt-1.5">
+                          <Input
+                            id="first_name"
+                            placeholder="John"
+                            value={customerData.first_name}
+                            onChange={(e) => handleInputChange('first_name', e.target.value)}
+                            onBlur={() => handleFieldBlur('first_name')}
+                            required
+                            className={`h-11 sm:h-12 text-base ${getInputValidationClass('first_name')}`}
+                          />
+                          {validatedFields.first_name && !fieldErrors.first_name && (
+                            <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
+                          )}
+                        </div>
+                        {showValidation && fieldErrors.first_name && (
+                          <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                            <AlertCircle className="w-3.5 h-3.5" />
+                            {fieldErrors.first_name}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Last Name */}
+                      <div>
+                        <Label htmlFor="last_name" className="text-sm font-medium text-foreground/80">Last Name *</Label>
+                        <div className="relative mt-1.5">
+                          <Input
+                            id="last_name"
+                            placeholder="Enter surname"
+                            value={customerData.last_name}
+                            onChange={(e) => handleInputChange('last_name', e.target.value)}
+                            onBlur={() => handleFieldBlur('last_name')}
+                            required
+                            className={`h-11 sm:h-12 text-base ${getInputValidationClass('last_name')}`}
+                          />
+                          {validatedFields.last_name && !fieldErrors.last_name && (
+                            <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
+                          )}
+                        </div>
+                        {showValidation && fieldErrors.last_name && (
+                          <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                            <AlertCircle className="w-3.5 h-3.5" />
+                            {fieldErrors.last_name}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Email */}
                     <div>
-                      <Label htmlFor="first_name" className="text-sm font-medium text-foreground/80">First Name *</Label>
-                      <div className="relative mt-1.5">
+                      <Label htmlFor="email" className="text-sm font-medium text-foreground/80">Email Address *</Label>
+                      <p className="text-xs text-muted-foreground mt-0.5 mb-1.5">We'll send your policy documents here.</p>
+                      <div className="relative">
                         <Input
-                          id="first_name"
-                          placeholder="John"
-                          value={customerData.first_name}
-                          onChange={(e) => handleInputChange('first_name', e.target.value)}
-                          onBlur={() => handleFieldBlur('first_name')}
+                          id="email"
+                          type="email"
+                          placeholder="john.smith@email.com"
+                          value={customerData.email}
+                          onChange={(e) => handleInputChange('email', e.target.value)}
+                          onBlur={() => handleFieldBlur('email')}
                           required
-                          className={`h-11 sm:h-12 text-base ${getInputValidationClass('first_name')}`}
+                          className={`h-11 sm:h-12 text-base ${getInputValidationClass('email')}`}
                         />
-                        {validatedFields.first_name && !fieldErrors.first_name && (
+                        {validatedFields.email && !fieldErrors.email && (
                           <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                         )}
                       </div>
-                      {showValidation && fieldErrors.first_name && (
+                      {showValidation && fieldErrors.email && (
                         <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                           <AlertCircle className="w-3.5 h-3.5" />
-                          {fieldErrors.first_name}
+                          {fieldErrors.email}
                         </p>
                       )}
                     </div>
 
-                    {/* Last Name */}
+                    {/* Phone */}
                     <div>
-                      <Label htmlFor="last_name" className="text-sm font-medium text-foreground/80">Last Name *</Label>
+                      <Label htmlFor="phone" className="text-sm font-medium text-foreground/80">Phone Number *</Label>
                       <div className="relative mt-1.5">
                         <Input
-                          id="last_name"
-                          placeholder="Enter surname"
-                          value={customerData.last_name}
-                          onChange={(e) => handleInputChange('last_name', e.target.value)}
-                          onBlur={() => handleFieldBlur('last_name')}
+                          id="phone"
+                          type="tel"
+                          placeholder="07123 456789"
+                          value={customerData.phone}
+                          onChange={(e) => handleInputChange('phone', e.target.value)}
+                          onBlur={() => handleFieldBlur('phone')}
                           required
-                          className={`h-11 sm:h-12 text-base ${getInputValidationClass('last_name')}`}
+                          className={`h-11 sm:h-12 text-base ${getInputValidationClass('phone')}`}
                         />
-                        {validatedFields.last_name && !fieldErrors.last_name && (
+                        {validatedFields.phone && !fieldErrors.phone && (
                           <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                         )}
                       </div>
-                      {showValidation && fieldErrors.last_name && (
+                      {showValidation && fieldErrors.phone && (
                         <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                           <AlertCircle className="w-3.5 h-3.5" />
-                          {fieldErrors.last_name}
+                          {fieldErrors.phone}
                         </p>
                       )}
                     </div>
-                  </div>
 
-                  {/* Email */}
-                  <div>
-                    <Label htmlFor="email" className="text-sm font-medium text-foreground/80">Email Address *</Label>
-                    <p className="text-xs text-muted-foreground mt-0.5 mb-1.5">We'll send your policy documents here</p>
-                    <div className="relative">
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="john.smith@email.com"
-                        value={customerData.email}
-                        onChange={(e) => handleInputChange('email', e.target.value)}
-                        onBlur={() => handleFieldBlur('email')}
-                        required
-                        className={`h-11 sm:h-12 text-base ${getInputValidationClass('email')}`}
-                      />
-                      {validatedFields.email && !fieldErrors.email && (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
-                      )}
-                    </div>
-                    {showValidation && fieldErrors.email && (
-                      <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        {fieldErrors.email}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Phone */}
-                  <div>
-                    <Label htmlFor="phone" className="text-sm font-medium text-foreground/80">Phone Number *</Label>
-                    <div className="relative mt-1.5">
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="07123 456789"
-                        value={customerData.phone}
-                        onChange={(e) => handleInputChange('phone', e.target.value)}
-                        onBlur={() => handleFieldBlur('phone')}
-                        required
-                        className={`h-11 sm:h-12 text-base ${getInputValidationClass('phone')}`}
-                      />
-                      {validatedFields.phone && !fieldErrors.phone && (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
-                      )}
-                    </div>
-                    {showValidation && fieldErrors.phone && (
-                      <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        {fieldErrors.phone}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Mileage */}
-                  <div>
-                    <Label htmlFor="mileage" className="text-sm font-medium text-foreground/80">Current Mileage *</Label>
-                    <div className="flex gap-2 mt-1.5">
-                      <div className="relative flex-1">
-                        <Input
-                          id="mileage"
-                          type="text"
-                          inputMode="numeric"
-                          placeholder="e.g. 52,000"
-                          value={customerData.mileage ? Number(customerData.mileage).toLocaleString('en-GB') : ''}
+                    {/* Mileage */}
+                    <div>
+                      <Label htmlFor="mileage" className="text-sm font-medium text-foreground/80">Current Mileage *</Label>
+                      <div className="flex gap-2 mt-1.5">
+                        <div className="relative flex-1">
+                          <Input
+                            id="mileage"
+                            type="text"
+                            inputMode="numeric"
+                            placeholder="e.g. 52,000"
+                            value={customerData.mileage ? Number(customerData.mileage).toLocaleString('en-GB') : ''}
+                            onChange={(e) => {
+                              const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                              handleInputChange('mileage', rawValue);
+                            }}
+                            onBlur={() => handleFieldBlur('mileage')}
+                            required
+                            className={`h-11 sm:h-12 text-base ${getInputValidationClass('mileage')}`}
+                          />
+                          {validatedFields.mileage && !fieldErrors.mileage && (
+                            <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
+                          )}
+                        </div>
+                        <select
+                          value=""
                           onChange={(e) => {
-                            const rawValue = e.target.value.replace(/[^0-9]/g, '');
-                            handleInputChange('mileage', rawValue);
+                            if (e.target.value) {
+                              handleInputChange('mileage', e.target.value);
+                              setValidatedFields(prev => ({ ...prev, mileage: true }));
+                            }
                           }}
-                          onBlur={() => handleFieldBlur('mileage')}
-                          required
-                          className={`h-11 sm:h-12 text-base ${getInputValidationClass('mileage')}`}
-                        />
-                        {validatedFields.mileage && !fieldErrors.mileage && (
-                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
-                        )}
+                          className="h-11 sm:h-12 px-3 rounded-lg border border-border bg-card text-sm cursor-pointer hover:border-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                          <option value="">Quick</option>
+                          {Array.from({ length: 131 }, (_, i) => {
+                            const value = 10000 + (i * 1000);
+                            return <option key={value} value={value}>{value.toLocaleString('en-GB')}</option>;
+                          })}
+                        </select>
                       </div>
-                      <select
-                        value=""
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            handleInputChange('mileage', e.target.value);
-                            setValidatedFields(prev => ({ ...prev, mileage: true }));
-                          }
-                        }}
-                        className="h-11 sm:h-12 px-3 rounded-lg border border-border bg-card text-sm cursor-pointer hover:border-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary"
-                      >
-                        <option value="">Quick</option>
-                        {Array.from({ length: 131 }, (_, i) => {
-                          const value = 10000 + (i * 1000);
-                          return <option key={value} value={value}>{value.toLocaleString('en-GB')}</option>;
-                        })}
-                      </select>
-                    </div>
-                    {customerData.mileage && Number(customerData.mileage) > 150000 && (
-                      <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2 mt-2">
-                        <p className="text-destructive text-sm font-medium">
-                          Sorry, we only cover vehicles under 150,000 miles.
-                        </p>
-                      </div>
-                    )}
-                    {/* High Mileage Surcharge Banner */}
-                    {highMileageSurchargeApplied && (
-                      <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 mt-2">
-                        <div className="flex items-start gap-2 sm:gap-3">
-                          <Info className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                          <div>
-                            <p className="text-sm font-medium text-amber-800">
-                              Higher mileage? No problem!
-                            </p>
-                            <p className="text-xs text-amber-700 mt-0.5">
-                              As your mileage is over 120,000 miles, we've updated your quote to include our higher mileage cover. Your new price is shown above.
-                            </p>
+                      {customerData.mileage && Number(customerData.mileage) > 150000 && (
+                        <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2 mt-2">
+                          <p className="text-destructive text-sm font-medium">
+                            Sorry, we only cover vehicles under 150,000 miles.
+                          </p>
+                        </div>
+                      )}
+                      {/* High Mileage Surcharge Banner */}
+                      {highMileageSurchargeApplied && (
+                        <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 mt-2">
+                          <div className="flex items-start gap-2 sm:gap-3">
+                            <Info className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                            <div>
+                              <p className="text-sm font-medium text-amber-800">
+                                Higher mileage? No problem!
+                              </p>
+                              <p className="text-xs text-amber-700 mt-0.5">
+                                As your mileage is over 120,000 miles, we've updated your quote to include our higher mileage cover. Your new price is shown above.
+                              </p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )}
-                    {showValidation && fieldErrors.mileage && (
-                      <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        {fieldErrors.mileage}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Address Info Message */}
-                  <div className="bg-muted/50 border border-border rounded-xl p-3 sm:p-4">
-                    <div className="flex items-start gap-2 sm:gap-3">
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground/80">No address needed at checkout</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          You can update your address later in your customer dashboard if required for claims.
+                      )}
+                      {showValidation && fieldErrors.mileage && (
+                        <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5" />
+                          {fieldErrors.mileage}
                         </p>
+                      )}
+                    </div>
+
+                    {/* Address Info Message */}
+                    <div className="bg-muted/40 border border-border rounded-xl p-3 sm:p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <MapPin className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground/80">No address needed at checkout</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            You can update your address later in your customer dashboard if required for claims.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          </Card>
+                </CollapsibleContent>
+              </Collapsible>
+            </Card>
+          </section>
 
-          {/* PAYMENT SELECTION SECTION */}
-          <div id="payment-section" className="space-y-3 sm:space-y-4">
-            <h2 className="text-sm font-semibold text-foreground text-left flex items-center gap-2">
+          {/* ==================== SECTION 3: HOW TO PAY ==================== */}
+          <section id="payment-section" className="space-y-4">
+            <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
               <Lock className="w-4 h-4 text-muted-foreground" />
-              How would you like to pay?
+              How To Pay
             </h2>
 
             {/* Payment Error Message */}
@@ -1149,7 +1155,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             )}
 
             {/* Payment Cards - Radio Style */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-4">
               {/* Pay Monthly Card */}
               <button
                 type="button"
@@ -1157,18 +1163,18 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   setSelectedPayment('monthly');
                   setPaymentError('');
                 }}
-                className={`relative text-left p-4 sm:p-5 rounded-2xl border-2 transition-all ${
+                className={`relative text-left p-5 sm:p-5 rounded-2xl border-2 transition-all ${
                   selectedPayment === 'monthly'
-                    ? 'border-primary bg-primary/5 shadow-lg ring-1 ring-primary/20'
-                    : 'border-border bg-card hover:border-primary/50 hover:shadow-md'
+                    ? 'border-primary bg-primary/5 shadow-lg'
+                    : 'border-border bg-card hover:border-muted-foreground/50 hover:shadow-sm'
                 }`}
               >
                 {/* Badge */}
-                <span className="absolute -top-2.5 left-3 sm:left-4 bg-primary text-primary-foreground text-xs font-bold px-2.5 py-0.5 rounded-full shadow-sm">
+                <span className="absolute -top-2.5 left-4 bg-primary text-primary-foreground text-xs font-bold px-2.5 py-0.5 rounded-full">
                   0% APR
                 </span>
 
-                <div className="flex items-start gap-2.5 sm:gap-3 mt-1">
+                <div className="flex items-start gap-3 mt-1">
                   <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-all ${
                     selectedPayment === 'monthly' 
                       ? 'border-primary bg-primary' 
@@ -1179,30 +1185,30 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-semibold text-foreground">Pay Monthly</h3>
+                    <h3 className="text-sm font-semibold text-foreground">Monthly</h3>
                     
                     {/* Price Display */}
-                    <div className="mt-2 sm:mt-3 mb-2 sm:mb-3">
+                    <div className="mt-3 mb-3">
                       <div className="flex items-baseline gap-1">
                         <span className="text-2xl sm:text-3xl font-bold text-foreground">£{Math.floor(discountedBumperPrice / 12)}</span>
                         <span className="text-sm font-medium text-muted-foreground">/mo</span>
                       </div>
-                      <p className="text-xs sm:text-sm text-foreground/70 mt-1">Total £{discountedBumperPrice}</p>
+                      <p className="text-sm text-muted-foreground mt-1">Total £{discountedBumperPrice}</p>
                     </div>
                     
-                    <div className="space-y-1.5 sm:space-y-2">
-                      <div className="flex items-center gap-2 text-xs sm:text-sm text-foreground/80">
-                        <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[hsl(var(--success))] flex-shrink-0" />
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm text-foreground/80">
+                        <Check className="w-4 h-4 text-primary flex-shrink-0" />
                         <span>No credit impact</span>
                       </div>
-                      <div className="flex items-center gap-2 text-xs sm:text-sm text-foreground/80">
-                        <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[hsl(var(--success))] flex-shrink-0" />
+                      <div className="flex items-center gap-2 text-sm text-foreground/80">
+                        <Check className="w-4 h-4 text-primary flex-shrink-0" />
                         <span>Spread the cost</span>
                       </div>
                     </div>
                     
-                    <div className="mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-border/50">
-                      <img src={bumperLogo} alt="Bumper" className="h-4 sm:h-5 opacity-70" />
+                    <div className="mt-4 pt-3 border-t border-border/50">
+                      <img src={bumperLogo} alt="Bumper" className="h-5 opacity-70" />
                     </div>
                   </div>
                 </div>
@@ -1215,54 +1221,52 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   setSelectedPayment('full');
                   setPaymentError('');
                 }}
-                className={`relative text-left p-4 sm:p-5 rounded-2xl border-2 transition-all ${
+                className={`relative text-left p-5 sm:p-5 rounded-2xl border-2 transition-all ${
                   selectedPayment === 'full'
-                    ? 'border-[hsl(var(--success))] bg-[hsl(var(--success)/0.05)] shadow-lg ring-1 ring-[hsl(var(--success)/0.2)]'
-                    : 'border-border bg-card hover:border-[hsl(var(--success)/0.5)] hover:shadow-md'
+                    ? 'border-primary bg-primary/5 shadow-lg'
+                    : 'border-border bg-card hover:border-muted-foreground/50 hover:shadow-sm'
                 }`}
               >
                 {/* Badge */}
-                <span className="absolute -top-2.5 left-3 sm:left-4 bg-[hsl(var(--success))] text-[hsl(var(--success-foreground))] text-xs font-bold px-2.5 py-0.5 rounded-full shadow-sm">
-                  SAVE 10%
+                <span className="absolute -top-2.5 left-4 bg-primary text-primary-foreground text-xs font-bold px-2.5 py-0.5 rounded-full">
+                  Save 10%
                 </span>
 
-                <div className="flex items-start gap-2.5 sm:gap-3 mt-1">
+                <div className="flex items-start gap-3 mt-1">
                   <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-all ${
                     selectedPayment === 'full' 
-                      ? 'border-[hsl(var(--success))] bg-[hsl(var(--success))]' 
+                      ? 'border-primary bg-primary' 
                       : 'border-muted-foreground/30 bg-card'
                   }`}>
                     {selectedPayment === 'full' && (
-                      <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[hsl(var(--success-foreground))]" />
+                      <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary-foreground" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-sm font-semibold text-foreground">Pay in Full</h3>
                     
                     {/* Price Display */}
-                    <div className="mt-2 sm:mt-3 mb-2 sm:mb-3">
-                      <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-                        <span className="line-through decoration-2">Was £{bumperTotalPrice}</span>
-                      </p>
+                    <div className="mt-3 mb-3">
+                      <p className="text-sm text-muted-foreground line-through">Was £{bumperTotalPrice}</p>
                       <div className="flex items-baseline gap-1 mt-0.5">
                         <span className="text-2xl sm:text-3xl font-bold text-foreground">£{discountedStripePrice}</span>
                       </div>
-                      <p className="text-xs sm:text-sm font-semibold text-[hsl(var(--success))] mt-1">You save £{savings}!</p>
+                      <p className="text-sm font-medium text-primary mt-1">You save £{savings}!</p>
                     </div>
                     
-                    <div className="space-y-1.5 sm:space-y-2">
-                      <div className="flex items-center gap-2 text-xs sm:text-sm text-foreground/80">
-                        <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[hsl(var(--success))] flex-shrink-0" />
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm text-foreground/80">
+                        <Check className="w-4 h-4 text-primary flex-shrink-0" />
                         <span>Instant 10% off</span>
                       </div>
-                      <div className="flex items-center gap-2 text-xs sm:text-sm text-foreground/80">
-                        <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[hsl(var(--success))] flex-shrink-0" />
+                      <div className="flex items-center gap-2 text-sm text-foreground/80">
+                        <Check className="w-4 h-4 text-primary flex-shrink-0" />
                         <span>One simple payment</span>
                       </div>
                     </div>
                     
-                    <div className="mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-border/50">
-                      <img src={stripeLogo} alt="Stripe" className="h-4 sm:h-5 opacity-70" />
+                    <div className="mt-4 pt-3 border-t border-border/50">
+                      <img src={stripeLogo} alt="Stripe" className="h-5 opacity-70" />
                     </div>
                   </div>
                 </div>
@@ -1270,7 +1274,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </div>
 
             {/* Promo Code - Collapsed */}
-            <div className="pt-1 sm:pt-2">
+            <div className="pt-2">
               <Collapsible open={promoOpen} onOpenChange={setPromoOpen}>
                 <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
                   <Tag className="w-4 h-4" />
@@ -1281,11 +1285,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   {appliedDiscountCodes.length > 0 ? (
                     <div className="space-y-2">
                       {appliedDiscountCodes.map(discount => (
-                        <div key={discount.code} className="flex items-center justify-between bg-[hsl(var(--success)/0.1)] border border-[hsl(var(--success)/0.3)] rounded-lg p-3">
+                        <div key={discount.code} className="flex items-center justify-between bg-primary/10 border border-primary/20 rounded-lg p-3">
                           <div className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-[hsl(var(--success))]" />
-                            <span className="font-semibold text-[hsl(var(--success))] text-sm">{discount.code}</span>
-                            <span className="text-xs text-[hsl(var(--success)/0.8)]">
+                            <Check className="w-4 h-4 text-primary" />
+                            <span className="font-semibold text-primary text-sm">{discount.code}</span>
+                            <span className="text-xs text-primary/80">
                               {discount.type === 'percentage' ? `${discount.value}% OFF` : `£${discount.value} OFF`}
                             </span>
                           </div>
@@ -1315,7 +1319,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         variant="outline"
                         size="sm"
                         disabled={!promoCodeInput.trim() || isValidatingPromoCode}
-                        className="h-10 px-4 bg-[hsl(var(--success)/0.15)] border-[hsl(var(--success)/0.4)] text-[hsl(var(--success))] font-semibold hover:bg-[hsl(var(--success)/0.25)] hover:border-[hsl(var(--success)/0.6)]"
+                        className="h-10 px-4 border-primary/30 text-primary font-semibold hover:bg-primary/10"
                       >
                         Apply
                       </Button>
@@ -1332,76 +1336,70 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
               {/* Discount Applied Banner */}
               {hasValidDiscountCodes && !promoOpen && (
-                <div className="mt-3 bg-[hsl(var(--success)/0.1)] border border-[hsl(var(--success)/0.3)] rounded-lg p-3">
+                <div className="mt-3 bg-primary/10 border border-primary/20 rounded-lg p-3">
                   <div className="flex justify-between items-center text-sm">
                     <span className="font-medium text-foreground/80">Discount Applied:</span>
-                    <span className="font-bold text-[hsl(var(--success))]">-£{Math.floor(totalDiscountAmount)}</span>
+                    <span className="font-bold text-primary">-£{Math.floor(totalDiscountAmount)}</span>
                   </div>
                 </div>
               )}
             </div>
-          </div>
 
-          {/* PRIMARY CTA BUTTON */}
-          <div className="sticky bottom-3 sm:bottom-4 z-10 pt-3 sm:pt-4">
-            <Button
-              onClick={processPayment}
-              disabled={isLoading}
-              className={`w-full py-5 sm:py-6 text-base sm:text-lg font-bold rounded-xl shadow-xl animate-breathing ${
-                selectedPayment === 'monthly'
-                  ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20'
-                  : selectedPayment === 'full'
-                  ? 'bg-[hsl(var(--success))] hover:bg-[hsl(var(--success)/0.9)] text-[hsl(var(--success-foreground))] shadow-[hsl(var(--success)/0.2)]'
-                  : 'bg-muted-foreground text-background'
-              }`}
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Processing...
-                </span>
-              ) : (
-                <span className="flex items-center justify-center gap-2">
-                  <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
-                  {selectedPayment === 'monthly' 
-                    ? 'Complete Monthly Checkout' 
-                    : selectedPayment === 'full'
-                    ? 'Complete One-Time Payment'
-                    : 'Select Payment Option'}
-                </span>
+            {/* PRIMARY CTA BUTTON */}
+            <div className="pt-4">
+              <Button
+                onClick={processPayment}
+                disabled={isLoading}
+                className="w-full py-6 text-base sm:text-lg font-bold rounded-xl shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground animate-breathing"
+              >
+                {isLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Processing...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
+                    {selectedPayment === 'monthly' 
+                      ? 'Complete Monthly Checkout' 
+                      : selectedPayment === 'full'
+                      ? 'Complete One-Time Payment'
+                      : 'Select Payment Option'}
+                  </span>
+                )}
+              </Button>
+              
+              {/* Form error indicator */}
+              {showValidation && !personalDetailsComplete && (
+                <p className="text-center text-sm text-destructive mt-3 flex items-center justify-center gap-1.5">
+                  <AlertCircle className="w-4 h-4" />
+                  Please complete all required fields above
+                </p>
               )}
-            </Button>
-            
-            {/* Form error indicator on CTA */}
-            {showValidation && !personalDetailsComplete && (
-              <p className="text-center text-sm text-destructive mt-2 sm:mt-3 flex items-center justify-center gap-1.5">
-                <AlertCircle className="w-4 h-4" />
-                Please complete all required fields above
+              
+              {/* Security text */}
+              <p className="text-center text-xs text-muted-foreground mt-3">
+                🔒 Secure checkout processing
               </p>
-            )}
-            
-            {/* Security text */}
-            <p className="text-center text-xs sm:text-sm text-muted-foreground mt-2 sm:mt-3">
-              Secure checkout — You have 14 days to cancel
-            </p>
-          </div>
+            </div>
+          </section>
 
           {/* TRUST SIGNALS */}
-          <div className="flex flex-wrap justify-center gap-3 sm:gap-6 py-4 sm:py-6 border-t border-border mt-4 sm:mt-6">
-            <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-foreground/70">
-              <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[hsl(var(--success))]" />
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 py-5 border-t border-border">
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+              <Lock className="w-4 h-4" />
               <span>256-bit encryption</span>
             </div>
             <a 
               href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-foreground/70 hover:text-[hsl(var(--success))] transition-colors"
+              className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               <img 
                 src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" 
-                alt="Trustpilot 5 stars" 
-                className="h-4 sm:h-5 object-contain"
+                alt="Trustpilot" 
+                className="h-5 object-contain"
               />
               <span className="underline underline-offset-2">Rated Excellent</span>
             </a>
