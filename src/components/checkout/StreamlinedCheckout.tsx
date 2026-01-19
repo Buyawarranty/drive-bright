@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ArrowLeft, CheckCircle, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, Tag, Shield, AlertCircle, User, X, Info, Calendar } from 'lucide-react';
+import { ArrowLeft, CheckCircle, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, Tag, Shield, AlertCircle, User, X, Info, Calendar, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { trackFormSubmission, trackBumperCheckoutClick, trackStripeCheckoutClick, trackStripeCheckoutPageLoad, trackStep4EmailEntry } from '@/utils/analytics';
@@ -15,6 +15,7 @@ import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
 import { StartDatePicker } from '@/components/checkout/StartDatePicker';
 import { startOfDay, format, isToday } from 'date-fns';
+import { useMotMileage } from '@/hooks/useMotMileage';
 
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
@@ -165,6 +166,23 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Track if high mileage surcharge applies based on entered mileage
   const [highMileageSurchargeApplied, setHighMileageSurchargeApplied] = useState(false);
   const [highMileageSurchargeAmount, setHighMileageSurchargeAmount] = useState(0);
+  
+  // Fetch MOT mileage from database
+  const { motMileage, motDate, isLoading: motLoading } = useMotMileage(vehicleData.regNumber);
+  const [mileagePreFilled, setMileagePreFilled] = useState(false);
+  
+  // Pre-fill mileage from MOT data if customer hasn't entered one
+  useEffect(() => {
+    if (motMileage && !mileagePreFilled && !customerData.mileage) {
+      console.log('✅ Pre-filling mileage from MOT:', motMileage);
+      setCustomerData(prev => ({
+        ...prev,
+        mileage: String(motMileage)
+      }));
+      setValidatedFields(prev => ({ ...prev, mileage: true }));
+      setMileagePreFilled(true);
+    }
+  }, [motMileage, mileagePreFilled, customerData.mileage]);
 
   // Calculate high mileage surcharge based on warranty duration
   const getHighMileageSurcharge = (enteredMileage: number): number => {
@@ -1053,21 +1071,29 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       <Label htmlFor="mileage" className="text-sm font-medium text-foreground/80">Current Mileage *</Label>
                       <div className="flex gap-2 mt-1.5">
                         <div className="relative flex-1">
-                          <Input
-                            id="mileage"
-                            type="text"
-                            inputMode="numeric"
-                            placeholder="e.g. 52,000"
-                            value={customerData.mileage ? Number(customerData.mileage).toLocaleString('en-GB') : ''}
-                            onChange={(e) => {
-                              const rawValue = e.target.value.replace(/[^0-9]/g, '');
-                              handleInputChange('mileage', rawValue);
-                            }}
-                            onBlur={() => handleFieldBlur('mileage')}
-                            required
-                            className={`h-11 sm:h-12 text-base ${getInputValidationClass('mileage')}`}
-                          />
-                          {validatedFields.mileage && !fieldErrors.mileage && (
+                          {motLoading ? (
+                            <div className="h-11 sm:h-12 flex items-center gap-2 px-3 border border-border rounded-lg bg-muted/30">
+                              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                              <span className="text-sm text-muted-foreground">Fetching from MOT history...</span>
+                            </div>
+                          ) : (
+                            <Input
+                              id="mileage"
+                              type="text"
+                              inputMode="numeric"
+                              placeholder="e.g. 52,000"
+                              value={customerData.mileage ? Number(customerData.mileage).toLocaleString('en-GB') : ''}
+                              onChange={(e) => {
+                                const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                                handleInputChange('mileage', rawValue);
+                                setMileagePreFilled(false); // User is editing, so clear the pre-filled state
+                              }}
+                              onBlur={() => handleFieldBlur('mileage')}
+                              required
+                              className={`h-11 sm:h-12 text-base ${getInputValidationClass('mileage')}`}
+                            />
+                          )}
+                          {!motLoading && validatedFields.mileage && !fieldErrors.mileage && (
                             <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                           )}
                         </div>
@@ -1077,6 +1103,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             if (e.target.value) {
                               handleInputChange('mileage', e.target.value);
                               setValidatedFields(prev => ({ ...prev, mileage: true }));
+                              setMileagePreFilled(false);
                             }
                           }}
                           className="h-11 sm:h-12 px-3 rounded-lg border border-border bg-card text-sm cursor-pointer hover:border-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary"
@@ -1088,6 +1115,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           })}
                         </select>
                       </div>
+                      
+                      {/* MOT Pre-fill Info Badge */}
+                      {mileagePreFilled && motMileage && motDate && (
+                        <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+                          <Info className="w-3.5 h-3.5" />
+                          <span>
+                            Pre-filled from your last MOT ({format(new Date(motDate), 'MMM yyyy')}) — feel free to update
+                          </span>
+                        </div>
+                      )}
+                      
                       {customerData.mileage && Number(customerData.mileage) > 150000 && (
                         <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2 mt-2">
                           <p className="text-destructive text-sm font-medium">
