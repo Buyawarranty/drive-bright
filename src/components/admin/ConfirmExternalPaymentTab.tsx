@@ -14,12 +14,11 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Loader2, Search, CheckCircle2, UserCheck, AlertCircle, 
-  CalendarIcon, CreditCard, Car, Info, Users, Zap, ArrowRight, Edit
+  CalendarIcon, CreditCard, Car, Info, Zap, ArrowRight, Edit, UserPlus
 } from 'lucide-react';
 import { format, isToday, addMonths } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
-import MileageSlider from '@/components/MileageSlider';
 import { 
   calculateTotalWarrantyPrice, 
   DURATION_MONTHS,
@@ -36,6 +35,13 @@ interface VehicleData {
   transmission?: string;
   year?: string;
   vehicleType?: string;
+}
+
+interface AdminUser {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
 }
 
 // Step 3 exact options
@@ -77,11 +83,17 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
   
-  // Customer details
-  const [customerName, setCustomerName] = useState('');
+  // Customer details - split into first/last name
+  const [customerFirstName, setCustomerFirstName] = useState('');
+  const [customerLastName, setCustomerLastName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+  
+  // Assignee
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
+  const [assigneeId, setAssigneeId] = useState<string>('');
+  const [currentAdminUserId, setCurrentAdminUserId] = useState<string>('');
   
   // Policy configuration
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
@@ -90,12 +102,12 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const [labourRate, setLabourRate] = useState(70);
   const [boostAddon, setBoostAddon] = useState(false);
   const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months'>('none');
+  const [isEditingPolicyConfig, setIsEditingPolicyConfig] = useState(false);
   
   // Payment confirmation state
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [paymentSource, setPaymentSource] = useState('');
-  const [paymentReference, setPaymentReference] = useState('');
   const [paymentAmount, setPaymentAmount] = useState('');
   const [warrantyStartDate, setWarrantyStartDate] = useState<Date>(new Date());
   const [isStartDateCalendarOpen, setIsStartDateCalendarOpen] = useState(false);
@@ -111,7 +123,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const [skipAddressDetails, setSkipAddressDetails] = useState(true);
   
   // Editable fields for dialog
-  const [editableCustomerName, setEditableCustomerName] = useState('');
+  const [editableFirstName, setEditableFirstName] = useState('');
+  const [editableLastName, setEditableLastName] = useState('');
   const [editableCustomerEmail, setEditableCustomerEmail] = useState('');
   const [editableCustomerPhone, setEditableCustomerPhone] = useState('');
   const [editableMileage, setEditableMileage] = useState('');
@@ -128,6 +141,35 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     w2k?: boolean;
     email?: boolean;
   }>({});
+
+  // Fetch admin users for assignee dropdown
+  useEffect(() => {
+    const fetchAdminUsers = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Get current user's admin_users.id
+        const { data: currentAdmin } = await supabase
+          .from('admin_users')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (currentAdmin) {
+          setCurrentAdminUserId(currentAdmin.id);
+          setAssigneeId(currentAdmin.id); // Default to self
+        }
+      }
+      
+      const { data } = await supabase
+        .from('admin_users')
+        .select('id, first_name, last_name, email')
+        .eq('is_active', true)
+        .order('first_name');
+      
+      if (data) setAdminUsers(data);
+    };
+    fetchAdminUsers();
+  }, []);
 
   // Calculate price
   const currentPrice = vehicleData ? calculateTotalWarrantyPrice({
@@ -151,31 +193,34 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     setSliderMileage(rawValue ? parseInt(rawValue, 10) : 0);
   };
 
-  const handleSliderChange = (value: number) => {
-    setSliderMileage(value);
-    setMileage(value.toLocaleString());
-  };
-
   const handleLeadSelect = (lead: LeadData) => {
     setSelectedLeadId(lead.id);
     if (lead.vehicle_reg) setRegNumber(formatRegNumber(lead.vehicle_reg));
     if (lead.email) setCustomerEmail(lead.email);
-    const fullName = [lead.first_name, lead.last_name].filter(Boolean).join(' ');
-    if (fullName) setCustomerName(fullName);
+    if (lead.first_name) setCustomerFirstName(lead.first_name);
+    if (lead.last_name) setCustomerLastName(lead.last_name);
     if (lead.phone) setCustomerPhone(lead.phone);
     if (lead.mileage) {
       setMileage(parseInt(lead.mileage.replace(/\D/g, ''), 10).toLocaleString());
       setSliderMileage(parseInt(lead.mileage.replace(/\D/g, ''), 10));
     }
     
+    // Auto-lookup vehicle if reg exists
+    if (lead.vehicle_reg) {
+      setRegNumber(formatRegNumber(lead.vehicle_reg));
+      // Trigger lookup after a short delay
+      setTimeout(() => handleVehicleLookup(lead.vehicle_reg), 100);
+    }
+    
     toast({
       title: "Lead Imported",
-      description: `Imported data for ${fullName || lead.email}`,
+      description: `Imported data for ${[lead.first_name, lead.last_name].filter(Boolean).join(' ') || lead.email}`,
     });
   };
 
-  const handleVehicleLookup = async () => {
-    if (!regNumber.trim()) {
+  const handleVehicleLookup = async (regToLookup?: string) => {
+    const reg = regToLookup || regNumber;
+    if (!reg.trim()) {
       toast({
         title: "Missing Registration",
         description: "Please enter a registration number",
@@ -191,7 +236,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       });
       
       const lookupPromise = supabase.functions.invoke('dvla-vehicle-lookup', {
-        body: { registrationNumber: regNumber.replace(/\s/g, '') }
+        body: { registrationNumber: reg.replace(/\s/g, '') }
       });
       
       const { data, error } = await Promise.race([lookupPromise, timeoutPromise]) as any;
@@ -223,7 +268,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       }
 
       setVehicleData({
-        regNumber: regNumber.toUpperCase(),
+        regNumber: reg.toUpperCase(),
         mileage: mileage || '0',
         make: data.make,
         model: data.model,
@@ -259,10 +304,10 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       return;
     }
 
-    if (!customerName.trim() || !customerEmail.trim()) {
+    if (!customerFirstName.trim() || !customerLastName.trim() || !customerEmail.trim()) {
       toast({
         title: "Customer Details Required",
-        description: "Please enter customer name and email",
+        description: "Please enter customer first name, last name and email",
         variant: "destructive",
       });
       return;
@@ -284,7 +329,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     }
 
     // Pre-fill editable fields
-    setEditableCustomerName(customerName);
+    setEditableFirstName(customerFirstName);
+    setEditableLastName(customerLastName);
     setEditableCustomerEmail(customerEmail);
     setEditableCustomerPhone(customerPhone);
     setEditableMileage(mileage.replace(/,/g, ''));
@@ -295,10 +341,10 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   };
 
   const handleProceedToPreview = () => {
-    if (!paymentSource || !paymentReference || !paymentAmount) {
+    if (!paymentSource || !paymentAmount) {
       toast({
         title: "Missing Payment Info",
-        description: "Please fill in payment source, reference and amount",
+        description: "Please fill in payment source and amount",
         variant: "destructive",
       });
       return;
@@ -316,10 +362,13 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       const bonusMonthsMap: Record<string, number> = { 'none': 0, '3months': 3, '6months': 6 };
       const bonusMonths = bonusMonthsMap[freeExtendedCover] || 0;
       const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
+      const fullName = `${editableFirstName} ${editableLastName}`.trim();
 
       const { data, error } = await supabase.functions.invoke('confirm-external-payment', {
         body: {
-          customerName: editableCustomerName,
+          customerName: fullName,
+          customerFirstName: editableFirstName,
+          customerLastName: editableLastName,
           customerEmail: editableCustomerEmail,
           customerPhone: editableCustomerPhone,
           vehicleReg: editableRegNumber,
@@ -336,7 +385,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
           boostAddon,
           finalAmount: parseFloat(paymentAmount),
           paymentSource,
-          paymentReference,
+          assigneeId: assigneeId || null,
           warrantyStartDate: format(warrantyStartDate, 'yyyy-MM-dd'),
           durationMonths: coverMonths,
           bonusMonths,
@@ -367,7 +416,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       
       toast({
         title: "Payment Confirmed!",
-        description: `Policy created for ${editableCustomerName}`,
+        description: `Policy created for ${fullName}`,
       });
     } catch (error: any) {
       console.error('Error confirming payment:', error);
@@ -386,7 +435,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     setMileage('');
     setSliderMileage(0);
     setVehicleData(null);
-    setCustomerName('');
+    setCustomerFirstName('');
+    setCustomerLastName('');
     setCustomerEmail('');
     setCustomerPhone('');
     setSelectedLeadId(null);
@@ -397,22 +447,27 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     setBoostAddon(false);
     setFreeExtendedCover('none');
     setPaymentSource('');
-    setPaymentReference('');
     setPaymentAmount('');
     setExternalPaymentStep('details');
     setCompletionStatus({});
     setShowConfirmDialog(false);
+    setAssigneeId(currentAdminUserId);
+  };
+
+  const getAdminDisplayName = (admin: AdminUser) => {
+    const name = [admin.first_name, admin.last_name].filter(Boolean).join(' ');
+    return name || admin.email.split('@')[0];
   };
 
   return (
     <div className="space-y-6">
       {/* Step 1: Vehicle & Customer Lookup */}
-      <Card>
+      <Card className="border-border">
         <CardHeader>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5 text-green-600" />
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <CreditCard className="h-5 w-5 text-primary" />
                 Confirm External Payment
               </CardTitle>
               <CardDescription>
@@ -442,7 +497,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                   maxLength={8}
                 />
                 <Button 
-                  onClick={handleVehicleLookup}
+                  onClick={() => handleVehicleLookup()}
                   disabled={isLookingUp}
                   className="gap-2"
                 >
@@ -491,28 +546,36 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
           {/* Vehicle Details Display */}
           {vehicleData && (
-            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="p-4 bg-muted/50 border border-border rounded-lg">
               <div className="flex items-center gap-2 mb-2">
-                <Car className="h-4 w-4 text-green-600" />
-                <span className="font-semibold text-green-800">Vehicle Found</span>
+                <Car className="h-4 w-4 text-primary" />
+                <span className="font-semibold text-foreground">Vehicle Found</span>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-                <div><span className="text-green-600">Make:</span> {vehicleData.make}</div>
-                <div><span className="text-green-600">Model:</span> {vehicleData.model}</div>
-                <div><span className="text-green-600">Year:</span> {vehicleData.year}</div>
-                <div><span className="text-green-600">Fuel:</span> {vehicleData.fuelType}</div>
+                <div><span className="text-muted-foreground">Make:</span> {vehicleData.make}</div>
+                <div><span className="text-muted-foreground">Model:</span> {vehicleData.model}</div>
+                <div><span className="text-muted-foreground">Year:</span> {vehicleData.year}</div>
+                <div><span className="text-muted-foreground">Fuel:</span> {vehicleData.fuelType}</div>
               </div>
             </div>
           )}
 
-          {/* Customer Details */}
-          <div className="grid md:grid-cols-3 gap-4">
+          {/* Customer Details - Split first/last name */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <Label>Customer Name *</Label>
+              <Label>First Name *</Label>
               <Input
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="John Smith"
+                value={customerFirstName}
+                onChange={(e) => setCustomerFirstName(e.target.value)}
+                placeholder="John"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Last Name *</Label>
+              <Input
+                value={customerLastName}
+                onChange={(e) => setCustomerLastName(e.target.value)}
+                placeholder="Smith"
               />
             </div>
             <div className="space-y-2">
@@ -534,125 +597,178 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
             </div>
           </div>
 
+          {/* Assignee Selection */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <UserPlus className="w-4 h-4" />
+              Assign To
+            </Label>
+            <Select value={assigneeId} onValueChange={setAssigneeId}>
+              <SelectTrigger className="w-full md:w-[300px]">
+                <SelectValue placeholder="Select assignee..." />
+              </SelectTrigger>
+              <SelectContent>
+                {adminUsers.map((admin) => (
+                  <SelectItem key={admin.id} value={admin.id}>
+                    {getAdminDisplayName(admin)}
+                    {admin.id === currentAdminUserId && ' (You)'}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Policy Configuration */}
           {vehicleData && (
-            <div className="p-4 bg-muted/50 border rounded-lg space-y-4">
-              <h4 className="font-semibold flex items-center gap-2">
-                <Zap className="h-4 w-4" />
-                Policy Configuration
-              </h4>
-              
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Duration */}
-                <div className="space-y-2">
-                  <Label>Duration</Label>
-                  <Select value={paymentType} onValueChange={(v) => setPaymentType(v as PaymentPeriod)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {termOptions.map((opt) => (
-                        <SelectItem key={opt.id} value={opt.id}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                {/* Excess */}
-                <div className="space-y-2">
-                  <Label>Excess</Label>
-                  <Select value={excessAmount.toString()} onValueChange={(v) => setExcessAmount(parseInt(v))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {excessOptions.map((opt) => (
-                        <SelectItem key={opt} value={opt.toString()}>
-                          £{opt}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                {/* Claim Limit */}
-                <div className="space-y-2">
-                  <Label>Claim Limit</Label>
-                  <Select value={claimLimit.toString()} onValueChange={(v) => setClaimLimit(parseInt(v))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {claimLimitOptions.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value.toString()}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                {/* Labour Rate */}
-                <div className="space-y-2">
-                  <Label>Labour Rate</Label>
-                  <Select value={labourRate.toString()} onValueChange={(v) => setLabourRate(parseInt(v))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {labourRateOptions.map((opt) => (
-                        <SelectItem key={opt.rate} value={opt.rate.toString()}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            <div className="p-4 bg-muted/30 border border-border rounded-lg space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold flex items-center gap-2 text-foreground">
+                  <Zap className="h-4 w-4 text-primary" />
+                  Policy Configuration
+                </h4>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setIsEditingPolicyConfig(!isEditingPolicyConfig)}
+                  className="gap-1 text-primary hover:text-primary/80"
+                >
+                  <Edit className="w-3 h-3" />
+                  {isEditingPolicyConfig ? 'Done' : 'Edit'}
+                </Button>
               </div>
+              
+              {isEditingPolicyConfig ? (
+                <>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Duration */}
+                    <div className="space-y-2">
+                      <Label>Duration</Label>
+                      <Select value={paymentType} onValueChange={(v) => setPaymentType(v as PaymentPeriod)}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {termOptions.map((opt) => (
+                            <SelectItem key={opt.id} value={opt.id}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {/* Excess */}
+                    <div className="space-y-2">
+                      <Label>Excess</Label>
+                      <Select value={excessAmount.toString()} onValueChange={(v) => setExcessAmount(parseInt(v))}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {excessOptions.map((opt) => (
+                            <SelectItem key={opt} value={opt.toString()}>
+                              £{opt}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {/* Claim Limit */}
+                    <div className="space-y-2">
+                      <Label>Claim Limit</Label>
+                      <Select value={claimLimit.toString()} onValueChange={(v) => setClaimLimit(parseInt(v))}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {claimLimitOptions.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value.toString()}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {/* Labour Rate */}
+                    <div className="space-y-2">
+                      <Label>Labour Rate</Label>
+                      <Select value={labourRate.toString()} onValueChange={(v) => setLabourRate(parseInt(v))}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {labourRateOptions.map((opt) => (
+                            <SelectItem key={opt.rate} value={opt.rate.toString()}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
 
-              <div className="flex flex-wrap gap-4 pt-2">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="boost"
-                    checked={boostAddon}
-                    onCheckedChange={(c) => setBoostAddon(c === true)}
-                  />
-                  <Label htmlFor="boost" className="cursor-pointer">+£1,000 Boost (+£50)</Label>
+                  <div className="flex flex-wrap gap-4 pt-2">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="boost"
+                        checked={boostAddon}
+                        onCheckedChange={(c) => setBoostAddon(c === true)}
+                      />
+                      <Label htmlFor="boost" className="cursor-pointer">+£1,000 Boost (+£50)</Label>
+                    </div>
+                    
+                    <div className="flex items-center gap-4">
+                      <Label>Free Extended Cover:</Label>
+                      <Select value={freeExtendedCover} onValueChange={(v: any) => setFreeExtendedCover(v)}>
+                        <SelectTrigger className="w-[120px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">None</SelectItem>
+                          <SelectItem value="3months">+3 Months</SelectItem>
+                          <SelectItem value="6months">+6 Months</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                  <div><span className="text-muted-foreground">Plan:</span> <span className="font-medium">Platinum</span></div>
+                  <div>
+                    <span className="text-muted-foreground">Duration:</span>{' '}
+                    <span className="font-medium">{termOptions.find(t => t.id === paymentType)?.label}</span>
+                    {freeExtendedCover !== 'none' && (
+                      <span className="ml-1 text-primary text-xs">+ {freeExtendedCover === '3months' ? '3' : '6'} months FREE</span>
+                    )}
+                  </div>
+                  <div><span className="text-muted-foreground">Excess:</span> <span className="font-medium">£{excessAmount}</span></div>
+                  <div><span className="text-muted-foreground">Claim Limit:</span> <span className="font-medium">£{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}</span></div>
+                  <div><span className="text-muted-foreground">Labour Rate:</span> <span className="font-medium">£{labourRate}/hr</span></div>
+                  <div><span className="text-muted-foreground">Price:</span> <span className="font-bold text-foreground">£{currentPrice.totalPrice}</span></div>
                 </div>
-                
-                <div className="flex items-center gap-4">
-                  <Label>Free Extended Cover:</Label>
-                  <Select value={freeExtendedCover} onValueChange={(v: any) => setFreeExtendedCover(v)}>
-                    <SelectTrigger className="w-[120px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
-                      <SelectItem value="3months">+3 Months</SelectItem>
-                      <SelectItem value="6months">+6 Months</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+              )}
               
-              <div className="pt-2 border-t">
-                <p className="text-lg font-semibold">
-                  Total: £{currentPrice.totalPrice} 
-                  <span className="text-sm text-muted-foreground ml-2">
-                    (£{currentPrice.monthlyPrice}/month)
-                  </span>
-                </p>
-              </div>
+              {isEditingPolicyConfig && (
+                <div className="pt-2 border-t border-border">
+                  <p className="text-lg font-semibold text-foreground">
+                    Total: £{currentPrice.totalPrice} 
+                    <span className="text-sm text-muted-foreground ml-2">
+                      (£{currentPrice.monthlyPrice}/month)
+                    </span>
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
           {/* Confirm Button */}
           <Button 
             onClick={handleOpenConfirmDialog}
-            disabled={!vehicleData || !customerName || !customerEmail}
-            className="w-full bg-green-600 hover:bg-green-700 text-white gap-2"
+            disabled={!vehicleData || !customerFirstName || !customerLastName || !customerEmail}
+            className="w-full gap-2"
             size="lg"
           >
             <CheckCircle2 className="w-5 h-5" />
@@ -669,8 +785,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-green-600" />
+            <DialogTitle className="flex items-center gap-2 text-foreground">
+              <CheckCircle2 className="w-5 h-5 text-primary" />
               {externalPaymentStep === 'details' 
                 ? 'Confirm External Payment' 
                 : externalPaymentStep === 'preview' 
@@ -696,71 +812,85 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
           {externalPaymentStep === 'details' && (
             <div className="space-y-4">
               {/* Customer & Vehicle Details */}
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
-                <h4 className="font-semibold text-blue-900 flex items-center gap-2">
-                  <UserCheck className="w-4 h-4" />
+              <div className="p-4 bg-muted/30 border border-border rounded-lg space-y-3">
+                <h4 className="font-semibold text-foreground flex items-center gap-2">
+                  <UserCheck className="w-4 h-4 text-primary" />
                   Customer & Vehicle Details
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-xs text-blue-600">Customer Name *</Label>
+                    <Label className="text-xs text-muted-foreground">First Name *</Label>
                     <Input
-                      value={editableCustomerName}
-                      onChange={(e) => setEditableCustomerName(e.target.value)}
-                      className="bg-white"
+                      value={editableFirstName}
+                      onChange={(e) => setEditableFirstName(e.target.value)}
+                      className="bg-background"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-blue-600">Email *</Label>
+                    <Label className="text-xs text-muted-foreground">Last Name *</Label>
+                    <Input
+                      value={editableLastName}
+                      onChange={(e) => setEditableLastName(e.target.value)}
+                      className="bg-background"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Email *</Label>
                     <Input
                       value={editableCustomerEmail}
                       onChange={(e) => setEditableCustomerEmail(e.target.value)}
-                      className="bg-white"
+                      className="bg-background"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-blue-600">Phone</Label>
+                    <Label className="text-xs text-muted-foreground">Phone</Label>
                     <Input
                       value={editableCustomerPhone}
                       onChange={(e) => setEditableCustomerPhone(e.target.value)}
                       placeholder="07xxx xxxxxx"
-                      className="bg-white"
+                      className="bg-background"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-blue-600">Registration *</Label>
+                    <Label className="text-xs text-muted-foreground">Registration *</Label>
                     <Input
                       value={editableRegNumber}
                       onChange={(e) => setEditableRegNumber(e.target.value.toUpperCase())}
-                      className="bg-white font-mono"
+                      className="bg-background font-mono"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-blue-600">Vehicle</Label>
-                    <p className="text-sm text-blue-900 py-2">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
+                    <Label className="text-xs text-muted-foreground">Vehicle</Label>
+                    <p className="text-sm text-foreground py-2">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-blue-600">Mileage</Label>
+                    <Label className="text-xs text-muted-foreground">Mileage</Label>
                     <Input
                       value={editableMileage}
                       onChange={(e) => setEditableMileage(e.target.value.replace(/\D/g, ''))}
-                      className="bg-white"
+                      className="bg-background"
                     />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Assigned To</Label>
+                    <p className="text-sm text-foreground py-2">
+                      {adminUsers.find(a => a.id === assigneeId) ? getAdminDisplayName(adminUsers.find(a => a.id === assigneeId)!) : 'Unassigned'}
+                    </p>
                   </div>
                 </div>
               </div>
 
               {/* Address Section */}
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg space-y-3">
+              <div className="p-4 bg-muted/30 border border-border rounded-lg space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-amber-900">📍 Customer Address</h4>
+                  <h4 className="font-semibold text-foreground">📍 Customer Address</h4>
                   <div className="flex items-center gap-2">
                     <Checkbox
                       id="skip-address"
                       checked={skipAddressDetails}
                       onCheckedChange={(checked) => setSkipAddressDetails(checked === true)}
                     />
-                    <Label htmlFor="skip-address" className="text-xs text-amber-700 cursor-pointer">
+                    <Label htmlFor="skip-address" className="text-xs text-muted-foreground cursor-pointer">
                       Customer will complete in dashboard
                     </Label>
                   </div>
@@ -769,52 +899,52 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                 {!skipAddressDetails && (
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <Label className="text-xs text-amber-600">House/Building Number</Label>
+                      <Label className="text-xs text-muted-foreground">House/Building Number</Label>
                       <Input
                         value={customerBuildingNumber}
                         onChange={(e) => setCustomerBuildingNumber(e.target.value)}
-                        className="bg-white"
+                        className="bg-background"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs text-amber-600">Street</Label>
+                      <Label className="text-xs text-muted-foreground">Street</Label>
                       <Input
                         value={customerStreet}
                         onChange={(e) => setCustomerStreet(e.target.value)}
-                        className="bg-white"
+                        className="bg-background"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs text-amber-600">Town/City</Label>
+                      <Label className="text-xs text-muted-foreground">Town/City</Label>
                       <Input
                         value={customerTown}
                         onChange={(e) => setCustomerTown(e.target.value)}
-                        className="bg-white"
+                        className="bg-background"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs text-amber-600">County</Label>
+                      <Label className="text-xs text-muted-foreground">County</Label>
                       <Input
                         value={customerCounty}
                         onChange={(e) => setCustomerCounty(e.target.value)}
-                        className="bg-white"
+                        className="bg-background"
                       />
                     </div>
                     <div className="space-y-1 col-span-2">
-                      <Label className="text-xs text-amber-600">Postcode *</Label>
+                      <Label className="text-xs text-muted-foreground">Postcode *</Label>
                       <Input
                         value={customerPostcode}
                         onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())}
-                        className="bg-white w-1/2"
+                        className="bg-background w-1/2"
                       />
                     </div>
                   </div>
                 )}
                 
                 {skipAddressDetails && (
-                  <Alert className="bg-amber-100 border-amber-300">
-                    <Info className="h-4 w-4 text-amber-600" />
-                    <AlertDescription className="text-amber-800 text-sm">
+                  <Alert className="bg-muted/50 border-border">
+                    <Info className="h-4 w-4 text-muted-foreground" />
+                    <AlertDescription className="text-muted-foreground text-sm">
                       The customer will be prompted to complete their address in their dashboard.
                     </AlertDescription>
                   </Alert>
@@ -822,16 +952,16 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
               </div>
 
               {/* Policy Summary */}
-              <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg space-y-3">
+              <div className="p-4 bg-muted/30 border border-border rounded-lg space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-purple-900 flex items-center gap-2">
-                    <Zap className="w-4 h-4" />
+                  <h4 className="font-semibold text-foreground flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-primary" />
                     Policy Configuration
                   </h4>
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="text-purple-600 hover:text-purple-800 h-7 px-2"
+                    className="text-primary hover:text-primary/80 h-7 px-2"
                     onClick={() => setShowConfirmDialog(false)}
                   >
                     <Edit className="w-3 h-3 mr-1" />
@@ -839,17 +969,26 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                   </Button>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-purple-600">Plan:</span> Platinum</div>
+                  <div><span className="text-muted-foreground">Plan:</span> <span className="font-medium">Platinum</span></div>
                   <div>
-                    <span className="text-purple-600">Duration:</span> {termOptions.find(t => t.id === paymentType)?.label}
+                    <span className="text-muted-foreground">Duration:</span>{' '}
+                    <span className="font-medium">{termOptions.find(t => t.id === paymentType)?.label}</span>
                     {freeExtendedCover !== 'none' && (
-                      <span className="ml-1 text-green-600">+ {freeExtendedCover === '3months' ? '3' : '6'} months FREE</span>
+                      <span className="ml-1 text-primary text-xs">+ {freeExtendedCover === '3months' ? '3' : '6'} months FREE</span>
                     )}
                   </div>
-                  <div><span className="text-purple-600">Excess:</span> £{excessAmount}</div>
-                  <div><span className="text-purple-600">Claim Limit:</span> £{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}</div>
-                  <div><span className="text-purple-600">Labour Rate:</span> £{labourRate}/hr</div>
-                  <div><span className="text-purple-600">Price:</span> <strong>£{currentPrice.totalPrice}</strong></div>
+                  <div><span className="text-muted-foreground">Excess:</span> <span className="font-medium">£{excessAmount}</span></div>
+                  <div><span className="text-muted-foreground">Claim Limit:</span> <span className="font-medium">£{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}</span></div>
+                  <div><span className="text-muted-foreground">Labour Rate:</span> <span className="font-medium">£{labourRate}/hr</span></div>
+                  <div><span className="text-muted-foreground">Price:</span> <span className="font-bold">£{currentPrice.totalPrice}</span></div>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  <span>Included Add-ons: </span>
+                  <span className="font-medium text-foreground">
+                    {getAutoIncludedAddOns(paymentType).length > 0 
+                      ? getAutoIncludedAddOns(paymentType).map(a => a.charAt(0).toUpperCase() + a.slice(1)).join(', ')
+                      : 'None'}
+                  </span>
                 </div>
               </div>
 
@@ -860,7 +999,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                   <select
                     value={paymentSource}
                     onChange={(e) => setPaymentSource(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-md bg-background"
+                    className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
                   >
                     <option value="">Select payment source...</option>
                     <option value="stripe_dashboard">Stripe Dashboard</option>
@@ -872,7 +1011,6 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                   </select>
                 </div>
 
-
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Amount Received (£) *</Label>
@@ -883,7 +1021,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                       placeholder={currentPrice.totalPrice.toString()}
                     />
                     {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
-                      <p className="text-xs text-amber-600">
+                      <p className="text-xs text-destructive">
                         ⚠️ Differs from quoted price (£{currentPrice.totalPrice})
                       </p>
                     )}
@@ -919,7 +1057,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
               <div className="flex flex-wrap gap-4">
                 <div className="flex items-center gap-2">
                   <Checkbox id="w2k" checked={sendToW2k} onCheckedChange={(c) => setSendToW2k(c === true)} />
-                  <Label htmlFor="w2k" className="cursor-pointer">Send to register warranty</Label>
+                  <Label htmlFor="w2k" className="cursor-pointer">Send to register</Label>
                 </div>
                 <div className="flex items-center gap-2">
                   <Checkbox id="welcome" checked={sendWelcomeEmail} onCheckedChange={(c) => setSendWelcomeEmail(c === true)} />
@@ -931,7 +1069,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                 <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
                   Cancel
                 </Button>
-                <Button onClick={handleProceedToPreview} className="bg-green-600 hover:bg-green-700">
+                <Button onClick={handleProceedToPreview}>
                   Review & Confirm
                 </Button>
               </DialogFooter>
@@ -940,29 +1078,29 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
           {externalPaymentStep === 'preview' && (
             <div className="space-y-4">
-              <Alert className="bg-blue-50 border-blue-200">
-                <Info className="h-4 w-4 text-blue-600" />
-                <AlertDescription className="text-blue-800">
+              <Alert className="bg-muted/30 border-border">
+                <Info className="h-4 w-4 text-primary" />
+                <AlertDescription className="text-foreground">
                   Please review all details before confirming. This will create a policy and customer record.
                 </AlertDescription>
               </Alert>
 
               <div className="space-y-3 text-sm">
-                <div className="grid grid-cols-2 gap-2 p-3 bg-muted rounded">
-                  <div><strong>Customer:</strong> {editableCustomerName}</div>
+                <div className="grid grid-cols-2 gap-2 p-3 bg-muted/30 rounded border border-border">
+                  <div><strong>Customer:</strong> {editableFirstName} {editableLastName}</div>
                   <div><strong>Email:</strong> {editableCustomerEmail}</div>
                   <div><strong>Vehicle:</strong> {editableRegNumber}</div>
                   <div><strong>Mileage:</strong> {parseInt(editableMileage).toLocaleString()}</div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 p-3 bg-muted rounded">
+                <div className="grid grid-cols-2 gap-2 p-3 bg-muted/30 rounded border border-border">
                   <div><strong>Duration:</strong> {termOptions.find(t => t.id === paymentType)?.label}</div>
                   <div><strong>Claim Limit:</strong> £{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}</div>
                   <div><strong>Start Date:</strong> {format(warrantyStartDate, 'd MMM yyyy')}</div>
                   <div><strong>Amount:</strong> £{paymentAmount}</div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 p-3 bg-muted rounded">
+                <div className="grid grid-cols-2 gap-2 p-3 bg-muted/30 rounded border border-border">
                   <div><strong>Payment Source:</strong> {paymentSource}</div>
-                  <div><strong>Reference:</strong> {paymentReference}</div>
+                  <div><strong>Assigned To:</strong> {adminUsers.find(a => a.id === assigneeId) ? getAdminDisplayName(adminUsers.find(a => a.id === assigneeId)!) : 'Unassigned'}</div>
                 </div>
               </div>
 
@@ -973,7 +1111,6 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                 <Button 
                   onClick={handleConfirmPayment}
                   disabled={isConfirming}
-                  className="bg-green-600 hover:bg-green-700"
                 >
                   {isConfirming ? (
                     <>
@@ -994,37 +1131,49 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
           {externalPaymentStep === 'complete' && (
             <div className="space-y-4">
               <div className="text-center py-4">
-                <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-green-700">Payment Confirmed!</h3>
+                <CheckCircle2 className="w-16 h-16 text-primary mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-foreground">Payment Confirmed!</h3>
                 <p className="text-muted-foreground">Policy has been created successfully</p>
               </div>
 
-              <div className="space-y-2">
-                {completionStatus.policy && (
-                  <div className="flex items-center gap-2 text-green-600">
-                    <CheckCircle2 className="w-4 h-4" /> Policy created
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className={cn(
+                  "p-3 rounded-lg border flex items-center gap-2",
+                  completionStatus.customer ? "bg-primary/10 border-primary/20" : "bg-muted/30 border-border"
+                )}>
+                  <CheckCircle2 className={cn("w-4 h-4", completionStatus.customer ? "text-primary" : "text-muted-foreground")} />
+                  <span>Customer Record</span>
+                </div>
+                <div className={cn(
+                  "p-3 rounded-lg border flex items-center gap-2",
+                  completionStatus.policy ? "bg-primary/10 border-primary/20" : "bg-muted/30 border-border"
+                )}>
+                  <CheckCircle2 className={cn("w-4 h-4", completionStatus.policy ? "text-primary" : "text-muted-foreground")} />
+                  <span>Policy Created</span>
+                </div>
+                {sendToW2k && (
+                  <div className={cn(
+                    "p-3 rounded-lg border flex items-center gap-2",
+                    completionStatus.w2k ? "bg-primary/10 border-primary/20" : "bg-muted/30 border-border"
+                  )}>
+                    <CheckCircle2 className={cn("w-4 h-4", completionStatus.w2k ? "text-primary" : "text-muted-foreground")} />
+                    <span>Sent to Register</span>
                   </div>
                 )}
-                {completionStatus.customer && (
-                  <div className="flex items-center gap-2 text-green-600">
-                    <CheckCircle2 className="w-4 h-4" /> Customer account created
-                  </div>
-                )}
-                {completionStatus.w2k && (
-                  <div className="flex items-center gap-2 text-green-600">
-                    <CheckCircle2 className="w-4 h-4" /> Sent to Warranties 2000
-                  </div>
-                )}
-                {completionStatus.email && (
-                  <div className="flex items-center gap-2 text-green-600">
-                    <CheckCircle2 className="w-4 h-4" /> Welcome email sent
+                {sendWelcomeEmail && (
+                  <div className={cn(
+                    "p-3 rounded-lg border flex items-center gap-2",
+                    completionStatus.email ? "bg-primary/10 border-primary/20" : "bg-muted/30 border-border"
+                  )}>
+                    <CheckCircle2 className={cn("w-4 h-4", completionStatus.email ? "text-primary" : "text-muted-foreground")} />
+                    <span>Welcome Email</span>
                   </div>
                 )}
               </div>
 
               <DialogFooter>
-                <Button onClick={resetForm} className="w-full">
-                  Confirm Another Payment
+                <Button onClick={resetForm}>
+                  Create Another
                 </Button>
               </DialogFooter>
             </div>
@@ -1034,5 +1183,3 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     </div>
   );
 };
-
-export default ConfirmExternalPaymentTab;
