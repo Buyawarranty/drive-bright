@@ -30,6 +30,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   const [phone, setPhone] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [firstNameError, setFirstNameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
@@ -89,10 +90,17 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
 
   const handleSubmit = async () => {
     setHasAttemptedSubmit(true);
+    setFirstNameError('');
     setEmailError('');
     setPhoneError('');
     
     // Validate and show errors
+    if (!firstName.trim()) {
+      setFirstNameError('Please enter your first name');
+    } else if (!isValidFirstName) {
+      setFirstNameError('First name must be at least 2 characters');
+    }
+    
     if (!email.trim()) {
       setEmailError('Please enter your email address');
     } else if (!isValidEmail) {
@@ -285,11 +293,15 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               {vehicleData.regNumber}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-900 text-sm sm:text-base">
-                {vehicleData.make} {vehicleData.model}
-              </p>
+              {(vehicleData.make || vehicleData.model) && (
+                <p className="font-semibold text-gray-900 text-sm sm:text-base">
+                  {vehicleData.make} {vehicleData.model} {vehicleData.year && `(${vehicleData.year})`}
+                </p>
+              )}
               <p className="text-xs sm:text-sm text-gray-500 truncate">
-                {vehicleData.year} • {parseInt(vehicleData.mileage) <= 120000 ? 'Under 120k miles' : 'Over 120k miles'} • {vehicleData.fuelType}
+                {parseInt(vehicleData.mileage) <= 120000 ? 'Under 120,000 miles' : 'Over 120,000 miles'}
+                {vehicleData.fuelType && ` • ${vehicleData.fuelType}`}
+                {vehicleData.transmission && ` • ${vehicleData.transmission}`}
               </p>
             </div>
             <button
@@ -323,10 +335,15 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 type="text"
                 placeholder="e.g. John"
                 value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                onChange={(e) => {
+                  setFirstName(e.target.value);
+                  setFirstNameError('');
+                }}
                 autoComplete="given-name"
                 data-ga4-event="step2_firstname_input"
-                className="w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 border-gray-300 text-gray-700 font-bold"
+                className={`w-full pl-12 pr-12 py-4 text-base placeholder:text-gray-500 border-2 rounded-xl focus:ring-0 focus:border-gray-500 focus:shadow-sm transition-all bg-gray-100 text-gray-700 font-bold ${
+                  hasAttemptedSubmit && !isValidFirstName ? 'border-red-500' : 'border-gray-300'
+                }`}
               />
               {firstName && isValidFirstName && (
                 <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
@@ -334,6 +351,12 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
                 </div>
               )}
             </div>
+            {firstNameError && (
+              <p className="text-red-500 text-sm mt-1.5 flex items-center gap-1">
+                <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
+                {firstNameError}
+              </p>
+            )}
           </div>
 
           {/* Email Input - Shown by default */}
