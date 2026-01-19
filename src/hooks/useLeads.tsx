@@ -287,33 +287,9 @@ export const useLeads = () => {
         };
       });
 
-      // Combine and sort: leads with follow-up dates due today appear first, then by created_at
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-
+      // Combine and sort by created_at (newest first)
       const allLeads = [...salesLeadsWithFlags, ...cartsAsLeads]
-        .sort((a, b) => {
-          const aFollowUp = a.next_action_date ? new Date(a.next_action_date) : null;
-          const bFollowUp = b.next_action_date ? new Date(b.next_action_date) : null;
-          
-          // Check if follow-up is due today or overdue
-          const aIsDueToday = aFollowUp && aFollowUp < tomorrow;
-          const bIsDueToday = bFollowUp && bFollowUp < tomorrow;
-          
-          // Leads with follow-up due today/overdue come first
-          if (aIsDueToday && !bIsDueToday) return -1;
-          if (!aIsDueToday && bIsDueToday) return 1;
-          
-          // If both have follow-ups due, sort by follow-up date (earliest first)
-          if (aIsDueToday && bIsDueToday && aFollowUp && bFollowUp) {
-            return aFollowUp.getTime() - bFollowUp.getTime();
-          }
-          
-          // Otherwise sort by created_at (newest first)
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        });
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       // Calculate application count per email (how many times this email has applied)
       const emailCounts: Record<string, number> = {};
