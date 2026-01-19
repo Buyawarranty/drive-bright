@@ -721,64 +721,93 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           <MobileNavigation />
         </div>
 
-        {/* Page Title */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Review and Pay</h1>
-          <p className="text-muted-foreground mt-1">Almost there — just a few quick details</p>
-        </div>
-
         <div className="space-y-5">
-          {/* SECTION 1: PLAN SUMMARY (Non-clickable pricing) */}
+          {/* SECTION 1: PLAN SUMMARY - Old Format Style */}
           <Card className="border border-border shadow-sm overflow-hidden bg-card">
             <CardContent className="p-4 sm:p-6">
-              {/* Plan Header */}
+              {/* Header with Plan Title and Change Button */}
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 border border-primary/20">
-                    <Shield className="w-6 h-6 text-primary" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                    <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                   </div>
-                  <div>
-                    <h2 className="text-lg font-bold text-foreground">{formatPlanName()} Plan</h2>
-                    <p className="text-sm text-muted-foreground">{getDurationText()} • {vehicleData.regNumber?.toUpperCase()}</p>
-                  </div>
+                  <h2 className="text-lg sm:text-xl font-bold text-foreground">
+                    Your {formatPlanName().toLowerCase()} vehicle plan is ready
+                  </h2>
                 </div>
                 <Button 
-                  variant="ghost" 
+                  variant="outline" 
                   size="sm"
                   onClick={onBack}
-                  className="text-primary hover:text-primary/90 hover:bg-primary/5 text-sm font-medium"
+                  className="text-foreground hover:bg-muted text-sm font-medium border-border"
                 >
                   <Edit className="w-3.5 h-3.5 mr-1.5" />
                   Change
                 </Button>
               </div>
-              
-              {/* Pricing Summary Card (Non-interactive) */}
-              <div className="bg-muted/50 rounded-xl p-4 sm:p-5 border border-border">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">Price Summary</p>
-                <div className="flex flex-col sm:flex-row sm:items-stretch gap-4 sm:gap-0">
-                  {/* Monthly Side */}
-                  <div className="flex-1 sm:pr-5">
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-3xl sm:text-4xl font-bold text-foreground">£{monthlyPrice}</span>
-                      <span className="text-base text-muted-foreground font-medium">/month</span>
-                    </div>
-                    <p className="text-sm text-foreground/70 mt-1">12 monthly payments • 0% APR</p>
-                  </div>
-                  
-                  {/* Divider */}
-                  <div className="hidden sm:block w-px bg-border my-1"></div>
-                  <div className="sm:hidden border-t border-border"></div>
-                  
-                  {/* Pay in Full Side */}
-                  <div className="flex-1 sm:pl-5">
-                    <div className="flex items-baseline gap-2 flex-wrap">
-                      <span className="text-2xl sm:text-3xl font-bold text-foreground">£{stripeTotalPrice}</span>
-                      <span className="text-sm font-semibold text-[hsl(var(--success))] bg-[hsl(var(--success)/0.1)] px-2 py-0.5 rounded-full">Save £{savings}</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      <span className="line-through decoration-1">Was £{bumperTotalPrice}</span>
+
+              {/* 14-day Refund Banner */}
+              <div className="bg-[hsl(var(--success)/0.1)] border border-[hsl(var(--success)/0.2)] rounded-lg p-3 mb-5">
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-[hsl(var(--success))] flex-shrink-0" />
+                  <p className="text-sm text-foreground">Cancel anytime within 14 days for a full refund</p>
+                </div>
+              </div>
+
+              {/* Plan Details Table */}
+              <div className="space-y-3 mb-5">
+                <div className="flex justify-between items-center py-1.5 border-b border-border/50">
+                  <span className="text-muted-foreground text-sm">Plan:</span>
+                  <span className="font-semibold text-foreground">{formatPlanName()}</span>
+                </div>
+                <div className="flex justify-between items-center py-1.5 border-b border-border/50">
+                  <span className="text-muted-foreground text-sm">Duration:</span>
+                  <span className="font-semibold text-foreground">{getDurationText()}</span>
+                </div>
+                <div className="flex justify-between items-center py-1.5 border-b border-border/50">
+                  <span className="text-muted-foreground text-sm">Vehicle:</span>
+                  <span className="font-semibold text-foreground uppercase">{vehicleData.make} {vehicleData.model || ''}</span>
+                </div>
+                <div className="flex justify-between items-center py-1.5 border-b border-border/50">
+                  <span className="text-muted-foreground text-sm">Claim Limit:</span>
+                  <span className="font-semibold text-foreground">£{(updatedPricingData.claimLimit || 1250).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center py-1.5 border-b border-border/50">
+                  <span className="text-muted-foreground text-sm">Labour Rate:</span>
+                  <span className="font-semibold text-foreground">£{updatedPricingData.labourRate || 70}/hour</span>
+                </div>
+                <div className="flex justify-between items-center py-1.5 border-b border-border/50">
+                  <span className="text-muted-foreground text-sm">Excess:</span>
+                  <span className="font-semibold text-foreground">£{updatedPricingData.voluntaryExcess || 100}</span>
+                </div>
+                <div className="flex justify-between items-center py-1.5">
+                  <span className="text-muted-foreground text-sm">Registration:</span>
+                  <span className="font-semibold text-foreground uppercase">{vehicleData.regNumber}</span>
+                </div>
+              </div>
+
+              {/* Pricing Options - Two Separate Boxes */}
+              <div className="space-y-3">
+                {/* Pay Monthly Box */}
+                <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+                  <p className="text-foreground">
+                    <span className="font-bold">Pay Monthly: £{monthlyPrice}/month</span>
+                    {' '}
+                    <span className="text-muted-foreground">Total £{bumperTotalPrice} – 0% APR, 12 payments</span>
+                  </p>
+                </div>
+
+                {/* Pay in Full Box */}
+                <div className="bg-[hsl(var(--success)/0.05)] border border-[hsl(var(--success)/0.2)] rounded-lg p-4">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <p className="text-foreground">
+                      <span className="font-bold">Pay in Full: £{stripeTotalPrice}</span>
+                      {' '}
+                      <span className="text-muted-foreground">(Was £{bumperTotalPrice}, Now £{stripeTotalPrice} with extra 10% off)</span>
                     </p>
+                    <span className="bg-[hsl(var(--success))] text-[hsl(var(--success-foreground))] text-xs font-bold px-2.5 py-1 rounded uppercase">
+                      Best Value
+                    </span>
                   </div>
                 </div>
               </div>
