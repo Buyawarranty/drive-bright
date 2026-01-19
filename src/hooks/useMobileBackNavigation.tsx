@@ -232,6 +232,10 @@ export const useMobileBackNavigation = ({
     window.history.pushState({ step: currentStep }, '', currentUrl);
   }, [currentStep, journeyId]);
 
+  // Track if we've already pushed a guard entry for this session
+  const hasInitializedHistoryRef = useRef(false);
+  const lastPushedStepRef = useRef<number | null>(null);
+
   useEffect(() => {
     console.log('📱 Setting up mobile navigation listeners for step', currentStep);
     
@@ -250,10 +254,14 @@ export const useMobileBackNavigation = ({
       console.log('📱 Set history state for step', urlStep);
     }
     
-    // Push an extra entry so back button has something to catch
-    // This is the key to preventing leaving the site
-    window.history.pushState({ step: urlStep, guard: true }, '', window.location.href);
-    console.log('📱 Pushed guard entry for step', urlStep);
+    // Only push guard entry once per step to prevent history pollution
+    // This prevents slow loading when returning from external sites like Stripe
+    if (!hasInitializedHistoryRef.current || lastPushedStepRef.current !== urlStep) {
+      window.history.pushState({ step: urlStep, guard: true }, '', window.location.href);
+      console.log('📱 Pushed guard entry for step', urlStep);
+      hasInitializedHistoryRef.current = true;
+      lastPushedStepRef.current = urlStep;
+    }
     
     // Listen for popstate events (back/forward button presses)
     window.addEventListener('popstate', handleBackNavigation);
@@ -261,19 +269,25 @@ export const useMobileBackNavigation = ({
     // iOS Safari specific: handle bfcache
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
-        console.log('📱 Page restored from bfcache');
+        console.log('📱 Page restored from bfcache - fast path');
         // Reset state when page comes back from bfcache
         isLeavingRef.current = false;
         isHandlingBackRef.current = false;
         setHasShownConfirmOnThisStep(false);
         
-        // Re-establish proper history state
+        // Re-establish proper history state WITHOUT pushing new entries
+        // This is the key fix - we only replaceState, not pushState
         const urlParams = new URLSearchParams(window.location.search);
         const urlStep = parseInt(urlParams.get('step') || '1');
         
-        // Ensure history state
+        // Just ensure history state is correct, don't push more entries
         window.history.replaceState({ step: urlStep }, '', window.location.href);
-        window.history.pushState({ step: urlStep, guard: true }, '', window.location.href);
+        
+        // Only push a guard entry if we don't already have one
+        if (lastPushedStepRef.current !== urlStep) {
+          window.history.pushState({ step: urlStep, guard: true }, '', window.location.href);
+          lastPushedStepRef.current = urlStep;
+        }
       }
     };
     
