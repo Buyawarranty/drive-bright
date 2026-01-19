@@ -703,7 +703,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   );
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
         {/* Back Link */}
         <div className="flex items-center justify-between mb-6">
@@ -713,7 +713,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               localStorage.removeItem('buyawarranty_originalPricingData');
               onBack();
             }}
-            className="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-3 py-2 -ml-2"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted px-3 py-2 -ml-2"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Plan Selection</span>
@@ -723,30 +723,30 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
         {/* Page Title */}
         <div className="text-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Review and Pay</h1>
-          <p className="text-slate-500 mt-1">Almost there — just a few quick details</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Review and Pay</h1>
+          <p className="text-muted-foreground mt-1">Almost there — just a few quick details</p>
         </div>
 
         <div className="space-y-5">
           {/* SECTION 1: PLAN SUMMARY (Non-clickable pricing) */}
-          <Card className="border border-slate-200 shadow-sm overflow-hidden">
+          <Card className="border border-border shadow-sm overflow-hidden bg-card">
             <CardContent className="p-4 sm:p-6">
               {/* Plan Header */}
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center flex-shrink-0 border border-orange-200">
-                    <Shield className="w-6 h-6 text-orange-600" />
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                    <Shield className="w-6 h-6 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-slate-900">{formatPlanName()} Plan</h2>
-                    <p className="text-sm text-slate-500">{getDurationText()} • {vehicleData.regNumber?.toUpperCase()}</p>
+                    <h2 className="text-lg font-bold text-foreground">{formatPlanName()} Plan</h2>
+                    <p className="text-sm text-muted-foreground">{getDurationText()} • {vehicleData.regNumber?.toUpperCase()}</p>
                   </div>
                 </div>
                 <Button 
                   variant="ghost" 
                   size="sm"
                   onClick={onBack}
-                  className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 text-sm font-medium"
+                  className="text-primary hover:text-primary/90 hover:bg-primary/5 text-sm font-medium"
                 >
                   <Edit className="w-3.5 h-3.5 mr-1.5" />
                   Change
@@ -754,29 +754,29 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               </div>
               
               {/* Pricing Summary Card (Non-interactive) */}
-              <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 rounded-xl p-4 sm:p-5 border border-slate-200">
-                <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Price Summary</p>
+              <div className="bg-muted/50 rounded-xl p-4 sm:p-5 border border-border">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">Price Summary</p>
                 <div className="flex flex-col sm:flex-row sm:items-stretch gap-4 sm:gap-0">
                   {/* Monthly Side */}
                   <div className="flex-1 sm:pr-5">
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-3xl sm:text-4xl font-bold text-slate-900">£{monthlyPrice}</span>
-                      <span className="text-base text-slate-500 font-medium">/month</span>
+                      <span className="text-3xl sm:text-4xl font-bold text-foreground">£{monthlyPrice}</span>
+                      <span className="text-base text-muted-foreground font-medium">/month</span>
                     </div>
-                    <p className="text-sm text-slate-600 mt-1">12 monthly payments • 0% APR</p>
+                    <p className="text-sm text-foreground/70 mt-1">12 monthly payments • 0% APR</p>
                   </div>
                   
                   {/* Divider */}
-                  <div className="hidden sm:block w-px bg-slate-200 my-1"></div>
-                  <div className="sm:hidden border-t border-slate-200"></div>
+                  <div className="hidden sm:block w-px bg-border my-1"></div>
+                  <div className="sm:hidden border-t border-border"></div>
                   
                   {/* Pay in Full Side */}
                   <div className="flex-1 sm:pl-5">
                     <div className="flex items-baseline gap-2 flex-wrap">
-                      <span className="text-2xl sm:text-3xl font-bold text-slate-900">£{stripeTotalPrice}</span>
-                      <span className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Save £{savings}</span>
+                      <span className="text-2xl sm:text-3xl font-bold text-foreground">£{stripeTotalPrice}</span>
+                      <span className="text-sm font-semibold text-[hsl(var(--success))] bg-[hsl(var(--success)/0.1)] px-2 py-0.5 rounded-full">Save £{savings}</span>
                     </div>
-                    <p className="text-sm text-slate-500 mt-1">
+                    <p className="text-sm text-muted-foreground mt-1">
                       <span className="line-through decoration-1">Was £{bumperTotalPrice}</span>
                     </p>
                   </div>
@@ -786,7 +786,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           </Card>
 
           {/* SECTION 2: COVER START DATE */}
-          <Card className="border border-slate-200 shadow-sm overflow-hidden">
+          <Card className="border border-border shadow-sm overflow-hidden bg-card">
             <CardContent className="p-4 sm:p-5">
               <StartDatePicker
                 value={startDate}
@@ -806,29 +806,29 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           </Card>
 
           {/* SECTION 3: YOUR DETAILS (Collapsible) */}
-          <Card id="customer-form" className="border border-slate-200 shadow-sm overflow-hidden">
+          <Card id="customer-form" className="border border-border shadow-sm overflow-hidden bg-card">
             <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
               <CollapsibleTrigger className="w-full">
-                <div className="flex items-center justify-between p-4 sm:p-5 hover:bg-slate-50/50 transition-colors">
+                <div className="flex items-center justify-between p-4 sm:p-5 hover:bg-muted/30 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
                       personalDetailsComplete 
-                        ? 'bg-green-100 border border-green-200' 
+                        ? 'bg-[hsl(var(--success)/0.15)] border border-[hsl(var(--success)/0.3)]' 
                         : showValidation && !personalDetailsComplete 
-                        ? 'bg-red-100 border border-red-200' 
-                        : 'bg-slate-100 border border-slate-200'
+                        ? 'bg-destructive/10 border border-destructive/20' 
+                        : 'bg-muted border border-border'
                     }`}>
                       <User className={`w-5 h-5 ${
                         personalDetailsComplete 
-                          ? 'text-green-600' 
+                          ? 'text-[hsl(var(--success))]' 
                           : showValidation && !personalDetailsComplete 
-                          ? 'text-red-600' 
-                          : 'text-slate-600'
+                          ? 'text-destructive' 
+                          : 'text-muted-foreground'
                       }`} />
                     </div>
                     <div className="text-left">
-                      <h3 className="font-semibold text-slate-900">Your Details</h3>
-                      <p className="text-sm text-slate-500">Just 5 quick fields to complete</p>
+                      <h3 className="font-semibold text-foreground">Your Details</h3>
+                      <p className="text-sm text-muted-foreground">Just 5 quick fields to complete</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -837,7 +837,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         ? <SectionErrorBadge count={personalDetailsMissing} />
                         : personalDetailsComplete && <SectionCompleteBadge />
                     )}
-                    <div className="text-slate-400">
+                    <div className="text-muted-foreground">
                       {detailsOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                     </div>
                   </div>
@@ -845,12 +845,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               </CollapsibleTrigger>
               
               <CollapsibleContent>
-                <div className="px-4 sm:px-5 pb-5 space-y-4 border-t border-slate-100 pt-4">
+                <div className="px-4 sm:px-5 pb-5 space-y-4 border-t border-border/50 pt-4">
                   {/* Name Fields - Side by Side */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* First Name */}
                     <div>
-                      <Label htmlFor="first_name" className="text-sm font-medium text-slate-700">First Name *</Label>
+                      <Label htmlFor="first_name" className="text-sm font-medium text-foreground/80">First Name *</Label>
                       <div className="relative mt-1.5">
                         <Input
                           id="first_name"
@@ -862,11 +862,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           className={`h-12 text-base ${getInputValidationClass('first_name')}`}
                         />
                         {validatedFields.first_name && !fieldErrors.first_name && (
-                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                         )}
                       </div>
                       {showValidation && fieldErrors.first_name && (
-                        <p className="text-red-600 text-sm mt-1.5 flex items-center gap-1">
+                        <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                           <AlertCircle className="w-3.5 h-3.5" />
                           {fieldErrors.first_name}
                         </p>
@@ -875,7 +875,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
                     {/* Last Name */}
                     <div>
-                      <Label htmlFor="last_name" className="text-sm font-medium text-slate-700">Last Name *</Label>
+                      <Label htmlFor="last_name" className="text-sm font-medium text-foreground/80">Last Name *</Label>
                       <div className="relative mt-1.5">
                         <Input
                           id="last_name"
@@ -887,11 +887,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           className={`h-12 text-base ${getInputValidationClass('last_name')}`}
                         />
                         {validatedFields.last_name && !fieldErrors.last_name && (
-                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                         )}
                       </div>
                       {showValidation && fieldErrors.last_name && (
-                        <p className="text-red-600 text-sm mt-1.5 flex items-center gap-1">
+                        <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                           <AlertCircle className="w-3.5 h-3.5" />
                           {fieldErrors.last_name}
                         </p>
@@ -901,8 +901,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
                   {/* Email */}
                   <div>
-                    <Label htmlFor="email" className="text-sm font-medium text-slate-700">Email Address *</Label>
-                    <p className="text-xs text-slate-500 mt-0.5 mb-1.5">We'll send your policy documents here</p>
+                    <Label htmlFor="email" className="text-sm font-medium text-foreground/80">Email Address *</Label>
+                    <p className="text-xs text-muted-foreground mt-0.5 mb-1.5">We'll send your policy documents here</p>
                     <div className="relative">
                       <Input
                         id="email"
@@ -915,11 +915,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         className={`h-12 text-base ${getInputValidationClass('email')}`}
                       />
                       {validatedFields.email && !fieldErrors.email && (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                       )}
                     </div>
                     {showValidation && fieldErrors.email && (
-                      <p className="text-red-600 text-sm mt-1.5 flex items-center gap-1">
+                      <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5" />
                         {fieldErrors.email}
                       </p>
@@ -928,7 +928,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
                   {/* Phone */}
                   <div>
-                    <Label htmlFor="phone" className="text-sm font-medium text-slate-700">Phone Number *</Label>
+                    <Label htmlFor="phone" className="text-sm font-medium text-foreground/80">Phone Number *</Label>
                     <div className="relative mt-1.5">
                       <Input
                         id="phone"
@@ -941,11 +941,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         className={`h-12 text-base ${getInputValidationClass('phone')}`}
                       />
                       {validatedFields.phone && !fieldErrors.phone && (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                       )}
                     </div>
                     {showValidation && fieldErrors.phone && (
-                      <p className="text-red-600 text-sm mt-1.5 flex items-center gap-1">
+                      <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5" />
                         {fieldErrors.phone}
                       </p>
@@ -954,7 +954,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
                   {/* Mileage */}
                   <div>
-                    <Label htmlFor="mileage" className="text-sm font-medium text-slate-700">Current Mileage *</Label>
+                    <Label htmlFor="mileage" className="text-sm font-medium text-foreground/80">Current Mileage *</Label>
                     <div className="flex gap-2 mt-1.5">
                       <div className="relative flex-1">
                         <Input
@@ -972,7 +972,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           className={`h-12 text-base ${getInputValidationClass('mileage')}`}
                         />
                         {validatedFields.mileage && !fieldErrors.mileage && (
-                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                         )}
                       </div>
                       <select
@@ -983,7 +983,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             setValidatedFields(prev => ({ ...prev, mileage: true }));
                           }
                         }}
-                        className="h-12 px-3 rounded-lg border border-slate-200 bg-white text-sm cursor-pointer hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="h-12 px-3 rounded-lg border border-border bg-card text-sm cursor-pointer hover:border-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary"
                       >
                         <option value="">Quick</option>
                         {Array.from({ length: 131 }, (_, i) => {
@@ -993,14 +993,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       </select>
                     </div>
                     {customerData.mileage && Number(customerData.mileage) > 150000 && (
-                      <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-2">
-                        <p className="text-red-600 text-sm font-medium">
+                      <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2 mt-2">
+                        <p className="text-destructive text-sm font-medium">
                           Sorry, we only cover vehicles under 150,000 miles.
                         </p>
                       </div>
                     )}
                     {showValidation && fieldErrors.mileage && (
-                      <p className="text-red-600 text-sm mt-1.5 flex items-center gap-1">
+                      <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5" />
                         {fieldErrors.mileage}
                       </p>
@@ -1008,14 +1008,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   </div>
 
                   {/* Address Info Message */}
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                  <div className="bg-muted/50 border border-border rounded-xl p-4">
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <MapPin className="w-4 h-4 text-slate-500" />
+                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <MapPin className="w-4 h-4 text-muted-foreground" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-700">No address needed at checkout</p>
-                        <p className="text-xs text-slate-500 mt-1">
+                        <p className="text-sm font-medium text-foreground/80">No address needed at checkout</p>
+                        <p className="text-xs text-muted-foreground mt-1">
                           You can update your address later in your customer dashboard if required for claims.
                         </p>
                       </div>
@@ -1029,15 +1029,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           {/* SECTION 4: CHOOSE PAYMENT (Radio-style selection) */}
           <div id="payment-section" className="space-y-4">
             <div className="text-center">
-              <h2 className="text-xl font-bold text-slate-900">Choose Payment</h2>
-              <p className="text-sm text-slate-500 mt-1">Select how you'd like to pay</p>
+              <h2 className="text-xl font-bold text-foreground">Choose Payment</h2>
+              <p className="text-sm text-muted-foreground mt-1">Select how you'd like to pay</p>
             </div>
 
             {/* Payment Error Message */}
             {paymentError && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-                <p className="text-red-700 text-sm font-medium">{paymentError}</p>
+              <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
+                <p className="text-destructive text-sm font-medium">{paymentError}</p>
               </div>
             )}
 
@@ -1052,49 +1052,49 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 }}
                 className={`relative text-left p-5 sm:p-6 rounded-2xl border-2 transition-all duration-200 ${
                   selectedPayment === 'monthly'
-                    ? 'border-orange-500 bg-orange-50/80 shadow-lg ring-1 ring-orange-200'
-                    : 'border-slate-200 bg-white hover:border-orange-300 hover:shadow-md'
+                    ? 'border-primary bg-primary/5 shadow-lg ring-1 ring-primary/20'
+                    : 'border-border bg-card hover:border-primary/50 hover:shadow-md'
                 }`}
               >
                 {/* Badge */}
-                <span className="absolute -top-3 left-4 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                <span className="absolute -top-3 left-4 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full shadow-sm">
                   0% APR
                 </span>
 
                 <div className="flex items-start gap-3 mt-1">
                   <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-all ${
                     selectedPayment === 'monthly' 
-                      ? 'border-orange-500 bg-orange-500' 
-                      : 'border-slate-300 bg-white'
+                      ? 'border-primary bg-primary' 
+                      : 'border-muted-foreground/30 bg-card'
                   }`}>
                     {selectedPayment === 'monthly' && (
-                      <Check className="w-3.5 h-3.5 text-white" />
+                      <Check className="w-3.5 h-3.5 text-primary-foreground" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-bold text-slate-900">Pay Monthly</h3>
+                    <h3 className="text-lg font-bold text-foreground">Pay Monthly</h3>
                     
                     {/* Price Display */}
                     <div className="mt-3 mb-3">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl sm:text-4xl font-bold text-slate-900">£{Math.floor(discountedBumperPrice / 12)}</span>
-                        <span className="text-base font-medium text-slate-500">/mo</span>
+                        <span className="text-3xl sm:text-4xl font-bold text-foreground">£{Math.floor(discountedBumperPrice / 12)}</span>
+                        <span className="text-base font-medium text-muted-foreground">/mo</span>
                       </div>
-                      <p className="text-sm text-slate-600 mt-1.5">12 easy payments • Total £{discountedBumperPrice}</p>
+                      <p className="text-sm text-foreground/70 mt-1.5">12 easy payments • Total £{discountedBumperPrice}</p>
                     </div>
                     
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2.5 text-sm text-slate-700">
-                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <div className="flex items-center gap-2.5 text-sm text-foreground/80">
+                        <Check className="w-4 h-4 text-[hsl(var(--success))] flex-shrink-0" />
                         <span>No credit impact</span>
                       </div>
-                      <div className="flex items-center gap-2.5 text-sm text-slate-700">
-                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <div className="flex items-center gap-2.5 text-sm text-foreground/80">
+                        <Check className="w-4 h-4 text-[hsl(var(--success))] flex-shrink-0" />
                         <span>Spread the cost</span>
                       </div>
                     </div>
                     
-                    <div className="mt-4 pt-3 border-t border-slate-100">
+                    <div className="mt-4 pt-3 border-t border-border/50">
                       <img src={bumperLogo} alt="Bumper" className="h-5 opacity-70" />
                     </div>
                   </div>
@@ -1110,51 +1110,51 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 }}
                 className={`relative text-left p-5 sm:p-6 rounded-2xl border-2 transition-all duration-200 ${
                   selectedPayment === 'full'
-                    ? 'border-green-500 bg-green-50/80 shadow-lg ring-1 ring-green-200'
-                    : 'border-slate-200 bg-white hover:border-green-300 hover:shadow-md'
+                    ? 'border-[hsl(var(--success))] bg-[hsl(var(--success)/0.05)] shadow-lg ring-1 ring-[hsl(var(--success)/0.2)]'
+                    : 'border-border bg-card hover:border-[hsl(var(--success)/0.5)] hover:shadow-md'
                 }`}
               >
                 {/* Badge */}
-                <span className="absolute -top-3 left-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                <span className="absolute -top-3 left-4 bg-[hsl(var(--success))] text-[hsl(var(--success-foreground))] text-xs font-bold px-3 py-1 rounded-full shadow-sm">
                   SAVE 10%
                 </span>
 
                 <div className="flex items-start gap-3 mt-1">
                   <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-all ${
                     selectedPayment === 'full' 
-                      ? 'border-green-500 bg-green-500' 
-                      : 'border-slate-300 bg-white'
+                      ? 'border-[hsl(var(--success))] bg-[hsl(var(--success))]' 
+                      : 'border-muted-foreground/30 bg-card'
                   }`}>
                     {selectedPayment === 'full' && (
-                      <Check className="w-3.5 h-3.5 text-white" />
+                      <Check className="w-3.5 h-3.5 text-[hsl(var(--success-foreground))]" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-bold text-slate-900">Pay in Full</h3>
+                    <h3 className="text-lg font-bold text-foreground">Pay in Full</h3>
                     
                     {/* Price Display */}
                     <div className="mt-3 mb-3">
-                      <p className="text-sm font-medium text-slate-400">
+                      <p className="text-sm font-medium text-muted-foreground">
                         <span className="line-through decoration-2">Was £{bumperTotalPrice}</span>
                       </p>
                       <div className="flex items-baseline gap-1 mt-1">
-                        <span className="text-3xl sm:text-4xl font-bold text-slate-900">£{discountedStripePrice}</span>
+                        <span className="text-3xl sm:text-4xl font-bold text-foreground">£{discountedStripePrice}</span>
                       </div>
-                      <p className="text-sm font-semibold text-green-600 mt-1.5">You save £{savings}!</p>
+                      <p className="text-sm font-semibold text-[hsl(var(--success))] mt-1.5">You save £{savings}!</p>
                     </div>
                     
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2.5 text-sm text-slate-700">
-                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <div className="flex items-center gap-2.5 text-sm text-foreground/80">
+                        <Check className="w-4 h-4 text-[hsl(var(--success))] flex-shrink-0" />
                         <span>Instant 10% off</span>
                       </div>
-                      <div className="flex items-center gap-2.5 text-sm text-slate-700">
-                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <div className="flex items-center gap-2.5 text-sm text-foreground/80">
+                        <Check className="w-4 h-4 text-[hsl(var(--success))] flex-shrink-0" />
                         <span>One simple payment</span>
                       </div>
                     </div>
                     
-                    <div className="mt-4 pt-3 border-t border-slate-100">
+                    <div className="mt-4 pt-3 border-t border-border/50">
                       <img src={stripeLogo} alt="Stripe" className="h-5 opacity-70" />
                     </div>
                   </div>
@@ -1165,7 +1165,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             {/* Promo Code - Collapsed */}
             <div className="pt-2">
               <Collapsible open={promoOpen} onOpenChange={setPromoOpen}>
-                <CollapsibleTrigger className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors">
+                <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
                   <Tag className="w-4 h-4" />
                   <span>Have a promo code?</span>
                   {promoOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -1174,17 +1174,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   {appliedDiscountCodes.length > 0 ? (
                     <div className="space-y-2">
                       {appliedDiscountCodes.map(discount => (
-                        <div key={discount.code} className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg p-3">
+                        <div key={discount.code} className="flex items-center justify-between bg-[hsl(var(--success)/0.1)] border border-[hsl(var(--success)/0.3)] rounded-lg p-3">
                           <div className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-green-600" />
-                            <span className="font-semibold text-green-800 text-sm">{discount.code}</span>
-                            <span className="text-xs text-green-600">
+                            <Check className="w-4 h-4 text-[hsl(var(--success))]" />
+                            <span className="font-semibold text-[hsl(var(--success))] text-sm">{discount.code}</span>
+                            <span className="text-xs text-[hsl(var(--success)/0.8)]">
                               {discount.type === 'percentage' ? `${discount.value}% OFF` : `£${discount.value} OFF`}
                             </span>
                           </div>
                           <button
                             onClick={() => removePromoCode(discount.code)}
-                            className="text-slate-400 hover:text-red-600 transition-colors"
+                            className="text-muted-foreground hover:text-destructive transition-colors"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -1200,7 +1200,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           setPromoCodeInput(e.target.value.toUpperCase());
                           setPromoCodeError('');
                         }}
-                        className="flex-1 h-10 placeholder:text-slate-500 placeholder:font-normal"
+                        className="flex-1 h-10 placeholder:text-muted-foreground placeholder:font-normal"
                         disabled={isValidatingPromoCode}
                       />
                       <Button
@@ -1208,14 +1208,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         variant="outline"
                         size="sm"
                         disabled={!promoCodeInput.trim() || isValidatingPromoCode}
-                        className="h-10 px-4 bg-[#DFF5E3] border-[#6BBF7B] text-[#1a4d24] font-semibold hover:bg-[#c8ebd0] hover:border-[#4da85f]"
+                        className="h-10 px-4 bg-[hsl(var(--success)/0.15)] border-[hsl(var(--success)/0.4)] text-[hsl(var(--success))] font-semibold hover:bg-[hsl(var(--success)/0.25)] hover:border-[hsl(var(--success)/0.6)]"
                       >
                         Apply
                       </Button>
                     </div>
                   )}
                   {promoCodeError && (
-                    <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                    <p className="text-destructive text-sm mt-2 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5" />
                       {promoCodeError}
                     </p>
@@ -1225,10 +1225,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
               {/* Discount Applied Banner */}
               {hasValidDiscountCodes && !promoOpen && (
-                <div className="mt-3 bg-green-50 border border-green-200 rounded-lg p-3">
+                <div className="mt-3 bg-[hsl(var(--success)/0.1)] border border-[hsl(var(--success)/0.3)] rounded-lg p-3">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="font-medium text-slate-700">Discount Applied:</span>
-                    <span className="font-bold text-green-600">-£{Math.floor(totalDiscountAmount)}</span>
+                    <span className="font-medium text-foreground/80">Discount Applied:</span>
+                    <span className="font-bold text-[hsl(var(--success))]">-£{Math.floor(totalDiscountAmount)}</span>
                   </div>
                 </div>
               )}
@@ -1242,10 +1242,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               disabled={isLoading}
               className={`w-full py-6 text-lg font-bold rounded-xl shadow-xl transition-all ${
                 selectedPayment === 'monthly'
-                  ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-200/50'
+                  ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20'
                   : selectedPayment === 'full'
-                  ? 'bg-green-600 hover:bg-green-700 text-white shadow-green-200/50'
-                  : 'bg-slate-400 text-white'
+                  ? 'bg-[hsl(var(--success))] hover:bg-[hsl(var(--success)/0.9)] text-[hsl(var(--success-foreground))] shadow-[hsl(var(--success)/0.2)]'
+                  : 'bg-muted-foreground text-background'
               }`}
             >
               {isLoading ? (
@@ -1267,31 +1267,31 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             
             {/* Form error indicator on CTA */}
             {showValidation && !personalDetailsComplete && (
-              <p className="text-center text-sm text-red-600 mt-3 flex items-center justify-center gap-1.5">
+              <p className="text-center text-sm text-destructive mt-3 flex items-center justify-center gap-1.5">
                 <AlertCircle className="w-4 h-4" />
                 Please complete all required fields above
               </p>
             )}
             
             {/* Security text */}
-            <p className="text-center text-sm text-slate-500 mt-3">
+            <p className="text-center text-sm text-muted-foreground mt-3">
               Secure checkout — You have 14 days to cancel
             </p>
           </div>
 
           {/* TRUST SIGNALS */}
-          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 py-6 border-t border-slate-200 mt-6">
-            <div className="flex items-center gap-2 text-sm text-slate-600">
-              <Lock className="w-4 h-4 text-green-600" />
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 py-6 border-t border-border mt-6">
+            <div className="flex items-center gap-2 text-sm text-foreground/70">
+              <Lock className="w-4 h-4 text-[hsl(var(--success))]" />
               <span>256-bit encryption</span>
             </div>
             <a 
               href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm text-slate-600 hover:text-green-700 transition-colors"
+              className="flex items-center gap-2 text-sm text-foreground/70 hover:text-[hsl(var(--success))] transition-colors"
             >
-              <CheckCircle className="w-4 h-4 text-green-600" />
+              <CheckCircle className="w-4 h-4 text-[hsl(var(--success))]" />
               <span className="underline underline-offset-2">Rated Excellent on Trustpilot</span>
             </a>
           </div>
