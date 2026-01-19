@@ -147,19 +147,20 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     discountAmount: number;
   }>>([]);
 
-  // Pricing data state
+  // Pricing data state - ALWAYS use pricingData from Step 3 as source of truth
+  // This fixes the mobile pricing mismatch issue where old localStorage data was being used
   const [updatedPricingData, setUpdatedPricingData] = useState(() => {
-    try {
-      const savedOriginalPrice = localStorage.getItem('buyawarranty_originalPricingData');
-      if (savedOriginalPrice) {
-        return JSON.parse(savedOriginalPrice);
-      }
-    } catch (error) {
-      console.error('Error restoring pricing data:', error);
-    }
+    // Always use fresh pricingData from Step 3, not cached localStorage
     localStorage.setItem('buyawarranty_originalPricingData', JSON.stringify(pricingData));
     return pricingData;
   });
+
+  // Sync updatedPricingData when pricingData prop changes (e.g., navigating back from Step 4 to Step 3 and returning)
+  useEffect(() => {
+    console.log('📊 Step 4: Syncing pricing from Step 3:', pricingData);
+    setUpdatedPricingData(pricingData);
+    localStorage.setItem('buyawarranty_originalPricingData', JSON.stringify(pricingData));
+  }, [pricingData.totalPrice, pricingData.monthlyPrice]);
 
   // Start date state
   const [startDate, setStartDate] = useState<Date | undefined>(() => {
