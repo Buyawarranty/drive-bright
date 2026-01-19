@@ -826,7 +826,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             <CardContent className="p-4 sm:p-5">
               {/* Label with reassurance */}
               <div className="mb-4">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">Price Summary</p>
+                <p className="text-sm font-semibold text-muted-foreground tracking-wide mb-0.5">Price Summary</p>
                 <p className="text-sm text-muted-foreground">Includes your comprehensive {formatPlanName()} cover.</p>
               </div>
 
@@ -919,7 +919,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       }`} />
                     </div>
                     <h3 className="text-sm font-semibold text-foreground text-left">
-                      Almost there — just two quick details
+                      Almost there, just two quick details
                     </h3>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3">
@@ -1135,7 +1135,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
           {/* PAYMENT SELECTION SECTION */}
           <div id="payment-section" className="space-y-3 sm:space-y-4">
-            <h2 className="text-lg sm:text-xl font-bold text-foreground text-left">How would you like to pay?</h2>
+            <h2 className="text-sm font-semibold text-foreground text-left flex items-center gap-2">
+              <Lock className="w-4 h-4 text-muted-foreground" />
+              How would you like to pay?
+            </h2>
 
             {/* Payment Error Message */}
             {paymentError && (
@@ -1146,7 +1149,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             )}
 
             {/* Payment Cards - Radio Style */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-4">
               {/* Pay Monthly Card */}
               <button
                 type="button"
@@ -1176,7 +1179,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-base sm:text-lg font-bold text-foreground">Monthly</h3>
+                    <h3 className="text-sm font-semibold text-foreground">Pay Monthly</h3>
                     
                     {/* Price Display */}
                     <div className="mt-2 sm:mt-3 mb-2 sm:mb-3">
@@ -1234,7 +1237,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-base sm:text-lg font-bold text-foreground">Pay in Full</h3>
+                    <h3 className="text-sm font-semibold text-foreground">Pay in Full</h3>
                     
                     {/* Price Display */}
                     <div className="mt-2 sm:mt-3 mb-2 sm:mb-3">
@@ -1395,8 +1398,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-foreground/70 hover:text-[hsl(var(--success))] transition-colors"
             >
-              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[hsl(var(--success))]" />
-              <span className="underline underline-offset-2">Rated Excellent on Trustpilot</span>
+              <img 
+                src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" 
+                alt="Trustpilot 5 stars" 
+                className="h-4 sm:h-5 object-contain"
+              />
+              <span className="underline underline-offset-2">Rated Excellent</span>
             </a>
           </div>
         </div>
