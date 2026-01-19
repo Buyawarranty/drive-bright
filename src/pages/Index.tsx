@@ -57,8 +57,9 @@ const RecoveryFallback: React.FC<{
   onRecovered: (vehicleData: VehicleData, selectedPlan: any) => void;
   onStartOver: () => void;
 }> = ({ onRecovered, onStartOver }) => {
-  const [isAttemptingRecovery, setIsAttemptingRecovery] = useState(false);
+  const [isAttemptingRecovery, setIsAttemptingRecovery] = useState(true);
   const [recoveryFailed, setRecoveryFailed] = useState(false);
+  const hasAttemptedRef = useRef(false);
 
   // Scroll to top when recovery fails
   useEffect(() => {
@@ -68,10 +69,12 @@ const RecoveryFallback: React.FC<{
   }, [recoveryFailed]);
 
   useEffect(() => {
-    // Attempt automatic recovery once
+    // Only attempt recovery once to prevent infinite loops
+    if (hasAttemptedRef.current) return;
+    hasAttemptedRef.current = true;
+    
+    // Use requestAnimationFrame to ensure we're not blocking the main thread
     const attemptRecovery = () => {
-      setIsAttemptingRecovery(true);
-      
       try {
         const savedVehicleData = localStorage.getItem('buyawarranty_vehicleData');
         const savedSelectedPlan = localStorage.getItem('buyawarranty_selectedPlan');
@@ -80,12 +83,15 @@ const RecoveryFallback: React.FC<{
           const parsedVehicleData = JSON.parse(savedVehicleData);
           const parsedSelectedPlan = JSON.parse(savedSelectedPlan);
           
-          console.log('Recovery attempt successful:', { parsedVehicleData, parsedSelectedPlan });
-          onRecovered(parsedVehicleData, parsedSelectedPlan);
-          return;
+          // Validate the data has required fields
+          if (parsedVehicleData?.regNumber && parsedSelectedPlan?.paymentType) {
+            console.log('✅ Recovery attempt successful:', { parsedVehicleData, parsedSelectedPlan });
+            onRecovered(parsedVehicleData, parsedSelectedPlan);
+            return;
+          }
         }
       } catch (error) {
-        console.error('Error during recovery attempt:', error);
+        console.error('❌ Error during recovery attempt:', error);
       }
       
       // Recovery failed
@@ -93,8 +99,11 @@ const RecoveryFallback: React.FC<{
       setIsAttemptingRecovery(false);
     };
 
-    attemptRecovery();
-  }, [onRecovered]);
+    // Small delay to ensure bfcache has fully restored
+    requestAnimationFrame(() => {
+      setTimeout(attemptRecovery, 100);
+    });
+  }, []); // Empty dependency array - only run once
 
   if (isAttemptingRecovery) {
     return (
@@ -448,6 +457,44 @@ const Index = () => {
   useEffect(() => {
     captureGclid();
   }, []);
+
+  // Handle bfcache restoration (when user navigates back from payment gateway)
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        console.log('📱 Index: Page restored from bfcache, checking state');
+        
+        // Get current step from URL
+        const urlStep = parseInt(searchParams.get('step') || '1');
+        
+        // If on step 4, ensure we have the required data
+        if (urlStep === 4 && (!vehicleData || !selectedPlan)) {
+          console.log('📱 Index: Step 4 missing data, attempting recovery from localStorage');
+          
+          try {
+            const savedVehicleData = localStorage.getItem('buyawarranty_vehicleData');
+            const savedSelectedPlan = localStorage.getItem('buyawarranty_selectedPlan');
+            
+            if (savedVehicleData && savedSelectedPlan) {
+              const parsedVehicleData = JSON.parse(savedVehicleData);
+              const parsedSelectedPlan = JSON.parse(savedSelectedPlan);
+              
+              if (parsedVehicleData?.regNumber && parsedSelectedPlan?.paymentType) {
+                console.log('✅ Index: Recovered state from localStorage on bfcache restore');
+                setVehicleData(parsedVehicleData);
+                setSelectedPlan(parsedSelectedPlan);
+              }
+            }
+          } catch (error) {
+            console.error('❌ Index: Error recovering state on bfcache restore:', error);
+          }
+        }
+      }
+    };
+    
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, [vehicleData, selectedPlan, searchParams]);
 
   // Quote restoration effect - optimized with memoization
   useEffect(() => {
