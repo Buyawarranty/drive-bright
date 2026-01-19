@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, FileText, User, Mail, Lock, MapPin, CreditCard, Eye, EyeOff, Phone, MessageSquare, Download, AlertCircle, CheckCircle, X, ArrowLeft } from 'lucide-react';
+import { Calendar, FileText, User, Mail, Lock, MapPin, CreditCard, Eye, EyeOff, Phone, MessageSquare, Download, AlertCircle, CheckCircle, X, ArrowLeft, Search } from 'lucide-react';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { getWarrantyDurationDisplay, getPaymentTypeDisplay } from '@/lib/warrantyUtils';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -21,6 +21,7 @@ import { useCustomerNotifications } from '@/hooks/useCustomerNotifications';
 import { ReturnDiscountBanner } from '@/components/ReturnDiscountBanner';
 import { useImpersonation } from '@/hooks/useImpersonation';
 import { ImpersonationBanner } from '@/components/ImpersonationBanner';
+import { AddressAutocomplete, AddressData as AutocompleteAddressData } from '@/components/ui/address-autocomplete';
 
 interface CustomerPolicy {
   id: string;
@@ -1613,6 +1614,32 @@ const CustomerDashboard = () => {
                                 value={address.phone}
                                 onChange={(e) => setAddress({...address, phone: e.target.value})}
                               />
+                            </div>
+                            
+                            {/* Address Lookup with getaddress.io */}
+                            <div className="mb-2">
+                              <Label className="flex items-center gap-2">
+                                <Search className="h-4 w-4" />
+                                Find Your Address
+                              </Label>
+                              <AddressAutocomplete
+                                placeholder="Start typing postcode or address..."
+                                onAddressSelect={(autocompleteData: AutocompleteAddressData) => {
+                                  setAddress({
+                                    ...address,
+                                    buildingNumber: autocompleteData.building_number || '',
+                                    buildingName: autocompleteData.building_name || '',
+                                    street: autocompleteData.line_1 || '',
+                                    city: autocompleteData.town || '',
+                                    county: autocompleteData.county || '',
+                                    postcode: autocompleteData.postcode || '',
+                                  });
+                                }}
+                                className="w-full border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                              />
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Type to search, then edit fields below if needed
+                              </p>
                             </div>
                             
                             <div className="grid grid-cols-2 gap-4">
