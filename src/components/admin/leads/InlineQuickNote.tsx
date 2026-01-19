@@ -3,7 +3,7 @@ import { useLeadQuickNotes, QuickNote } from '@/hooks/useLeadQuickNotes';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Pin, PinOff, Trash2, Clock, User, Check, Loader2 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -322,9 +322,10 @@ export const InlineQuickNote: React.FC<InlineQuickNoteProps> = ({ leadId }) => {
                     </p>
                   )}
                   <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
-                    <span>{getAuthorName(note)}</span>
+                    <span className="font-medium">{getAuthorName(note)}</span>
                     <span>•</span>
-                    <span>{formatDistanceToNow(new Date(note.created_at), { addSuffix: true })}</span>
+                    <span>{format(new Date(note.created_at), 'dd MMM yyyy, HH:mm')}</span>
+                    <span className="text-muted-foreground/60">({formatDistanceToNow(new Date(note.created_at), { addSuffix: true })})</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
