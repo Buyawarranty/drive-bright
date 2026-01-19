@@ -80,7 +80,8 @@ serve(async (req) => {
       .from('live_quotes')
       .update({ 
         status: 'paid',
-        paid_at: new Date().toISOString()
+        paid_at: new Date().toISOString(),
+        payment_method: 'bumper'
       })
       .eq('id', quote.id);
 
