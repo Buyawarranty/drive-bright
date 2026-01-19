@@ -327,10 +327,15 @@ serve(async (req) => {
     }
 
     // Send welcome email directly using Resend
+    // Note: Subject line optimized for Primary inbox - no emojis, conversational tone
     const emailPayload = {
       from: resendFrom,
       to: [email],
-      subject: `Your Buy A Warranty Policy Is Now Active 🚗`,
+      reply_to: 'support@buyawarranty.co.uk',
+      subject: `${finalCustomerName}, your warranty is now active`,
+      headers: {
+        'X-Entity-Ref-ID': `welcome-${policyNumber}-${Date.now()}`,
+      },
       ...(attachments.length > 0 && { attachments }),
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; color: #333333;">
