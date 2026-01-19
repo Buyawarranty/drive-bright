@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, Zap, ChevronRight, ArrowRight, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -23,6 +23,20 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
   const isUnder120k = value === 'under120k';
   const isOver120k = value === 'over120k';
   const hasSelection = isUnder120k || isOver120k;
+  
+  // Reset loading message when isLoading prop changes to false (e.g., after error)
+  useEffect(() => {
+    if (!isLoading) {
+      setShowLoadingMessage(false);
+    }
+  }, [isLoading]);
+
+  // Also reset loading message when there's an error
+  useEffect(() => {
+    if (error) {
+      setShowLoadingMessage(false);
+    }
+  }, [error]);
   
   const handleSelect = (selection: string) => {
     onChange(selection);
