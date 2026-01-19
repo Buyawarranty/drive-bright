@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Loader2, Search, CheckCircle2, UserCheck, AlertCircle, 
-  CalendarIcon, CreditCard, Car, Info, Users, Zap, ArrowRight
+  CalendarIcon, CreditCard, Car, Info, Users, Zap, ArrowRight, Edit
 } from 'lucide-react';
 import { format, isToday, addMonths } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -823,10 +823,21 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
               {/* Policy Summary */}
               <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg space-y-3">
-                <h4 className="font-semibold text-purple-900 flex items-center gap-2">
-                  <Zap className="w-4 h-4" />
-                  Policy Configuration
-                </h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold text-purple-900 flex items-center gap-2">
+                    <Zap className="w-4 h-4" />
+                    Policy Configuration
+                  </h4>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-purple-600 hover:text-purple-800 h-7 px-2"
+                    onClick={() => setShowConfirmDialog(false)}
+                  >
+                    <Edit className="w-3 h-3 mr-1" />
+                    Edit
+                  </Button>
+                </div>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div><span className="text-purple-600">Plan:</span> Platinum</div>
                   <div>
@@ -861,14 +872,6 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                   </select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Payment Reference *</Label>
-                  <Input
-                    value={paymentReference}
-                    onChange={(e) => setPaymentReference(e.target.value)}
-                    placeholder="e.g. pi_xxxx, BAC123456, etc."
-                  />
-                </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -916,7 +919,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
               <div className="flex flex-wrap gap-4">
                 <div className="flex items-center gap-2">
                   <Checkbox id="w2k" checked={sendToW2k} onCheckedChange={(c) => setSendToW2k(c === true)} />
-                  <Label htmlFor="w2k" className="cursor-pointer">Send to Warranties 2000</Label>
+                  <Label htmlFor="w2k" className="cursor-pointer">Send to register warranty</Label>
                 </div>
                 <div className="flex items-center gap-2">
                   <Checkbox id="welcome" checked={sendWelcomeEmail} onCheckedChange={(c) => setSendWelcomeEmail(c === true)} />
