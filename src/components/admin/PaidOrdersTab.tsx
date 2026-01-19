@@ -37,6 +37,11 @@ interface PaidOrder {
   status: string;
   duration_months: number;
   bonus_months: number;
+  // Agent tracking
+  created_by: string;
+  created_by_name: string;
+  payment_confirmed_by: string;
+  payment_confirmed_by_name?: string;
   // Related customer/policy data
   customer_id?: string;
   policy_id?: string;
@@ -98,6 +103,29 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
 
       if (quotesError) throw quotesError;
 
+      // Collect unique admin user IDs for batch lookup
+      const adminUserIds = new Set<string>();
+      (quotesData || []).forEach(quote => {
+        if (quote.created_by) adminUserIds.add(quote.created_by);
+        if (quote.payment_confirmed_by) adminUserIds.add(quote.payment_confirmed_by);
+      });
+
+      // Fetch admin user names in batch
+      let adminUsersMap: Record<string, string> = {};
+      if (adminUserIds.size > 0) {
+        const { data: adminUsers } = await supabase
+          .from('admin_users')
+          .select('user_id, first_name, last_name, email')
+          .in('user_id', Array.from(adminUserIds));
+        
+        if (adminUsers) {
+          adminUsers.forEach(admin => {
+            const name = [admin.first_name, admin.last_name].filter(Boolean).join(' ') || admin.email?.split('@')[0] || 'Unknown';
+            adminUsersMap[admin.user_id] = name;
+          });
+        }
+      }
+
       // For each paid quote, try to fetch associated customer and policy data
       const ordersWithDetails = await Promise.all(
         (quotesData || []).map(async (quote) => {
@@ -138,6 +166,8 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
               building_number: customerData.building_number,
             } : undefined,
             customer_phone: quote.customer_phone || customerData?.phone || '',
+            // Add agent names
+            payment_confirmed_by_name: quote.payment_confirmed_by ? adminUsersMap[quote.payment_confirmed_by] : undefined,
           };
         })
       );
@@ -269,6 +299,7 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
                   <TableHead className="min-w-[80px]">Total</TableHead>
                   <TableHead className="hidden sm:table-cell">Payment</TableHead>
                   <TableHead className="hidden md:table-cell">Date</TableHead>
+                  <TableHead className="hidden lg:table-cell">Agent</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -310,6 +341,18 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
                     <TableCell className="hidden md:table-cell">
                       {order.paid_at && (
                         <div className="text-sm">{format(new Date(order.paid_at), 'dd/MM/yy')}</div>
+                      )}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {(order.payment_confirmed_by_name || order.created_by_name) ? (
+                        <div>
+                          <div className="text-sm font-medium">{order.payment_confirmed_by_name || order.created_by_name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {order.payment_confirmed_by_name ? 'Confirmed' : 'Created'}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
                       )}
                     </TableCell>
                     <TableCell>

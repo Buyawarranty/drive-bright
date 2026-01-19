@@ -1252,6 +1252,17 @@ Questions? Call 0330 229 5040`;
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const adminUserId = user?.id;
+      
+      // Get the admin_users.id for assigning customer to this agent
+      let adminUserRecordId: string | null = null;
+      if (adminUserId) {
+        const { data: adminUser } = await supabase
+          .from('admin_users')
+          .select('id')
+          .eq('user_id', adminUserId)
+          .maybeSingle();
+        adminUserRecordId = adminUser?.id || null;
+      }
 
       // === ATOMIC TRANSACTION START ===
       
@@ -1295,6 +1306,8 @@ Questions? Call 0330 229 5040`;
         payment_verified: true,
         breakdown_recovery: getAutoIncludedAddOns(paymentType).includes('breakdown'),
         vehicle_rental: getAutoIncludedAddOns(paymentType).includes('rental'),
+        // Assign customer to the confirming sales agent
+        assigned_to: adminUserRecordId,
       };
       
       // Include address if provided (not skipped)
