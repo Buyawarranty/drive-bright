@@ -356,12 +356,20 @@ const handler = async (req: Request): Promise<Response> => {
     const htmlContent = generateQuoteEmail({ ...data, quoteId }, baseUrl);
 
     const vehicleDisplay = `${data.vehicleData.make || ''} ${data.vehicleData.model || ''}`.trim() || 'Your Vehicle';
-    const emailSubject = `${data.vehicleData.regNumber} – Complete Your Warranty Purchase`;
+    // Subject line optimized for Primary inbox - conversational, no promotional language
+    const customerName = data.firstName && data.firstName.trim() ? data.firstName.trim() : '';
+    const emailSubject = customerName 
+      ? `${customerName}, your ${data.vehicleData.regNumber} warranty quote`
+      : `Your ${data.vehicleData.regNumber} warranty quote is ready`;
     
     const emailResponse = await resend.emails.send({
       from: "Buyawarranty Customer Care <noreply@buyawarranty.co.uk>",
       to: [data.email],
+      reply_to: 'support@buyawarranty.co.uk',
       subject: emailSubject,
+      headers: {
+        'X-Entity-Ref-ID': `quote-${quoteId}-${Date.now()}`,
+      },
       html: htmlContent,
     });
 

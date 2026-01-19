@@ -122,7 +122,7 @@ serve(async (req: Request) => {
                 If you have a spare moment, we'd really appreciate your honest feedback on Trustpilot. Your review helps other UK drivers make informed decisions and helps us continue improving our service.
               </p>
               
-              <!-- CTA Button -->
+              <!-- CTA Button - Trustpilot green, conversational text -->
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin: 0 0 28px 0;">
                 <tr>
                   <td align="center">
@@ -130,11 +130,11 @@ serve(async (req: Request) => {
                       <tr>
                         <td align="center" style="border-radius: 6px; background-color: #00b67a;">
                           <a 
-                            href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+                            href="https://uk.trustpilot.com/evaluate/buyawarranty.co.uk" 
                             target="_blank"
                             style="display: inline-block; padding: 16px 32px; background-color: #00b67a; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: 600;"
                           >
-                            👉 Leave a quick review on Trustpilot
+                            Share your experience on Trustpilot
                           </a>
                         </td>
                       </tr>
