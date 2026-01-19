@@ -162,6 +162,59 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     localStorage.setItem('buyawarranty_originalPricingData', JSON.stringify(pricingData));
   }, [pricingData.totalPrice, pricingData.monthlyPrice]);
 
+  // Track if customer originally selected "under 120k" on homepage
+  const [originalMileageWasUnder120k, setOriginalMileageWasUnder120k] = useState(() => {
+    // Check if the vehicle mileage from step 1/2 was under 120k
+    const originalMileage = parseInt(vehicleData.mileage?.replace(/[^0-9]/g, '') || '0');
+    return originalMileage <= 120000;
+  });
+
+  // Track if high mileage surcharge applies based on entered mileage
+  const [highMileageSurchargeApplied, setHighMileageSurchargeApplied] = useState(false);
+  const [highMileageSurchargeAmount, setHighMileageSurchargeAmount] = useState(0);
+
+  // Calculate high mileage surcharge based on warranty duration
+  const getHighMileageSurcharge = (enteredMileage: number): number => {
+    if (enteredMileage > 120000 && enteredMileage <= 150000) {
+      // Surcharge based on warranty duration: +£200/+£400/+£600 for 1/2/3-year
+      if (paymentType === '12months') return 200;
+      if (paymentType === '24months') return 400;
+      if (paymentType === '36months') return 600;
+    }
+    return 0;
+  };
+
+  // Effect to handle mileage change and recalculate pricing
+  useEffect(() => {
+    const enteredMileage = parseInt(customerData.mileage?.replace(/[^0-9]/g, '') || '0');
+    
+    // Only apply surcharge if:
+    // 1. Customer originally selected "under 120k" on homepage
+    // 2. Now enters mileage between 120,001 and 150,000
+    if (originalMileageWasUnder120k && enteredMileage > 120000 && enteredMileage <= 150000) {
+      const surcharge = getHighMileageSurcharge(enteredMileage);
+      
+      if (!highMileageSurchargeApplied || highMileageSurchargeAmount !== surcharge) {
+        console.log('📊 High mileage surcharge applied:', { enteredMileage, surcharge, paymentType });
+        setHighMileageSurchargeApplied(true);
+        setHighMileageSurchargeAmount(surcharge);
+        
+        // Recalculate pricing with surcharge
+        setUpdatedPricingData(prev => ({
+          ...prev,
+          totalPrice: pricingData.totalPrice + surcharge,
+          monthlyPrice: Math.floor((pricingData.totalPrice + surcharge) / 12)
+        }));
+      }
+    } else if (highMileageSurchargeApplied && (enteredMileage <= 120000 || enteredMileage > 150000)) {
+      // Remove surcharge if mileage is back under 120k or over 150k
+      console.log('📊 High mileage surcharge removed:', { enteredMileage });
+      setHighMileageSurchargeApplied(false);
+      setHighMileageSurchargeAmount(0);
+      setUpdatedPricingData(pricingData);
+    }
+  }, [customerData.mileage, originalMileageWasUnder120k, paymentType, pricingData.totalPrice]);
+
   // Start date state
   const [startDate, setStartDate] = useState<Date | undefined>(() => {
     try {
@@ -827,10 +880,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       }`} />
                     </div>
                     <div className="text-left">
-                      <h3 className="font-semibold text-foreground flex items-center gap-2">
-                        <span>Almost there — just a few quick details</span>
+                      <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                        <span>Almost there — just two quick details</span>
                       </h3>
-                      <p className="text-sm text-muted-foreground">Just 5 quick fields to complete</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -1001,6 +1053,22 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         </p>
                       </div>
                     )}
+                    {/* High Mileage Surcharge Banner - Friendly notification */}
+                    {highMileageSurchargeApplied && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mt-2">
+                        <div className="flex items-start gap-3">
+                          <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium text-amber-800">
+                              Higher mileage? No problem!
+                            </p>
+                            <p className="text-xs text-amber-700 mt-1">
+                              As your mileage is over 120,000 miles, we've updated your quote to include our higher mileage cover. Your new price is shown above.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     {showValidation && fieldErrors.mileage && (
                       <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5" />
@@ -1030,7 +1098,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
           {/* SECTION 4: CHOOSE PAYMENT (Radio-style selection) */}
           <div id="payment-section" className="space-y-4">
-            <div className="text-center">
+            <div className="text-left">
               <h2 className="text-xl font-bold text-foreground">How would you like to pay?</h2>
             </div>
 
