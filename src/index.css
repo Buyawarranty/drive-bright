@@ -281,6 +281,16 @@ body {
   Clean and accessible - no harsh effects or glows.
 */
 
+/* Breathing animation for CTAs */
+@keyframes breathing {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.animate-breathing {
+  animation: breathing 2.8s ease-in-out infinite;
+}
+
 /* Swinton Design System Components */
 
 /* CTA Button - Branded Orange for Primary Actions */
