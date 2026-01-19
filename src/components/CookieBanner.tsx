@@ -21,15 +21,25 @@ export function CookieBanner() {
   useEffect(() => {
     const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
     if (!consent) {
-      setShowBanner(true);
+      // Delay showing banner - 30 seconds on mobile, 15 seconds on desktop
+      // This prevents interrupting first-time visitors during their initial browsing
+      const isMobile = window.innerWidth < 768;
+      const showDelay = isMobile ? 30000 : 15000; // 30s mobile, 15s desktop
       
-      // Auto-fade after 15 seconds if no action taken
-      const timer = setTimeout(() => {
+      const showTimer = setTimeout(() => {
+        setShowBanner(true);
+      }, showDelay);
+      
+      // Auto-fade after additional 15 seconds if no action taken
+      const fadeTimer = setTimeout(() => {
         setShowBanner(false);
         setShowIcon(true);
-      }, 15000);
+      }, showDelay + 15000);
 
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(showTimer);
+        clearTimeout(fadeTimer);
+      };
     }
   }, []);
 
