@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ArrowLeft, CheckCircle, Edit, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, Tag, Shield, AlertCircle, User, Car, X, Info } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Edit, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, Tag, Shield, AlertCircle, User, Car, X, Info, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { trackFormSubmission, trackBumperCheckoutClick, trackStripeCheckoutClick, trackStripeCheckoutPageLoad, trackStep4EmailEntry } from '@/utils/analytics';
@@ -705,7 +705,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
-        {/* Header */}
+        {/* Back Link */}
         <div className="flex items-center justify-between mb-6">
           <Button
             variant="ghost"
@@ -716,24 +716,29 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             className="flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-3 py-2 -ml-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back</span>
+            <span>Back to Plan Selection</span>
           </Button>
           <MobileNavigation />
         </div>
 
+        {/* Page Title */}
+        <div className="text-center mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Review and Pay</h1>
+          <p className="text-slate-500 mt-1">Almost there — just a few quick details</p>
+        </div>
 
-        <div className="space-y-4">
-          {/* SECTION 1: PLAN SUMMARY - With Pricing */}
-          <Card className="border border-slate-200 shadow-sm overflow-hidden bg-gradient-to-r from-slate-50 to-white">
-            <CardContent className="p-4 sm:p-5">
-              {/* Top Row: Plan Info + Change Button */}
+        <div className="space-y-5">
+          {/* SECTION 1: PLAN SUMMARY (Non-clickable pricing) */}
+          <Card className="border border-slate-200 shadow-sm overflow-hidden">
+            <CardContent className="p-4 sm:p-6">
+              {/* Plan Header */}
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                    <Shield className="w-5 h-5 text-orange-600" />
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center flex-shrink-0 border border-orange-200">
+                    <Shield className="w-6 h-6 text-orange-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-slate-900">{formatPlanName()} Plan</h3>
+                    <h2 className="text-lg font-bold text-slate-900">{formatPlanName()} Plan</h2>
                     <p className="text-sm text-slate-500">{getDurationText()} • {vehicleData.regNumber?.toUpperCase()}</p>
                   </div>
                 </div>
@@ -741,75 +746,84 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   variant="ghost" 
                   size="sm"
                   onClick={onBack}
-                  className="text-slate-500 hover:text-slate-700 text-xs -mr-2"
+                  className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 text-sm font-medium"
                 >
-                  <Edit className="w-3 h-3 mr-1" />
+                  <Edit className="w-3.5 h-3.5 mr-1.5" />
                   Change
                 </Button>
               </div>
               
-              {/* Unified Pricing Block - Matching Step 3 */}
-              <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  {/* Monthly Price Hero */}
-                  <div className="flex-1">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-sm font-medium text-slate-600">Total:</span>
-                      <span className="text-2xl sm:text-3xl font-bold text-slate-900">£{monthlyPrice}/Month</span>
-                      <span className="text-base text-slate-600">– 0% APR</span>
+              {/* Pricing Summary Card (Non-interactive) */}
+              <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 rounded-xl p-4 sm:p-5 border border-slate-200">
+                <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Price Summary</p>
+                <div className="flex flex-col sm:flex-row sm:items-stretch gap-4 sm:gap-0">
+                  {/* Monthly Side */}
+                  <div className="flex-1 sm:pr-5">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-3xl sm:text-4xl font-bold text-slate-900">£{monthlyPrice}</span>
+                      <span className="text-base text-slate-500 font-medium">/month</span>
                     </div>
-                    <p className="text-sm text-slate-900 mt-0.5">Only 12 payments</p>
+                    <p className="text-sm text-slate-600 mt-1">12 monthly payments • 0% APR</p>
                   </div>
                   
                   {/* Divider */}
-                  <div className="hidden sm:block w-px h-12 bg-slate-200"></div>
-                  <div className="sm:hidden border-t border-slate-200 my-1"></div>
+                  <div className="hidden sm:block w-px bg-slate-200 my-1"></div>
+                  <div className="sm:hidden border-t border-slate-200"></div>
                   
-                  {/* Pay in Full */}
-                  <div className="flex-1 sm:text-right">
-                    <p className="text-sm text-slate-600 mb-1">Or pay in full</p>
-                    <div className="flex items-baseline gap-2 sm:justify-end">
-                      <span className="text-slate-400 line-through text-sm">£{bumperTotalPrice}</span>
-                      <span className="text-xl font-bold text-slate-900">£{stripeTotalPrice}</span>
-                      <span className="text-green-600 font-medium text-sm">(Save £{savings})</span>
+                  {/* Pay in Full Side */}
+                  <div className="flex-1 sm:pl-5">
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <span className="text-2xl sm:text-3xl font-bold text-slate-900">£{stripeTotalPrice}</span>
+                      <span className="text-sm font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Save £{savings}</span>
                     </div>
+                    <p className="text-sm text-slate-500 mt-1">
+                      <span className="line-through decoration-1">Was £{bumperTotalPrice}</span>
+                    </p>
                   </div>
-                </div>
-              </div>
-              
-              {/* Start Date */}
-              <div className="mt-4 pt-4 border-t border-slate-100">
-                <div id="start-date-picker">
-                  <StartDatePicker
-                    value={startDate}
-                    onChange={(date) => {
-                      setStartDate(date);
-                      if (date) {
-                        try {
-                          localStorage.setItem('buyawarranty_startDate', date.toISOString());
-                        } catch (error) {
-                          console.error('Error saving start date:', error);
-                        }
-                      }
-                    }}
-                    maxDaysAhead={365}
-                  />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* SECTION 2: YOUR DETAILS - Simplified */}
+          {/* SECTION 2: COVER START DATE */}
+          <Card className="border border-slate-200 shadow-sm overflow-hidden">
+            <CardContent className="p-4 sm:p-5">
+              <StartDatePicker
+                value={startDate}
+                onChange={(date) => {
+                  setStartDate(date);
+                  if (date) {
+                    try {
+                      localStorage.setItem('buyawarranty_startDate', date.toISOString());
+                    } catch (error) {
+                      console.error('Error saving start date:', error);
+                    }
+                  }
+                }}
+                maxDaysAhead={365}
+              />
+            </CardContent>
+          </Card>
+
+          {/* SECTION 3: YOUR DETAILS (Collapsible) */}
           <Card id="customer-form" className="border border-slate-200 shadow-sm overflow-hidden">
             <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
               <CollapsibleTrigger className="w-full">
-                <div className="flex items-center justify-between p-4 sm:p-5 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center justify-between p-4 sm:p-5 hover:bg-slate-50/50 transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      personalDetailsComplete ? 'bg-green-100' : showValidation && !personalDetailsComplete ? 'bg-red-100' : 'bg-slate-100'
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                      personalDetailsComplete 
+                        ? 'bg-green-100 border border-green-200' 
+                        : showValidation && !personalDetailsComplete 
+                        ? 'bg-red-100 border border-red-200' 
+                        : 'bg-slate-100 border border-slate-200'
                     }`}>
                       <User className={`w-5 h-5 ${
-                        personalDetailsComplete ? 'text-green-600' : showValidation && !personalDetailsComplete ? 'text-red-600' : 'text-slate-600'
+                        personalDetailsComplete 
+                          ? 'text-green-600' 
+                          : showValidation && !personalDetailsComplete 
+                          ? 'text-red-600' 
+                          : 'text-slate-600'
                       }`} />
                     </div>
                     <div className="text-left">
@@ -994,15 +1008,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   </div>
 
                   {/* Address Info Message */}
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mt-4">
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Info className="w-4 h-4 text-slate-500" />
+                        <MapPin className="w-4 h-4 text-slate-500" />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-slate-700">No address needed at checkout</p>
                         <p className="text-xs text-slate-500 mt-1">
-                          You can update your address later in your customer dashboard. We only need it if you ever make a claim or update your policy.
+                          You can update your address later in your customer dashboard if required for claims.
                         </p>
                       </div>
                     </div>
@@ -1012,16 +1026,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </Collapsible>
           </Card>
 
-          {/* SECTION 3: PAYMENT SELECTION */}
+          {/* SECTION 4: CHOOSE PAYMENT (Radio-style selection) */}
           <div id="payment-section" className="space-y-4">
-            <div className="text-center pt-2">
+            <div className="text-center">
               <h2 className="text-xl font-bold text-slate-900">Choose Payment</h2>
-              <div className="flex items-center justify-center gap-3 mt-2">
-                <div className="flex items-center gap-1.5 text-sm text-slate-500">
-                  <Lock className="w-4 h-4 text-green-600" />
-                  <span>Secure checkout</span>
-                </div>
-              </div>
+              <p className="text-sm text-slate-500 mt-1">Select how you'd like to pay</p>
             </div>
 
             {/* Payment Error Message */}
@@ -1032,7 +1041,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               </div>
             )}
 
-            {/* Payment Cards */}
+            {/* Payment Cards - Radio Style */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Pay Monthly Card */}
               <button
@@ -1043,7 +1052,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 }}
                 className={`relative text-left p-5 sm:p-6 rounded-2xl border-2 transition-all duration-200 ${
                   selectedPayment === 'monthly'
-                    ? 'border-orange-500 bg-orange-50/50 shadow-lg ring-2 ring-orange-200'
+                    ? 'border-orange-500 bg-orange-50/80 shadow-lg ring-1 ring-orange-200'
                     : 'border-slate-200 bg-white hover:border-orange-300 hover:shadow-md'
                 }`}
               >
@@ -1065,13 +1074,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-bold text-slate-900">Pay Monthly</h3>
                     
-                    {/* Price Display - Improved hierarchy */}
+                    {/* Price Display */}
                     <div className="mt-3 mb-3">
                       <div className="flex items-baseline gap-1">
                         <span className="text-3xl sm:text-4xl font-bold text-slate-900">£{Math.floor(discountedBumperPrice / 12)}</span>
-                        <span className="text-base font-normal text-slate-600">/mo</span>
+                        <span className="text-base font-medium text-slate-500">/mo</span>
                       </div>
-                      <p className="text-sm text-slate-500 mt-1.5 font-medium">12 easy payments • Total £{discountedBumperPrice}</p>
+                      <p className="text-sm text-slate-600 mt-1.5">12 easy payments • Total £{discountedBumperPrice}</p>
                     </div>
                     
                     <div className="space-y-2">
@@ -1101,7 +1110,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 }}
                 className={`relative text-left p-5 sm:p-6 rounded-2xl border-2 transition-all duration-200 ${
                   selectedPayment === 'full'
-                    ? 'border-green-500 bg-green-50/50 shadow-lg ring-2 ring-green-200'
+                    ? 'border-green-500 bg-green-50/80 shadow-lg ring-1 ring-green-200'
                     : 'border-slate-200 bg-white hover:border-green-300 hover:shadow-md'
                 }`}
               >
@@ -1123,17 +1132,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-bold text-slate-900">Pay in Full</h3>
                     
-                    {/* Price Display - Improved hierarchy with Was/Now/Save */}
+                    {/* Price Display */}
                     <div className="mt-3 mb-3">
-                      {/* Was price - muted with clear strikethrough */}
                       <p className="text-sm font-medium text-slate-400">
-                        <span className="line-through decoration-2 decoration-slate-400">Was £{bumperTotalPrice}</span>
+                        <span className="line-through decoration-2">Was £{bumperTotalPrice}</span>
                       </p>
-                      {/* Main price - bold and prominent */}
                       <div className="flex items-baseline gap-1 mt-1">
                         <span className="text-3xl sm:text-4xl font-bold text-slate-900">£{discountedStripePrice}</span>
                       </div>
-                      {/* Savings - green and encouraging */}
                       <p className="text-sm font-semibold text-green-600 mt-1.5">You save £{savings}!</p>
                     </div>
                     
@@ -1156,7 +1162,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               </button>
             </div>
 
-            {/* Promo Code - Subtle, collapsed */}
+            {/* Promo Code - Collapsed */}
             <div className="pt-2">
               <Collapsible open={promoOpen} onOpenChange={setPromoOpen}>
                 <CollapsibleTrigger className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors">
@@ -1229,7 +1235,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </div>
           </div>
 
-          {/* Primary CTA Button - Sticky on mobile */}
+          {/* PRIMARY CTA BUTTON */}
           <div className="sticky bottom-4 z-10 pt-4">
             <Button
               onClick={processPayment}
@@ -1240,7 +1246,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   : selectedPayment === 'full'
                   ? 'bg-green-600 hover:bg-green-700 text-white shadow-green-200/50'
                   : 'bg-slate-400 text-white'
-              } ${!isLoading && selectedPayment ? 'animate-breathing' : ''}`}
+              }`}
             >
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -1268,25 +1274,26 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             )}
             
             {/* Security text */}
-            <p className="text-center text-xs text-slate-400 mt-3">
+            <p className="text-center text-sm text-slate-500 mt-3">
               Secure checkout — You have 14 days to cancel
             </p>
           </div>
 
-          {/* Trust signals */}
-          <div className="flex flex-wrap justify-center gap-4 py-4 text-xs text-slate-500">
-            <div className="flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-green-600" />
+          {/* TRUST SIGNALS */}
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 py-6 border-t border-slate-200 mt-6">
+            <div className="flex items-center gap-2 text-sm text-slate-600">
+              <Lock className="w-4 h-4 text-green-600" />
               <span>256-bit encryption</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Shield className="w-3.5 h-3.5 text-green-600" />
-              <span>FCA regulated</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle className="w-3.5 h-3.5 text-green-600" />
-              <span>Trusted by 10,000+ UK drivers</span>
-            </div>
+            <a 
+              href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm text-slate-600 hover:text-green-700 transition-colors"
+            >
+              <CheckCircle className="w-4 h-4 text-green-600" />
+              <span className="underline underline-offset-2">Rated Excellent on Trustpilot</span>
+            </a>
           </div>
         </div>
       </div>
