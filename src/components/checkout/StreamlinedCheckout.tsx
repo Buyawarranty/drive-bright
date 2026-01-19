@@ -252,10 +252,25 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     return count;
   }, [customerData]);
 
-  // Auto-collapse details section when complete
+  // Track if component has been mounted (for bfcache handling)
+  const hasMountedRef = React.useRef(false);
+  const [isPageRestored, setIsPageRestored] = useState(false);
+
+  // Auto-collapse details section when complete (only after initial render, not on bfcache restore)
   useEffect(() => {
+    // Skip auto-collapse on initial mount or bfcache restore to prevent freezing
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+    
+    // Don't auto-collapse if page was just restored from bfcache
+    if (isPageRestored) {
+      setIsPageRestored(false);
+      return;
+    }
+    
     if (personalDetailsComplete && detailsOpen) {
-      // Small delay to show the complete state before collapsing
       const timer = setTimeout(() => {
         setDetailsOpen(false);
       }, 500);
@@ -307,23 +322,47 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     autoValidatePrefilledFields();
   }, []);
 
-  // Reset loading on mount
+  // Reset loading on mount and handle bfcache restoration
   useEffect(() => {
+    // Ensure loading is always false on mount
     setIsLoading(false);
     
-    const handlePageShow = () => setIsLoading(false);
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') setIsLoading(false);
+    const handlePageShow = (event: PageTransitionEvent) => {
+      console.log('📱 Step 4: pageshow event, persisted:', event.persisted);
+      
+      // Always reset loading state
+      setIsLoading(false);
+      
+      // If page was restored from bfcache, mark it and reset states
+      if (event.persisted) {
+        console.log('📱 Step 4: Page restored from bfcache, resetting states');
+        setIsPageRestored(true);
+        setShowValidation(false);
+        setPaymentError('');
+        
+        // Re-open details if not complete to prevent frozen collapsed state
+        if (!personalDetailsComplete) {
+          setDetailsOpen(true);
+        }
+      }
     };
     
-    window.addEventListener('pageshow', handlePageShow);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('📱 Step 4: Page visible again, resetting loading');
+        setIsLoading(false);
+      }
+    };
+    
+    // Use type assertion for pageshow event
+    window.addEventListener('pageshow', handlePageShow as EventListener);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     
     return () => {
-      window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener('pageshow', handlePageShow as EventListener);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, []);
+  }, [personalDetailsComplete]);
 
   // Auto-apply discount codes
   useEffect(() => {
