@@ -748,16 +748,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 </Button>
               </div>
               
-              {/* Unified Pricing Block */}
+              {/* Unified Pricing Block - Matching Step 3 */}
               <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  {/* Monthly Price */}
+                  {/* Monthly Price Hero */}
                   <div className="flex-1">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-2xl sm:text-3xl font-bold text-slate-900">£{monthlyPrice}</span>
-                      <span className="text-base font-normal text-slate-500">/mo</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-sm font-medium text-slate-600">Total:</span>
+                      <span className="text-2xl sm:text-3xl font-bold text-slate-900">£{monthlyPrice}/Month</span>
+                      <span className="text-base text-slate-600">– 0% APR</span>
                     </div>
-                    <p className="text-sm text-slate-500 mt-0.5">12 monthly payments • 0% APR</p>
+                    <p className="text-sm text-slate-900 mt-0.5">Only 12 payments</p>
                   </div>
                   
                   {/* Divider */}
@@ -770,7 +771,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <div className="flex items-baseline gap-2 sm:justify-end">
                       <span className="text-slate-400 line-through text-sm">£{bumperTotalPrice}</span>
                       <span className="text-xl font-bold text-slate-900">£{stripeTotalPrice}</span>
-                      <span className="text-green-600 font-medium text-sm">Save £{savings}!</span>
+                      <span className="text-green-600 font-medium text-sm">(Save £{savings})</span>
                     </div>
                   </div>
                 </div>
