@@ -21,8 +21,10 @@ import {
 } from "@/components/ui/select";
 import { supabase } from '@/integrations/supabase/client';
 import { EditCustomerDetailsDialog } from '../EditCustomerDetailsDialog';
+import { InlineWarrantyUpgrade } from '../InlineWarrantyUpgrade';
+import { InlineUpgradeCell } from '../InlineUpgradeCell';
 import { 
-  Search, RefreshCw, Plus, AlertCircle, Edit, ExternalLink
+  Search, RefreshCw, Plus, AlertCircle, Edit, ExternalLink, Sparkles
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -53,6 +55,7 @@ interface Customer {
   created_at: string;
   claim_limit: number | null;
   voluntary_excess: number | null;
+  labour_rate: number | null;
   mileage: string | null;
   flat_number: string | null;
   building_name: string | null;
@@ -63,6 +66,17 @@ interface Customer {
   postcode: string | null;
   // Purchase source tracking
   purchase_source?: string | null;
+  // Add-ons
+  tyre_cover?: boolean | null;
+  wear_tear?: boolean | null;
+  europe_cover?: boolean | null;
+  transfer_cover?: boolean | null;
+  breakdown_recovery?: boolean | null;
+  vehicle_rental?: boolean | null;
+  mot_fee?: boolean | null;
+  mot_repair?: boolean | null;
+  lost_key?: boolean | null;
+  consequential?: boolean | null;
   // Policy info
   policy?: {
     policy_number: string;
@@ -73,6 +87,7 @@ interface Customer {
     email_sent_status: string | null;
     payment_amount: number | null;
     payment_verified: boolean | null;
+    claim_limit: number | null;
   } | null;
   // Tags
   tags?: CustomerTag[];
@@ -201,6 +216,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
             email_sent_status: policy.email_sent_status,
             payment_amount: policy.payment_amount,
             payment_verified: policy.payment_verified,
+            claim_limit: policy.claim_limit,
           } : null,
           tags,
         };
@@ -525,9 +541,10 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
       {/* Customer Table */}
       <div className="bg-background rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
-          <Table className="min-w-[1400px]">
+          <Table className="min-w-[1600px]">
             <TableHeader>
               <TableRow>
+                <TableHead className="bg-amber-50/50">Upgrade</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Purchase Date</TableHead>
                 <TableHead>Email</TableHead>
@@ -536,13 +553,14 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                 <TableHead>Make</TableHead>
                 <TableHead>Model</TableHead>
                 <TableHead>RegDate</TableHead>
-                <TableHead>Address</TableHead>
                 <TableHead>WarType</TableHead>
                 <TableHead>Dur.</TableHead>
                 <TableHead>Start Date</TableHead>
                 <TableHead>Expiry Date</TableHead>
-                <TableHead>Vol. Excess</TableHead>
-                <TableHead>Claim Limit</TableHead>
+                <TableHead className="bg-blue-50/50">Vol. Excess</TableHead>
+                <TableHead className="bg-green-50/50">Claim Limit</TableHead>
+                <TableHead className="bg-purple-50/50">Labour Rate</TableHead>
+                <TableHead>Mileage</TableHead>
                 <TableHead>Tags</TableHead>
                 <TableHead className="bg-purple-50">Source</TableHead>
                 <TableHead>Warranties2000</TableHead>
@@ -552,7 +570,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
             <TableBody>
               {filteredCustomers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={18} className="text-center py-8">
+                  <TableCell colSpan={21} className="text-center py-8">
                     <div className="space-y-4">
                       <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto" />
                       <div>
@@ -571,6 +589,30 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
               ) : (
                 filteredCustomers.map((customer) => (
                   <TableRow key={customer.id}>
+                    {/* Upgrade Column */}
+                    <TableCell className="bg-amber-50/30">
+                      <InlineUpgradeCell
+                        customerId={customer.id}
+                        customerEmail={customer.email}
+                        customerName={customer.name}
+                        registrationPlate={customer.registration_plate || ''}
+                        currentClaimLimit={customer.policy?.claim_limit || customer.claim_limit || 1250}
+                        currentLabourRate={customer.labour_rate || 70}
+                        currentExcess={customer.voluntary_excess || 100}
+                        onUpdate={fetchCustomers}
+                        tyreCover={customer.tyre_cover || false}
+                        wearTear={customer.wear_tear || false}
+                        europeCover={customer.europe_cover || false}
+                        transferCover={customer.transfer_cover || false}
+                        breakdownRecovery={customer.breakdown_recovery || false}
+                        vehicleRental={customer.vehicle_rental || false}
+                        motFee={customer.mot_fee || false}
+                        motRepair={customer.mot_repair || false}
+                        lostKey={customer.lost_key || false}
+                        consequential={customer.consequential || false}
+                      />
+                    </TableCell>
+
                     {/* Name with Edit Button */}
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
@@ -642,11 +684,6 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                       {customer.vehicle_year || 'N/A'}
                     </TableCell>
                     
-                    {/* Address */}
-                    <TableCell className="max-w-[150px] truncate" title={formatAddress(customer)}>
-                      {formatAddress(customer)}
-                    </TableCell>
-                    
                     {/* WarType (Plan Type) */}
                     <TableCell>
                       <Badge variant="outline" className="capitalize">
@@ -673,14 +710,48 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                         : 'N/A'}
                     </TableCell>
                     
-                    {/* Voluntary Excess */}
-                    <TableCell className="text-center">
-                      £{customer.voluntary_excess || 0}
+                    {/* Voluntary Excess - Inline Editable */}
+                    <TableCell className="bg-blue-50/30">
+                      <InlineWarrantyUpgrade
+                        customerId={customer.id}
+                        customerEmail={customer.email}
+                        customerName={customer.name}
+                        registrationPlate={customer.registration_plate || ''}
+                        field="excess"
+                        currentValue={customer.voluntary_excess || 100}
+                        onUpdate={fetchCustomers}
+                      />
                     </TableCell>
                     
-                    {/* Claim Limit */}
+                    {/* Claim Limit - Inline Editable */}
+                    <TableCell className="bg-green-50/30">
+                      <InlineWarrantyUpgrade
+                        customerId={customer.id}
+                        customerEmail={customer.email}
+                        customerName={customer.name}
+                        registrationPlate={customer.registration_plate || ''}
+                        field="claim_limit"
+                        currentValue={customer.policy?.claim_limit || customer.claim_limit || 1250}
+                        onUpdate={fetchCustomers}
+                      />
+                    </TableCell>
+                    
+                    {/* Labour Rate - Inline Editable */}
+                    <TableCell className="bg-purple-50/30">
+                      <InlineWarrantyUpgrade
+                        customerId={customer.id}
+                        customerEmail={customer.email}
+                        customerName={customer.name}
+                        registrationPlate={customer.registration_plate || ''}
+                        field="labour_rate"
+                        currentValue={customer.labour_rate || 70}
+                        onUpdate={fetchCustomers}
+                      />
+                    </TableCell>
+                    
+                    {/* Mileage */}
                     <TableCell className="text-center">
-                      £{customer.claim_limit?.toLocaleString() || 'N/A'}
+                      {customer.mileage || 'N/A'}
                     </TableCell>
                     
                     {/* Tags */}
