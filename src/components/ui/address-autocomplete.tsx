@@ -51,10 +51,14 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout>();
+  const isSelectingRef = useRef(false); // Prevent closing during selection
 
   // Close dropdown when clicking/tapping outside (iOS/Safari compatible)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      // Don't close if we're in the middle of a selection
+      if (isSelectingRef.current) return;
+      
       try {
         const target = event.target as Node;
         if (
@@ -72,8 +76,9 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     };
 
     // Add both mouse and touch events for iOS/Safari compatibility
-    document.addEventListener('mousedown', handleClickOutside, { passive: true });
-    document.addEventListener('touchstart', handleClickOutside, { passive: true });
+    // Using 'capture: true' ensures we catch events before they bubble
+    document.addEventListener('mousedown', handleClickOutside, { passive: true, capture: false });
+    document.addEventListener('touchstart', handleClickOutside, { passive: true, capture: false });
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
@@ -316,34 +321,48 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         </div>
       )}
 
-      {/* Dropdown - wrapped in try/catch rendering */}
+      {/* Dropdown - iOS/Safari optimized with robust touch handling */}
       {showDropdown && suggestions.length > 0 && (
         <div
           ref={dropdownRef}
           className="absolute z-50 w-full mt-1 bg-background border border-border rounded-lg shadow-lg max-h-60 overflow-auto"
+          style={{ WebkitOverflowScrolling: 'touch' }}
         >
           {suggestions.map((suggestion, index) => (
             <button
               key={suggestion.id || index}
               type="button"
               className={cn(
-                "w-full px-3 py-3 text-left text-sm hover:bg-accent active:bg-accent transition-colors touch-manipulation cursor-pointer select-none",
+                "w-full px-4 py-4 text-left text-sm hover:bg-accent active:bg-accent transition-colors touch-manipulation cursor-pointer select-none",
                 index === selectedIndex && "bg-accent",
                 index !== suggestions.length - 1 && "border-b border-border/50"
               )}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                isSelectingRef.current = true;
                 handleSelectAddress(suggestion);
+                // Reset after a small delay
+                setTimeout(() => { isSelectingRef.current = false; }, 300);
               }}
               onMouseDown={(e) => {
                 // Prevent blur on input before click completes (Safari fix)
                 e.preventDefault();
+                isSelectingRef.current = true;
+              }}
+              onMouseUp={() => {
+                setTimeout(() => { isSelectingRef.current = false; }, 300);
+              }}
+              onTouchStart={(e) => {
+                // Mark that we're selecting to prevent dropdown close
+                isSelectingRef.current = true;
               }}
               onTouchEnd={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 handleSelectAddress(suggestion);
+                // Reset after selection completes
+                setTimeout(() => { isSelectingRef.current = false; }, 300);
               }}
             >
               <span className="text-foreground">{suggestion.address}</span>
