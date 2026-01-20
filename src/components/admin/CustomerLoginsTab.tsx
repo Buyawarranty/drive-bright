@@ -9,11 +9,13 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   Eye, EyeOff, RefreshCw, LogIn, UserCheck, Search, 
   Send, Save, User, Mail, Phone, MapPin, Accessibility, 
-  KeyRound, CheckCircle, AlertCircle, Loader2, Copy
+  KeyRound, CheckCircle, AlertCircle, Loader2, Copy, Shield, Settings
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface CustomerData {
   id: string;
@@ -31,6 +33,7 @@ interface CustomerData {
   building_number?: string;
   building_name?: string;
   flat_number?: string;
+  labour_rate?: number;
 }
 
 interface PolicyData {
@@ -40,12 +43,26 @@ interface PolicyData {
   status: string;
   policy_start_date: string;
   policy_end_date: string;
+  claim_limit?: number;
+  voluntary_excess?: number;
+  additional_notes?: string;
+  breakdown_recovery?: boolean;
+  vehicle_rental?: boolean;
+  wear_tear?: boolean;
+  tyre_cover?: boolean;
+  transfer_cover?: boolean;
+  europe_cover?: boolean;
+  mot_fee?: boolean;
+  mot_repair?: boolean;
+  lost_key?: boolean;
+  consequential?: boolean;
 }
 
 const CustomerLoginsTab = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [savingDetails, setSavingDetails] = useState(false);
+  const [savingWarranty, setSavingWarranty] = useState(false);
   const [sendingCredentials, setSendingCredentials] = useState(false);
   
   // Search state
@@ -55,6 +72,7 @@ const CustomerLoginsTab = () => {
   // Customer data state
   const [customer, setCustomer] = useState<CustomerData | null>(null);
   const [policies, setPolicies] = useState<PolicyData[]>([]);
+  const [selectedPolicyId, setSelectedPolicyId] = useState<string>('');
   const [hasAuthAccount, setHasAuthAccount] = useState<boolean | null>(null);
   
   // Editable fields
@@ -70,6 +88,22 @@ const CustomerLoginsTab = () => {
   const [editBuildingName, setEditBuildingName] = useState('');
   const [editFlatNumber, setEditFlatNumber] = useState('');
   
+  // Warranty editable fields
+  const [editClaimLimit, setEditClaimLimit] = useState<number>(1000);
+  const [editVoluntaryExcess, setEditVoluntaryExcess] = useState<number>(0);
+  const [editLabourRate, setEditLabourRate] = useState<number>(70);
+  const [editAdditionalNotes, setEditAdditionalNotes] = useState('');
+  const [editBreakdownRecovery, setEditBreakdownRecovery] = useState(false);
+  const [editVehicleRental, setEditVehicleRental] = useState(false);
+  const [editWearTear, setEditWearTear] = useState(false);
+  const [editTyreCover, setEditTyreCover] = useState(false);
+  const [editTransferCover, setEditTransferCover] = useState(false);
+  const [editEuropeCover, setEditEuropeCover] = useState(false);
+  const [editMotFee, setEditMotFee] = useState(false);
+  const [editMotRepair, setEditMotRepair] = useState(false);
+  const [editLostKey, setEditLostKey] = useState(false);
+  const [editConsequential, setEditConsequential] = useState(false);
+  
   // Password/credentials state
   const [testPassword, setTestPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -84,6 +118,113 @@ const CustomerLoginsTab = () => {
       password += charset.charAt(Math.floor(Math.random() * charset.length));
     }
     return password;
+  };
+
+  const populateWarrantyFields = (policy: PolicyData, customerData: CustomerData) => {
+    setEditClaimLimit(policy.claim_limit || 1000);
+    setEditVoluntaryExcess(policy.voluntary_excess || 0);
+    setEditLabourRate(customerData.labour_rate || 70);
+    setEditAdditionalNotes(policy.additional_notes || '');
+    setEditBreakdownRecovery(policy.breakdown_recovery || false);
+    setEditVehicleRental(policy.vehicle_rental || false);
+    setEditWearTear(policy.wear_tear || false);
+    setEditTyreCover(policy.tyre_cover || false);
+    setEditTransferCover(policy.transfer_cover || false);
+    setEditEuropeCover(policy.europe_cover || false);
+    setEditMotFee(policy.mot_fee || false);
+    setEditMotRepair(policy.mot_repair || false);
+    setEditLostKey(policy.lost_key || false);
+    setEditConsequential(policy.consequential || false);
+  };
+
+  const handlePolicySelect = (policyId: string) => {
+    setSelectedPolicyId(policyId);
+    const policy = policies.find(p => p.id === policyId);
+    if (policy && customer) {
+      populateWarrantyFields(policy, customer);
+    }
+  };
+
+  const handleSaveWarranty = async () => {
+    if (!customer || !selectedPolicyId) return;
+
+    setSavingWarranty(true);
+    try {
+      // Update the customer's labour rate
+      const { error: customerError } = await supabase
+        .from('customers')
+        .update({
+          labour_rate: editLabourRate,
+        })
+        .eq('id', customer.id);
+
+      if (customerError) throw customerError;
+
+      // Update the selected policy
+      const { error: policyError } = await supabase
+        .from('customer_policies')
+        .update({
+          claim_limit: editClaimLimit,
+          voluntary_excess: editVoluntaryExcess,
+          additional_notes: editAdditionalNotes || null,
+          breakdown_recovery: editBreakdownRecovery,
+          vehicle_rental: editVehicleRental,
+          wear_tear: editWearTear,
+          tyre_cover: editTyreCover,
+          transfer_cover: editTransferCover,
+          europe_cover: editEuropeCover,
+          mot_fee: editMotFee,
+          mot_repair: editMotRepair,
+          lost_key: editLostKey,
+          consequential: editConsequential,
+        })
+        .eq('id', selectedPolicyId);
+
+      if (policyError) throw policyError;
+
+      toast({
+        title: "✅ Warranty Details Saved",
+        description: "Customer's warranty details updated. Dashboard will reflect changes.",
+      });
+
+      // Update local customer state
+      setCustomer({
+        ...customer,
+        labour_rate: editLabourRate,
+      });
+
+      // Update local policy state
+      setPolicies(policies.map(p => 
+        p.id === selectedPolicyId 
+          ? {
+              ...p,
+              claim_limit: editClaimLimit,
+              voluntary_excess: editVoluntaryExcess,
+              additional_notes: editAdditionalNotes,
+              breakdown_recovery: editBreakdownRecovery,
+              vehicle_rental: editVehicleRental,
+              wear_tear: editWearTear,
+              tyre_cover: editTyreCover,
+              transfer_cover: editTransferCover,
+              europe_cover: editEuropeCover,
+              mot_fee: editMotFee,
+              mot_repair: editMotRepair,
+              lost_key: editLostKey,
+              consequential: editConsequential,
+            }
+          : p
+      ));
+
+    } catch (error: any) {
+      console.error('Save warranty error:', error);
+      toast({
+        title: "Save Failed",
+        description: error.message || "Failed to save warranty details",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingWarranty(false);
+    }
   };
 
   const handleSearch = async () => {
@@ -142,13 +283,22 @@ const CustomerLoginsTab = () => {
       setEditBuildingName(foundCustomer.building_name || '');
       setEditFlatNumber(foundCustomer.flat_number || '');
 
-      // Get policies
+      // Get policies with warranty details
       const { data: policyData } = await supabase
         .from('customer_policies')
-        .select('*')
+        .select('id, policy_number, plan_type, status, policy_start_date, policy_end_date, claim_limit, voluntary_excess, additional_notes, breakdown_recovery, vehicle_rental, wear_tear, tyre_cover, transfer_cover, europe_cover, mot_fee, mot_repair, lost_key, consequential')
         .ilike('email', foundCustomer.email);
 
       setPolicies(policyData || []);
+      
+      // Set the first policy as selected and populate warranty fields
+      if (policyData && policyData.length > 0) {
+        setSelectedPolicyId(policyData[0].id);
+        populateWarrantyFields(policyData[0], foundCustomer);
+      }
+      
+      // Set labour rate from customer
+      setEditLabourRate(foundCustomer.labour_rate || 70);
 
       // Check if auth account exists
       const { data: checkData } = await supabase.functions.invoke('check-customer-auth', {
@@ -586,6 +736,208 @@ const CustomerLoginsTab = () => {
               </Button>
             </CardContent>
           </Card>
+
+          {/* Warranty Details Section */}
+          {policies.length > 0 && (
+            <Card className="border-blue-200 bg-blue-50/30">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Shield className="w-5 h-5 text-blue-600" />
+                  Warranty Details
+                </CardTitle>
+                <CardDescription>
+                  Update claim limit, labour rate, add-ons, and notes for upgraded/downgraded warranties
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Policy Selector */}
+                {policies.length > 1 && (
+                  <div className="space-y-2">
+                    <Label>Select Policy to Edit</Label>
+                    <Select value={selectedPolicyId} onValueChange={handlePolicySelect}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a policy" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {policies.map((policy) => (
+                          <SelectItem key={policy.id} value={policy.id}>
+                            {policy.policy_number} - {policy.plan_type} ({policy.status})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {/* Core Warranty Settings */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Claim Limit</Label>
+                    <Select value={editClaimLimit.toString()} onValueChange={(v) => setEditClaimLimit(parseInt(v))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="500">£500</SelectItem>
+                        <SelectItem value="1000">£1,000</SelectItem>
+                        <SelectItem value="1500">£1,500</SelectItem>
+                        <SelectItem value="2000">£2,000</SelectItem>
+                        <SelectItem value="2500">£2,500</SelectItem>
+                        <SelectItem value="3000">£3,000</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Labour Rate</Label>
+                    <Select value={editLabourRate.toString()} onValueChange={(v) => setEditLabourRate(parseInt(v))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="50">£50/hr</SelectItem>
+                        <SelectItem value="70">£70/hr (Standard)</SelectItem>
+                        <SelectItem value="100">£100/hr</SelectItem>
+                        <SelectItem value="150">£150/hr</SelectItem>
+                        <SelectItem value="200">£200/hr</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Voluntary Excess</Label>
+                    <Select value={editVoluntaryExcess.toString()} onValueChange={(v) => setEditVoluntaryExcess(parseInt(v))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0">£0</SelectItem>
+                        <SelectItem value="50">£50</SelectItem>
+                        <SelectItem value="100">£100</SelectItem>
+                        <SelectItem value="150">£150</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <Separator />
+                <p className="text-sm font-medium">Add-On Protection</p>
+
+                {/* Add-ons Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="breakdown" 
+                      checked={editBreakdownRecovery}
+                      onCheckedChange={(checked) => setEditBreakdownRecovery(checked as boolean)}
+                    />
+                    <Label htmlFor="breakdown" className="text-sm">Breakdown Recovery</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="rental" 
+                      checked={editVehicleRental}
+                      onCheckedChange={(checked) => setEditVehicleRental(checked as boolean)}
+                    />
+                    <Label htmlFor="rental" className="text-sm">Vehicle Rental</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="wearTear" 
+                      checked={editWearTear}
+                      onCheckedChange={(checked) => setEditWearTear(checked as boolean)}
+                    />
+                    <Label htmlFor="wearTear" className="text-sm">Wear & Tear</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="tyreCover" 
+                      checked={editTyreCover}
+                      onCheckedChange={(checked) => setEditTyreCover(checked as boolean)}
+                    />
+                    <Label htmlFor="tyreCover" className="text-sm">Tyre Cover</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="transferCover" 
+                      checked={editTransferCover}
+                      onCheckedChange={(checked) => setEditTransferCover(checked as boolean)}
+                    />
+                    <Label htmlFor="transferCover" className="text-sm">Transfer Cover</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="europeCover" 
+                      checked={editEuropeCover}
+                      onCheckedChange={(checked) => setEditEuropeCover(checked as boolean)}
+                    />
+                    <Label htmlFor="europeCover" className="text-sm">Europe Cover</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="motFee" 
+                      checked={editMotFee}
+                      onCheckedChange={(checked) => setEditMotFee(checked as boolean)}
+                    />
+                    <Label htmlFor="motFee" className="text-sm">MOT Fee</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="motRepair" 
+                      checked={editMotRepair}
+                      onCheckedChange={(checked) => setEditMotRepair(checked as boolean)}
+                    />
+                    <Label htmlFor="motRepair" className="text-sm">MOT Repair</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="lostKey" 
+                      checked={editLostKey}
+                      onCheckedChange={(checked) => setEditLostKey(checked as boolean)}
+                    />
+                    <Label htmlFor="lostKey" className="text-sm">Lost Key</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="consequential" 
+                      checked={editConsequential}
+                      onCheckedChange={(checked) => setEditConsequential(checked as boolean)}
+                    />
+                    <Label htmlFor="consequential" className="text-sm">Consequential Loss</Label>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Additional Notes */}
+                <div className="space-y-2">
+                  <Label htmlFor="additionalNotes">Additional Notes (visible in Customer Dashboard)</Label>
+                  <Textarea
+                    id="additionalNotes"
+                    value={editAdditionalNotes}
+                    onChange={(e) => setEditAdditionalNotes(e.target.value)}
+                    placeholder="e.g., Transfer cover included, Labour rate increased to £150/hr, 3 months FREE extended cover..."
+                    rows={3}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    These notes will be displayed in the customer's dashboard under "Additional Notes"
+                  </p>
+                </div>
+
+                <Button onClick={handleSaveWarranty} disabled={savingWarranty} className="gap-2 bg-blue-600 hover:bg-blue-700">
+                  {savingWarranty ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Saving Warranty...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      Save Warranty Details
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Login Credentials Section */}
           <Card>
