@@ -2700,11 +2700,27 @@ Please log in and change your password after first login.`;
                                 <TabsContent value="details" className="space-y-4">
                                   <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                      <Label htmlFor="edit-name">Full Name</Label>
+                                      <Label htmlFor="edit-first-name">First Name</Label>
                                       <Input
-                                        id="edit-name"
-                                        value={editingCustomer.name}
-                                        onChange={(e) => setEditingCustomer({ ...editingCustomer, name: e.target.value })}
+                                        id="edit-first-name"
+                                        value={editingCustomer.first_name || ''}
+                                        onChange={(e) => setEditingCustomer({ 
+                                          ...editingCustomer, 
+                                          first_name: e.target.value,
+                                          name: `${e.target.value} ${editingCustomer.last_name || ''}`.trim()
+                                        })}
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor="edit-last-name">Surname</Label>
+                                      <Input
+                                        id="edit-last-name"
+                                        value={editingCustomer.last_name || ''}
+                                        onChange={(e) => setEditingCustomer({ 
+                                          ...editingCustomer, 
+                                          last_name: e.target.value,
+                                          name: `${editingCustomer.first_name || ''} ${e.target.value}`.trim()
+                                        })}
                                       />
                                     </div>
                                     <div>
