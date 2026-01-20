@@ -97,11 +97,11 @@ export const PendingW2000Tab = () => {
       
       if (error) throw error;
       
-      toast.success('Successfully sent to Warranties 2000');
+      toast.success('Successfully sent to Warranties Register');
       fetchScheduledPolicies();
     } catch (error) {
-      console.error('Error sending to W2000:', error);
-      toast.error('Failed to send to Warranties 2000');
+      console.error('Error sending to Register:', error);
+      toast.error('Failed to send to Warranties Register');
     } finally {
       setSendingId(null);
     }

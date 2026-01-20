@@ -92,9 +92,9 @@ const TestWarranties2000 = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Test Warranties 2000 API</CardTitle>
+        <CardTitle>Test Warranties Register API</CardTitle>
         <CardDescription>
-          Test the integration with Warranties 2000 registration system
+          Test the integration with Warranties Register system
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -103,7 +103,7 @@ const TestWarranties2000 = () => {
           disabled={loading}
           className="w-full"
         >
-          {loading ? 'Testing API...' : 'Test Warranties 2000 API'}
+          {loading ? 'Testing API...' : 'Test Warranties Register API'}
         </Button>
         
         {response && (

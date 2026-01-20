@@ -165,9 +165,9 @@ const defaultTabs: Tab[] = [
   },
   {
     id: 'pending-w2000',
-    label: 'Pending W2000',
+    label: 'Pending Register',
     icon: Clock,
-    description: 'Scheduled warranty submissions to W2000'
+    description: 'Scheduled warranty submissions to register'
   },
   {
     id: 'emails',

@@ -101,7 +101,7 @@ export const W2KAuditLog: React.FC<W2KAuditLogProps> = ({ policyId }) => {
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
           <Clock className="h-4 w-4" />
-          Warranties 2000 Submission History
+          Warranties Register Submission History
         </CardTitle>
       </CardHeader>
       <CardContent>

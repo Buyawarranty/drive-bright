@@ -129,21 +129,21 @@ export const WarrantyActions: React.FC<WarrantyActionsProps> = ({
             // Use original error message
           }
         }
-        toast.error(`Failed to send to Warranties 2000: ${errorMessage}`);
+        toast.error(`Failed to send to Warranties Register: ${errorMessage}`);
       } else if (data?.ok) {
         if (data.already) {
-          toast.success('Already sent to Warranties 2000 previously');
+          toast.success('Already sent to Warranties Register previously');
         } else {
-          toast.success('Successfully sent to Warranties 2000!');
+          toast.success('Successfully sent to Warranties Register!');
         }
         onActionComplete?.();
       } else {
-        const errorMsg = `${data?.code || 'Unknown error'}: ${data?.error || data?.message || 'Failed to send to Warranties 2000'}`;
-        console.error('Warranties 2000 error:', data);
+        const errorMsg = `${data?.code || 'Unknown error'}: ${data?.error || data?.message || 'Failed to send to Warranties Register'}`;
+        console.error('Warranties Register error:', data);
         toast.error(errorMsg);
       }
     } catch (error: any) {
-      console.error('Unexpected error sending to Warranties 2000:', error);
+      console.error('Unexpected error sending to Warranties Register:', error);
       toast.error(`Unexpected error: ${error.message}`);
     } finally {
       setIsLoading(prev => ({ ...prev, warranties2000: false }));
@@ -246,7 +246,7 @@ export const WarrantyActions: React.FC<WarrantyActionsProps> = ({
           className="flex items-center gap-2"
         >
           <ExternalLink className="w-4 h-4" />
-          {isLoading.warranties2000 ? 'Sending...' : 'Send to Warranties 2000'}
+          {isLoading.warranties2000 ? 'Sending...' : 'Send to Warranties Register'}
         </Button>
 
         <Dialog open={showAuditLogs} onOpenChange={setShowAuditLogs}>

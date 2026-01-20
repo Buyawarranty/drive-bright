@@ -85,7 +85,7 @@ export const ApiConnectivityTest = () => {
             API Connectivity Test
           </CardTitle>
           <CardDescription>
-            Test connectivity to all external APIs: Bumper, Warranties 2000, and Stripe.
+            Test connectivity to all external APIs: Bumper, Warranties Register, and Stripe.
             This will help diagnose go-live issues.
           </CardDescription>
         </CardHeader>
@@ -182,7 +182,7 @@ export const ApiConnectivityTest = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between text-sm">
-                Warranties 2000 API
+                Warranties Register API
                 {getStatusIcon(testResults.warranties2000.status)}
               </CardTitle>
             </CardHeader>

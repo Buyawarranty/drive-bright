@@ -354,9 +354,9 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
           });
       }
 
-      // 5. Send to Warranties 2000
+      // 5. Send to Warranties Register
       if (sendToW2k) {
-        console.log('🔄 Sending to Warranties 2000...');
+        console.log('🔄 Sending to Warranties Register...');
         try {
           const { error: w2kError } = await supabase.functions.invoke(
             'send-to-warranties-2000',
@@ -372,9 +372,9 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
 
           if (w2kError) {
             console.error('W2K Error:', w2kError);
-            toast.warning('Order created but failed to send to Warranties 2000');
+            toast.warning('Order created but failed to send to Warranties Register');
           } else {
-            console.log('✅ Sent to Warranties 2000');
+            console.log('✅ Sent to Warranties Register');
           }
         } catch (w2kErr) {
           console.error('W2K Exception:', w2kErr);
@@ -667,7 +667,7 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
                 <Checkbox id="sendToW2k" checked={sendToW2k} onCheckedChange={(c) => setSendToW2k(!!c)} />
-                <Label htmlFor="sendToW2k" className="cursor-pointer">Send to Warranties 2000 API</Label>
+                <Label htmlFor="sendToW2k" className="cursor-pointer">Send to Warranties Register</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox id="sendWelcomeEmail" checked={sendWelcomeEmail} onCheckedChange={(c) => setSendWelcomeEmail(!!c)} />

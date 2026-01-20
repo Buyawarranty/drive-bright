@@ -3217,7 +3217,7 @@ Questions? Call 0330 229 5040`;
                         onCheckedChange={(checked) => setSendToW2k(checked === true)}
                       />
                       <Label htmlFor="confirm-send-w2k" className="text-sm cursor-pointer">
-                        Send to Warranties 2000
+                        Send to Warranties Register
                       </Label>
                     </div>
                     <div className="flex items-center space-x-2">
