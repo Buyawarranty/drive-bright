@@ -86,6 +86,8 @@ const RecoveryFallback: React.FC<{
           // Validate the data has required fields
           if (parsedVehicleData?.regNumber && parsedSelectedPlan?.paymentType) {
             console.log('✅ Recovery attempt successful:', { parsedVehicleData, parsedSelectedPlan });
+            // IMPORTANT: Stop showing loading before calling onRecovered
+            setIsAttemptingRecovery(false);
             onRecovered(parsedVehicleData, parsedSelectedPlan);
             return;
           }
@@ -101,9 +103,42 @@ const RecoveryFallback: React.FC<{
 
     // Small delay to ensure bfcache has fully restored
     requestAnimationFrame(() => {
-      setTimeout(attemptRecovery, 100);
+      setTimeout(attemptRecovery, 50);
     });
   }, []); // Empty dependency array - only run once
+
+  // Safety timeout - if still loading after 3 seconds, force recovery attempt
+  useEffect(() => {
+    if (!isAttemptingRecovery) return;
+    
+    const safetyTimeout = setTimeout(() => {
+      if (isAttemptingRecovery && !recoveryFailed) {
+        console.log('⚠️ Recovery timeout - forcing recovery check');
+        try {
+          const savedVehicleData = localStorage.getItem('buyawarranty_vehicleData');
+          const savedSelectedPlan = localStorage.getItem('buyawarranty_selectedPlan');
+          
+          if (savedVehicleData && savedSelectedPlan) {
+            const parsedVehicleData = JSON.parse(savedVehicleData);
+            const parsedSelectedPlan = JSON.parse(savedSelectedPlan);
+            
+            if (parsedVehicleData?.regNumber && parsedSelectedPlan?.paymentType) {
+              setIsAttemptingRecovery(false);
+              onRecovered(parsedVehicleData, parsedSelectedPlan);
+              return;
+            }
+          }
+        } catch (error) {
+          console.error('❌ Safety timeout recovery failed:', error);
+        }
+        // If we get here, recovery failed
+        setRecoveryFailed(true);
+        setIsAttemptingRecovery(false);
+      }
+    }, 2000);
+    
+    return () => clearTimeout(safetyTimeout);
+  }, [isAttemptingRecovery, recoveryFailed, onRecovered]);
 
   if (isAttemptingRecovery) {
     return (
