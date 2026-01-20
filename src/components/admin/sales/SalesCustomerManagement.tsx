@@ -42,6 +42,8 @@ interface CustomerTag {
 interface Customer {
   id: string;
   name: string;
+  first_name: string | null;
+  last_name: string | null;
   email: string;
   phone: string | null;
   registration_plate: string | null;
@@ -808,6 +810,8 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
           customerId={editDetailsDialog.customer.id}
           currentEmail={editDetailsDialog.customer.email}
           currentPhone={editDetailsDialog.customer.phone}
+          currentFirstName={editDetailsDialog.customer.first_name}
+          currentLastName={editDetailsDialog.customer.last_name}
           currentName={editDetailsDialog.customer.name}
           onSaved={fetchCustomers}
         />

@@ -46,6 +46,8 @@ interface Order {
   // Customer details for letter and editing
   customer?: {
     name?: string | null;
+    first_name?: string | null;
+    last_name?: string | null;
     phone?: string | null;
     registration_plate?: string | null;
     vehicle_make?: string | null;
@@ -113,7 +115,7 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
         .select(`
           *,
           customers!customer_id (
-            name, phone, registration_plate, vehicle_make, vehicle_model, vehicle_year, mileage,
+            name, first_name, last_name, phone, registration_plate, vehicle_make, vehicle_model, vehicle_year, mileage,
             flat_number, building_name, building_number, street, town, county, postcode
           )
         `)
@@ -412,6 +414,8 @@ export const MyOrdersView: React.FC<MyOrdersViewProps> = ({ currentUserId }) => 
           customerId={editDetailsDialog.order.customer_id}
           currentEmail={editDetailsDialog.order.email}
           currentPhone={editDetailsDialog.order.customer?.phone}
+          currentFirstName={editDetailsDialog.order.customer?.first_name}
+          currentLastName={editDetailsDialog.order.customer?.last_name}
           currentName={editDetailsDialog.order.customer?.name || editDetailsDialog.order.customer_full_name}
           onSaved={fetchMyOrders}
         />
