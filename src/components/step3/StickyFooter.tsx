@@ -74,7 +74,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
       <div className="hidden md:block max-w-6xl mx-auto px-6 py-5">
         <div className="flex items-center justify-between gap-8">
           
-          {/* Left Section - Trustpilot + Micro-benefit */}
+          {/* Left Section - Trustpilot */}
           <div className="flex flex-col items-start gap-1 min-w-[160px]">
             <a 
               href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
@@ -83,17 +83,14 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
               className="flex flex-col items-start gap-0.5 hover:opacity-80 transition-opacity"
             >
               <div className="flex items-center gap-1">
+                <span className="text-sm font-bold text-[#00b67a]">★</span>
+                <span className="text-sm font-semibold text-gray-800">Trustpilot</span>
+              </div>
+              <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-[#00b67a] text-[#00b67a]" />
                 ))}
               </div>
-              <span className="text-sm font-semibold text-gray-800">Rated Excellent</span>
-            </a>
-            <a 
-              href="/claims" 
-              className="text-sm text-gray-600 hover:text-gray-900 hover:underline transition-colors"
-            >
-              Easy Claims, Fast Payouts
             </a>
           </div>
 
@@ -109,8 +106,8 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
               <span className="text-lg text-gray-600">– 0% APR</span>
             </div>
             
-            {/* 12 Payments - Single mention only */}
-            <span className="text-sm text-gray-900">Only 12 payments</span>
+            {/* 12 Payments - Single mention */}
+            <span className="text-sm text-gray-600">12 easy payments</span>
             
             {/* Pay in full with savings */}
             <div className="flex items-center gap-2 mt-1">
@@ -123,7 +120,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             </div>
           </div>
 
-          {/* Centre-Right Section - Year 2 FREE Badge */}
+          {/* Centre-Right Section - Cover Badge */}
           <div className="flex flex-col items-center gap-1.5">
             {paymentPeriod === '24months' && (
               <>
@@ -133,9 +130,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             )}
             {paymentPeriod === '36months' && (
               <>
-                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
-                  Best Value
-                </span>
+                <span className="text-lg font-bold text-gray-900">Years 2 & 3 FREE 🎉</span>
                 <span className="text-sm text-gray-600">{coverText}</span>
               </>
             )}
