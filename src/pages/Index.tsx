@@ -60,6 +60,7 @@ const RecoveryFallback: React.FC<{
   const [isAttemptingRecovery, setIsAttemptingRecovery] = useState(true);
   const [recoveryFailed, setRecoveryFailed] = useState(false);
   const hasAttemptedRef = useRef(false);
+  const recoveryCompleteRef = useRef(false);
 
   // Scroll to top when recovery fails
   useEffect(() => {
@@ -68,13 +69,15 @@ const RecoveryFallback: React.FC<{
     }
   }, [recoveryFailed]);
 
+  // Immediate recovery attempt on mount - no delays
   useEffect(() => {
     // Only attempt recovery once to prevent infinite loops
     if (hasAttemptedRef.current) return;
     hasAttemptedRef.current = true;
     
-    // Use requestAnimationFrame to ensure we're not blocking the main thread
     const attemptRecovery = () => {
+      if (recoveryCompleteRef.current) return;
+      
       try {
         const savedVehicleData = localStorage.getItem('buyawarranty_vehicleData');
         const savedSelectedPlan = localStorage.getItem('buyawarranty_selectedPlan');
@@ -86,6 +89,7 @@ const RecoveryFallback: React.FC<{
           // Validate the data has required fields
           if (parsedVehicleData?.regNumber && parsedSelectedPlan?.paymentType) {
             console.log('✅ Recovery attempt successful:', { parsedVehicleData, parsedSelectedPlan });
+            recoveryCompleteRef.current = true;
             // IMPORTANT: Stop showing loading before calling onRecovered
             setIsAttemptingRecovery(false);
             onRecovered(parsedVehicleData, parsedSelectedPlan);
@@ -97,22 +101,29 @@ const RecoveryFallback: React.FC<{
       }
       
       // Recovery failed
-      setRecoveryFailed(true);
-      setIsAttemptingRecovery(false);
+      if (!recoveryCompleteRef.current) {
+        setRecoveryFailed(true);
+        setIsAttemptingRecovery(false);
+      }
     };
 
-    // Small delay to ensure bfcache has fully restored
-    requestAnimationFrame(() => {
-      setTimeout(attemptRecovery, 50);
-    });
+    // Attempt immediately first
+    attemptRecovery();
+    
+    // Also try with a small delay for bfcache edge cases
+    if (!recoveryCompleteRef.current) {
+      requestAnimationFrame(() => {
+        setTimeout(attemptRecovery, 50);
+      });
+    }
   }, []); // Empty dependency array - only run once
 
-  // Safety timeout - if still loading after 3 seconds, force recovery attempt
+  // Safety timeout - FASTER: 1.5 seconds max to prevent long freezes
   useEffect(() => {
-    if (!isAttemptingRecovery) return;
+    if (!isAttemptingRecovery || recoveryCompleteRef.current) return;
     
     const safetyTimeout = setTimeout(() => {
-      if (isAttemptingRecovery && !recoveryFailed) {
+      if (isAttemptingRecovery && !recoveryFailed && !recoveryCompleteRef.current) {
         console.log('⚠️ Recovery timeout - forcing recovery check');
         try {
           const savedVehicleData = localStorage.getItem('buyawarranty_vehicleData');
@@ -123,6 +134,7 @@ const RecoveryFallback: React.FC<{
             const parsedSelectedPlan = JSON.parse(savedSelectedPlan);
             
             if (parsedVehicleData?.regNumber && parsedSelectedPlan?.paymentType) {
+              recoveryCompleteRef.current = true;
               setIsAttemptingRecovery(false);
               onRecovered(parsedVehicleData, parsedSelectedPlan);
               return;
@@ -135,7 +147,7 @@ const RecoveryFallback: React.FC<{
         setRecoveryFailed(true);
         setIsAttemptingRecovery(false);
       }
-    }, 2000);
+    }, 1500); // Reduced from 2000ms to 1500ms
     
     return () => clearTimeout(safetyTimeout);
   }, [isAttemptingRecovery, recoveryFailed, onRecovered]);

@@ -353,28 +353,33 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     autoValidatePrefilledFields();
   }, []);
 
-  // Reset loading on mount and handle bfcache restoration
+  // Reset loading on mount and handle bfcache restoration - CRITICAL for Stripe back-nav
   useEffect(() => {
-    // Ensure loading is always false on mount
+    // Ensure loading is always false on mount - immediate
     setIsLoading(false);
     
     const handlePageShow = (event: PageTransitionEvent) => {
       console.log('📱 Step 4: pageshow event, persisted:', event.persisted);
       
-      // Always reset loading state
+      // ALWAYS reset loading state immediately - this is critical for bfcache
       setIsLoading(false);
       
-      // If page was restored from bfcache, mark it and reset states
+      // If page was restored from bfcache (e.g., back from Stripe)
       if (event.persisted) {
-        console.log('📱 Step 4: Page restored from bfcache, resetting states');
-        setIsPageRestored(true);
-        setShowValidation(false);
-        setPaymentError('');
+        console.log('📱 Step 4: Page restored from bfcache, resetting all states');
         
-        // Re-open details if not complete to prevent frozen collapsed state
-        if (!personalDetailsComplete) {
-          setDetailsOpen(true);
-        }
+        // Use requestAnimationFrame for smoother state restoration
+        requestAnimationFrame(() => {
+          setIsPageRestored(true);
+          setShowValidation(false);
+          setPaymentError('');
+          setIsLoading(false); // Double-ensure loading is false
+          
+          // Re-open details if not complete to prevent frozen collapsed state
+          if (!personalDetailsComplete) {
+            setDetailsOpen(true);
+          }
+        });
       }
     };
     
@@ -382,16 +387,25 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       if (document.visibilityState === 'visible') {
         console.log('📱 Step 4: Page visible again, resetting loading');
         setIsLoading(false);
+        setPaymentError('');
       }
+    };
+    
+    // Handle focus - catches some edge cases where pageshow doesn't fire
+    const handleFocus = () => {
+      console.log('📱 Step 4: Window focused, resetting loading');
+      setIsLoading(false);
     };
     
     // Use type assertion for pageshow event
     window.addEventListener('pageshow', handlePageShow as EventListener);
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
     
     return () => {
       window.removeEventListener('pageshow', handlePageShow as EventListener);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
     };
   }, [personalDetailsComplete]);
 

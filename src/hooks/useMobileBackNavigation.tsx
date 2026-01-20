@@ -266,11 +266,11 @@ export const useMobileBackNavigation = ({
     // Listen for popstate events (back/forward button presses)
     window.addEventListener('popstate', handleBackNavigation);
     
-    // iOS Safari specific: handle bfcache
+    // iOS Safari specific: handle bfcache - CRITICAL for Stripe back-navigation
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
         console.log('📱 Page restored from bfcache - fast path');
-        // Reset state when page comes back from bfcache
+        // Reset ALL state flags when page comes back from bfcache
         isLeavingRef.current = false;
         isHandlingBackRef.current = false;
         setHasShownConfirmOnThisStep(false);
@@ -283,10 +283,14 @@ export const useMobileBackNavigation = ({
         // Just ensure history state is correct, don't push more entries
         window.history.replaceState({ step: urlStep }, '', window.location.href);
         
-        // Only push a guard entry if we don't already have one
+        // Only push a guard entry if we don't already have one for this step
+        // This prevents history pollution that causes slow back navigation
         if (lastPushedStepRef.current !== urlStep) {
-          window.history.pushState({ step: urlStep, guard: true }, '', window.location.href);
-          lastPushedStepRef.current = urlStep;
+          // Use a small delay to let the page fully restore first
+          setTimeout(() => {
+            window.history.pushState({ step: urlStep, guard: true }, '', window.location.href);
+            lastPushedStepRef.current = urlStep;
+          }, 100);
         }
       }
     };
