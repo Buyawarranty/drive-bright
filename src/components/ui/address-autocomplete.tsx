@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { Loader2, MapPin, Check } from 'lucide-react';
+import { Loader2, Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface AddressData {
@@ -48,22 +48,23 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout>();
 
-  // Close dropdown when clicking/tapping outside (iOS compatible)
+  // Close dropdown when clicking/tapping outside (iOS/Safari compatible)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
+        !dropdownRef.current.contains(target) &&
         inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
+        !inputRef.current.contains(target)
       ) {
         setShowDropdown(false);
       }
     };
 
-    // Add both mouse and touch events for iOS compatibility
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('touchstart', handleClickOutside);
+    // Add both mouse and touch events for iOS/Safari compatibility
+    document.addEventListener('mousedown', handleClickOutside, { passive: true });
+    document.addEventListener('touchstart', handleClickOutside, { passive: true });
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('touchstart', handleClickOutside);
@@ -239,19 +240,25 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               key={suggestion.id}
               type="button"
               className={cn(
-                "w-full px-3 py-3 text-left text-sm hover:bg-accent active:bg-accent transition-colors touch-manipulation",
+                "w-full px-3 py-3 text-left text-sm hover:bg-accent active:bg-accent transition-colors touch-manipulation cursor-pointer select-none",
                 index === selectedIndex && "bg-accent"
               )}
-              onClick={() => handleSelectAddress(suggestion)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSelectAddress(suggestion);
+              }}
+              onMouseDown={(e) => {
+                // Prevent blur on input before click completes (Safari fix)
+                e.preventDefault();
+              }}
               onTouchEnd={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 handleSelectAddress(suggestion);
               }}
             >
-              <div className="flex items-start gap-2">
-                <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
-                <span className="text-foreground">{suggestion.address}</span>
-              </div>
+              <span className="text-foreground">{suggestion.address}</span>
             </button>
           ))}
         </div>
