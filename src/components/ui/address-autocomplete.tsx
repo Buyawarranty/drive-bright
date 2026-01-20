@@ -48,9 +48,9 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout>();
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking/tapping outside (iOS compatible)
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node) &&
@@ -61,8 +61,13 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       }
     };
 
+    // Add both mouse and touch events for iOS compatibility
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   // Fetch suggestions from getaddress.io via edge function
@@ -234,11 +239,14 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               key={suggestion.id}
               type="button"
               className={cn(
-                "w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors",
+                "w-full px-3 py-3 text-left text-sm hover:bg-accent active:bg-accent transition-colors touch-manipulation",
                 index === selectedIndex && "bg-accent"
               )}
               onClick={() => handleSelectAddress(suggestion)}
-              onMouseEnter={() => setSelectedIndex(index)}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                handleSelectAddress(suggestion);
+              }}
             >
               <div className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
