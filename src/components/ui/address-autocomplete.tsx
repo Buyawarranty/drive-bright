@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { Loader2, Check } from 'lucide-react';
+import { Loader2, Check, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface AddressData {
@@ -27,6 +27,7 @@ interface AddressAutocompleteProps {
   error?: string;
   initialValue?: string;
   disabled?: boolean;
+  onLookupError?: (hasError: boolean) => void;
 }
 
 export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
@@ -36,6 +37,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   error,
   initialValue = "",
   disabled = false,
+  onLookupError,
 }) => {
   const [inputValue, setInputValue] = useState(initialValue);
   const [suggestions, setSuggestions] = useState<AutocompleteSuggestion[]>([]);
@@ -43,6 +45,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [hasSelected, setHasSelected] = useState(false);
+  const [lookupFailed, setLookupFailed] = useState(false);
   
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -80,6 +83,8 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     }
 
     setIsLoading(true);
+    setLookupFailed(false);
+    
     try {
       const { data, error } = await supabase.functions.invoke('getaddress-lookup', {
         body: { action: 'autocomplete', term }
@@ -88,19 +93,37 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       if (error) {
         console.error('Error fetching suggestions:', error);
         setSuggestions([]);
-      } else if (data?.suggestions) {
+        setLookupFailed(true);
+        onLookupError?.(true);
+      } else if (data?.suggestions && data.suggestions.length > 0) {
         setSuggestions(data.suggestions);
-        setShowDropdown(data.suggestions.length > 0);
-      } else {
+        setShowDropdown(true);
+        setLookupFailed(false);
+        onLookupError?.(false);
+      } else if (data?.error) {
+        // API returned an error (e.g., credit issues, invalid key)
+        console.error('API error:', data.error);
         setSuggestions([]);
+        setLookupFailed(true);
+        onLookupError?.(true);
+      } else {
+        // No suggestions found
+        setSuggestions([]);
+        if (term.length >= 5) {
+          // Only show as "failed" if they've typed enough for a valid postcode
+          setLookupFailed(true);
+          onLookupError?.(true);
+        }
       }
     } catch (err) {
       console.error('Error in fetchSuggestions:', err);
       setSuggestions([]);
+      setLookupFailed(true);
+      onLookupError?.(true);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [onLookupError]);
 
   // Handle input change with debounce
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,6 +131,12 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     setInputValue(value);
     setHasSelected(false);
     setSelectedIndex(-1);
+    
+    // Reset lookup failed state when user clears input
+    if (value.length < 3) {
+      setLookupFailed(false);
+      onLookupError?.(false);
+    }
 
     // Clear previous debounce
     if (debounceRef.current) {
@@ -133,6 +162,8 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
 
       if (error) {
         console.error('Error fetching address details:', error);
+        setLookupFailed(true);
+        onLookupError?.(true);
         return;
       }
 
@@ -148,10 +179,14 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         };
 
         setHasSelected(true);
+        setLookupFailed(false);
+        onLookupError?.(false);
         onAddressSelect(addressData);
       }
     } catch (err) {
       console.error('Error in handleSelectAddress:', err);
+      setLookupFailed(true);
+      onLookupError?.(true);
     } finally {
       setIsLoading(false);
     }
@@ -212,6 +247,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           className={cn(
             "pr-9",
             error && "border-destructive",
+            lookupFailed && "border-amber-400",
             className
           )}
           disabled={disabled}
@@ -223,17 +259,32 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         {hasSelected && !isLoading && (
           <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-600" />
         )}
+        {lookupFailed && !isLoading && !hasSelected && (
+          <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500" />
+        )}
       </div>
 
       {error && (
         <p className="text-sm text-destructive mt-1">{error}</p>
       )}
 
+      {/* Lookup Failed Fallback Message */}
+      {lookupFailed && !hasSelected && (
+        <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-amber-800">
+              We couldn't retrieve your address at the moment. Please enter it manually below.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Dropdown */}
       {showDropdown && suggestions.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-auto"
+          className="absolute z-50 w-full mt-1 bg-background border border-border rounded-lg shadow-lg max-h-60 overflow-auto"
         >
           {suggestions.map((suggestion, index) => (
             <button
@@ -241,7 +292,8 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
               type="button"
               className={cn(
                 "w-full px-3 py-3 text-left text-sm hover:bg-accent active:bg-accent transition-colors touch-manipulation cursor-pointer select-none",
-                index === selectedIndex && "bg-accent"
+                index === selectedIndex && "bg-accent",
+                index !== suggestions.length - 1 && "border-b border-border/50"
               )}
               onClick={(e) => {
                 e.preventDefault();
