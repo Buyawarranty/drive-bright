@@ -1204,10 +1204,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-shrink-0">
                           {!addressExpanded && (
                             <span 
-                              className="text-xs font-medium px-3 py-1.5 rounded-full transition-colors"
+                              className="text-xs font-medium px-4 py-2 rounded-full transition-colors whitespace-nowrap"
                               style={{ 
                                 backgroundColor: '#FFFFFF', 
                                 color: '#666666',
