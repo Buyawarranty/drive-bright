@@ -447,14 +447,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     return () => clearTimeout(timeoutId);
   }, [customerData.email, customerData.full_name, customerData.phone, vehicleData, planName, paymentType]);
 
-  // Save customer data to localStorage
+  // Save customer data to localStorage - preserve first_name/last_name directly
   useEffect(() => {
     try {
-      const nameParts = customerData.full_name?.trim().split(' ') || [];
       const dataToSave = {
         ...customerData,
-        first_name: nameParts[0] || '',
-        last_name: nameParts.slice(1).join(' ') || '',
+        first_name: customerData.first_name || '',
+        last_name: customerData.last_name || '',
       };
       localStorage.setItem('buyawarranty_customerData', JSON.stringify(dataToSave));
     } catch (error) {
