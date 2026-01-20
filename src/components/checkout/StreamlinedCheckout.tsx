@@ -1213,7 +1213,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 {/* Badge - Soft orange tint */}
                 <span 
                   className="absolute -top-2.5 left-4 text-xs font-bold px-2.5 py-0.5 rounded-full"
-                  style={{ backgroundColor: '#FFF3E5', color: '#FF6B00' }}
+                  style={{ backgroundColor: '#FF6B00', color: '#FFFFFF' }}
                 >
                   0% APR
                 </span>
@@ -1280,12 +1280,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 }`}
               >
                 {/* Badge - Soft orange tint */}
-                  <span 
-                    className="absolute -top-2.5 left-4 text-xs font-bold px-2.5 py-0.5 rounded-full"
-                    style={{ backgroundColor: '#E8F5E9', color: '#28A745' }}
-                  >
-                    Save 10%
-                  </span>
+                <span 
+                  className="absolute -top-2.5 left-4 text-xs font-bold px-2.5 py-0.5 rounded-full"
+                  style={{ backgroundColor: '#28A745', color: '#FFFFFF' }}
+                >
+                  Save 10%
+                </span>
 
                 <div className="flex items-start gap-3 mt-1">
                   {/* Radio - Green when active */}
@@ -1310,7 +1310,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         <span className="text-2xl sm:text-3xl font-bold text-gray-900">£{discountedStripePrice}</span>
                       </div>
                       {/* Savings - Orange #FF6B00 */}
-                      <p className="text-sm font-medium mt-1" style={{ color: '#FF6B00' }}>You save £{savings}!</p>
+                      <p className="text-sm font-medium mt-1" style={{ color: '#1B5E20' }}>You save £{savings}!</p>
                     </div>
                     
                     <div className="space-y-2">
