@@ -1068,8 +1068,8 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
             </div>
             
             {/* Address Lookup */}
-            <div>
-              <Label>Find Address</Label>
+            <div className="mb-4 pb-4 border-b border-border/50">
+              <Label className="mb-2 block">Find Address</Label>
               <AddressAutocomplete
                 placeholder="Start typing postcode or address..."
                 onAddressSelect={(address: AddressData) => {
@@ -1080,8 +1080,11 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
                   if (address.county) updateOrderData('county', address.county);
                   if (address.postcode) updateOrderData('postcode', address.postcode);
                 }}
+                className="w-full"
               />
-              <p className="text-xs text-muted-foreground mt-1">Or enter address manually below</p>
+              <p className="text-xs text-muted-foreground mt-2">
+                Search by postcode or address, then adjust fields below if needed
+              </p>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
