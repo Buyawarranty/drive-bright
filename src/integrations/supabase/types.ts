@@ -1432,6 +1432,7 @@ export type Database = {
       }
       customer_policies: {
         Row: {
+          additional_notes: string | null
           address: Json | null
           breakdown_recovery: boolean | null
           bumper_order_id: string | null
@@ -1487,6 +1488,7 @@ export type Database = {
           wear_tear: boolean | null
         }
         Insert: {
+          additional_notes?: string | null
           address?: Json | null
           breakdown_recovery?: boolean | null
           bumper_order_id?: string | null
@@ -1542,6 +1544,7 @@ export type Database = {
           wear_tear?: boolean | null
         }
         Update: {
+          additional_notes?: string | null
           address?: Json | null
           breakdown_recovery?: boolean | null
           bumper_order_id?: string | null

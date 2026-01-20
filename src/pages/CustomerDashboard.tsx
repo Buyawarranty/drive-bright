@@ -63,6 +63,7 @@ interface CustomerPolicy {
   mot_repair?: boolean;
   lost_key?: boolean;
   consequential?: boolean;
+  additional_notes?: string;
   customer_id?: string;
   customers?: {
     id: string;
@@ -1512,6 +1513,18 @@ const CustomerDashboard = () => {
                             payment_type={selectedPolicy.payment_type}
                           />
                           
+                          {/* Additional Notes Section */}
+                          {selectedPolicy.additional_notes && (
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                              <h4 className="text-sm font-semibold text-amber-800 flex items-center gap-2 mb-2">
+                                <FileText className="h-4 w-4" />
+                                Additional Notes
+                              </h4>
+                              <p className="text-sm text-amber-900 whitespace-pre-line">
+                                {selectedPolicy.additional_notes}
+                              </p>
+                            </div>
+                          )}
                           {/* Policy Details */}
                           <div className="space-y-3">
                             <h4 className="text-lg font-semibold text-blue-900 flex items-center gap-2">
