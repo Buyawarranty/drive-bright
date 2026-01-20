@@ -1193,31 +1193,40 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Payment Cards - Radio Style */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-4">
-              {/* Pay Monthly Card - Orange accent */}
+              {/* Pay Monthly Card */}
               <button
                 type="button"
                 onClick={() => {
                   setSelectedPayment('monthly');
                   setPaymentError('');
                 }}
-                className={`relative text-left p-5 sm:p-5 rounded-2xl transition-all bg-white ${
+                style={{
+                  borderColor: selectedPayment === 'monthly' ? '#FF9A4C' : '#FFD9BF',
+                  borderWidth: selectedPayment === 'monthly' ? '3px' : '2px',
+                }}
+                className={`relative text-left p-5 sm:p-5 rounded-xl bg-white transition-all duration-150 ${
                   selectedPayment === 'monthly'
-                    ? 'border-[3px] border-orange-400 shadow-lg'
-                    : 'border-2 border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                    ? 'shadow-md'
+                    : 'hover:shadow-sm'
                 }`}
               >
-                {/* Badge - Neutral grey */}
-                <span className="absolute -top-2.5 left-4 bg-gray-600 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">
+                {/* Badge - Soft orange tint */}
+                <span 
+                  className="absolute -top-2.5 left-4 text-xs font-bold px-2.5 py-0.5 rounded-full"
+                  style={{ backgroundColor: '#FFF3E5', color: '#FF6B00' }}
+                >
                   0% APR
                 </span>
 
                 <div className="flex items-start gap-3 mt-1">
                   {/* Radio - Orange when active */}
-                  <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-all ${
-                    selectedPayment === 'monthly' 
-                      ? 'border-orange-500 bg-orange-500' 
-                      : 'border-gray-300 bg-white'
-                  }`}>
+                  <div 
+                    className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-all duration-150"
+                    style={{
+                      borderColor: selectedPayment === 'monthly' ? '#FF6B00' : '#D1D5DB',
+                      backgroundColor: selectedPayment === 'monthly' ? '#FF6B00' : 'white',
+                    }}
+                  >
                     {selectedPayment === 'monthly' && (
                       <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
                     )}
@@ -1235,13 +1244,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     </div>
                     
                     <div className="space-y-2">
-                      {/* Tick icons - Orange */}
+                      {/* Tick icons - Brand Orange #FF6B00 */}
                       <div className="flex items-center gap-2 text-sm text-gray-700">
-                        <Check className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                        <Check className="w-4 h-4 flex-shrink-0" style={{ color: '#FF6B00' }} />
                         <span>No credit impact</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-700">
-                        <Check className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                        <Check className="w-4 h-4 flex-shrink-0" style={{ color: '#FF6B00' }} />
                         <span>Spread the cost</span>
                       </div>
                     </div>
@@ -1253,31 +1262,40 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 </div>
               </button>
 
-              {/* Pay in Full Card - Green accent */}
+              {/* Pay in Full Card */}
               <button
                 type="button"
                 onClick={() => {
                   setSelectedPayment('full');
                   setPaymentError('');
                 }}
-                className={`relative text-left p-5 sm:p-5 rounded-2xl transition-all bg-white ${
+                style={{
+                  borderColor: selectedPayment === 'full' ? '#7AD69D' : '#C8F3D2',
+                  borderWidth: selectedPayment === 'full' ? '3px' : '2px',
+                }}
+                className={`relative text-left p-5 sm:p-5 rounded-xl bg-white transition-all duration-150 ${
                   selectedPayment === 'full'
-                    ? 'border-[3px] border-green-500 shadow-lg'
-                    : 'border-2 border-green-200 hover:border-green-300 hover:shadow-sm'
+                    ? 'shadow-md'
+                    : 'hover:shadow-sm'
                 }`}
               >
-                {/* Badge - Orange */}
-                <span className="absolute -top-2.5 left-4 bg-orange-500 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">
+                {/* Badge - Soft orange tint */}
+                <span 
+                  className="absolute -top-2.5 left-4 text-xs font-bold px-2.5 py-0.5 rounded-full"
+                  style={{ backgroundColor: '#FFF3E5', color: '#FF6B00' }}
+                >
                   Save 10%
                 </span>
 
                 <div className="flex items-start gap-3 mt-1">
                   {/* Radio - Green when active */}
-                  <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-all ${
-                    selectedPayment === 'full' 
-                      ? 'border-green-500 bg-green-500' 
-                      : 'border-gray-300 bg-white'
-                  }`}>
+                  <div 
+                    className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-all duration-150"
+                    style={{
+                      borderColor: selectedPayment === 'full' ? '#28A745' : '#D1D5DB',
+                      backgroundColor: selectedPayment === 'full' ? '#28A745' : 'white',
+                    }}
+                  >
                     {selectedPayment === 'full' && (
                       <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
                     )}
@@ -1291,18 +1309,18 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       <div className="flex items-baseline gap-1 mt-0.5">
                         <span className="text-2xl sm:text-3xl font-bold text-gray-900">£{discountedStripePrice}</span>
                       </div>
-                      {/* Savings - Orange text */}
-                      <p className="text-sm font-medium text-orange-500 mt-1">You save £{savings}!</p>
+                      {/* Savings - Orange #FF6B00 */}
+                      <p className="text-sm font-medium mt-1" style={{ color: '#FF6B00' }}>You save £{savings}!</p>
                     </div>
                     
                     <div className="space-y-2">
-                      {/* Tick icons - Green */}
+                      {/* Tick icons - Green #28A745 */}
                       <div className="flex items-center gap-2 text-sm text-gray-700">
-                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                        <Check className="w-4 h-4 flex-shrink-0" style={{ color: '#28A745' }} />
                         <span>Instant 10% off</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-700">
-                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                        <Check className="w-4 h-4 flex-shrink-0" style={{ color: '#28A745' }} />
                         <span>One simple payment</span>
                       </div>
                     </div>
@@ -1387,12 +1405,25 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               )}
             </div>
 
-            {/* PRIMARY CTA BUTTON */}
+            {/* PRIMARY CTA BUTTON - Dynamic based on selection */}
             <div className="pt-4">
               <Button
                 onClick={processPayment}
-                disabled={isLoading}
-                className="w-full py-6 text-base sm:text-lg font-bold rounded-xl shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground animate-breathing"
+                disabled={isLoading || !selectedPayment}
+                style={{
+                  backgroundColor: !selectedPayment 
+                    ? '#CCCCCC' 
+                    : selectedPayment === 'monthly' 
+                      ? '#FF6B00' 
+                      : '#28A745',
+                  borderColor: !selectedPayment 
+                    ? '#B3B3B3' 
+                    : selectedPayment === 'monthly' 
+                      ? '#E05F00' 
+                      : '#1F8A39',
+                  cursor: !selectedPayment ? 'not-allowed' : 'pointer',
+                }}
+                className="w-full py-6 text-base sm:text-lg font-bold rounded-xl shadow-lg text-white border-2 transition-all duration-150 hover:opacity-90"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -1406,7 +1437,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       ? 'Complete Monthly Checkout' 
                       : selectedPayment === 'full'
                       ? 'Complete One-Time Payment'
-                      : 'Select Payment Option'}
+                      : 'Select a payment option'}
                   </span>
                 )}
               </Button>
