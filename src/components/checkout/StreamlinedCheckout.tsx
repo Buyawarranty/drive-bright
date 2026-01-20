@@ -1253,10 +1253,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           addressExpanded ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
                         }`}
                       >
-                        <div className="px-4 pb-4 pt-2 space-y-4 border-t border-border/30">
+                        <div className="px-4 pb-4 pt-3 space-y-4 border-t border-border/30">
                           {/* Address Autocomplete Search */}
                           <div>
-                            <Label className="text-sm font-medium text-foreground/80 flex items-center gap-2 mb-1.5">
+                            <Label className="text-sm font-medium text-foreground/80 flex items-center gap-2 mb-2">
                               <Search className="w-3.5 h-3.5" />
                               Find Your Address
                             </Label>
@@ -1273,10 +1273,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                   postcode: autocompleteData.postcode || '',
                                 });
                               }}
-                              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
+                              className="w-full border border-border rounded-lg px-3 py-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white min-h-[44px]"
                             />
-                            <p className="text-xs text-muted-foreground mt-1.5">
-                              Type to search, then edit fields below if needed
+                            <p className="text-xs text-muted-foreground mt-2">
+                              Search by postcode or address, then adjust fields below if needed
                             </p>
                           </div>
 

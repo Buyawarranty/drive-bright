@@ -1630,8 +1630,8 @@ const CustomerDashboard = () => {
                             </div>
                             
                             {/* Address Lookup with getaddress.io */}
-                            <div className="mb-2">
-                              <Label className="flex items-center gap-2">
+                            <div className="mb-4 pb-4 border-b border-border/50">
+                              <Label className="flex items-center gap-2 mb-2 text-sm font-medium">
                                 <Search className="h-4 w-4" />
                                 Find Your Address
                               </Label>
@@ -1648,10 +1648,10 @@ const CustomerDashboard = () => {
                                     postcode: autocompleteData.postcode || '',
                                   });
                                 }}
-                                className="w-full border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                className="w-full border border-border rounded-lg px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary/20 min-h-[44px]"
                               />
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Type to search, then edit fields below if needed
+                              <p className="text-xs text-muted-foreground mt-2">
+                                Search by postcode or address, then adjust fields below if needed
                               </p>
                             </div>
                             
