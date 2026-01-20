@@ -306,7 +306,7 @@ export const CustomersTab = () => {
   const [filterByPlan, setFilterByPlan] = useState('all');
   const [filterByStatus, setFilterByStatus] = useState('all');
   const [filterByTag, setFilterByTag] = useState('all');
-  const [filterBySource, setFilterBySource] = useState('website'); // Default to Website (BAW)
+  const [filterBySource, setFilterBySource] = useState('all_view'); // Default to All View
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [availableTags, setAvailableTags] = useState<any[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
