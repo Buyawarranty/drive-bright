@@ -1370,6 +1370,11 @@ const CustomerDashboard = () => {
                               <Label className="text-xs sm:text-sm font-medium text-gray-500">Duration</Label>
                               <p className="font-semibold text-sm sm:text-base">
                                 {getWarrantyDurationDisplay(selectedPolicy.payment_type)}
+                                {selectedPolicy.seasonal_bonus_months && selectedPolicy.seasonal_bonus_months > 0 && (
+                                  <span className="text-green-600 font-medium ml-1">
+                                    + {selectedPolicy.seasonal_bonus_months} months FREE
+                                  </span>
+                                )}
                               </p>
                             </div>
                             <div>
