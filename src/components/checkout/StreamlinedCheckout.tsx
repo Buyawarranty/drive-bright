@@ -127,15 +127,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const [detailsOpen, setDetailsOpen] = useState(true);
   const [addressExpanded, setAddressExpanded] = useState(false);
   
-  // Address fields state
+  // Address fields state - using canonical database field names
   const [addressData, setAddressData] = useState({
-    address_line_1: '',
-    address_line_2: '',
+    street: '',
+    building_name: '',
+    building_number: '',
+    flat_number: '',
     town: '',
     county: '',
     postcode: '',
-    building_number: '',
-    building_name: '',
   });
   
   // Form states
@@ -664,7 +664,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             ...customerData, 
             first_name: firstName,
             last_name: lastName,
-            final_amount: finalPrice 
+            final_amount: finalPrice,
+            // Address fields with canonical database names
+            street: addressData.street || '',
+            building_name: addressData.building_name || '',
+            building_number: addressData.building_number || '',
+            flat_number: addressData.flat_number || '',
+            town: addressData.town || '',
+            county: addressData.county || '',
+            postcode: addressData.postcode || '',
           },
           discountCode: appliedDiscountCodes.map(code => code.code).join(', '),
           finalAmount: finalPrice,
@@ -736,7 +744,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             ...customerData, 
             first_name: firstName,
             last_name: lastName,
-            final_amount: finalPrice 
+            final_amount: finalPrice,
+            // Address fields with canonical database names
+            street: addressData.street || '',
+            building_name: addressData.building_name || '',
+            building_number: addressData.building_number || '',
+            flat_number: addressData.flat_number || '',
+            town: addressData.town || '',
+            county: addressData.county || '',
+            postcode: addressData.postcode || '',
           },
           discountCode: appliedDiscountCodes.map(code => code.code).join(', '),
           finalAmount: finalPrice,
@@ -1248,13 +1264,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                               placeholder="Start typing your postcode or address..."
                               onAddressSelect={(autocompleteData: AddressData) => {
                                 setAddressData({
-                                  address_line_1: autocompleteData.line_1 || '',
-                                  address_line_2: autocompleteData.line_2 || '',
+                                  street: autocompleteData.line_1 || '',
+                                  building_name: autocompleteData.building_name || '',
+                                  building_number: autocompleteData.building_number || '',
+                                  flat_number: autocompleteData.line_2 || '',
                                   town: autocompleteData.town || '',
                                   county: autocompleteData.county || '',
                                   postcode: autocompleteData.postcode || '',
-                                  building_number: autocompleteData.building_number || '',
-                                  building_name: autocompleteData.building_name || '',
                                 });
                               }}
                               className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
@@ -1266,30 +1282,58 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
                           {/* Manual Address Fields */}
                           <div className="grid grid-cols-1 gap-3">
-                            {/* Address Line 1 */}
+                            {/* Building Number & Name */}
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <Label htmlFor="building_number" className="text-sm font-medium text-foreground/80">
+                                  Building Number
+                                </Label>
+                                <Input
+                                  id="building_number"
+                                  placeholder="e.g. 123"
+                                  value={addressData.building_number}
+                                  onChange={(e) => setAddressData(prev => ({ ...prev, building_number: e.target.value }))}
+                                  className="h-10 sm:h-11 text-sm mt-1 bg-white"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="building_name" className="text-sm font-medium text-foreground/80">
+                                  Building Name <span className="text-muted-foreground font-normal">(optional)</span>
+                                </Label>
+                                <Input
+                                  id="building_name"
+                                  placeholder="e.g. Oak House"
+                                  value={addressData.building_name}
+                                  onChange={(e) => setAddressData(prev => ({ ...prev, building_name: e.target.value }))}
+                                  className="h-10 sm:h-11 text-sm mt-1 bg-white"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Street */}
                             <div>
-                              <Label htmlFor="address_line_1" className="text-sm font-medium text-foreground/80">
-                                Address Line 1
+                              <Label htmlFor="street" className="text-sm font-medium text-foreground/80">
+                                Street
                               </Label>
                               <Input
-                                id="address_line_1"
-                                placeholder="e.g. 123 High Street"
-                                value={addressData.address_line_1}
-                                onChange={(e) => setAddressData(prev => ({ ...prev, address_line_1: e.target.value }))}
+                                id="street"
+                                placeholder="e.g. High Street"
+                                value={addressData.street}
+                                onChange={(e) => setAddressData(prev => ({ ...prev, street: e.target.value }))}
                                 className="h-10 sm:h-11 text-sm mt-1 bg-white"
                               />
                             </div>
 
-                            {/* Address Line 2 */}
+                            {/* Flat Number (optional) */}
                             <div>
-                              <Label htmlFor="address_line_2" className="text-sm font-medium text-foreground/80">
-                                Address Line 2 <span className="text-muted-foreground font-normal">(optional)</span>
+                              <Label htmlFor="flat_number" className="text-sm font-medium text-foreground/80">
+                                Flat / Apartment <span className="text-muted-foreground font-normal">(optional)</span>
                               </Label>
                               <Input
-                                id="address_line_2"
-                                placeholder="Apartment, suite, etc."
-                                value={addressData.address_line_2}
-                                onChange={(e) => setAddressData(prev => ({ ...prev, address_line_2: e.target.value }))}
+                                id="flat_number"
+                                placeholder="e.g. Flat 2"
+                                value={addressData.flat_number}
+                                onChange={(e) => setAddressData(prev => ({ ...prev, flat_number: e.target.value }))}
                                 className="h-10 sm:h-11 text-sm mt-1 bg-white"
                               />
                             </div>
