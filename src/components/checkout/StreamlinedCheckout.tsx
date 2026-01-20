@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ArrowLeft, CheckCircle, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, Tag, Shield, AlertCircle, User, X, Info, Calendar, Loader2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, Tag, Shield, AlertCircle, User, X, Info, Calendar, Loader2, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { trackFormSubmission, trackBumperCheckoutClick, trackStripeCheckoutClick, trackStripeCheckoutPageLoad, trackStep4EmailEntry } from '@/utils/analytics';
@@ -16,6 +16,7 @@ import stripeLogo from '@/assets/stripe-logo.png';
 import { StartDatePicker } from '@/components/checkout/StartDatePicker';
 import { startOfDay, format, isToday } from 'date-fns';
 import { useMotMileage } from '@/hooks/useMotMileage';
+import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
@@ -124,6 +125,18 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   
   // Section states for collapsible accordion
   const [detailsOpen, setDetailsOpen] = useState(true);
+  const [addressExpanded, setAddressExpanded] = useState(false);
+  
+  // Address fields state
+  const [addressData, setAddressData] = useState({
+    address_line_1: '',
+    address_line_2: '',
+    town: '',
+    county: '',
+    postcode: '',
+    building_number: '',
+    building_name: '',
+  });
   
   // Form states
   const [showValidation, setShowValidation] = useState(false);
@@ -1156,16 +1169,163 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       )}
                     </div>
 
-                    {/* Address Info Message */}
-                    <div className="bg-muted/40 border border-border rounded-xl p-3 sm:p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <MapPin className="w-4 h-4 text-muted-foreground" />
+                    {/* Optional Address Section - Collapsible */}
+                    <div 
+                      className="rounded-xl overflow-hidden transition-all duration-200"
+                      style={{ 
+                        backgroundColor: '#F8F8F8', 
+                        border: '1px solid #E5E5E5' 
+                      }}
+                    >
+                      {/* Collapsed Header */}
+                      <button
+                        type="button"
+                        onClick={() => setAddressExpanded(!addressExpanded)}
+                        className="w-full p-4 flex items-center justify-between text-left transition-colors hover:bg-muted/60"
+                        aria-expanded={addressExpanded}
+                        aria-controls="address-fields"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                            style={{ backgroundColor: '#EFEFEF' }}
+                          >
+                            <MapPin className="w-4 h-4" style={{ color: '#8A8A8A' }} />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">
+                              {addressExpanded ? 'Your Address' : 'No address needed now'}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {addressExpanded 
+                                ? 'Search or enter your address below' 
+                                : 'You can add it later from your dashboard — or enter it now if you prefer.'
+                              }
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-foreground/80">No address needed at checkout</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            You can update your address later in your customer dashboard if required for claims.
+                        <div className="flex items-center gap-2">
+                          {!addressExpanded && (
+                            <span 
+                              className="text-xs font-medium px-3 py-1.5 rounded-full transition-colors"
+                              style={{ 
+                                backgroundColor: '#FFFFFF', 
+                                color: '#666666',
+                                border: '1px solid #D0D0D0'
+                              }}
+                            >
+                              Add address now
+                            </span>
+                          )}
+                          {addressExpanded && (
+                            <span 
+                              className="text-xs font-medium text-muted-foreground"
+                            >
+                              Hide
+                            </span>
+                          )}
+                          <ChevronDown 
+                            className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${addressExpanded ? 'rotate-180' : ''}`} 
+                          />
+                        </div>
+                      </button>
+
+                      {/* Expanded Address Fields */}
+                      <div 
+                        id="address-fields"
+                        className={`overflow-hidden transition-all duration-200 ease-in-out ${
+                          addressExpanded ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
+                        }`}
+                      >
+                        <div className="px-4 pb-4 pt-2 space-y-4 border-t border-border/30">
+                          {/* Address Autocomplete Search */}
+                          <div>
+                            <Label className="text-sm font-medium text-foreground/80 flex items-center gap-2 mb-1.5">
+                              <Search className="w-3.5 h-3.5" />
+                              Find Your Address
+                            </Label>
+                            <AddressAutocomplete
+                              placeholder="Start typing your postcode or address..."
+                              onAddressSelect={(autocompleteData: AddressData) => {
+                                setAddressData({
+                                  address_line_1: autocompleteData.line_1 || '',
+                                  address_line_2: autocompleteData.line_2 || '',
+                                  town: autocompleteData.town || '',
+                                  county: autocompleteData.county || '',
+                                  postcode: autocompleteData.postcode || '',
+                                  building_number: autocompleteData.building_number || '',
+                                  building_name: autocompleteData.building_name || '',
+                                });
+                              }}
+                              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
+                            />
+                            <p className="text-xs text-muted-foreground mt-1.5">
+                              Type to search, then edit fields below if needed
+                            </p>
+                          </div>
+
+                          {/* Manual Address Fields */}
+                          <div className="grid grid-cols-1 gap-3">
+                            {/* Address Line 1 */}
+                            <div>
+                              <Label htmlFor="address_line_1" className="text-sm font-medium text-foreground/80">
+                                Address Line 1
+                              </Label>
+                              <Input
+                                id="address_line_1"
+                                placeholder="e.g. 123 High Street"
+                                value={addressData.address_line_1}
+                                onChange={(e) => setAddressData(prev => ({ ...prev, address_line_1: e.target.value }))}
+                                className="h-10 sm:h-11 text-sm mt-1 bg-white"
+                              />
+                            </div>
+
+                            {/* Address Line 2 */}
+                            <div>
+                              <Label htmlFor="address_line_2" className="text-sm font-medium text-foreground/80">
+                                Address Line 2 <span className="text-muted-foreground font-normal">(optional)</span>
+                              </Label>
+                              <Input
+                                id="address_line_2"
+                                placeholder="Apartment, suite, etc."
+                                value={addressData.address_line_2}
+                                onChange={(e) => setAddressData(prev => ({ ...prev, address_line_2: e.target.value }))}
+                                className="h-10 sm:h-11 text-sm mt-1 bg-white"
+                              />
+                            </div>
+
+                            {/* Town/City and Postcode - Side by Side */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                <Label htmlFor="town" className="text-sm font-medium text-foreground/80">
+                                  Town / City
+                                </Label>
+                                <Input
+                                  id="town"
+                                  placeholder="e.g. London"
+                                  value={addressData.town}
+                                  onChange={(e) => setAddressData(prev => ({ ...prev, town: e.target.value }))}
+                                  className="h-10 sm:h-11 text-sm mt-1 bg-white"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="postcode" className="text-sm font-medium text-foreground/80">
+                                  Postcode
+                                </Label>
+                                <Input
+                                  id="postcode"
+                                  placeholder="e.g. SW1A 1AA"
+                                  value={addressData.postcode}
+                                  onChange={(e) => setAddressData(prev => ({ ...prev, postcode: e.target.value.toUpperCase() }))}
+                                  className="h-10 sm:h-11 text-sm mt-1 bg-white"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Reassuring Note */}
+                          <p className="text-xs text-muted-foreground pt-1">
+                            Your address is optional — you can always update it later in your dashboard.
                           </p>
                         </div>
                       </div>
