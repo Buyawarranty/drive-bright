@@ -1899,11 +1899,11 @@ export const CustomersTab = () => {
 
       if (error) throw error;
       
-      toast.success('Successfully sent to Warranties 2000!');
+      toast.success('Successfully sent to Warranties Register!');
       fetchCustomers(); // Refresh to update status
     } catch (error: any) {
-      console.error('Error sending to Warranties 2000:', error);
-      toast.error(`Failed to send to Warranties 2000: ${error.message}`);
+      console.error('Error sending to Warranties Register:', error);
+      toast.error(`Failed to send to Warranties Register: ${error.message}`);
     } finally {
       setEmailSendingLoading(prev => ({ 
         ...prev, 
@@ -3228,7 +3228,7 @@ Please log in and change your password after first login.`;
                                       rows={3}
                                     />
                                     <p className="text-xs text-muted-foreground">
-                                      These notes will appear in the customer's dashboard under "Additional Notes". Changes here do NOT resend to Warranties 2000.
+                                      These notes will appear in the customer's dashboard under "Additional Notes". Changes here do NOT resend to Warranties Register.
                                     </p>
                                   </div>
 
@@ -3322,7 +3322,7 @@ Please log in and change your password after first login.`;
                                             ) : (
                                               <Send className="h-4 w-4 text-orange-600" />
                                             )}
-                                            <span className="text-orange-600">Manual Resend to Warranties 2000</span>
+                                            <span className="text-orange-600">Manual Resend to Warranties Register</span>
                                           </Button>
                                           <EditOrderButton 
                                             customer={editingCustomer}
@@ -3958,7 +3958,7 @@ Please log in and change your password after first login.`;
                            size="sm"
                            onClick={() => handleSendToWarranties2000(customer.customer_policies[0].id, customer.id)}
                            disabled={emailSendingLoading[customer.id]?.warranties2000}
-                           title="Send to Warranties 2000"
+                           title="Send to Warranties Register"
                            className="hover:bg-purple-50 hover:text-purple-600"
                          >
                            {emailSendingLoading[customer.id]?.warranties2000 ? (

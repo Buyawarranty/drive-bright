@@ -49,7 +49,7 @@ const ADMIN_TABS = [
   { id: 'claims', label: 'Claims', description: 'Manage customer claim submissions' },
   { id: 'contact', label: 'Contact Submissions', description: 'Manage customer contact form submissions' },
   { id: 'abandoned-carts', label: 'Abandoned Carts', description: 'Track and follow up with incomplete purchases' },
-  { id: 'pending-w2000', label: 'Pending W2000', description: 'Scheduled warranty submissions to W2000' },
+  { id: 'pending-w2000', label: 'Pending Register', description: 'Scheduled warranty submissions to register' },
   { id: 'emails', label: 'Email Hub', description: 'Unified email management' },
   { id: 'analytics', label: 'Analytics', description: 'View reports and analytics' },
   { id: 'user-permissions', label: 'User Permissions', description: 'Manage admin user access and permissions' },

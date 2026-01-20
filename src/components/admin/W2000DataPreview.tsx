@@ -236,10 +236,10 @@ export const W2000DataPreview: React.FC<W2000DataPreviewProps> = ({ customer }) 
       <div className="bg-blue-50 border-l-4 border-blue-400 p-4">
         <div className="flex items-center">
           <AlertCircle className="h-5 w-5 text-blue-400 mr-2" />
-          <h4 className="text-blue-800 font-semibold">Warranties 2000 Data Preview</h4>
+          <h4 className="text-blue-800 font-semibold">Warranties Register Data Preview</h4>
         </div>
         <p className="text-blue-700 text-sm mt-1">
-          This shows exactly what data is/was sent to Warranties 2000 API
+          This shows exactly what data is/was sent to Warranties Register API
         </p>
       </div>
 
