@@ -209,6 +209,7 @@ interface Customer {
     user_id?: string;
     customer_id?: string;
     email?: string;
+    additional_notes?: string;
   }>;
 }
 
@@ -648,6 +649,7 @@ export const CustomersTab = () => {
             mot_repair,
             lost_key,
             consequential,
+            additional_notes,
             user_id,
             customer_id,
             email
@@ -1327,7 +1329,8 @@ export const CustomersTab = () => {
           vehicle_rental: editingCustomer.vehicle_rental,
           mot_repair: editingCustomer.mot_repair,
           lost_key: editingCustomer.lost_key,
-          consequential: editingCustomer.consequential
+          consequential: editingCustomer.consequential,
+          labour_rate: editingCustomer.labour_rate
         })
         .eq('id', editingCustomer.id);
 
@@ -1381,6 +1384,7 @@ export const CustomersTab = () => {
             mot_repair: editingCustomer.mot_repair,
             lost_key: editingCustomer.lost_key,
             consequential: editingCustomer.consequential,
+            additional_notes: editingCustomer.customer_policies[0].additional_notes || null,
             updated_at: new Date().toISOString()
           };
 
@@ -2944,6 +2948,22 @@ Please log in and change your password after first login.`;
                                           <ToggleGroupItem value="5000" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£5,000</ToggleGroupItem>
                                         </ToggleGroup>
                                       </div>
+
+                                      <div>
+                                        <Label className="mb-2 block">Labour Rate</Label>
+                                        <ToggleGroup 
+                                          type="single" 
+                                          value={editingCustomer.labour_rate?.toString() || '70'} 
+                                          onValueChange={(value) => value && setEditingCustomer({ ...editingCustomer, labour_rate: parseInt(value) })}
+                                          className="justify-start flex-wrap gap-2"
+                                        >
+                                          <ToggleGroupItem value="50" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£50/hr</ToggleGroupItem>
+                                          <ToggleGroupItem value="70" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£70/hr</ToggleGroupItem>
+                                          <ToggleGroupItem value="100" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£100/hr</ToggleGroupItem>
+                                          <ToggleGroupItem value="150" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£150/hr</ToggleGroupItem>
+                                          <ToggleGroupItem value="200" className="px-4 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">£200/hr</ToggleGroupItem>
+                                        </ToggleGroup>
+                                      </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4 pt-4">
@@ -3186,6 +3206,30 @@ Please log in and change your password after first login.`;
                                         <Label htmlFor="edit-consequential" className="font-normal cursor-pointer">Consequential Loss</Label>
                                       </div>
                                     </div>
+                                  </div>
+
+                                  {/* Additional Notes for Customer Dashboard */}
+                                  <div className="space-y-2 pt-4 border-t">
+                                    <Label htmlFor="edit-additional-notes" className="text-base font-semibold">Additional Notes (visible in Customer Dashboard)</Label>
+                                    <Textarea
+                                      id="edit-additional-notes"
+                                      value={editingCustomer.customer_policies?.[0]?.additional_notes || ''}
+                                      onChange={(e) => {
+                                        if (editingCustomer.customer_policies && editingCustomer.customer_policies[0]) {
+                                          const updatedPolicies = [...editingCustomer.customer_policies];
+                                          updatedPolicies[0] = {
+                                            ...updatedPolicies[0],
+                                            additional_notes: e.target.value
+                                          };
+                                          setEditingCustomer({ ...editingCustomer, customer_policies: updatedPolicies });
+                                        }
+                                      }}
+                                      placeholder="e.g., Transfer cover included, Labour rate increased to £150/hr, 3 months FREE extended cover..."
+                                      rows={3}
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                      These notes will appear in the customer's dashboard under "Additional Notes". Changes here do NOT resend to Warranties 2000.
+                                    </p>
                                   </div>
 
                                   {/* Customer Dashboard Access */}
