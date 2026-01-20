@@ -191,7 +191,6 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   return (
     <div className="relative w-full">
       <div className="relative">
-        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           ref={inputRef}
           type="text"
@@ -205,7 +204,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           }}
           placeholder={placeholder}
           className={cn(
-            "pl-9 pr-9",
+            "pr-9",
             error && "border-destructive",
             className
           )}
