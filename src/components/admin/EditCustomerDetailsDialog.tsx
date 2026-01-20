@@ -18,7 +18,8 @@ import { z } from 'zod';
 const customerDetailsSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   phone: z.string().max(20, 'Phone number too long').optional(),
-  name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
+  firstName: z.string().min(1, 'First name is required').max(50, 'First name too long'),
+  lastName: z.string().min(1, 'Surname is required').max(50, 'Surname too long'),
 });
 
 interface EditCustomerDetailsDialogProps {
@@ -27,6 +28,8 @@ interface EditCustomerDetailsDialogProps {
   customerId: string;
   currentEmail: string;
   currentPhone?: string | null;
+  currentFirstName?: string | null;
+  currentLastName?: string | null;
   currentName?: string | null;
   onSaved?: () => void;
 }
@@ -37,12 +40,27 @@ export const EditCustomerDetailsDialog: React.FC<EditCustomerDetailsDialogProps>
   customerId,
   currentEmail,
   currentPhone,
+  currentFirstName,
+  currentLastName,
   currentName,
   onSaved,
 }) => {
+  // Parse existing name into first/last if first_name/last_name not provided
+  const parseNameParts = () => {
+    if (currentFirstName || currentLastName) {
+      return { first: currentFirstName || '', last: currentLastName || '' };
+    }
+    // Fallback: split the combined name
+    const nameParts = (currentName || '').trim().split(' ');
+    const first = nameParts[0] || '';
+    const last = nameParts.slice(1).join(' ') || '';
+    return { first, last };
+  };
+
   const [email, setEmail] = useState(currentEmail);
   const [phone, setPhone] = useState(currentPhone || '');
-  const [name, setName] = useState(currentName || '');
+  const [firstName, setFirstName] = useState(parseNameParts().first);
+  const [lastName, setLastName] = useState(parseNameParts().last);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -50,14 +68,16 @@ export const EditCustomerDetailsDialog: React.FC<EditCustomerDetailsDialogProps>
     if (open) {
       setEmail(currentEmail);
       setPhone(currentPhone || '');
-      setName(currentName || '');
+      const { first, last } = parseNameParts();
+      setFirstName(first);
+      setLastName(last);
       setErrors({});
     }
-  }, [open, currentEmail, currentPhone, currentName]);
+  }, [open, currentEmail, currentPhone, currentFirstName, currentLastName, currentName]);
 
   const handleSave = async () => {
     // Validate
-    const result = customerDetailsSchema.safeParse({ email, phone, name });
+    const result = customerDetailsSchema.safeParse({ email, phone, firstName, lastName });
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
       result.error.errors.forEach(err => {
@@ -69,6 +89,8 @@ export const EditCustomerDetailsDialog: React.FC<EditCustomerDetailsDialogProps>
       return;
     }
 
+    const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
+
     setSaving(true);
     try {
       // Update customers table
@@ -77,19 +99,21 @@ export const EditCustomerDetailsDialog: React.FC<EditCustomerDetailsDialogProps>
         .update({
           email: email.toLowerCase().trim(),
           phone: phone.trim() || null,
-          name: name.trim(),
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          name: fullName,
           updated_at: new Date().toISOString(),
         })
         .eq('id', customerId);
 
       if (customerError) throw customerError;
 
-      // Also update customer_policies table with the new email
+      // Also update customer_policies table with the new email and name
       const { error: policyError } = await supabase
         .from('customer_policies')
         .update({
           email: email.toLowerCase().trim(),
-          customer_full_name: name.trim(),
+          customer_full_name: fullName,
           updated_at: new Date().toISOString(),
         })
         .eq('customer_id', customerId);
@@ -124,21 +148,39 @@ export const EditCustomerDetailsDialog: React.FC<EditCustomerDetailsDialogProps>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="edit-name" className="flex items-center gap-2">
-              <User className="h-4 w-4 text-muted-foreground" />
-              Full Name
-            </Label>
-            <Input
-              id="edit-name"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                setErrors(prev => ({ ...prev, name: '' }));
-              }}
-              placeholder="John Smith"
-            />
-            {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-first-name" className="flex items-center gap-2">
+                <User className="h-4 w-4 text-muted-foreground" />
+                First Name
+              </Label>
+              <Input
+                id="edit-first-name"
+                value={firstName}
+                onChange={(e) => {
+                  setFirstName(e.target.value);
+                  setErrors(prev => ({ ...prev, firstName: '' }));
+                }}
+                placeholder="John"
+              />
+              {errors.firstName && <p className="text-sm text-red-500">{errors.firstName}</p>}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-last-name" className="flex items-center gap-2">
+                <User className="h-4 w-4 text-muted-foreground" />
+                Surname
+              </Label>
+              <Input
+                id="edit-last-name"
+                value={lastName}
+                onChange={(e) => {
+                  setLastName(e.target.value);
+                  setErrors(prev => ({ ...prev, lastName: '' }));
+                }}
+                placeholder="Smith"
+              />
+              {errors.lastName && <p className="text-sm text-red-500">{errors.lastName}</p>}
+            </div>
           </div>
 
           <div className="space-y-2">
