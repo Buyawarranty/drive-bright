@@ -1193,116 +1193,121 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Payment Cards - Radio Style */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-4">
-              {/* Pay Monthly Card */}
+              {/* Pay Monthly Card - Orange accent */}
               <button
                 type="button"
                 onClick={() => {
                   setSelectedPayment('monthly');
                   setPaymentError('');
                 }}
-                className={`relative text-left p-5 sm:p-5 rounded-2xl border-2 transition-all ${
+                className={`relative text-left p-5 sm:p-5 rounded-2xl transition-all bg-white ${
                   selectedPayment === 'monthly'
-                    ? 'border-primary bg-primary/5 shadow-lg'
-                    : 'border-border bg-card hover:border-muted-foreground/50 hover:shadow-sm'
+                    ? 'border-[3px] border-orange-400 shadow-lg'
+                    : 'border-2 border-gray-200 hover:border-gray-300 hover:shadow-sm'
                 }`}
               >
-                {/* Badge */}
-                <span className="absolute -top-2.5 left-4 bg-primary text-primary-foreground text-xs font-bold px-2.5 py-0.5 rounded-full">
+                {/* Badge - Neutral grey */}
+                <span className="absolute -top-2.5 left-4 bg-gray-600 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">
                   0% APR
                 </span>
 
                 <div className="flex items-start gap-3 mt-1">
+                  {/* Radio - Orange when active */}
                   <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-all ${
                     selectedPayment === 'monthly' 
-                      ? 'border-primary bg-primary' 
-                      : 'border-muted-foreground/30 bg-card'
+                      ? 'border-orange-500 bg-orange-500' 
+                      : 'border-gray-300 bg-white'
                   }`}>
                     {selectedPayment === 'monthly' && (
-                      <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary-foreground" />
+                      <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-semibold text-foreground">Monthly</h3>
+                    <h3 className="text-sm font-semibold text-gray-900">Monthly</h3>
                     
                     {/* Price Display */}
                     <div className="mt-3 mb-3">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-2xl sm:text-3xl font-bold text-foreground">£{Math.floor(discountedBumperPrice / 12)}</span>
-                        <span className="text-sm font-medium text-muted-foreground">/mo</span>
+                        <span className="text-2xl sm:text-3xl font-bold text-gray-900">£{Math.floor(discountedBumperPrice / 12)}</span>
+                        <span className="text-sm font-medium text-gray-500">/mo</span>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">Total £{discountedBumperPrice}</p>
+                      <p className="text-sm text-gray-500 mt-1">Total £{discountedBumperPrice}</p>
                     </div>
                     
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-foreground/80">
-                        <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                      {/* Tick icons - Orange */}
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <Check className="w-4 h-4 text-orange-500 flex-shrink-0" />
                         <span>No credit impact</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-foreground/80">
-                        <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <Check className="w-4 h-4 text-orange-500 flex-shrink-0" />
                         <span>Spread the cost</span>
                       </div>
                     </div>
                     
-                    <div className="mt-4 pt-3 border-t border-border/50">
+                    <div className="mt-4 pt-3 border-t border-gray-100">
                       <img src={bumperLogo} alt="Bumper" className="h-5 opacity-70" />
                     </div>
                   </div>
                 </div>
               </button>
 
-              {/* Pay in Full Card */}
+              {/* Pay in Full Card - Green accent */}
               <button
                 type="button"
                 onClick={() => {
                   setSelectedPayment('full');
                   setPaymentError('');
                 }}
-                className={`relative text-left p-5 sm:p-5 rounded-2xl border-2 transition-all ${
+                className={`relative text-left p-5 sm:p-5 rounded-2xl transition-all bg-white ${
                   selectedPayment === 'full'
-                    ? 'border-primary bg-primary/5 shadow-lg'
-                    : 'border-border bg-card hover:border-muted-foreground/50 hover:shadow-sm'
+                    ? 'border-[3px] border-green-500 shadow-lg'
+                    : 'border-2 border-green-200 hover:border-green-300 hover:shadow-sm'
                 }`}
               >
-                {/* Badge */}
-                <span className="absolute -top-2.5 left-4 bg-primary text-primary-foreground text-xs font-bold px-2.5 py-0.5 rounded-full">
+                {/* Badge - Orange */}
+                <span className="absolute -top-2.5 left-4 bg-orange-500 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">
                   Save 10%
                 </span>
 
                 <div className="flex items-start gap-3 mt-1">
+                  {/* Radio - Green when active */}
                   <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 transition-all ${
                     selectedPayment === 'full' 
-                      ? 'border-primary bg-primary' 
-                      : 'border-muted-foreground/30 bg-card'
+                      ? 'border-green-500 bg-green-500' 
+                      : 'border-gray-300 bg-white'
                   }`}>
                     {selectedPayment === 'full' && (
-                      <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary-foreground" />
+                      <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-semibold text-foreground">Pay in Full</h3>
+                    <h3 className="text-sm font-semibold text-gray-900">Pay in Full</h3>
                     
                     {/* Price Display */}
                     <div className="mt-3 mb-3">
-                      <p className="text-sm text-muted-foreground line-through">Was £{bumperTotalPrice}</p>
+                      <p className="text-sm text-gray-400 line-through">Was £{bumperTotalPrice}</p>
                       <div className="flex items-baseline gap-1 mt-0.5">
-                        <span className="text-2xl sm:text-3xl font-bold text-foreground">£{discountedStripePrice}</span>
+                        <span className="text-2xl sm:text-3xl font-bold text-gray-900">£{discountedStripePrice}</span>
                       </div>
-                      <p className="text-sm font-medium text-primary mt-1">You save £{savings}!</p>
+                      {/* Savings - Orange text */}
+                      <p className="text-sm font-medium text-orange-500 mt-1">You save £{savings}!</p>
                     </div>
                     
                     <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-foreground/80">
-                        <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                      {/* Tick icons - Green */}
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                         <span>Instant 10% off</span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-foreground/80">
-                        <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                      <div className="flex items-center gap-2 text-sm text-gray-700">
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                         <span>One simple payment</span>
                       </div>
                     </div>
                     
-                    <div className="mt-4 pt-3 border-t border-border/50">
+                    <div className="mt-4 pt-3 border-t border-gray-100">
                       <img src={stripeLogo} alt="Stripe" className="h-5 opacity-70" />
                     </div>
                   </div>
