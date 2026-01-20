@@ -1280,12 +1280,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 }`}
               >
                 {/* Badge - Soft orange tint */}
-                <span 
-                  className="absolute -top-2.5 left-4 text-xs font-bold px-2.5 py-0.5 rounded-full"
-                  style={{ backgroundColor: '#FFF3E5', color: '#FF6B00' }}
-                >
-                  Save 10%
-                </span>
+                  <span 
+                    className="absolute -top-2.5 left-4 text-xs font-bold px-2.5 py-0.5 rounded-full"
+                    style={{ backgroundColor: '#E8F5E9', color: '#28A745' }}
+                  >
+                    Save 10%
+                  </span>
 
                 <div className="flex items-start gap-3 mt-1">
                   {/* Radio - Green when active */}
