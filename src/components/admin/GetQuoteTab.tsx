@@ -1369,6 +1369,9 @@ Questions? Call 0330 229 5040`;
         // W2000 scheduling for future start dates
         warranties_2000_scheduled_for: isFutureStartDate ? startDate.toISOString() : null,
         warranties_2000_status: sendToW2k ? (isFutureStartDate ? 'scheduled' : 'pending') : null,
+        // Include additional notes and bonus months from quote
+        additional_notes: additionalNotes || null,
+        seasonal_bonus_months: freeExtendedCover === '6months' ? 6 : freeExtendedCover === '3months' ? 3 : 0,
       };
       
       // Include address in policy if provided
