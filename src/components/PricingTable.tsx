@@ -1633,17 +1633,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         {(durationId === '24months' || durationId === '36months') ? 'Pay in full ' : 'Total: '}
                         £{displayedAnnualPrice}
                       </span>
-                      {savingsAmount > 0 && (
-                        <span className="text-red-500 line-through ml-1">(Was £{displayedAnnualPrice + savingsAmount})</span>
-                      )}
                     </div>
-                    
-                    {/* Savings line */}
-                    {savingsAmount > 0 && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <span className="text-sm font-bold text-green-600">Save £{savingsAmount} Today</span>
-                      </div>
-                    )}
                     
                     {/* Extra benefits for 2-year and 3-year */}
                     {(durationId === '24months' || durationId === '36months') && (
