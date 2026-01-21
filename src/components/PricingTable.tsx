@@ -2309,36 +2309,83 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </Alert>
           )}
           
-          <div className="grid grid-cols-4 gap-3 ml-11">
-            {[
-              { value: 0, label: '£0', tag: 'No upfront cost', isMostPopular: false },
-              { value: 100, label: '£100', tag: 'Best value overall', isMostPopular: true },
-              { value: 250, label: '£250', tag: 'Lower monthly price', isMostPopular: false },
-              { value: 500, label: '£500', tag: 'Cheapest monthly price', isMostPopular: false }
-            ].map((option) => (
-              <button
-                key={option.value}
-                onClick={() => {
-                  toggleVoluntaryExcess(option.value);
-                  setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
-                }}
-                className={`py-4 px-3 rounded-xl transition-all duration-200 text-center relative min-h-[90px] flex flex-col items-center justify-center ${
-                  voluntaryExcess === option.value
-                    ? 'bg-orange-500/10 border-2 border-orange-500 shadow-lg shadow-orange-500/30'
-                    : 'neutral-container shadow-lg shadow-black/15 hover:shadow-xl hover:shadow-orange-500/20 border-2 border-transparent'
-                }`}
-              >
-                {option.isMostPopular && (
-                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-success text-white text-[9px] font-bold px-2 py-0.5 rounded whitespace-nowrap">
-                    MOST POPULAR
-                  </span>
-                )}
-                <div className="text-lg font-bold text-black">{option.label}</div>
-                {option.tag && (
-                  <div className="text-[10px] text-gray-500 mt-1 leading-tight">{option.tag}</div>
-                )}
-              </button>
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 ml-11">
+            <button
+              onClick={() => {
+                toggleVoluntaryExcess(0);
+                setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
+              }}
+              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                voluntaryExcess === 0
+                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
+                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
+              }`}
+            >
+              <div className="mb-2">
+                <span className="text-2xl font-bold text-foreground">£0 </span>
+                <span className="text-sm font-medium text-foreground">excess</span>
+              </div>
+              <p className="text-xl font-bold text-black">Zero Excess</p>
+              <p className="text-xs text-muted-foreground mt-1">No upfront cost when you claim.</p>
+            </button>
+            
+            <button
+              onClick={() => {
+                toggleVoluntaryExcess(100);
+                setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
+              }}
+              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                voluntaryExcess === 100
+                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
+                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
+              }`}
+            >
+              <span className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">MOST POPULAR</span>
+              <div className="mb-2">
+                <span className="text-2xl font-bold text-foreground">£100 </span>
+                <span className="text-sm font-medium text-foreground">excess</span>
+              </div>
+              <p className="text-xl font-bold text-black">Best Value</p>
+              <p className="text-xs text-muted-foreground mt-1">Best value overall for most drivers.</p>
+            </button>
+            
+            <button
+              onClick={() => {
+                toggleVoluntaryExcess(250);
+                setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
+              }}
+              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                voluntaryExcess === 250
+                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
+                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
+              }`}
+            >
+              <div className="mb-2">
+                <span className="text-2xl font-bold text-foreground">£250 </span>
+                <span className="text-sm font-medium text-foreground">excess</span>
+              </div>
+              <p className="text-xl font-bold text-black">Saver Option</p>
+              <p className="text-xs text-muted-foreground mt-1">Lower monthly price.</p>
+            </button>
+            
+            <button
+              onClick={() => {
+                toggleVoluntaryExcess(500);
+                setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
+              }}
+              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
+                voluntaryExcess === 500
+                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
+                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
+              }`}
+            >
+              <div className="mb-2">
+                <span className="text-2xl font-bold text-foreground">£500 </span>
+                <span className="text-sm font-medium text-foreground">excess</span>
+              </div>
+              <p className="text-xl font-bold text-black">Budget Option</p>
+              <p className="text-xs text-muted-foreground mt-1">Cheapest monthly price.</p>
+            </button>
           </div>
         </div>
 
