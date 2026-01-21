@@ -190,14 +190,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
   // Account for boost addon which adds 500 to the claim limit value
   const validClaimLimits = [1000, 2000, 3000];
   const getValidatedClaimLimit = (): number => {
-    if (!previousClaimLimit) return 1000;
+    if (!previousClaimLimit) return 2000;
     // Check if it's a valid base claim limit
     if (validClaimLimits.includes(previousClaimLimit)) return previousClaimLimit;
     // Check if it's a boosted claim limit (base + 500)
     const possibleBaseLimit = previousClaimLimit - 500;
     if (validClaimLimits.includes(possibleBaseLimit)) return possibleBaseLimit;
-    // Default to 1000
-    return 1000;
+    // Default to 2000
+    return 2000;
   };
   const [selectedClaimLimit, setSelectedClaimLimit] = useState<number | null>(getValidatedClaimLimit());
   const [summaryDismissed, setSummaryDismissed] = useState(false);
