@@ -2311,10 +2311,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
           
           <div className="grid grid-cols-4 gap-3 ml-11">
             {[
-              { value: 0, label: '£0', delta: '+£6/mo', tag: null },
-              { value: 100, label: '£100', delta: '£0', tag: 'Most people choose this' },
-              { value: 250, label: '£250', delta: '-£4/mo', tag: 'Saver option' },
-              { value: 500, label: '£500', delta: '-£8/mo', tag: 'Budget option' }
+              { value: 0, label: '£0', tag: null },
+              { value: 100, label: '£100', tag: 'Most people choose this' },
+              { value: 250, label: '£250', tag: 'Saver option' },
+              { value: 500, label: '£500', tag: 'Budget option' }
             ].map((option) => (
               <button
                 key={option.value}
@@ -2334,15 +2334,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   </span>
                 )}
                 <div className="text-lg font-bold text-black">{option.label}</div>
-                <div className={`text-xs font-semibold mt-1 ${
-                  option.delta.startsWith('-') ? 'text-green-600' : 
-                  option.delta.startsWith('+') ? 'text-orange-600' : 
-                  'text-gray-500'
-                }`}>
-                  {option.delta}
-                </div>
                 {option.tag && (
-                  <div className="text-[9px] text-gray-500 mt-1 leading-tight">{option.tag}</div>
+                  <div className="text-[10px] text-gray-500 mt-1 leading-tight">{option.tag}</div>
                 )}
               </button>
             ))}
