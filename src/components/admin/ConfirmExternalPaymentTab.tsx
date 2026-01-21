@@ -442,7 +442,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     setSelectedLeadId(null);
     setPaymentType('24months');
     setExcessAmount(100);
-    setClaimLimit(1250);
+    setClaimLimit(1000);
     setLabourRate(70);
     setBoostAddon(false);
     setFreeExtendedCover('none');

@@ -63,7 +63,7 @@ export function InlineWarrantyUpgrade({
     if (field === 'labour_rate') {
       return `£${currentValue || 70}/hr`;
     }
-    return `£${currentValue || (field === 'claim_limit' ? 1250 : 100)}`;
+    return `£${currentValue || (field === 'claim_limit' ? 1000 : 100)}`;
   };
 
   const getBadgeStyle = () => {

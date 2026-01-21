@@ -266,7 +266,7 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
         startDate: startDate,
         expiryDate: expiryDate,
         voluntaryExcess: policyToEdit.voluntary_excess || 0,
-        claimLimit: policyToEdit.claim_limit || 1250,
+        claimLimit: policyToEdit.claim_limit || 1000,
         totalAmount: policyToEdit.payment_amount?.toString() || '',
         wearTearCover: policyToEdit.wear_tear || false,
         vehicleRecovery: policyToEdit.breakdown_recovery || false,
