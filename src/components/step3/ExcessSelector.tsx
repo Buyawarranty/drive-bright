@@ -10,10 +10,10 @@ interface ExcessSelectorProps {
 
 // Updated excess options per requirements: £0, £100, £250, £500
 const excessOptions = [
-  { value: 0, label: '£0', delta: '+£6/mo', tag: null },
-  { value: 100, label: '£100', delta: '£0', tag: 'Most people choose this' },
-  { value: 250, label: '£250', delta: '-£4/mo', tag: 'Saver option' },
-  { value: 500, label: '£500', delta: '-£8/mo', tag: 'Budget option' }
+  { value: 0, label: '£0', tag: 'No upfront cost' },
+  { value: 100, label: '£100', tag: 'Best value overall', isMostPopular: true },
+  { value: 250, label: '£250', tag: 'Lower monthly price' },
+  { value: 500, label: '£500', tag: 'Cheapest monthly price' }
 ];
 
 const ExcessSelector: React.FC<ExcessSelectorProps> = ({
@@ -34,7 +34,6 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
       <div className="grid grid-cols-4 gap-2 mb-3">
         {excessOptions.map((option) => {
           const isSelected = selectedExcess === option.value;
-          const isDefault = option.value === 100;
           
           return (
             <button
@@ -47,25 +46,15 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
                   : "border-border bg-card text-foreground hover:border-success/50"
               )}
             >
-              {/* Default indicator */}
-              {isDefault && (
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[8px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap">
-                  DEFAULT
+              {/* Most Popular indicator */}
+              {'isMostPopular' in option && option.isMostPopular && (
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-success text-white text-[8px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap">
+                  MOST POPULAR
                 </span>
               )}
               
               {/* Excess amount */}
               <span className="font-bold text-base">{option.label}</span>
-              
-              {/* Monthly delta */}
-              <span className={cn(
-                "text-[10px] font-semibold mt-1",
-                option.delta.startsWith('-') ? "text-success" : 
-                option.delta.startsWith('+') ? "text-orange-600" : 
-                "text-muted-foreground"
-              )}>
-                {option.delta}
-              </span>
               
               {/* Selection checkmark */}
               {isSelected && (
