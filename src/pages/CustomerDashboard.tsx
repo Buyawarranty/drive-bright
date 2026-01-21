@@ -1538,7 +1538,7 @@ const CustomerDashboard = () => {
                               <div>
                                 <Label className="text-xs sm:text-sm font-medium text-gray-700">Claim Limit</Label>
                                 <p className="font-bold text-lg text-blue-900">
-                                  £{(selectedPolicy?.claim_limit || customerData?.claim_limit || 1250).toLocaleString()} per claim
+                                  £{(selectedPolicy?.claim_limit || customerData?.claim_limit || 1000).toLocaleString()} per claim
                                 </p>
                               </div>
                               <div>

@@ -258,7 +258,7 @@ const Index = () => {
         if (restoredData.paymentType || restoredData.claimLimit || restoredData.labourRate || restoredData.voluntaryExcess !== undefined) {
           const planSettings = {
             paymentType: restoredData.paymentType || '24months',
-            claimLimit: restoredData.claimLimit || 1250,
+            claimLimit: restoredData.claimLimit || 1000,
             labourRate: restoredData.labourRate || 70,
             voluntaryExcess: restoredData.voluntaryExcess ?? 100,
             boostAddon: restoredData.boostAddon || false,
