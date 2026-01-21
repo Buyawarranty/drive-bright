@@ -52,12 +52,13 @@ interface VehicleData {
   manufactureDate?: string; // Full manufacture date for precise age calculation
 }
 
-// Recovery fallback component
+// Recovery fallback component - optimized for bfcache restoration
 const RecoveryFallback: React.FC<{
   onRecovered: (vehicleData: VehicleData, selectedPlan: any) => void;
   onStartOver: () => void;
 }> = ({ onRecovered, onStartOver }) => {
-  const [isAttemptingRecovery, setIsAttemptingRecovery] = useState(true);
+  // CRITICAL: Start with loading hidden to prevent flash during bfcache restoration
+  const [showLoadingUI, setShowLoadingUI] = useState(false);
   const [recoveryFailed, setRecoveryFailed] = useState(false);
   const hasAttemptedRef = useRef(false);
   const recoveryCompleteRef = useRef(false);
@@ -69,14 +70,14 @@ const RecoveryFallback: React.FC<{
     }
   }, [recoveryFailed]);
 
-  // Immediate recovery attempt on mount - no delays
+  // Immediate recovery attempt on mount - optimized for bfcache
   useEffect(() => {
     // Only attempt recovery once to prevent infinite loops
     if (hasAttemptedRef.current) return;
     hasAttemptedRef.current = true;
     
-    const attemptRecovery = () => {
-      if (recoveryCompleteRef.current) return;
+    const attemptRecovery = (): boolean => {
+      if (recoveryCompleteRef.current) return true;
       
       try {
         const savedVehicleData = localStorage.getItem('buyawarranty_vehicleData');
@@ -88,43 +89,46 @@ const RecoveryFallback: React.FC<{
           
           // Validate the data has required fields
           if (parsedVehicleData?.regNumber && parsedSelectedPlan?.paymentType) {
-            console.log('✅ Recovery attempt successful:', { parsedVehicleData, parsedSelectedPlan });
+            console.log('✅ RecoveryFallback: Recovery successful');
             recoveryCompleteRef.current = true;
-            // IMPORTANT: Stop showing loading before calling onRecovered
-            setIsAttemptingRecovery(false);
             onRecovered(parsedVehicleData, parsedSelectedPlan);
-            return;
+            return true;
           }
         }
       } catch (error) {
-        console.error('❌ Error during recovery attempt:', error);
+        console.error('❌ RecoveryFallback: Error during recovery:', error);
       }
-      
-      // Recovery failed
-      if (!recoveryCompleteRef.current) {
-        setRecoveryFailed(true);
-        setIsAttemptingRecovery(false);
-      }
+      return false;
     };
 
-    // Attempt immediately first
-    attemptRecovery();
-    
-    // Also try with a small delay for bfcache edge cases
-    if (!recoveryCompleteRef.current) {
-      requestAnimationFrame(() => {
-        setTimeout(attemptRecovery, 50);
-      });
+    // Try SYNCHRONOUS recovery first - no UI flash
+    if (attemptRecovery()) {
+      return; // Success - parent will re-render without this component
     }
+    
+    // If immediate recovery failed, wait ONE animation frame for parent's
+    // bfcache handler to potentially restore state first
+    requestAnimationFrame(() => {
+      if (recoveryCompleteRef.current) return;
+      
+      // Try again after frame
+      if (attemptRecovery()) {
+        return;
+      }
+      
+      // Still failed after frame - NOW show loading UI
+      // This gives parent's pageshow handler time to restore state
+      setShowLoadingUI(true);
+    });
   }, []); // Empty dependency array - only run once
 
-  // Safety timeout - FASTER: 1.5 seconds max to prevent long freezes
+  // Safety timeout - 800ms max to prevent long freezes
   useEffect(() => {
-    if (!isAttemptingRecovery || recoveryCompleteRef.current) return;
+    if (!showLoadingUI || recoveryCompleteRef.current) return;
     
     const safetyTimeout = setTimeout(() => {
-      if (isAttemptingRecovery && !recoveryFailed && !recoveryCompleteRef.current) {
-        console.log('⚠️ Recovery timeout - forcing recovery check');
+      if (!recoveryCompleteRef.current) {
+        console.log('⚠️ RecoveryFallback: Timeout - final recovery attempt');
         try {
           const savedVehicleData = localStorage.getItem('buyawarranty_vehicleData');
           const savedSelectedPlan = localStorage.getItem('buyawarranty_selectedPlan');
@@ -135,24 +139,25 @@ const RecoveryFallback: React.FC<{
             
             if (parsedVehicleData?.regNumber && parsedSelectedPlan?.paymentType) {
               recoveryCompleteRef.current = true;
-              setIsAttemptingRecovery(false);
+              setShowLoadingUI(false);
               onRecovered(parsedVehicleData, parsedSelectedPlan);
               return;
             }
           }
         } catch (error) {
-          console.error('❌ Safety timeout recovery failed:', error);
+          console.error('❌ RecoveryFallback: Safety timeout failed:', error);
         }
-        // If we get here, recovery failed
+        // If we get here, recovery truly failed
         setRecoveryFailed(true);
-        setIsAttemptingRecovery(false);
+        setShowLoadingUI(false);
       }
-    }, 1500); // Reduced from 2000ms to 1500ms
+    }, 800); // Reduced to 800ms for faster feedback
     
     return () => clearTimeout(safetyTimeout);
-  }, [isAttemptingRecovery, recoveryFailed, onRecovered]);
+  }, [showLoadingUI, onRecovered]);
 
-  if (isAttemptingRecovery) {
+  // Only show loading AFTER confirming we need it (prevents bfcache flash)
+  if (showLoadingUI && !recoveryFailed) {
     return (
       <div className="w-full px-4 py-8">
         <div className="max-w-4xl mx-auto text-center space-y-6">
@@ -506,17 +511,19 @@ const Index = () => {
   }, []);
 
   // Handle bfcache restoration (when user navigates back from payment gateway)
+  // This MUST run synchronously to prevent RecoveryFallback from flashing
   useEffect(() => {
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
-        console.log('📱 Index: Page restored from bfcache, checking state');
+        console.log('📱 Index: Page restored from bfcache');
         
         // Get current step from URL
         const urlStep = parseInt(searchParams.get('step') || '1');
         
-        // If on step 4, ensure we have the required data
-        if (urlStep === 4 && (!vehicleData || !selectedPlan)) {
-          console.log('📱 Index: Step 4 missing data, attempting recovery from localStorage');
+        // ALWAYS attempt recovery on step 4, even if state appears to exist
+        // This handles edge cases where React's state is stale
+        if (urlStep === 4) {
+          console.log('📱 Index: Step 4 bfcache restore - forcing state recovery');
           
           try {
             const savedVehicleData = localStorage.getItem('buyawarranty_vehicleData');
@@ -527,9 +534,18 @@ const Index = () => {
               const parsedSelectedPlan = JSON.parse(savedSelectedPlan);
               
               if (parsedVehicleData?.regNumber && parsedSelectedPlan?.paymentType) {
-                console.log('✅ Index: Recovered state from localStorage on bfcache restore');
+                console.log('✅ Index: Recovered state from localStorage on bfcache');
+                
+                // Use flushSync-like behavior by setting state immediately
+                // React 18 batches updates, but bfcache requires immediate response
                 setVehicleData(parsedVehicleData);
                 setSelectedPlan(parsedSelectedPlan);
+                
+                // Force a re-render to ensure state is applied
+                requestAnimationFrame(() => {
+                  setVehicleData(parsedVehicleData);
+                  setSelectedPlan(parsedSelectedPlan);
+                });
               }
             }
           } catch (error) {
@@ -539,9 +555,10 @@ const Index = () => {
       }
     };
     
+    // Add listener immediately - don't wait for dependencies
     window.addEventListener('pageshow', handlePageShow);
     return () => window.removeEventListener('pageshow', handlePageShow);
-  }, [vehicleData, selectedPlan, searchParams]);
+  }, [searchParams]); // Minimal dependencies to ensure listener is stable
 
   // Quote restoration effect - optimized with memoization
   useEffect(() => {
