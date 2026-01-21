@@ -7,11 +7,12 @@ interface LabourRateSelectorProps {
   currentMonthlyPrice: number;
 }
 
+// Labour rate options with updated pricing per Jan 2026: £50=-£5/mo, £70=base, £100=+£4/mo, £200=+£24/mo
 const labourRateOptions = [
-  { rate: 50, label: '£50/hr', description: 'Local Garages', isBestValue: true },
-  { rate: 70, label: '£70/hr', description: 'Independent Garages', isPopular: true },
-  { rate: 100, label: '£100/hr', description: 'Approved Garages' },
-  { rate: 200, label: '£200/hr', description: 'Expert Garages' }
+  { rate: 50, label: '£50/hr', description: 'Local Garages', delta: '-£5/mo', isBestValue: true },
+  { rate: 70, label: '£70/hr', description: 'Independent Garages', delta: '£0', isPopular: true },
+  { rate: 100, label: '£100/hr', description: 'Approved Garages', delta: '+£4/mo' },
+  { rate: 200, label: '£200/hr', description: 'Expert Garages', delta: '+£24/mo' }
 ];
 
 const LabourRateSelector: React.FC<LabourRateSelectorProps> = ({
@@ -55,7 +56,15 @@ const LabourRateSelector: React.FC<LabourRateSelectorProps> = ({
                 </span>
               )}
               <span className="font-bold text-sm">{option.label}</span>
-              <span className="text-xs text-muted-foreground mt-1">{option.description}</span>
+              <span className="text-xs text-muted-foreground">{option.description}</span>
+              <span className={cn(
+                "text-[10px] font-semibold mt-1",
+                option.delta.startsWith('-') ? "text-success" : 
+                option.delta.startsWith('+') ? "text-orange-600" : 
+                "text-muted-foreground"
+              )}>
+                {option.delta}
+              </span>
             </button>
           );
         })}

@@ -365,10 +365,11 @@ serve(async (req) => {
     });
 
     // Get claim limit from policy or customer data
-    // Valid claim limits are 750, 1250, 2000
+    // Valid claim limits for new business: 1000, 1500, 2000, 2500, 3000 (includes boost combinations)
+    // Legacy claim limits (750, 1250) preserved for existing policies - pass through unchanged
     const policyClaimLimit = policy?.claim_limit;
     const customerClaimLimit = customer?.claim_limit;
-    const finalClaimLimit = policyClaimLimit ?? customerClaimLimit ?? 1250;
+    const finalClaimLimit = policyClaimLimit ?? customerClaimLimit ?? 1000; // Default 1000 (updated Jan 2026)
     
     // Get voluntary excess from policy or customer data - EXACT same pattern as claim limit
     const policyVoluntaryExcess = policy?.voluntary_excess;

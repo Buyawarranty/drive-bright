@@ -17,24 +17,26 @@
 
 // Base pricing matrix from CURRENT_PRICE_DEC_2025 (ORIGINAL PRICING)
 // These are the base prices at £70/hr labour rate (DEFAULT)
+// UPDATED JAN 2026: New claim limit keys 1000, 2000, 3000 (mapped from old 750, 1250, 2000 prices)
+// UPDATED JAN 2026: New excess keys 0, 100, 250, 500
 export const BASE_PRICING_MATRIX = {
   '12months': {
-    0: { 750: 467, 1250: 497, 2000: 587 },
-    50: { 750: 437, 1250: 457, 2000: 547 },
-    100: { 750: 387, 1250: 417, 2000: 507 },
-    150: { 750: 367, 1250: 387, 2000: 477 }
+    0: { 1000: 467, 2000: 497, 3000: 587 },      // £0 excess (+£6/mo from £100 baseline)
+    100: { 1000: 387, 2000: 417, 3000: 507 },    // £100 excess (default baseline)
+    250: { 1000: 339, 2000: 369, 3000: 459 },    // £250 excess (-£4/mo = -£48/yr from baseline)
+    500: { 1000: 291, 2000: 321, 3000: 411 }     // £500 excess (-£8/mo = -£96/yr from baseline)
   },
   '24months': {
-    0: { 750: 897, 1250: 937, 2000: 1027 },
-    50: { 750: 827, 1250: 877, 2000: 957 },
-    100: { 750: 737, 1250: 787, 2000: 877 },
-    150: { 750: 697, 1250: 737, 2000: 827 }
+    0: { 1000: 897, 2000: 937, 3000: 1027 },     // £0 excess (+£6/mo = +£144/2yr from baseline)
+    100: { 1000: 737, 2000: 787, 3000: 877 },    // £100 excess (default baseline)
+    250: { 1000: 641, 2000: 691, 3000: 781 },    // £250 excess (-£4/mo = -£96/2yr from baseline)
+    500: { 1000: 545, 2000: 595, 3000: 685 }     // £500 excess (-£8/mo = -£192/2yr from baseline)
   },
   '36months': {
-    0: { 750: 1347, 1250: 1397, 2000: 1497 },
-    50: { 750: 1247, 1250: 1297, 2000: 1397 },
-    100: { 750: 1097, 1250: 1177, 2000: 1277 },
-    150: { 750: 1047, 1250: 1097, 2000: 1197 }
+    0: { 1000: 1347, 2000: 1397, 3000: 1497 },   // £0 excess (+£6/mo = +£216/3yr from baseline)
+    100: { 1000: 1097, 2000: 1177, 3000: 1277 }, // £100 excess (default baseline)
+    250: { 1000: 953, 2000: 1033, 3000: 1133 },  // £250 excess (-£4/mo = -£144/3yr from baseline)
+    500: { 1000: 809, 2000: 889, 3000: 989 }     // £500 excess (-£8/mo = -£288/3yr from baseline)
   }
 } as const;
 
@@ -57,7 +59,7 @@ export const DURATION_MONTHS = {
 export const LABOUR_RATE_MONTHLY_ADJUSTMENT: Record<number, number> = {
   50: -5,  // £5 LESS per month (below base)
   70: 0,   // Base rate, no adjustment (DEFAULT)
-  100: 8,  // £8 more per month
+  100: 4,  // £4 more per month (UPDATED from £8)
   200: 24  // £24 more per month (for main dealers and specialists)
 };
 
@@ -70,11 +72,27 @@ export const DEFAULT_EXCESS = 100;
 // Default claim limit is £1000 (updated Jan 2026)
 export const DEFAULT_CLAIM_LIMIT = 1000;
 
-// Boost claim limit adds £5/month
-export const BOOST_CLAIM_LIMIT_MONTHLY = 5;
+// Boost claim limit adds +£500 to selected limit, costs £3/month (UPDATED from £5)
+export const BOOST_CLAIM_LIMIT_MONTHLY = 3;
+export const BOOST_CLAIM_LIMIT_AMOUNT = 500;
 
 // Transfer Cover one-off price (not monthly)
 export const TRANSFER_COVER_PRICE = 19;
+
+// Excess monthly adjustment values (for UI display and calculations)
+export const EXCESS_MONTHLY_ADJUSTMENT: Record<number, number> = {
+  0: 6,     // +£6/month
+  100: 0,   // Default (no adjustment)
+  250: -4,  // -£4/month
+  500: -8   // -£8/month
+};
+
+// Claim limit monthly adjustment values (for UI display and calculations)
+export const CLAIM_LIMIT_MONTHLY_ADJUSTMENT: Record<number, number> = {
+  1000: 0,  // Default (no adjustment)
+  2000: 6,  // +£6/month
+  3000: 10  // +£10/month
+};
 
 export type PaymentPeriod = keyof typeof BASE_PRICING_MATRIX;
 export type ExcessAmount = keyof typeof BASE_PRICING_MATRIX['12months'];
@@ -89,8 +107,12 @@ export function getBasePrice(
   claimLimit: number
 ): number {
   const periodData = BASE_PRICING_MATRIX[paymentPeriod] || BASE_PRICING_MATRIX['12months'];
-  const excessData = periodData[voluntaryExcess as ExcessAmount] || periodData[DEFAULT_EXCESS];
-  return excessData[claimLimit as ClaimLimit] || excessData[DEFAULT_CLAIM_LIMIT];
+  // Map excess to nearest valid key
+  const validExcess = [0, 100, 250, 500].includes(voluntaryExcess) ? voluntaryExcess : DEFAULT_EXCESS;
+  const excessData = periodData[validExcess as ExcessAmount] || periodData[DEFAULT_EXCESS];
+  // Map claim limit to nearest valid key
+  const validClaimLimit = [1000, 2000, 3000].includes(claimLimit) ? claimLimit : DEFAULT_CLAIM_LIMIT;
+  return excessData[validClaimLimit as ClaimLimit] || excessData[DEFAULT_CLAIM_LIMIT];
 }
 
 /**
