@@ -1384,30 +1384,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <span className="text-sm text-gray-600 font-bold text-center w-full sm:w-auto sm:text-base sm:self-center">All parts included at no extra cost</span>
           </div>
           
-          {/* Dynamic microcopy for add-ons explanation */}
-          <div className={cn(
-            "mb-6 px-4 py-3 rounded-lg text-sm transition-all duration-300",
-            hasAddOnsSelected 
-              ? "bg-green-50 border border-green-200" 
-              : "bg-gray-50 border border-gray-200"
-          )}>
-            {hasAddOnsSelected ? (
-              <div className="flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                <p className="text-gray-800">
-                  <span className="font-medium text-green-700">Optional Add-Ons selected.</span>{' '}
-                  <span className="text-gray-600">Your updated total is shown in the summary bar below.</span>
-                </p>
-              </div>
-            ) : (
-              <div className="flex items-start gap-2">
-                <Search className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5" />
-                <p className="text-gray-600">
-                  Base cover prices shown below. Any Optional Add-Ons you choose are added to the total in the summary bar.
-                </p>
-              </div>
-            )}
-          </div>
 
           {validationErrors.paymentType && (
             <Alert variant="destructive" className="mb-6">
