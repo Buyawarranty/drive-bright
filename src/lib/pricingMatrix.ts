@@ -67,8 +67,8 @@ export const DEFAULT_LABOUR_RATE = 70;
 // Default excess is £100
 export const DEFAULT_EXCESS = 100;
 
-// Default claim limit is £1250
-export const DEFAULT_CLAIM_LIMIT = 1250;
+// Default claim limit is £1000 (updated Jan 2026)
+export const DEFAULT_CLAIM_LIMIT = 1000;
 
 // Boost claim limit adds £5/month
 export const BOOST_CLAIM_LIMIT_MONTHLY = 5;
