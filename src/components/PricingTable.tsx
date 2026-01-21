@@ -133,8 +133,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
     previousSelectedAddOns ? { 'platinum': previousSelectedAddOns } : {}
   );
   // Detect if boost was enabled - either from explicit prop or inferred from boosted claim limit
+  // Boost now adds +£500, so boosted limits are 1500, 2500 (not 3000 as max can't be boosted)
   const wasBoostEnabled = previousBoostAddon || 
-    (previousClaimLimit && previousClaimLimit > 2000 && [1750, 2250, 3000].includes(previousClaimLimit));
+    (previousClaimLimit && [1500, 2500].includes(previousClaimLimit));
   const [boostAddon, setBoostAddon] = useState(wasBoostEnabled || false);
   const [loading, setLoading] = useState<{[key: string]: boolean}>({});
   const [plansLoading, setPlansLoading] = useState(true);
@@ -185,18 +186,18 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isFloatingBarVisible, setIsFloatingBarVisible] = useState(false);
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
-  // Validate previousClaimLimit is a valid option (750, 1250, 2000), otherwise default to 1250
-  // Account for boost addon which adds 1000 to the claim limit value
-  const validClaimLimits = [750, 1250, 2000];
+  // Validate previousClaimLimit is a valid option (1000, 2000, 3000), otherwise default to 1000
+  // Account for boost addon which adds 500 to the claim limit value
+  const validClaimLimits = [1000, 2000, 3000];
   const getValidatedClaimLimit = (): number => {
-    if (!previousClaimLimit) return 1250;
+    if (!previousClaimLimit) return 1000;
     // Check if it's a valid base claim limit
     if (validClaimLimits.includes(previousClaimLimit)) return previousClaimLimit;
-    // Check if it's a boosted claim limit (base + 1000)
-    const possibleBaseLimit = previousClaimLimit - 1000;
+    // Check if it's a boosted claim limit (base + 500)
+    const possibleBaseLimit = previousClaimLimit - 500;
     if (validClaimLimits.includes(possibleBaseLimit)) return possibleBaseLimit;
-    // Default to 1250
-    return 1250;
+    // Default to 1000
+    return 1000;
   };
   const [selectedClaimLimit, setSelectedClaimLimit] = useState<number | null>(getValidatedClaimLimit());
   const [summaryDismissed, setSummaryDismissed] = useState(false);
@@ -257,11 +258,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
   // Benefits expansion state
   const [expandedBenefits, setExpandedBenefits] = useState<Record<string, boolean>>({});
   
-  // Claim limit dialog state
+  // Claim limit dialog state - using new claim limits
   const [claimLimitDialogOpen, setClaimLimitDialogOpen] = useState<{[key: number]: boolean}>({
-    750: false,
-    1250: false,
-    2000: false
+    1000: false,
+    2000: false,
+    3000: false
   });
   
   // Validation error states
@@ -771,11 +772,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
     }
   };
 
-  // Get pricing data using centralized pricing matrix
+  // Get pricing data using centralized pricing matrix with new claim limit keys
   const getPricingData = (excess: number, claimLimit: number, paymentPeriod: string) => {
     const periodData = BASE_PRICING_MATRIX[paymentPeriod as PaymentPeriod] || BASE_PRICING_MATRIX['12months'];
-    const excessData = periodData[excess as keyof typeof periodData] || periodData[100];
-    return excessData[claimLimit as keyof typeof excessData] || excessData[1250];
+    // Map excess to valid keys (0, 100, 250, 500)
+    const validExcess = [0, 100, 250, 500].includes(excess) ? excess : 100;
+    const excessData = periodData[validExcess as keyof typeof periodData] || periodData[100];
+    // Map claim limit to valid keys (1000, 2000, 3000)
+    const validClaimLimit = [1000, 2000, 3000].includes(claimLimit) ? claimLimit : 1000;
+    return excessData[validClaimLimit as keyof typeof excessData] || excessData[1000];
   };
 
   // Memoized price calculation to prevent pricing fluctuations
