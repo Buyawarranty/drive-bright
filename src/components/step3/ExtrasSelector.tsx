@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { getAutoIncludedAddOns } from '@/lib/addOnsUtils';
+import { TRANSFER_COVER_PRICE } from '@/lib/pricingMatrix';
 
 interface Extra {
   key: string;
@@ -13,6 +14,7 @@ interface Extra {
   price: number;
   priceType: 'monthly' | 'one-off';
   icon: string;
+  group: 'included' | 'claim-protection' | 'mobility' | 'ownership';
 }
 
 interface ExtrasSelectorProps {
@@ -26,62 +28,56 @@ interface ExtraWithBadge extends Extra {
   badge?: { text: string; color: 'orange' | 'green' };
 }
 
+// Regrouped add-ons per the spec
 const allExtras: ExtraWithBadge[] = [
+  // Included as standard - 24/7 Vehicle Recovery
   {
     key: 'breakdown',
-    title: 'Roadside Assistance',
-    shortDescription: '24/7 vehicle recovery cost refund',
+    title: '24/7 Vehicle Recovery',
+    shortDescription: 'Roadside assistance and recovery service',
     details: ['Covers recovery costs up to £150 per incident', 'Available 24/7 across the UK', 'Includes home start service'],
-    price: 4,
+    price: 0,
     priceType: 'monthly',
-    icon: '🚗'
+    icon: '🚗',
+    group: 'included'
   },
+  // Claim Protection group
   {
     key: 'wearAndTear',
     title: 'Wear & Tear Cover',
-    shortDescription: 'Protects key parts from natural wear',
+    shortDescription: 'Protects clutch, brakes, and wear items',
     details: ['Covers clutch, brake pads, and discs', 'No excess on wear claims', 'Protects against gradual deterioration'],
-    price: 9,
-    priceType: 'monthly',
-    icon: '🔧',
-    badge: { text: 'BEST VALUE', color: 'orange' }
-  },
-  {
-    key: 'tyre',
-    title: 'Tyre Cover',
-    shortDescription: 'Accidental and malicious tyre damage',
-    details: ['Up to £150 per tyre replacement', 'Covers accidental damage and vandalism', 'Includes puncture repairs'],
-    price: 8,
-    priceType: 'monthly',
-    icon: '🛞',
-    badge: { text: 'POPULAR', color: 'green' }
-  },
-  {
-    key: 'european',
-    title: 'Europe Cover',
-    shortDescription: 'Full protection across Europe',
-    details: ['Valid in all EU countries', 'Same coverage as UK warranty', 'Includes recovery to nearest garage'],
     price: 5,
     priceType: 'monthly',
-    icon: '🌍'
+    icon: '🔧',
+    group: 'claim-protection',
+    badge: { text: 'ADVANCED', color: 'orange' }
   },
+  // Mobility & Breakdown bundle
   {
-    key: 'rental',
-    title: 'Vehicle Rental',
-    shortDescription: 'Replacement vehicle during repairs',
-    details: ['Up to 7 days rental per claim', 'Group A vehicle provided', 'Arranged directly with repair garage'],
+    key: 'extendedMobility',
+    title: 'Extended Mobility Cover',
+    shortDescription: 'Hire car + European cover bundle',
+    details: [
+      'Up to 7 days hire car per claim',
+      'Full coverage across Europe',
+      'Same protection as UK warranty abroad'
+    ],
     price: 7,
     priceType: 'monthly',
-    icon: '🚘'
+    icon: '🌍',
+    group: 'mobility'
   },
+  // Ownership extras
   {
     key: 'transfer',
     title: 'Transfer Cover',
-    shortDescription: 'Transfer warranty to new owner (£19 total)',
-    details: ['One-time £19 fee spread across your monthly payments', 'Full warranty continues with new owner', 'Increases vehicle resale value'],
-    price: 19,
+    shortDescription: 'Transfer warranty to new owner',
+    details: ['One-time £19 fee', 'Full warranty continues with new owner', 'Increases vehicle resale value', 'Handy if you sell privately'],
+    price: TRANSFER_COVER_PRICE,
     priceType: 'one-off',
-    icon: '🔁'
+    icon: '🔁',
+    group: 'ownership'
   }
 ];
 
@@ -91,26 +87,24 @@ const ExtrasSelector: React.FC<ExtrasSelectorProps> = ({
   paymentType,
   currentMonthlyPrice
 }) => {
-  const [showAllExtras, setShowAllExtras] = useState(false);
   const [openDetails, setOpenDetails] = useState<string | null>(null);
   const autoIncluded = getAutoIncludedAddOns(paymentType);
   
-  // Popular extras shown first
-  const popularExtras = allExtras.filter(e => ['breakdown', 'wearAndTear'].includes(e.key));
-  const otherExtras = allExtras.filter(e => !['breakdown', 'wearAndTear'].includes(e.key));
-  
-  const visibleExtras = showAllExtras ? allExtras : popularExtras;
+  // Group extras by category
+  const includedExtras = allExtras.filter(e => e.group === 'included');
+  const claimProtectionExtras = allExtras.filter(e => e.group === 'claim-protection');
+  const mobilityExtras = allExtras.filter(e => e.group === 'mobility');
+  const ownershipExtras = allExtras.filter(e => e.group === 'ownership');
 
-  const renderExtra = (extra: ExtraWithBadge) => {
-    const isAutoIncluded = autoIncluded.includes(extra.key);
+  const renderExtra = (extra: ExtraWithBadge, isIncludedSection = false) => {
+    const isAutoIncluded = autoIncluded.includes(extra.key) || extra.group === 'included';
     const isSelected = selectedAddOns[extra.key] || isAutoIncluded;
     const isDetailsOpen = openDetails === extra.key;
     
-    // Calculate display price - all add-ons shown as monthly (split across 12 payments)
-    const months = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
+    // Calculate display price
     const displayPrice = extra.priceType === 'monthly' 
-      ? Math.round((extra.price * months) / 12)
-      : Math.round(extra.price / 12); // One-off fees split across 12 monthly payments
+      ? extra.price
+      : extra.price;
 
     return (
       <Collapsible
@@ -120,8 +114,8 @@ const ExtrasSelector: React.FC<ExtrasSelectorProps> = ({
       >
         <div
           className={cn(
-            "rounded-xl border-[2.5px] transition-all overflow-hidden",
-            isAutoIncluded
+            "rounded-xl border-2 transition-all overflow-hidden",
+            isAutoIncluded || isIncludedSection
               ? "border-green-200 bg-green-50"
               : isSelected
                 ? "border-success bg-success/5"
@@ -131,16 +125,16 @@ const ExtrasSelector: React.FC<ExtrasSelectorProps> = ({
           <div className="p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3 flex-1">
-                <span className="text-2xl">{extra.icon}</span>
+                <span className="text-2xl flex-shrink-0">{extra.icon}</span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h4 className="font-semibold text-foreground">{extra.title}</h4>
-                    {isAutoIncluded && (
+                    {(isAutoIncluded || isIncludedSection) && (
                       <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-green-200">
                         INCLUDED FREE
                       </span>
                     )}
-                    {!isAutoIncluded && extra.badge && (
+                    {!isAutoIncluded && !isIncludedSection && extra.badge && (
                       <span className={cn(
                         "text-[10px] font-bold px-2 py-0.5 rounded-full",
                         extra.badge.color === 'orange' 
@@ -152,24 +146,33 @@ const ExtrasSelector: React.FC<ExtrasSelectorProps> = ({
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground mt-0.5">{extra.shortDescription}</p>
-                  {!isAutoIncluded && (
+                  {!isAutoIncluded && !isIncludedSection && extra.price > 0 && (
                     <p className="text-sm font-semibold text-foreground mt-1">
-                      +£{displayPrice}/month
+                      {extra.priceType === 'one-off' 
+                        ? `£${displayPrice} one-off` 
+                        : `+£${displayPrice}/month`}
                     </p>
                   )}
                 </div>
               </div>
               
-              {!isAutoIncluded && (
+              {!isAutoIncluded && !isIncludedSection && (
                 <Switch
                   checked={isSelected}
-                  onCheckedChange={(checked) => onAddOnChange(extra.key, checked)}
-                  className="data-[state=checked]:bg-success"
+                  onCheckedChange={(checked) => {
+                    // Handle the extended mobility bundle - enable both rental and european
+                    if (extra.key === 'extendedMobility') {
+                      onAddOnChange('rental', checked);
+                      onAddOnChange('european', checked);
+                    }
+                    onAddOnChange(extra.key, checked);
+                  }}
+                  className="data-[state=checked]:bg-success flex-shrink-0"
                 />
               )}
               
-              {isAutoIncluded && (
-                <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+              {(isAutoIncluded || isIncludedSection) && (
+                <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
                   <Check className="w-4 h-4 text-white" />
                 </div>
               )}
@@ -177,7 +180,7 @@ const ExtrasSelector: React.FC<ExtrasSelectorProps> = ({
             
             {/* Details Button */}
             {extra.details && extra.details.length > 0 && (
-              <CollapsibleTrigger className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-muted-foreground bg-gray-100 hover:bg-gray-200 hover:text-foreground rounded-lg shadow-sm transition-all duration-200">
+              <CollapsibleTrigger className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-muted-foreground bg-muted hover:bg-muted/80 hover:text-foreground rounded-lg shadow-sm transition-all duration-200">
                 <Info className="w-4 h-4" />
                 <span>Details</span>
                 <ChevronDown 
@@ -192,10 +195,10 @@ const ExtrasSelector: React.FC<ExtrasSelectorProps> = ({
           
           {/* Collapsible Details Content */}
           <CollapsibleContent className="animate-accordion-down">
-            <div className="px-4 pb-4 pt-2 bg-gray-50 border-t border-border">
+            <div className="px-4 pb-4 pt-2 bg-muted/50 border-t border-border">
               <ul className="space-y-1.5">
                 {extra.details?.map((detail, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-sm text-gray-700">
+                  <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
                     <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                     <span>{detail}</span>
                   </li>
@@ -217,40 +220,50 @@ const ExtrasSelector: React.FC<ExtrasSelectorProps> = ({
         <h3 className="font-semibold text-lg text-foreground">Optional Add-Ons</h3>
       </div>
 
-      <div className="space-y-3">
-        {/* Popular Extras Label */}
-        {!showAllExtras && (
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            Popular extras
+      <div className="space-y-4">
+        {/* Included as Standard */}
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+            Included as Standard
           </p>
-        )}
-        
-        <div className={cn(
-          "grid gap-3",
-          showAllExtras ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
-        )}>
-          {visibleExtras.map(renderExtra)}
+          <div className="space-y-2">
+            {includedExtras.map(extra => renderExtra(extra, true))}
+          </div>
         </div>
 
-        {/* View All Toggle */}
-        <button
-          onClick={() => setShowAllExtras(!showAllExtras)}
-          className="w-full py-3 text-sm font-medium text-muted-foreground hover:text-foreground flex items-center justify-center gap-2 transition-colors border border-border rounded-lg"
-        >
-          {showAllExtras ? (
-            <>
-              Show less <ChevronUp className="w-4 h-4" />
-            </>
-          ) : (
-            <>
-              View all {allExtras.length} extras <ChevronDown className="w-4 h-4" />
-            </>
-          )}
-        </button>
+        {/* Claim Protection */}
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+            Claim Protection
+          </p>
+          <div className="space-y-2">
+            {claimProtectionExtras.map(extra => renderExtra(extra))}
+          </div>
+        </div>
+
+        {/* Mobility & Breakdown */}
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+            Mobility & Breakdown
+          </p>
+          <div className="space-y-2">
+            {mobilityExtras.map(extra => renderExtra(extra))}
+          </div>
+        </div>
+
+        {/* Ownership Extras */}
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+            Ownership Extras
+          </p>
+          <div className="space-y-2">
+            {ownershipExtras.map(extra => renderExtra(extra))}
+          </div>
+        </div>
       </div>
 
       {/* Live Price Update */}
-      <div className="mt-3 text-sm font-medium text-success animate-fade-in">
+      <div className="mt-4 text-sm font-medium text-success animate-fade-in">
         Updated price: £{currentMonthlyPrice}/month
       </div>
     </div>

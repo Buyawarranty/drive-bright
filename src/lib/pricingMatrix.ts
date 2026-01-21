@@ -2,12 +2,14 @@
  * Centralized pricing matrix and utilities for warranty pricing.
  * 
  * PRICING RULES (UPDATED JAN 2026):
- * - BASE prices are from CURRENT_PRICE_JAN_2026.xlsx at £70/hr labour rate (DEFAULT), £100 excess, £1250 claim limit
- * - Labour rate £50/hr = -£5/month for duration (BELOW base)
+ * - BASE prices are from CURRENT_PRICE_JAN_2026.xlsx at £70/hr labour rate (DEFAULT), £100 excess, £1000 claim limit
+ * - Claim limits: £1,000 (£0/mo), £2,000 (+£6/mo), £3,000 (+£10/mo)
+ * - Boost: +£500 extra cover for +£3/mo (disabled at £3,000)
+ * - Labour rate £50/hr = -£5/month (BELOW base)
  * - Labour rate £70/hr = base price (no adjustment) - DEFAULT
- * - Labour rate £100/hr = +£8/month for duration
- * - Labour rate £200/hr = +£24/month for duration
- * - Boost claim limit (+£1000) = +£5/month for duration
+ * - Labour rate £100/hr = +£4/month
+ * - Labour rate £200/hr = +£24/month
+ * - Excess: £0 (+£6/mo), £100 (£0/mo default), £250 (-£4/mo), £500 (-£8/mo)
  * - All payments are ALWAYS 12 monthly installments
  * - Monthly = Math.floor(total / 12) - always round DOWN
  * - "Was" price = total + marketing savings (£100 for 2yr, £200 for 3yr) - display only
@@ -17,24 +19,25 @@
 
 // Base pricing matrix from CURRENT_PRICE_DEC_2025 (ORIGINAL PRICING)
 // These are the base prices at £70/hr labour rate (DEFAULT)
+// Updated to use new claim limits: 1000, 2000, 3000
 export const BASE_PRICING_MATRIX = {
   '12months': {
-    0: { 750: 467, 1250: 497, 2000: 587 },
-    50: { 750: 437, 1250: 457, 2000: 547 },
-    100: { 750: 387, 1250: 417, 2000: 507 },
-    150: { 750: 367, 1250: 387, 2000: 477 }
+    0: { 1000: 497, 2000: 569, 3000: 617 },
+    100: { 1000: 417, 2000: 489, 3000: 537 },
+    250: { 1000: 369, 2000: 441, 3000: 489 },
+    500: { 1000: 321, 2000: 393, 3000: 441 }
   },
   '24months': {
-    0: { 750: 897, 1250: 937, 2000: 1027 },
-    50: { 750: 827, 1250: 877, 2000: 957 },
-    100: { 750: 737, 1250: 787, 2000: 877 },
-    150: { 750: 697, 1250: 737, 2000: 827 }
+    0: { 1000: 937, 2000: 1081, 3000: 1177 },
+    100: { 1000: 787, 2000: 931, 3000: 1027 },
+    250: { 1000: 691, 2000: 835, 3000: 931 },
+    500: { 1000: 595, 2000: 739, 3000: 835 }
   },
   '36months': {
-    0: { 750: 1347, 1250: 1397, 2000: 1497 },
-    50: { 750: 1247, 1250: 1297, 2000: 1397 },
-    100: { 750: 1097, 1250: 1177, 2000: 1277 },
-    150: { 750: 1047, 1250: 1097, 2000: 1197 }
+    0: { 1000: 1397, 2000: 1613, 3000: 1757 },
+    100: { 1000: 1177, 2000: 1393, 3000: 1537 },
+    250: { 1000: 1033, 2000: 1249, 3000: 1393 },
+    500: { 1000: 889, 2000: 1105, 3000: 1249 }
   }
 } as const;
 
@@ -52,26 +55,40 @@ export const DURATION_MONTHS = {
   '36months': 36
 } as const;
 
+// Claim limit options and their monthly adjustments (relative to base £1000)
+export const CLAIM_LIMIT_OPTIONS = [1000, 2000, 3000] as const;
+export const CLAIM_LIMIT_MONTHLY_ADJUSTMENT: Record<number, number> = {
+  1000: 0,   // Base (default)
+  2000: 6,   // +£6/month
+  3000: 10   // +£10/month
+};
+
 // Labour rate adjustment per month (relative to £70/hr base - DEFAULT)
 // £70/hr is now the default base rate
 export const LABOUR_RATE_MONTHLY_ADJUSTMENT: Record<number, number> = {
-  50: -5,  // £5 LESS per month (below base)
-  70: 0,   // Base rate, no adjustment (DEFAULT)
-  100: 8,  // £8 more per month
-  200: 24  // £24 more per month (for main dealers and specialists)
+  50: -5,   // £5 LESS per month (below base)
+  70: 0,    // Base rate, no adjustment (DEFAULT)
+  100: 4,   // £4 more per month
+  200: 24   // £24 more per month (for main dealers and specialists)
 };
 
-// Default labour rate is now £70/hr
+// Excess options and their monthly adjustments (relative to £100 default)
+export const EXCESS_OPTIONS = [0, 100, 250, 500] as const;
+export const EXCESS_MONTHLY_ADJUSTMENT: Record<number, number> = {
+  0: 6,     // +£6/month (premium, worry-free)
+  100: 0,   // Default - no adjustment
+  250: -4,  // -£4/month
+  500: -8   // -£8/month
+};
+
+// Default values
 export const DEFAULT_LABOUR_RATE = 70;
-
-// Default excess is £100
 export const DEFAULT_EXCESS = 100;
+export const DEFAULT_CLAIM_LIMIT = 1000;
 
-// Default claim limit is £1250
-export const DEFAULT_CLAIM_LIMIT = 1250;
-
-// Boost claim limit adds £5/month
-export const BOOST_CLAIM_LIMIT_MONTHLY = 5;
+// Boost claim limit adds £3/month and +£500 to claim limit
+export const BOOST_CLAIM_LIMIT_MONTHLY = 3;
+export const BOOST_CLAIM_LIMIT_AMOUNT = 500;
 
 // Transfer Cover one-off price (not monthly)
 export const TRANSFER_COVER_PRICE = 19;
@@ -109,7 +126,7 @@ export function calculateLabourRateAdjustment(
 }
 
 /**
- * Calculate boost claim limit adjustment (+£1000 claim limit for £5/month)
+ * Calculate boost claim limit adjustment (+£500 claim limit for £3/month)
  * @param boostEnabled Whether boost is enabled
  * @param paymentPeriod The warranty duration
  * @returns Total boost cost
@@ -128,6 +145,20 @@ export function calculateBoostAdjustment(
  */
 export function getLabourRateMonthlyAdjustment(labourRate: number): number {
   return LABOUR_RATE_MONTHLY_ADJUSTMENT[labourRate] ?? LABOUR_RATE_MONTHLY_ADJUSTMENT[DEFAULT_LABOUR_RATE];
+}
+
+/**
+ * Get the monthly price adjustment for claim limit
+ */
+export function getClaimLimitMonthlyAdjustment(claimLimit: number): number {
+  return CLAIM_LIMIT_MONTHLY_ADJUSTMENT[claimLimit] ?? 0;
+}
+
+/**
+ * Get the monthly price adjustment for excess
+ */
+export function getExcessMonthlyAdjustment(excess: number): number {
+  return EXCESS_MONTHLY_ADJUSTMENT[excess] ?? 0;
 }
 
 /**
@@ -189,6 +220,29 @@ export function calculateTotalWarrantyPrice(params: {
  */
 export function getMarketingSavings(paymentPeriod: PaymentPeriod): number {
   return MARKETING_SAVINGS[paymentPeriod] || 0;
+}
+
+/**
+ * Get effective claim limit (base + boost if enabled)
+ */
+export function getEffectiveClaimLimit(claimLimit: number, boostEnabled: boolean): number {
+  return boostEnabled ? claimLimit + BOOST_CLAIM_LIMIT_AMOUNT : claimLimit;
+}
+
+/**
+ * Calculate equivalent cost per month of cover (total / coverage months)
+ */
+export function getCostPerCoverMonth(totalPrice: number, paymentPeriod: PaymentPeriod): number {
+  const coverageMonths = DURATION_MONTHS[paymentPeriod];
+  return Math.floor(totalPrice / coverageMonths);
+}
+
+/**
+ * Calculate cost per year for multi-year plans
+ */
+export function getCostPerYear(totalPrice: number, paymentPeriod: PaymentPeriod): number {
+  const years = paymentPeriod === '12months' ? 1 : paymentPeriod === '24months' ? 2 : 3;
+  return Math.floor(totalPrice / years);
 }
 
 /**
