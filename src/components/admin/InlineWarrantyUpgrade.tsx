@@ -19,20 +19,18 @@ interface InlineWarrantyUpgradeProps {
 
 const EXCESS_OPTIONS = [
   { value: 0, label: '£0' },
-  { value: 50, label: '£50' },
   { value: 100, label: '£100' },
-  { value: 150, label: '£150' },
-  { value: 200, label: '£200' },
+  { value: 250, label: '£250' },
+  { value: 500, label: '£500' },
 ];
 
 const CLAIM_LIMIT_OPTIONS = [
-  { value: 750, label: '£750' },
-  { value: 1250, label: '£1,250' },
+  { value: 1000, label: '£1,000' },
+  { value: 1500, label: '£1,500' },
   { value: 2000, label: '£2,000' },
   { value: 2500, label: '£2,500' },
   { value: 3000, label: '£3,000' },
-  { value: 4000, label: '£4,000' },
-  { value: 5000, label: '£5,000' },
+  { value: 3500, label: '£3,500' },
 ];
 
 const LABOUR_RATE_OPTIONS = [

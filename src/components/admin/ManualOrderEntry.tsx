@@ -105,7 +105,7 @@ const initialOrderData: ManualOrderData = {
   startDate: new Date().toISOString().split('T')[0],
   expiryDate: '',
   voluntaryExcess: 0,
-  claimLimit: 1250,
+  claimLimit: 1000,
   totalAmount: '',
   wearTearCover: false,
   vehicleRecovery: false, // Auto-included for 2-year and 3-year only
