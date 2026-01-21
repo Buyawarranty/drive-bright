@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, ChevronDown, ChevronUp, CheckCircle, Search } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface TermOption {
@@ -69,7 +69,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
     {
       id: '24months',
       label: '2-Year Cover',
-      subtitle: 'MOST POPULAR',
+      subtitle: 'Better value per month',
       description: '24 months of cover. Most drivers choose this. Better value than renewing yearly.',
       monthlyPrice: getPriceForTerm('24months'),
       isPopular: true
@@ -77,14 +77,14 @@ const TermSelector: React.FC<TermSelectorProps> = ({
     {
       id: '12months',
       label: '1-Year Cover',
-      subtitle: 'Short-Term Protection',
+      subtitle: 'Short-term protection',
       description: '12 months of cover. Ideal if you\'re changing your car soon or just want short-term protection.',
       monthlyPrice: getPriceForTerm('12months')
     },
     {
       id: '36months',
       label: '3-Year Cover',
-      subtitle: 'BEST VALUE',
+      subtitle: 'Lowest cost per month of cover',
       description: '36 months of cover. Best value over time. Locks in your price with no annual renewals.',
       monthlyPrice: getPriceForTerm('36months'),
       isBestValue: true
@@ -111,29 +111,14 @@ const TermSelector: React.FC<TermSelectorProps> = ({
         </div>
       </div>
       
-      {/* Dynamic microcopy for add-ons explanation */}
-      <div className={cn(
-        "mb-4 px-3 py-2.5 rounded-lg text-sm transition-all duration-300",
-        hasAddOnsSelected 
-          ? "bg-success/10 border border-success/30" 
-          : "bg-muted/50 border border-border"
-      )}>
-        {hasAddOnsSelected ? (
-          <div className="flex items-start gap-2">
-            <CheckCircle className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
-            <p className="text-foreground">
-              <span className="font-medium">Optional Add-Ons selected.</span>{' '}
-              <span className="text-muted-foreground">Your updated total is shown in the summary below.</span>
-            </p>
-          </div>
-        ) : (
-          <div className="flex items-start gap-2">
-            <Search className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-            <p className="text-muted-foreground">
-              All warranties are paid over 12 interest-free instalments. Longer plans spread the cost of cover over more years.
-            </p>
-          </div>
-        )}
+      {/* Value explanation microcopy - trust-building */}
+      <div className="mb-4 px-3 py-2.5 rounded-lg text-sm bg-slate-50 border border-slate-200">
+        <div className="flex items-start gap-2">
+          <Search className="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" />
+          <p className="text-slate-600">
+            All plans are paid over 12 monthly instalments. Longer cover periods cost less per month of protection.
+          </p>
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -156,78 +141,87 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                   : "border-border bg-card hover:border-success/50"
               )}
             >
-              {/* Badge */}
+              {/* Badge - refined, trust-focused styling */}
               {term.isPopular && (
-                <span className="absolute -top-2.5 right-4 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
+                <span className="absolute -top-2.5 right-4 bg-orange-100 text-orange-800 border border-orange-200 text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
                   Most popular
                 </span>
               )}
               {term.isBestValue && (
-                <span className="absolute -top-2.5 right-4 bg-success text-success-foreground text-xs font-bold px-3 py-1 rounded-full">
+                <span className="absolute -top-2.5 right-4 bg-green-100 text-green-800 border border-green-200 text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
                   Best value
                 </span>
               )}
 
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  {/* Term label with subtitle */}
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-bold text-foreground">{term.label}</span>
-                    {!term.isPopular && !term.isBestValue && term.subtitle && (
-                      <span className="text-xs text-muted-foreground">({term.subtitle})</span>
-                    )}
+                  {/* Term label */}
+                  <div className="mb-1">
+                    <span className="font-bold text-lg text-foreground">{term.label}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">{term.subtitle}</p>
+                  
+                  {/* Monthly payment headline */}
+                  <div className="mb-2">
+                    <div className="flex items-baseline gap-1.5 flex-wrap">
+                      <span className="text-2xl font-bold text-foreground">£{term.monthlyPrice}</span>
+                      <span className="text-base text-muted-foreground">per month</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-0.5">for 12 months</p>
                   </div>
                   
-                  {/* Price Headline */}
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-foreground">£{term.monthlyPrice}/month</span>
-                    <span className="text-sm text-muted-foreground">(12 instalments)</span>
+                  {/* Total cost */}
+                  <div className="text-sm text-muted-foreground mb-3">
+                    Total cost: <span className="font-semibold text-foreground">£{payInFullPrice}</span>
                   </div>
                   
-                  {/* Free year benefit line with tick */}
+                  {/* Value per month of cover - KEY DIFFERENTIATOR */}
+                  {term.id === '12months' && (
+                    <div className="bg-gray-100 rounded-lg px-3 py-2">
+                      <p className="text-sm text-gray-700">
+                        <span className="font-medium">£{term.monthlyPrice}/month</span> of cover
+                      </p>
+                    </div>
+                  )}
+                  
                   {term.id === '24months' && (
-                    <div className="flex items-center gap-1.5 mt-2">
-                      <Check className="w-4 h-4 text-success flex-shrink-0" />
-                      <span className="text-sm font-medium text-foreground">Year 2 FREE cover</span>
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg px-3 py-2">
+                      <p className="text-sm text-orange-800">
+                        Works out at <span className="font-bold">£{equivalentMonthly}/month</span> of cover
+                      </p>
+                      <p className="text-xs text-orange-600 mt-0.5">24 months protection, paid over 12</p>
                     </div>
                   )}
+                  
                   {term.id === '36months' && (
-                    <div className="flex items-center gap-1.5 mt-2">
-                      <Check className="w-4 h-4 text-success flex-shrink-0" />
-                      <span className="text-sm font-medium text-foreground">Years 2 & 3 FREE cover</span>
+                    <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                      <p className="text-sm text-green-800">
+                        Works out at <span className="font-bold">£{equivalentMonthly}/month</span> of cover
+                      </p>
+                      <p className="text-xs text-green-600 mt-0.5">36 months protection, paid over 12</p>
                     </div>
                   )}
                   
-                  {/* Pay in full with was price */}
-                  <div className="text-sm mt-2">
-                    <span className="font-bold text-foreground">Total: £{payInFullPrice}</span>
-                    {savings > 0 && (
-                      <span className="text-destructive line-through ml-2">(Was £{payInFullPrice + savings})</span>
-                    )}
-                  </div>
-                  
-                  {/* Equivalent monthly cost - for 2 & 3 year only */}
-                  {showEquivalent && (
-                    <div className="mt-2 space-y-1">
-                      <div className="flex items-center gap-1.5">
-                        <Check className="w-3 h-3 text-success flex-shrink-0" />
-                        <span className="text-xs text-muted-foreground">
-                          Equivalent to <span className="font-semibold text-foreground">£{equivalentMonthly}/month</span> of cover
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <Check className="w-3 h-3 text-success flex-shrink-0" />
-                        <span className="text-xs text-muted-foreground">
-                          <span className="font-semibold text-foreground">£{perYearCost}</span> per year
-                        </span>
+                  {/* Key benefits for longer plans */}
+                  {term.id === '24months' && (
+                    <div className="mt-2.5 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <span className="text-sm text-muted-foreground">Covers 2 MOT cycles</span>
                       </div>
                     </div>
                   )}
                   
-                  {/* Save today line */}
-                  {savings > 0 && (
-                    <div className="flex items-center gap-1 mt-2">
-                      <span className="text-sm font-bold text-success">Save £{savings} Today</span>
+                  {term.id === '36months' && (
+                    <div className="mt-2.5 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <span className="text-sm text-muted-foreground">Best value over time</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <span className="text-sm text-muted-foreground">Price locked — no renewals</span>
+                      </div>
                     </div>
                   )}
                 </div>
