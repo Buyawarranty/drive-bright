@@ -2309,21 +2309,41 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </Alert>
           )}
           
-          <div className="flex gap-1.5 flex-wrap justify-start ml-11">
-            {[0, 50, 100, 150].map((amount) => (
+          <div className="flex gap-2 flex-wrap justify-start ml-11">
+            {[
+              { value: 0, label: '£0', delta: '+£6/mo', tag: null },
+              { value: 100, label: '£100', delta: '£0', tag: 'Most people choose this' },
+              { value: 250, label: '£250', delta: '-£4/mo', tag: 'Saver option' },
+              { value: 500, label: '£500', delta: '-£8/mo', tag: 'Budget option' }
+            ].map((option) => (
               <button
-                key={amount}
+                key={option.value}
                 onClick={() => {
-                  toggleVoluntaryExcess(amount);
+                  toggleVoluntaryExcess(option.value);
                   setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
                 }}
-                className={`px-2.5 py-2 rounded-lg transition-all duration-200 text-center relative min-w-[50px] text-sm ${
-                  voluntaryExcess === amount
+                className={`px-3 py-2.5 rounded-lg transition-all duration-200 text-center relative min-w-[70px] ${
+                  voluntaryExcess === option.value
                     ? 'bg-orange-500/10 border-2 border-orange-500 shadow-lg shadow-orange-500/30'
-                    : 'neutral-container shadow-lg shadow-black/15 hover:shadow-xl hover:shadow-orange-500/20'
+                    : 'neutral-container shadow-lg shadow-black/15 hover:shadow-xl hover:shadow-orange-500/20 border-2 border-transparent'
                 }`}
               >
-                <div className="text-base font-bold text-black">£{amount}</div>
+                {option.value === 100 && (
+                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap">
+                    DEFAULT
+                  </span>
+                )}
+                <div className="text-base font-bold text-black">{option.label}</div>
+                <div className={`text-[10px] font-semibold mt-0.5 ${
+                  option.delta.startsWith('-') ? 'text-green-600' : 
+                  option.delta.startsWith('+') ? 'text-orange-600' : 
+                  'text-gray-500'
+                }`}>
+                  {option.delta}
+                </div>
+                {option.tag && (
+                  <div className="text-[8px] text-gray-500 mt-0.5">{option.tag}</div>
+                )}
               </button>
             ))}
           </div>
