@@ -136,7 +136,7 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
   };
 
   const populateFromCartMetadata = (metadata: any, app: any) => {
-    setClaimLimit(metadata.claim_limit || 1000);
+    setClaimLimit(metadata.claim_limit || 1250);
     setVoluntaryExcess(metadata.voluntary_excess || 100);
     setLabourRate(metadata.labour_rate || 70);
     setPaymentAmount(metadata.total_price?.toString() || '');

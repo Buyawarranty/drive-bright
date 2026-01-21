@@ -778,12 +778,12 @@ const CustomerLoginsTab = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="500">£500</SelectItem>
                         <SelectItem value="1000">£1,000</SelectItem>
                         <SelectItem value="1500">£1,500</SelectItem>
                         <SelectItem value="2000">£2,000</SelectItem>
                         <SelectItem value="2500">£2,500</SelectItem>
                         <SelectItem value="3000">£3,000</SelectItem>
-                        <SelectItem value="3500">£3,500</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -794,10 +794,11 @@ const CustomerLoginsTab = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="50">£50/hr (-£5/month)</SelectItem>
+                        <SelectItem value="50">£50/hr</SelectItem>
                         <SelectItem value="70">£70/hr (Standard)</SelectItem>
-                        <SelectItem value="100">£100/hr (+£4/month)</SelectItem>
-                        <SelectItem value="200">£200/hr (+£24/month)</SelectItem>
+                        <SelectItem value="100">£100/hr</SelectItem>
+                        <SelectItem value="150">£150/hr</SelectItem>
+                        <SelectItem value="200">£200/hr</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -808,10 +809,10 @@ const CustomerLoginsTab = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="0">£0 (+£6/month)</SelectItem>
-                        <SelectItem value="100">£100 (Standard)</SelectItem>
-                        <SelectItem value="250">£250 (-£4/month)</SelectItem>
-                        <SelectItem value="500">£500 (-£8/month)</SelectItem>
+                        <SelectItem value="0">£0</SelectItem>
+                        <SelectItem value="50">£50</SelectItem>
+                        <SelectItem value="100">£100</SelectItem>
+                        <SelectItem value="150">£150</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

@@ -598,7 +598,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                         customerEmail={customer.email}
                         customerName={customer.name}
                         registrationPlate={customer.registration_plate || ''}
-                        currentClaimLimit={customer.policy?.claim_limit || customer.claim_limit || 1000}
+                        currentClaimLimit={customer.policy?.claim_limit || customer.claim_limit || 1250}
                         currentLabourRate={customer.labour_rate || 70}
                         currentExcess={customer.voluntary_excess || 100}
                         onUpdate={fetchCustomers}
@@ -733,7 +733,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                         customerName={customer.name}
                         registrationPlate={customer.registration_plate || ''}
                         field="claim_limit"
-                        currentValue={customer.policy?.claim_limit || customer.claim_limit || 1000}
+                        currentValue={customer.policy?.claim_limit || customer.claim_limit || 1250}
                         onUpdate={fetchCustomers}
                       />
                     </TableCell>

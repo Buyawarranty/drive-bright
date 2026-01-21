@@ -672,8 +672,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           vehicleData,
           paymentType,
           voluntaryExcess: updatedPricingData.voluntaryExcess,
-          claimLimit: updatedPricingData.claimLimit || 1000,
-          labourRate: pricingData.labourRate || 70,
+          claimLimit: updatedPricingData.claimLimit || 1250,
+          labourRate: pricingData.labourRate || 50,
           customerData: { 
             ...customerData, 
             first_name: firstName,
@@ -752,8 +752,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           vehicleData,
           paymentType,
           voluntaryExcess: updatedPricingData.voluntaryExcess,
-          claimLimit: updatedPricingData.claimLimit || 1000,
-          labourRate: pricingData.labourRate || 70,
+          claimLimit: updatedPricingData.claimLimit || 1250,
+          labourRate: pricingData.labourRate || 50,
           customerData: { 
             ...customerData, 
             first_name: firstName,

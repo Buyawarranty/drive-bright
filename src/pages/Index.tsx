@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect, useCallback, useMemo, lazy, useRef } from 'react';
-import { flushSync } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Homepage from '@/components/Homepage';
@@ -258,7 +257,7 @@ const Index = () => {
         if (restoredData.paymentType || restoredData.claimLimit || restoredData.labourRate || restoredData.voluntaryExcess !== undefined) {
           const planSettings = {
             paymentType: restoredData.paymentType || '24months',
-            claimLimit: restoredData.claimLimit || 1000,
+            claimLimit: restoredData.claimLimit || 1250,
             labourRate: restoredData.labourRate || 70,
             voluntaryExcess: restoredData.voluntaryExcess ?? 100,
             boostAddon: restoredData.boostAddon || false,
@@ -451,7 +450,6 @@ const Index = () => {
   const [currentStep, setCurrentStep] = useState(getStepFromUrl());
   const [showDiscountPopup, setShowDiscountPopup] = useState(false);
   const isNavigatingRef = useRef(false);
-  const bfcacheRestoringRef = useRef(false);
   
   const { restoreQuoteData } = useQuoteRestoration();
 
@@ -520,15 +518,12 @@ const Index = () => {
         console.log('📱 Index: Page restored from bfcache');
         
         // Get current step from URL
-        const urlStep = parseInt(new URLSearchParams(window.location.search).get('step') || '1');
+        const urlStep = parseInt(searchParams.get('step') || '1');
         
         // ALWAYS attempt recovery on step 4, even if state appears to exist
         // This handles edge cases where React's state is stale
         if (urlStep === 4) {
           console.log('📱 Index: Step 4 bfcache restore - forcing state recovery');
-          
-          // Set flag IMMEDIATELY to prevent RecoveryFallback from showing
-          bfcacheRestoringRef.current = true;
           
           try {
             const savedVehicleData = localStorage.getItem('buyawarranty_vehicleData');
@@ -541,24 +536,21 @@ const Index = () => {
               if (parsedVehicleData?.regNumber && parsedSelectedPlan?.paymentType) {
                 console.log('✅ Index: Recovered state from localStorage on bfcache');
                 
-                // Use flushSync to force synchronous state update
-                // This ensures state is updated BEFORE the component re-renders
-                flushSync(() => {
+                // Use flushSync-like behavior by setting state immediately
+                // React 18 batches updates, but bfcache requires immediate response
+                setVehicleData(parsedVehicleData);
+                setSelectedPlan(parsedSelectedPlan);
+                
+                // Force a re-render to ensure state is applied
+                requestAnimationFrame(() => {
                   setVehicleData(parsedVehicleData);
                   setSelectedPlan(parsedSelectedPlan);
                 });
-                
-                // Clear flag after state is set
-                bfcacheRestoringRef.current = false;
-                return;
               }
             }
           } catch (error) {
             console.error('❌ Index: Error recovering state on bfcache restore:', error);
           }
-          
-          // Clear flag if recovery failed
-          bfcacheRestoringRef.current = false;
         }
       }
     };
@@ -566,7 +558,7 @@ const Index = () => {
     // Add listener immediately - don't wait for dependencies
     window.addEventListener('pageshow', handlePageShow);
     return () => window.removeEventListener('pageshow', handlePageShow);
-  }, []); // Empty dependencies - this handler should be stable
+  }, [searchParams]); // Minimal dependencies to ensure listener is stable
 
   // Quote restoration effect - optimized with memoization
   useEffect(() => {
@@ -1249,11 +1241,6 @@ const Index = () => {
                 onBack={() => handleBackToStep(3)}
               />
             </PerformanceOptimizedSuspense>
-          ) : bfcacheRestoringRef.current ? (
-            // Show minimal loading during bfcache restoration
-            <div className="min-h-[60vh] flex items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
           ) : (
             <RecoveryFallback 
               onRecovered={(recoveredVehicleData, recoveredSelectedPlan) => {

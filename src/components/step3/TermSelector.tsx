@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { Check, ChevronDown, ChevronUp, CheckCircle } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Flame, Wrench, Search, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getCostPerCoverMonth, getCostPerYear, DURATION_MONTHS, type PaymentPeriod } from '@/lib/pricingMatrix';
 
 interface TermOption {
   id: '12months' | '24months' | '36months';
   label: string;
-  shortLabel: string;
   description: string;
   monthlyPrice: number;
   isPopular?: boolean;
@@ -21,21 +19,6 @@ interface TermSelectorProps {
   getTotalForTerm: (term: string) => number;
   hasAddOnsSelected?: boolean;
 }
-
-const termCopy: Record<string, { headline: string; description: string }> = {
-  '12months': {
-    headline: 'Short-Term Protection',
-    description: '12 months of cover. Ideal if you are changing your car soon or just want short-term protection.'
-  },
-  '24months': {
-    headline: 'Most Popular',
-    description: '24 months of cover. Most drivers choose this. Better value than renewing yearly and covers you through two MOT cycles.'
-  },
-  '36months': {
-    headline: 'Best Value',
-    description: '36 months of cover. Best value over time. Locks in your price and gives long-term peace of mind with no annual renewals.'
-  }
-};
 
 const TermSelector: React.FC<TermSelectorProps> = ({
   selectedTerm,
@@ -60,27 +43,31 @@ const TermSelector: React.FC<TermSelectorProps> = ({
     return monthly * 12;
   };
 
+  // Calculate "was" price = pay in full + savings
+  const getWasPriceForTerm = (termId: string): number => {
+    const payInFull = getPayInFullPrice(termId);
+    const savings = getSavingsForTerm(termId);
+    return payInFull + savings;
+  };
+
   const allTerms: TermOption[] = [
     {
       id: '24months',
       label: '2-Year Cover',
-      shortLabel: '2 Years',
-      description: termCopy['24months'].description,
+      description: '2-year cover',
       monthlyPrice: getPriceForTerm('24months'),
       isPopular: true
     },
     {
       id: '12months',
       label: '1-Year Cover',
-      shortLabel: '1 Year',
-      description: termCopy['12months'].description,
+      description: '1-year cover',
       monthlyPrice: getPriceForTerm('12months')
     },
     {
       id: '36months',
       label: '3-Year Cover',
-      shortLabel: '3 Years',
-      description: termCopy['36months'].description,
+      description: '3-year cover',
       monthlyPrice: getPriceForTerm('36months'),
       isBestValue: true
     }
@@ -102,8 +89,9 @@ const TermSelector: React.FC<TermSelectorProps> = ({
           <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold">
             1
           </div>
-          <h3 className="font-semibold text-lg text-foreground">Choose Your Cover Duration</h3>
+          <h3 className="font-semibold text-lg text-foreground">Choose your cover duration</h3>
         </div>
+        <span className="text-sm text-gray-600 font-bold text-center w-full sm:w-auto sm:text-base sm:self-center flex items-center gap-1">All parts included at no extra cost</span>
       </div>
       
       {/* Dynamic microcopy for add-ons explanation */}
@@ -117,14 +105,17 @@ const TermSelector: React.FC<TermSelectorProps> = ({
           <div className="flex items-start gap-2">
             <CheckCircle className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
             <p className="text-foreground">
-              <span className="font-medium">Add-ons selected.</span>{' '}
+              <span className="font-medium">Optional Add-Ons selected.</span>{' '}
               <span className="text-muted-foreground">Your updated total is shown in the summary below.</span>
             </p>
           </div>
         ) : (
-          <p className="text-muted-foreground">
-            Base cover prices shown. Any add-ons are added to the total in the summary bar.
-          </p>
+          <div className="flex items-start gap-2">
+            <Search className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+            <p className="text-muted-foreground">
+              Base cover prices shown below. Any Optional Add-Ons you choose are added to the total in the summary bar.
+            </p>
+          </div>
         )}
       </div>
 
@@ -134,13 +125,6 @@ const TermSelector: React.FC<TermSelectorProps> = ({
           const savings = getSavingsForTerm(term.id);
           const payInFullPrice = getPayInFullPrice(term.id);
           const wasPrice = payInFullPrice + savings;
-          const totalFromBackend = getTotalForTerm(term.id);
-          
-          // Calculate equivalent per-cover-month and per-year
-          const coverMonths = DURATION_MONTHS[term.id as PaymentPeriod];
-          const costPerCoverMonth = Math.floor(totalFromBackend / coverMonths);
-          const years = term.id === '12months' ? 1 : term.id === '24months' ? 2 : 3;
-          const costPerYear = Math.floor(totalFromBackend / years);
           
           return (
             <button
@@ -156,39 +140,22 @@ const TermSelector: React.FC<TermSelectorProps> = ({
               {/* Badge */}
               {term.isPopular && (
                 <span className="absolute -top-2.5 right-4 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
-                  Most Popular
+                  Most popular
                 </span>
               )}
               {term.isBestValue && (
                 <span className="absolute -top-2.5 right-4 bg-success text-success-foreground text-xs font-bold px-3 py-1 rounded-full">
-                  Best Value
+                  Best value
                 </span>
               )}
 
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  {/* Term Label */}
-                  <div className="text-sm font-medium text-muted-foreground mb-1">
-                    {term.label}
-                  </div>
-                  
                   {/* Price Headline */}
-                  <div className="flex items-baseline gap-2 flex-wrap">
+                  <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold text-foreground">£{term.monthlyPrice}/month</span>
-                    <span className="text-sm font-medium text-muted-foreground">(12 payments)</span>
+                    <span className="text-sm font-bold text-muted-foreground">(12 easy payments)</span>
                   </div>
-                  
-                  {/* Equivalent per cover month */}
-                  <div className="text-sm text-muted-foreground mt-1">
-                    Equivalent to <span className="font-semibold text-foreground">£{costPerCoverMonth}/month of cover</span>
-                  </div>
-                  
-                  {/* Per year for multi-year */}
-                  {years > 1 && (
-                    <div className="text-sm text-muted-foreground">
-                      £{costPerYear}/year
-                    </div>
-                  )}
                   
                   {/* Free year benefit line with tick */}
                   {term.id === '24months' && (
@@ -208,7 +175,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                   <div className="text-sm mt-2">
                     <span className="font-bold text-foreground">Pay in full £{payInFullPrice}</span>
                     {savings > 0 && (
-                      <span className="text-destructive line-through ml-1">(Was £{wasPrice})</span>
+                      <span className="text-destructive line-through ml-1">(Was £{payInFullPrice + savings})</span>
                     )}
                   </div>
                   
@@ -222,7 +189,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                 
                 {/* Selection indicator */}
                 <div className={cn(
-                  "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 mt-1",
+                  "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ml-3",
                   isSelected
                     ? "bg-success border-success"
                     : "border-border bg-card"

@@ -49,19 +49,19 @@ const termOptions = [
   { id: '36months', label: '3-Year Cover', months: 36, bonus: 3, isBestValue: true }
 ];
 
-const excessOptions = [0, 100, 250, 500];
+const excessOptions = [0, 50, 100, 150];
 
 const claimLimitOptions = [
-  { value: 1000, label: '£1,000', description: 'Standard' },
-  { value: 2000, label: '£2,000', description: '+£6/month' },
-  { value: 3000, label: '£3,000', description: '+£10/month' }
+  { value: 750, label: '£750', description: 'Minor repairs' },
+  { value: 1250, label: '£1,250', description: 'Most popular' },
+  { value: 2000, label: '£2,000', description: 'Comprehensive' }
 ];
 
 const labourRateOptions = [
-  { rate: 50, label: '£50/hr', description: '-£5/month', isBestValue: true },
-  { rate: 70, label: '£70/hr', description: 'Standard', isPopular: true },
-  { rate: 100, label: '£100/hr', description: '+£4/month' },
-  { rate: 200, label: '£200/hr', description: '+£24/month' }
+  { rate: 50, label: '£50/hr', description: 'Local Garages', isBestValue: true },
+  { rate: 70, label: '£70/hr', description: 'Independent Garages', isPopular: true },
+  { rate: 100, label: '£100/hr', description: 'Approved Garages' },
+  { rate: 200, label: '£200/hr', description: 'Expert Garages' }
 ];
 
 // Mileage dropdown options (10,000 to 140,000 in 1,000 increments)
@@ -85,7 +85,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
   const [excessAmount, setExcessAmount] = useState(100);
-  const [claimLimit, setClaimLimit] = useState(1000);
+  const [claimLimit, setClaimLimit] = useState(1250);
   const [labourRate, setLabourRate] = useState(70);
   const [boostAddon, setBoostAddon] = useState(false);
   const [selectedAddOns, setSelectedAddOns] = useState<{ [key: string]: boolean }>({});

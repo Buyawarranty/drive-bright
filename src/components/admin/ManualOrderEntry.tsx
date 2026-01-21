@@ -105,7 +105,7 @@ const initialOrderData: ManualOrderData = {
   startDate: new Date().toISOString().split('T')[0],
   expiryDate: '',
   voluntaryExcess: 0,
-  claimLimit: 1000,
+  claimLimit: 1250,
   totalAmount: '',
   wearTearCover: false,
   vehicleRecovery: false, // Auto-included for 2-year and 3-year only
@@ -266,7 +266,7 @@ export const ManualOrderEntry = ({ customerToEdit, policyToEdit, onClose }: Manu
         startDate: startDate,
         expiryDate: expiryDate,
         voluntaryExcess: policyToEdit.voluntary_excess || 0,
-        claimLimit: policyToEdit.claim_limit || 1000,
+        claimLimit: policyToEdit.claim_limit || 1250,
         totalAmount: policyToEdit.payment_amount?.toString() || '',
         wearTearCover: policyToEdit.wear_tear || false,
         vehicleRecovery: policyToEdit.breakdown_recovery || false,

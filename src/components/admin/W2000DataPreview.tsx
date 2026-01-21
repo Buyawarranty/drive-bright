@@ -136,9 +136,9 @@ export const W2000DataPreview: React.FC<W2000DataPreviewProps> = ({ customer }) 
   const coverageMonths = getWarrantyDurationInMonths(paymentType);
   
   // Get claim limit (same validation as W2000 function)
-  const rawClaimLimit = policy?.claim_limit || customer?.claim_limit || 1000;
-  const validClaimLimits = [1000, 2000, 3000];
-  const maxClaimAmount = validClaimLimits.includes(rawClaimLimit) ? rawClaimLimit.toString() : '1000';
+  const rawClaimLimit = policy?.claim_limit || customer?.claim_limit || 1250;
+  const validClaimLimits = [750, 1250, 2000];
+  const maxClaimAmount = validClaimLimits.includes(rawClaimLimit) ? rawClaimLimit.toString() : '1250';
   
   // Build exact W2000 registration data structure
   const w2000Data = {
