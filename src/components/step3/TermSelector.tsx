@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Check, ChevronDown, ChevronUp, Flame, Wrench, Search, CheckCircle } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, CheckCircle, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface TermOption {
   id: '12months' | '24months' | '36months';
   label: string;
+  subtitle: string;
   description: string;
   monthlyPrice: number;
   isPopular?: boolean;
@@ -50,24 +51,41 @@ const TermSelector: React.FC<TermSelectorProps> = ({
     return payInFull + savings;
   };
 
+  // Calculate equivalent monthly cost of cover (total ÷ months of cover)
+  const getEquivalentMonthly = (termId: string): number => {
+    const total = getTotalForTerm(termId);
+    const coverMonths = termId === '12months' ? 12 : termId === '24months' ? 24 : 36;
+    return Math.floor(total / coverMonths);
+  };
+
+  // Calculate per-year cost
+  const getPerYearCost = (termId: string): number => {
+    const total = getTotalForTerm(termId);
+    const years = termId === '12months' ? 1 : termId === '24months' ? 2 : 3;
+    return Math.floor(total / years);
+  };
+
   const allTerms: TermOption[] = [
     {
       id: '24months',
       label: '2-Year Cover',
-      description: '2-year cover',
+      subtitle: 'MOST POPULAR',
+      description: '24 months of cover. Most drivers choose this. Better value than renewing yearly.',
       monthlyPrice: getPriceForTerm('24months'),
       isPopular: true
     },
     {
       id: '12months',
       label: '1-Year Cover',
-      description: '1-year cover',
+      subtitle: 'Short-Term Protection',
+      description: '12 months of cover. Ideal if you\'re changing your car soon or just want short-term protection.',
       monthlyPrice: getPriceForTerm('12months')
     },
     {
       id: '36months',
       label: '3-Year Cover',
-      description: '3-year cover',
+      subtitle: 'BEST VALUE',
+      description: '36 months of cover. Best value over time. Locks in your price with no annual renewals.',
       monthlyPrice: getPriceForTerm('36months'),
       isBestValue: true
     }
@@ -91,7 +109,6 @@ const TermSelector: React.FC<TermSelectorProps> = ({
           </div>
           <h3 className="font-semibold text-lg text-foreground">Choose your cover duration</h3>
         </div>
-        <span className="text-sm text-gray-600 font-bold text-center w-full sm:w-auto sm:text-base sm:self-center flex items-center gap-1">All parts included at no extra cost</span>
       </div>
       
       {/* Dynamic microcopy for add-ons explanation */}
@@ -113,7 +130,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
           <div className="flex items-start gap-2">
             <Search className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
             <p className="text-muted-foreground">
-              Base cover prices shown below. Any Optional Add-Ons you choose are added to the total in the summary bar.
+              All warranties are paid over 12 interest-free instalments. Longer plans spread the cost of cover over more years.
             </p>
           </div>
         )}
@@ -124,7 +141,9 @@ const TermSelector: React.FC<TermSelectorProps> = ({
           const isSelected = selectedTerm === term.id;
           const savings = getSavingsForTerm(term.id);
           const payInFullPrice = getPayInFullPrice(term.id);
-          const wasPrice = payInFullPrice + savings;
+          const equivalentMonthly = getEquivalentMonthly(term.id);
+          const perYearCost = getPerYearCost(term.id);
+          const showEquivalent = term.id !== '12months';
           
           return (
             <button
@@ -149,12 +168,20 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                 </span>
               )}
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between">
                 <div className="flex-1">
+                  {/* Term label with subtitle */}
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-bold text-foreground">{term.label}</span>
+                    {!term.isPopular && !term.isBestValue && term.subtitle && (
+                      <span className="text-xs text-muted-foreground">({term.subtitle})</span>
+                    )}
+                  </div>
+                  
                   {/* Price Headline */}
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold text-foreground">£{term.monthlyPrice}/month</span>
-                    <span className="text-sm font-bold text-muted-foreground">(12 easy payments)</span>
+                    <span className="text-sm text-muted-foreground">(12 instalments)</span>
                   </div>
                   
                   {/* Free year benefit line with tick */}
@@ -173,15 +200,33 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                   
                   {/* Pay in full with was price */}
                   <div className="text-sm mt-2">
-                    <span className="font-bold text-foreground">Pay in full £{payInFullPrice}</span>
+                    <span className="font-bold text-foreground">Total: £{payInFullPrice}</span>
                     {savings > 0 && (
-                      <span className="text-destructive line-through ml-1">(Was £{payInFullPrice + savings})</span>
+                      <span className="text-destructive line-through ml-2">(Was £{payInFullPrice + savings})</span>
                     )}
                   </div>
                   
+                  {/* Equivalent monthly cost - for 2 & 3 year only */}
+                  {showEquivalent && (
+                    <div className="mt-2 space-y-1">
+                      <div className="flex items-center gap-1.5">
+                        <Check className="w-3 h-3 text-success flex-shrink-0" />
+                        <span className="text-xs text-muted-foreground">
+                          Equivalent to <span className="font-semibold text-foreground">£{equivalentMonthly}/month</span> of cover
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Check className="w-3 h-3 text-success flex-shrink-0" />
+                        <span className="text-xs text-muted-foreground">
+                          <span className="font-semibold text-foreground">£{perYearCost}</span> per year
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* Save today line */}
                   {savings > 0 && (
-                    <div className="flex items-center gap-1 mt-1">
+                    <div className="flex items-center gap-1 mt-2">
                       <span className="text-sm font-bold text-success">Save £{savings} Today</span>
                     </div>
                   )}
@@ -189,7 +234,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                 
                 {/* Selection indicator */}
                 <div className={cn(
-                  "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ml-3",
+                  "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ml-3 mt-1",
                   isSelected
                     ? "bg-success border-success"
                     : "border-border bg-card"
