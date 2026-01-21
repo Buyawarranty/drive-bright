@@ -2311,10 +2311,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
           
           <div className="grid grid-cols-4 gap-3 ml-11">
             {[
-              { value: 0, label: '£0', tag: null },
-              { value: 100, label: '£100', tag: 'Most people choose this' },
-              { value: 250, label: '£250', tag: 'Saver option' },
-              { value: 500, label: '£500', tag: 'Budget option' }
+              { value: 0, label: '£0', tag: 'No upfront cost', isMostPopular: false },
+              { value: 100, label: '£100', tag: 'Best value overall', isMostPopular: true },
+              { value: 250, label: '£250', tag: 'Lower monthly price', isMostPopular: false },
+              { value: 500, label: '£500', tag: 'Cheapest monthly price', isMostPopular: false }
             ].map((option) => (
               <button
                 key={option.value}
@@ -2328,9 +2328,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     : 'neutral-container shadow-lg shadow-black/15 hover:shadow-xl hover:shadow-orange-500/20 border-2 border-transparent'
                 }`}
               >
-                {option.value === 100 && (
-                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[9px] font-bold px-2 py-0.5 rounded whitespace-nowrap">
-                    DEFAULT
+                {option.isMostPopular && (
+                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-success text-white text-[9px] font-bold px-2 py-0.5 rounded whitespace-nowrap">
+                    MOST POPULAR
                   </span>
                 )}
                 <div className="text-lg font-bold text-black">{option.label}</div>
