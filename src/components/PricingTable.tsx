@@ -1371,7 +1371,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
         {/* Choose Warranty Duration - Moved to top */}
         <div id="duration-price-section" className="section-header rounded-lg p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-4">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
                 1
@@ -1381,7 +1381,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 Choose your cover duration
               </h2>
             </div>
-            <span className="text-sm text-gray-600 font-bold text-center w-full sm:w-auto sm:text-base sm:self-center">All parts included at no extra cost</span>
+          </div>
+          
+          {/* Value explanation microcopy - trust-building */}
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-6">
+            <div className="flex items-start gap-3">
+              <Info className="w-5 h-5 text-slate-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-slate-700">
+                <p className="font-medium text-slate-800 mb-1">How our pricing works</p>
+                <p>All plans are paid over 12 monthly instalments. Longer cover periods cost less per month of protection — you're simply spreading more cover over the same 12 payments.</p>
+              </div>
+            </div>
           </div>
           
 
@@ -1441,9 +1451,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
             {[
               { 
                 id: '12months', 
-                label: '1-year cover', 
+                label: '1-Year Cover', 
                 badge: null, 
-                planName: 'Platinum Complete Plan',
+                planName: 'Short-term protection',
                 features: [
                   'All mechanical & electrical parts',
                   'Up to 10 claims per year',
@@ -1460,9 +1470,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
               },
               { 
                 id: '24months', 
-                label: '2-year cover', 
-                badge: 'MOST POPULAR', 
-                planName: 'Platinum Complete Plan',
+                label: '2-Year Cover', 
+                badge: 'Most Popular', 
+                planName: 'Better value per month',
                 features: [
                   'All mechanical & electrical parts',
                   'Unlimited Claims',
@@ -1480,9 +1490,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
               },
               { 
                 id: '36months', 
-                label: '3-year cover', 
-                badge: 'BEST VALUE', 
-                planName: 'Platinum Complete Plan',
+                label: '3-Year Cover', 
+                badge: 'Best Value', 
+                planName: 'Lowest cost per month of cover',
                 features: [
                   'All mechanical & electrical parts',
                   'Unlimited Claims',
@@ -1571,10 +1581,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   }`}
                   style={{ position: 'relative', zIndex: 1 }}
                 >
-                  {/* Badge */}
+                  {/* Badge - refined, trust-focused styling */}
                   {duration.badge && (
-                    <span className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
-                      durationId === '24months' ? 'bg-orange-500 text-white' : 'bg-green-600 text-white'
+                    <span className={`absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shadow-sm ${
+                      durationId === '24months' 
+                        ? 'bg-orange-100 text-orange-800 border border-orange-200' 
+                        : 'bg-green-100 text-green-800 border border-green-200'
                     }`}>
                       {duration.badge}
                     </span>
@@ -1603,42 +1615,79 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   <h4 className="text-xl font-bold text-gray-900 mb-1">
                     {duration.label}
                   </h4>
-                  <p className="text-sm text-gray-500 mb-3">{duration.planName}</p>
+                  <p className="text-sm text-gray-500 mb-4">{duration.planName}</p>
                   
-                  {/* Price Section */}
+                  {/* Price Section - Redesigned for clarity */}
                   <div className="mb-4">
-                    {/* Price Headline */}
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-bold text-black">£{displayedMonthlyPrice}/month</span>
-                      <span className="text-sm font-bold text-gray-400">(12 easy payments)</span>
+                    {/* Monthly payment headline */}
+                    <div className="mb-3">
+                      <div className="flex items-baseline gap-1.5 flex-wrap">
+                        <span className="text-2xl font-bold text-black">£{displayedMonthlyPrice}</span>
+                        <span className="text-base text-gray-600">per month</span>
+                      </div>
+                      <p className="text-sm text-gray-500 mt-1">for 12 months</p>
                     </div>
                     
-                    {/* Free year benefit line with tick */}
+                    {/* Total cost */}
+                    <div className="text-sm text-gray-700 mb-3">
+                      Total cost: <span className="font-semibold text-black">£{displayedAnnualPrice}</span>
+                    </div>
+                    
+                    {/* Value per month of cover - KEY DIFFERENTIATOR */}
+                    {durationId === '12months' && (
+                      <div className="bg-gray-100 rounded-lg px-3 py-2.5">
+                        <p className="text-sm text-gray-700">
+                          <span className="font-medium">£{displayedMonthlyPrice}/month</span> of cover
+                        </p>
+                      </div>
+                    )}
+                    
                     {durationId === '24months' && (
-                      <div className="flex items-center gap-1.5 mt-2">
-                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                        <span className="text-sm font-medium text-black">Year 2 FREE cover</span>
+                      <div className="bg-orange-50 border border-orange-200 rounded-lg px-3 py-2.5">
+                        <p className="text-sm text-orange-800">
+                          Works out at <span className="font-bold">£{Math.round(displayedAnnualPrice / 24)}/month</span> of cover
+                        </p>
+                        <p className="text-xs text-orange-600 mt-1">24 months protection, paid over 12</p>
                       </div>
                     )}
+                    
                     {durationId === '36months' && (
-                      <div className="flex items-center gap-1.5 mt-2">
-                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                        <span className="text-sm font-medium text-black">Years 2 & 3 FREE cover</span>
+                      <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2.5">
+                        <p className="text-sm text-green-800">
+                          Works out at <span className="font-bold">£{Math.round(displayedAnnualPrice / 36)}/month</span> of cover
+                        </p>
+                        <p className="text-xs text-green-600 mt-1">36 months protection, paid over 12</p>
                       </div>
                     )}
                     
-                    {/* Total price with was price */}
-                    <div className="text-sm mt-2">
-                      <span className="font-bold text-black">
-                        {(durationId === '24months' || durationId === '36months') ? 'Pay in full ' : 'Total: '}
-                        £{displayedAnnualPrice}
-                      </span>
-                    </div>
+                    {/* Key benefits for longer plans */}
+                    {durationId === '24months' && (
+                      <div className="mt-3 space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                          <span className="text-sm text-gray-700">Lowest cost per month of cover</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                          <span className="text-sm text-gray-700">Covers 2 MOT cycles</span>
+                        </div>
+                      </div>
+                    )}
                     
-                    {/* Extra benefits for 2-year and 3-year */}
-                    {(durationId === '24months' || durationId === '36months') && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <span className="text-sm font-medium text-gray-700">🎁 Includes extra benefits</span>
+                    {durationId === '36months' && (
+                      <div className="mt-3 space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                          <span className="text-sm text-gray-700">Best value over time</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                          <span className="text-sm text-gray-700">Price locked — no renewals</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                          <span className="text-sm text-gray-700">Includes recovery & extras</span>
+                        </div>
                       </div>
                     )}
                   </div>
