@@ -1789,7 +1789,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <div className="flex items-center gap-2 sm:gap-3 cursor-pointer group">
                   <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-black flex-shrink-0" />
                   <h2 className="text-lg sm:text-xl font-semibold text-black">
-                    Comprehensive Cover
+                    What's covered by your warranty
                   </h2>
                   <ChevronDown className="w-5 h-5 sm:w-8 sm:h-8 text-black transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
                 </div>
