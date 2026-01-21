@@ -2309,7 +2309,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </Alert>
           )}
           
-          <div className="flex gap-2 flex-wrap justify-start ml-11">
+          <div className="grid grid-cols-4 gap-3 ml-11">
             {[
               { value: 0, label: '£0', delta: '+£6/mo', tag: null },
               { value: 100, label: '£100', delta: '£0', tag: 'Most people choose this' },
@@ -2322,19 +2322,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   toggleVoluntaryExcess(option.value);
                   setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
                 }}
-                className={`px-3 py-2.5 rounded-lg transition-all duration-200 text-center relative min-w-[70px] ${
+                className={`py-4 px-3 rounded-xl transition-all duration-200 text-center relative min-h-[90px] flex flex-col items-center justify-center ${
                   voluntaryExcess === option.value
                     ? 'bg-orange-500/10 border-2 border-orange-500 shadow-lg shadow-orange-500/30'
                     : 'neutral-container shadow-lg shadow-black/15 hover:shadow-xl hover:shadow-orange-500/20 border-2 border-transparent'
                 }`}
               >
                 {option.value === 100 && (
-                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap">
+                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[9px] font-bold px-2 py-0.5 rounded whitespace-nowrap">
                     DEFAULT
                   </span>
                 )}
-                <div className="text-base font-bold text-black">{option.label}</div>
-                <div className={`text-[10px] font-semibold mt-0.5 ${
+                <div className="text-lg font-bold text-black">{option.label}</div>
+                <div className={`text-xs font-semibold mt-1 ${
                   option.delta.startsWith('-') ? 'text-green-600' : 
                   option.delta.startsWith('+') ? 'text-orange-600' : 
                   'text-gray-500'
@@ -2342,7 +2342,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   {option.delta}
                 </div>
                 {option.tag && (
-                  <div className="text-[8px] text-gray-500 mt-0.5">{option.tag}</div>
+                  <div className="text-[9px] text-gray-500 mt-1 leading-tight">{option.tag}</div>
                 )}
               </button>
             ))}
