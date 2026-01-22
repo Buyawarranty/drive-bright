@@ -15,28 +15,28 @@
  * - Transfer Cover = +£19 one-off (not monthly)
  */
 
-// Base pricing matrix from CURRENT_PRICE_DEC_2025 (ORIGINAL PRICING)
+// Base pricing matrix from BRAND_NEW_PRICES_JAN_2026.xlsx
 // These are the base prices at £70/hr labour rate (DEFAULT)
-// UPDATED JAN 2026: New claim limit keys 1000, 2000, 3000 (mapped from old 750, 1250, 2000 prices)
-// UPDATED JAN 2026: New excess keys 0, 100, 250, 500
+// Excess keys: 0, 100, 250 (mapped from £200), 500
+// Claim limit keys: 1000, 2000, 3000
 export const BASE_PRICING_MATRIX = {
   '12months': {
-    0: { 1000: 467, 2000: 497, 3000: 587 },      // £0 excess (+£6/mo from £100 baseline)
-    100: { 1000: 387, 2000: 417, 3000: 507 },    // £100 excess (default baseline)
-    250: { 1000: 339, 2000: 369, 3000: 459 },    // £250 excess (-£4/mo = -£48/yr from baseline)
-    500: { 1000: 291, 2000: 321, 3000: 411 }     // £500 excess (-£8/mo = -£96/yr from baseline)
+    0: { 1000: 492, 2000: 528, 3000: 612 },      // £0 excess
+    100: { 1000: 468, 2000: 492, 3000: 576 },    // £100 excess (DEFAULT)
+    250: { 1000: 420, 2000: 444, 3000: 540 },    // £250 excess (from £200 Excel row)
+    500: { 1000: 396, 2000: 420, 3000: 504 }     // £500 excess
   },
   '24months': {
-    0: { 1000: 897, 2000: 937, 3000: 1027 },     // £0 excess (+£6/mo = +£144/2yr from baseline)
-    100: { 1000: 737, 2000: 787, 3000: 877 },    // £100 excess (default baseline)
-    250: { 1000: 641, 2000: 691, 3000: 781 },    // £250 excess (-£4/mo = -£96/2yr from baseline)
-    500: { 1000: 545, 2000: 595, 3000: 685 }     // £500 excess (-£8/mo = -£192/2yr from baseline)
+    0: { 1000: 852, 2000: 890, 3000: 976 },      // £0 excess
+    100: { 1000: 786, 2000: 833, 3000: 909 },    // £100 excess (DEFAULT)
+    250: { 1000: 700, 2000: 748, 3000: 833 },    // £250 excess (from £200 Excel row)
+    500: { 1000: 662, 2000: 700, 3000: 786 }     // £500 excess
   },
   '36months': {
-    0: { 1000: 1347, 2000: 1397, 3000: 1497 },   // £0 excess (+£6/mo = +£216/3yr from baseline)
-    100: { 1000: 1097, 2000: 1177, 3000: 1277 }, // £100 excess (default baseline)
-    250: { 1000: 953, 2000: 1033, 3000: 1133 },  // £250 excess (-£4/mo = -£144/3yr from baseline)
-    500: { 1000: 809, 2000: 889, 3000: 989 }     // £500 excess (-£8/mo = -£288/3yr from baseline)
+    0: { 1000: 1246, 2000: 1292, 3000: 1385 },   // £0 excess
+    100: { 1000: 1153, 2000: 1200, 3000: 1292 }, // £100 excess (DEFAULT)
+    250: { 1000: 1015, 2000: 1089, 3000: 1181 }, // £250 excess (from £200 Excel row)
+    500: { 1000: 968, 2000: 1015, 3000: 1107 }   // £500 excess
   }
 } as const;
 
@@ -69,8 +69,8 @@ export const DEFAULT_LABOUR_RATE = 70;
 // Default excess is £100
 export const DEFAULT_EXCESS = 100;
 
-// Default claim limit is £1000 (updated Jan 2026)
-export const DEFAULT_CLAIM_LIMIT = 1000;
+// Default claim limit is £2000 (updated Jan 2026)
+export const DEFAULT_CLAIM_LIMIT = 2000;
 
 // Boost claim limit adds +£500 to selected limit, costs £3/month (UPDATED from £5)
 export const BOOST_CLAIM_LIMIT_MONTHLY = 3;
