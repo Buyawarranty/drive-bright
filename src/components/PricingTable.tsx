@@ -866,9 +866,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
   }, [selectedLabourRate]);
 
-  // Memoized boost display adjustment (£5/month)
+  // Memoized boost display adjustment (£3/month - using centralized constant)
   const boostDisplayAdjustment = useMemo(() => {
-    return boostAddon ? 5 : 0;
+    return boostAddon ? 3 : 0;
   }, [boostAddon]);
 
   // Memoized display monthly price - ALWAYS floor(total / 12)
@@ -1002,8 +1002,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
         discountedBasePrice = adjustedBasePrice - 200; // £200 discount for 3-year plans
       }
       
-      // Calculate boost addon cost (£5/month for 12 months = £60)
-      const boostCost = boostAddon ? 60 : 0;
+      // Calculate boost addon cost (£3/month × durationMonths - using centralized constant)
+      const boostCost = boostAddon ? (3 * durationMonths) : 0;
       
       // Calculate labour rate display adjustment (annual)
       let labourRateAdjust = 0;
@@ -1555,8 +1555,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
               const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
               const labourTotalAdjust = labourMonthlyAdjust * durationMonths;
               
-              // Boost addon: +£5/month for duration
-              const boostTotalAdjust = boostAddon ? (5 * durationMonths) : 0;
+              // Boost addon: +£3/month for duration (uses centralized BOOST_CLAIM_LIMIT_MONTHLY = 3)
+              const boostTotalAdjust = boostAddon ? (3 * durationMonths) : 0;
               
               // Get auto-included add-ons for THIS card's duration (not the selected plan)
               const thisCardAutoIncluded = getAutoIncludedAddOns(durationId);
