@@ -77,7 +77,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
         <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold">
           3
         </div>
-        <h3 className="font-semibold text-lg text-foreground">Choose your claim limit</h3>
+        <h3 className="font-semibold text-lg text-foreground">Single repair amount per claim</h3>
         
         {/* Info icon */}
         <button

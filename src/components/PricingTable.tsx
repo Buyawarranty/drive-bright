@@ -2484,7 +2484,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
             <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 flex-shrink-0" />
-              Choose your claim limit 🚗
+              Single repair amount per claim
             </h2>
             
             <Dialog>
