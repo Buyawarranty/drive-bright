@@ -1383,16 +1383,33 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
           </div>
           
-          {/* Value explanation microcopy - trust-building */}
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-6">
-            <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-slate-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-slate-700">
-                <p className="font-medium text-slate-800 mb-1">How our pricing works</p>
-                <p>All plans are paid over 12 monthly instalments. Longer cover periods cost less per month of protection — you're simply spreading more cover over the same 12 payments.</p>
+          {/* Collapsible pricing explainer */}
+          <Collapsible className="mb-6">
+            <CollapsibleTrigger className="w-full">
+              <div className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+                <Info className="w-4 h-4 text-slate-500" />
+                <span className="text-sm font-medium text-slate-600">How pricing works</span>
+                <span className="text-xs text-slate-400 hidden sm:inline">• 12 payments • 0% APR • Pay in full & save 10%</span>
+                <ChevronDown className="w-4 h-4 text-slate-400 ml-1" />
               </div>
-            </div>
-          </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-3 p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2.5">
+                <div className="flex items-start gap-2.5">
+                  <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-sm text-slate-600">Pay monthly over 12 interest-free instalments (0% APR)</span>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-sm text-slate-600">Or pay in full and save 10%</span>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-sm text-slate-600">Longer cover costs less per month</span>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
           
 
           {validationErrors.paymentType && (
