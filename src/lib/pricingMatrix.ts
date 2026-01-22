@@ -7,7 +7,7 @@
  * - Labour rate £70/hr = base price (no adjustment) - DEFAULT
  * - Labour rate £100/hr = +£4/month for duration (UPDATED from £8)
  * - Labour rate £200/hr = +£24/month for duration
- * - Boost claim limit (+£500) = +£3/month for duration (UPDATED from £5)
+ * - Boost claim limit (+£500) = FIXED £3/month × 12 payments = £36 total (NOT multiplied by cover duration)
  * - All payments are ALWAYS 12 monthly installments
  * - Monthly = Math.floor(total / 12) - always round DOWN
  * - "Was" price = total + marketing savings (£100 for 2yr, £200 for 3yr) - display only
@@ -131,18 +131,20 @@ export function calculateLabourRateAdjustment(
 }
 
 /**
- * Calculate boost claim limit adjustment (+£500 claim limit for £3/month)
+ * Calculate boost claim limit adjustment (+£500 claim limit for £3/month FIXED)
+ * IMPORTANT: Boost is ALWAYS £3/month × 12 payments = £36 total, regardless of cover duration
  * @param boostEnabled Whether boost is enabled
- * @param paymentPeriod The warranty duration
- * @returns Total boost cost
+ * @param paymentPeriod The warranty duration (not used for cost calculation, but kept for API compatibility)
+ * @returns Total boost cost (always £36 for 12 payments)
  */
 export function calculateBoostAdjustment(
   boostEnabled: boolean,
   paymentPeriod: PaymentPeriod
 ): number {
   if (!boostEnabled) return 0;
-  const durationMonths = DURATION_MONTHS[paymentPeriod];
-  return BOOST_CLAIM_LIMIT_MONTHLY * durationMonths;
+  // FIXED: Boost is always £3/month × 12 payments = £36 total
+  // NOT multiplied by cover duration (24 or 36 months)
+  return BOOST_CLAIM_LIMIT_MONTHLY * 12;
 }
 
 /**
