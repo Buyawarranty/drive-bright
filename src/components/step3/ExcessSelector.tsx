@@ -83,7 +83,7 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
               )}
             >
               {option.isMostPopular && (
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-success text-white text-[8px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap uppercase">
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[8px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap uppercase">
                   MOST POPULAR
                 </span>
               )}

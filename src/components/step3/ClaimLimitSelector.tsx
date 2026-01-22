@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import { ChevronDown, Check, Info, Plus } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Check, Info, X } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface ClaimLimitSelectorProps {
@@ -14,13 +13,11 @@ interface ClaimLimitSelectorProps {
 }
 
 // Updated claim limit options: £1,000 / £2,000 / £3,000 only
-const claimLimitOptions = [1000, 2000, 3000];
-
-const claimLimitDetails: Record<number, string> = {
-  1000: "Standard cover for common repairs. A sensible choice for reliable vehicles.",
-  2000: "Our most popular option. Covers major component failures including engine and gearbox.",
-  3000: "Maximum protection for high-value repairs. Best for luxury and performance vehicles."
-};
+const claimLimitOptions = [
+  { value: 1000, label: '£1,000', name: 'AutoCare Essential' },
+  { value: 2000, label: '£2,000', name: 'AutoCare Advantage', isPopular: true },
+  { value: 3000, label: '£3,000', name: 'AutoCare Elite' }
+];
 
 const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
   selectedClaimLimit,
@@ -30,7 +27,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
   onBoostChange,
   boostPrice
 }) => {
-  const [openDetails, setOpenDetails] = useState<number | null>(null);
+  const [showExplainer, setShowExplainer] = useState(false);
   
   // Tiny spark effect when boost is clicked
   const triggerBoostSpark = useCallback((event: React.MouseEvent) => {
@@ -75,87 +72,91 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
 
   return (
     <div className="px-4 py-4 border-t border-border">
-      <div className="flex items-center gap-2 mb-3">
+      {/* Heading with info icon */}
+      <div className="flex items-center gap-2 mb-2">
         <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold">
           3
         </div>
-        <h3 className="font-semibold text-lg text-foreground">Set your claim limit</h3>
+        <h3 className="font-semibold text-lg text-foreground">Choose your claim limit</h3>
+        
+        {/* Info icon */}
+        <button
+          onClick={() => setShowExplainer(!showExplainer)}
+          className="relative flex items-center justify-center w-11 h-11 -m-2 rounded-full hover:bg-muted/50 transition-colors"
+          aria-label="What is a claim limit?"
+          aria-expanded={showExplainer}
+        >
+          <Info className="w-5 h-5 text-muted-foreground" />
+        </button>
       </div>
       
-      {/* Helper text */}
+      {/* Single helper line */}
       <p className="text-xs text-muted-foreground mb-3">
-        Maximum claim limit per repair. Most repairs cost hundreds; higher limits help with big failures.
+        Sets the maximum amount we'll pay for each claim.
       </p>
 
-      {/* Claim Limit Cards */}
-      <div className="grid grid-cols-3 gap-3 mb-3">
-        {claimLimitOptions.map((limit) => {
-          const isSelected = selectedClaimLimit === limit;
-          const isPopular = limit === 2000;
-          const isOpen = openDetails === limit;
+      {/* Expandable Explainer */}
+      {showExplainer && (
+        <div className="mb-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-left animate-fade-in">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1">
+              <h4 className="font-semibold text-sm text-foreground mb-2">What is a claim limit?</h4>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-2">
+                This is the maximum amount we'll pay towards a single repair. Claims can be made up to the value of your car.
+              </p>
+              <p className="text-xs text-muted-foreground/80 leading-relaxed">
+                For example: with a £2,000 limit, we'll cover repairs up to £2,000 per claim.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowExplainer(false)}
+              className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 transition-colors"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Claim Limit Cards - Simplified */}
+      <div className="grid grid-cols-3 gap-2 mb-3">
+        {claimLimitOptions.map((option) => {
+          const isSelected = selectedClaimLimit === option.value;
           
           return (
-            <div key={limit} className="relative pt-3">
-              {/* Tag - positioned to overlap border */}
-              {isPopular && (
-                <span className="absolute -top-0 left-2 z-10 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wide">
+            <button
+              key={option.value}
+              onClick={() => handleSelect(option.value)}
+              className={cn(
+                "relative py-3 px-2 rounded-lg border-2 text-left transition-all min-h-[70px]",
+                isSelected
+                  ? "border-success bg-success/10"
+                  : "border-border bg-card hover:border-success/50"
+              )}
+            >
+              {option.isPopular && (
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[8px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap uppercase">
                   MOST POPULAR
                 </span>
               )}
               
-              <Collapsible open={isOpen} onOpenChange={(open) => setOpenDetails(open ? limit : null)}>
-                <div
-                  className={cn(
-                    "rounded-lg border-2 transition-all bg-white shadow-sm",
-                    isSelected
-                      ? "border-success"
-                      : "border-border hover:border-success/50"
-                  )}
-                >
-                  {/* Main Card Content */}
-                  <button
-                    onClick={() => handleSelect(limit)}
-                    className="w-full p-3 text-left"
-                  >
-                    <div className="font-bold text-lg text-foreground">£{limit.toLocaleString()}</div>
-                    <div className="text-[10px] text-muted-foreground">per repair</div>
-                  </button>
-                  
-                  {/* Divider */}
-                  <div className="border-t border-border" />
-                  
-                  {/* View Details Trigger */}
-                  <CollapsibleTrigger className="w-full px-3 py-2 flex items-center justify-between text-xs font-semibold text-foreground hover:text-primary transition-colors">
-                    <span>Details</span>
-                    <ChevronDown 
-                      className={cn(
-                        "w-3 h-3 transition-transform duration-200",
-                        isOpen && "rotate-180"
-                      )} 
-                    />
-                  </CollapsibleTrigger>
-                  
-                  {/* Collapsible Content */}
-                  <CollapsibleContent>
-                    <div className="px-3 pb-3 pt-1 bg-muted/50 border-t border-border">
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        {claimLimitDetails[limit]}
-                      </p>
-                    </div>
-                  </CollapsibleContent>
+              <span className="font-bold text-sm text-foreground block">{option.label}</span>
+              <span className="text-xs text-muted-foreground">{option.name}</span>
+              
+              {isSelected && (
+                <div className="absolute top-1 right-1 w-4 h-4 bg-success rounded-full flex items-center justify-center">
+                  <Check className="w-3 h-3 text-white" strokeWidth={3} />
                 </div>
-              </Collapsible>
-            </div>
+              )}
+            </button>
           );
         })}
       </div>
 
-      {/* Boost Add-On Section - Only shown for £1,000 and £2,000 */}
+      {/* Boost Add-On Section - Simplified */}
       {canShowBoost && (
-        <div className="mt-4 mb-2">
-          <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Boost Your Cover</h4>
-          
-          {/* Add Extra Cover Card - Fully Tappable */}
+        <div className="mt-4 pt-4 border-t border-border">
           <div 
             onClick={(e) => {
               if (!isBoostActive) {
@@ -165,93 +166,51 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
               }
             }}
             className={cn(
-              "relative p-4 rounded-xl cursor-pointer border-2 overflow-hidden",
-              "transition-all duration-300 ease-out transform",
+              "relative p-4 rounded-xl cursor-pointer border-2",
+              "transition-all duration-300 ease-out",
               isBoostActive
-                ? "bg-gradient-to-br from-green-50 to-green-100 border-green-500 shadow-[0_0_16px_rgba(34,197,94,0.35)] scale-[1.01]"
-                : "bg-gradient-to-br from-orange-50 to-orange-100/50 border-orange-200 hover:border-orange-400 hover:shadow-lg hover:scale-[1.005]"
+                ? "bg-success/5 border-success"
+                : "bg-card border-border hover:border-success/50"
             )}
           >
-            {/* Animated background pulse when active */}
-            {isBoostActive && (
-              <div className="absolute inset-0 bg-green-400/10 animate-pulse pointer-events-none" />
-            )}
-            
-            <div className="relative flex items-center gap-4">
+            <div className="flex items-center justify-between gap-4">
               {/* Content */}
               <div className="flex-1 min-w-0">
-                {isBoostActive ? (
-                  <>
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                        <Check className="w-4 h-4 text-white" strokeWidth={3} />
-                      </div>
-                      <h4 className="text-lg font-bold text-green-700">
-                        Boost Added!
-                      </h4>
-                    </div>
-                    <div className="text-base font-semibold text-green-800">
-                      Your claim limit is now £{finalClaimLimit?.toLocaleString()} per repair 🚀
-                    </div>
-                    <div className="text-xs text-green-600 mt-1">
-                      +£{boostPrice}/month × 12 payments
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <h4 className="text-lg font-bold text-foreground mb-0.5">
-                      🚀 Add +£500 extra cover
-                    </h4>
-                    <div className="text-base font-semibold text-foreground">
-                      Your claim limit becomes £{((selectedClaimLimit || 0) + 500).toLocaleString()} per repair
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      +£{boostPrice}/month × 12 payments
-                    </div>
-                  </>
-                )}
+                <h4 className="text-sm font-bold text-foreground mb-0.5">
+                  Add £500 extra cover
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  Upgrade to £{((selectedClaimLimit || 0) + 500).toLocaleString()} per claim
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  +£{boostPrice}/month · 12 payments
+                </p>
               </div>
               
               {/* Toggle Switch */}
               <div className="flex-shrink-0">
                 <div
                   className={cn(
-                    "relative inline-flex items-center justify-between rounded-full transition-all duration-300 ease-out",
-                    "w-[68px] h-[36px] px-1",
+                    "relative inline-flex items-center rounded-full transition-all duration-300",
+                    "w-[52px] h-[28px]",
                     isBoostActive 
-                      ? "bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.5)]" 
-                      : "bg-gray-300"
+                      ? "bg-success" 
+                      : "bg-muted"
                   )}
                 >
-                  {/* ON/OFF Labels */}
-                  <span className={cn(
-                    "text-[11px] font-bold uppercase pl-1.5 transition-all duration-200",
-                    isBoostActive ? "text-white" : "text-transparent"
-                  )}>
-                    ON
-                  </span>
-                  <span className={cn(
-                    "text-[11px] font-bold uppercase pr-1.5 transition-all duration-200",
-                    isBoostActive ? "text-transparent" : "text-gray-500"
-                  )}>
-                    OFF
-                  </span>
-                  
                   {/* Toggle Knob */}
                   <span
                     className={cn(
-                      "absolute inline-flex items-center justify-center rounded-full bg-white shadow-md",
-                      "w-[28px] h-[28px] top-1",
+                      "absolute inline-flex items-center justify-center rounded-full bg-white shadow-sm",
+                      "w-[22px] h-[22px]",
                       "transition-all duration-300 ease-out",
                       isBoostActive 
-                        ? "left-[36px] shadow-lg" 
-                        : "left-1"
+                        ? "left-[27px]" 
+                        : "left-[3px]"
                     )}
                   >
-                    {isBoostActive ? (
-                      <Check className="w-4 h-4 text-green-500" strokeWidth={3} />
-                    ) : (
-                      <Plus className="w-4 h-4 text-gray-400" strokeWidth={2} />
+                    {isBoostActive && (
+                      <Check className="w-3 h-3 text-success" strokeWidth={3} />
                     )}
                   </span>
                 </div>
@@ -266,7 +225,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
         <div className="mt-3 p-3 bg-muted/50 rounded-lg border border-border">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-foreground">
-              Maximum claim limit: <span className="font-bold">£{finalClaimLimit?.toLocaleString()}</span> per repair
+              Claim limit: <span className="font-bold">£{finalClaimLimit?.toLocaleString()}</span> per claim
             </span>
             <span className="text-sm font-medium text-success">
               £{currentMonthlyPrice}/month
