@@ -1581,12 +1581,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   }`}
                   style={{ position: 'relative', zIndex: 1 }}
                 >
-                  {/* Badge - refined, trust-focused styling */}
+                  {/* Badge - matching LabourRateSelector style */}
                   {duration.badge && (
-                    <span className={`absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shadow-sm ${
+                    <span className={`absolute -top-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap uppercase ${
                       durationId === '24months' 
-                        ? 'bg-orange-100 text-orange-800 border border-orange-200' 
-                        : 'bg-green-100 text-green-800 border border-green-200'
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-success text-success-foreground'
                     }`}>
                       {duration.badge}
                     </span>
