@@ -180,21 +180,18 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                   </div>
 
                   {/* Payment breakdown - muted grey */}
-                  <div className="mb-4 space-y-1.5">
-                    <p className="text-sm text-slate-500">
-                      Paid monthly for 12 months
-                    </p>
-                    <p className="text-sm text-slate-700">
-                      <span className="font-semibold">£{monthlyPayment} per month</span>
+                  <div className="mb-4 space-y-1">
+                    <p className="text-sm text-muted-foreground">
+                      Paid monthly for 12 months <span className="font-semibold text-foreground">£{monthlyPayment} per month</span>
                     </p>
                     {term.id === '24months' && (
-                      <p className="text-sm font-medium text-orange-600">No payments in year 2</p>
+                      <p className="text-sm font-semibold text-orange-600">No payments in year 2</p>
                     )}
                     {term.id === '36months' && (
-                      <p className="text-sm font-medium text-green-600">No payments in years 2 or 3</p>
+                      <p className="text-sm font-semibold text-green-600">No payments in years 2 or 3</p>
                     )}
-                    <p className="text-sm text-slate-600">
-                      Total cost <span className="font-semibold">£{totalCost}</span>
+                    <p className="text-sm text-muted-foreground">
+                      Total cost <span className="font-semibold text-foreground">£{totalCost}</span>
                     </p>
                   </div>
 

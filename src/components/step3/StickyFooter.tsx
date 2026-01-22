@@ -120,22 +120,22 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           <div className="flex flex-col items-center gap-1.5">
             {paymentPeriod === '24months' && (
               <>
-                <span className="inline-block bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-semibold">
+                <span className="inline-block bg-orange-100 text-orange-700 px-3 py-1.5 rounded-full text-sm font-semibold">
                   No payments in year 2
                 </span>
-                <span className="text-sm text-gray-600">24 months of cover</span>
+                <span className="text-sm text-muted-foreground">24 months of cover</span>
               </>
             )}
             {paymentPeriod === '36months' && (
               <>
-                <span className="inline-block bg-success/10 text-success px-3 py-1.5 rounded-full text-sm font-semibold">
+                <span className="inline-block bg-green-100 text-green-700 px-3 py-1.5 rounded-full text-sm font-semibold">
                   No payments in years 2 or 3
                 </span>
-                <span className="text-sm text-gray-600">36 months of cover</span>
+                <span className="text-sm text-muted-foreground">36 months of cover</span>
               </>
             )}
             {paymentPeriod === '12months' && (
-              <span className="text-base font-semibold text-gray-800">{coverText}</span>
+              <span className="text-base font-semibold text-foreground">{coverText}</span>
             )}
           </div>
 
@@ -194,14 +194,14 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             {/* No payments badge for multi-year */}
             {paymentPeriod === '24months' && (
               <div className="text-center">
-                <span className="inline-block bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-semibold">
+                <span className="inline-block bg-orange-100 text-orange-700 px-3 py-1.5 rounded-full text-sm font-semibold">
                   No payments in year 2
                 </span>
               </div>
             )}
             {paymentPeriod === '36months' && (
               <div className="text-center">
-                <span className="inline-block bg-success/10 text-success px-3 py-1.5 rounded-full text-sm font-semibold">
+                <span className="inline-block bg-green-100 text-green-700 px-3 py-1.5 rounded-full text-sm font-semibold">
                   No payments in years 2 or 3
                 </span>
               </div>
