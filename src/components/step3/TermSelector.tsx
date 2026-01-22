@@ -31,10 +31,9 @@ const TermSelector: React.FC<TermSelectorProps> = ({
 }) => {
   const [showAllOptions, setShowAllOptions] = useState(false);
 
-  // Pay in full price = monthly × 12 (what user actually pays)
+  // Pay in full price = total price (actual cost, not monthly × 12 which may differ due to rounding)
   const getPayInFullPrice = (termId: string): number => {
-    const monthly = getPriceForTerm(termId);
-    return monthly * 12;
+    return getTotalForTerm(termId);
   };
 
   // Calculate cost per month of cover (total ÷ months of cover)

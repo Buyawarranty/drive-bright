@@ -54,8 +54,9 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isMobileExpanded]);
   
-  // Pay in full = monthly × 12
-  const payInFull = monthlyPrice * 12;
+  // Use actual total price passed from parent for consistency
+  // Monthly price × 12 might differ from totalPrice due to rounding
+  const payInFull = totalPrice;
   
   // Get marketing savings from centralized pricing matrix
   const savings = getMarketingSavings(paymentPeriod as PaymentPeriod);
