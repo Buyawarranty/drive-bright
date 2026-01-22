@@ -2,12 +2,12 @@
  * Centralized pricing matrix and utilities for warranty pricing.
  * 
  * PRICING RULES (UPDATED JAN 2026):
- * - BASE prices are from CURRENT_PRICE_JAN_2026.xlsx at £70/hr labour rate (DEFAULT), £100 excess, £1250 claim limit
+ * - BASE prices are from CURRENT_PRICE_JAN_2026.xlsx at £70/hr labour rate (DEFAULT), £100 excess, £2000 claim limit
  * - Labour rate £50/hr = -£5/month for duration (BELOW base)
  * - Labour rate £70/hr = base price (no adjustment) - DEFAULT
- * - Labour rate £100/hr = +£8/month for duration
+ * - Labour rate £100/hr = +£4/month for duration (UPDATED from £8)
  * - Labour rate £200/hr = +£24/month for duration
- * - Boost claim limit (+£1000) = +£5/month for duration
+ * - Boost claim limit (+£500) = +£3/month for duration (UPDATED from £5)
  * - All payments are ALWAYS 12 monthly installments
  * - Monthly = Math.floor(total / 12) - always round DOWN
  * - "Was" price = total + marketing savings (£100 for 2yr, £200 for 3yr) - display only
@@ -131,7 +131,7 @@ export function calculateLabourRateAdjustment(
 }
 
 /**
- * Calculate boost claim limit adjustment (+£1000 claim limit for £5/month)
+ * Calculate boost claim limit adjustment (+£500 claim limit for £3/month)
  * @param boostEnabled Whether boost is enabled
  * @param paymentPeriod The warranty duration
  * @returns Total boost cost

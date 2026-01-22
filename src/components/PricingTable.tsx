@@ -835,7 +835,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return addOnPrice - oneTimeAddOnPrice;
   }, [addOnPrice, oneTimeAddOnPrice]);
   
-  // Calculate boost addon cost using centralized function (£5/month × duration)
+  // Calculate boost addon cost using centralized function (£3/month × duration)
   const boostAddonCost = useMemo(() => {
     return calculateBoostAdjustment(boostAddon, paymentType as PaymentPeriod);
   }, [boostAddon, paymentType]);
@@ -861,9 +861,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
   }, [totalPrice, marketingSavings]);
 
   // Memoized labour rate per-month adjustment (for display in UI)
-  // £50=-5, £70=0 (default), £100=+8, £200=+24
+  // £50=-5, £70=0 (default), £100=+4, £200=+24 (UPDATED: £100/hr is now +£4, not +£8)
   const labourRateDisplayAdjustment = useMemo(() => {
-    return selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
+    return selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 4 : selectedLabourRate === 200 ? 24 : 0;
   }, [selectedLabourRate]);
 
   // Memoized boost display adjustment (£3/month - using centralized constant)
@@ -1005,16 +1005,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
       // Calculate boost addon cost (£3/month × durationMonths - using centralized constant)
       const boostCost = boostAddon ? (3 * durationMonths) : 0;
       
-      // Calculate labour rate display adjustment (annual)
+      // Calculate labour rate adjustment for duration (UPDATED: £70=base, £100=+£4/mo)
       let labourRateAdjust = 0;
-      if (selectedLabourRate === 70) {
-        labourRateAdjust = 4 * 12; // +£48 annually
+      if (selectedLabourRate === 50) {
+        labourRateAdjust = -5 * durationMonths; // -£5/mo below base
+      } else if (selectedLabourRate === 70) {
+        labourRateAdjust = 0; // Base rate, no adjustment
       } else if (selectedLabourRate === 100) {
-        labourRateAdjust = 8 * 12; // +£96 annually
+        labourRateAdjust = 4 * durationMonths; // +£4/mo (UPDATED from £8)
       } else if (selectedLabourRate === 200) {
-        labourRateAdjust = 24 * 12; // +£288 annually
+        labourRateAdjust = 24 * durationMonths; // +£24/mo
       }
-      // £50/hr is the default with no adjustment
       
       const totalPrice = discountedBasePrice + recurringAddonTotal + oneTimeAddonTotal + boostCost + labourRateAdjust;
       
@@ -1551,8 +1552,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // The base price already includes multi-year pricing
               const finalBasePrice = adjustedBasePrice;
               
-              // Labour rate adjustment: £50=-£5/mo, £70=base(0), £100=+£8/mo, £200=+£24/mo
-              const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
+              // Labour rate adjustment: £50=-£5/mo, £70=base(0), £100=+£4/mo, £200=+£24/mo (UPDATED)
+              const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 4 : selectedLabourRate === 200 ? 24 : 0;
               const labourTotalAdjust = labourMonthlyAdjust * durationMonths;
               
               // Boost addon: +£3/month for duration (uses centralized BOOST_CLAIM_LIMIT_MONTHLY = 3)
