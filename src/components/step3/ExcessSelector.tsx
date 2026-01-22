@@ -8,12 +8,12 @@ interface ExcessSelectorProps {
   currentMonthlyPrice: number;
 }
 
-// Updated excess options per requirements: £0, £100, £250, £500
+// Simplified excess options - minimal labels
 const excessOptions = [
-  { value: 0, label: '£0', tag: 'No upfront cost' },
-  { value: 100, label: '£100', tag: 'Best value overall', isMostPopular: true },
-  { value: 250, label: '£250', tag: 'Lower monthly price' },
-  { value: 500, label: '£500', tag: 'Cheapest monthly price' }
+  { value: 0, label: '£0', description: 'Zero excess' },
+  { value: 100, label: '£100', description: 'Best value', isMostPopular: true },
+  { value: 250, label: '£250', description: 'Lower monthly cost' },
+  { value: 500, label: '£500', description: 'Lowest monthly cost' }
 ];
 
 const ExcessSelector: React.FC<ExcessSelectorProps> = ({
@@ -66,7 +66,7 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
         </div>
       )}
 
-      {/* Excess Cards */}
+      {/* Excess Cards - Simplified */}
       <div className="grid grid-cols-4 gap-2 mb-3">
         {excessOptions.map((option) => {
           const isSelected = selectedExcess === option.value;
@@ -76,23 +76,21 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
               key={option.value}
               onClick={() => onExcessChange(option.value)}
               className={cn(
-                "relative py-3 px-2 rounded-lg border-2 text-center transition-all flex flex-col items-center justify-center min-h-[80px]",
+                "relative py-3 px-2 rounded-lg border-2 text-left transition-all min-h-[70px]",
                 isSelected
-                  ? "border-success bg-success/10 text-foreground"
-                  : "border-border bg-card text-foreground hover:border-success/50"
+                  ? "border-success bg-success/10"
+                  : "border-border bg-card hover:border-success/50"
               )}
             >
-              {/* Most Popular indicator */}
-              {'isMostPopular' in option && option.isMostPopular && (
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-success text-white text-[8px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap">
+              {option.isMostPopular && (
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-success text-white text-[8px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap uppercase">
                   MOST POPULAR
                 </span>
               )}
               
-              {/* Excess amount */}
-              <span className="font-bold text-base">{option.label}</span>
+              <span className="font-bold text-sm text-foreground block">{option.label}</span>
+              <span className="text-xs text-muted-foreground">{option.description}</span>
               
-              {/* Selection checkmark */}
               {isSelected && (
                 <div className="absolute top-1 right-1 w-4 h-4 bg-success rounded-full flex items-center justify-center">
                   <Check className="w-3 h-3 text-white" strokeWidth={3} />
@@ -101,19 +99,6 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
             </button>
           );
         })}
-      </div>
-      
-      {/* Tag labels below cards */}
-      <div className="grid grid-cols-4 gap-2 mb-3">
-        {excessOptions.map((option) => (
-          <div key={option.value} className="text-center">
-            {option.tag && (
-              <span className="text-[9px] text-muted-foreground leading-tight block">
-                {option.tag}
-              </span>
-            )}
-          </div>
-        ))}
       </div>
 
       {/* Micro-helper line */}
