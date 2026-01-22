@@ -1383,29 +1383,35 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
           </div>
           
-          {/* Collapsible pricing explainer */}
-          <Collapsible className="mb-6">
+          {/* Interactive Info Strip - Collapsible pricing explainer */}
+          <Collapsible className="mb-6 group">
             <CollapsibleTrigger className="w-full">
-              <div className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
-                <Info className="w-4 h-4 text-slate-500" />
-                <span className="text-sm font-medium text-slate-600">How pricing works</span>
-                <span className="text-xs text-slate-400 hidden sm:inline">• 12 payments • 0% APR • Pay in full & save 10%</span>
-                <ChevronDown className="w-4 h-4 text-slate-400 ml-1" />
+              <div className="flex items-center justify-between min-h-[48px] py-3 px-4 rounded-xl bg-gradient-to-r from-slate-50 to-slate-100/80 border border-slate-200/80 shadow-sm hover:shadow-md hover:from-slate-100 hover:to-slate-50 transition-all duration-200 group-data-[state=open]:bg-slate-100 group-data-[state=open]:shadow-md">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-7 h-7 rounded-full bg-white shadow-sm border border-slate-200">
+                    <Info className="w-4 h-4 text-slate-500" />
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-3 text-left">
+                    <span className="text-sm font-semibold text-slate-700">How pricing works</span>
+                    <span className="text-xs text-slate-500 font-normal">12 payments · 0% APR · Save 10%</span>
+                  </div>
+                </div>
+                <ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-data-[state=open]:rotate-180" />
               </div>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="mt-3 p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2.5">
-                <div className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-600">Pay monthly over 12 interest-free instalments (0% APR)</span>
+              <div className="mt-2 p-4 rounded-xl bg-slate-50/80 border border-slate-200/60 space-y-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-base flex-shrink-0">✅</span>
+                  <span className="text-sm text-slate-700 font-medium">12 interest-free monthly payments (0% APR)</span>
                 </div>
-                <div className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-600">Or pay in full and save 10%</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-base flex-shrink-0">💰</span>
+                  <span className="text-sm text-slate-700 font-medium">Pay in full and save 10%</span>
                 </div>
-                <div className="flex items-start gap-2.5">
-                  <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-slate-600">Longer cover costs less per month</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-base flex-shrink-0">📉</span>
+                  <span className="text-sm text-slate-700 font-medium">Longer cover costs less per month</span>
                 </div>
               </div>
             </CollapsibleContent>
