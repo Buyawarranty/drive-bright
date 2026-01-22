@@ -13,6 +13,7 @@ interface StickyFooterProps {
   isValid: boolean;
   paymentPeriod?: string;
   hasAddOnsSelected?: boolean;
+  costPerMonthOfCover?: number;
 }
 
 const StickyFooter: React.FC<StickyFooterProps> = ({
@@ -22,7 +23,8 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
   isLoading,
   isValid,
   paymentPeriod = '24months',
-  hasAddOnsSelected = false
+  hasAddOnsSelected = false,
+  costPerMonthOfCover
 }) => {
   const [isPulsing, setIsPulsing] = useState(false);
   const [prevPrice, setPrevPrice] = useState(monthlyPrice);
@@ -55,19 +57,25 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
   }, [isMobileExpanded]);
   
   // Use actual total price passed from parent for consistency
-  // Monthly price × 12 might differ from totalPrice due to rounding
   const payInFull = totalPrice;
   
-  // Get marketing savings from centralized pricing matrix
-  const savings = getMarketingSavings(paymentPeriod as PaymentPeriod);
-  const wasPrice = payInFull + savings;
+  // Calculate cost per month of cover (total ÷ cover months) - same as TermSelector
+  const coverMonths = paymentPeriod === '12months' ? 12 : paymentPeriod === '24months' ? 24 : 36;
+  const calculatedCostPerMonth = costPerMonthOfCover ?? Math.round(payInFull / coverMonths);
 
   const toggleMobileExpand = useCallback(() => {
     setIsMobileExpanded(prev => !prev);
   }, []);
 
-  const coverYears = paymentPeriod === '12months' ? 'One' : paymentPeriod === '24months' ? 'Two' : 'Three';
+  const coverYears = paymentPeriod === '12months' ? '1' : paymentPeriod === '24months' ? '2' : '3';
   const coverText = `${coverYears}-Year Cover`;
+  
+  // Get color based on plan type (matching TermSelector)
+  const getPriceColor = () => {
+    if (paymentPeriod === '36months') return 'text-green-600';
+    if (paymentPeriod === '24months') return 'text-orange-600';
+    return 'text-slate-700';
+  };
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] border-t border-gray-200 z-50">
@@ -95,49 +103,40 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             </a>
           </div>
 
-          {/* Centre Section - Primary Pricing Block (Hero) */}
-          <div className="flex flex-col items-center gap-0.5">
-            {/* Monthly Price - Hero */}
+          {/* Centre Section - Primary Pricing Block (matching TermSelector card) */}
+          <div className="flex flex-col items-center gap-1">
+            {/* Cost per month of cover - HERO PRICE (matching card) */}
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Cost per month of cover</p>
             <div className={cn(
-              "flex items-baseline gap-2 transition-all duration-300",
+              "flex items-baseline gap-1.5 transition-all duration-300",
               isPulsing && "animate-pulse scale-105"
             )}>
-              <span className="text-3xl font-bold text-gray-900">£{monthlyPrice}/month</span>
-              <span className="text-lg text-gray-600">0% APR</span>
+              <span className={cn("text-3xl font-bold", getPriceColor())}>
+                £{calculatedCostPerMonth}
+              </span>
+              <span className="text-base text-muted-foreground">per month</span>
             </div>
             
-            {/* 12 Payments - Single mention */}
-            <span className="text-sm text-gray-600">Paid over 12 interest-free instalments</span>
-            
-            {/* Total cost */}
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-sm font-medium text-gray-700">Total cost: £{payInFull}</span>
-              <span className="text-sm text-gray-500">•</span>
-              <span className="text-sm text-gray-600">{coverText}</span>
+            {/* Payment breakdown - muted grey (matching card) */}
+            <div className="flex flex-col items-center gap-0.5 mt-1">
+              <p className="text-sm text-muted-foreground">
+                Paid monthly for 12 months <span className="font-semibold text-foreground">£{monthlyPrice} per month</span>
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Total cost <span className="font-semibold text-foreground">£{payInFull}</span>
+              </p>
             </div>
           </div>
 
-          {/* Centre-Right Section - Cover Badge */}
+          {/* Centre-Right Section - Cover Badge (matching card) */}
           <div className="flex flex-col items-center gap-1.5">
             {paymentPeriod === '24months' && (
-              <>
-                <span className="inline-block bg-orange-100 text-orange-700 px-3 py-1.5 rounded-full text-sm font-semibold">
-                  No payments in year 2
-                </span>
-                <span className="text-sm text-muted-foreground">24 months of cover</span>
-              </>
+              <p className="text-sm font-semibold text-orange-600">No payments in year 2</p>
             )}
             {paymentPeriod === '36months' && (
-              <>
-                <span className="inline-block bg-green-100 text-green-700 px-3 py-1.5 rounded-full text-sm font-semibold">
-                  No payments in years 2 or 3
-                </span>
-                <span className="text-sm text-muted-foreground">36 months of cover</span>
-              </>
+              <p className="text-sm font-semibold text-green-600">No payments in years 2 or 3</p>
             )}
-            {paymentPeriod === '12months' && (
-              <span className="text-base font-semibold text-foreground">{coverText}</span>
-            )}
+            <span className="text-sm text-muted-foreground">{coverText}</span>
           </div>
 
           {/* Right Section - CTA */}
@@ -174,39 +173,37 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           )}
         >
           <div className="px-4 pt-4 pb-2 space-y-3">
-            {/* Primary: Monthly Price Hero */}
+            {/* Cost per month of cover - HERO PRICE (matching card) */}
             <div className="text-center">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Cost per month of cover</p>
               <div className={cn(
-                "flex items-baseline justify-center gap-2 transition-all duration-300",
+                "flex items-baseline justify-center gap-1.5 transition-all duration-300",
                 isPulsing && "animate-pulse"
               )}>
-                <span className="text-2xl font-bold text-gray-900">£{monthlyPrice}/month</span>
-                <span className="text-sm text-gray-600">0% APR</span>
+                <span className={cn("text-2xl font-bold", getPriceColor())}>
+                  £{calculatedCostPerMonth}
+                </span>
+                <span className="text-sm text-muted-foreground">per month</span>
               </div>
-              <p className="text-sm text-gray-600 mt-1">Paid over 12 interest-free instalments</p>
             </div>
 
-            {/* Total cost */}
-            <div className="text-center">
-              <p className="text-sm font-medium text-gray-700">Total cost: £{payInFull}</p>
-              <p className="text-sm text-gray-600 mt-0.5">{coverText}</p>
+            {/* Payment breakdown - muted grey (matching card) */}
+            <div className="text-center space-y-1">
+              <p className="text-sm text-muted-foreground">
+                Paid monthly for 12 months <span className="font-semibold text-foreground">£{monthlyPrice} per month</span>
+              </p>
+              {paymentPeriod === '24months' && (
+                <p className="text-sm font-semibold text-orange-600">No payments in year 2</p>
+              )}
+              {paymentPeriod === '36months' && (
+                <p className="text-sm font-semibold text-green-600">No payments in years 2 or 3</p>
+              )}
+              <p className="text-sm text-muted-foreground">
+                Total cost <span className="font-semibold text-foreground">£{payInFull}</span>
+              </p>
             </div>
 
-            {/* No payments badge for multi-year */}
-            {paymentPeriod === '24months' && (
-              <div className="text-center">
-                <span className="inline-block bg-orange-100 text-orange-700 px-3 py-1.5 rounded-full text-sm font-semibold">
-                  No payments in year 2
-                </span>
-              </div>
-            )}
-            {paymentPeriod === '36months' && (
-              <div className="text-center">
-                <span className="inline-block bg-green-100 text-green-700 px-3 py-1.5 rounded-full text-sm font-semibold">
-                  No payments in years 2 or 3
-                </span>
-              </div>
-            )}
+            <p className="text-center text-sm text-muted-foreground">{coverText}</p>
           </div>
         </div>
 
@@ -236,14 +233,15 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           <div className="flex items-center justify-between gap-3">
             {/* Left: Price Hero */}
             <div className="flex-shrink-0">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Cost per month of cover</p>
               <div className={cn(
                 "flex items-baseline gap-1 transition-all duration-300",
                 isPulsing && "animate-pulse"
               )}>
-                <span className="text-xl font-bold text-gray-900">£{monthlyPrice}/mo</span>
-                <span className="text-xs text-gray-600">0% APR</span>
+                <span className={cn("text-xl font-bold", getPriceColor())}>£{calculatedCostPerMonth}</span>
+                <span className="text-xs text-muted-foreground">/mo</span>
               </div>
-              <p className="text-xs text-gray-600">12 interest-free instalments</p>
+              <p className="text-xs text-muted-foreground">Total: £{payInFull}</p>
             </div>
 
             {/* Right: CTA Button */}

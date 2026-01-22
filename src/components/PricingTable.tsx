@@ -2985,6 +2985,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   const payInFull = displayMonthlyPrice * 12;
                   const savings = getMarketingSavings(paymentType as PaymentPeriod);
                   const wasPrice = payInFull + savings;
+                  // Calculate cost per month of cover (matching TermSelector)
+                  const coverMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
+                  const costPerMonthOfCover = Math.round(payInFull / coverMonths);
+                  
+                  // Get color based on plan type (matching TermSelector)
+                  const priceColor = paymentType === '36months' ? 'text-green-600' : paymentType === '24months' ? 'text-orange-600' : 'text-slate-700';
+                  
                   return (
                     <div className="flex flex-col md:hidden gap-2 w-full">
                       {/* Collapsible Header */}
@@ -2992,27 +2999,28 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
                         className="flex items-center justify-center w-full relative"
                       >
-                        {/* Centered Content */}
+                        {/* Centered Content - Matching TermSelector card layout */}
                         <div className="flex flex-col items-center text-center">
+                          {/* Cost per month of cover - HERO (matching card) */}
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Cost per month of cover</p>
                           <div className="flex items-baseline gap-1">
-                            <span className="text-base font-bold text-gray-900">Total:</span>
-                            <span className="text-lg font-bold text-gray-900">£{displayMonthlyPrice}/mo</span>
-                            <span className="text-xs text-gray-600">0% APR</span>
+                            <span className={`text-xl font-bold ${priceColor}`}>£{costPerMonthOfCover}</span>
+                            <span className="text-xs text-muted-foreground">per month</span>
                           </div>
-                          <div className="flex items-center gap-1 text-xs mt-0.5">
-                            {savings > 0 && <span className="line-through text-red-500">£{wasPrice}</span>}
-                            <span className="font-bold text-green-600">£{payInFull}</span>
-                            {savings > 0 && <span className="text-gray-500">(Save £{savings})</span>}
-                          </div>
-                          <div className="flex items-center gap-2 text-xs mt-1">
-                            <span className="font-semibold text-gray-800">
-                              {paymentType === '12months' && '1-Year Cover'}
-                              {paymentType === '24months' && '2-Year Cover'}
-                              {paymentType === '36months' && '3-Year Cover'}
-                            </span>
-                            <span className="text-gray-400">·</span>
-                            <span className="text-gray-500">12 easy payments</span>
-                          </div>
+                          {/* Payment breakdown - muted grey (matching card) */}
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Paid monthly for 12 months <span className="font-semibold text-foreground">£{displayMonthlyPrice}/mo</span>
+                          </p>
+                          {/* No payments text (matching card) */}
+                          {paymentType === '24months' && (
+                            <p className="text-xs font-semibold text-orange-600">No payments in year 2</p>
+                          )}
+                          {paymentType === '36months' && (
+                            <p className="text-xs font-semibold text-green-600">No payments in years 2 or 3</p>
+                          )}
+                          <p className="text-xs text-muted-foreground">
+                            Total cost <span className="font-semibold text-foreground">£{payInFull}</span>
+                          </p>
                         </div>
                         
                         {/* Details Chevron - Positioned Right */}
@@ -3036,17 +3044,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           >
                             <TrustpilotHeader className="h-3 scale-[0.5] origin-center" />
                           </a>
-                          {/* No payments badge */}
-                          {paymentType === '24months' && (
-                            <span className="inline-block bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-semibold">
-                              No payments in year 2
-                            </span>
-                          )}
-                          {paymentType === '36months' && (
-                            <span className="inline-block bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
-                              No payments in years 2 or 3
-                            </span>
-                          )}
+                          {/* Cover text */}
+                          <span className="text-sm text-muted-foreground">
+                            {paymentType === '12months' && '1-Year Cover'}
+                            {paymentType === '24months' && '2-Year Cover'}
+                            {paymentType === '36months' && '3-Year Cover'}
+                          </span>
                         </div>
                       </div>
                       
@@ -3073,6 +3076,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   const payInFull = displayMonthlyPrice * 12;
                   const savings = getMarketingSavings(paymentType as PaymentPeriod);
                   const wasPrice = payInFull + savings;
+                  // Calculate cost per month of cover (matching TermSelector)
+                  const coverMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
+                  const costPerMonthOfCover = Math.round(payInFull / coverMonths);
+                  
+                  // Get color based on plan type (matching TermSelector)
+                  const priceColor = paymentType === '36months' ? 'text-green-600' : paymentType === '24months' ? 'text-orange-600' : 'text-slate-700';
+                  
                   return (
                     <div className="hidden md:flex md:items-stretch md:justify-between w-full bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                       
@@ -3086,38 +3096,36 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         >
                           <TrustpilotHeader className="flex-shrink-0 scale-[0.7] origin-center" />
                         </a>
-                        <div className="text-xs text-gray-500 mt-1.5 whitespace-nowrap">12 easy payments</div>
                       </div>
                       
-                      {/* SECTION 2: Price */}
+                      {/* SECTION 2: Price - Matching TermSelector card layout */}
                       <div className="flex-1 flex flex-col items-center justify-center px-3 lg:px-6 py-4 border-r border-gray-100 text-center min-w-0">
-                        <div className="text-xl lg:text-2xl font-bold text-gray-900 whitespace-nowrap">
-                          Total: £{displayMonthlyPrice}/Month <span className="text-sm lg:text-base font-normal text-gray-600">– 0% APR</span>
+                        {/* Cost per month of cover - HERO (matching card) */}
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">Cost per month of cover</p>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className={`text-2xl lg:text-3xl font-bold ${priceColor}`}>£{costPerMonthOfCover}</span>
+                          <span className="text-base text-muted-foreground">per month</span>
                         </div>
-                        <div className="text-xs lg:text-sm text-gray-500 mt-0.5 whitespace-nowrap">
-                          12 easy payments
-                        </div>
-                        <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm mt-0.5 flex-wrap justify-center">
-                          {savings > 0 && <span className="line-through text-red-500">£{wasPrice}</span>}
-                          <span className="font-bold text-green-600">£{payInFull}</span>
-                          {savings > 0 && <span className="text-gray-600 whitespace-nowrap">(Save £{savings})</span>}
-                          <span className="text-gray-700">– {paymentType === '12months' ? '1-Year' : paymentType === '24months' ? '2-Year' : '3-Year'} Cover</span>
+                        {/* Payment breakdown - muted grey (matching card) */}
+                        <div className="flex flex-col items-center gap-0.5 mt-1">
+                          <p className="text-sm text-muted-foreground">
+                            Paid monthly for 12 months <span className="font-semibold text-foreground">£{displayMonthlyPrice} per month</span>
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Total cost <span className="font-semibold text-foreground">£{payInFull}</span>
+                          </p>
                         </div>
                       </div>
                       
-                      {/* SECTION 3: Cover & Free Years */}
+                      {/* SECTION 3: Cover & No Payment Badge (matching card) */}
                       <div className="flex flex-col items-center justify-center px-3 lg:px-6 py-4 border-r border-gray-100 text-center min-w-fit">
                         {paymentType === '24months' && (
-                          <span className="inline-block bg-orange-100 text-orange-700 px-3 py-1.5 rounded-full text-xs lg:text-sm font-semibold mb-1 whitespace-nowrap">
-                            No payments in year 2
-                          </span>
+                          <p className="text-sm font-semibold text-orange-600 mb-1">No payments in year 2</p>
                         )}
                         {paymentType === '36months' && (
-                          <span className="inline-block bg-green-100 text-green-700 px-3 py-1.5 rounded-full text-xs lg:text-sm font-semibold mb-1 whitespace-nowrap">
-                            No payments in years 2 or 3
-                          </span>
+                          <p className="text-sm font-semibold text-green-600 mb-1">No payments in years 2 or 3</p>
                         )}
-                        <span className="font-bold text-gray-900 text-sm lg:text-base whitespace-nowrap">
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">
                           {paymentType === '12months' && '1-Year Cover'}
                           {paymentType === '24months' && '2-Year Cover'}
                           {paymentType === '36months' && '3-Year Cover'}
