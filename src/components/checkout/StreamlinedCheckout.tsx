@@ -904,8 +904,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       <span className="text-2xl sm:text-3xl font-bold text-foreground">£{monthlyPrice}</span>
                       <span className="text-sm text-muted-foreground">/mo</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">Total £{bumperTotalPrice}</p>
-                    <p className="text-xs text-muted-foreground">12 payments • 0% APR</p>
+                    <p className="text-xs text-muted-foreground">Paid over 12 instalments • 0% APR</p>
+                    <p className="text-xs font-medium text-foreground">Total cost: £{bumperTotalPrice}</p>
+                    {paymentType === '24months' && (
+                      <p className="text-xs font-semibold text-primary mt-1">No payments in year 2</p>
+                    )}
+                    {paymentType === '36months' && (
+                      <p className="text-xs font-semibold text-[hsl(var(--success))] mt-1">No payments in years 2 or 3</p>
+                    )}
                   </div>
 
                   {/* Pay in Full Column */}
@@ -914,8 +920,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <div className="flex items-baseline gap-2 justify-end flex-wrap">
                       <span className="text-2xl sm:text-3xl font-bold text-foreground">£{stripeTotalPrice}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground line-through">Was £{bumperTotalPrice}</p>
-                    <p className="text-xs font-medium text-[hsl(var(--success))]">Save £{savings} (10% off)</p>
+                    <p className="text-xs font-medium text-[hsl(var(--success))]">Save 10% today</p>
+                    <p className="text-xs text-muted-foreground">One-time payment</p>
                   </div>
                 </div>
               </CardContent>
