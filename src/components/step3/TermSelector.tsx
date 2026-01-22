@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface TermOption {
   id: '12months' | '24months' | '36months';
@@ -296,12 +297,34 @@ const TermSelector: React.FC<TermSelectorProps> = ({
         )}
       </div>
 
-      {/* Global explainer - centered, small text */}
-      <div className="mt-4 text-center">
-        <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto">
-          You pay monthly for 12 months on every plan.<br className="hidden sm:inline" />
-          <span className="sm:inline"> </span>Longer cover continues automatically with no further payments.
-        </p>
+      {/* Collapsible pricing explainer */}
+      <div className="mt-4">
+        <Collapsible>
+          <CollapsibleTrigger className="w-full">
+            <div className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+              <Info className="w-4 h-4 text-slate-500" />
+              <span className="text-sm font-medium text-slate-600">How pricing works</span>
+              <span className="text-xs text-slate-400 hidden sm:inline">• 12 payments • 0% APR • Pay in full & save 10%</span>
+              <ChevronDown className="w-4 h-4 text-slate-400 ml-1" />
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="mt-3 p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2.5">
+              <div className="flex items-start gap-2.5">
+                <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                <span className="text-sm text-slate-600">Pay monthly over 12 interest-free instalments (0% APR)</span>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                <span className="text-sm text-slate-600">Or pay in full and save 10%</span>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <Check className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                <span className="text-sm text-slate-600">Longer cover costs less per month</span>
+              </div>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
     </div>
   );
