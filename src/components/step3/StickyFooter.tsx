@@ -101,22 +101,18 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
               "flex items-baseline gap-2 transition-all duration-300",
               isPulsing && "animate-pulse scale-105"
             )}>
-              <span className="text-sm font-medium text-gray-600">Total:</span>
-              <span className="text-3xl font-bold text-gray-900">£{monthlyPrice}/Month</span>
-              <span className="text-lg text-gray-600">– 0% APR</span>
+              <span className="text-3xl font-bold text-gray-900">£{monthlyPrice}/month</span>
+              <span className="text-lg text-gray-600">0% APR</span>
             </div>
             
             {/* 12 Payments - Single mention */}
-            <span className="text-sm text-gray-600">12 easy payments</span>
+            <span className="text-sm text-gray-600">Paid over 12 interest-free instalments</span>
             
-            {/* Pay in full with savings */}
+            {/* Total cost */}
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-sm text-gray-400 line-through">£{wasPrice}</span>
-              <span className="text-sm font-semibold text-gray-800">£{payInFull}</span>
-              {savings > 0 && (
-                <span className="text-sm font-medium text-green-600">(Save £{savings})</span>
-              )}
-              <span className="text-sm text-gray-600">– {coverText}</span>
+              <span className="text-sm font-medium text-gray-700">Total cost: £{payInFull}</span>
+              <span className="text-sm text-gray-500">•</span>
+              <span className="text-sm text-gray-600">{coverText}</span>
             </div>
           </div>
 
@@ -124,18 +120,22 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           <div className="flex flex-col items-center gap-1.5">
             {paymentPeriod === '24months' && (
               <>
-                <span className="text-lg font-bold text-gray-900">Year 2 FREE 🎉</span>
-                <span className="text-sm text-gray-600">{coverText}</span>
+                <span className="inline-block bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-semibold">
+                  No payments in year 2
+                </span>
+                <span className="text-sm text-gray-600">24 months of cover</span>
               </>
             )}
             {paymentPeriod === '36months' && (
               <>
-                <span className="text-lg font-bold text-gray-900">Years 2 & 3 FREE 🎉</span>
-                <span className="text-sm text-gray-600">{coverText}</span>
+                <span className="inline-block bg-success/10 text-success px-3 py-1.5 rounded-full text-sm font-semibold">
+                  No payments in years 2 or 3
+                </span>
+                <span className="text-sm text-gray-600">36 months of cover</span>
               </>
             )}
             {paymentPeriod === '12months' && (
-              <span className="text-lg font-bold text-gray-900">{coverText}</span>
+              <span className="text-base font-semibold text-gray-800">{coverText}</span>
             )}
           </div>
 
@@ -179,35 +179,30 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
                 "flex items-baseline justify-center gap-2 transition-all duration-300",
                 isPulsing && "animate-pulse"
               )}>
-                <span className="text-sm font-medium text-gray-600">Total:</span>
-                <span className="text-2xl font-bold text-gray-900">£{monthlyPrice}/Month</span>
-                <span className="text-sm text-gray-600">– 0% APR</span>
+                <span className="text-2xl font-bold text-gray-900">£{monthlyPrice}/month</span>
+                <span className="text-sm text-gray-600">0% APR</span>
               </div>
-              <p className="text-sm text-gray-900 mt-1">Only 12 payments</p>
+              <p className="text-sm text-gray-600 mt-1">Paid over 12 interest-free instalments</p>
             </div>
 
-            {/* Pay in full with savings */}
+            {/* Total cost */}
             <div className="text-center">
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-sm text-gray-400 line-through">£{wasPrice}</span>
-                <span className="text-sm font-semibold text-gray-800">£{payInFull}</span>
-                {savings > 0 && (
-                  <span className="text-sm font-medium text-green-600">(Save £{savings})</span>
-                )}
-              </div>
+              <p className="text-sm font-medium text-gray-700">Total cost: £{payInFull}</p>
               <p className="text-sm text-gray-600 mt-0.5">{coverText}</p>
             </div>
 
-            {/* Year 2 FREE Badge */}
+            {/* No payments badge for multi-year */}
             {paymentPeriod === '24months' && (
               <div className="text-center">
-                <span className="text-base font-bold text-gray-900">Year 2 FREE 🎉</span>
+                <span className="inline-block bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-semibold">
+                  No payments in year 2
+                </span>
               </div>
             )}
             {paymentPeriod === '36months' && (
               <div className="text-center">
-                <span className="inline-block bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
-                  Best Value
+                <span className="inline-block bg-success/10 text-success px-3 py-1.5 rounded-full text-sm font-semibold">
+                  No payments in years 2 or 3
                 </span>
               </div>
             )}
@@ -244,10 +239,10 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
                 "flex items-baseline gap-1 transition-all duration-300",
                 isPulsing && "animate-pulse"
               )}>
-                <span className="text-xs text-gray-600">Total:</span>
                 <span className="text-xl font-bold text-gray-900">£{monthlyPrice}/mo</span>
+                <span className="text-xs text-gray-600">0% APR</span>
               </div>
-              <p className="text-xs text-gray-900">Only 12 payments</p>
+              <p className="text-xs text-gray-600">12 interest-free instalments</p>
             </div>
 
             {/* Right: CTA Button */}
