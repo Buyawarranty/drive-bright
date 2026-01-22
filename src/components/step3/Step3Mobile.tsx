@@ -275,8 +275,8 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
 
       // Add-ons removed from new business per Jan 2026 update
       
-      // Boost addon: +£3/month for duration (updated from £5)
-      const boostCost = boostAddon ? (BOOST_CLAIM_LIMIT_MONTHLY * durationMonths) : 0;
+      // Boost addon: FIXED £3/month × 12 payments = £36 total (not multiplied by cover duration)
+      const boostCost = boostAddon ? (BOOST_CLAIM_LIMIT_MONTHLY * 12) : 0;
       
       // Labour rate adjustment: £50=-£5/mo, £70=base(0), £100=+£4/mo, £200=+£24/mo
       const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 4 : selectedLabourRate === 200 ? 24 : 0;
