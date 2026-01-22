@@ -3,13 +3,14 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Users, CreditCard, PoundSterling, Globe, Phone } from 'lucide-react';
+import { Users, CreditCard, PoundSterling, Globe, Phone, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { ApiConnectivityTest } from './ApiConnectivityTest';
 import { DateRangeFilter } from './DateRangeFilter';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { DateRange } from 'react-day-picker';
+import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 
 interface Customer {
   id: string;
@@ -21,6 +22,7 @@ interface Customer {
   final_amount: number | null;
   warranty_reference_number: string | null;
   purchase_source: string | null;
+  payment_type: string | null;
 }
 
 // Test names to exclude from analytics (matching CustomersTab filtering)
@@ -46,6 +48,7 @@ export const AnalyticsTab = () => {
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [sourceFilter, setSourceFilter] = useState<string>('all');
+  const [durationFilter, setDurationFilter] = useState<string>('all');
 
   useEffect(() => {
     fetchAnalyticsData();
@@ -58,7 +61,7 @@ export const AnalyticsTab = () => {
       // Match CustomersTab filtering exactly
       const { data, error } = await supabase
         .from('customers')
-        .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source')
+        .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, payment_type')
         .not('email', 'ilike', '%@test.com%')
         .not('email', 'ilike', '%testuser%')
         .not('email', 'ilike', '%guest@%')
@@ -84,7 +87,7 @@ export const AnalyticsTab = () => {
     }
   };
 
-  // Filter customers based on date range and source
+  // Filter customers based on date range, source, and duration
   const filteredCustomers = useMemo(() => {
     return customers.filter(customer => {
       // Date filter
@@ -110,9 +113,16 @@ export const AnalyticsTab = () => {
         }
       }
 
+      // Duration filter
+      if (durationFilter !== 'all') {
+        const durationMonths = getWarrantyDurationInMonths(customer.payment_type || '');
+        const filterMonths = parseInt(durationFilter, 10);
+        if (durationMonths !== filterMonths) return false;
+      }
+
       return true;
     });
-  }, [customers, dateRange, sourceFilter]);
+  }, [customers, dateRange, sourceFilter, durationFilter]);
 
   // Helper function to categorize customer by source
   const getCustomerSource = (customer: Customer): 'website' | 'sales_team' | 'unknown' => {
@@ -333,8 +343,40 @@ export const AnalyticsTab = () => {
               </SelectContent>
             </Select>
           </div>
+
+          <div className="space-y-1 min-w-[180px]">
+            <Label className="text-sm font-medium">Warranty Duration</Label>
+            <Select value={durationFilter} onValueChange={setDurationFilter}>
+              <SelectTrigger className="h-10">
+                <SelectValue placeholder="All Durations" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  <span className="flex items-center gap-2">All Durations</span>
+                </SelectItem>
+                <SelectItem value="12">
+                  <span className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-gray-500" />
+                    1 Year (12 months)
+                  </span>
+                </SelectItem>
+                <SelectItem value="24">
+                  <span className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-blue-500" />
+                    2 Year (24 months)
+                  </span>
+                </SelectItem>
+                <SelectItem value="36">
+                  <span className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-green-500" />
+                    3 Year (36 months)
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           
-          {(dateRange || sourceFilter !== 'all') && (
+          {(dateRange || sourceFilter !== 'all' || durationFilter !== 'all') && (
             <div className="text-sm text-muted-foreground">
               Showing <span className="font-semibold text-foreground">{filteredCustomers.length}</span> of {customers.length} customers
             </div>
