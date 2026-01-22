@@ -242,11 +242,71 @@ export const AnalyticsTab = () => {
         
         {/* Filters Row */}
         <div className="flex flex-wrap gap-4 items-end p-4 bg-muted/30 rounded-lg border">
-          <DateRangeFilter 
-            dateRange={dateRange} 
-            onDateRangeChange={setDateRange}
-            className="min-w-[280px]"
-          />
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Date Range</Label>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setDateRange(undefined)}
+                className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
+                  !dateRange ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted border-input'
+                }`}
+              >
+                All Time
+              </button>
+              <button
+                onClick={() => {
+                  const now = new Date();
+                  const from = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                  const to = new Date(now.getFullYear(), now.getMonth(), 0);
+                  setDateRange({ from, to });
+                }}
+                className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
+                  dateRange?.from && dateRange?.to && 
+                  dateRange.from.getMonth() === new Date().getMonth() - 1 &&
+                  dateRange.to.getDate() === new Date(new Date().getFullYear(), new Date().getMonth(), 0).getDate()
+                    ? 'bg-primary text-primary-foreground border-primary' 
+                    : 'bg-background hover:bg-muted border-input'
+                }`}
+              >
+                Last Month
+              </button>
+              <button
+                onClick={() => {
+                  const now = new Date();
+                  const from = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+                  setDateRange({ from, to: now });
+                }}
+                className={`px-3 py-1.5 text-sm rounded-md border transition-colors bg-background hover:bg-muted border-input`}
+              >
+                1 Year
+              </button>
+              <button
+                onClick={() => {
+                  const now = new Date();
+                  const from = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
+                  setDateRange({ from, to: now });
+                }}
+                className={`px-3 py-1.5 text-sm rounded-md border transition-colors bg-background hover:bg-muted border-input`}
+              >
+                2 Year
+              </button>
+              <button
+                onClick={() => {
+                  const now = new Date();
+                  const from = new Date(now.getFullYear() - 3, now.getMonth(), now.getDate());
+                  setDateRange({ from, to: now });
+                }}
+                className={`px-3 py-1.5 text-sm rounded-md border transition-colors bg-background hover:bg-muted border-input`}
+              >
+                3 Year
+              </button>
+            </div>
+            <DateRangeFilter 
+              dateRange={dateRange} 
+              onDateRangeChange={setDateRange}
+              className="min-w-[280px]"
+            />
+          </div>
           
           <div className="space-y-1 min-w-[200px]">
             <Label className="text-sm font-medium">Sales Source</Label>
