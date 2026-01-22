@@ -1393,7 +1393,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-3 text-left">
                     <span className="text-sm font-semibold text-slate-700">How pricing works</span>
-                    <span className="text-xs text-slate-500 font-normal">12 payments · 0% APR · Save 10%</span>
+                    <span className="text-xs text-slate-500 font-normal">• 12 payments • 0% APR • Pay in full & save 10%</span>
                   </div>
                 </div>
                 <ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-data-[state=open]:rotate-180" />
@@ -1402,16 +1402,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <CollapsibleContent>
               <div className="mt-2 p-4 rounded-xl bg-slate-50/80 border border-slate-200/60 space-y-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-base flex-shrink-0">✅</span>
+                  <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
                   <span className="text-sm text-slate-700 font-medium">12 interest-free monthly payments (0% APR)</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-base flex-shrink-0">💰</span>
+                  <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
                   <span className="text-sm text-slate-700 font-medium">Pay in full and save 10%</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-base flex-shrink-0">📉</span>
-                  <span className="text-sm text-slate-700 font-medium">Longer cover costs less per month</span>
+                  <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  <span className="text-sm text-slate-700 font-medium">Longer cover costs less per month and saves you more money overall</span>
                 </div>
               </div>
             </CollapsibleContent>
