@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Check } from 'lucide-react';
+import { Check, Info, X } from 'lucide-react';
 
 interface ExcessSelectorProps {
   selectedExcess: number | null;
@@ -21,6 +21,8 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
   onExcessChange,
   currentMonthlyPrice
 }) => {
+  const [showExplainer, setShowExplainer] = useState(false);
+
   return (
     <div className="px-4 py-4 border-t border-border">
       <div className="flex items-center gap-2 mb-3">
@@ -28,7 +30,41 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
           2
         </div>
         <h3 className="font-semibold text-lg text-foreground">Choose Your Excess</h3>
+        
+        {/* Info icon with tooltip trigger */}
+        <button
+          onClick={() => setShowExplainer(!showExplainer)}
+          className="relative flex items-center justify-center w-11 h-11 -m-2 rounded-full hover:bg-muted/50 transition-colors"
+          aria-label="What is an excess?"
+          aria-expanded={showExplainer}
+        >
+          <Info className="w-5 h-5 text-muted-foreground" />
+        </button>
       </div>
+
+      {/* Expandable Explainer */}
+      {showExplainer && (
+        <div className="mb-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-left animate-fade-in">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1">
+              <h4 className="font-semibold text-sm text-foreground mb-2">What is an excess?</h4>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-2">
+                An excess is the amount you pay towards a repair when you make a claim. We cover the rest, up to your claim limit.
+              </p>
+              <p className="text-xs text-muted-foreground/80 leading-relaxed">
+                For example: with a £100 excess on a £600 repair, you pay £100 and we pay £500.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowExplainer(false)}
+              className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 transition-colors"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Excess Cards */}
       <div className="grid grid-cols-4 gap-2 mb-3">
@@ -80,9 +116,9 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
         ))}
       </div>
 
-      {/* Helper Text */}
+      {/* Micro-helper line */}
       <p className="text-xs text-muted-foreground mb-2">
-        You only pay the excess when you make a successful claim.
+        A higher excess means a lower monthly price.
       </p>
 
       {/* Live Price Update */}
