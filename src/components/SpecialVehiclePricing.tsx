@@ -438,7 +438,7 @@ const SpecialVehiclePricing: React.FC<SpecialVehiclePricingProps> = ({ vehicleDa
                 3
               </div>
               <h2 className="text-2xl font-bold text-gray-900">
-                Choose Your Claim Limit
+                Single repair amount per claim
               </h2>
             </div>
             
