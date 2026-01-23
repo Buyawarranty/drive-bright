@@ -1394,7 +1394,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-3 text-left">
                     <span className="text-sm font-semibold text-slate-700">How pricing works</span>
-                    <span className="text-xs text-slate-500 font-normal">• 12 payments • 0% APR • Pay in full & save 10%</span>
+                    <span className="text-xs text-[#555555] font-normal">• Only 12 payments • 0% APR • Pay in full & save 10%</span>
                   </div>
                 </div>
                 <ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-data-[state=open]:rotate-180" />
