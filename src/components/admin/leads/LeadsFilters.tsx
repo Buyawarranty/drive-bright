@@ -155,7 +155,7 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
                 selected={{ from: dateRange?.from, to: dateRange?.to }}
                 onSelect={handleDateSelect}
                 numberOfMonths={2}
-                className="p-3"
+                className="p-3 pointer-events-auto"
               />
             </PopoverContent>
           </Popover>
