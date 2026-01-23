@@ -821,9 +821,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   };
 
   const getDurationText = () => {
-    if (paymentType === '12months') return '1 Year';
-    if (paymentType === '24months') return '2 Years';
-    return '3 Years';
+    if (paymentType === '12months') return '1 Year Cover';
+    if (paymentType === '24months') return '2 Year Cover';
+    return '3 Year Cover';
   };
 
   // Collapsed section error indicator
