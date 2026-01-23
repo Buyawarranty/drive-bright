@@ -1599,25 +1599,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     setPaymentType(durationId);
                   }}
                   className={cn(
-                    "relative p-6 rounded-2xl border-2 transition-all duration-200 bg-white pointer-events-auto cursor-pointer group",
+                    "relative p-6 rounded-xl border transition-all bg-white pointer-events-auto cursor-pointer",
                     isSelected 
-                      ? "border-[#F68B2C] shadow-lg shadow-orange-200/50" 
-                      : "border-[#EDEDED] hover:border-[#F5C9A6] hover:shadow-md"
+                      ? "border-[#E65100] border-2 shadow-md" 
+                      : "border-[#EDEDED] hover:border-[#CCCCCC]"
                   )}
                   style={{ position: 'relative', zIndex: 1 }}
                 >
-                  {/* Tags - MOST POPULAR / BEST VALUE */}
-                  {durationId === '24months' && (
-                    <span className="absolute -top-3 left-4 bg-[#F68B2C] text-white px-4 py-1 rounded-full text-xs font-semibold shadow-sm">
-                      MOST POPULAR
-                    </span>
-                  )}
-                  {durationId === '36months' && (
-                    <span className="absolute -top-3 left-4 bg-[#2EAD5F] text-white px-4 py-1 rounded-full text-xs font-semibold shadow-sm">
-                      BEST VALUE
-                    </span>
-                  )}
-                  
                   {/* Selection indicator - top right */}
                   <div 
                     className="absolute top-4 right-4 cursor-pointer"
@@ -1630,30 +1618,30 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <div className={cn(
                       "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200",
                       isSelected 
-                        ? "bg-[#2EAD5F] border-[#2EAD5F]" 
-                        : "bg-white border-[#CCCCCC] group-hover:border-[#F68B2C]"
+                        ? "bg-[#3A8F45] border-[#3A8F45]" 
+                        : "bg-white border-[#CCCCCC] hover:border-[#999999]"
                     )}>
                       {isSelected && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
                     </div>
                   </div>
 
                   {/* Duration Title */}
-                  <h4 className="text-xl font-bold text-[#000000] mb-1 mt-2">
+                  <h4 className="text-lg font-bold text-[#000000] mb-0.5">
                     {duration.label}
                   </h4>
                   <p className="text-sm text-[#777777] mb-5">{duration.planName}</p>
                   
                   {/* Main Price - Large */}
-                  <div className="mb-5">
+                  <div className="mb-4">
                     {/* For 2-year and 3-year, show "Cost per month of cover" with equivalent */}
                     {(durationId === '24months' || durationId === '36months') && (
                       <>
                         <p className="text-sm text-[#555555] mb-1">Cost per month of cover</p>
                         <div className="flex items-baseline gap-1 mb-3">
-                          <span className="text-4xl font-bold text-[#000000]">
+                          <span className="text-3xl font-bold text-[#000000]">
                             £{Math.floor(displayedAnnualPrice / (durationId === '24months' ? 24 : 36))}
                           </span>
-                          <span className="text-base text-[#555555]">per month</span>
+                          <span className="text-base text-[#333333]">per month</span>
                         </div>
                       </>
                     )}
@@ -1661,72 +1649,72 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     {/* For 1-year, just show the monthly payment */}
                     {durationId === '12months' && (
                       <div className="flex items-baseline gap-1">
-                        <span className="text-4xl font-bold text-[#000000]">£{displayedMonthlyPrice}</span>
-                        <span className="text-base text-[#555555]">per month</span>
+                        <span className="text-3xl font-bold text-[#000000]">£{displayedMonthlyPrice}</span>
+                        <span className="text-base text-[#333333]">per month</span>
                       </div>
                     )}
                   </div>
 
                   {/* Payment Details */}
-                  <div className="space-y-1.5 mb-5 pb-5 border-b border-[#EDEDED]">
-                    <p className="text-sm text-[#555555]">
+                  <div className="space-y-1.5 mb-4">
+                    <p className="text-sm text-[#777777]">
                       Paid monthly for 12 months <span className="font-semibold text-[#000000]">£{displayedMonthlyPrice}</span> per month
                     </p>
                     
                     {durationId === '24months' && (
-                      <p className="text-sm font-medium text-[#555555]">No payments in year 2</p>
+                      <p className="text-sm text-[#777777]">No payments in year 2</p>
                     )}
                     
                     {durationId === '36months' && (
-                      <p className="text-sm font-medium text-[#555555]">No payments in years 2 or 3</p>
+                      <p className="text-sm text-[#777777]">No payments in years 2 or 3</p>
                     )}
                     
                     <p className="text-sm text-[#333333]">
-                      Total cost <span className="font-bold text-[#000000]">£{displayedAnnualPrice}</span>
+                      Total cost <span className="font-semibold text-[#000000]">£{displayedAnnualPrice}</span>
                     </p>
                   </div>
 
                   {/* Pay in full savings - Only for 2-year and 3-year */}
                   {(durationId === '24months' || durationId === '36months') && (
-                    <div className="bg-[#F0FDF4] border border-[#BBF7D0] rounded-xl px-4 py-3 mb-5">
-                      <p className="text-sm text-[#555555] mb-1">Or pay in full and save 10%</p>
+                    <div className="bg-[#F7F7F7] border border-[#EDEDED] rounded-lg px-4 py-3 mb-4">
+                      <p className="text-sm text-[#777777] mb-1">Or pay in full and save 10%</p>
                       <p className="text-sm text-[#333333]">
-                        Was £{displayedAnnualPrice} – now <span className="font-bold text-[#2EAD5F]">£{Math.round(displayedAnnualPrice * 0.9)}</span>
+                        Was £{displayedAnnualPrice} – now <span className="font-semibold text-[#3A8F45]">£{Math.round(displayedAnnualPrice * 0.9)}</span>
                       </p>
-                      <p className="text-sm font-semibold text-[#2EAD5F]">You save £{Math.round(displayedAnnualPrice * 0.1)}</p>
+                      <p className="text-sm font-semibold text-[#3A8F45]">You save £{Math.round(displayedAnnualPrice * 0.1)}</p>
                     </div>
                   )}
 
-                  {/* Benefits - Simple ticks with green */}
+                  {/* Benefits - Simple ticks */}
                   <div className="space-y-2 mb-5">
                     {durationId === '12months' && (
                       <div className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-[#2EAD5F] flex-shrink-0" />
+                        <Check className="w-4 h-4 text-[#333333] flex-shrink-0" />
                         <span className="text-sm text-[#333333]">Ideal for short-term protection</span>
                       </div>
                     )}
                     {durationId === '24months' && (
                       <div className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-[#2EAD5F] flex-shrink-0" />
+                        <Check className="w-4 h-4 text-[#333333] flex-shrink-0" />
                         <span className="text-sm text-[#333333]">Lower cost per month of cover</span>
                       </div>
                     )}
                     {durationId === '36months' && (
                       <div className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-[#2EAD5F] flex-shrink-0" />
+                        <Check className="w-4 h-4 text-[#333333] flex-shrink-0" />
                         <span className="text-sm text-[#333333]">Lowest cost per month of cover</span>
                       </div>
                     )}
                   </div>
                   
-                  {/* What's Included Collapsible - Secondary button style */}
+                  {/* What's Included Collapsible */}
                   <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
                     <CollapsibleTrigger className="w-full mb-4">
-                      <div className="flex items-center justify-between w-full bg-white border border-[#F5C9A6] rounded-xl px-4 py-3 hover:bg-[#FFF8F3] transition-colors">
-                        <span className="text-sm font-semibold text-[#F68B2C]">See what's included</span>
+                      <div className="flex items-center justify-between w-full bg-[#FFF3E0] border border-[#E65100] rounded-lg px-4 py-3 hover:bg-[#FFE0B2] transition-colors">
+                        <span className="text-sm font-semibold text-[#E65100]">See what's included</span>
                         <ChevronDown 
                           className={cn(
-                            "w-5 h-5 text-[#F68B2C] transition-transform duration-300",
+                            "w-5 h-5 text-[#E65100] transition-transform duration-300",
                             isExpanded && "transform rotate-180"
                           )}
                         />
@@ -1734,7 +1722,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </CollapsibleTrigger>
                     
                     <CollapsibleContent className="mb-4">
-                      <div className="bg-[#F9FAFB] border border-[#EDEDED] rounded-xl p-4 space-y-2">
+                      <div className="bg-[#F7F7F7] border border-[#EDEDED] rounded-lg p-4 space-y-2">
                         {duration.features.map((feature, idx) => {
                           const featureText = typeof feature === 'string' ? feature : feature.text;
                           const isExtra = typeof feature === 'object' && feature.isExtra;
@@ -1744,7 +1732,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                               {isExclusion ? (
                                 <X className="w-4 h-4 text-[#777777] mt-0.5 flex-shrink-0" />
                               ) : (
-                                <Check className="w-4 h-4 text-[#2EAD5F] mt-0.5 flex-shrink-0" />
+                                <Check className="w-4 h-4 text-[#333333] mt-0.5 flex-shrink-0" />
                               )}
                               <span className="text-sm text-[#333333]">
                                 {featureText}{isExtra && ' (Bonus)'}
@@ -1756,7 +1744,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </CollapsibleContent>
                   </Collapsible>
                   
-                  {/* CTA Button - Orange primary style */}
+                  {/* CTA Button - White with black outline */}
                   <Button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1764,10 +1752,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       setPaymentType(durationId);
                     }}
                     className={cn(
-                      "w-full mb-3 font-semibold text-sm py-5 rounded-xl transition-all duration-200",
+                      "w-full mb-3 font-semibold text-sm py-5 transition-all duration-200",
                       isSelected
-                        ? "bg-[#333333] hover:bg-[#000000] text-white border-none"
-                        : "bg-[#F68B2C] hover:bg-[#E67E25] active:bg-[#D97018] text-white border-none shadow-sm"
+                        ? "bg-[#000000] hover:bg-[#333333] text-white border-none"
+                        : "bg-[#E65100] hover:bg-[#D84315] text-white border-none"
                     )}
                     size="lg"
                   >
