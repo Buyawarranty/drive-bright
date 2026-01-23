@@ -3061,29 +3061,33 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
 
                       {/* Main Pricing Section (Centre-Left) */}
-                      <div className="flex flex-col items-start gap-1 px-6 border-r border-[#DDDDDD]">
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-lg font-bold text-[#000000]">Total: £{displayMonthlyPrice}/Month</span>
-                          <span className="text-sm text-[#777777]">– 0% APR</span>
+                      <div className="flex flex-col items-start gap-0.5 px-6 border-r border-[#DDDDDD]">
+                        <p className="text-xs text-[#555555]">Cost per month of cover</p>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-2xl font-bold text-[#000000]">£{costPerMonthOfCover}</span>
+                          <span className="text-sm text-[#333333]">per month</span>
                         </div>
-                        <p className="text-sm text-[#777777]">Only 12 payments</p>
-                        <p className="text-sm">
-                          <span className="line-through text-[#999999]">£{payInFull + (paymentType === '24months' ? 100 : paymentType === '36months' ? 200 : 0)}</span>
-                          <span className="text-[#3A8F45] font-semibold ml-1">£{payInFull}</span>
-                          <span className="text-[#3A8F45] text-sm ml-1">(Save £{paymentType === '24months' ? 100 : paymentType === '36months' ? 200 : 0})</span>
-                          <span className="text-[#777777] ml-1">– {coverYears}-Year Cover</span>
+                        <p className="text-sm font-semibold text-[#333333]">
+                          Paid monthly for 12 months <span className="font-bold text-[#000000]">£{displayMonthlyPrice}</span> per month
+                        </p>
+                        {paymentType !== '12months' && (
+                          <p className="text-sm font-semibold text-[#333333]">
+                            No payments in year {paymentType === '24months' ? '2' : '2 or 3'}
+                          </p>
+                        )}
+                        <p className="text-sm text-[#333333]">
+                          Total cost <span className="font-bold text-[#000000]">£{payInFull}</span>
                         </p>
                       </div>
 
-                      {/* Year Free Badge Section */}
-                      {paymentType !== '12months' && (
-                        <div className="flex flex-col items-center gap-1 px-6 border-r border-[#DDDDDD]">
-                          <p className="text-base font-semibold text-[#000000]">
-                            Year {paymentType === '24months' ? '2' : '2 & 3'} FREE 🎉
-                          </p>
-                          <p className="text-sm font-medium text-[#333333]">{coverYears}-Year Cover</p>
-                        </div>
-                      )}
+                      {/* Pay in Full Section */}
+                      <div className="flex flex-col items-start gap-0.5 px-6 border-r border-[#DDDDDD]">
+                        <p className="text-sm text-[#555555]">Pay in full and save 10%</p>
+                        <p className="text-sm text-[#333333]">
+                          Was £{payInFull} – now <span className="font-semibold text-[#3A8F45]">£{payInFullPrice}</span>
+                        </p>
+                        <p className="text-sm font-semibold text-[#3A8F45]">You save £{savings}</p>
+                      </div>
 
                       {/* Far Right CTA Section */}
                       <div className="flex flex-col items-end gap-2 min-w-[180px]">
