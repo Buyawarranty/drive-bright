@@ -2356,8 +2356,8 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
 
-                {/* Sticky Price Summary Bar */}
-                <div className="sticky bottom-0 -mx-6 -mb-6 p-4 bg-gray-50 rounded-b-lg shadow-lg border-t-4 border-green-400">
+                {/* Fixed Price Summary Bar - sticks to viewport bottom */}
+                <div className="fixed bottom-0 left-0 right-0 p-4 bg-gray-50 shadow-lg border-t-4 border-green-400 z-50">
                   <div className="flex items-center justify-center gap-6 text-center">
                     <div>
                       <div className="text-sm text-gray-700 font-medium">Monthly (12 payments via Bumper)</div>
