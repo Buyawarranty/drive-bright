@@ -2095,20 +2095,25 @@ Questions? Call 0330 229 5040`;
                 </div>
                 {/* Free Extended Cover Option - PROMINENT */}
                 <div className={cn(
-                  "space-y-3 p-4 rounded-lg border-2 transition-all",
+                  "space-y-3 p-4 rounded-lg border-2 transition-all bg-white",
                   freeExtendedCover !== 'none' 
-                    ? "border-green-500 bg-green-50" 
-                    : "border-dashed border-gray-300 bg-gray-50"
+                    ? "border-green-500" 
+                    : "border-dashed border-gray-300"
                 )}>
-                  <Label className="text-base font-semibold flex items-center gap-2">
-                    <Gift className="w-5 h-5 text-green-600" />
-                    Free Extended Cover
+                  <div className={cn(
+                    "flex items-center gap-2 -mx-4 -mt-4 px-4 py-2 rounded-t-md",
+                    freeExtendedCover !== 'none' ? "bg-green-500" : "bg-gray-100"
+                  )}>
+                    <Gift className={cn("w-5 h-5", freeExtendedCover !== 'none' ? "text-white" : "text-green-600")} />
+                    <Label className={cn("text-base font-semibold", freeExtendedCover !== 'none' ? "text-white" : "text-foreground")}>
+                      Free Extended Cover
+                    </Label>
                     {freeExtendedCover !== 'none' && (
-                      <Badge className="bg-green-600 text-white ml-2">
+                      <Badge className="bg-white text-green-600 ml-2">
                         +{freeExtendedCover === '3months' ? '3' : '6'} MONTHS ACTIVE
                       </Badge>
                     )}
-                  </Label>
+                  </div>
                   <p className="text-sm text-muted-foreground">
                     <strong>IMPORTANT:</strong> Click a button below to add free months. This will show in the customer's email AND their quote page.
                   </p>
