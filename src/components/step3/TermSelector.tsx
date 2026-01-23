@@ -124,11 +124,22 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                 </div>
               </div>
 
-              {/* Price */}
-              <div className="mb-4">
-                <span className="text-3xl font-bold text-[#000000]">£{costPerMonth}</span>
-                <span className="text-sm text-[#777777] ml-1">per month</span>
-              </div>
+              {/* Price - show equivalent for multi-year */}
+              {term.id !== '12months' && (
+                <div className="mb-4">
+                  <p className="text-xs text-[#777777] uppercase tracking-wider mb-1">Cost per month of cover</p>
+                  <span className="text-3xl font-bold text-[#000000]">£{costPerMonth}</span>
+                  <span className="text-sm text-[#777777] ml-1">per month</span>
+                </div>
+              )}
+              
+              {/* For 1-year, just show the monthly payment */}
+              {term.id === '12months' && (
+                <div className="mb-4">
+                  <span className="text-3xl font-bold text-[#000000]">£{monthlyPayment}</span>
+                  <span className="text-sm text-[#777777] ml-1">per month</span>
+                </div>
+              )}
 
               {/* Details */}
               <div className="space-y-1 text-sm text-[#333333]">
