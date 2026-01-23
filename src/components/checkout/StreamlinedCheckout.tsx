@@ -1273,10 +1273,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           addressExpanded ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
                         }`}
                       >
-                        <div className="px-4 pb-4 pt-3 space-y-4 border-t border-border/30">
+                        <div className="px-4 pb-4 pt-3 space-y-4 border-t border-border/30 bg-white">
                           {/* Address Autocomplete Search */}
                           <div>
-                            <Label className="text-sm font-medium text-foreground/80 flex items-center gap-2 mb-2">
+                            <Label className="text-sm font-medium text-foreground flex items-center gap-2 mb-2">
                               <Search className="w-3.5 h-3.5" />
                               Find Your Address
                             </Label>
@@ -1293,7 +1293,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                   postcode: autocompleteData.postcode || '',
                                 });
                               }}
-                              className="w-full border border-border rounded-lg px-3 py-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white min-h-[44px]"
+                              className="w-full rounded-lg px-3 py-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-[#F5F5F5] border-0 min-h-[44px]"
                             />
                             <p className="text-xs text-muted-foreground mt-2">
                               Search by postcode or address, then adjust fields below if needed
@@ -1305,7 +1305,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             {/* Building Number & Name */}
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <Label htmlFor="building_number" className="text-sm font-medium text-foreground/80">
+                                <Label htmlFor="building_number" className="text-sm font-medium text-foreground">
                                   Building Number
                                 </Label>
                                 <Input
@@ -1313,11 +1313,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                   placeholder="e.g. 123"
                                   value={addressData.building_number}
                                   onChange={(e) => setAddressData(prev => ({ ...prev, building_number: e.target.value }))}
-                                  className="h-10 sm:h-11 text-sm mt-1 bg-white"
+                                  className="h-11 text-sm mt-1 bg-[#F5F5F5] border-0 focus:ring-2 focus:ring-primary/20"
                                 />
                               </div>
                               <div>
-                                <Label htmlFor="building_name" className="text-sm font-medium text-foreground/80">
+                                <Label htmlFor="building_name" className="text-sm font-medium text-foreground">
                                   Building Name <span className="text-muted-foreground font-normal">(optional)</span>
                                 </Label>
                                 <Input
@@ -1325,14 +1325,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                   placeholder="e.g. Oak House"
                                   value={addressData.building_name}
                                   onChange={(e) => setAddressData(prev => ({ ...prev, building_name: e.target.value }))}
-                                  className="h-10 sm:h-11 text-sm mt-1 bg-white"
+                                  className="h-11 text-sm mt-1 bg-[#F5F5F5] border-0 focus:ring-2 focus:ring-primary/20"
                                 />
                               </div>
                             </div>
 
                             {/* Street */}
                             <div>
-                              <Label htmlFor="street" className="text-sm font-medium text-foreground/80">
+                              <Label htmlFor="street" className="text-sm font-medium text-foreground">
                                 Street
                               </Label>
                               <Input
@@ -1340,13 +1340,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                 placeholder="e.g. High Street"
                                 value={addressData.street}
                                 onChange={(e) => setAddressData(prev => ({ ...prev, street: e.target.value }))}
-                                className="h-10 sm:h-11 text-sm mt-1 bg-white"
+                                className="h-11 text-sm mt-1 bg-[#F5F5F5] border-0 focus:ring-2 focus:ring-primary/20"
                               />
                             </div>
 
                             {/* Flat Number (optional) */}
                             <div>
-                              <Label htmlFor="flat_number" className="text-sm font-medium text-foreground/80">
+                              <Label htmlFor="flat_number" className="text-sm font-medium text-foreground">
                                 Flat / Apartment <span className="text-muted-foreground font-normal">(optional)</span>
                               </Label>
                               <Input
@@ -1354,14 +1354,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                 placeholder="e.g. Flat 2"
                                 value={addressData.flat_number}
                                 onChange={(e) => setAddressData(prev => ({ ...prev, flat_number: e.target.value }))}
-                                className="h-10 sm:h-11 text-sm mt-1 bg-white"
+                                className="h-11 text-sm mt-1 bg-[#F5F5F5] border-0 focus:ring-2 focus:ring-primary/20"
                               />
                             </div>
 
                             {/* Town/City and Postcode - Side by Side */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               <div>
-                                <Label htmlFor="town" className="text-sm font-medium text-foreground/80">
+                                <Label htmlFor="town" className="text-sm font-medium text-foreground">
                                   Town / City
                                 </Label>
                                 <Input
@@ -1369,11 +1369,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                   placeholder="e.g. London"
                                   value={addressData.town}
                                   onChange={(e) => setAddressData(prev => ({ ...prev, town: e.target.value }))}
-                                  className="h-10 sm:h-11 text-sm mt-1 bg-white"
+                                  className="h-11 text-sm mt-1 bg-[#F5F5F5] border-0 focus:ring-2 focus:ring-primary/20"
                                 />
                               </div>
                               <div>
-                                <Label htmlFor="postcode" className="text-sm font-medium text-foreground/80">
+                                <Label htmlFor="postcode" className="text-sm font-medium text-foreground">
                                   Postcode
                                 </Label>
                                 <Input
@@ -1381,7 +1381,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                   placeholder="e.g. SW1A 1AA"
                                   value={addressData.postcode}
                                   onChange={(e) => setAddressData(prev => ({ ...prev, postcode: e.target.value.toUpperCase() }))}
-                                  className="h-10 sm:h-11 text-sm mt-1 bg-white"
+                                  className="h-11 text-sm mt-1 bg-[#F5F5F5] border-0 focus:ring-2 focus:ring-primary/20"
                                 />
                               </div>
                             </div>
