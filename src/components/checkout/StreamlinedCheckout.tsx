@@ -909,7 +909,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     {paymentType !== '12months' && (
                       <div className="bg-[#F0FDF4] rounded px-2 py-1 inline-block">
                         <p className="text-xs text-[#166534]">
-                          Works out to <span className="font-semibold">£{Math.floor(bumperTotalPrice / (paymentType === '24months' ? 24 : 36))}/month</span> of cover
+                          Works out to <span className="font-semibold">£{Math.floor(bumperTotalPrice / (paymentType === '24months' ? 24 : 36))}/month</span> over cover period
                         </p>
                       </div>
                     )}
