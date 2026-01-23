@@ -1680,15 +1680,15 @@ Questions? Call 0330 229 5040`;
                       className="text-lg py-4 flex-1"
                     />
                     <Select
-                      value={sliderMileage.toString()}
+                      value={sliderMileage > 0 ? sliderMileage.toString() : ''}
                       onValueChange={(value) => {
                         const numValue = parseInt(value, 10);
                         setSliderMileage(numValue);
                         setMileage(numValue.toLocaleString());
                       }}
                     >
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Quick select" />
+                      <SelectTrigger className="w-[180px] bg-orange-50 border-orange-300 hover:border-orange-400 focus:border-orange-500">
+                        <SelectValue placeholder="Select" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
                         {mileageDropdownOptions.map((miles) => (
@@ -1812,6 +1812,14 @@ Questions? Call 0330 229 5040`;
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* Import from Leads Button */}
+                <div className="flex justify-end">
+                  <LeadSearchPopover
+                    onSelectLead={handleLeadSelect}
+                    className="gap-2"
+                  />
+                </div>
+
                 {/* Customer Info */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
