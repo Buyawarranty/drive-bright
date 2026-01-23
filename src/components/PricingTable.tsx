@@ -1655,57 +1655,50 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     )}
                   </div>
 
-                  {/* Payment Details */}
-                  <div className="space-y-1.5 mb-4">
-                    <p className="text-sm text-[#777777]">
+                  {/* Payment Details - Bullet points */}
+                  <ul className="space-y-1.5 mb-4 list-disc list-inside text-sm">
+                    <li className="text-[#777777]">
                       Paid monthly for 12 months <span className="font-semibold text-[#000000]">£{displayedMonthlyPrice}</span> per month
-                    </p>
+                    </li>
                     
                     {durationId === '24months' && (
-                      <p className="text-sm text-[#777777]">No payments in year 2</p>
+                      <li className="text-[#777777]">No payments in year 2</li>
                     )}
                     
                     {durationId === '36months' && (
-                      <p className="text-sm text-[#777777]">No payments in years 2 or 3</p>
+                      <li className="text-[#777777]">No payments in years 2 or 3</li>
                     )}
                     
-                    <p className="text-sm text-[#333333]">
+                    <li className="text-[#333333]">
                       Total cost <span className="font-semibold text-[#000000]">£{displayedAnnualPrice}</span>
-                    </p>
-                  </div>
+                    </li>
+                  </ul>
 
                   {/* Pay in full savings - Only for 2-year and 3-year */}
                   {(durationId === '24months' || durationId === '36months') && (
                     <div className="bg-[#F7F7F7] border border-[#EDEDED] rounded-lg px-4 py-3 mb-4">
-                      <p className="text-sm text-[#777777] mb-1">Or pay in full and save 10%</p>
-                      <p className="text-sm text-[#333333]">
-                        Was £{displayedAnnualPrice} – now <span className="font-semibold text-[#3A8F45]">£{Math.round(displayedAnnualPrice * 0.9)}</span>
-                      </p>
-                      <p className="text-sm font-semibold text-[#3A8F45]">You save £{Math.round(displayedAnnualPrice * 0.1)}</p>
+                      <ul className="space-y-1 list-disc list-inside text-sm">
+                        <li className="text-[#777777]">Or pay in full and save 10%</li>
+                        <li className="text-[#333333]">
+                          Was £{displayedAnnualPrice} – now <span className="font-semibold text-[#3A8F45]">£{Math.round(displayedAnnualPrice * 0.9)}</span>
+                        </li>
+                        <li className="font-semibold text-[#3A8F45]">You save £{Math.round(displayedAnnualPrice * 0.1)}</li>
+                      </ul>
                     </div>
                   )}
 
-                  {/* Benefits - Simple ticks */}
-                  <div className="space-y-2 mb-5">
+                  {/* Benefits - Bullet points */}
+                  <ul className="space-y-2 mb-5 list-disc list-inside text-sm">
                     {durationId === '12months' && (
-                      <div className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-[#333333] flex-shrink-0" />
-                        <span className="text-sm text-[#333333]">Ideal for short-term protection</span>
-                      </div>
+                      <li className="text-[#333333]">Ideal for short-term protection</li>
                     )}
                     {durationId === '24months' && (
-                      <div className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-[#333333] flex-shrink-0" />
-                        <span className="text-sm text-[#333333]">Lower cost per month of cover</span>
-                      </div>
+                      <li className="text-[#333333]">Lower cost per month of cover</li>
                     )}
                     {durationId === '36months' && (
-                      <div className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-[#333333] flex-shrink-0" />
-                        <span className="text-sm text-[#333333]">Lowest cost per month of cover</span>
-                      </div>
+                      <li className="text-[#333333]">Lowest cost per month of cover</li>
                     )}
-                  </div>
+                  </ul>
                   
                   {/* What's Included Collapsible */}
                   <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
