@@ -58,11 +58,21 @@ const excessOptions = [
   { value: 500, label: '£500', description: 'Cheapest monthly' }
 ];
 
-// Claim limit options - UPDATED to match Step 3 (£1,000 / £2,000 / £3,000)
+// Claim limit options - Extended for admin quotes (matches W2000 options)
 const claimLimitOptions = [
+  { value: 500, label: '£500', name: 'AutoCare Starter' },
+  { value: 750, label: '£750', name: 'AutoCare Basic' },
   { value: 1000, label: '£1,000', name: 'AutoCare Essential' },
+  { value: 1200, label: '£1,200', name: 'AutoCare Standard' },
+  { value: 1250, label: '£1,250', name: 'AutoCare Standard+' },
+  { value: 1500, label: '£1,500', name: 'AutoCare Plus' },
+  { value: 1750, label: '£1,750', name: 'AutoCare Select' },
   { value: 2000, label: '£2,000', name: 'AutoCare Advantage', isPopular: true },
-  { value: 3000, label: '£3,000', name: 'AutoCare Elite' }
+  { value: 2250, label: '£2,250', name: 'AutoCare Premium' },
+  { value: 2500, label: '£2,500', name: 'AutoCare Premium+' },
+  { value: 3000, label: '£3,000', name: 'AutoCare Elite' },
+  { value: 4000, label: '£4,000', name: 'AutoCare Ultra' },
+  { value: 5000, label: '£5,000', name: 'AutoCare Ultimate' }
 ];
 
 // Labour rate options - UPDATED to match Step 3 (£50/£70/£100/£200)
@@ -2014,7 +2024,7 @@ Questions? Call 0330 229 5040`;
                 {/* 4. Claim Limit + Boost - Grouped together */}
                 <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border">
                   <Label className="text-base font-semibold">4. Single repair amount per claim</Label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-2">
                     {claimLimitOptions.map((option) => (
                       <button
                         key={option.value}
