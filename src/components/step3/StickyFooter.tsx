@@ -100,11 +100,11 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
               <span className="text-2xl font-bold text-[#000000]">£{calculatedCostPerMonth}</span>
               <span className="text-sm text-[#777777]">per month</span>
             </div>
-            <p className="text-xs text-[#777777]">
-              Paid monthly for 12 months <span className="font-semibold text-[#000000]">£{monthlyPrice}</span> per month
+            <p className="text-xs font-semibold text-[#555555]">
+              Paid monthly for 12 months <span className="font-bold text-[#000000]">£{monthlyPrice}</span> per month
             </p>
             {paymentPeriod !== '12months' && (
-              <p className="text-xs text-[#777777]">
+              <p className="text-xs font-semibold text-[#555555]">
                 No payments in year {paymentPeriod === '24months' ? '2' : '2 or 3'}
               </p>
             )}
@@ -170,11 +170,11 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
 
             {/* Payment breakdown */}
             <div className="text-center space-y-0.5">
-              <p className="text-xs text-[#777777]">
-                Paid monthly for 12 months <span className="font-semibold text-[#000000]">£{monthlyPrice}</span> per month
+              <p className="text-xs font-semibold text-[#555555]">
+                Paid monthly for 12 months <span className="font-bold text-[#000000]">£{monthlyPrice}</span> per month
               </p>
               {paymentPeriod !== '12months' && (
-                <p className="text-xs text-[#777777]">
+                <p className="text-xs font-semibold text-[#555555]">
                   No payments in year {paymentPeriod === '24months' ? '2' : '2 or 3'}
                 </p>
               )}
