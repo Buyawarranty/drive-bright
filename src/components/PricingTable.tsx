@@ -2946,17 +2946,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
       {/* Bottom padding for sticky bar */}
       <div className="pb-20 md:pb-24 -mt-4"></div>
 
-      {/* Sticky Total Bar - Always visible */}
+      {/* Sticky Total Bar - Always visible - Monochrome Design */}
       {!vehicleAgeError && (
-        <div className="fixed bottom-0 left-0 right-0 bg-gray-50 border-t-2 border-green-200 shadow-lg z-50">
+        <div className="fixed bottom-0 left-0 right-0 bg-[#F7F7F7] border-t border-[#DDDDDD] z-50">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between p-4 max-w-6xl mx-auto gap-4">
             
             {/* Loading State */}
             {plansLoading && (
               <div className="flex items-center justify-center w-full py-2">
                 <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-                  <span className="text-gray-600 font-medium">Loading pricing plans...</span>
+                  <div className="w-5 h-5 border-2 border-[#333333] border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-[#777777] font-medium">Loading pricing plans...</span>
                 </div>
               </div>
             )}
@@ -2968,7 +2968,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <Button
                   onClick={retryFetchPlans}
                   size="sm"
-                  className="bg-green-600 hover:bg-green-700 text-white"
+                  className="bg-[#333333] hover:bg-[#000000] text-white"
                 >
                   <RotateCcw className="w-4 h-4 mr-2" />
                   Retry
@@ -2981,170 +2981,152 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <>
                 {/* Mobile Layout - Collapsible */}
                 {(() => {
-                  // Pay in full = monthly × 12
                   const payInFull = displayMonthlyPrice * 12;
-                  const savings = getMarketingSavings(paymentType as PaymentPeriod);
-                  const wasPrice = payInFull + savings;
-                  // Calculate cost per month of cover (matching TermSelector)
                   const coverMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
                   const costPerMonthOfCover = Math.round(payInFull / coverMonths);
-                  
-                  // Get color based on plan type (matching TermSelector)
-                  const priceColor = paymentType === '36months' ? 'text-green-600' : paymentType === '24months' ? 'text-orange-600' : 'text-slate-700';
+                  const payInFullPrice = Math.round(payInFull * 0.9);
+                  const savings = payInFull - payInFullPrice;
+                  const coverYears = paymentType === '12months' ? '1' : paymentType === '24months' ? '2' : '3';
                   
                   return (
                     <div className="flex flex-col md:hidden gap-2 w-full">
-                      {/* Collapsible Header */}
+                      {/* Expand/Collapse Toggle */}
                       <button
                         onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
-                        className="flex items-center justify-center w-full relative"
+                        className="w-full flex items-center justify-center gap-1 text-xs text-[#777777] py-1"
+                        aria-expanded={isSummaryExpanded}
                       >
-                        {/* Centered Content - Matching TermSelector card layout */}
-                        <div className="flex flex-col items-center text-center">
-                          {/* Cost per month of cover - HERO (matching card) */}
-                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Cost per month of cover</p>
-                          <div className="flex items-baseline gap-1">
-                            <span className={`text-xl font-bold ${priceColor}`}>£{costPerMonthOfCover}</span>
-                            <span className="text-xs text-muted-foreground">per month</span>
-                          </div>
-                          {/* Payment breakdown - muted grey (matching card) */}
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Paid monthly for 12 months <span className="font-semibold text-foreground">£{displayMonthlyPrice}/mo</span>
-                          </p>
-                          {/* No payments text (matching card) */}
-                          {paymentType === '24months' && (
-                            <p className="text-xs font-semibold text-orange-600">No payments in year 2</p>
-                          )}
-                          {paymentType === '36months' && (
-                            <p className="text-xs font-semibold text-green-600">No payments in years 2 or 3</p>
-                          )}
-                          <p className="text-xs text-muted-foreground">
-                            Total cost <span className="font-semibold text-foreground">£{payInFull}</span>
-                          </p>
+                        <div className={`transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : 'rotate-0'}`}>
+                          <ChevronUp className="w-4 h-4" />
                         </div>
-                        
-                        {/* Details Chevron - Positioned Right */}
-                        <div className="absolute right-0 flex flex-col items-center">
-                          <div className={`p-1.5 rounded-full bg-green-600 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : 'rotate-0'}`}>
-                            <ChevronUp className="w-4 h-4 text-white" />
-                          </div>
-                          <span className="text-[10px] font-medium text-green-600 mt-0.5">Details</span>
-                        </div>
+                        <span>{isSummaryExpanded ? 'Hide details' : 'More details'}</span>
                       </button>
-                      
+
                       {/* Expandable Content */}
                       <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSummaryExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-                        <div className="flex items-center justify-center gap-4 py-2 border-t border-gray-100">
-                          {/* Trustpilot */}
-                          <a 
-                            href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="hover:opacity-80 transition-opacity"
-                          >
-                            <TrustpilotHeader className="h-3 scale-[0.5] origin-center" />
-                          </a>
-                          {/* Cover text */}
-                          <span className="text-sm text-muted-foreground">
-                            {paymentType === '12months' && '1-Year Cover'}
-                            {paymentType === '24months' && '2-Year Cover'}
-                            {paymentType === '36months' && '3-Year Cover'}
-                          </span>
+                        <div className="text-center space-y-2 pb-3">
+                          <p className="text-sm font-semibold text-[#000000]">{coverYears}-Year Cover</p>
+                          <div>
+                            <p className="text-xs text-[#777777]">Cost per month of cover</p>
+                            <div className="flex items-baseline justify-center gap-1">
+                              <span className="text-2xl font-bold text-[#000000]">£{costPerMonthOfCover}</span>
+                              <span className="text-sm text-[#777777]">per month</span>
+                            </div>
+                          </div>
+                          <div className="space-y-0.5">
+                            <p className="text-xs text-[#777777]">
+                              Paid monthly for 12 months <span className="font-semibold text-[#000000]">£{displayMonthlyPrice}</span> per month
+                            </p>
+                            {paymentType !== '12months' && (
+                              <p className="text-xs text-[#777777]">
+                                No payments in year {paymentType === '24months' ? '2' : '2 or 3'}
+                              </p>
+                            )}
+                            <p className="text-xs text-[#777777]">
+                              Total cost <span className="font-semibold text-[#000000]">£{payInFull}</span>
+                            </p>
+                          </div>
+                          <div className="pt-2 border-t border-[#DDDDDD]">
+                            <p className="text-xs text-[#777777]">Pay in full and save 10%</p>
+                            <p className="text-sm text-[#333333]">
+                              Was £{payInFull} – now <span className="font-semibold text-[#3A8F45]">£{payInFullPrice}</span>
+                            </p>
+                            <p className="text-xs font-semibold text-[#3A8F45]">You save £{savings}</p>
+                          </div>
                         </div>
                       </div>
                       
-                      {/* CTA Button - Always visible */}
-                      <Button
-                        onClick={handleSelectPlan}
-                        size="lg"
-                        className="w-full text-base font-semibold py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl"
-                      >
-                        Continue to checkout
-                        <ArrowRight className="w-4 h-4 ml-2" strokeWidth={3} />
-                      </Button>
-                      <div className="flex items-center justify-center gap-1.5 text-[10px] text-gray-500">
-                        <Lock className="h-3 w-3" />
+                      {/* Main row: Price + CTA */}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex-shrink-0">
+                          <p className="text-xs font-semibold text-[#000000]">{coverYears}-Year Cover</p>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-xl font-bold text-[#000000]">£{costPerMonthOfCover}</span>
+                            <span className="text-xs text-[#777777]">/mo</span>
+                          </div>
+                          <p className="text-xs text-[#777777]">Total: £{payInFull}</p>
+                        </div>
+                        <Button
+                          onClick={handleSelectPlan}
+                          className="bg-white hover:bg-[#EFEFEF] text-[#000000] font-semibold py-3 px-4 rounded-lg text-sm gap-1.5 border border-[#000000] shadow-none flex-shrink-0"
+                        >
+                          Checkout
+                          <ArrowRight className="w-4 h-4" strokeWidth={2} />
+                        </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-center gap-1.5 mt-1 text-xs text-[#777777]">
+                        <Lock className="w-3 h-3" />
                         <span>Secure checkout – 14 days to cancel</span>
                       </div>
                     </div>
                   );
                 })()}
 
-                {/* Desktop Layout - Clean 4-Section Card with Equal Spacing */}
+                {/* Desktop Layout - Monochrome 4-Section Design */}
                 {(() => {
-                  // Pay in full = monthly × 12
                   const payInFull = displayMonthlyPrice * 12;
-                  const savings = getMarketingSavings(paymentType as PaymentPeriod);
-                  const wasPrice = payInFull + savings;
-                  // Calculate cost per month of cover (matching TermSelector)
                   const coverMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
                   const costPerMonthOfCover = Math.round(payInFull / coverMonths);
-                  
-                  // Get color based on plan type (matching TermSelector)
-                  const priceColor = paymentType === '36months' ? 'text-green-600' : paymentType === '24months' ? 'text-orange-600' : 'text-slate-700';
+                  const payInFullPrice = Math.round(payInFull * 0.9);
+                  const savings = payInFull - payInFullPrice;
+                  const coverYears = paymentType === '12months' ? '1' : paymentType === '24months' ? '2' : '3';
                   
                   return (
-                    <div className="hidden md:flex md:items-stretch md:justify-between w-full bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                    <div className="hidden md:flex md:items-center md:justify-between w-full gap-6">
                       
-                      {/* SECTION 1: Trust & Reassurance */}
-                      <div className="flex flex-col items-center justify-center px-3 lg:px-6 py-4 border-r border-gray-100 min-w-fit">
+                      {/* Far Left Section - Trustpilot + Cancel */}
+                      <div className="flex flex-col items-start gap-1.5 min-w-[140px] pr-6 border-r border-[#DDDDDD]">
                         <a 
                           href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="hover:opacity-80 transition-opacity"
+                          className="flex items-center gap-1.5 hover:opacity-70 transition-opacity"
                         >
-                          <TrustpilotHeader className="flex-shrink-0 scale-[0.7] origin-center" />
+                          <span className="text-sm font-semibold text-[#333333]">★ Trustpilot</span>
                         </a>
+                        <span className="text-xs text-[#777777]">14 days to cancel</span>
                       </div>
-                      
-                      {/* SECTION 2: Price - Matching TermSelector card layout */}
-                      <div className="flex-1 flex flex-col items-center justify-center px-3 lg:px-6 py-4 border-r border-gray-100 text-center min-w-0">
-                        {/* Cost per month of cover - HERO (matching card) */}
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground mb-0.5">Cost per month of cover</p>
-                        <div className="flex items-baseline gap-1.5">
-                          <span className={`text-2xl lg:text-3xl font-bold ${priceColor}`}>£{costPerMonthOfCover}</span>
-                          <span className="text-base text-muted-foreground">per month</span>
+
+                      {/* Main Pricing Section (Centre-Left) */}
+                      <div className="flex flex-col items-start gap-0.5 px-6 border-r border-[#DDDDDD]">
+                        <p className="text-sm font-semibold text-[#000000]">{coverYears}-Year Cover</p>
+                        <p className="text-xs text-[#777777]">Cost per month of cover</p>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-2xl font-bold text-[#000000]">£{costPerMonthOfCover}</span>
+                          <span className="text-sm text-[#777777]">per month</span>
                         </div>
-                        {/* Payment breakdown - muted grey (matching card) */}
-                        <div className="flex flex-col items-center gap-0.5 mt-1">
-                          <p className="text-sm text-muted-foreground">
-                            Paid monthly for 12 months <span className="font-semibold text-foreground">£{displayMonthlyPrice} per month</span>
+                        <p className="text-xs text-[#777777]">
+                          Paid monthly for 12 months <span className="font-semibold text-[#000000]">£{displayMonthlyPrice}</span> per month
+                        </p>
+                        {paymentType !== '12months' && (
+                          <p className="text-xs text-[#777777]">
+                            No payments in year {paymentType === '24months' ? '2' : '2 or 3'}
                           </p>
-                          <p className="text-sm text-muted-foreground">
-                            Total cost <span className="font-semibold text-foreground">£{payInFull}</span>
-                          </p>
-                        </div>
-                      </div>
-                      
-                      {/* SECTION 3: Cover & No Payment Badge (matching card) */}
-                      <div className="flex flex-col items-center justify-center px-3 lg:px-6 py-4 border-r border-gray-100 text-center min-w-fit">
-                        {paymentType === '24months' && (
-                          <p className="text-sm font-semibold text-orange-600 mb-1">No payments in year 2</p>
                         )}
-                        {paymentType === '36months' && (
-                          <p className="text-sm font-semibold text-green-600 mb-1">No payments in years 2 or 3</p>
-                        )}
-                        <span className="text-sm text-muted-foreground whitespace-nowrap">
-                          {paymentType === '12months' && '1-Year Cover'}
-                          {paymentType === '24months' && '2-Year Cover'}
-                          {paymentType === '36months' && '3-Year Cover'}
-                        </span>
                       </div>
-                      
-                      {/* SECTION 4: CTA */}
-                      <div className="flex flex-col items-center justify-center px-3 lg:px-6 py-4 min-w-fit">
+
+                      {/* Right-Hand Savings Section */}
+                      <div className="flex flex-col items-start gap-0.5 px-6 border-r border-[#DDDDDD]">
+                        <p className="text-xs text-[#777777]">Pay in full and save 10%</p>
+                        <p className="text-sm text-[#333333]">
+                          Was £{payInFull} – now <span className="font-semibold text-[#3A8F45]">£{payInFullPrice}</span>
+                        </p>
+                        <p className="text-xs font-semibold text-[#3A8F45]">You save £{savings}</p>
+                      </div>
+
+                      {/* Far Right CTA Section */}
+                      <div className="flex flex-col items-end gap-2 min-w-[180px]">
                         <Button
                           onClick={handleSelectPlan}
-                          size="lg"
-                          className="text-base lg:text-lg font-semibold px-4 lg:px-8 py-3 lg:py-3.5 bg-green-600 hover:bg-green-700 hover:shadow-lg text-white rounded-xl whitespace-nowrap"
+                          className="bg-white hover:bg-[#EFEFEF] text-[#000000] font-semibold py-5 px-6 rounded-lg text-sm gap-2 border border-[#000000] shadow-none"
                         >
                           Continue to checkout
-                          <ArrowRight className="w-4 lg:w-5 h-4 lg:h-5 ml-2" strokeWidth={3} />
+                          <ArrowRight className="w-4 h-4 text-[#000000]" strokeWidth={2} />
                         </Button>
-                        <div className="flex items-center gap-1.5 mt-2 text-xs text-gray-500 whitespace-nowrap">
-                          <Lock className="h-3 w-3 flex-shrink-0" />
-                          <span>Secure checkout – 14 days to cancel</span>
+                        <div className="flex items-center gap-1.5 text-xs text-[#777777]">
+                          <Lock className="w-3 h-3" />
+                          <span>Secure checkout – Easy claims</span>
                         </div>
                       </div>
                     </div>
