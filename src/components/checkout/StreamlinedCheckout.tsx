@@ -904,6 +904,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       <span className="text-2xl sm:text-3xl font-bold text-foreground">£{monthlyPrice}</span>
                       <span className="text-sm text-muted-foreground">/mo</span>
                     </div>
+                    {/* Cost per month of cover for multi-year plans */}
+                    {paymentType !== '12months' && (
+                      <div className="bg-[#F0FDF4] rounded px-2 py-1 mt-1 mb-1 inline-block">
+                        <p className="text-xs text-[#166534]">
+                          Works out to <span className="font-semibold">£{Math.floor(bumperTotalPrice / (paymentType === '24months' ? 24 : 36))}/month</span> of cover
+                        </p>
+                      </div>
+                    )}
                     <p className="text-xs text-muted-foreground">Paid over 12 instalments • 0% APR</p>
                     <p className="text-xs font-medium text-foreground">Total cost: £{bumperTotalPrice}</p>
                     {paymentType === '24months' && (
