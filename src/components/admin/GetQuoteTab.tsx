@@ -1259,9 +1259,10 @@ Questions? Call 0330 229 5040`;
   const isPaymentFormValid = () => {
     return (
       paymentSource.trim() !== '' &&
-      paymentReference.trim() !== '' &&
       paymentAmount.trim() !== '' &&
       warrantyStartDate !== undefined &&
+      customerFirstName.trim() !== '' &&
+      editableCustomerEmail.trim() !== '' &&
       paymentConfirmed === true
     );
   };
