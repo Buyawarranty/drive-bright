@@ -94,7 +94,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           {/* Main Pricing Section (Centre-Left) */}
           <div className="flex flex-col items-start gap-0.5 px-6 border-r border-[#DDDDDD]">
             <p className="text-sm font-semibold text-[#000000]">{coverText}</p>
-            <p className="text-xs text-[#777777]">Cost per month of cover</p>
+            <p className="text-xs text-[#777777]">Approx. per month over {coverYears} year{coverYears !== '1' ? 's' : ''}</p>
             <div className={cn(
               "flex items-baseline gap-1 transition-all duration-300",
               isPulsing && "animate-pulse"
@@ -158,9 +158,9 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             {/* Cover heading */}
             <p className="text-center text-sm font-semibold text-[#000000]">{coverText}</p>
             
-            {/* Cost per month of cover */}
+            {/* Approx. per month over X years */}
             <div className="text-center">
-              <p className="text-xs text-[#777777] mb-0.5">Cost per month of cover</p>
+              <p className="text-xs text-[#777777] mb-0.5">Approx. per month over {coverYears} year{coverYears !== '1' ? 's' : ''}</p>
               <div className={cn(
                 "flex items-baseline justify-center gap-1 transition-all duration-300",
                 isPulsing && "animate-pulse"
