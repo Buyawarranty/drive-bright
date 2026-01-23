@@ -122,12 +122,13 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           </div>
 
           {/* Right-Hand Savings Section */}
-          <div className="flex flex-col items-start gap-0.5 px-6 border-r border-[#DDDDDD]">
-            <p className="text-xs text-[#777777]">Pay in full and save 10%</p>
-            <p className="text-sm text-[#333333]">
-              Was £{payInFull} – now <span className="font-semibold text-[#3A8F45]">£{payInFullPrice}</span>
+          <div className="flex flex-col items-start gap-1 px-6 border-r border-[#DDDDDD]">
+            <p className="text-sm font-semibold text-[#3A8F45]">
+              Pay in full and save £{savings}
             </p>
-            <p className="text-xs font-semibold text-[#3A8F45]">You save £{savings}</p>
+            <p className="text-sm text-[#333333]">
+              <span className="font-bold text-[#000000]">£{payInFullPrice.toLocaleString()}</span> today <span className="text-[#777777]">(was £{payInFull.toLocaleString()})</span>
+            </p>
           </div>
 
           {/* Far Right CTA Section */}
@@ -193,11 +194,12 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
 
             {/* Pay in full savings */}
             <div className="text-center pt-2 border-t border-[#DDDDDD]">
-              <p className="text-xs text-[#777777]">Pay in full and save 10%</p>
-              <p className="text-sm text-[#333333]">
-                Was £{payInFull} – now <span className="font-semibold text-[#3A8F45]">£{payInFullPrice}</span>
+              <p className="text-sm font-semibold text-[#3A8F45]">
+                Pay in full and save £{savings}
               </p>
-              <p className="text-xs font-semibold text-[#3A8F45]">You save £{savings}</p>
+              <p className="text-sm text-[#333333]">
+                <span className="font-bold text-[#000000]">£{payInFullPrice.toLocaleString()}</span> today <span className="text-[#777777]">(was £{payInFull.toLocaleString()})</span>
+              </p>
             </div>
           </div>
         </div>
