@@ -96,17 +96,21 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       return;
     }
 
+    console.log('[AddressAutocomplete] Fetching suggestions for:', term);
     setIsLoading(true);
     // Don't reset lookupFailed here - only set it on actual failure
     
     try {
+      console.log('[AddressAutocomplete] Calling supabase edge function...');
       const { data, error } = await supabase.functions.invoke('getaddress-lookup', {
         body: { action: 'autocomplete', term }
       });
+      
+      console.log('[AddressAutocomplete] Response:', { data, error });
 
       if (error) {
         // API call failed - show fallback message but NEVER clear input
-        console.error('Error fetching suggestions:', error);
+        console.error('[AddressAutocomplete] Error fetching suggestions:', error);
         setSuggestions([]);
         setLookupFailed(true);
         onLookupError?.(true);
@@ -148,6 +152,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       const value = e.target.value;
+      console.log('[AddressAutocomplete] Input changed:', value);
       setInputValue(value); // Always preserve what user types
       setHasSelected(false);
       setSelectedIndex(-1);
@@ -167,13 +172,14 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
 
       // Debounce API call - only if they've typed enough
       if (value.length >= 3) {
+        console.log('[AddressAutocomplete] Scheduling fetch for:', value);
         debounceRef.current = setTimeout(() => {
           fetchSuggestions(value);
         }, 300);
       }
     } catch (err) {
       // Never crash on input change
-      console.error('Error in handleInputChange:', err);
+      console.error('[AddressAutocomplete] Error in handleInputChange:', err);
     }
   };
 
