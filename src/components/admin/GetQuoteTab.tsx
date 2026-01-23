@@ -1400,6 +1400,8 @@ Questions? Call 0330 229 5040`;
       const isFutureStartDate = !isToday(warrantyStartDate) && warrantyStartDate > new Date();
 
       // 5. Create policy record with payment confirmation metadata
+      // Note: status constraint only allows 'active', 'cancelled', 'expired'
+      // Future start dates are tracked via policy_start_date and warranties_2000_scheduled_for
       const policyData: Record<string, any> = {
         customer_id: customerId,
         email: finalEmail.toLowerCase(),
@@ -1410,7 +1412,7 @@ Questions? Call 0330 229 5040`;
         warranty_number: warrantyReference, // Use same reference to prevent trigger from generating a duplicate
         policy_start_date: startDate.toISOString(),
         policy_end_date: endDate.toISOString(),
-        status: isFutureStartDate ? 'scheduled' : 'active',
+        status: 'active', // Constraint only allows: active, cancelled, expired
         voluntary_excess: excessAmount,
         claim_limit: displayClaimLimit,
         payment_amount: confirmedAmount,
