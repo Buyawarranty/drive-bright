@@ -3034,37 +3034,39 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           rel="noopener noreferrer"
                           className="flex items-center gap-1.5 hover:opacity-70 transition-opacity"
                         >
-                          <span className="text-sm font-semibold text-[#333333]">★ Trustpilot</span>
+                          <img 
+                            src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" 
+                            alt="Trustpilot" 
+                            className="h-6 w-auto"
+                          />
                         </a>
                         <span className="text-xs text-[#777777]">14 days to cancel</span>
                       </div>
 
                       {/* Main Pricing Section (Centre-Left) */}
-                      <div className="flex flex-col items-start gap-0.5 px-6 border-r border-[#DDDDDD]">
-                        <p className="text-sm font-semibold text-[#000000]">{coverYears}-Year Cover</p>
-                        <p className="text-xs text-[#777777]">Cost per month of cover</p>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-2xl font-bold text-[#000000]">£{costPerMonthOfCover}</span>
-                          <span className="text-sm text-[#777777]">per month</span>
+                      <div className="flex flex-col items-start gap-1 px-6 border-r border-[#DDDDDD]">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-lg font-bold text-[#000000]">Total: £{displayMonthlyPrice}/Month</span>
+                          <span className="text-sm text-[#777777]">– 0% APR</span>
                         </div>
-                        <p className="text-xs font-semibold text-[#555555]">
-                          Paid monthly for 12 months <span className="font-bold text-[#000000]">£{displayMonthlyPrice}</span> per month
+                        <p className="text-sm text-[#777777]">Only 12 payments</p>
+                        <p className="text-sm">
+                          <span className="line-through text-[#999999]">£{payInFull + (paymentType === '24months' ? 100 : paymentType === '36months' ? 200 : 0)}</span>
+                          <span className="text-[#3A8F45] font-semibold ml-1">£{payInFull}</span>
+                          <span className="text-[#3A8F45] text-sm ml-1">(Save £{paymentType === '24months' ? 100 : paymentType === '36months' ? 200 : 0})</span>
+                          <span className="text-[#777777] ml-1">– {coverYears}-Year Cover</span>
                         </p>
-                        {paymentType !== '12months' && (
-                          <p className="text-xs font-semibold text-[#555555]">
-                            No payments in year {paymentType === '24months' ? '2' : '2 or 3'}
-                          </p>
-                        )}
                       </div>
 
-                      {/* Right-Hand Savings Section */}
-                      <div className="flex flex-col items-start gap-0.5 px-6 border-r border-[#DDDDDD]">
-                        <p className="text-xs text-[#777777]">Pay in full and save 10%</p>
-                        <p className="text-sm text-[#333333]">
-                          Was £{payInFull} – now <span className="font-semibold text-[#3A8F45]">£{payInFullPrice}</span>
-                        </p>
-                        <p className="text-xs font-semibold text-[#3A8F45]">You save £{savings}</p>
-                      </div>
+                      {/* Year Free Badge Section */}
+                      {paymentType !== '12months' && (
+                        <div className="flex flex-col items-center gap-1 px-6 border-r border-[#DDDDDD]">
+                          <p className="text-base font-semibold text-[#000000]">
+                            Year {paymentType === '24months' ? '2' : '2 & 3'} FREE 🎉
+                          </p>
+                          <p className="text-sm font-medium text-[#333333]">{coverYears}-Year Cover</p>
+                        </div>
+                      )}
 
                       {/* Far Right CTA Section */}
                       <div className="flex flex-col items-end gap-2 min-w-[180px]">
@@ -3077,7 +3079,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         </Button>
                         <div className="flex items-center gap-1.5 text-xs text-[#777777]">
                           <Lock className="w-3 h-3" />
-                          <span>Secure checkout – Easy claims</span>
+                          <span>Secure checkout – No hidden fees</span>
                         </div>
                       </div>
                     </div>
