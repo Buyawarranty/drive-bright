@@ -93,7 +93,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
   const [customerEmail, setCustomerEmail] = useState('');
-  const [customerName, setCustomerName] = useState('');
+  const [customerFirstName, setCustomerFirstName] = useState('');
+  const [customerLastName, setCustomerLastName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
@@ -176,7 +177,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const handleLeadSelect = (lead: LeadData) => {
     setSelectedLeadId(lead.id);
     setCustomerEmail(lead.email);
-    setCustomerName(`${lead.first_name || ''} ${lead.last_name || ''}`.trim());
+    setCustomerFirstName(lead.first_name || '');
+    setCustomerLastName(lead.last_name || '');
     setCustomerPhone(lead.phone || '');
     
     if (lead.vehicle_reg) {
@@ -255,7 +257,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       const numMileage = parseInt(String(savedQuote.vehicleData.mileage).replace(/,/g, ''), 10);
       if (!isNaN(numMileage)) setSliderMileage(numMileage);
     }
-    setCustomerName(savedQuote.customerName || '');
+    // Handle backward compatibility: split customerName into first/last if they're not separate
+    if (savedQuote.customerFirstName !== undefined) {
+      setCustomerFirstName(savedQuote.customerFirstName || '');
+      setCustomerLastName(savedQuote.customerLastName || '');
+    } else {
+      // Legacy: split full name
+      const nameParts = (savedQuote.customerName || '').trim().split(' ');
+      setCustomerFirstName(nameParts[0] || '');
+      setCustomerLastName(nameParts.slice(1).join(' ') || '');
+    }
     setCustomerEmail(savedQuote.customerEmail || '');
     setCustomerPhone(savedQuote.customerPhone || '');
     setPaymentType(savedQuote.paymentType || '24months');
@@ -635,10 +646,13 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     }
   };
 
+  // Helper to get full customer name
+  const getFullCustomerName = () => `${customerFirstName} ${customerLastName}`.trim();
+
   const handleCalculateQuote = () => {
     let hasError = false;
     
-    if (!customerName.trim()) {
+    if (!customerFirstName.trim()) {
       setShowNameError(true);
       hasError = true;
     } else {
@@ -729,7 +743,9 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
           cc: allCcEmails.length > 0 ? allCcEmails : undefined,
           subject: emailSubject,
           quoteLink: quoteLink,
-          customerName,
+          customerName: getFullCustomerName(),
+          customerFirstName,
+          customerLastName,
           vehicleData,
           quoteDetails: {
             plan: 'Platinum',
@@ -793,7 +809,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       const { error: quoteError } = await supabase
         .from('admin_sent_quotes')
         .insert({
-          customer_name: customerName,
+          customer_name: getFullCustomerName(),
           customer_email: customerEmail,
           vehicle_reg: vehicleData?.regNumber || '',
           vehicle_make: vehicleData?.make,
@@ -835,7 +851,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         .from('abandoned_carts')
         .insert({
           email: customerEmail,
-          full_name: customerName,
+          full_name: getFullCustomerName(),
           phone: '',
           vehicle_reg: vehicleData?.regNumber,
           vehicle_make: vehicleData?.make,
@@ -876,7 +892,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       setSliderMileage(0);
       setVehicleData(null);
       setCustomerEmail('');
-      setCustomerName('');
+      setCustomerFirstName('');
+      setCustomerLastName('');
       setPaymentType('24months');
       setExcessAmount(100);
       setClaimLimit(1250);
@@ -973,7 +990,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     const bonus = termOption?.bonus || 3;
     const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
     
-    const content = `Hi ${customerName.split(' ')[0]},
+    const content = `Hi ${customerFirstName || 'there'},
 
 Here's your warranty quote for ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber}):
 
@@ -999,13 +1016,13 @@ Questions? Call 0330 229 5040`;
 
   // Auto-generate quote link when entering step 3
   useEffect(() => {
-    if (step === 3 && customerEmail && customerName && vehicleData && !quoteGenerated) {
+    if (step === 3 && customerEmail && customerFirstName && vehicleData && !quoteGenerated) {
       generateQuoteLink();
     }
-  }, [step, customerEmail, customerName, vehicleData]);
+  }, [step, customerEmail, customerFirstName, vehicleData]);
 
   const generateQuoteLink = async () => {
-    if (!customerEmail || !customerName || !vehicleData) return;
+    if (!customerEmail || !customerFirstName || !vehicleData) return;
     
     setIsGeneratingQuoteLink(true);
     setQuoteLink(null);
@@ -1016,7 +1033,9 @@ Questions? Call 0330 229 5040`;
     try {
       const { data, error } = await supabase.functions.invoke('create-live-quote', {
         body: {
-          customerName,
+          customerName: getFullCustomerName(),
+          customerFirstName,
+          customerLastName,
           customerEmail,
           customerPhone: '',
           vehicleData: {
@@ -1119,7 +1138,7 @@ Questions? Call 0330 229 5040`;
 
   // Open payment confirmation dialog with validation
   const handleOpenConfirmPaymentDialog = async () => {
-    if (!customerEmail || !customerName || !vehicleData) {
+    if (!customerEmail || !customerFirstName || !vehicleData) {
       toast({
         title: "Incomplete Quote",
         description: "Please complete all customer and vehicle details first",
@@ -1140,7 +1159,7 @@ Questions? Call 0330 229 5040`;
     setExternalPaymentStep('details');
     
     // Initialize editable fields with current values
-    setEditableCustomerName(customerName);
+    setEditableCustomerName(getFullCustomerName());
     setEditableCustomerEmail(customerEmail);
     setEditableCustomerPhone(customerPhone);
     setEditableMileage(vehicleData?.mileage || mileage);
@@ -1170,7 +1189,7 @@ Questions? Call 0330 229 5040`;
 
     return {
       customer: {
-        name: editableCustomerName || customerName,
+        name: editableCustomerName || getFullCustomerName(),
         email: (editableCustomerEmail || customerEmail).toLowerCase(),
         phone: editableCustomerPhone || customerPhone || 'Not provided',
         address: skipAddressDetails 
@@ -1291,7 +1310,7 @@ Questions? Call 0330 229 5040`;
       let customerId: string;
       
       // Use editable fields for final data
-      const finalName = editableCustomerName || customerName;
+      const finalName = editableCustomerName || getFullCustomerName();
       const finalPhone = editableCustomerPhone || customerPhone;
       const finalRegNumber = (editableRegNumber || vehicleData.regNumber)?.toUpperCase();
       const finalMileage = editableMileage || vehicleData.mileage;
@@ -1548,7 +1567,8 @@ Questions? Call 0330 229 5040`;
     setSliderMileage(0);
     setVehicleData(null);
     setCustomerEmail('');
-    setCustomerName('');
+    setCustomerFirstName('');
+    setCustomerLastName('');
     setCustomerPhone('');
     setPaymentType('24months');
     setExcessAmount(100);
@@ -1819,17 +1839,17 @@ Questions? Call 0330 229 5040`;
               </CardHeader>
               <CardContent className="space-y-6">
 
-                {/* Customer Info */}
+                {/* Customer Info - First Name & Last Name */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Customer Name <span className="text-red-500">*</span></Label>
+                    <Label>First Name <span className="text-red-500">*</span></Label>
                     <Input
-                      value={customerName}
+                      value={customerFirstName}
                       onChange={(e) => {
-                        setCustomerName(e.target.value);
+                        setCustomerFirstName(e.target.value);
                         if (showNameError && e.target.value.trim()) setShowNameError(false);
                       }}
-                      placeholder="e.g. John Smith"
+                      placeholder="e.g. John"
                       className={cn(
                         "bg-blue-50 border-blue-200 focus:border-blue-400",
                         showNameError && "border-red-500 bg-red-50"
@@ -1837,10 +1857,24 @@ Questions? Call 0330 229 5040`;
                     />
                     {showNameError && (
                       <p className="text-sm text-red-500 flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> Customer name is required
+                        <AlertCircle className="w-3 h-3" /> First name is required
                       </p>
                     )}
                   </div>
+                  <div className="space-y-2">
+                    <Label>Last Name <span className="text-muted-foreground text-xs">(optional)</span></Label>
+                    <Input
+                      value={customerLastName}
+                      onChange={(e) => setCustomerLastName(e.target.value)}
+                      placeholder="e.g. Smith"
+                      className="bg-blue-50 border-blue-200 focus:border-blue-400"
+                    />
+                    <p className="text-xs text-muted-foreground">Required for Bumper, leave blank if unknown</p>
+                  </div>
+                </div>
+
+                {/* Email & Phone */}
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Customer Email <span className="text-red-500">*</span></Label>
                     <Input
@@ -1861,6 +1895,16 @@ Questions? Call 0330 229 5040`;
                         <AlertCircle className="w-3 h-3" /> Valid email address is required
                       </p>
                     )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Phone Number</Label>
+                    <Input
+                      type="tel"
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      placeholder="e.g. 07123 456789"
+                      className="bg-blue-50 border-blue-200 focus:border-blue-400"
+                    />
                   </div>
                 </div>
 
@@ -2335,7 +2379,8 @@ Questions? Call 0330 229 5040`;
                       // Save quote data to localStorage for later
                       const savedQuote = {
                         vehicleData,
-                        customerName,
+                        customerFirstName,
+                        customerLastName,
                         customerEmail,
                         customerPhone,
                         paymentType,
@@ -2423,7 +2468,7 @@ Questions? Call 0330 229 5040`;
                 <div className="bg-muted p-4 rounded-lg">
                   <h3 className="font-semibold mb-2">Order Summary</h3>
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <p><strong>Customer:</strong> {customerName}</p>
+                    <p><strong>Customer:</strong> {getFullCustomerName()}</p>
                     <p><strong>Email:</strong> {customerEmail}</p>
                     <p><strong>Vehicle:</strong> {vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
                     <p><strong>Registration:</strong> {vehicleData?.regNumber}</p>
@@ -2500,7 +2545,7 @@ Questions? Call 0330 229 5040`;
                         </Button>
                         <Button 
                           onClick={() => {
-                            const message = `Hi ${customerName?.split(' ')[0] || 'there'},\n\nYour warranty quote for ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber}) is ready!\n\n💰 £${currentPrice.monthlyPrice}/month via Bumper\n💳 £${currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)} pay in full (10% off)\n\n🔗 Complete your purchase: ${quoteLink}\n\nBuyawarranty Customer Care\n📞 0330 229 5040`;
+                            const message = `Hi ${customerFirstName || 'there'},\n\nYour warranty quote for ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber}) is ready!\n\n💰 £${currentPrice.monthlyPrice}/month via Bumper\n💳 £${currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)} pay in full (10% off)\n\n🔗 Complete your purchase: ${quoteLink}\n\nBuyawarranty Customer Care\n📞 0330 229 5040`;
                             const encodedMessage = encodeURIComponent(message);
                             window.open(`https://api.whatsapp.com/send?text=${encodedMessage}`, '_blank');
                           }}
@@ -2739,7 +2784,7 @@ Questions? Call 0330 229 5040`;
                       
                       {/* Greeting */}
                       <div className="mb-4">
-                        <p className="text-gray-800">Hi {customerName?.split(' ')[0] || 'there'},</p>
+                        <p className="text-gray-800">Hi {customerFirstName || 'there'},</p>
                         <p className="text-gray-600 text-sm mt-2">
                           Thanks for requesting your personalised warranty quote. Please review your cover details below.
                         </p>
@@ -2822,7 +2867,7 @@ Questions? Call 0330 229 5040`;
                       <h4 className="font-semibold text-blue-900 mb-2">👤 Customer Details</h4>
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <span className="text-blue-700">Name:</span>
-                        <span className="font-medium">{customerName || 'Not provided'}</span>
+                        <span className="font-medium">{getFullCustomerName() || 'Not provided'}</span>
                         <span className="text-blue-700">Email:</span>
                         <span className="font-medium">{customerEmail}</span>
                         <span className="text-blue-700">Phone:</span>
