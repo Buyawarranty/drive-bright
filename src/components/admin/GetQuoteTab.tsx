@@ -1857,7 +1857,7 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
 
-                {/* SECTION ORDER MATCHES STEP 3: Duration → Claim Limit + Boost → Excess → Labour Rate → Add-ons */}
+                {/* SECTION ORDER: Duration → Labour Rate → Excess → Claim Limit + Boost → Add-ons */}
 
                 {/* 1. Duration - Quick Select Chips */}
                 <div className="space-y-3">
@@ -1890,9 +1890,65 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
 
-                {/* 2. Claim Limit + Boost - Grouped together like Step 3 */}
+                {/* 2. Labour Rate - Quick Select Chips */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">2. Labour Rate</Label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {labourRateOptions.map((option) => (
+                      <button
+                        key={option.rate}
+                        onClick={() => setLabourRate(option.rate)}
+                        className={cn(
+                          "relative py-3 px-2 rounded-lg border-2 text-center transition-all min-h-[80px] flex flex-col items-center justify-center",
+                          labourRate === option.rate
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50"
+                        )}
+                      >
+                        {option.isPopular && (
+                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
+                            POPULAR
+                          </span>
+                        )}
+                        <div className="font-semibold">{option.label}</div>
+                        <div className="text-xs text-muted-foreground">{option.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Higher rate = more garage choice. £70/hr is the default.</p>
+                </div>
+
+                {/* 3. Excess - Quick Select Chips */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">3. Excess Amount</Label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {excessOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => setExcessAmount(option.value)}
+                        className={cn(
+                          "relative py-3 px-2 rounded-lg border-2 text-center transition-all min-h-[70px] flex flex-col items-center justify-center",
+                          excessAmount === option.value
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50"
+                        )}
+                      >
+                        {option.isPopular && (
+                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
+                            MOST POPULAR
+                          </span>
+                        )}
+                        <div className="font-semibold">{option.label}</div>
+                        <div className="text-xs text-muted-foreground">{option.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Higher excess = lower monthly cost. £100 is the default.</p>
+                </div>
+
+                {/* 4. Claim Limit + Boost - Grouped together */}
                 <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border">
-                  <Label className="text-base font-semibold">2. Single repair amount per claim</Label>
+                  <Label className="text-base font-semibold">4. Single repair amount per claim</Label>
                   <div className="grid grid-cols-3 gap-2">
                     {claimLimitOptions.map((option) => (
                       <button
@@ -1953,62 +2009,6 @@ Questions? Call 0330 229 5040`;
                       </div>
                     </div>
                   )}
-                </div>
-
-                {/* 3. Excess - Quick Select Chips */}
-                <div className="space-y-3">
-                  <Label className="text-base font-semibold">3. Excess Amount</Label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {excessOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => setExcessAmount(option.value)}
-                        className={cn(
-                          "relative py-3 px-2 rounded-lg border-2 text-center transition-all min-h-[70px] flex flex-col items-center justify-center",
-                          excessAmount === option.value
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
-                        )}
-                      >
-                        {option.isPopular && (
-                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
-                            MOST POPULAR
-                          </span>
-                        )}
-                        <div className="font-semibold">{option.label}</div>
-                        <div className="text-xs text-muted-foreground">{option.description}</div>
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground">Higher excess = lower monthly cost. £100 is the default.</p>
-                </div>
-
-                {/* 4. Labour Rate - Quick Select Chips */}
-                <div className="space-y-3">
-                  <Label className="text-base font-semibold">4. Labour Rate</Label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {labourRateOptions.map((option) => (
-                      <button
-                        key={option.rate}
-                        onClick={() => setLabourRate(option.rate)}
-                        className={cn(
-                          "relative py-3 px-2 rounded-lg border-2 text-center transition-all min-h-[80px] flex flex-col items-center justify-center",
-                          labourRate === option.rate
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
-                        )}
-                      >
-                        {option.isPopular && (
-                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
-                            POPULAR
-                          </span>
-                        )}
-                        <div className="font-semibold">{option.label}</div>
-                        <div className="text-xs text-muted-foreground">{option.description}</div>
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground">Higher rate = more garage choice. £70/hr is the default.</p>
                 </div>
 
                 {/* 5. Optional Add-ons Section */}
@@ -2291,7 +2291,7 @@ Questions? Call 0330 229 5040`;
                     <div className="text-gray-400 text-2xl">|</div>
                     <div className="text-sm text-gray-700 font-medium">
                       <div>Total: £{currentPrice.monthlyPrice * 12}</div>
-                      <div>Claim: £{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()} | Labour: £{labourRate}/hr</div>
+                      <div>Claim: £{(boostAddon ? claimLimit + 500 : claimLimit).toLocaleString()} | Labour: £{labourRate}/hr</div>
                     </div>
                   </div>
                 </div>
