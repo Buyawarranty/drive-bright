@@ -1692,12 +1692,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     {durationId === '12months' && (
                       <li className="text-[#333333]">Ideal for short-term protection</li>
                     )}
-                    {durationId === '24months' && (
-                      <li className="text-[#333333]">Lower cost per month of cover</li>
-                    )}
-                    {durationId === '36months' && (
-                      <li className="text-[#333333]">Lowest cost per month of cover</li>
-                    )}
                   </ul>
                   
                   {/* What's Included Collapsible */}
