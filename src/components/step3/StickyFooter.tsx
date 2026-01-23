@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { ArrowRight, Lock, ChevronUp, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { calculateCPMWithGuardrail } from '@/lib/cpmUtils';
 
 interface StickyFooterProps {
   monthlyPrice: number;
@@ -57,7 +58,8 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
   
   const payInFull = totalPrice;
   const coverMonths = paymentPeriod === '12months' ? 12 : paymentPeriod === '24months' ? 24 : 36;
-  const calculatedCostPerMonth = costPerMonthOfCover ?? Math.round(payInFull / coverMonths);
+  // Use guardrail CPM: ensures CPM × years >= monthly instalment
+  const calculatedCostPerMonth = costPerMonthOfCover ?? calculateCPMWithGuardrail(payInFull, coverMonths, monthlyPrice);
 
   const toggleMobileExpand = useCallback(() => {
     setIsMobileExpanded(prev => !prev);

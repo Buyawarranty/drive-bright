@@ -31,6 +31,7 @@ import {
   getMarketingSavings,
   type PaymentPeriod
 } from '@/lib/pricingMatrix';
+import { calculateCPMWithGuardrail, getCoverMonthsFromPaymentType } from '@/lib/cpmUtils';
 import pandaCarWarranty from "@/assets/panda-car-warranty-transparent.png";
 import trustpilotLogo from "@/assets/trustpilot-excellent-box.webp";
 import { trackStepCompletion, trackBeginCheckout } from '@/utils/analytics';
@@ -1639,7 +1640,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         <p className="text-sm text-[#555555] mb-1">Cost per month of cover</p>
                         <div className="flex items-baseline gap-1 mb-3">
                           <span className="text-3xl font-bold text-[#000000]">
-                            £{Math.floor(displayedAnnualPrice / (durationId === '24months' ? 24 : 36))}
+                            £{calculateCPMWithGuardrail(displayedAnnualPrice, durationId === '24months' ? 24 : 36, displayedMonthlyPrice)}
                           </span>
                           <span className="text-base text-[#333333]">per month</span>
                         </div>
@@ -2683,7 +2684,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             {(() => {
               const payInFull = displayMonthlyPrice * 12;
               const coverMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
-              const costPerMonthOfCover = Math.floor(payInFull / coverMonths);
+              const costPerMonthOfCover = calculateCPMWithGuardrail(payInFull, coverMonths, displayMonthlyPrice);
               const coverYears = paymentType === '12months' ? '1' : paymentType === '24months' ? '2' : '3';
               const savings = getMarketingSavings(paymentType as PaymentPeriod);
               const wasPrice = payInFull + savings;
@@ -2926,7 +2927,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 {(() => {
                   const payInFull = displayMonthlyPrice * 12;
                   const coverMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
-                  const costPerMonthOfCover = Math.floor(payInFull / coverMonths);
+                  const costPerMonthOfCover = calculateCPMWithGuardrail(payInFull, coverMonths, displayMonthlyPrice);
                   const payInFullPrice = Math.round(payInFull * 0.9);
                   const savings = payInFull - payInFullPrice;
                   const coverYears = paymentType === '12months' ? '1' : paymentType === '24months' ? '2' : '3';
@@ -3016,7 +3017,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 {(() => {
                   const payInFull = displayMonthlyPrice * 12;
                   const coverMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
-                  const costPerMonthOfCover = Math.floor(payInFull / coverMonths);
+                  const costPerMonthOfCover = calculateCPMWithGuardrail(payInFull, coverMonths, displayMonthlyPrice);
                   const payInFullPrice = Math.round(payInFull * 0.9);
                   const savings = payInFull - payInFullPrice;
                   const coverYears = paymentType === '12months' ? '1' : paymentType === '24months' ? '2' : '3';
@@ -3156,7 +3157,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   calculatedTotalCost = calculatedMonthlyPrice * 12;
                 }
                 
-                const costPerMonthOfCover = Math.floor(calculatedTotalCost / coverMonths);
+                const costPerMonthOfCover = calculateCPMWithGuardrail(calculatedTotalCost, coverMonths, calculatedMonthlyPrice);
                 
                 return (
                   <>
