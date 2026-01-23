@@ -1694,28 +1694,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
                     )}
                     {durationId === '24months' && (
-                      <>
-                        <div className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-[#333333] flex-shrink-0" />
-                          <span className="text-sm text-[#333333]">Lower cost per month of cover</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-[#333333] flex-shrink-0" />
-                          <span className="text-sm text-[#333333]">Covers two MOT cycles</span>
-                        </div>
-                      </>
+                      <div className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-[#333333] flex-shrink-0" />
+                        <span className="text-sm text-[#333333]">Lower cost per month of cover</span>
+                      </div>
                     )}
                     {durationId === '36months' && (
-                      <>
-                        <div className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-[#333333] flex-shrink-0" />
-                          <span className="text-sm text-[#333333]">Lowest cost per month of cover</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-[#333333] flex-shrink-0" />
-                          <span className="text-sm text-[#333333]">Price locked for longer</span>
-                        </div>
-                      </>
+                      <div className="flex items-center gap-2">
+                        <Check className="w-4 h-4 text-[#333333] flex-shrink-0" />
+                        <span className="text-sm text-[#333333]">Lowest cost per month of cover</span>
+                      </div>
                     )}
                   </div>
                   
