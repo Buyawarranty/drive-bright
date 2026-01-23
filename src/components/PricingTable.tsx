@@ -2940,7 +2940,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 {(() => {
                   const payInFull = displayMonthlyPrice * 12;
                   const coverMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
-                  const costPerMonthOfCover = Math.round(payInFull / coverMonths);
+                  const costPerMonthOfCover = Math.floor(payInFull / coverMonths);
                   const payInFullPrice = Math.round(payInFull * 0.9);
                   const savings = payInFull - payInFullPrice;
                   const coverYears = paymentType === '12months' ? '1' : paymentType === '24months' ? '2' : '3';
@@ -3030,7 +3030,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 {(() => {
                   const payInFull = displayMonthlyPrice * 12;
                   const coverMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
-                  const costPerMonthOfCover = Math.round(payInFull / coverMonths);
+                  const costPerMonthOfCover = Math.floor(payInFull / coverMonths);
                   const payInFullPrice = Math.round(payInFull * 0.9);
                   const savings = payInFull - payInFullPrice;
                   const coverYears = paymentType === '12months' ? '1' : paymentType === '24months' ? '2' : '3';
