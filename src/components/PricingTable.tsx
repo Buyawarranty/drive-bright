@@ -1601,7 +1601,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   className={cn(
                     "relative p-6 rounded-xl border transition-all bg-white pointer-events-auto cursor-pointer",
                     isSelected 
-                      ? "border-[#000000] border-2 shadow-sm" 
+                      ? "border-[#E65100] border-2 shadow-md" 
                       : "border-[#EDEDED] hover:border-[#CCCCCC]"
                   )}
                   style={{ position: 'relative', zIndex: 1 }}
@@ -1618,7 +1618,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <div className={cn(
                       "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200",
                       isSelected 
-                        ? "bg-[#000000] border-[#000000]" 
+                        ? "bg-[#3A8F45] border-[#3A8F45]" 
                         : "bg-white border-[#CCCCCC] hover:border-[#999999]"
                     )}>
                       {isSelected && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
@@ -1710,11 +1710,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   {/* What's Included Collapsible */}
                   <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
                     <CollapsibleTrigger className="w-full mb-4">
-                      <div className="flex items-center justify-between w-full border border-[#EDEDED] rounded-lg px-4 py-3 hover:border-[#CCCCCC] transition-colors">
-                        <span className="text-sm font-medium text-[#333333]">See what's included</span>
+                      <div className="flex items-center justify-between w-full bg-[#FFF3E0] border border-[#E65100] rounded-lg px-4 py-3 hover:bg-[#FFE0B2] transition-colors">
+                        <span className="text-sm font-semibold text-[#E65100]">See what's included</span>
                         <ChevronDown 
                           className={cn(
-                            "w-5 h-5 text-[#777777] transition-transform duration-300",
+                            "w-5 h-5 text-[#E65100] transition-transform duration-300",
                             isExpanded && "transform rotate-180"
                           )}
                         />
@@ -1755,7 +1755,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       "w-full mb-3 font-semibold text-sm py-5 transition-all duration-200",
                       isSelected
                         ? "bg-[#000000] hover:bg-[#333333] text-white border-none"
-                        : "bg-white hover:bg-[#F2F2F2] text-[#000000] border border-[#000000]"
+                        : "bg-[#E65100] hover:bg-[#D84315] text-white border-none"
                     )}
                     size="lg"
                   >
