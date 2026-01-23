@@ -1326,8 +1326,15 @@ Questions? Call 0330 229 5040`;
       const finalMileage = editableMileage || vehicleData.mileage;
       
       // 2. Customer record data with payment confirmation details
+      // Extract first and last name from editable name or state
+      const nameParts = finalName.trim().split(/\s+/);
+      const finalFirstName = customerFirstName.trim() || nameParts[0] || 'Customer';
+      const finalLastName = customerLastName.trim() || nameParts.slice(1).join(' ') || '';
+      
       const customerData: Record<string, any> = {
         name: finalName,
+        first_name: finalFirstName,
+        last_name: finalLastName || null,
         email: finalEmail.toLowerCase(),
         phone: finalPhone || null,
         registration_plate: finalRegNumber || null,
