@@ -3010,11 +3010,33 @@ Questions? Call 0330 229 5040`;
 
               {externalPaymentStep === 'details' ? (
                 <div className="space-y-4">
-                  {/* Editable Customer & Vehicle Details */}
+                  {/* Vehicle Details - Pre-populated from DVLA (read-only display) */}
+                  <div className="p-4 bg-white border border-gray-200 rounded-lg space-y-3">
+                    <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                      🚗 Vehicle Details
+                      <span className="text-xs font-normal text-green-600 bg-green-50 px-2 py-0.5 rounded">Pre-filled from DVLA</span>
+                    </h4>
+                    <div className="grid grid-cols-3 gap-3 text-sm">
+                      <div>
+                        <span className="text-gray-600 font-medium">Registration:</span>
+                        <p className="text-gray-900 font-mono font-semibold">{vehicleData?.regNumber || regNumber}</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-600 font-medium">Vehicle:</span>
+                        <p className="text-gray-900">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-600 font-medium">Mileage:</span>
+                        <p className="text-gray-900">{parseInt(vehicleData?.mileage || mileage || '0').toLocaleString()} miles</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Customer Details - Editable */}
                   <div className="p-4 bg-white border border-gray-200 rounded-lg space-y-3">
                     <h4 className="font-semibold text-gray-900 flex items-center gap-2">
                       <UserCheck className="w-4 h-4 text-gray-600" />
-                      Customer & Vehicle Details
+                      Customer Details
                     </h4>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
@@ -3027,7 +3049,7 @@ Questions? Call 0330 229 5040`;
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs text-gray-600">Surname *</Label>
+                        <Label className="text-xs text-gray-600">Surname</Label>
                         <Input
                           value={customerLastName}
                           onChange={(e) => setCustomerLastName(e.target.value)}
@@ -3049,27 +3071,6 @@ Questions? Call 0330 229 5040`;
                           value={editableCustomerPhone}
                           onChange={(e) => setEditableCustomerPhone(e.target.value)}
                           placeholder="07xxx xxxxxx"
-                          className="bg-gray-50 border-gray-200"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-gray-600">Registration *</Label>
-                        <Input
-                          value={editableRegNumber}
-                          onChange={(e) => setEditableRegNumber(e.target.value.toUpperCase())}
-                          className="bg-gray-50 border-gray-200 font-mono"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-gray-600">Vehicle</Label>
-                        <p className="text-sm text-gray-900 py-2">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-gray-600">Mileage</Label>
-                        <Input
-                          value={editableMileage}
-                          onChange={(e) => setEditableMileage(e.target.value.replace(/\D/g, ''))}
-                          placeholder="e.g. 45000"
                           className="bg-gray-50 border-gray-200"
                         />
                       </div>
@@ -3154,12 +3155,26 @@ Questions? Call 0330 229 5040`;
                     )}
                   </div>
 
-                  {/* Pre-populated Policy Summary */}
-                  <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-3">
-                    <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-gray-600" />
-                      Policy Configuration (from Step 2)
-                    </h4>
+                  {/* Pre-populated Policy Summary with Edit Button */}
+                  <div className="p-4 bg-white border border-gray-200 rounded-lg space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-gray-600" />
+                        Policy Configuration (from Step 2)
+                      </h4>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setShowConfirmPaymentDialog(false);
+                          setStep(2);
+                        }}
+                        className="h-7 px-2 text-xs"
+                      >
+                        <Pencil className="w-3 h-3 mr-1" />
+                        Edit
+                      </Button>
+                    </div>
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
                         <span className="text-gray-600 font-medium">Plan:</span>
@@ -3609,8 +3624,8 @@ Questions? Call 0330 229 5040`;
                     </Button>
                     <Button
                       onClick={() => setExternalPaymentStep('preview')}
-                      disabled={!paymentSource || !paymentAmount || !paymentDate || !customerFirstName.trim()}
-                      className="bg-blue-600 hover:bg-blue-700"
+                      disabled={!paymentSource || !paymentAmount || !customerFirstName.trim() || !editableCustomerEmail.trim()}
+                      className="bg-green-600 hover:bg-green-700 text-white"
                     >
                       <Eye className="w-4 h-4 mr-2" />
                       Preview Before Submit
