@@ -3046,9 +3046,15 @@ Questions? Call 0330 229 5040`;
                         <Input
                           value={customerFirstName}
                           onChange={(e) => setCustomerFirstName(e.target.value)}
-                          className="bg-gray-50 border-gray-200"
+                          className={cn(
+                            "bg-gray-50 border-gray-200",
+                            !customerFirstName.trim() && "border-red-300 focus:ring-red-500"
+                          )}
                           placeholder="e.g. John"
                         />
+                        {!customerFirstName.trim() && (
+                          <p className="text-xs text-red-600">First name is required</p>
+                        )}
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs text-gray-600">Surname</Label>
@@ -3064,8 +3070,15 @@ Questions? Call 0330 229 5040`;
                         <Input
                           value={editableCustomerEmail}
                           onChange={(e) => setEditableCustomerEmail(e.target.value)}
-                          className="bg-gray-50 border-gray-200"
+                          className={cn(
+                            "bg-gray-50 border-gray-200",
+                            !editableCustomerEmail.trim() && "border-red-300 focus:ring-red-500"
+                          )}
+                          placeholder="email@example.com"
                         />
+                        {!editableCustomerEmail.trim() && (
+                          <p className="text-xs text-red-600">Email is required</p>
+                        )}
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs text-gray-600">Phone</Label>
@@ -3227,7 +3240,10 @@ Questions? Call 0330 229 5040`;
                       id="payment-source"
                       value={paymentSource}
                       onChange={(e) => setPaymentSource(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-md bg-background"
+                      className={cn(
+                        "w-full px-3 py-2 border rounded-md bg-background",
+                        !paymentSource && "border-red-300"
+                      )}
                     >
                       <option value="">Select payment source...</option>
                       <option value="stripe_dashboard">Stripe Dashboard</option>
@@ -3237,6 +3253,9 @@ Questions? Call 0330 229 5040`;
                       <option value="dealer_portal">Dealer Portal</option>
                       <option value="other">Other</option>
                     </select>
+                    {!paymentSource && (
+                      <p className="text-xs text-red-600">Please select a payment source</p>
+                    )}
                   </div>
 
 
@@ -3250,7 +3269,11 @@ Questions? Call 0330 229 5040`;
                         value={paymentAmount}
                         onChange={(e) => setPaymentAmount(e.target.value)}
                         placeholder={currentPrice.totalPrice.toString()}
+                        className={cn(!paymentAmount && "border-red-300")}
                       />
+                      {!paymentAmount && (
+                        <p className="text-xs text-red-600">Payment amount is required</p>
+                      )}
                       {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
                         <p className="text-xs text-amber-600">
                           ⚠️ Differs from quoted price (£{currentPrice.totalPrice})
