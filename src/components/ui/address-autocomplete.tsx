@@ -327,47 +327,57 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           ref={dropdownRef}
           className="absolute z-50 w-full mt-1 bg-background border border-border rounded-lg shadow-lg max-h-60 overflow-auto"
           style={{ WebkitOverflowScrolling: 'touch' }}
+          onMouseDown={(e) => {
+            // Prevent any mousedown from bubbling and closing dropdown
+            e.preventDefault();
+          }}
         >
-          {suggestions.map((suggestion, index) => (
-            <button
-              key={suggestion.id || index}
-              type="button"
-              className={cn(
-                "w-full px-4 py-4 text-left text-sm hover:bg-accent active:bg-accent transition-colors touch-manipulation cursor-pointer select-none",
-                index === selectedIndex && "bg-accent",
-                index !== suggestions.length - 1 && "border-b border-border/50"
-              )}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                isSelectingRef.current = true;
-                handleSelectAddress(suggestion);
-                // Reset after a small delay
-                setTimeout(() => { isSelectingRef.current = false; }, 300);
-              }}
-              onMouseDown={(e) => {
-                // Prevent blur on input before click completes (Safari fix)
-                e.preventDefault();
-                isSelectingRef.current = true;
-              }}
-              onMouseUp={() => {
-                setTimeout(() => { isSelectingRef.current = false; }, 300);
-              }}
-              onTouchStart={(e) => {
-                // Mark that we're selecting to prevent dropdown close
-                isSelectingRef.current = true;
-              }}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleSelectAddress(suggestion);
-                // Reset after selection completes
-                setTimeout(() => { isSelectingRef.current = false; }, 300);
-              }}
-            >
-              <span className="text-foreground">{suggestion.address}</span>
-            </button>
-          ))}
+          {suggestions.map((suggestion, index) => {
+            // Use a ref to track if this specific item was touched
+            const handleSelection = () => {
+              isSelectingRef.current = true;
+              handleSelectAddress(suggestion);
+              setTimeout(() => { isSelectingRef.current = false; }, 500);
+            };
+
+            return (
+              <div
+                key={suggestion.id || index}
+                role="button"
+                tabIndex={0}
+                className={cn(
+                  "w-full px-4 py-4 text-left text-sm hover:bg-accent active:bg-accent transition-colors cursor-pointer select-none",
+                  index === selectedIndex && "bg-accent",
+                  index !== suggestions.length - 1 && "border-b border-border/50"
+                )}
+                style={{ 
+                  WebkitTapHighlightColor: 'transparent',
+                  WebkitTouchCallout: 'none',
+                  WebkitUserSelect: 'none',
+                  touchAction: 'manipulation'
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSelection();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleSelection();
+                  }
+                }}
+                onMouseDown={(e) => {
+                  // Prevent blur on input before click completes (Safari/iOS fix)
+                  e.preventDefault();
+                  e.stopPropagation();
+                  isSelectingRef.current = true;
+                }}
+              >
+                <span className="text-foreground">{suggestion.address}</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
