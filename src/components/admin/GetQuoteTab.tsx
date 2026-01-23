@@ -148,7 +148,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [paymentNotes, setPaymentNotes] = useState('');
-  const [sendToW2k, setSendToW2k] = useState(true);
+  const [sendToW2k, setSendToW2k] = useState(false); // Default OFF - user must opt-in
   const [sendWelcomeEmail, setSendWelcomeEmail] = useState(true);
   const [existingPolicyWarning, setExistingPolicyWarning] = useState<string | null>(null);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
@@ -1199,7 +1199,9 @@ Questions? Call 0330 229 5040`;
 
     return {
       customer: {
-        name: editableCustomerName || getFullCustomerName(),
+        firstName: customerFirstName.trim() || 'Customer',
+        lastName: customerLastName.trim() || '',
+        name: `${customerFirstName.trim() || 'Customer'} ${customerLastName.trim()}`.trim(),
         email: (editableCustomerEmail || customerEmail).toLowerCase(),
         phone: editableCustomerPhone || customerPhone || 'Not provided',
         address: skipAddressDetails 
@@ -3009,65 +3011,75 @@ Questions? Call 0330 229 5040`;
               {externalPaymentStep === 'details' ? (
                 <div className="space-y-4">
                   {/* Editable Customer & Vehicle Details */}
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
-                    <h4 className="font-semibold text-blue-900 flex items-center gap-2">
-                      <UserCheck className="w-4 h-4" />
+                  <div className="p-4 bg-white border border-gray-200 rounded-lg space-y-3">
+                    <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                      <UserCheck className="w-4 h-4 text-gray-600" />
                       Customer & Vehicle Details
                     </h4>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <Label className="text-xs text-blue-600">Customer Name *</Label>
+                        <Label className="text-xs text-gray-600">First Name *</Label>
                         <Input
-                          value={editableCustomerName}
-                          onChange={(e) => setEditableCustomerName(e.target.value)}
-                          className="bg-white"
+                          value={customerFirstName}
+                          onChange={(e) => setCustomerFirstName(e.target.value)}
+                          className="bg-gray-50 border-gray-200"
+                          placeholder="e.g. John"
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs text-blue-600">Email *</Label>
+                        <Label className="text-xs text-gray-600">Surname *</Label>
+                        <Input
+                          value={customerLastName}
+                          onChange={(e) => setCustomerLastName(e.target.value)}
+                          className="bg-gray-50 border-gray-200"
+                          placeholder="e.g. Smith"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-gray-600">Email *</Label>
                         <Input
                           value={editableCustomerEmail}
                           onChange={(e) => setEditableCustomerEmail(e.target.value)}
-                          className="bg-white"
+                          className="bg-gray-50 border-gray-200"
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs text-blue-600">Phone</Label>
+                        <Label className="text-xs text-gray-600">Phone</Label>
                         <Input
                           value={editableCustomerPhone}
                           onChange={(e) => setEditableCustomerPhone(e.target.value)}
                           placeholder="07xxx xxxxxx"
-                          className="bg-white"
+                          className="bg-gray-50 border-gray-200"
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs text-blue-600">Registration *</Label>
+                        <Label className="text-xs text-gray-600">Registration *</Label>
                         <Input
                           value={editableRegNumber}
                           onChange={(e) => setEditableRegNumber(e.target.value.toUpperCase())}
-                          className="bg-white font-mono"
+                          className="bg-gray-50 border-gray-200 font-mono"
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs text-blue-600">Vehicle</Label>
-                        <p className="text-sm text-blue-900 py-2">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
+                        <Label className="text-xs text-gray-600">Vehicle</Label>
+                        <p className="text-sm text-gray-900 py-2">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs text-blue-600">Mileage</Label>
+                        <Label className="text-xs text-gray-600">Mileage</Label>
                         <Input
                           value={editableMileage}
                           onChange={(e) => setEditableMileage(e.target.value.replace(/\D/g, ''))}
                           placeholder="e.g. 45000"
-                          className="bg-white"
+                          className="bg-gray-50 border-gray-200"
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* Address Section */}
-                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg space-y-3">
+                  <div className="p-4 bg-white border border-gray-200 rounded-lg space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-semibold text-amber-900 flex items-center gap-2">
+                      <h4 className="font-semibold text-gray-900 flex items-center gap-2">
                         📍 Customer Address
                       </h4>
                       <div className="flex items-center gap-2">
@@ -3076,7 +3088,7 @@ Questions? Call 0330 229 5040`;
                           checked={skipAddressDetails}
                           onCheckedChange={(checked) => setSkipAddressDetails(checked === true)}
                         />
-                        <Label htmlFor="skip-address" className="text-xs text-amber-700 cursor-pointer">
+                        <Label htmlFor="skip-address" className="text-xs text-gray-600 cursor-pointer">
                           Customer will complete in dashboard
                         </Label>
                       </div>
@@ -3085,57 +3097,57 @@ Questions? Call 0330 229 5040`;
                     {!skipAddressDetails && (
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <Label className="text-xs text-amber-600">House/Building Number</Label>
+                          <Label className="text-xs text-gray-600">House/Building Number</Label>
                           <Input
                             value={customerBuildingNumber}
                             onChange={(e) => setCustomerBuildingNumber(e.target.value)}
                             placeholder="e.g. 42"
-                            className="bg-white"
+                            className="bg-gray-50 border-gray-200"
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs text-amber-600">Street</Label>
+                          <Label className="text-xs text-gray-600">Street</Label>
                           <Input
                             value={customerStreet}
                             onChange={(e) => setCustomerStreet(e.target.value)}
                             placeholder="e.g. High Street"
-                            className="bg-white"
+                            className="bg-gray-50 border-gray-200"
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs text-amber-600">Town/City</Label>
+                          <Label className="text-xs text-gray-600">Town/City</Label>
                           <Input
                             value={customerTown}
                             onChange={(e) => setCustomerTown(e.target.value)}
                             placeholder="e.g. Manchester"
-                            className="bg-white"
+                            className="bg-gray-50 border-gray-200"
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs text-amber-600">County</Label>
+                          <Label className="text-xs text-gray-600">County</Label>
                           <Input
                             value={customerCounty}
                             onChange={(e) => setCustomerCounty(e.target.value)}
                             placeholder="e.g. Greater Manchester"
-                            className="bg-white"
+                            className="bg-gray-50 border-gray-200"
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs text-amber-600">Postcode *</Label>
+                          <Label className="text-xs text-gray-600">Postcode *</Label>
                           <Input
                             value={customerPostcode}
                             onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())}
                             placeholder="e.g. M1 1AA"
-                            className="bg-white"
+                            className="bg-gray-50 border-gray-200"
                           />
                         </div>
                       </div>
                     )}
                     
                     {skipAddressDetails && (
-                      <Alert className="bg-amber-100 border-amber-300">
-                        <Info className="h-4 w-4 text-amber-600" />
-                        <AlertDescription className="text-amber-800 text-sm">
+                      <Alert className="bg-gray-100 border-gray-200">
+                        <Info className="h-4 w-4 text-gray-600" />
+                        <AlertDescription className="text-gray-700 text-sm">
                           The customer will be prompted to complete their address when they log into their dashboard.
                         </AlertDescription>
                       </Alert>
@@ -3143,19 +3155,19 @@ Questions? Call 0330 229 5040`;
                   </div>
 
                   {/* Pre-populated Policy Summary */}
-                  <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg space-y-3">
-                    <h4 className="font-semibold text-purple-900 flex items-center gap-2">
-                      <Zap className="w-4 h-4" />
+                  <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-3">
+                    <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-gray-600" />
                       Policy Configuration (from Step 2)
                     </h4>
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
-                        <span className="text-purple-600 font-medium">Plan:</span>
-                        <p className="text-purple-900">Platinum</p>
+                        <span className="text-gray-600 font-medium">Plan:</span>
+                        <p className="text-gray-900">Platinum</p>
                       </div>
                       <div>
-                        <span className="text-purple-600 font-medium">Duration:</span>
-                        <p className="text-purple-900">
+                        <span className="text-gray-600 font-medium">Duration:</span>
+                        <p className="text-gray-900">
                           {termOptions.find(t => t.id === paymentType)?.label}
                           {freeExtendedCover !== 'none' && (
                             <span className="ml-1 text-green-600">+ {freeExtendedCover === '3months' ? '3' : '6'} months FREE</span>
@@ -3163,25 +3175,25 @@ Questions? Call 0330 229 5040`;
                         </p>
                       </div>
                       <div>
-                        <span className="text-purple-600 font-medium">Excess:</span>
-                        <p className="text-purple-900">£{excessAmount}</p>
+                        <span className="text-gray-600 font-medium">Excess:</span>
+                        <p className="text-gray-900">£{excessAmount}</p>
                       </div>
                       <div>
-                        <span className="text-purple-600 font-medium">Claim Limit:</span>
-                        <p className="text-purple-900">£{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}{boostAddon ? ' (boost)' : ''}</p>
+                        <span className="text-gray-600 font-medium">Claim Limit:</span>
+                        <p className="text-gray-900">£{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}{boostAddon ? ' (boost)' : ''}</p>
                       </div>
                       <div>
-                        <span className="text-purple-600 font-medium">Labour Rate:</span>
-                        <p className="text-purple-900">£{labourRate}/hr</p>
+                        <span className="text-gray-600 font-medium">Labour Rate:</span>
+                        <p className="text-gray-900">£{labourRate}/hr</p>
                       </div>
                       <div>
-                        <span className="text-purple-600 font-medium">Quoted Price:</span>
-                        <p className="text-purple-900 font-semibold">£{currentPrice.totalPrice}</p>
+                        <span className="text-gray-600 font-medium">Quoted Price:</span>
+                        <p className="text-gray-900 font-semibold">£{currentPrice.totalPrice}</p>
                       </div>
                       {getAutoIncludedAddOns(paymentType).length > 0 && (
                         <div className="col-span-2">
-                          <span className="text-purple-600 font-medium">Included Add-ons:</span>
-                          <p className="text-purple-900">
+                          <span className="text-gray-600 font-medium">Included Add-ons:</span>
+                          <p className="text-gray-900">
                             {getAutoIncludedAddOns(paymentType).includes('breakdown') && 'Vehicle Recovery'}
                             {getAutoIncludedAddOns(paymentType).includes('breakdown') && getAutoIncludedAddOns(paymentType).includes('rental') && ', '}
                             {getAutoIncludedAddOns(paymentType).includes('rental') && 'Hire Car'}
@@ -3210,16 +3222,6 @@ Questions? Call 0330 229 5040`;
                     </select>
                   </div>
 
-                  {/* Payment Reference */}
-                  <div className="space-y-2">
-                    <Label htmlFor="payment-reference">Payment Reference / Transaction ID *</Label>
-                    <Input
-                      id="payment-reference"
-                      value={paymentReference}
-                      onChange={(e) => setPaymentReference(e.target.value)}
-                      placeholder="e.g. pi_xxxx, BAC123456, etc."
-                    />
-                  </div>
 
                   {/* Amount */}
                   <div className="grid grid-cols-2 gap-4">
@@ -3370,36 +3372,36 @@ Questions? Call 0330 229 5040`;
                     const preview = getExternalPaymentPreviewData();
                     return (
                       <>
-                        <Alert className="bg-amber-50 border-amber-200">
-                          <Eye className="h-4 w-4 text-amber-600" />
-                          <AlertDescription className="text-amber-800">
-                            Please review all information carefully before confirming. This data will be sent to your Customer Dashboard and {sendToW2k ? 'Warranties 2000 API' : 'stored locally only'}.
+                        <Alert className="bg-gray-100 border-gray-200">
+                          <Eye className="h-4 w-4 text-gray-600" />
+                          <AlertDescription className="text-gray-700">
+                            Please review all information carefully before confirming. This data will be sent to your Customer Dashboard{sendToW2k ? ' and Warranties Register' : ''}.
                           </AlertDescription>
                         </Alert>
 
                         {/* Customer Dashboard Data */}
-                        <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg space-y-3">
-                          <h4 className="font-semibold text-green-900 flex items-center gap-2">
-                            <UserCheck className="w-4 h-4" />
+                        <div className="p-4 bg-white border border-gray-200 rounded-lg space-y-3">
+                          <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                            <UserCheck className="w-4 h-4 text-gray-600" />
                             Customer Dashboard Record
                           </h4>
                           <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div><span className="font-medium">Name:</span> {preview.customer.name}</div>
-                            <div><span className="font-medium">Email:</span> {preview.customer.email}</div>
-                            <div><span className="font-medium">Phone:</span> {preview.customer.phone}</div>
-                            <div><span className="font-medium">Registration:</span> {preview.vehicle.registration}</div>
-                            <div><span className="font-medium">Vehicle:</span> {preview.vehicle.make} {preview.vehicle.model} ({preview.vehicle.year})</div>
-                            <div><span className="font-medium">Mileage:</span> {preview.vehicle.mileage} miles</div>
-                            <div><span className="font-medium">Plan:</span> {preview.policy.planType}</div>
-                            <div><span className="font-medium">Duration:</span> {preview.policy.duration}</div>
-                            <div><span className="font-medium">Start Date:</span> {preview.policy.startDate}</div>
-                            <div><span className="font-medium">End Date:</span> {preview.policy.endDate}</div>
-                            <div><span className="font-medium">Excess:</span> £{preview.policy.excess}</div>
-                            <div><span className="font-medium">Claim Limit:</span> £{preview.policy.claimLimit.toLocaleString()}</div>
-                            <div><span className="font-medium">Labour Rate:</span> £{preview.policy.labourRate}/hr</div>
-                            <div><span className="font-medium">Payment Amount:</span> £{preview.payment.amount}</div>
-                            <div><span className="font-medium">Payment Source:</span> {preview.payment.source}</div>
-                            <div><span className="font-medium">Payment Ref:</span> {preview.payment.reference}</div>
+                            <div><span className="font-medium text-gray-600">First Name:</span> {preview.customer.firstName}</div>
+                            <div><span className="font-medium text-gray-600">Surname:</span> {preview.customer.lastName || 'Not provided'}</div>
+                            <div><span className="font-medium text-gray-600">Email:</span> {preview.customer.email}</div>
+                            <div><span className="font-medium text-gray-600">Phone:</span> {preview.customer.phone}</div>
+                            <div><span className="font-medium text-gray-600">Registration:</span> {preview.vehicle.registration}</div>
+                            <div><span className="font-medium text-gray-600">Vehicle:</span> {preview.vehicle.make} {preview.vehicle.model} ({preview.vehicle.year})</div>
+                            <div><span className="font-medium text-gray-600">Mileage:</span> {preview.vehicle.mileage} miles</div>
+                            <div><span className="font-medium text-gray-600">Plan:</span> {preview.policy.planType}</div>
+                            <div><span className="font-medium text-gray-600">Duration:</span> {preview.policy.duration}</div>
+                            <div><span className="font-medium text-gray-600">Start Date:</span> {preview.policy.startDate}</div>
+                            <div><span className="font-medium text-gray-600">End Date:</span> {preview.policy.endDate}</div>
+                            <div><span className="font-medium text-gray-600">Excess:</span> £{preview.policy.excess}</div>
+                            <div><span className="font-medium text-gray-600">Claim Limit:</span> £{preview.policy.claimLimit.toLocaleString()}</div>
+                            <div><span className="font-medium text-gray-600">Labour Rate:</span> £{preview.policy.labourRate}/hr</div>
+                            <div><span className="font-medium text-gray-600">Payment Amount:</span> £{preview.payment.amount}</div>
+                            <div><span className="font-medium text-gray-600">Payment Source:</span> {preview.payment.source}</div>
                             {preview.policy.breakdownRecovery && <div className="text-green-700">✓ Breakdown Recovery</div>}
                             {preview.policy.vehicleRental && <div className="text-green-700">✓ Hire Car Cover</div>}
                             {preview.policy.boostAddon && <div className="text-green-700">✓ Boost Add-on</div>}
@@ -3409,7 +3411,7 @@ Questions? Call 0330 229 5040`;
                               </div>
                             )}
                             {preview.policy.isFutureStart && (
-                              <div className="col-span-2 p-2 bg-blue-100 border border-blue-200 rounded text-blue-800 text-sm">
+                              <div className="col-span-2 p-2 bg-gray-100 border border-gray-200 rounded text-gray-800 text-sm">
                                 <span className="font-medium">📅 Future Start:</span> Payment today, warranty activates on {preview.policy.startDate}
                               </div>
                             )}
@@ -3418,38 +3420,38 @@ Questions? Call 0330 229 5040`;
 
                         {/* Warranties 2000 Data */}
                         {sendToW2k && (
-                          <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg space-y-3">
-                            <h4 className="font-semibold text-blue-900 flex items-center gap-2">
-                              <Send className="w-4 h-4" />
-                              W2000 API Payload
+                          <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-3">
+                            <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                              <Send className="w-4 h-4 text-gray-600" />
+                              Warranties Register Payload
                             </h4>
                             <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div><span className="font-medium">First:</span> {preview.customer.name.split(' ')[0]}</div>
-                              <div><span className="font-medium">Surname:</span> {preview.customer.name.split(' ').slice(1).join(' ') || 'N/A'}</div>
-                              <div><span className="font-medium">EMail:</span> {preview.customer.email}</div>
-                              <div><span className="font-medium">Tel:</span> {preview.customer.phone}</div>
-                              <div><span className="font-medium">VRM:</span> {preview.vehicle.registration}</div>
-                              <div><span className="font-medium">Make:</span> {preview.vehicle.make}</div>
-                              <div><span className="font-medium">Model:</span> {preview.vehicle.model}</div>
-                              <div><span className="font-medium">Year:</span> {preview.vehicle.year}</div>
-                              <div><span className="font-medium">Mileage:</span> {preview.vehicle.mileage.replace(/,/g, '')}</div>
-                              <div><span className="font-medium">Fuel:</span> {preview.vehicle.fuelType}</div>
-                              <div><span className="font-medium">Transmission:</span> {preview.vehicle.transmission}</div>
-                              <div><span className="font-medium">Cover (months):</span> {preview.policy.durationMonths}</div>
-                              <div><span className="font-medium">Excess:</span> £{preview.policy.excess}</div>
-                              <div><span className="font-medium">Claim Limit:</span> £{preview.policy.claimLimit.toLocaleString()}</div>
-                              <div><span className="font-medium">Labour Rate:</span> £{preview.policy.labourRate}/hr</div>
-                              <div><span className="font-medium">Price:</span> £{preview.payment.amount}</div>
+                              <div><span className="font-medium text-gray-600">First:</span> {preview.customer.firstName}</div>
+                              <div><span className="font-medium text-gray-600">Surname:</span> {preview.customer.lastName || 'N/A'}</div>
+                              <div><span className="font-medium text-gray-600">EMail:</span> {preview.customer.email}</div>
+                              <div><span className="font-medium text-gray-600">Tel:</span> {preview.customer.phone}</div>
+                              <div><span className="font-medium text-gray-600">VRM:</span> {preview.vehicle.registration}</div>
+                              <div><span className="font-medium text-gray-600">Make:</span> {preview.vehicle.make}</div>
+                              <div><span className="font-medium text-gray-600">Model:</span> {preview.vehicle.model}</div>
+                              <div><span className="font-medium text-gray-600">Year:</span> {preview.vehicle.year}</div>
+                              <div><span className="font-medium text-gray-600">Mileage:</span> {preview.vehicle.mileage.replace(/,/g, '')}</div>
+                              <div><span className="font-medium text-gray-600">Fuel:</span> {preview.vehicle.fuelType}</div>
+                              <div><span className="font-medium text-gray-600">Transmission:</span> {preview.vehicle.transmission}</div>
+                              <div><span className="font-medium text-gray-600">Cover (months):</span> {preview.policy.durationMonths}</div>
+                              <div><span className="font-medium text-gray-600">Excess:</span> £{preview.policy.excess}</div>
+                              <div><span className="font-medium text-gray-600">Claim Limit:</span> £{preview.policy.claimLimit.toLocaleString()}</div>
+                              <div><span className="font-medium text-gray-600">Labour Rate:</span> £{preview.policy.labourRate}/hr</div>
+                              <div><span className="font-medium text-gray-600">Price:</span> £{preview.payment.amount}</div>
                             </div>
                             {preview.integrations.w2kNotes && (
-                              <div className="mt-2 p-2 bg-white/50 rounded text-sm">
-                                <span className="font-medium">Notes to W2000:</span>
-                                <p className="text-muted-foreground mt-1">{preview.integrations.w2kNotes}</p>
+                              <div className="mt-2 p-2 bg-white rounded text-sm">
+                                <span className="font-medium text-gray-600">Notes:</span>
+                                <p className="text-gray-700 mt-1">{preview.integrations.w2kNotes}</p>
                               </div>
                             )}
                             {preview.policy.isFutureStart && (
-                              <div className="mt-2 p-2 bg-amber-100 border border-amber-200 rounded text-sm text-amber-800">
-                                <span className="font-medium">⏰ Scheduled:</span> W2000 submission will be processed on {preview.policy.startDate}
+                              <div className="mt-2 p-2 bg-gray-100 border border-gray-200 rounded text-sm text-gray-700">
+                                <span className="font-medium">⏰ Scheduled:</span> Submission will be processed on {preview.policy.startDate}
                               </div>
                             )}
                           </div>
@@ -3607,7 +3609,7 @@ Questions? Call 0330 229 5040`;
                     </Button>
                     <Button
                       onClick={() => setExternalPaymentStep('preview')}
-                      disabled={!paymentSource || !paymentReference || !paymentAmount || !paymentDate}
+                      disabled={!paymentSource || !paymentAmount || !paymentDate || !customerFirstName.trim()}
                       className="bg-blue-600 hover:bg-blue-700"
                     >
                       <Eye className="w-4 h-4 mr-2" />
