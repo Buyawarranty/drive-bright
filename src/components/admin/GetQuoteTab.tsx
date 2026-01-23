@@ -1255,39 +1255,29 @@ Questions? Call 0330 229 5040`;
     };
   };
 
-  // Validate payment confirmation form
+  // Validate payment confirmation form - simplified, only essential fields
   const isPaymentFormValid = () => {
     return (
       paymentSource.trim() !== '' &&
       paymentAmount.trim() !== '' &&
-      warrantyStartDate !== undefined &&
-      customerFirstName.trim() !== '' &&
-      editableCustomerEmail.trim() !== '' &&
       paymentConfirmed === true
     );
   };
 
   // Handle confirm external payment - atomic operation
   const handleConfirmExternalPayment = async () => {
-    if (!isPaymentFormValid()) {
+    // Only check essential validation
+    if (!paymentConfirmed) {
       toast({
-        title: "Incomplete Form",
-        description: "Please fill in all required fields and confirm payment",
+        title: "Confirmation Required",
+        description: "Please tick the confirmation checkbox to proceed",
         variant: "destructive",
       });
       return;
     }
 
-    // Price validation
-    const confirmedAmount = parseFloat(paymentAmount);
-    if (Math.abs(confirmedAmount - currentPrice.totalPrice) > 1 && !paymentNotes) {
-      toast({
-        title: "Price Mismatch",
-        description: "Payment amount differs from quoted price. Please add a note explaining the difference.",
-        variant: "destructive",
-      });
-      return;
-    }
+    // Use defaults if fields are empty
+    const confirmedAmount = parseFloat(paymentAmount) || currentPrice.totalPrice;
 
     setIsConfirmingPaid(true);
     const warrantyReference = generateWarrantyReference();
@@ -3650,7 +3640,7 @@ Questions? Call 0330 229 5040`;
                     </Button>
                     <Button
                       onClick={() => setExternalPaymentStep('preview')}
-                      disabled={!paymentSource || !paymentAmount || !customerFirstName.trim() || !editableCustomerEmail.trim()}
+                      disabled={!paymentSource || !paymentAmount}
                       className="bg-green-600 hover:bg-green-700 text-white"
                     >
                       <Eye className="w-4 h-4 mr-2" />
