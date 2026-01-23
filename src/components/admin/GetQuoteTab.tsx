@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
+import { PromoCodeSection } from '@/components/quote/PromoCodeSection';
 import MileageSlider from '@/components/MileageSlider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -102,6 +103,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [boostAddon, setBoostAddon] = useState(false);
   const [selectedAddOns, setSelectedAddOns] = useState<{ [key: string]: boolean }>({});
   const [additionalNotes, setAdditionalNotes] = useState('');
+  const [discountCode, setDiscountCode] = useState('');
   const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months'>('none');
   const [includePayInFullDiscount, setIncludePayInFullDiscount] = useState(false); // Default OFF - must opt-in to give 10% discount
   
@@ -1860,6 +1862,20 @@ Questions? Call 0330 229 5040`;
                       </p>
                     )}
                   </div>
+                </div>
+
+                {/* Promo Code Section */}
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold">Promo Code (Optional)</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={discountCode}
+                      onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                      placeholder="Enter promo code"
+                      className="flex-1 bg-green-50 border-green-200"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">If the customer has a promo code, enter it here to apply to the quote.</p>
                 </div>
 
                 {/* SECTION ORDER: Duration → Labour Rate → Excess → Claim Limit + Boost → Add-ons */}
