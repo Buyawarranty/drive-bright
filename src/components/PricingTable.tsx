@@ -2753,25 +2753,20 @@ const PricingTable: React.FC<PricingTableProps> = ({
                             {coverYears}-Year Cover
                           </h3>
                           
-                          {/* Main pricing display */}
-                          <div className="flex items-baseline gap-2 mb-1">
-                            <span className="text-lg font-bold text-[#000000]">Total: £{displayMonthlyPrice}/Month</span>
-                            <span className="text-sm text-[#777777]">– 0% APR</span>
+                          {/* Main pricing display - Cost per month of cover */}
+                          <div className="flex items-baseline gap-1 mb-2">
+                            <span className="text-2xl font-bold text-[#000000]">£{costPerMonthOfCover}</span>
+                            <span className="text-sm text-[#333333]">per month</span>
                           </div>
-                          <p className="text-sm text-[#555555] mb-2">Only 12 payments</p>
                           
-                          {/* Savings line */}
-                          <p className="text-sm">
-                            {savings > 0 && <span className="line-through text-[#999999]">£{wasPrice}</span>}
-                            <span className="font-semibold text-[#3A8F45] ml-1">£{payInFull}</span>
-                            {savings > 0 && <span className="text-[#3A8F45] ml-1">(Save £{savings})</span>}
-                            <span className="text-[#777777] ml-1">– {coverYears}-Year Cover</span>
+                          <p className="text-sm font-semibold text-[#333333] mb-1">
+                            Paid monthly for 12 months <span className="font-bold text-[#000000]">£{displayMonthlyPrice}</span> per month
                           </p>
                           
-                          {/* Year free badge for multi-year */}
+                          {/* No payments in year 2/3 for multi-year */}
                           {paymentType !== '12months' && (
-                            <p className="text-base font-semibold text-[#000000] mt-2">
-                              Year {paymentType === '24months' ? '2' : '2 & 3'} FREE 🎉
+                            <p className="text-sm font-semibold text-[#333333]">
+                              No payments in year {paymentType === '24months' ? '2' : '2 or 3'}
                             </p>
                           )}
                         </div>
