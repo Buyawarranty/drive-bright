@@ -500,9 +500,12 @@ serve(async (req) => {
           notesStr += ` | PROMOTION: ${bonusMonths} Months FREE Bonus - Total ${parseInt(coverageMonths) + bonusMonths} months coverage`;
         }
         
+        // Get notes from multiple sources: request body (customNotes) OR policy.additional_notes
+        const effectiveNotes = customNotes || policy?.additional_notes || '';
+        
         // Append custom notes from admin (Additional Notes for Warranties 2000)
-        if (customNotes && customNotes.trim()) {
-          notesStr += ` | NOTES: ${customNotes.trim()}`;
+        if (effectiveNotes && effectiveNotes.trim()) {
+          notesStr += ` | NOTES: ${effectiveNotes.trim()}`;
         }
         
         return notesStr;
