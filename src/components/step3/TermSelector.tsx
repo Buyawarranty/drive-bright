@@ -32,8 +32,20 @@ const TermSelector: React.FC<TermSelectorProps> = ({
 
   const getCostPerMonthOfCover = (termId: string): number => {
     const total = getTotalForTerm(termId);
-    const coverMonths = termId === '12months' ? 12 : termId === '24months' ? 24 : 36;
-    return Math.round(total / coverMonths);
+    const years = termId === '12months' ? 1 : termId === '24months' ? 2 : 3;
+    const coverMonths = years * 12;
+    const monthlyInstalment = getPriceForTerm(termId);
+    
+    // Base CPM calculation (rounded to nearest pound)
+    let cpm = Math.round(total / coverMonths);
+    
+    // Guardrail: CPM × years must be >= monthly instalment
+    // This ensures the representative CPM never looks cheaper than the actual payment
+    while (cpm * years < monthlyInstalment) {
+      cpm += 1;
+    }
+    
+    return cpm;
   };
 
   const getPayInFullDiscount = (termId: string): { wasPrice: number; nowPrice: number; savings: number } => {

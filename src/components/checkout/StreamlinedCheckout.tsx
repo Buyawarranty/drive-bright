@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { trackFormSubmission, trackBumperCheckoutClick, trackStripeCheckoutClick, trackStripeCheckoutPageLoad, trackStep4EmailEntry } from '@/utils/analytics';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { getAddOnInfo, normalizePaymentType, calculateAddOnPrice } from '@/lib/addOnsUtils';
+import { calculateCPMWithGuardrail } from '@/lib/cpmUtils';
 import MobileNavigation from '@/components/MobileNavigation';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
@@ -909,7 +910,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     {paymentType !== '12months' && (
                       <div className="bg-[#F0FDF4] rounded px-2 py-1 inline-block">
                         <p className="text-xs text-[#166534]">
-                          Works out to <span className="font-semibold">£{Math.floor(bumperTotalPrice / (paymentType === '24months' ? 24 : 36))}/month</span> over cover period
+                          Works out to <span className="font-semibold">£{calculateCPMWithGuardrail(bumperTotalPrice, paymentType === '24months' ? 24 : 36, Math.round(bumperTotalPrice / 12))}/month</span> over cover period
                         </p>
                       </div>
                     )}
