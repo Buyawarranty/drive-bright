@@ -2934,75 +2934,81 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   const coverYears = paymentType === '12months' ? '1' : paymentType === '24months' ? '2' : '3';
                   
                   return (
-                    <div className="flex flex-col md:hidden gap-2 w-full">
-                      {/* Expand/Collapse Toggle */}
+                    <div className="flex flex-col md:hidden w-full bg-[#F7F7F7]">
+                      {/* Collapsed State - Main Row */}
+                      <div className="flex items-center justify-between gap-3 px-1">
+                        {/* Left Side - Cover Info */}
+                        <div className="flex-shrink-0">
+                          <p className="text-sm font-semibold text-[#000000]">{coverYears}-Year Cover</p>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-xl font-bold text-[#000000]">£{costPerMonthOfCover}</span>
+                            <span className="text-xs text-[#333333]">/mo</span>
+                          </div>
+                          <p className="text-xs text-[#333333]">Total: £{payInFull}</p>
+                        </div>
+                        
+                        {/* Right Side - CTA Button */}
+                        <div className="flex flex-col items-center gap-1">
+                          <Button
+                            onClick={handleSelectPlan}
+                            className="bg-white hover:bg-[#F2F2F2] text-[#000000] font-semibold py-3 px-5 rounded-lg text-sm gap-1.5 border border-[#000000] shadow-none"
+                          >
+                            Checkout
+                            <ArrowRight className="w-4 h-4" strokeWidth={2} />
+                          </Button>
+                          <div className="flex items-center gap-1 text-[10px] text-[#777777]">
+                            <Lock className="w-3 h-3" />
+                            <span>Secure checkout – 14 days to cancel</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Show/Hide Details Toggle */}
                       <button
                         onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
-                        className="w-full flex items-center justify-center gap-1 text-xs text-[#777777] py-1"
+                        className="w-full flex items-center justify-center gap-1 text-xs text-[#333333] py-2 mt-2 border-t border-[#E5E5E5]"
                         aria-expanded={isSummaryExpanded}
                       >
-                        <div className={`transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : 'rotate-0'}`}>
-                          <ChevronUp className="w-4 h-4" />
-                        </div>
-                        <span>{isSummaryExpanded ? 'Hide details' : 'More details'}</span>
+                        <span>{isSummaryExpanded ? 'Hide details' : 'Show details'}</span>
+                        <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : 'rotate-0'}`} />
                       </button>
 
-                      {/* Expandable Content */}
-                      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSummaryExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-                        <div className="text-center space-y-2 pb-3">
-                          <p className="text-sm font-semibold text-[#000000]">{coverYears}-Year Cover</p>
-                          <div>
-                            <p className="text-xs text-[#777777]">Cost per month of cover</p>
+                      {/* Expanded Content */}
+                      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSummaryExpanded ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                        <div className="px-4 py-4 space-y-4 bg-white border-t border-[#E5E5E5]">
+                          {/* Cost per month of cover */}
+                          <div className="text-center">
+                            <p className="text-xs text-[#555555] mb-1">Cost per month of cover</p>
                             <div className="flex items-baseline justify-center gap-1">
-                              <span className="text-2xl font-bold text-[#000000]">£{costPerMonthOfCover}</span>
-                              <span className="text-sm text-[#777777]">per month</span>
+                              <span className="text-3xl font-bold text-[#000000]">£{costPerMonthOfCover}</span>
+                              <span className="text-sm text-[#333333]">per month</span>
                             </div>
                           </div>
-                          <div className="space-y-0.5">
-                            <p className="text-xs font-semibold text-[#555555]">
+                          
+                          {/* Payment Details */}
+                          <div className="text-center space-y-1">
+                            <p className="text-sm font-semibold text-[#333333]">
                               Paid monthly for 12 months <span className="font-bold text-[#000000]">£{displayMonthlyPrice}</span> per month
                             </p>
                             {paymentType !== '12months' && (
-                              <p className="text-xs font-semibold text-[#555555]">
+                              <p className="text-sm font-semibold text-[#333333]">
                                 No payments in year {paymentType === '24months' ? '2' : '2 or 3'}
                               </p>
                             )}
-                            <p className="text-xs text-[#777777]">
-                              Total cost <span className="font-semibold text-[#000000]">£{payInFull}</span>
+                            <p className="text-sm text-[#333333]">
+                              Total cost <span className="font-bold text-[#000000]">£{payInFull}</span>
                             </p>
                           </div>
-                          <div className="pt-2 border-t border-[#DDDDDD]">
-                            <p className="text-xs text-[#777777]">Pay in full and save 10%</p>
+                          
+                          {/* Pay in Full Savings */}
+                          <div className="text-center pt-3 border-t border-[#E5E5E5]">
+                            <p className="text-sm text-[#555555] mb-1">Pay in full and save 10%</p>
                             <p className="text-sm text-[#333333]">
                               Was £{payInFull} – now <span className="font-semibold text-[#3A8F45]">£{payInFullPrice}</span>
                             </p>
-                            <p className="text-xs font-semibold text-[#3A8F45]">You save £{savings}</p>
+                            <p className="text-sm font-semibold text-[#3A8F45]">You save £{savings}</p>
                           </div>
                         </div>
-                      </div>
-                      
-                      {/* Main row: Price + CTA */}
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex-shrink-0">
-                          <p className="text-xs font-semibold text-[#000000]">{coverYears}-Year Cover</p>
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-xl font-bold text-[#000000]">£{costPerMonthOfCover}</span>
-                            <span className="text-xs text-[#777777]">/mo</span>
-                          </div>
-                          <p className="text-xs text-[#777777]">Total: £{payInFull}</p>
-                        </div>
-                        <Button
-                          onClick={handleSelectPlan}
-                          className="bg-white hover:bg-[#EFEFEF] text-[#000000] font-semibold py-3 px-4 rounded-lg text-sm gap-1.5 border border-[#000000] shadow-none flex-shrink-0"
-                        >
-                          Checkout
-                          <ArrowRight className="w-4 h-4" strokeWidth={2} />
-                        </Button>
-                      </div>
-                      
-                      <div className="flex items-center justify-center gap-1.5 mt-1 text-xs text-[#777777]">
-                        <Lock className="w-3 h-3" />
-                        <span>Secure checkout – 14 days to cancel</span>
                       </div>
                     </div>
                   );
