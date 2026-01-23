@@ -2693,97 +2693,114 @@ const PricingTable: React.FC<PricingTableProps> = ({
           <div className="bg-gradient-to-br from-green-100 via-green-50 to-white rounded-2xl border-2 border-green-200 p-6 md:p-8 shadow-lg">
             
             {/* Trust Signals Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="flex items-center gap-3 bg-white rounded-lg p-4 border border-green-100">
-                <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
-                  <Check className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <span className="font-bold text-green-800 text-lg">94%</span>
-                  <p className="text-base text-gray-600">of claims approved fast</p>
-                </div>
-              </div>
+            {(() => {
+              const payInFull = displayMonthlyPrice * 12;
+              const coverMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
+              const costPerMonthOfCover = Math.floor(payInFull / coverMonths);
+              const coverYears = paymentType === '12months' ? '1' : paymentType === '24months' ? '2' : '3';
+              const savings = getMarketingSavings(paymentType as PaymentPeriod);
+              const wasPrice = payInFull + savings;
               
-              <div className="flex items-center gap-3 bg-white rounded-lg p-4 border border-green-100">
-                <a 
-                  href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 w-full hover:opacity-90 transition-opacity"
-                >
-                  <TrustpilotHeader className="scale-90" />
-                  <div>
-                    <span className="font-bold text-gray-800 text-sm">Five‑Star Service</span>
-                    <p className="text-xs text-gray-500">Rated Excellent by UK drivers</p>
-                  </div>
-                </a>
-              </div>
-              
-              <div className="flex items-center gap-3 bg-white rounded-lg p-4 border border-green-100">
-                <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-6 h-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                </div>
-                <div>
-                  <span className="font-bold text-orange-600">14-Day</span>
-                  <p className="text-sm text-gray-600">Money-back guarantee</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Price Summary & CTA */}
-            <div className="bg-white rounded-xl border-2 border-green-300 p-4 md:p-6">
-              <div className="flex flex-col gap-3">
-                <div className="flex flex-col md:flex-row md:items-stretch gap-3">
-                  <div className="flex-1">
-                    <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">
-                      Your Platinum Plan – {paymentType === '12months' ? '1-Year' : paymentType === '24months' ? '2-Year' : '3-Year'} Cover
-                    </h3>
-                    <div className="flex flex-col">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-xl font-bold text-gray-900">
-                          {hasAddOnsSelected ? 'Total incl. add-ons:' : 'Total:'}
-                        </span>
-                        <span className="text-3xl font-bold text-gray-900">£{displayMonthlyPrice}/month</span>
+              return (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    {/* Cost per month of cover */}
+                    <div className="flex items-center gap-3 bg-white rounded-lg p-4 border border-[#E5E5E5]">
+                      <div className="w-10 h-10 rounded-full bg-[#3A8F45] flex items-center justify-center flex-shrink-0">
+                        <Check className="w-6 h-6 text-white" />
                       </div>
-                      <span className="text-sm text-black">(12 easy payments)</span>
+                      <div>
+                        <p className="text-xs text-[#555555]">Cost per month of cover</p>
+                        <span className="font-bold text-[#000000] text-xl">£{costPerMonthOfCover}</span>
+                        <span className="text-sm text-[#777777]"> per month</span>
+                      </div>
                     </div>
-                    {(() => {
-                      const payInFull = displayMonthlyPrice * 12; // monthly × 12
-                      const savings = getMarketingSavings(paymentType as PaymentPeriod);
-                      const wasPrice = payInFull + savings;
-                      const coverLabel = paymentType === '12months' ? '1-Year Cover' : paymentType === '24months' ? '2-Year Cover' : '3-Year Cover';
-                      return (
-                        <p className="text-sm text-black mt-1">
-                          {savings > 0 && <span className="line-through text-red-500">£{wasPrice}</span>} <span className="font-bold text-green-600">£{payInFull}</span> {savings > 0 && <span className="text-gray-600">(Save £{savings})</span>} <span className="text-gray-700">– {coverLabel}</span>
-                        </p>
-                      );
-                    })()}
-                  </div>
-                  
-                  <div className="flex flex-col gap-2 w-full md:w-auto md:justify-center md:mt-4">
-                    <Button
-                      onClick={handleSelectPlan}
-                      className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-4 px-8 text-lg shadow-lg hover:shadow-xl transition-all animate-cta-enhanced w-full md:w-auto"
-                    >
-                      <span className="md:hidden">Checkout securely</span>
-                      <span className="hidden md:inline">Continue to secure payment</span>
-                      <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
-                    </Button>
-                    <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
-                      <Lock className="w-3 h-3" />
-                      <span>Secure checkout – SSL encrypted</span>
+                    
+                    <div className="flex items-center gap-3 bg-white rounded-lg p-4 border border-[#E5E5E5]">
+                      <a 
+                        href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 w-full hover:opacity-90 transition-opacity"
+                      >
+                        <TrustpilotHeader className="scale-90" />
+                        <div>
+                          <span className="font-bold text-[#333333] text-sm">Five‑Star Service</span>
+                          <p className="text-xs text-[#777777]">Rated Excellent by UK drivers</p>
+                        </div>
+                      </a>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 bg-white rounded-lg p-4 border border-[#E5E5E5]">
+                      <div className="w-10 h-10 rounded-full bg-[#FFF3E0] flex items-center justify-center flex-shrink-0">
+                        <svg className="w-6 h-6 text-[#E65100]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <span className="font-bold text-[#E65100]">14-Day</span>
+                        <p className="text-sm text-[#555555]">Money-back guarantee</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-              
-              {/* Urgency micro-copy */}
-              <p className="text-center md:text-left text-sm text-green-700 mt-3 font-medium">
-                ⚡ You're covered in 60 seconds – no payment taken until confirmation
-              </p>
-            </div>
+
+                  {/* Price Summary & CTA */}
+                  <div className="bg-white rounded-xl border-2 border-[#E5E5E5] p-4 md:p-6">
+                    <div className="flex flex-col gap-3">
+                      <div className="flex flex-col md:flex-row md:items-stretch gap-4">
+                        <div className="flex-1">
+                          <h3 className="text-lg md:text-xl font-bold text-[#000000] mb-2">
+                            {coverYears}-Year Cover
+                          </h3>
+                          
+                          {/* Main pricing display */}
+                          <div className="flex items-baseline gap-2 mb-1">
+                            <span className="text-lg font-bold text-[#000000]">Total: £{displayMonthlyPrice}/Month</span>
+                            <span className="text-sm text-[#777777]">– 0% APR</span>
+                          </div>
+                          <p className="text-sm text-[#555555] mb-2">Only 12 payments</p>
+                          
+                          {/* Savings line */}
+                          <p className="text-sm">
+                            {savings > 0 && <span className="line-through text-[#999999]">£{wasPrice}</span>}
+                            <span className="font-semibold text-[#3A8F45] ml-1">£{payInFull}</span>
+                            {savings > 0 && <span className="text-[#3A8F45] ml-1">(Save £{savings})</span>}
+                            <span className="text-[#777777] ml-1">– {coverYears}-Year Cover</span>
+                          </p>
+                          
+                          {/* Year free badge for multi-year */}
+                          {paymentType !== '12months' && (
+                            <p className="text-base font-semibold text-[#000000] mt-2">
+                              Year {paymentType === '24months' ? '2' : '2 & 3'} FREE 🎉
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div className="flex flex-col gap-2 w-full md:w-auto md:justify-center md:mt-4">
+                          <Button
+                            onClick={handleSelectPlan}
+                            className="bg-[#3A8F45] hover:bg-[#2F7438] text-white font-bold py-4 px-8 text-lg shadow-lg hover:shadow-xl transition-all animate-breathing w-full md:w-auto"
+                          >
+                            <span className="md:hidden">Checkout securely</span>
+                            <span className="hidden md:inline">Continue to secure payment</span>
+                            <ArrowRight className="w-5 h-5 ml-2" strokeWidth={2.5} />
+                          </Button>
+                          <div className="flex items-center justify-center gap-2 text-xs text-[#777777]">
+                            <Lock className="w-3 h-3" />
+                            <span>Secure checkout – SSL encrypted</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Urgency micro-copy */}
+                    <p className="text-center md:text-left text-sm text-[#3A8F45] mt-3 font-medium">
+                      ⚡ You're covered in 60 seconds – no payment taken until confirmation
+                    </p>
+                  </div>
+                </>
+              );
+            })()}
           </div>
 
           {/* Crystal Clear Cover Card - Original Design */}
