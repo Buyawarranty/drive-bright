@@ -2165,14 +2165,14 @@ Questions? Call 0330 229 5040`;
 
                 {/* Additional Notes */}
                 <div className="space-y-2">
-                  <Label className="text-base font-semibold">Additional Notes (for Warranties 2000)</Label>
+                  <Label className="text-base font-semibold">Additional Notes (for W2000)</Label>
                   <Textarea
                     value={additionalNotes}
                     onChange={(e) => setAdditionalNotes(e.target.value)}
                     placeholder="Any special notes for this warranty (e.g., specific conditions, customer requests)..."
                     rows={3}
                   />
-                  <p className="text-xs text-muted-foreground">These notes will be sent to Warranties 2000 when the customer completes their purchase</p>
+                  <p className="text-xs text-muted-foreground">These notes will be sent to W2000 when the customer completes their purchase</p>
                   
                   {/* Warning if admin types about free months without selecting the toggle */}
                   {freeExtendedCover === 'none' && 
@@ -3333,7 +3333,7 @@ Questions? Call 0330 229 5040`;
                           <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg space-y-3">
                             <h4 className="font-semibold text-blue-900 flex items-center gap-2">
                               <Send className="w-4 h-4" />
-                              Warranties 2000 API Payload
+                              W2000 API Payload
                             </h4>
                             <div className="grid grid-cols-2 gap-2 text-sm">
                               <div><span className="font-medium">First:</span> {preview.customer.name.split(' ')[0]}</div>
