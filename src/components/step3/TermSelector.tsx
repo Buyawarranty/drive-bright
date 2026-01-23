@@ -60,6 +60,13 @@ const TermSelector: React.FC<TermSelectorProps> = ({
 
   const allTerms: TermOption[] = [
     {
+      id: '36months',
+      label: '3-Year Cover',
+      years: 3,
+      monthlyPrice: getPriceForTerm('36months'),
+      isBestValue: true
+    },
+    {
       id: '24months',
       label: '2-Year Cover',
       years: 2,
@@ -71,18 +78,11 @@ const TermSelector: React.FC<TermSelectorProps> = ({
       label: '1-Year Cover',
       years: 1,
       monthlyPrice: getPriceForTerm('12months')
-    },
-    {
-      id: '36months',
-      label: '3-Year Cover',
-      years: 3,
-      monthlyPrice: getPriceForTerm('36months'),
-      isBestValue: true
     }
   ];
 
   const terms = allTerms.filter(t => availableDurations.includes(t.id));
-  const defaultTerm = terms.find(t => t.isPopular) || terms[0];
+  const defaultTerm = terms.find(t => t.isBestValue) || terms.find(t => t.isPopular) || terms[0];
   const visibleTerms = showAllOptions ? terms : [defaultTerm];
 
   return (
@@ -103,96 +103,114 @@ const TermSelector: React.FC<TermSelectorProps> = ({
           const totalCost = getTotalForTerm(term.id);
           const monthlyPayment = term.monthlyPrice;
           const payInFull = getPayInFullDiscount(term.id);
-          const showPayInFull = term.id !== '12months';
           
           return (
             <div
               key={term.id}
               onClick={() => onTermChange(term.id)}
               className={cn(
-                "w-full p-6 rounded-lg border bg-[#FAFAFA] cursor-pointer transition-all",
+                "relative w-full rounded-2xl border-2 bg-white cursor-pointer transition-all duration-200",
                 isSelected 
-                  ? "border-[#000000] border-2" 
-                  : "border-[#E5E5E5] hover:border-[#999999]"
+                  ? "border-[#E65100] shadow-lg" 
+                  : "border-[#E8E8E8] hover:border-[#E65100]/50 hover:shadow-md"
               )}
             >
-              {/* Header Row */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <h4 className="text-lg font-bold text-[#000000]">{term.label}</h4>
-                  {isSelected && (
-                    <span className="text-xs font-medium text-[#000000] uppercase tracking-wider">
-                      ✓ Selected
+              {/* Badge Row */}
+              <div className="flex items-center justify-between px-5 pt-4">
+                <div className="flex items-center gap-2">
+                  {term.isBestValue && (
+                    <span className="px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-[#3A8F45] text-white rounded-full">
+                      Best Value
+                    </span>
+                  )}
+                  {term.isPopular && (
+                    <span className="px-3 py-1 text-xs font-semibold uppercase tracking-wide bg-[#E65100] text-white rounded-full">
+                      Most Popular
                     </span>
                   )}
                 </div>
                 
-                {/* Radio */}
-                <div className={cn(
-                  "w-5 h-5 rounded-full border-2 flex items-center justify-center",
-                  isSelected ? "border-[#000000] bg-[#000000]" : "border-[#999999] bg-white"
-                )}>
-                  {isSelected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
-                </div>
+                {/* Selection Tick */}
+                {isSelected && (
+                  <div className="w-7 h-7 rounded-full bg-[#3A8F45] flex items-center justify-center">
+                    <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                  </div>
+                )}
               </div>
 
-              {/* Price - show equivalent for multi-year */}
-              {term.id !== '12months' && (
-                <div className="mb-4">
-                  <p className="text-sm text-[#555555] mb-1">Approx. per month over {term.id === '24months' ? '2' : '3'} years</p>
-                  <span className="text-3xl font-bold text-[#000000]">£{costPerMonth}</span>
-                  <span className="text-sm text-[#777777] ml-1">per month</span>
-                </div>
-              )}
-              
-              {/* For 1-year, just show the monthly payment */}
-              {term.id === '12months' && (
-                <div className="mb-4">
-                  <span className="text-3xl font-bold text-[#000000]">£{monthlyPayment}</span>
-                  <span className="text-sm text-[#777777] ml-1">per month</span>
-                </div>
-              )}
+              {/* Main Content */}
+              <div className="px-5 pt-3 pb-5">
+                {/* Plan Title */}
+                <h4 className="text-xl font-bold text-[#000000] mb-4">{term.label}</h4>
 
-              {/* Details */}
-              <div className="space-y-1 text-sm text-[#333333]">
-                <p>
-                  Paid monthly for 12 months <span className="font-semibold text-[#000000]">£{monthlyPayment}/month</span>
-                </p>
+                {/* Primary Price: Monthly Payment - LARGEST */}
+                <div className="mb-3">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-bold text-[#000000]">£{monthlyPayment}</span>
+                    <span className="text-lg text-[#555555]">/month</span>
+                  </div>
+                  <p className="text-sm text-[#666666] mt-1">for 12 months</p>
+                </div>
+
+                {/* No Payments Notice - for multi-year plans */}
                 {term.id === '24months' && (
-                  <p className="text-[#777777]">No payments in year 2</p>
+                  <p className="text-sm text-[#3A8F45] font-medium mb-3">
+                    <Check className="w-4 h-4 inline mr-1" />
+                    No payments in year 2
+                  </p>
                 )}
                 {term.id === '36months' && (
-                  <p className="text-[#777777]">No payments in years 2 or 3</p>
-                )}
-                <p>Total cost <span className="font-semibold text-[#000000]">£{totalCost}</span></p>
-              </div>
-
-              {/* Pay in Full - only for multi-year */}
-              {showPayInFull && (
-                <div className="mt-5 pt-5 border-t border-[#E5E5E5]">
-                  <p className="text-sm text-[#777777] mb-1">Or pay in full and save 10%</p>
-                  <p className="text-sm">
-                    <span className="text-[#999999] line-through">Was £{payInFull.wasPrice}</span>
-                    <span className="text-[#3A8F45] font-semibold ml-2">now £{payInFull.nowPrice}</span>
+                  <p className="text-sm text-[#3A8F45] font-medium mb-3">
+                    <Check className="w-4 h-4 inline mr-1" />
+                    No payments in years 2 or 3
                   </p>
-                  <p className="text-sm font-semibold text-[#3A8F45]">You save £{payInFull.savings}</p>
-                </div>
-              )}
+                )}
 
-              {/* Links */}
-              <div className="flex gap-4 mt-5 text-xs">
-                <button 
-                  className="text-[#333333] underline hover:text-[#000000]"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  See what's included
-                </button>
-                <button 
-                  className="text-[#333333] underline hover:text-[#000000]"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  View full cover details
-                </button>
+                {/* Average Cost Badge - for multi-year plans */}
+                {term.id !== '12months' && (
+                  <div className="inline-block px-3 py-2 bg-[#FFF8E1] border border-[#FFE0B2] rounded-lg mb-4">
+                    <p className="text-sm text-[#E65100] font-medium">
+                      Avg. £{costPerMonth}/month over {term.years} years
+                    </p>
+                  </div>
+                )}
+
+                {/* Divider */}
+                <div className="border-t border-[#EEEEEE] pt-4 mt-2">
+                  {/* Total Cost */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-[#666666]">Total cost</span>
+                    <span className="text-base font-bold text-[#000000]">£{totalCost}</span>
+                  </div>
+
+                  {/* Pay in Full Savings - for multi-year */}
+                  {term.id !== '12months' && (
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-dashed border-[#E5E5E5]">
+                      <span className="text-sm text-[#666666]">Pay in full</span>
+                      <div className="text-right">
+                        <span className="text-sm text-[#999999] line-through mr-2">£{payInFull.wasPrice}</span>
+                        <span className="text-base font-bold text-[#3A8F45]">£{payInFull.nowPrice}</span>
+                        <span className="text-xs text-[#3A8F45] ml-1">(save £{payInFull.savings})</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Links */}
+                <div className="flex gap-4 mt-5 text-xs">
+                  <button 
+                    className="text-[#555555] underline hover:text-[#E65100] transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    See what's included
+                  </button>
+                  <button 
+                    className="text-[#555555] underline hover:text-[#E65100] transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    View full cover details
+                  </button>
+                </div>
               </div>
             </div>
           );
@@ -202,7 +220,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
         {terms.length > 1 && (
           <button
             onClick={() => setShowAllOptions(!showAllOptions)}
-            className="w-full py-3 text-sm font-medium text-[#000000] bg-white border border-[#000000] rounded-lg hover:bg-[#F2F2F2] flex items-center justify-center gap-2"
+            className="w-full py-3.5 text-sm font-semibold text-[#E65100] bg-[#FFF3E0] border-2 border-[#E65100] rounded-xl hover:bg-[#FFE0B2] transition-colors flex items-center justify-center gap-2"
           >
             {showAllOptions ? (
               <>Hide options <ChevronUp className="w-4 h-4" /></>
@@ -214,8 +232,8 @@ const TermSelector: React.FC<TermSelectorProps> = ({
       </div>
 
       {/* Footer text */}
-      <p className="text-center text-xs text-[#999999] mt-6">
-        All plans are paid monthly for 12 months. Longer cover continues with no further payments.
+      <p className="text-center text-xs text-[#888888] mt-6 leading-relaxed">
+        All plans are paid monthly for 12 months only. Longer cover continues with no further payments.
       </p>
     </div>
   );
