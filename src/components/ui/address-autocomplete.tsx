@@ -38,6 +38,8 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   disabled = false,
   onLookupError,
 }) => {
+  // Debug mount
+  console.log('[AddressAutocomplete] Component mounting/rendering');
   // IMPORTANT: Never clear inputValue except when user types - this preserves partial entries
   const [inputValue, setInputValue] = useState(initialValue);
   const [suggestions, setSuggestions] = useState<AutocompleteSuggestion[]>([]);
@@ -280,11 +282,42 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         <input
           ref={inputRef}
           type="text"
+          inputMode="text"
+          name={`address-search-${Math.random().toString(36).slice(2, 9)}`}
           value={inputValue}
-          onChange={handleInputChange}
+          onChange={(e) => {
+            console.log('[AddressAutocomplete] onChange fired:', e.target.value);
+            handleInputChange(e);
+          }}
           onInput={(e) => {
-            // Backup handler for browsers that handle onInput differently
-            console.log('[AddressAutocomplete] onInput fired:', (e.target as HTMLInputElement).value);
+            // Safari fix: onInput is more reliable on Safari/Mac
+            const target = e.target as HTMLInputElement;
+            const newValue = target.value;
+            console.log('[AddressAutocomplete] onInput fired:', newValue);
+            
+            // Only process if value actually changed (prevents double-firing)
+            if (newValue !== inputValue) {
+              setInputValue(newValue);
+              setHasSelected(false);
+              setSelectedIndex(-1);
+              
+              if (newValue.length < 3) {
+                setLookupFailed(false);
+                onLookupError?.(false);
+                setSuggestions([]);
+                setShowDropdown(false);
+                return;
+              }
+              
+              if (debounceRef.current) {
+                clearTimeout(debounceRef.current);
+              }
+              
+              debounceRef.current = setTimeout(() => {
+                console.log('[AddressAutocomplete] Triggering fetch from onInput for:', newValue);
+                fetchSuggestions(newValue);
+              }, 300);
+            }
           }}
           onKeyDown={handleKeyDown}
           onFocus={() => {
@@ -305,7 +338,12 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
             className
           )}
           disabled={disabled}
-          autoComplete="off"
+          autoComplete="new-password"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
+          data-lpignore="true"
+          data-form-type="other"
         />
         {isLoading && (
           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
