@@ -42,27 +42,39 @@ interface VehicleData {
   vehicleType?: string;
 }
 
-// Step 3 exact options
+// Step 3 exact options - UPDATED JAN 2026 to match main site
 const termOptions = [
   { id: '12months', label: '1-Year Cover', months: 12, bonus: 3 },
   { id: '24months', label: '2-Year Cover', months: 24, bonus: 3, isPopular: true },
   { id: '36months', label: '3-Year Cover', months: 36, bonus: 3, isBestValue: true }
 ];
 
-const excessOptions = [0, 50, 100, 150];
-
-const claimLimitOptions = [
-  { value: 750, label: '£750', description: 'Minor repairs' },
-  { value: 1250, label: '£1,250', description: 'Most popular' },
-  { value: 2000, label: '£2,000', description: 'Comprehensive' }
+// Excess options - UPDATED to match Step 3 (£0, £100, £250, £500)
+const excessOptions = [
+  { value: 0, label: '£0', description: 'No upfront cost' },
+  { value: 100, label: '£100', description: 'Best value overall', isPopular: true },
+  { value: 250, label: '£250', description: 'Lower monthly price' },
+  { value: 500, label: '£500', description: 'Cheapest monthly' }
 ];
 
+// Claim limit options - UPDATED to match Step 3 (£1,000 / £2,000 / £3,000)
+const claimLimitOptions = [
+  { value: 1000, label: '£1,000', name: 'AutoCare Essential' },
+  { value: 2000, label: '£2,000', name: 'AutoCare Advantage', isPopular: true },
+  { value: 3000, label: '£3,000', name: 'AutoCare Elite' }
+];
+
+// Labour rate options - UPDATED to match Step 3 (£50/£70/£100/£200)
 const labourRateOptions = [
-  { rate: 50, label: '£50/hr', description: 'Local Garages', isBestValue: true },
+  { rate: 50, label: '£50/hr', description: 'Local Garages' },
   { rate: 70, label: '£70/hr', description: 'Independent Garages', isPopular: true },
   { rate: 100, label: '£100/hr', description: 'Approved Garages' },
   { rate: 200, label: '£200/hr', description: 'Expert Garages' }
 ];
+
+// Boost adds +£500 at £3/month fixed (12 payments = £36 total)
+const BOOST_ADDON_MONTHLY = 3;
+const BOOST_ADDON_AMOUNT = 500;
 
 // Mileage dropdown options (10,000 to 140,000 in 1,000 increments)
 const mileageDropdownOptions = Array.from({ length: 131 }, (_, i) => 10000 + (i * 1000));
@@ -85,7 +97,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
   const [excessAmount, setExcessAmount] = useState(100);
-  const [claimLimit, setClaimLimit] = useState(1250);
+  const [claimLimit, setClaimLimit] = useState(2000); // Updated default to £2,000
   const [labourRate, setLabourRate] = useState(70);
   const [boostAddon, setBoostAddon] = useState(false);
   const [selectedAddOns, setSelectedAddOns] = useState<{ [key: string]: boolean }>({});
@@ -1845,9 +1857,11 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
 
-                {/* Duration - Quick Select Chips */}
+                {/* SECTION ORDER MATCHES STEP 3: Duration → Claim Limit + Boost → Excess → Labour Rate → Add-ons */}
+
+                {/* 1. Duration - Quick Select Chips */}
                 <div className="space-y-3">
-                  <Label className="text-base font-semibold">Cover Duration</Label>
+                  <Label className="text-base font-semibold">1. Cover Duration</Label>
                   <div className="grid grid-cols-3 gap-3">
                     {termOptions.map((term) => (
                       <button
@@ -1876,9 +1890,102 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
 
-                {/* Labour Rate - Quick Select Chips */}
+                {/* 2. Claim Limit + Boost - Grouped together like Step 3 */}
+                <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border">
+                  <Label className="text-base font-semibold">2. Single repair amount per claim</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {claimLimitOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setClaimLimit(option.value);
+                          // Disable boost if £3,000 is selected (maximum limit)
+                          if (option.value === 3000 && boostAddon) {
+                            setBoostAddon(false);
+                          }
+                        }}
+                        className={cn(
+                          "relative py-3 px-2 rounded-lg border-2 text-center transition-all min-h-[70px] flex flex-col items-center justify-center",
+                          claimLimit === option.value
+                            ? "border-success bg-success/10"
+                            : "border-border hover:border-success/50"
+                        )}
+                      >
+                        {option.isPopular && (
+                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
+                            MOST POPULAR
+                          </span>
+                        )}
+                        <div className="font-semibold">{option.label}</div>
+                        <div className="text-xs text-muted-foreground">{option.name}</div>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Maximum we'll pay for each claim. £2,000 is the default.</p>
+                  
+                  {/* Boost Addon - directly after claim limit */}
+                  {claimLimit < 3000 && (
+                    <div 
+                      onClick={() => setBoostAddon(!boostAddon)}
+                      className={cn(
+                        "relative p-4 rounded-xl cursor-pointer border-2 transition-all mt-3",
+                        boostAddon
+                          ? "bg-success/5 border-success"
+                          : "bg-card border-border hover:border-success/50"
+                      )}
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-bold text-foreground mb-0.5">
+                            Add £500 extra cover
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            Upgrade to £{(claimLimit + BOOST_ADDON_AMOUNT).toLocaleString()} per claim
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            +£{BOOST_ADDON_MONTHLY}/month · 12 payments = £{BOOST_ADDON_MONTHLY * 12} total
+                          </p>
+                        </div>
+                        <Switch
+                          checked={boostAddon}
+                          onCheckedChange={setBoostAddon}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. Excess - Quick Select Chips */}
                 <div className="space-y-3">
-                  <Label className="text-base font-semibold">Labour Rate</Label>
+                  <Label className="text-base font-semibold">3. Excess Amount</Label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {excessOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => setExcessAmount(option.value)}
+                        className={cn(
+                          "relative py-3 px-2 rounded-lg border-2 text-center transition-all min-h-[70px] flex flex-col items-center justify-center",
+                          excessAmount === option.value
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50"
+                        )}
+                      >
+                        {option.isPopular && (
+                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
+                            MOST POPULAR
+                          </span>
+                        )}
+                        <div className="font-semibold">{option.label}</div>
+                        <div className="text-xs text-muted-foreground">{option.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Higher excess = lower monthly cost. £100 is the default.</p>
+                </div>
+
+                {/* 4. Labour Rate - Quick Select Chips */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">4. Labour Rate</Label>
                   <div className="grid grid-cols-4 gap-2">
                     {labourRateOptions.map((option) => (
                       <button
@@ -1891,11 +1998,6 @@ Questions? Call 0330 229 5040`;
                             : "border-border hover:border-primary/50"
                         )}
                       >
-                        {option.isBestValue && (
-                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-success text-success-foreground text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
-                            BEST VALUE
-                          </span>
-                        )}
                         {option.isPopular && (
                           <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
                             POPULAR
@@ -1906,56 +2008,12 @@ Questions? Call 0330 229 5040`;
                       </button>
                     ))}
                   </div>
-                  <p className="text-xs text-muted-foreground">Higher rate = more garage choice</p>
+                  <p className="text-xs text-muted-foreground">Higher rate = more garage choice. £70/hr is the default.</p>
                 </div>
 
-                {/* Excess - Quick Select Chips */}
+                {/* 5. Optional Add-ons Section */}
                 <div className="space-y-3">
-                  <Label className="text-base font-semibold">Excess Amount</Label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {excessOptions.map((excess) => (
-                      <button
-                        key={excess}
-                        onClick={() => setExcessAmount(excess)}
-                        className={cn(
-                          "py-3 px-2 rounded-lg border-2 text-center font-semibold transition-all",
-                          excessAmount === excess
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
-                        )}
-                      >
-                        £{excess}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground">Lower excess = higher monthly cost</p>
-                </div>
-
-                {/* Claim Limit - Quick Select Chips */}
-                <div className="space-y-3">
-                  <Label className="text-base font-semibold">Claim Limit 🚗</Label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {claimLimitOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => setClaimLimit(option.value)}
-                        className={cn(
-                          "py-3 px-2 rounded-lg border-2 text-center transition-all",
-                          claimLimit === option.value
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50"
-                        )}
-                      >
-                        <div className="font-semibold">{option.label}</div>
-                        <div className="text-xs text-muted-foreground">{option.description}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Optional Add-ons Section */}
-                <div className="space-y-3">
-                  <Label className="text-base font-semibold">Optional Add-ons</Label>
+                  <Label className="text-base font-semibold">5. Optional Add-ons</Label>
                   
                   {/* Auto-Included Add-ons Display */}
                   {getAutoIncludedAddOns(paymentType).length > 0 && (
@@ -2014,24 +2072,6 @@ Questions? Call 0330 229 5040`;
                     })}
                   </div>
                 </div>
-
-                {/* Boost Addon - directly below Optional Add-ons */}
-                <div className="flex items-center justify-between p-4 rounded-lg border-2 border-dashed border-amber-400 bg-amber-50">
-                  <div className="flex items-center gap-3">
-                    <Zap className="w-5 h-5 text-amber-500" />
-                    <div>
-                      <div className="font-semibold">Boost Claim Limit (+£1,000)</div>
-                      <div className="text-sm text-muted-foreground">
-                        +£{5 * DURATION_MONTHS[paymentType]} total (+£5/month × {DURATION_MONTHS[paymentType]} months)
-                      </div>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={boostAddon}
-                    onCheckedChange={setBoostAddon}
-                  />
-                </div>
-
                 {/* Free Extended Cover Option - PROMINENT */}
                 <div className={cn(
                   "space-y-3 p-4 rounded-lg border-2 transition-all",
