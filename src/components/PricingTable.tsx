@@ -2704,15 +2704,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
               return (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    {/* Cost per month of cover */}
+                    {/* 94% Claims Approved */}
                     <div className="flex items-center gap-3 bg-white rounded-lg p-4 border border-[#E5E5E5]">
                       <div className="w-10 h-10 rounded-full bg-[#3A8F45] flex items-center justify-center flex-shrink-0">
                         <Check className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <p className="text-xs text-[#555555]">Cost per month of cover</p>
-                        <span className="font-bold text-[#000000] text-xl">£{costPerMonthOfCover}</span>
-                        <span className="text-sm text-[#777777]"> per month</span>
+                        <span className="font-bold text-[#3A8F45] text-lg">94%</span>
+                        <p className="text-sm text-[#555555]">of claims approved fast</p>
                       </div>
                     </div>
                     
