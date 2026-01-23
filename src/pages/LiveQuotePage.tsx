@@ -341,22 +341,28 @@ export default function LiveQuotePage() {
     const value = customerData[fieldName as keyof typeof customerData];
     if (!value || value.trim() === '') return false;
     
-    // If pre-populated, check it still has value
-    if (prePopulatedFields[fieldName]) {
-      return validateField(fieldName, value) === null;
-    }
-    
-    // If touched by user and passes validation
-    if (touchedFields[fieldName]) {
-      return validateField(fieldName, value) === null;
-    }
-    
-    return false;
+    // Always check validation - regardless of how the field was filled (manual, pre-populated, or autofill)
+    return validateField(fieldName, value) === null;
   };
 
   // Check if we should show error for a field
+  // IMPORTANT: Re-validate before showing error to handle browser autofill properly
   const shouldShowError = (fieldName: string) => {
-    return (touchedFields[fieldName] || showValidation) && fieldErrors[fieldName];
+    // Only show errors if the field has been touched or form submitted
+    if (!touchedFields[fieldName] && !showValidation) return false;
+    
+    // Re-validate the current value (handles browser autofill which may have populated the field)
+    const value = customerData[fieldName as keyof typeof customerData];
+    const currentError = validateField(fieldName, value);
+    
+    // Only show error if there's actually a current validation error
+    return !!currentError;
+  };
+  
+  // Get the current error message for a field (re-validates to handle autofill)
+  const getFieldError = (fieldName: string) => {
+    const value = customerData[fieldName as keyof typeof customerData];
+    return validateField(fieldName, value);
   };
 
   // Mileage dropdown options (10,000 to 140,000 in 1,000 increments)
@@ -873,7 +879,7 @@ export default function LiveQuotePage() {
                       )}
                     </div>
                     {shouldShowError('firstName') && (
-                      <p className="text-xs text-red-500">{fieldErrors.firstName}</p>
+                      <p className="text-xs text-red-500">{getFieldError('firstName')}</p>
                     )}
                   </div>
                   <div className="space-y-2">
@@ -891,7 +897,7 @@ export default function LiveQuotePage() {
                       )}
                     </div>
                     {shouldShowError('lastName') && (
-                      <p className="text-xs text-red-500">{fieldErrors.lastName}</p>
+                      <p className="text-xs text-red-500">{getFieldError('lastName')}</p>
                     )}
                   </div>
                 </div>
@@ -914,7 +920,7 @@ export default function LiveQuotePage() {
                       )}
                     </div>
                     {shouldShowError('email') && (
-                      <p className="text-xs text-red-500">{fieldErrors.email}</p>
+                      <p className="text-xs text-red-500">{getFieldError('email')}</p>
                     )}
                   </div>
                   <div className="space-y-2">
@@ -933,7 +939,7 @@ export default function LiveQuotePage() {
                       )}
                     </div>
                     {shouldShowError('phone') && (
-                      <p className="text-xs text-red-500">{fieldErrors.phone}</p>
+                      <p className="text-xs text-red-500">{getFieldError('phone')}</p>
                     )}
                   </div>
                 </div>
@@ -998,7 +1004,7 @@ export default function LiveQuotePage() {
                     </div>
                   )}
                   {shouldShowError('mileage') && (
-                    <p className="text-xs text-red-500">{fieldErrors.mileage}</p>
+                    <p className="text-xs text-red-500">{getFieldError('mileage')}</p>
                   )}
                 </div>
 
@@ -1026,7 +1032,7 @@ export default function LiveQuotePage() {
                       )}
                     </div>
                     {shouldShowError('addressLine1') && (
-                      <p className="text-xs text-red-500">{fieldErrors.addressLine1}</p>
+                      <p className="text-xs text-red-500">{getFieldError('addressLine1')}</p>
                     )}
                   </div>
 
@@ -1055,7 +1061,7 @@ export default function LiveQuotePage() {
                         )}
                       </div>
                       {shouldShowError('city') && (
-                        <p className="text-xs text-red-500">{fieldErrors.city}</p>
+                        <p className="text-xs text-red-500">{getFieldError('city')}</p>
                       )}
                     </div>
                     <div className="space-y-2">
@@ -1074,7 +1080,7 @@ export default function LiveQuotePage() {
                         )}
                       </div>
                       {shouldShowError('postcode') && (
-                        <p className="text-xs text-red-500">{fieldErrors.postcode}</p>
+                        <p className="text-xs text-red-500">{getFieldError('postcode')}</p>
                       )}
                     </div>
                   </div>
