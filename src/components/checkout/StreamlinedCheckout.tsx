@@ -902,7 +902,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Monthly</p>
                     <div className="flex items-baseline gap-1 flex-wrap">
                       <span className="text-2xl sm:text-3xl font-bold text-foreground">£{monthlyPrice}</span>
-                      <span className="text-sm text-muted-foreground">/mo</span>
+                      <span className="text-sm text-muted-foreground">/month</span>
                     </div>
                     <p className="text-xs text-muted-foreground">Paid over 12 instalments • 0% APR</p>
                     {/* Cost per month of cover for multi-year plans */}
