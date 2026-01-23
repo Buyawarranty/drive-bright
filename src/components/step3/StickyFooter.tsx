@@ -92,24 +92,33 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           </div>
 
           {/* Main Pricing Section (Centre-Left) */}
-          <div className="flex flex-col items-start gap-0.5 px-6 border-r border-[#DDDDDD]">
-            <p className="text-sm font-semibold text-[#000000]">{coverText}</p>
-            <p className="text-xs text-[#777777]">Approx. per month over {coverYears} year{coverYears !== '1' ? 's' : ''}</p>
+          <div className="flex flex-col items-start gap-1 px-6 border-r border-[#DDDDDD]">
+            {/* Average per month - small, top line */}
+            <p className="text-sm text-[#555555]">
+              <span className="font-semibold text-[#000000]">£{calculatedCostPerMonth}/month</span> average
+            </p>
+            
+            {/* Actual payment - BOLD AND LARGE */}
             <div className={cn(
-              "flex items-baseline gap-1 transition-all duration-300",
+              "transition-all duration-300",
               isPulsing && "animate-pulse"
             )}>
-              <span className="text-2xl font-bold text-[#000000]">£{calculatedCostPerMonth}</span>
-              <span className="text-sm text-[#777777]">per month</span>
+              <p className="text-lg font-bold text-[#000000]">
+                You pay £{monthlyPrice}/month for 12 months
+              </p>
             </div>
-            <p className="text-xs font-semibold text-[#555555]">
-              Paid monthly for 12 months <span className="font-bold text-[#000000]">£{monthlyPrice}</span> per month
-            </p>
+            
+            {/* £0 in year 2 & year 3 */}
             {paymentPeriod !== '12months' && (
-              <p className="text-xs font-semibold text-[#555555]">
-                No payments in year {paymentPeriod === '24months' ? '2' : '2 or 3'}
+              <p className="text-sm text-[#555555]">
+                £0 in year {paymentPeriod === '24months' ? '2' : '2 & year 3'}
               </p>
             )}
+            
+            {/* Total */}
+            <p className="text-sm font-semibold text-[#000000]">
+              Total: £{payInFull.toLocaleString()}
+            </p>
           </div>
 
           {/* Right-Hand Savings Section */}
@@ -154,36 +163,33 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             isMobileExpanded ? "max-h-[280px] opacity-100" : "max-h-0 opacity-0"
           )}
         >
-          <div className="px-4 pt-4 pb-2 space-y-3">
-            {/* Cover heading */}
-            <p className="text-center text-sm font-semibold text-[#000000]">{coverText}</p>
+          <div className="px-4 pt-4 pb-2 space-y-2">
+            {/* Average per month - small, top line */}
+            <p className="text-center text-sm text-[#555555]">
+              <span className="font-semibold text-[#000000]">£{calculatedCostPerMonth}/month</span> average
+            </p>
             
-            {/* Approx. per month over X years */}
-            <div className="text-center">
-              <p className="text-xs text-[#777777] mb-0.5">Approx. per month over {coverYears} year{coverYears !== '1' ? 's' : ''}</p>
-              <div className={cn(
-                "flex items-baseline justify-center gap-1 transition-all duration-300",
-                isPulsing && "animate-pulse"
-              )}>
-                <span className="text-2xl font-bold text-[#000000]">£{calculatedCostPerMonth}</span>
-                <span className="text-sm text-[#777777]">per month</span>
-              </div>
-            </div>
-
-            {/* Payment breakdown */}
-            <div className="text-center space-y-0.5">
-              <p className="text-xs font-semibold text-[#555555]">
-                Paid monthly for 12 months <span className="font-bold text-[#000000]">£{monthlyPrice}</span> per month
-              </p>
-              {paymentPeriod !== '12months' && (
-                <p className="text-xs font-semibold text-[#555555]">
-                  No payments in year {paymentPeriod === '24months' ? '2' : '2 or 3'}
-                </p>
-              )}
-              <p className="text-xs text-[#777777]">
-                Total cost <span className="font-semibold text-[#000000]">£{payInFull}</span>
+            {/* Actual payment - BOLD AND LARGE */}
+            <div className={cn(
+              "text-center transition-all duration-300",
+              isPulsing && "animate-pulse"
+            )}>
+              <p className="text-lg font-bold text-[#000000]">
+                You pay £{monthlyPrice}/month for 12 months
               </p>
             </div>
+            
+            {/* £0 in year 2 & year 3 */}
+            {paymentPeriod !== '12months' && (
+              <p className="text-center text-sm text-[#555555]">
+                £0 in year {paymentPeriod === '24months' ? '2' : '2 & year 3'}
+              </p>
+            )}
+            
+            {/* Total */}
+            <p className="text-center text-sm font-semibold text-[#000000]">
+              Total: £{payInFull.toLocaleString()}
+            </p>
 
             {/* Pay in full savings */}
             <div className="text-center pt-2 border-t border-[#DDDDDD]">
@@ -222,15 +228,16 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           <div className="flex items-center justify-between gap-3">
             {/* Left: Price summary */}
             <div className="flex-shrink-0">
-              <p className="text-xs font-semibold text-[#000000]">{coverText}</p>
+              <p className="text-xs text-[#555555]">
+                <span className="font-semibold text-[#000000]">£{calculatedCostPerMonth}/mo</span> avg
+              </p>
               <div className={cn(
-                "flex items-baseline gap-1 transition-all duration-300",
+                "transition-all duration-300",
                 isPulsing && "animate-pulse"
               )}>
-                <span className="text-xl font-bold text-[#000000]">£{calculatedCostPerMonth}</span>
-                <span className="text-xs text-[#777777]">/mo</span>
+                <p className="text-sm font-bold text-[#000000]">£{monthlyPrice}/mo × 12</p>
               </div>
-              <p className="text-xs text-[#777777]">Total: £{payInFull}</p>
+              <p className="text-xs text-[#555555]">Total: £{payInFull.toLocaleString()}</p>
             </div>
 
             {/* Right: CTA Button */}
