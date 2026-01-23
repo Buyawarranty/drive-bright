@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 import { StartDatePicker } from '@/components/checkout/StartDatePicker';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
+import { PromoCodeSection } from '@/components/quote/PromoCodeSection';
 import { 
   Shield, Car, Clock, CheckCircle, CreditCard, Calendar, 
   Phone, Mail, MessageCircle, AlertCircle, Loader2, Lock,
@@ -20,6 +21,15 @@ import { toast } from 'sonner';
 import { startOfDay, format, isToday } from 'date-fns';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
+
+interface AppliedDiscount {
+  code: string;
+  type: 'percentage' | 'fixed';
+  value: number;
+  discountAmount: number;
+  stripeCouponId?: string;
+  stripePromoCodeId?: string;
+}
 
 interface QuoteData {
   id: string;
@@ -91,6 +101,9 @@ export default function LiveQuotePage() {
   
   // Track which fields have been touched (blurred) for real-time validation
   const [touchedFields, setTouchedFields] = useState<{[key: string]: boolean}>({});
+
+  // Promo code state
+  const [appliedDiscounts, setAppliedDiscounts] = useState<AppliedDiscount[]>([]);
 
   const cancelled = searchParams.get('cancelled') === '1';
   const failed = searchParams.get('failed') === '1';
@@ -449,6 +462,21 @@ export default function LiveQuotePage() {
   const firstName = quote.customerName.split(' ')[0];
   const bumperMonthlyTotal = quote.pricing.monthlyPrice * 12;
 
+  // Calculate discounted prices
+  const totalDiscountAmount = appliedDiscounts.reduce((sum, d) => sum + d.discountAmount, 0);
+  const discountedUpfrontPrice = Math.max(0, quote.pricing.upfrontPrice - totalDiscountAmount);
+  const discountedMonthlyPrice = appliedDiscounts.length > 0 
+    ? Math.max(0, Math.ceil((bumperMonthlyTotal - totalDiscountAmount) / 12))
+    : quote.pricing.monthlyPrice;
+
+  const handleApplyDiscount = (discount: AppliedDiscount) => {
+    setAppliedDiscounts(prev => [...prev, discount]);
+  };
+
+  const handleRemoveDiscount = (code: string) => {
+    setAppliedDiscounts(prev => prev.filter(d => d.code !== code));
+  };
+
   // Payment Options Component (reusable for both mobile and desktop)
   const PaymentOptionsSection = () => (
     <Card className="border-2 border-gray-200">
@@ -784,6 +812,15 @@ export default function LiveQuotePage() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Promo Code Section - Mobile */}
+              <PromoCodeSection
+                orderAmount={quote.pricing.upfrontPrice}
+                customerEmail={customerData.email}
+                appliedDiscounts={appliedDiscounts}
+                onApplyDiscount={handleApplyDiscount}
+                onRemoveDiscount={handleRemoveDiscount}
+              />
             </div>
 
             {/* Start Date Picker */}
@@ -800,6 +837,15 @@ export default function LiveQuotePage() {
                 />
               </CardContent>
             </Card>
+
+            {/* Promo Code Section */}
+            <PromoCodeSection
+              orderAmount={quote.pricing.upfrontPrice}
+              customerEmail={customerData.email}
+              appliedDiscounts={appliedDiscounts}
+              onApplyDiscount={handleApplyDiscount}
+              onRemoveDiscount={handleRemoveDiscount}
+            />
 
             {/* Customer Details Form */}
             <Card id="customer-form">
