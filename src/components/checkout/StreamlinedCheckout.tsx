@@ -928,7 +928,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <div className="flex items-baseline gap-2 justify-end flex-wrap">
                       <span className="text-2xl sm:text-3xl font-bold text-foreground">£{stripeTotalPrice}</span>
                     </div>
-                    <p className="text-xs font-medium text-[hsl(var(--success))]">Save 10% today</p>
+                    <div className="bg-[#F0FDF4] rounded px-2 py-1 inline-block">
+                      <p className="text-xs font-medium text-[#166534]">Save 10% today</p>
+                    </div>
                     <p className="text-xs text-muted-foreground">One-time payment</p>
                   </div>
                 </div>
