@@ -1599,14 +1599,28 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     setPaymentType(durationId);
                   }}
                   className={cn(
-                    "relative p-5 rounded-lg border transition-all bg-white pointer-events-auto cursor-pointer",
-                    isSelected 
-                      ? "border-[#000000] border-2" 
-                      : "border-[#E5E5E5] hover:border-[#999999]"
+                    "relative p-6 rounded-xl border-2 transition-all bg-white pointer-events-auto cursor-pointer hover:shadow-lg",
+                    isSelected && durationId === '12months' && "border-slate-400 shadow-md",
+                    isSelected && durationId === '24months' && "border-orange-500 shadow-lg shadow-orange-500/20",
+                    isSelected && durationId === '36months' && "border-green-500 shadow-lg shadow-green-500/20",
+                    !isSelected && durationId === '12months' && "border-slate-200 hover:border-slate-300",
+                    !isSelected && durationId === '24months' && "border-orange-200 hover:border-orange-400",
+                    !isSelected && durationId === '36months' && "border-green-200 hover:border-green-400"
                   )}
                   style={{ position: 'relative', zIndex: 1 }}
                 >
-                  {/* Selection Radio - Top Right */}
+                  {/* Badge - color coded per duration */}
+                  {duration.badge && (
+                    <span className={cn(
+                      "absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap uppercase shadow-sm",
+                      durationId === '24months' && "bg-orange-500 text-white",
+                      durationId === '36months' && "bg-green-600 text-white"
+                    )}>
+                      {duration.badge}
+                    </span>
+                  )}
+                  
+                  {/* Selection Checkbox - Top Right */}
                   <div 
                     className="absolute top-4 right-4 cursor-pointer"
                     onClick={(e) => {
@@ -1616,55 +1630,173 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     }}
                   >
                     <div className={cn(
-                      "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
+                      "w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all duration-200",
                       isSelected 
-                        ? "bg-[#000000] border-[#000000]" 
-                        : "bg-white border-[#CCCCCC]"
+                        ? "bg-green-500 border-green-500" 
+                        : "bg-white border-gray-300 hover:border-green-400"
                     )}>
-                      {isSelected && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                      {isSelected && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
                     </div>
                   </div>
 
                   {/* Duration Title */}
-                  <h4 className="text-base font-bold text-[#000000] mb-4">
+                  <h4 className="text-xl font-bold text-gray-900 mb-1">
                     {duration.label}
                   </h4>
+                  <p className="text-sm text-gray-500 mb-4">{duration.planName}</p>
                   
-                  {/* Main Price */}
-                  <div className="mb-3">
-                    <span className="text-2xl font-bold text-[#000000]">£{displayedMonthlyPrice}</span>
-                    <span className="text-sm text-[#777777] ml-1">per month</span>
-                  </div>
-
-                  {/* Payment Details */}
-                  <div className="space-y-1 text-sm">
-                    <p className="text-[#777777]">
-                      Paid monthly for 12 months <span className="font-semibold text-[#000000]">£{displayedMonthlyPrice}/month</span>
-                    </p>
+                  {/* Price Section - Redesigned with exact copy */}
+                  <div className="mb-4">
+                    {/* 1-YEAR COVER - Neutral/Grey */}
+                    {durationId === '12months' && (
+                      <>
+                        <div className="mb-3">
+                          <p className="text-xs uppercase tracking-wide text-slate-500 mb-1">Cost per month of cover</p>
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="text-3xl font-bold text-slate-700">£{Math.round(displayedAnnualPrice / 12)}</span>
+                            <span className="text-base text-slate-600">per month</span>
+                          </div>
+                        </div>
+                        <div className="space-y-1 mb-3">
+                          <p className="text-sm text-slate-500">
+                            Paid monthly for 12 months <span className="font-semibold text-slate-700">£{displayedMonthlyPrice} per month</span>
+                          </p>
+                          <p className="text-sm text-slate-600">
+                            Total cost <span className="font-semibold text-slate-800">£{displayedAnnualPrice}</span>
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                          <span className="text-sm text-slate-600">Ideal for short-term protection</span>
+                        </div>
+                      </>
+                    )}
+                    
+                    {/* 2-YEAR COVER - Orange/Most Popular */}
                     {durationId === '24months' && (
-                      <p className="text-[#777777]">No payments in year 2</p>
+                      <>
+                        <div className="mb-3">
+                          <p className="text-xs uppercase tracking-wide text-orange-600 mb-1">Cost per month of cover</p>
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="text-3xl font-bold text-orange-600">£{Math.round(displayedAnnualPrice / 24)}</span>
+                            <span className="text-base text-orange-600">per month</span>
+                          </div>
+                        </div>
+                        <div className="space-y-1 mb-3">
+                          <p className="text-sm text-slate-500">
+                            Paid monthly for 12 months <span className="font-semibold text-slate-700">£{displayedMonthlyPrice} per month</span>
+                          </p>
+                          <p className="text-sm font-semibold text-orange-600">No payments in year 2</p>
+                          <p className="text-sm text-slate-600">
+                            Total cost <span className="font-semibold text-slate-800">£{displayedAnnualPrice}</span>
+                          </p>
+                        </div>
+                        {/* Pay in full option */}
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg px-3 py-2.5 mb-3">
+                          <p className="text-xs uppercase tracking-wide text-slate-500 mb-1">Or pay in full and save 10%</p>
+                          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                            <span className="text-sm text-slate-400 line-through">Was £{displayedAnnualPrice}</span>
+                            <span className="text-base font-bold text-orange-700">Now £{Math.round(displayedAnnualPrice * 0.9)}</span>
+                            <span className="text-xs text-slate-500">— one-off payment</span>
+                          </div>
+                          <p className="text-sm font-semibold text-orange-600 mt-1">Save £{Math.round(displayedAnnualPrice * 0.1)}</p>
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-2">
+                            <Check className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                            <span className="text-sm text-slate-700">Lower cost per month of cover</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Check className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                            <span className="text-sm text-slate-700">Covers two MOT cycles</span>
+                          </div>
+                        </div>
+                      </>
                     )}
+                    
+                    {/* 3-YEAR COVER - Green/Best Value */}
                     {durationId === '36months' && (
-                      <p className="text-[#777777]">No payments in years 2 or 3</p>
+                      <>
+                        <div className="mb-3">
+                          <p className="text-xs uppercase tracking-wide text-green-600 mb-1">Cost per month of cover</p>
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="text-3xl font-bold text-green-600">£{Math.round(displayedAnnualPrice / 36)}</span>
+                            <span className="text-base text-green-600">per month</span>
+                          </div>
+                        </div>
+                        <div className="space-y-1 mb-3">
+                          <p className="text-sm text-slate-500">
+                            Paid monthly for 12 months <span className="font-semibold text-slate-700">£{displayedMonthlyPrice} per month</span>
+                          </p>
+                          <p className="text-sm font-semibold text-green-600">No payments in years 2 or 3</p>
+                          <p className="text-sm text-slate-600">
+                            Total cost <span className="font-semibold text-slate-800">£{displayedAnnualPrice}</span>
+                          </p>
+                        </div>
+                        {/* Pay in full option */}
+                        <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2.5 mb-3">
+                          <p className="text-xs uppercase tracking-wide text-slate-500 mb-1">Or pay in full and save 10%</p>
+                          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                            <span className="text-sm text-slate-400 line-through">Was £{displayedAnnualPrice}</span>
+                            <span className="text-base font-bold text-green-700">Now £{Math.round(displayedAnnualPrice * 0.9)}</span>
+                            <span className="text-xs text-slate-500">— one-off payment</span>
+                          </div>
+                          <p className="text-sm font-semibold text-green-600 mt-1">Save £{Math.round(displayedAnnualPrice * 0.1)}</p>
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-2">
+                            <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                            <span className="text-sm text-slate-700">Lowest cost per month of cover</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                            <span className="text-sm text-slate-700">Price locked for longer</span>
+                          </div>
+                        </div>
+                      </>
                     )}
-                    <p className="text-[#333333]">
-                      Total cost <span className="font-semibold text-[#000000]">£{displayedAnnualPrice}</span>
-                    </p>
                   </div>
-
-                  {/* Pay in Full Section - Only for multi-year */}
-                  {(durationId === '24months' || durationId === '36months') && (
-                    <div className="mt-4 pt-4 border-t border-[#EDEDED]">
-                      <p className="text-sm text-[#777777] mb-1">Or pay in full and save 10%</p>
-                      <p className="text-sm">
-                        <span className="text-[#999999] line-through">Was £{displayedAnnualPrice}</span>
-                        <span className="text-[#3A8F45] font-semibold ml-2">now £{Math.round(displayedAnnualPrice * 0.9)}</span>
-                      </p>
-                      <p className="text-sm font-semibold text-[#3A8F45]">You save £{Math.round(displayedAnnualPrice * 0.1)}</p>
-                    </div>
-                  )}
                   
-                  {/* CTA Button */}
+                  {/* What's Included Collapsible */}
+                  <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+                    <CollapsibleTrigger className="w-full mb-4">
+                      <div className="flex items-center justify-between w-full border border-gray-300 rounded-lg px-4 py-3 hover:border-gray-400 transition-colors">
+                        <span className="text-sm font-medium text-gray-800">See What's Included</span>
+                        <ChevronDown 
+                          className={cn(
+                            "w-5 h-5 text-gray-600 transition-transform duration-300",
+                            isExpanded && "transform rotate-180"
+                          )}
+                        />
+                      </div>
+                    </CollapsibleTrigger>
+                    
+                    <CollapsibleContent className="mb-4">
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
+                        {duration.features.map((feature, idx) => {
+                          const featureText = typeof feature === 'string' ? feature : feature.text;
+                          const isExtra = typeof feature === 'object' && feature.isExtra;
+                          const isExclusion = featureText.toLowerCase().includes('pre-existing faults');
+                          return (
+                            <div key={idx} className="flex items-start gap-2">
+                              {isExclusion ? (
+                                <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                              ) : isExtra ? (
+                                <span className="text-base mt-0 flex-shrink-0">⭐</span>
+                              ) : (
+                                <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                              )}
+                              <span className="text-sm text-gray-700">
+                                {featureText}{isExtra && ' (Bonus benefit)'}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                  
+                  {/* CTA Button with Hover Effect and Arrow */}
                   <Button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1672,23 +1804,50 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       setPaymentType(durationId);
                     }}
                     className={cn(
-                      "w-full mt-4 font-semibold text-sm py-3 transition-all",
+                      "w-full mb-1.5 font-bold text-base py-6 transition-all duration-300 group",
                       isSelected
-                        ? "bg-[#000000] hover:bg-[#333333] text-white"
-                        : "bg-white hover:bg-[#F2F2F2] text-[#000000] border border-[#000000]"
+                        ? "bg-black hover:bg-black/90 text-white shadow-lg border-2 border-black"
+                        : "bg-brand-orange hover:bg-brand-orange/90 text-white border-2 border-brand-orange"
                     )}
                     size="lg"
                   >
-                    {isSelected ? 'Selected' : 'Select'}
+                    <div className="flex items-center justify-center gap-2">
+                      <span>{isSelected ? 'Selected' : 'Select this plan'}</span>
+                      {!isSelected && <ArrowRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" />}
+                    </div>
                   </Button>
+                  
+                  {/* Email Quote Link */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenEmailQuoteDialog(durationId);
+                    }}
+                    className="w-full text-center text-sm text-black hover:text-orange-600 transition-colors pointer-events-auto flex items-center justify-center gap-1"
+                  >
+                    <Mail className="w-4 h-4 text-orange-500" />
+                    <span className="underline">Email me this quote</span>
+                  </button>
+                  
+                  {/* See Full Cover Details Link */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const coverSection = document.getElementById('your-cover-details');
+                      coverSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }}
+                    className="w-full mt-3 text-center text-sm text-black hover:text-green-600 transition-colors pointer-events-auto flex items-center justify-center gap-1"
+                  >
+                    <span>🔍 See full cover details</span>
+                  </button>
                 </div>
               );
             })}
           </div>
           
           {/* Global Explainer Line */}
-          <p className="text-center text-xs text-[#999999] mb-8 px-4">
-            All plans are paid monthly for 12 months. Longer cover continues with no further payments.
+          <p className="text-center text-sm text-slate-500 mb-8 px-4">
+            You pay monthly for 12 months on every plan. Longer cover continues automatically with no further payments.
           </p>
         </div>
 
