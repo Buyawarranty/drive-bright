@@ -1633,10 +1633,26 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   
                   {/* Main Price - Large */}
                   <div className="mb-4">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-bold text-[#000000]">£{displayedMonthlyPrice}</span>
-                      <span className="text-base text-[#333333]">per month</span>
-                    </div>
+                    {/* For 2-year and 3-year, show "Cost per month of cover" with equivalent */}
+                    {(durationId === '24months' || durationId === '36months') && (
+                      <>
+                        <p className="text-xs text-[#777777] uppercase tracking-wider mb-1">Cost per month of cover</p>
+                        <div className="flex items-baseline gap-1 mb-3">
+                          <span className="text-3xl font-bold text-[#000000]">
+                            £{Math.floor(displayedAnnualPrice / (durationId === '24months' ? 24 : 36))}
+                          </span>
+                          <span className="text-base text-[#333333]">per month</span>
+                        </div>
+                      </>
+                    )}
+                    
+                    {/* For 1-year, just show the monthly payment */}
+                    {durationId === '12months' && (
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-bold text-[#000000]">£{displayedMonthlyPrice}</span>
+                        <span className="text-base text-[#333333]">per month</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Payment Details */}
