@@ -2339,7 +2339,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </Alert>
           )}
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 ml-11">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <button
               onClick={() => {
                 toggleVoluntaryExcess(0);
