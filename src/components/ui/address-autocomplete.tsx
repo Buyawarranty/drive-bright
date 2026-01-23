@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Loader2, Check, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -149,39 +148,39 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
 
   // Handle input change with debounce
   // IMPORTANT: User input is ALWAYS preserved - we only update inputValue, never clear it
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      const value = e.target.value;
-      console.log('[AddressAutocomplete] Input changed:', value);
-      setInputValue(value); // Always preserve what user types
-      setHasSelected(false);
-      setSelectedIndex(-1);
-      
-      // Reset lookup failed state when user clears input or starts fresh
-      if (value.length < 3) {
-        setLookupFailed(false);
-        onLookupError?.(false);
-        setSuggestions([]);
-        setShowDropdown(false);
-      }
-
-      // Clear previous debounce
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-
-      // Debounce API call - only if they've typed enough
-      if (value.length >= 3) {
-        console.log('[AddressAutocomplete] Scheduling fetch for:', value);
-        debounceRef.current = setTimeout(() => {
-          fetchSuggestions(value);
-        }, 300);
-      }
-    } catch (err) {
-      // Never crash on input change
-      console.error('[AddressAutocomplete] Error in handleInputChange:', err);
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    
+    // CRITICAL DEBUG: Log immediately on any input
+    console.log('[AddressAutocomplete] handleInputChange TRIGGERED - value:', value, 'length:', value.length);
+    
+    setInputValue(value); // Always preserve what user types
+    setHasSelected(false);
+    setSelectedIndex(-1);
+    
+    // Reset lookup failed state when user clears input or starts fresh
+    if (value.length < 3) {
+      setLookupFailed(false);
+      onLookupError?.(false);
+      setSuggestions([]);
+      setShowDropdown(false);
+      console.log('[AddressAutocomplete] Input too short, clearing suggestions');
+      return;
     }
-  };
+
+    // Clear previous debounce
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      console.log('[AddressAutocomplete] Cleared previous debounce');
+    }
+
+    // Debounce API call - only if they've typed enough
+    console.log('[AddressAutocomplete] Setting debounce timer for:', value);
+    debounceRef.current = setTimeout(() => {
+      console.log('[AddressAutocomplete] Debounce complete, calling fetchSuggestions for:', value);
+      fetchSuggestions(value);
+    }, 300);
+  }, [fetchSuggestions, onLookupError]);
 
   // Fetch full address details when user selects a suggestion
   // IMPORTANT: If this fails, we keep whatever the user typed - never clear
@@ -272,16 +271,24 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     };
   }, []);
 
+  // Debug: log on every render to confirm component is alive
+  console.log('[AddressAutocomplete] RENDER - inputValue:', inputValue, 'disabled:', disabled);
+
   return (
     <div className="relative w-full">
       <div className="relative">
-        <Input
+        <input
           ref={inputRef}
           type="text"
           value={inputValue}
           onChange={handleInputChange}
+          onInput={(e) => {
+            // Backup handler for browsers that handle onInput differently
+            console.log('[AddressAutocomplete] onInput fired:', (e.target as HTMLInputElement).value);
+          }}
           onKeyDown={handleKeyDown}
           onFocus={() => {
+            console.log('[AddressAutocomplete] Input focused');
             try {
               if (suggestions.length > 0 && !hasSelected) {
                 setShowDropdown(true);
@@ -292,7 +299,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           }}
           placeholder={placeholder}
           className={cn(
-            "pr-9",
+            "flex h-10 w-full rounded-md border border-gray-200 bg-[#F5F5F5] px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pr-9",
             error && "border-destructive",
             lookupFailed && !error && "border-amber-400",
             className
