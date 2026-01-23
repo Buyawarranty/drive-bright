@@ -2891,7 +2891,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
       {/* Sticky Total Bar - Always visible - Monochrome Design */}
       {!vehicleAgeError && (
-        <div className="fixed bottom-0 left-0 right-0 bg-[#F7F7F7] border-t border-[#DDDDDD] z-50">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-[#3A8F45] z-50 shadow-lg">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between p-4 max-w-6xl mx-auto gap-4">
             
             {/* Loading State */}
@@ -2932,7 +2932,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   const coverYears = paymentType === '12months' ? '1' : paymentType === '24months' ? '2' : '3';
                   
                   return (
-                    <div className="flex flex-col md:hidden w-full bg-[#F7F7F7]">
+                    <div className="flex flex-col md:hidden w-full bg-white">
                       {/* Collapsed State - Main Row */}
                       <div className="flex items-center justify-between gap-3 px-1">
                         {/* Left Side - Cover Info */}
