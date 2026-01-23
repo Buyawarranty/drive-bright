@@ -127,7 +127,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
               {/* Price - show equivalent for multi-year */}
               {term.id !== '12months' && (
                 <div className="mb-4">
-                  <p className="text-xs text-[#777777] uppercase tracking-wider mb-1">Cost per month of cover</p>
+                  <p className="text-sm text-[#555555] mb-1">Cost per month of cover</p>
                   <span className="text-3xl font-bold text-[#000000]">£{costPerMonth}</span>
                   <span className="text-sm text-[#777777] ml-1">per month</span>
                 </div>
