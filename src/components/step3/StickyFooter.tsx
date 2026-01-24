@@ -229,15 +229,13 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           <div className="flex items-center justify-between gap-3">
             {/* Left: Price summary */}
             <div className="flex-shrink-0">
+              <p className="text-xs font-bold text-[#000000]">{coverText}</p>
               <div className={cn(
                 "transition-all duration-300",
                 isPulsing && "animate-pulse"
               )}>
-                <p className="text-sm font-bold text-[#000000]">£{monthlyPrice}/mo × 12</p>
+                <p className="text-sm font-bold text-[#000000]">£{monthlyPrice} x 12 payments</p>
               </div>
-              <p className="text-xs text-[#555555]">
-                <span className="font-semibold text-[#000000]">£{calculatedCostPerMonth}/mo</span> avg
-              </p>
               <p className="text-xs text-[#555555]">Total: £{payInFull.toLocaleString()}</p>
             </div>
 
