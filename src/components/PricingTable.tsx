@@ -2934,11 +2934,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <div className="flex items-center justify-between gap-3 px-1">
                         {/* Left Side - Cover Info */}
                         <div className="flex-shrink-0">
-                          <p className="text-sm font-semibold text-[#000000]">{coverYears}-Year Cover</p>
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-xl font-bold text-[#000000]">£{costPerMonthOfCover}</span>
-                            <span className="text-xs text-[#333333]">/mo</span>
-                          </div>
+                          <p className="text-sm font-bold text-[#000000]">£{displayMonthlyPrice}/mo × 12</p>
+                          <p className="text-xs text-[#333333]">
+                            <span className="font-semibold text-[#000000]">£{costPerMonthOfCover}/mo</span> avg
+                          </p>
                           <p className="text-xs text-[#333333]">Total: £{payInFull}</p>
                         </div>
                         
@@ -2971,37 +2970,40 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       {/* Expanded Content */}
                       <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSummaryExpanded ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}`}>
                         <div className="px-4 py-4 space-y-4 bg-white border-t border-[#E5E5E5]">
-                          {/* Approx. per month over X years */}
+                          {/* Main headline: £X/month for 12 months */}
                           <div className="text-center">
-                            <p className="text-xs text-[#555555] mb-1">Approx. per month over {paymentType === '12months' ? '1 year' : paymentType === '24months' ? '2 years' : '3 years'}</p>
-                            <div className="flex items-baseline justify-center gap-1">
-                              <span className="text-3xl font-bold text-[#000000]">£{costPerMonthOfCover}</span>
-                              <span className="text-sm text-[#333333]">per month</span>
-                            </div>
+                            <p className="text-lg font-bold text-[#000000]">
+                              £{displayMonthlyPrice}/month for 12 months
+                            </p>
                           </div>
                           
-                          {/* Payment Details */}
-                          <div className="text-center space-y-1">
-                            <p className="text-sm font-semibold text-[#333333]">
-                              Paid monthly for 12 months <span className="font-bold text-[#000000]">£{displayMonthlyPrice}</span> per month
-                            </p>
-                            {paymentType !== '12months' && (
-                              <p className="text-sm font-semibold text-[#333333]">
-                                No payments in year {paymentType === '24months' ? '2' : '2 or 3'}
-                              </p>
-                            )}
-                            <p className="text-sm text-[#333333]">
-                              Total cost <span className="font-bold text-[#000000]">£{payInFull}</span>
+                          {/* Average per month */}
+                          <div className="text-center">
+                            <p className="text-sm text-[#555555]">
+                              <span className="font-semibold text-[#000000]">£{costPerMonthOfCover}/month</span> average
                             </p>
                           </div>
+                          
+                          {/* £0 in year 2 & year 3 */}
+                          {paymentType !== '12months' && (
+                            <p className="text-center text-sm font-semibold text-[#333333]">
+                              £0 in year {paymentType === '24months' ? '2' : '2 & year 3'}
+                            </p>
+                          )}
+                          
+                          {/* Total */}
+                          <p className="text-center text-sm text-[#333333]">
+                            Total: <span className="font-semibold text-[#000000]">£{payInFull}</span>
+                          </p>
                           
                           {/* Pay in Full Savings */}
                           <div className="text-center pt-3 border-t border-[#E5E5E5]">
-                            <p className="text-sm text-[#555555] mb-1">Pay in full and save 10%</p>
                             <p className="text-sm text-[#333333]">
-                              Was £{payInFull} – now <span className="font-semibold text-[#3A8F45]">£{payInFullPrice}</span>
+                              Pay in full and <span className="font-semibold text-[#3A8F45]">save £{savings}</span>
                             </p>
-                            <p className="text-sm font-semibold text-[#3A8F45]">You save £{savings}</p>
+                            <p className="text-sm text-[#333333]">
+                              <span className="font-bold text-[#000000]">£{payInFullPrice}</span> today <span className="text-[#777777]">(was £{payInFull})</span>
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -3040,14 +3042,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
                       {/* Main Pricing Section (Centre-Left) */}
                       <div className="flex flex-col items-start gap-0.5 px-6 border-r border-[#DDDDDD]">
-                        {/* Large bold average price */}
+                        {/* Large headline: £X/month for 12 months */}
                         <p className="text-xl font-bold text-[#000000]">
-                          <span className="text-2xl">£{costPerMonthOfCover}</span>/month average
+                          £{displayMonthlyPrice}/month for 12 months
                         </p>
                         
-                        {/* Actual payment line in parentheses */}
+                        {/* Average price line */}
                         <p className="text-sm text-[#333333]">
-                          (You pay <span className="font-semibold text-[#000000]">£{displayMonthlyPrice}/month</span> for 12 months)
+                          <span className="font-semibold text-[#000000]">£{costPerMonthOfCover}/month</span> average
                         </p>
                         
                         {/* £0 in year 2 & year 3 - for multi-year plans */}
@@ -3065,8 +3067,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
                       {/* Pay in Full Section */}
                       <div className="flex flex-col items-start gap-1 px-6 border-r border-[#DDDDDD]">
-                        <p className="text-sm font-semibold text-[#333333]">
-                          Pay in full and save £{savings}
+                        <p className="text-sm text-[#333333]">
+                          Pay in full and <span className="font-semibold text-[#3A8F45]">save £{savings}</span>
                         </p>
                         <p className="text-sm text-[#333333]">
                           <span className="font-semibold text-[#000000]">£{payInFullPrice}</span> today <span className="text-[#777777]">(was £{payInFull})</span>
