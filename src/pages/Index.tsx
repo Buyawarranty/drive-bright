@@ -56,10 +56,14 @@ interface VehicleData {
 const RecoveryFallback: React.FC<{
   onRecovered: (vehicleData: VehicleData, selectedPlan: any) => void;
   onStartOver: () => void;
-}> = ({ onRecovered, onStartOver }) => {
+  onRegSubmit: (regNumber: string, mileage: string) => void;
+}> = ({ onRecovered, onStartOver, onRegSubmit }) => {
   // CRITICAL: Start with loading hidden to prevent flash during bfcache restoration
   const [showLoadingUI, setShowLoadingUI] = useState(false);
   const [recoveryFailed, setRecoveryFailed] = useState(false);
+  const [regNumber, setRegNumber] = useState('');
+  const [mileage, setMileage] = useState<'under' | 'over' | null>(null);
+  const [regError, setRegError] = useState('');
   const hasAttemptedRef = useRef(false);
   const recoveryCompleteRef = useRef(false);
 
@@ -156,6 +160,29 @@ const RecoveryFallback: React.FC<{
     return () => clearTimeout(safetyTimeout);
   }, [showLoadingUI, onRecovered]);
 
+  const handleRegSubmit = () => {
+    const cleanReg = regNumber.trim().toUpperCase().replace(/\s+/g, '');
+    
+    if (!cleanReg) {
+      setRegError('Please enter your registration number');
+      return;
+    }
+    
+    if (cleanReg.length < 2 || cleanReg.length > 8) {
+      setRegError('Please enter a valid registration number');
+      return;
+    }
+    
+    if (!mileage) {
+      setRegError('Please select your mileage range');
+      return;
+    }
+    
+    setRegError('');
+    const mileageValue = mileage === 'under' ? '100000' : '130000';
+    onRegSubmit(cleanReg, mileageValue);
+  };
+
   // Only show loading AFTER confirming we need it (prevents bfcache flash)
   if (showLoadingUI && !recoveryFailed) {
     return (
@@ -176,24 +203,98 @@ const RecoveryFallback: React.FC<{
   if (recoveryFailed) {
     return (
       <div className="w-full px-4 py-8">
-        <div className="max-w-4xl mx-auto text-center space-y-6">
-          <h2 className="text-2xl font-bold text-gray-900">
-            Oops! We've lost your order details
-          </h2>
-          <p className="text-gray-600">
-            It looks like your session has expired or you've navigated back from a payment page. 
-            Please start your warranty journey again to continue.
-          </p>
-          <div className="space-y-4">
-            <Button 
-              onClick={onStartOver}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
-            >
-              Start Over
-            </Button>
-            <p className="text-sm text-gray-500">
-              If you've already completed a payment, please check your email for confirmation.
+        <div className="max-w-md mx-auto text-center space-y-6">
+          {/* Friendly heading */}
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-gray-900">
+              Let's get you back on track
+            </h2>
+            <p className="text-gray-600">
+              The page refreshed itself, so we'll just need your reg again to get your quote started.
             </p>
+          </div>
+
+          {/* Reg input form */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4 text-left">
+            {/* Registration input */}
+            <div className="space-y-2">
+              <label htmlFor="recovery-reg" className="block text-sm font-medium text-gray-700">
+                Vehicle registration
+              </label>
+              <input
+                id="recovery-reg"
+                type="text"
+                value={regNumber}
+                onChange={(e) => {
+                  setRegNumber(e.target.value.toUpperCase());
+                  setRegError('');
+                }}
+                placeholder="e.g. AB12 CDE"
+                className="w-full px-4 py-3 text-lg font-semibold uppercase tracking-wider border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#18864B] focus:border-[#18864B] outline-none text-center"
+                maxLength={8}
+              />
+            </div>
+
+            {/* Mileage selection */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Current mileage
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMileage('under');
+                    setRegError('');
+                  }}
+                  className={`py-3 px-4 rounded-lg border-2 text-sm font-medium transition-all ${
+                    mileage === 'under'
+                      ? 'border-[#18864B] bg-[#18864B]/5 text-[#18864B]'
+                      : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Under 120,000
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMileage('over');
+                    setRegError('');
+                  }}
+                  className={`py-3 px-4 rounded-lg border-2 text-sm font-medium transition-all ${
+                    mileage === 'over'
+                      ? 'border-[#18864B] bg-[#18864B]/5 text-[#18864B]'
+                      : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Over 120,000
+                </button>
+              </div>
+            </div>
+
+            {/* Error message */}
+            {regError && (
+              <p className="text-red-500 text-sm text-center">{regError}</p>
+            )}
+
+            {/* Primary CTA */}
+            <Button 
+              onClick={handleRegSubmit}
+              className="w-full bg-[#18864B] hover:bg-[#156B3D] text-white font-semibold py-4 text-base rounded-lg"
+            >
+              Enter reg & get your quote
+            </Button>
+          </div>
+
+          {/* Secondary CTA */}
+          <div className="pt-2">
+            <p className="text-sm text-gray-500 mb-2">Want to start fresh?</p>
+            <button 
+              onClick={onStartOver}
+              className="text-[#18864B] hover:text-[#156B3D] font-medium text-sm underline underline-offset-2"
+            >
+              Return to homepage
+            </button>
           </div>
         </div>
       </div>
@@ -1248,6 +1349,36 @@ const Index = () => {
                 setSelectedPlan(recoveredSelectedPlan);
               }}
               onStartOver={() => handleStepChange(1)}
+              onRegSubmit={(regNumber, mileageValue) => {
+                // Check if customer data exists (they completed Step 2)
+                const savedCustomerData = localStorage.getItem('buyawarranty_customerData');
+                const hasCompletedStep2 = savedCustomerData && JSON.parse(savedCustomerData)?.email;
+                
+                // Create minimal vehicle data to proceed
+                const recoveryVehicleData: VehicleData = {
+                  regNumber,
+                  mileage: mileageValue,
+                  email: '',
+                  phone: '',
+                  firstName: '',
+                  lastName: '',
+                  address: '',
+                  make: '',
+                  model: '',
+                  fuelType: '',
+                  transmission: '',
+                  year: '',
+                  vehicleType: 'car'
+                };
+                
+                // Save to localStorage for Step 1 lookup
+                localStorage.setItem('buyawarranty_regNumber', regNumber);
+                localStorage.setItem('buyawarranty_mileage', mileageValue);
+                
+                // Navigate to Step 1 to fetch vehicle details, then continue to Step 2 or 3
+                setVehicleData(recoveryVehicleData);
+                handleStepChange(1);
+              }}
             />
           )}
         </div>
