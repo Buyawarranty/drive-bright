@@ -1393,6 +1393,7 @@ Questions? Call 0330 229 5040`;
       // 5. Create policy record with payment confirmation metadata
       // Note: status constraint only allows 'active', 'cancelled', 'expired'
       // Future start dates are tracked via policy_start_date and warranties_2000_scheduled_for
+      // W2000 status uses existing database values: 'not_sent', 'sent', 'failed', 'blocked_test_data'
       const policyData: Record<string, any> = {
         customer_id: customerId,
         email: finalEmail.toLowerCase(),
@@ -1411,9 +1412,8 @@ Questions? Call 0330 229 5040`;
         vehicle_rental: getAutoIncludedAddOns(paymentType).includes('rental'),
         is_manual_entry: true,
         payment_verified: true,
-        // W2000 scheduling for future start dates
+        // W2000 scheduling - use database default 'not_sent' for now, edge function will update status
         warranties_2000_scheduled_for: isFutureStartDate ? startDate.toISOString() : null,
-        warranties_2000_status: sendToW2k ? (isFutureStartDate ? 'scheduled' : 'pending') : null,
         // Include additional notes and bonus months from quote
         additional_notes: additionalNotes || null,
         seasonal_bonus_months: freeExtendedCover === '6months' ? 6 : freeExtendedCover === '3months' ? 3 : 0,
@@ -1430,13 +1430,18 @@ Questions? Call 0330 229 5040`;
         };
       }
       
+      console.log('[DEBUG] Policy data being inserted:', JSON.stringify(policyData, null, 2));
+      
       const { data: newPolicy, error: policyError } = await supabase
         .from('customer_policies')
         .insert(policyData as any)
         .select('id')
         .single();
 
-      if (policyError) throw policyError;
+      if (policyError) {
+        console.error('[DEBUG] Policy insert error:', policyError);
+        throw policyError;
+      }
 
       // 6. Add admin note with payment confirmation details
       await supabase
@@ -1510,6 +1515,14 @@ Questions? Call 0330 229 5040`;
           w2000SentSuccess = false;
         }
       } else if (sendToW2k && isFutureStartDate) {
+        // Mark policy for future W2000 processing - edge function will handle it on the scheduled date
+        await supabase
+          .from('customer_policies')
+          .update({ 
+            warranties_2000_status: 'not_sent', // Will be processed by scheduled function
+            warranties_2000_scheduled_for: startDate.toISOString()
+          })
+          .eq('id', newPolicy.id);
         console.log('W2000 submission scheduled for future start date:', format(startDate, 'yyyy-MM-dd'));
         w2000SentSuccess = null; // Scheduled, not sent yet
       }
