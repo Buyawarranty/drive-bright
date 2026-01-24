@@ -186,7 +186,7 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                   {/* Pay in Full Savings - for multi-year */}
                   {term.id !== '12months' && (
                     <div className="flex items-center justify-between mt-2 pt-2 border-t border-dashed border-[#E5E5E5]">
-                      <span className="text-sm text-[#666666]">Pay in full</span>
+                      <span className="text-sm font-medium text-[#000000]">Pay in full and save 10%</span>
                       <div className="text-right">
                         <span className="text-sm text-[#999999] line-through mr-2">£{payInFull.wasPrice}</span>
                         <span className="text-base font-bold text-[#3A8F45]">£{payInFull.nowPrice}</span>
