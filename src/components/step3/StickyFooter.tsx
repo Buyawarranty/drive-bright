@@ -113,8 +113,8 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             
             {/* No payments notice - for multi-year plans */}
             {paymentPeriod !== '12months' && (
-              <p className="text-sm text-[#333333]">
-                No payments in year {paymentPeriod === '24months' ? '2' : '2 & 3'}
+              <p className="text-sm font-semibold text-[#333333]">
+                No payments in year {paymentPeriod === '24months' ? '2' : '2 or 3'}
               </p>
             )}
             
