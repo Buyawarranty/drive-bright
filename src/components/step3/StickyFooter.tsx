@@ -92,21 +92,19 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           </div>
 
           {/* Main Pricing Section (Centre-Left) */}
-          <div className="flex flex-col items-start gap-1 px-6 border-r border-[#DDDDDD]">
-            {/* Average per month - small, top line */}
-            <p className="text-sm text-[#555555]">
-              <span className="font-semibold text-[#000000]">£{calculatedCostPerMonth}/month</span> average
+          <div className="flex flex-col items-start gap-0.5 px-6 border-r border-[#DDDDDD]">
+            {/* Average per month - primary line */}
+            <p className="text-lg font-bold text-[#000000]">
+              £{calculatedCostPerMonth}/month average
             </p>
             
-            {/* Actual payment - BOLD AND LARGE */}
-            <div className={cn(
-              "transition-all duration-300",
+            {/* Actual payment - secondary line in parentheses */}
+            <p className={cn(
+              "text-sm text-[#555555] transition-all duration-300",
               isPulsing && "animate-pulse"
             )}>
-              <p className="text-lg font-bold text-[#000000]">
-                You pay £{monthlyPrice}/month for 12 months
-              </p>
-            </div>
+              (You pay £{monthlyPrice}/month for 12 months)
+            </p>
             
             {/* £0 in year 2 & year 3 */}
             {paymentPeriod !== '12months' && (
@@ -116,18 +114,18 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             )}
             
             {/* Total */}
-            <p className="text-sm font-semibold text-[#000000]">
+            <p className="text-sm text-[#333333]">
               Total: £{payInFull.toLocaleString()}
             </p>
           </div>
 
           {/* Right-Hand Savings Section */}
-          <div className="flex flex-col items-start gap-1 px-6 border-r border-[#DDDDDD]">
+          <div className="flex flex-col items-start gap-0.5 px-6 border-r border-[#DDDDDD]">
             <p className="text-sm font-semibold text-[#3A8F45]">
               Pay in full and save £{savings}
             </p>
             <p className="text-sm text-[#333333]">
-              <span className="font-bold text-[#000000]">£{payInFullPrice.toLocaleString()}</span> today <span className="text-[#777777]">(was £{payInFull.toLocaleString()})</span>
+              £{payInFullPrice.toLocaleString()} today <span className="text-[#777777]">(was £{payInFull.toLocaleString()})</span>
             </p>
           </div>
 
