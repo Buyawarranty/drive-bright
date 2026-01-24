@@ -3044,31 +3044,37 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
                       {/* Main Pricing Section (Centre-Left) */}
                       <div className="flex flex-col items-start gap-0.5 px-6 border-r border-[#DDDDDD]">
-                        <p className="text-xs text-[#555555]">Approx. per month over {paymentType === '12months' ? '1 year' : paymentType === '24months' ? '2 years' : '3 years'}</p>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-2xl font-bold text-[#000000]">£{costPerMonthOfCover}</span>
-                          <span className="text-sm text-[#333333]">per month</span>
-                        </div>
-                        <p className="text-sm font-semibold text-[#333333]">
-                          Paid monthly for 12 months <span className="font-bold text-[#000000]">£{displayMonthlyPrice}</span> per month
+                        {/* Large bold average price */}
+                        <p className="text-xl font-bold text-[#000000]">
+                          <span className="text-2xl">£{costPerMonthOfCover}</span>/month average
                         </p>
+                        
+                        {/* Actual payment line in parentheses */}
+                        <p className="text-sm text-[#333333]">
+                          (You pay <span className="font-semibold text-[#000000]">£{displayMonthlyPrice}/month</span> for 12 months)
+                        </p>
+                        
+                        {/* £0 in year 2 & year 3 - for multi-year plans */}
                         {paymentType !== '12months' && (
                           <p className="text-sm font-semibold text-[#333333]">
-                            No payments in year {paymentType === '24months' ? '2' : '2 or 3'}
+                            £0 in year {paymentType === '24months' ? '2' : '2 & year 3'}
                           </p>
                         )}
+                        
+                        {/* Total */}
                         <p className="text-sm text-[#333333]">
-                          Total cost <span className="font-bold text-[#000000]">£{payInFull}</span>
+                          Total: <span className="font-semibold">£{payInFull}</span>
                         </p>
                       </div>
 
                       {/* Pay in Full Section */}
-                      <div className="flex flex-col items-start gap-0.5 px-6 border-r border-[#DDDDDD]">
-                        <p className="text-sm text-[#555555]">Pay in full and save 10%</p>
-                        <p className="text-sm text-[#333333]">
-                          Was £{payInFull} – now <span className="font-semibold text-[#3A8F45]">£{payInFullPrice}</span>
+                      <div className="flex flex-col items-start gap-1 px-6 border-r border-[#DDDDDD]">
+                        <p className="text-sm font-semibold text-[#333333]">
+                          Pay in full and save £{savings}
                         </p>
-                        <p className="text-sm font-semibold text-[#3A8F45]">You save £{savings}</p>
+                        <p className="text-sm text-[#333333]">
+                          <span className="font-semibold text-[#000000]">£{payInFullPrice}</span> today <span className="text-[#777777]">(was £{payInFull})</span>
+                        </p>
                       </div>
 
                       {/* Far Right CTA Section */}
