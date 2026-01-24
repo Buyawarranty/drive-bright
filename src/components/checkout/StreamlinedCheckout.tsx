@@ -315,11 +315,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     trackStripeCheckoutPageLoad();
   }, []);
 
-  // Auto-validate pre-filled fields from Step 2
+  // Auto-validate pre-filled fields from Step 2 and clear any errors for valid fields
   useEffect(() => {
     const autoValidatePrefilledFields = () => {
       const fieldsToCheck = ['first_name', 'last_name', 'email', 'phone'];
       const newValidatedFields: { [key: string]: boolean } = {};
+      const errorsToRemove: string[] = [];
 
       fieldsToCheck.forEach(field => {
         const value = customerData[field as keyof typeof customerData];
@@ -342,17 +343,32 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           }
           if (isValid) {
             newValidatedFields[field] = true;
+            errorsToRemove.push(field);
           }
         }
       });
 
+      // Set validated fields for green indicators
       if (Object.keys(newValidatedFields).length > 0) {
         setValidatedFields(prev => ({ ...prev, ...newValidatedFields }));
       }
+      
+      // Clear any field errors for valid prefilled fields - prevents showing errors on mount
+      if (errorsToRemove.length > 0) {
+        setFieldErrors(prev => {
+          const updated = { ...prev };
+          errorsToRemove.forEach(field => delete updated[field]);
+          return updated;
+        });
+      }
+      
+      console.log('✅ Auto-validated prefilled fields:', Object.keys(newValidatedFields));
     };
 
-    autoValidatePrefilledFields();
-  }, []);
+    // Small delay to ensure customerData is fully initialized from localStorage
+    const timer = setTimeout(autoValidatePrefilledFields, 50);
+    return () => clearTimeout(timer);
+  }, [customerData.first_name, customerData.last_name, customerData.email, customerData.phone]);
 
   // Reset loading on mount and handle bfcache restoration - CRITICAL for Stripe back-nav
   useEffect(() => {
