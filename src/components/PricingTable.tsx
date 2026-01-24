@@ -1600,10 +1600,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     setPaymentType(durationId);
                   }}
                   className={cn(
-                    "relative p-6 rounded-xl border transition-all bg-white pointer-events-auto cursor-pointer",
+                    "relative p-6 rounded-xl border transition-all pointer-events-auto cursor-pointer",
                     isSelected 
-                      ? "border-[#E65100] border-2 shadow-md" 
-                      : "border-[#EDEDED] hover:border-[#CCCCCC]"
+                      ? "bg-[#FFF8F2] border-[#F4C9A7] shadow-md" 
+                      : "bg-white border-[#EDEDED] hover:border-[#CCCCCC]"
                   )}
                   style={{ position: 'relative', zIndex: 1 }}
                 >
@@ -1628,7 +1628,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <div className={cn(
                       "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200",
                       isSelected 
-                        ? "bg-[#3A8F45] border-[#3A8F45]" 
+                        ? "bg-[#2C7A2C] border-[#2C7A2C]" 
                         : "bg-white border-[#CCCCCC] hover:border-[#999999]"
                     )}>
                       {isSelected && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
@@ -1656,11 +1656,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <p className="text-sm font-semibold text-[#333333] mb-2">No payments in years 2 or 3</p>
                     )}
                     
-                    {/* Average cost badge - premium soft highlight for multi-year */}
+                    {/* Average cost badge - soft grey pill (non-interactive) */}
                     {(durationId === '24months' || durationId === '36months') && (
-                      <div className="inline-block bg-[#FFF4E8] border border-[#FFE0C2] rounded-full px-3 py-1.5 mb-3">
-                        <span className="text-sm text-[#B35C00]">
-                          Avg. <span className="font-bold text-[#E65100]">£{calculateCPMWithGuardrail(displayedAnnualPrice, durationId === '24months' ? 24 : 36, displayedMonthlyPrice)}</span>/month over {durationId === '24months' ? '2' : '3'} years
+                      <div className="inline-block bg-[#F5F5F5] border border-[#E5E5E5] rounded-full px-2.5 py-1 mb-3">
+                        <span className="text-sm font-medium text-[#333333]">
+                          Avg. <span className="font-bold">£{calculateCPMWithGuardrail(displayedAnnualPrice, durationId === '24months' ? 24 : 36, displayedMonthlyPrice)}</span>/month over {durationId === '24months' ? '2' : '3'} years
                         </span>
                       </div>
                     )}
@@ -1691,14 +1691,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     )}
                   </ul>
                   
-                  {/* What's Included Collapsible */}
+                  {/* What's Included Collapsible - Secondary CTA (grey, non-competing) */}
                   <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
                     <CollapsibleTrigger className="w-full mb-4">
-                      <div className="flex items-center justify-between w-full bg-[#FFF3E0] border border-[#E65100] rounded-lg px-4 py-3 hover:bg-[#FFE0B2] transition-colors">
-                        <span className="text-sm font-semibold text-[#E65100]">See what's included</span>
+                      <div className="flex items-center justify-between w-full bg-white border border-[#D9D9D9] rounded-md px-4 py-3 hover:bg-[#F2F2F2] hover:border-[#C5C5C5] transition-colors">
+                        <span className="text-sm font-semibold text-[#444444] hover:text-[#222222]">See what's included</span>
                         <ChevronDown 
                           className={cn(
-                            "w-5 h-5 text-[#E65100] transition-transform duration-300",
+                            "w-5 h-5 text-[#666666] transition-transform duration-300",
                             isExpanded && "transform rotate-180"
                           )}
                         />
@@ -1728,7 +1728,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </CollapsibleContent>
                   </Collapsible>
                   
-                  {/* CTA Button - White with black outline */}
+                  {/* CTA Button - Primary Orange */}
                   <Button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1736,10 +1736,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       setPaymentType(durationId);
                     }}
                     className={cn(
-                      "w-full mb-3 font-semibold text-sm py-5 transition-all duration-200",
+                      "w-full mb-3 font-semibold text-sm py-5 rounded-md transition-all duration-200",
                       isSelected
-                        ? "bg-[#000000] hover:bg-[#333333] text-white border-none"
-                        : "bg-[#E65100] hover:bg-[#D84315] text-white border-none"
+                        ? "bg-[#2C7A2C] hover:bg-[#256B25] text-white border-none"
+                        : "bg-[#CC5A23] hover:bg-[#B54F1F] text-white border-none"
                     )}
                     size="lg"
                   >
