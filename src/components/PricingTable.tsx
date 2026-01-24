@@ -1738,7 +1738,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     className={cn(
                       "w-full mb-3 font-semibold text-sm py-5 rounded-md transition-all duration-200",
                       isSelected
-                        ? "bg-[#2C7A2C] hover:bg-[#256B25] text-white border-none"
+                        ? "bg-black hover:bg-gray-800 text-white border-none"
                         : "bg-[#eb4b00] hover:bg-[#d63f00] text-white border-none"
                     )}
                     size="lg"
