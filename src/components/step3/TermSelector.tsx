@@ -168,8 +168,8 @@ const TermSelector: React.FC<TermSelectorProps> = ({
 
                 {/* Average Cost Badge - for multi-year plans */}
                 {term.id !== '12months' && (
-                  <div className="inline-block px-3 py-2 bg-[#FFF8E1] border border-[#FFE0B2] rounded-lg mb-4">
-                    <p className="text-sm text-[#E65100] font-medium">
+                  <div className="inline-block px-3 py-2 bg-[#F0FDF4] border border-[#3A8F45]/20 rounded-lg mb-4">
+                    <p className="text-sm text-[#3A8F45] font-medium">
                       Avg. £{costPerMonth}/month over {term.years} years
                     </p>
                   </div>
