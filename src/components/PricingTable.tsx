@@ -1648,11 +1648,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <p className="text-sm font-semibold text-[#333333] mb-2">No payments in years 2 or 3</p>
                     )}
                     
-                    {/* Average cost badge - smaller, subtle for multi-year */}
+                    {/* Average cost badge - premium soft highlight for multi-year */}
                     {(durationId === '24months' || durationId === '36months') && (
-                      <div className="inline-block bg-[#F5F5F5] border border-[#E0E0E0] rounded-full px-3 py-1 mb-3">
-                        <span className="text-sm text-[#555555]">
-                          Avg. <span className="font-semibold text-[#000000]">£{calculateCPMWithGuardrail(displayedAnnualPrice, durationId === '24months' ? 24 : 36, displayedMonthlyPrice)}</span>/month over {durationId === '24months' ? '2' : '3'} years
+                      <div className="inline-block bg-[#FFF4E8] border border-[#FFE0C2] rounded-full px-3 py-1.5 mb-3">
+                        <span className="text-sm text-[#B35C00]">
+                          Avg. <span className="font-bold text-[#E65100]">£{calculateCPMWithGuardrail(displayedAnnualPrice, durationId === '24months' ? 24 : 36, displayedMonthlyPrice)}</span>/month over {durationId === '24months' ? '2' : '3'} years
                         </span>
                       </div>
                     )}
