@@ -157,7 +157,7 @@ serve(async (req) => {
             currency: "gbp",
             product_data: { 
               name: `${planType.charAt(0).toUpperCase() + planType.slice(1)} Warranty Plan`,
-              description: `Vehicle warranty coverage - Full payment with 5% discount${discountCode ? ` + discount code applied` : ''}`
+              description: `Vehicle warranty coverage - Full payment with 10% discount${discountCode ? ` + discount code applied` : ''}`
             },
             unit_amount: amount,
           },
