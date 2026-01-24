@@ -1607,6 +1607,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   )}
                   style={{ position: 'relative', zIndex: 1 }}
                 >
+                  {/* BEST VALUE tag for 3-year */}
+                  {durationId === '36months' && (
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                      <span className="bg-[#3A8F45] text-white text-xs font-bold uppercase px-4 py-1.5 rounded-full shadow-sm">
+                        Best Value
+                      </span>
+                    </div>
+                  )}
+
                   {/* Selection indicator - top right */}
                   <div 
                     className="absolute top-4 right-4 cursor-pointer"
