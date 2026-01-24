@@ -2757,11 +2757,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         <div className="flex flex-col gap-2 w-full md:w-auto md:justify-center md:mt-4">
                           <Button
                             onClick={handleSelectPlan}
-                            className="bg-[#3A8F45] hover:bg-[#2F7438] text-white font-bold py-4 px-8 text-lg shadow-lg hover:shadow-xl transition-all animate-breathing w-full md:w-auto"
+                            className="bg-[#FFFFFF] hover:bg-[#F3F3F3] text-[#1A1A1A] font-bold py-4 px-8 text-lg rounded-lg border-[1.5px] border-[#D9D9D9] shadow-none w-full md:w-auto"
                           >
                             <span className="md:hidden">Checkout securely</span>
                             <span className="hidden md:inline">Continue to secure payment</span>
-                            <ArrowRight className="w-5 h-5 ml-2" strokeWidth={2.5} />
+                            <ArrowRight className="w-5 h-5 ml-2 text-[#1A1A1A]" strokeWidth={2.5} />
                           </Button>
                           <div className="flex items-center justify-center gap-2 text-xs text-[#777777]">
                             <Lock className="w-3 h-3" />
@@ -2945,10 +2945,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         <div className="flex flex-col items-center gap-1">
                           <Button
                             onClick={handleSelectPlan}
-                            className="bg-white hover:bg-[#F2F2F2] text-[#000000] font-semibold py-3 px-5 rounded-lg text-sm gap-1.5 border border-[#000000] shadow-none"
+                            className="bg-[#3A8F45] text-white font-semibold py-3 px-5 rounded-lg text-sm gap-1.5 border-none shadow-none animate-breathing"
                           >
                             Checkout
-                            <ArrowRight className="w-4 h-4" strokeWidth={2} />
+                            <ArrowRight className="w-4 h-4 text-white" strokeWidth={2} />
                           </Button>
                           <div className="flex items-center gap-1 text-[10px] text-[#777777]">
                             <Lock className="w-3 h-3" />
@@ -3079,7 +3079,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <div className="flex flex-col items-end gap-2 min-w-[180px]">
                         <Button
                           onClick={handleSelectPlan}
-                          className="bg-[#3A8F45] hover:bg-[#2F7438] text-white font-semibold py-5 px-6 rounded-lg text-sm gap-2 border-none shadow-none animate-breathing"
+                          className="bg-[#3A8F45] text-white font-semibold py-5 px-6 rounded-lg text-sm gap-2 border-none shadow-none animate-breathing"
                         >
                           Continue to checkout
                           <ArrowRight className="w-4 h-4 text-white" strokeWidth={2} />
