@@ -1728,7 +1728,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </CollapsibleContent>
                   </Collapsible>
                   
-                  {/* CTA Button - Primary Orange */}
+                  {/* CTA Button - Primary Brand Orange */}
                   <Button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1739,7 +1739,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       "w-full mb-3 font-semibold text-sm py-5 rounded-md transition-all duration-200",
                       isSelected
                         ? "bg-[#2C7A2C] hover:bg-[#256B25] text-white border-none"
-                        : "bg-[#CC5A23] hover:bg-[#B54F1F] text-white border-none"
+                        : "bg-[#eb4b00] hover:bg-[#d63f00] text-white border-none"
                     )}
                     size="lg"
                   >
