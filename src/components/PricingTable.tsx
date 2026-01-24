@@ -1627,10 +1627,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   </div>
 
                   {/* Duration Title */}
-                  <h4 className="text-lg font-bold text-[#000000] mb-0.5">
+                  <h4 className="text-lg font-bold text-[#000000] mb-5">
                     {duration.label}
                   </h4>
-                  <p className="text-sm text-[#777777] mb-5">{duration.planName}</p>
                   
                   {/* Main Price - Actual monthly payment FIRST and LARGEST */}
                   <div className="mb-4">
