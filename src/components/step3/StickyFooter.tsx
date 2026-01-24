@@ -121,6 +121,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
 
           {/* Right-Hand Savings Section */}
           <div className="flex flex-col items-start gap-1 px-6 border-r border-[#DDDDDD]">
+            <p className="text-sm font-bold text-[#000000]">{coverText}</p>
             <p className="text-sm text-[#333333]">
               Pay in full and <span className="font-semibold text-[#3A8F45]">save £{savings}</span>
             </p>
