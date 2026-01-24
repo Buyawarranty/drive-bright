@@ -1600,10 +1600,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     setPaymentType(durationId);
                   }}
                   className={cn(
-                    "relative p-6 rounded-xl border-2 transition-all pointer-events-auto cursor-pointer bg-white",
+                    "relative p-6 rounded-xl border-2 transition-all duration-200 pointer-events-auto cursor-pointer bg-white",
                     isSelected 
-                      ? "border-[#eb4b00] shadow-[0_0_0_3px_rgba(235,75,0,0.15)]" 
-                      : "border-[#EDEDED] hover:border-[#CCCCCC]"
+                      ? "border-orange-500 shadow-lg shadow-orange-500/30" 
+                      : "border-gray-200 hover:border-orange-300 hover:shadow-md"
                   )}
                   style={{ position: 'relative', zIndex: 1 }}
                 >
