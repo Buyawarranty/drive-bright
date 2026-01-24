@@ -142,20 +142,20 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             <Button
               onClick={onContinue}
               disabled={isLoading || !isValid}
-              className="bg-white hover:bg-[#EFEFEF] text-[#000000] font-semibold py-5 px-6 rounded-lg text-sm gap-2 border border-[#000000] shadow-none"
+              className="bg-[#3A8F45] hover:bg-[#2E7A38] text-white font-semibold py-5 px-6 rounded-lg text-sm gap-2 shadow-md"
             >
               {isLoading ? (
                 'Loading...'
               ) : (
                 <>
                   Continue to checkout
-                  <ArrowRight className="w-4 h-4 text-[#000000]" strokeWidth={2} />
+                  <ArrowRight className="w-4 h-4 text-white" strokeWidth={2} />
                 </>
               )}
             </Button>
             <div className="flex items-center gap-1.5 text-xs text-[#777777]">
               <Lock className="w-3 h-3" />
-              <span>Secure checkout – Easy claims</span>
+              <span>Secure checkout – No hidden fees</span>
             </div>
           </div>
         </div>
