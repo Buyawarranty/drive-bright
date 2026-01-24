@@ -2964,7 +2964,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         aria-expanded={isSummaryExpanded}
                       >
                         <span>{isSummaryExpanded ? 'Hide details' : 'Show details'}</span>
-                        <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : 'rotate-0'}`} />
+                        <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-0' : 'rotate-180'}`} />
                       </button>
 
                       {/* Expanded Content */}
