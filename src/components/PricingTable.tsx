@@ -1632,48 +1632,36 @@ const PricingTable: React.FC<PricingTableProps> = ({
                   </h4>
                   <p className="text-sm text-[#777777] mb-5">{duration.planName}</p>
                   
-                  {/* Main Price - Large */}
+                  {/* Main Price - Actual monthly payment FIRST and LARGEST */}
                   <div className="mb-4">
-                    {/* For 2-year and 3-year, show "Approx. per month over X years" with equivalent */}
-                    {(durationId === '24months' || durationId === '36months') && (
-                      <>
-                        <p className="text-sm text-[#555555] mb-1">Approx. per month over {durationId === '24months' ? '2' : '3'} years</p>
-                        <div className="flex items-baseline gap-1 mb-3">
-                          <span className="text-3xl font-bold text-[#000000]">
-                            £{calculateCPMWithGuardrail(displayedAnnualPrice, durationId === '24months' ? 24 : 36, displayedMonthlyPrice)}
-                          </span>
-                          <span className="text-base text-[#333333]">per month</span>
-                        </div>
-                      </>
+                    {/* Large headline: £X/month for 12 months */}
+                    <div className="flex items-baseline gap-1 mb-1">
+                      <span className="text-3xl font-bold text-[#000000]">£{displayedMonthlyPrice}</span>
+                      <span className="text-base text-[#333333]">/month for 12 months</span>
+                    </div>
+                    
+                    {/* No payments notice - for multi-year plans */}
+                    {durationId === '24months' && (
+                      <p className="text-sm font-semibold text-[#333333] mb-2">No payments in year 2</p>
+                    )}
+                    {durationId === '36months' && (
+                      <p className="text-sm font-semibold text-[#333333] mb-2">No payments in years 2 or 3</p>
                     )}
                     
-                    {/* For 1-year, just show the monthly payment */}
-                    {durationId === '12months' && (
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-bold text-[#000000]">£{displayedMonthlyPrice}</span>
-                        <span className="text-base text-[#333333]">per month</span>
+                    {/* Average cost badge - smaller, subtle for multi-year */}
+                    {(durationId === '24months' || durationId === '36months') && (
+                      <div className="inline-block bg-[#F5F5F5] border border-[#E0E0E0] rounded-full px-3 py-1 mb-3">
+                        <span className="text-sm text-[#555555]">
+                          Avg. <span className="font-semibold text-[#000000]">£{calculateCPMWithGuardrail(displayedAnnualPrice, durationId === '24months' ? 24 : 36, displayedMonthlyPrice)}</span>/month over {durationId === '24months' ? '2' : '3'} years
+                        </span>
                       </div>
                     )}
-                  </div>
-
-                  {/* Payment Details - Bullet points */}
-                  <ul className="space-y-1.5 mb-4 list-disc list-inside text-sm">
-                    <li className="text-[#777777]">
-                      Paid monthly for 12 months <span className="font-semibold text-[#000000]">£{displayedMonthlyPrice}</span> per month
-                    </li>
                     
-                    {durationId === '24months' && (
-                      <li className="text-[#777777]">No payments in year 2</li>
-                    )}
-                    
-                    {durationId === '36months' && (
-                      <li className="text-[#777777]">No payments in years 2 or 3</li>
-                    )}
-                    
-                    <li className="text-[#333333]">
+                    {/* Total cost */}
+                    <p className="text-sm text-[#333333]">
                       Total cost <span className="font-semibold text-[#000000]">£{displayedAnnualPrice}</span>
-                    </li>
-                  </ul>
+                    </p>
+                  </div>
 
                   {/* Pay in full savings - Only for 2-year and 3-year */}
                   {(durationId === '24months' || durationId === '36months') && (
