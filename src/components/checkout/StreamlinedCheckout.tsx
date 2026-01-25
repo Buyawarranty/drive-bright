@@ -1485,7 +1485,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-700">
                         <Check className="w-4 h-4 flex-shrink-0" style={{ color: '#FF6B00' }} />
-                        <span>Spread the cost</span>
+                        <span>12 payments only</span>
                       </div>
                     </div>
                     
