@@ -843,7 +843,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background px-2 sm:px-0">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
         {/* Back Link */}
         <div className="flex items-center justify-between mb-4 sm:mb-6">
