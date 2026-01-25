@@ -118,7 +118,6 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [isConfirmingPaid, setIsConfirmingPaid] = useState(false);
   const [showConfirmPaymentDialog, setShowConfirmPaymentDialog] = useState(false);
   const [paymentSource, setPaymentSource] = useState('');
-  const [paymentReference, setPaymentReference] = useState('');
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
@@ -575,7 +574,6 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       
       // Reset payment dialog state for fresh entry
       setPaymentSource('');
-      setPaymentReference('');
       setPaymentAmount('');
       setPaymentDate(new Date().toISOString().split('T')[0]);
       setPaymentConfirmed(false);
@@ -1197,7 +1195,6 @@ Questions? Call 0330 229 5040`;
       },
       payment: {
         source: paymentSource,
-        reference: paymentReference,
         amount: parseFloat(paymentAmount),
         date: paymentDate,
         notes: paymentNotes,
@@ -1205,7 +1202,7 @@ Questions? Call 0330 229 5040`;
       integrations: {
         sendToW2k,
         sendWelcomeEmail,
-        w2kNotes: additionalNotes ? `External payment via ${paymentSource}. Ref: ${paymentReference}. ${additionalNotes}`.trim() : `External payment via ${paymentSource}. Ref: ${paymentReference}`.trim(),
+        w2kNotes: additionalNotes ? `External payment via ${paymentSource}. ${additionalNotes}`.trim() : `External payment via ${paymentSource}`.trim(),
       }
     };
   };
@@ -1214,7 +1211,6 @@ Questions? Call 0330 229 5040`;
   const isPaymentFormValid = () => {
     return (
       paymentSource.trim() !== '' &&
-      paymentReference.trim() !== '' &&
       paymentAmount.trim() !== '' &&
       warrantyStartDate !== undefined &&
       paymentConfirmed === true
@@ -1427,7 +1423,7 @@ Questions? Call 0330 229 5040`;
         .from('admin_notes')
         .insert({
           customer_id: customerId,
-          note: `External Payment Confirmed:\n• Source: ${paymentSource}\n• Reference: ${paymentReference}\n• Amount: £${confirmedAmount}\n• Warranty Start Date: ${format(startDate, 'd MMM yyyy')}${isFutureStartDate ? ' (future start)' : ''}\n• Confirmed by: ${adminEmail || 'Admin'}${paymentNotes ? `\n• Notes: ${paymentNotes}` : ''}`,
+          note: `External Payment Confirmed:\n• Source: ${paymentSource}\n• Amount: £${confirmedAmount}\n• Warranty Start Date: ${format(startDate, 'd MMM yyyy')}${isFutureStartDate ? ' (future start)' : ''}\n• Confirmed by: ${adminEmail || 'Admin'}${paymentNotes ? `\n• Notes: ${paymentNotes}` : ''}`,
           created_by: adminUserId
         });
 
@@ -1441,8 +1437,7 @@ Questions? Call 0330 229 5040`;
               status: 'paid_externally',
               payment_confirmed_at: new Date().toISOString(),
               payment_confirmed_by: adminUserId,
-              payment_source: paymentSource,
-              payment_reference: paymentReference
+              payment_source: paymentSource
             })
             .eq('access_token', accessToken);
         }
@@ -1484,7 +1479,7 @@ Questions? Call 0330 229 5040`;
               policyId: newPolicy.id,
               customerId: customerId,
               force: true,
-              additionalNotes: additionalNotes ? `External payment via ${paymentSource}. Ref: ${paymentReference}. ${additionalNotes}`.trim() : `External payment via ${paymentSource}. Ref: ${paymentReference}`.trim()
+              additionalNotes: additionalNotes ? `External payment via ${paymentSource}. ${additionalNotes}`.trim() : `External payment via ${paymentSource}`.trim()
             }
           });
           w2000SentSuccess = !w2kError;
@@ -1580,7 +1575,6 @@ Questions? Call 0330 229 5040`;
     setShowEmailError(false);
     // Reset payment confirmation fields
     setPaymentSource('');
-    setPaymentReference('');
     setPaymentAmount('');
     setPaymentDate(new Date().toISOString().split('T')[0]);
     setPaymentConfirmed(false);
@@ -3111,16 +3105,6 @@ Questions? Call 0330 229 5040`;
                     </select>
                   </div>
 
-                  {/* Payment Reference */}
-                  <div className="space-y-2">
-                    <Label htmlFor="payment-reference">Payment Reference / Transaction ID *</Label>
-                    <Input
-                      id="payment-reference"
-                      value={paymentReference}
-                      onChange={(e) => setPaymentReference(e.target.value)}
-                      placeholder="e.g. pi_xxxx, BAC123456, etc."
-                    />
-                  </div>
 
                   {/* Amount */}
                   <div className="grid grid-cols-2 gap-4">
@@ -3300,7 +3284,6 @@ Questions? Call 0330 229 5040`;
                             <div><span className="font-medium">Labour Rate:</span> £{preview.policy.labourRate}/hr</div>
                             <div><span className="font-medium">Payment Amount:</span> £{preview.payment.amount}</div>
                             <div><span className="font-medium">Payment Source:</span> {preview.payment.source}</div>
-                            <div><span className="font-medium">Payment Ref:</span> {preview.payment.reference}</div>
                             {preview.policy.breakdownRecovery && <div className="text-green-700">✓ Breakdown Recovery</div>}
                             {preview.policy.vehicleRental && <div className="text-green-700">✓ Hire Car Cover</div>}
                             {preview.policy.boostAddon && <div className="text-green-700">✓ Boost Add-on</div>}
@@ -3508,7 +3491,7 @@ Questions? Call 0330 229 5040`;
                     </Button>
                     <Button
                       onClick={() => setExternalPaymentStep('preview')}
-                      disabled={!paymentSource || !paymentReference || !paymentAmount || !paymentDate}
+                      disabled={!paymentSource || !paymentAmount || !paymentDate}
                       className="bg-blue-600 hover:bg-blue-700"
                     >
                       <Eye className="w-4 h-4 mr-2" />
