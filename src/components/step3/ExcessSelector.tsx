@@ -8,13 +8,12 @@ interface ExcessSelectorProps {
   currentMonthlyPrice: number;
 }
 
-// Excess options - UI shows £0, £50, £100, £150 but backend uses 0, 100, 250, 500
-// This is a UI-only display change as requested - pricing logic unchanged
+// Original excess options matching the design - backend values
 const excessOptions = [
-  { value: 0, label: '£0' },
-  { value: 100, label: '£50' },
-  { value: 250, label: '£100' },
-  { value: 500, label: '£150' }
+  { value: 0, label: '£0', sublabel: 'excess', description: 'Zero Excess', subtitle: 'No upfront cost when you claim' },
+  { value: 100, label: '£100', sublabel: 'excess', description: 'Best Value', subtitle: 'Best value overall for most drivers', isPopular: true },
+  { value: 250, label: '£250', sublabel: 'excess', description: 'Saver Option', subtitle: 'Lower monthly price' },
+  { value: 500, label: '£500', sublabel: 'excess', description: 'Budget Option', subtitle: 'Cheapest monthly price' }
 ];
 
 const ExcessSelector: React.FC<ExcessSelectorProps> = ({
@@ -25,50 +24,19 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
   const [showExplainer, setShowExplainer] = useState(false);
 
   return (
-    <div className="px-4 py-4 border-t border-border">
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold">
-          2
+    <div className="px-4 py-6 bg-white rounded-2xl border border-[#E8E8E8] mx-4 mt-4">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="w-7 h-7 rounded-full bg-[#000000] text-white flex items-center justify-center text-sm font-bold">
+          3
         </div>
-        <h3 className="font-semibold text-lg text-foreground">Choose Your Excess</h3>
-        
-        {/* Info icon with tooltip trigger */}
-        <button
-          onClick={() => setShowExplainer(!showExplainer)}
-          className="relative flex items-center justify-center w-11 h-11 -m-2 rounded-full hover:bg-muted/50 transition-colors"
-          aria-label="What is an excess?"
-          aria-expanded={showExplainer}
-        >
-          <Info className="w-5 h-5 text-muted-foreground" />
-        </button>
+        <div className="flex items-center gap-2">
+          <span className="text-lg">⚡</span>
+          <h3 className="font-semibold text-lg text-[#000000]">Choose your excess amount</h3>
+        </div>
       </div>
 
-      {/* Expandable Explainer */}
-      {showExplainer && (
-        <div className="mb-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-left animate-fade-in">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex-1">
-              <h4 className="font-semibold text-sm text-foreground mb-2">What is an excess?</h4>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-2">
-                An excess is the amount you pay towards a repair when you make a claim. We cover the rest, up to your claim limit.
-              </p>
-              <p className="text-xs text-muted-foreground/80 leading-relaxed">
-                For example: with a £100 excess on a £600 repair, you pay £100 and we pay £500.
-              </p>
-            </div>
-            <button
-              onClick={() => setShowExplainer(false)}
-              className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 transition-colors"
-              aria-label="Close"
-            >
-              <X className="w-4 h-4 text-muted-foreground" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Excess Buttons - Inline style like original */}
-      <div className="flex gap-2 mb-3">
+      {/* Excess Cards Grid - Matching original design */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {excessOptions.map((option) => {
           const isSelected = selectedExcess === option.value;
           
@@ -77,29 +45,35 @@ const ExcessSelector: React.FC<ExcessSelectorProps> = ({
               key={option.value}
               onClick={() => onExcessChange(option.value)}
               className={cn(
-                "relative py-2 px-4 rounded-lg border-2 text-center transition-all min-w-[60px]",
+                "relative p-4 rounded-xl border-2 text-left transition-all",
                 isSelected
-                  ? "border-foreground bg-foreground text-background"
-                  : "border-border bg-card hover:border-foreground/50 text-foreground"
+                  ? "border-[#000000] bg-white"
+                  : "border-[#E8E8E8] bg-white hover:border-[#000000]/30"
               )}
             >
-              <span className="font-semibold text-sm">{option.label}</span>
+              {option.isPopular && (
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#E65100] text-white text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap uppercase">
+                  MOST POPULAR
+                </span>
+              )}
+              
+              <div className="mb-2">
+                <span className="text-2xl font-bold text-[#000000]">{option.label}</span>
+                <span className="text-sm text-[#888888] ml-1">{option.sublabel}</span>
+              </div>
+              
+              <p className="text-sm font-semibold text-[#000000]">{option.description}</p>
+              <p className="text-xs text-[#888888] mt-0.5">{option.subtitle}</p>
+              
+              {isSelected && (
+                <div className="absolute top-2 right-2 w-5 h-5 bg-[#000000] rounded-full flex items-center justify-center">
+                  <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                </div>
+              )}
             </button>
           );
         })}
       </div>
-
-      {/* Micro-helper line */}
-      <p className="text-xs text-muted-foreground mb-2">
-        A higher excess means a lower monthly price.
-      </p>
-
-      {/* Live Price Update */}
-      {selectedExcess !== null && (
-        <div className="text-sm font-medium text-success animate-fade-in">
-          Updated price: £{currentMonthlyPrice}/month
-        </div>
-      )}
     </div>
   );
 };
