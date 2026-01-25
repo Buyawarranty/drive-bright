@@ -2875,9 +2875,9 @@ Questions? Call 0330 229 5040`;
             setShowConfirmPaymentDialog(open);
             if (!open) setExternalPaymentStep('details');
           }}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white" largeCloseButton>
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
+                <DialogTitle className="flex items-center gap-2 text-lg">
                   <CheckCircle2 className="w-5 h-5 text-green-600" />
                   {externalPaymentStep === 'details' 
                     ? 'Confirm External Payment' 
@@ -2885,12 +2885,12 @@ Questions? Call 0330 229 5040`;
                       ? 'Review Before Submission'
                       : 'Order Complete'}
                 </DialogTitle>
-                <DialogDescription>
+                <DialogDescription className="text-muted-foreground">
                   {externalPaymentStep === 'details' 
-                    ? 'Step 1: Verify details and enter payment information' 
+                    ? 'Step 2: Verify details and enter payment information' 
                     : externalPaymentStep === 'preview'
-                      ? 'Step 2: Review all data before creating the policy'
-                      : 'Step 3: Confirmation status'}
+                      ? 'Step 3: Review all data before creating the policy'
+                      : 'Step 4: Confirmation status'}
                 </DialogDescription>
               </DialogHeader>
 
@@ -2902,67 +2902,67 @@ Questions? Call 0330 229 5040`;
               )}
 
               {externalPaymentStep === 'details' ? (
-                <div className="space-y-4">
+                <div className="space-y-5">
                   {/* Editable Customer & Vehicle Details */}
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
-                    <h4 className="font-semibold text-blue-900 flex items-center gap-2">
-                      <UserCheck className="w-4 h-4" />
+                  <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm space-y-4">
+                    <h4 className="font-semibold text-gray-800 flex items-center gap-2 text-base">
+                      <UserCheck className="w-4 h-4 text-blue-600" />
                       Customer & Vehicle Details
                     </h4>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <Label className="text-xs text-blue-600">Customer Name *</Label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium text-gray-600">Customer Name *</Label>
                         <Input
                           value={editableCustomerName}
                           onChange={(e) => setEditableCustomerName(e.target.value)}
-                          className="bg-white"
+                          className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
                         />
                       </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-blue-600">Email *</Label>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium text-gray-600">Email *</Label>
                         <Input
                           value={editableCustomerEmail}
                           onChange={(e) => setEditableCustomerEmail(e.target.value)}
-                          className="bg-white"
+                          className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
                         />
                       </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-blue-600">Phone</Label>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium text-gray-600">Phone</Label>
                         <Input
                           value={editableCustomerPhone}
                           onChange={(e) => setEditableCustomerPhone(e.target.value)}
                           placeholder="07xxx xxxxxx"
-                          className="bg-white"
+                          className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
                         />
                       </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-blue-600">Registration *</Label>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium text-gray-600">Registration *</Label>
                         <Input
                           value={editableRegNumber}
                           onChange={(e) => setEditableRegNumber(e.target.value.toUpperCase())}
-                          className="bg-white font-mono"
+                          className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors font-mono"
                         />
                       </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-blue-600">Vehicle</Label>
-                        <p className="text-sm text-blue-900 py-2">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium text-gray-600">Vehicle</Label>
+                        <p className="text-sm text-gray-800 py-2 px-3 bg-gray-50 rounded-md border border-gray-200">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
                       </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-blue-600">Mileage</Label>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium text-gray-600">Mileage</Label>
                         <Input
                           value={editableMileage}
                           onChange={(e) => setEditableMileage(e.target.value.replace(/\D/g, ''))}
                           placeholder="e.g. 45000"
-                          className="bg-white"
+                          className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* Address Section */}
-                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg space-y-3">
+                  <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm space-y-4">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-semibold text-amber-900 flex items-center gap-2">
+                      <h4 className="font-semibold text-gray-800 flex items-center gap-2 text-base">
                         📍 Customer Address
                       </h4>
                       <div className="flex items-center gap-2">
@@ -2971,66 +2971,66 @@ Questions? Call 0330 229 5040`;
                           checked={skipAddressDetails}
                           onCheckedChange={(checked) => setSkipAddressDetails(checked === true)}
                         />
-                        <Label htmlFor="skip-address" className="text-xs text-amber-700 cursor-pointer">
+                        <Label htmlFor="skip-address" className="text-xs text-gray-600 cursor-pointer">
                           Customer will complete in dashboard
                         </Label>
                       </div>
                     </div>
                     
                     {!skipAddressDetails && (
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <Label className="text-xs text-amber-600">House/Building Number</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium text-gray-600">House/Building Number</Label>
                           <Input
                             value={customerBuildingNumber}
                             onChange={(e) => setCustomerBuildingNumber(e.target.value)}
                             placeholder="e.g. 42"
-                            className="bg-white"
+                            className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
                           />
                         </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs text-amber-600">Street</Label>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium text-gray-600">Street</Label>
                           <Input
                             value={customerStreet}
                             onChange={(e) => setCustomerStreet(e.target.value)}
                             placeholder="e.g. High Street"
-                            className="bg-white"
+                            className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
                           />
                         </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs text-amber-600">Town/City</Label>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium text-gray-600">Town/City</Label>
                           <Input
                             value={customerTown}
                             onChange={(e) => setCustomerTown(e.target.value)}
                             placeholder="e.g. Manchester"
-                            className="bg-white"
+                            className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
                           />
                         </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs text-amber-600">County</Label>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium text-gray-600">County</Label>
                           <Input
                             value={customerCounty}
                             onChange={(e) => setCustomerCounty(e.target.value)}
                             placeholder="e.g. Greater Manchester"
-                            className="bg-white"
+                            className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
                           />
                         </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs text-amber-600">Postcode *</Label>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium text-gray-600">Postcode *</Label>
                           <Input
                             value={customerPostcode}
                             onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())}
                             placeholder="e.g. M1 1AA"
-                            className="bg-white"
+                            className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
                           />
                         </div>
                       </div>
                     )}
                     
                     {skipAddressDetails && (
-                      <Alert className="bg-amber-100 border-amber-300">
-                        <Info className="h-4 w-4 text-amber-600" />
-                        <AlertDescription className="text-amber-800 text-sm">
+                      <Alert className="bg-gray-50 border-gray-200">
+                        <Info className="h-4 w-4 text-gray-500" />
+                        <AlertDescription className="text-gray-600 text-sm">
                           The customer will be prompted to complete their address when they log into their dashboard.
                         </AlertDescription>
                       </Alert>
@@ -3038,45 +3038,45 @@ Questions? Call 0330 229 5040`;
                   </div>
 
                   {/* Pre-populated Policy Summary */}
-                  <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg space-y-3">
-                    <h4 className="font-semibold text-purple-900 flex items-center gap-2">
-                      <Zap className="w-4 h-4" />
-                      Policy Configuration (from Step 2)
+                  <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm space-y-4">
+                    <h4 className="font-semibold text-gray-800 flex items-center gap-2 text-base">
+                      <Zap className="w-4 h-4 text-purple-600" />
+                      Policy Configuration (from Step 1)
                     </h4>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <span className="text-purple-600 font-medium">Plan:</span>
-                        <p className="text-purple-900">Platinum</p>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="space-y-0.5">
+                        <span className="text-xs font-medium text-gray-500">Plan</span>
+                        <p className="text-gray-800 font-medium">Platinum</p>
                       </div>
-                      <div>
-                        <span className="text-purple-600 font-medium">Duration:</span>
-                        <p className="text-purple-900">
+                      <div className="space-y-0.5">
+                        <span className="text-xs font-medium text-gray-500">Duration</span>
+                        <p className="text-gray-800 font-medium">
                           {termOptions.find(t => t.id === paymentType)?.label}
                           {freeExtendedCover !== 'none' && (
                             <span className="ml-1 text-green-600">+ {freeExtendedCover === '3months' ? '3' : '6'} months FREE</span>
                           )}
                         </p>
                       </div>
-                      <div>
-                        <span className="text-purple-600 font-medium">Excess:</span>
-                        <p className="text-purple-900">£{excessAmount}</p>
+                      <div className="space-y-0.5">
+                        <span className="text-xs font-medium text-gray-500">Excess</span>
+                        <p className="text-gray-800 font-medium">£{excessAmount}</p>
                       </div>
-                      <div>
-                        <span className="text-purple-600 font-medium">Claim Limit:</span>
-                        <p className="text-purple-900">£{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}{boostAddon ? ' (boost)' : ''}</p>
+                      <div className="space-y-0.5">
+                        <span className="text-xs font-medium text-gray-500">Claim Limit</span>
+                        <p className="text-gray-800 font-medium">£{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}{boostAddon ? ' (boost)' : ''}</p>
                       </div>
-                      <div>
-                        <span className="text-purple-600 font-medium">Labour Rate:</span>
-                        <p className="text-purple-900">£{labourRate}/hr</p>
+                      <div className="space-y-0.5">
+                        <span className="text-xs font-medium text-gray-500">Labour Rate</span>
+                        <p className="text-gray-800 font-medium">£{labourRate}/hr</p>
                       </div>
-                      <div>
-                        <span className="text-purple-600 font-medium">Quoted Price:</span>
-                        <p className="text-purple-900 font-semibold">£{currentPrice.totalPrice}</p>
+                      <div className="space-y-0.5">
+                        <span className="text-xs font-medium text-gray-500">Quoted Price</span>
+                        <p className="text-gray-800 font-semibold text-base">£{currentPrice.totalPrice}</p>
                       </div>
                       {getAutoIncludedAddOns(paymentType).length > 0 && (
-                        <div className="col-span-2">
-                          <span className="text-purple-600 font-medium">Included Add-ons:</span>
-                          <p className="text-purple-900">
+                        <div className="col-span-2 space-y-0.5">
+                          <span className="text-xs font-medium text-gray-500">Included Add-ons</span>
+                          <p className="text-gray-800 font-medium">
                             {getAutoIncludedAddOns(paymentType).includes('breakdown') && 'Vehicle Recovery'}
                             {getAutoIncludedAddOns(paymentType).includes('breakdown') && getAutoIncludedAddOns(paymentType).includes('rental') && ', '}
                             {getAutoIncludedAddOns(paymentType).includes('rental') && 'Hire Car'}
@@ -3086,46 +3086,54 @@ Questions? Call 0330 229 5040`;
                     </div>
                   </div>
 
-                  {/* Payment Source */}
-                  <div className="space-y-2">
-                    <Label htmlFor="payment-source">Payment Source *</Label>
-                    <select
-                      id="payment-source"
-                      value={paymentSource}
-                      onChange={(e) => setPaymentSource(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-md bg-background"
-                    >
-                      <option value="">Select payment source...</option>
-                      <option value="stripe_dashboard">Stripe Dashboard</option>
-                      <option value="bumper_portal">Bumper Portal</option>
-                      <option value="bank_transfer">Bank Transfer</option>
-                      <option value="phone_card">Phone Card Payment</option>
-                      <option value="dealer_portal">Dealer Portal</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-
-
-                  {/* Amount */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="payment-amount">Amount Received (£) *</Label>
-                      <Input
-                        id="payment-amount"
-                        type="number"
-                        value={paymentAmount}
-                        onChange={(e) => setPaymentAmount(e.target.value)}
-                        placeholder={currentPrice.totalPrice.toString()}
-                      />
-                      {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
-                        <p className="text-xs text-amber-600">
-                          ⚠️ Differs from quoted price (£{currentPrice.totalPrice})
-                        </p>
-                      )}
+                  {/* Payment Details Section */}
+                  <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm space-y-4">
+                    <h4 className="font-semibold text-gray-800 flex items-center gap-2 text-base">
+                      💳 Payment Details
+                    </h4>
+                    
+                    {/* Payment Source */}
+                    <div className="space-y-1.5">
+                      <Label htmlFor="payment-source" className="text-xs font-medium text-gray-600">Payment Source *</Label>
+                      <select
+                        id="payment-source"
+                        value={paymentSource}
+                        onChange={(e) => setPaymentSource(e.target.value)}
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors text-sm"
+                      >
+                        <option value="">Select payment source...</option>
+                        <option value="stripe_dashboard">Stripe Dashboard</option>
+                        <option value="bumper_portal">Bumper Portal</option>
+                        <option value="bank_transfer">Bank Transfer</option>
+                        <option value="phone_card">Phone Card Payment</option>
+                        <option value="dealer_portal">Dealer Portal</option>
+                        <option value="other">Other</option>
+                      </select>
                     </div>
+
+                    {/* Amount */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="payment-amount" className="text-xs font-medium text-gray-600">Amount Received (£) *</Label>
+                        <Input
+                          id="payment-amount"
+                          type="number"
+                          value={paymentAmount}
+                          onChange={(e) => setPaymentAmount(e.target.value)}
+                          placeholder={currentPrice.totalPrice.toString()}
+                          className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                        />
+                        {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
+                          <p className="text-xs text-amber-600">
+                            ⚠️ Differs from quoted price (£{currentPrice.totalPrice})
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    
                     {/* Warranty Start Date Picker */}
-                    <div className="col-span-2 space-y-3">
-                      <Label className="flex items-center gap-2">
+                    <div className="space-y-3">
+                      <Label className="flex items-center gap-2 text-xs font-medium text-gray-600">
                         <CalendarIcon className="w-4 h-4" />
                         Warranty Start Date *
                       </Label>
@@ -3210,18 +3218,19 @@ Questions? Call 0330 229 5040`;
                         </div>
                       )}
                     </div>
-                  </div>
 
-                  {/* Notes */}
-                  <div className="space-y-2">
-                    <Label htmlFor="payment-notes">Internal Notes (optional)</Label>
-                    <Textarea
-                      id="payment-notes"
-                      value={paymentNotes}
-                      onChange={(e) => setPaymentNotes(e.target.value)}
-                      placeholder="Any additional notes about this payment..."
-                      rows={2}
-                    />
+                    {/* Notes */}
+                    <div className="space-y-1.5">
+                      <Label htmlFor="payment-notes" className="text-xs font-medium text-gray-600">Internal Notes (optional)</Label>
+                      <Textarea
+                        id="payment-notes"
+                        value={paymentNotes}
+                        onChange={(e) => setPaymentNotes(e.target.value)}
+                        placeholder="Any additional notes about this payment..."
+                        rows={2}
+                        className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                      />
+                    </div>
                   </div>
 
                   {/* Options */}
