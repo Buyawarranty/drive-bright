@@ -98,7 +98,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
               "text-xl font-bold text-[#000000] transition-all duration-300",
               isPulsing && "animate-pulse"
             )}>
-              £{monthlyPrice}/month for 12 months
+              £{monthlyPrice} x 12 payments
             </p>
             
             {/* Average price line */}
