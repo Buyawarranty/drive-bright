@@ -2585,27 +2585,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
           </div>
         </div>
-        <div className="section-header rounded-lg p-4 sm:p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
-              6
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-              <h3 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
-                <Shield className="w-5 h-5 flex-shrink-0" />
-                Optional Add-Ons
-              </h3>
-              <p className="text-muted-foreground text-base font-bold">Boost Your Cover ✨</p>
-            </div>
-          </div>
-          <AddOnProtectionPackages 
-            selectedAddOns={selectedProtectionAddOns}
-            paymentType={paymentType}
-            onAddOnChange={(addOnKey, selected) => 
-              setSelectedProtectionAddOns(prev => ({ ...prev, [addOnKey]: selected }))
-            }
-          />
-        </div>
+        {/* Add-ons section removed - auto-included add-ons for 24/36 month plans are handled by getAutoIncludedAddOns in addOnsUtils.ts */}
 
         {/* Conversion-Optimized Trust & Action Section */}
         <div id="your-cover-details" className="pt-2 pb-6 md:pt-4 md:pb-10 space-y-4">
