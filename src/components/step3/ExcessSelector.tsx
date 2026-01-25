@@ -8,12 +8,13 @@ interface ExcessSelectorProps {
   currentMonthlyPrice: number;
 }
 
-// Original excess options - inline buttons style
+// Excess options - UI shows £0, £50, £100, £150 but backend uses 0, 100, 250, 500
+// This is a UI-only display change as requested - pricing logic unchanged
 const excessOptions = [
   { value: 0, label: '£0' },
-  { value: 50, label: '£50' },
-  { value: 100, label: '£100', isMostPopular: true },
-  { value: 150, label: '£150' }
+  { value: 100, label: '£50' },
+  { value: 250, label: '£100' },
+  { value: 500, label: '£150' }
 ];
 
 const ExcessSelector: React.FC<ExcessSelectorProps> = ({
