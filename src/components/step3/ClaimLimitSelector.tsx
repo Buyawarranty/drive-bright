@@ -12,12 +12,24 @@ interface ClaimLimitSelectorProps {
   boostPrice: number;
 }
 
-// Original claim limit options: £750 / £1,250 / £2,000
+// Claim limit options - UI shows £750, £1,250, £2,000 but backend uses 1000, 2000, 3000
+// This is a UI-only display change as requested - pricing logic unchanged
 const claimLimitOptions = [
-  { value: 750, label: '£750', name: 'AutoCare Essential' },
-  { value: 1250, label: '£1,250', name: 'AutoCare Advantage', isPopular: true },
-  { value: 2000, label: '£2,000', name: 'AutoCare Elite' }
+  { value: 1000, label: '£750', displayValue: 750, name: 'AutoCare Essential' },
+  { value: 2000, label: '£1,250', displayValue: 1250, name: 'AutoCare Advantage', isPopular: true },
+  { value: 3000, label: '£2,000', displayValue: 2000, name: 'AutoCare Elite' }
 ];
+
+// Map backend value to display value for UI
+const getDisplayClaimLimit = (backendValue: number | null): number => {
+  if (backendValue === 1000) return 750;
+  if (backendValue === 2000) return 1250;
+  if (backendValue === 3000) return 2000;
+  if (backendValue === 1500) return 1750; // 750 + 1000 boost
+  if (backendValue === 2500) return 2250; // 1250 + 1000 boost
+  if (backendValue === 3500) return 3000; // 2000 + 1000 boost
+  return backendValue || 0;
+};
 
 const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
   selectedClaimLimit,
@@ -42,26 +54,26 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
     });
   }, []);
 
-  // Direct selection - no automatic boost for £2,000
+  // Direct selection - no automatic boost for max limit (3000)
   const handleSelect = (limit: number) => {
     onClaimLimitChange(limit);
-    // Disable boost if £2,000 is selected (maximum limit)
-    if (limit === 2000 && boostAddon) {
+    // Disable boost if max limit is selected
+    if (limit === 3000 && boostAddon) {
       onBoostChange(false);
     }
   };
 
-  // Calculate final claim limit with boost applied (+£1,000 boost)
+  // Calculate final claim limit with boost applied (+£1,000 displayed, but +500 backend value)
   const getFinalClaimLimit = () => {
-    if (boostAddon && selectedClaimLimit && selectedClaimLimit < 2000) {
-      return selectedClaimLimit + 1000;
+    if (boostAddon && selectedClaimLimit && selectedClaimLimit < 3000) {
+      return selectedClaimLimit + 500;
     }
     return selectedClaimLimit;
   };
 
   const finalClaimLimit = getFinalClaimLimit();
-  const isBoostActive = boostAddon && selectedClaimLimit !== null && selectedClaimLimit < 2000;
-  const canShowBoost = selectedClaimLimit !== null && selectedClaimLimit < 2000;
+  const isBoostActive = boostAddon && selectedClaimLimit !== null && selectedClaimLimit < 3000;
+  const canShowBoost = selectedClaimLimit !== null && selectedClaimLimit < 3000;
 
   const handleBoostToggle = (checked: boolean, event?: React.MouseEvent) => {
     if (checked && event) {
@@ -180,7 +192,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
                   🚀 Boost your cover by £1,000
                 </h4>
                 <p className="text-sm text-muted-foreground">
-                  Upgrade to £{((selectedClaimLimit || 0) + 1000).toLocaleString()} per claim
+                  Upgrade to £{(getDisplayClaimLimit(selectedClaimLimit) + 1000).toLocaleString()} per claim
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Just £{boostPrice}/month × 12 payments
@@ -225,7 +237,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
         <div className="mt-3 p-3 bg-muted/50 rounded-lg border border-border">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-foreground">
-              Claim limit: <span className="font-bold">£{finalClaimLimit?.toLocaleString()}</span> per claim
+              Claim limit: <span className="font-bold">£{getDisplayClaimLimit(finalClaimLimit).toLocaleString()}</span> per claim
             </span>
             <span className="text-sm font-medium text-success">
               £{currentMonthlyPrice}/month
