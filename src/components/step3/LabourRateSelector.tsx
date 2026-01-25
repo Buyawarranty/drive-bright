@@ -8,12 +8,12 @@ interface LabourRateSelectorProps {
   currentMonthlyPrice: number;
 }
 
-// Simplified labour rate options - no delta pricing displayed
+// Labour rate options matching original design
 const labourRateOptions = [
-  { rate: 50, label: '£50/hr', description: 'Local garages' },
-  { rate: 70, label: '£70/hr', description: 'Independent garages', isPopular: true },
-  { rate: 100, label: '£100/hr', description: 'Approved garages' },
-  { rate: 200, label: '£200/hr', description: 'Expert garages' }
+  { rate: 50, label: '£50', sublabel: 'per hour', description: 'Local Garages', subtitle: 'Affordable option for smaller garages', isBestValue: true },
+  { rate: 70, label: '£70', sublabel: 'per hour', description: 'Independent Garages', subtitle: 'Ideal for your trusted local garage', isPopular: true },
+  { rate: 100, label: '£100', sublabel: 'per hour', description: 'Approved Garages', subtitle: 'Covers most garages nationwide' },
+  { rate: 200, label: '£200', sublabel: 'per hour', description: 'Expert Garages', subtitle: 'Perfect for main dealers and specialists' }
 ];
 
 const LabourRateSelector: React.FC<LabourRateSelectorProps> = ({
@@ -22,21 +22,24 @@ const LabourRateSelector: React.FC<LabourRateSelectorProps> = ({
   currentMonthlyPrice
 }) => {
   return (
-    <div className="px-4 py-4 border-t border-border">
+    <div className="px-4 py-6 bg-white rounded-2xl border border-[#E8E8E8] mx-4 mt-4">
       <div className="flex items-center gap-2 mb-2">
-        <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold">
-          4
+        <div className="w-7 h-7 rounded-full bg-[#000000] text-white flex items-center justify-center text-sm font-bold">
+          2
         </div>
-        <h3 className="font-semibold text-lg text-foreground">Choose Your Labour Rate</h3>
+        <div className="flex items-center gap-2">
+          <span className="text-lg">⚙️</span>
+          <h3 className="font-semibold text-lg text-[#000000]">Choose your labour rate</h3>
+        </div>
       </div>
 
-      {/* Single helper line */}
-      <p className="text-xs text-muted-foreground mb-3">
-        This sets the hourly rate we'll cover at the garage.
+      {/* Helper line */}
+      <p className="text-sm text-[#666666] mb-4 ml-9">
+        Pick the hourly rate that works best for your repair needs.
       </p>
 
-      {/* Labour Rate Cards - Simplified */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+      {/* Labour Rate Cards Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {labourRateOptions.map((option) => {
           const isSelected = selectedLabourRate === option.rate;
           
@@ -45,39 +48,39 @@ const LabourRateSelector: React.FC<LabourRateSelectorProps> = ({
               key={option.rate}
               onClick={() => onLabourRateChange(option.rate)}
               className={cn(
-                "relative py-3 px-2 rounded-lg border-2 text-left transition-all min-h-[70px]",
+                "relative p-4 rounded-xl border-2 text-left transition-all",
                 isSelected
-                  ? "border-success bg-success/10"
-                  : "border-border bg-card hover:border-success/50"
+                  ? "border-[#000000] bg-white"
+                  : "border-[#E8E8E8] bg-white hover:border-[#000000]/30"
               )}
             >
+              {option.isBestValue && (
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#000000] text-white text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap uppercase">
+                  BEST VALUE
+                </span>
+              )}
               {option.isPopular && (
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[8px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap uppercase">
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#E65100] text-white text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap uppercase">
                   MOST POPULAR
                 </span>
               )}
               
-              <span className="font-bold text-sm text-foreground block">{option.label}</span>
-              <span className="text-xs text-muted-foreground">{option.description}</span>
+              <div className="mb-2">
+                <span className="text-2xl font-bold text-[#000000]">{option.label}</span>
+                <span className="text-sm text-[#888888] ml-1">{option.sublabel}</span>
+              </div>
+              
+              <p className="text-sm font-semibold text-[#000000]">{option.description}</p>
+              <p className="text-xs text-[#888888] mt-0.5">{option.subtitle}</p>
               
               {isSelected && (
-                <div className="absolute top-1 right-1 w-4 h-4 bg-success rounded-full flex items-center justify-center">
+                <div className="absolute top-2 right-2 w-5 h-5 bg-[#000000] rounded-full flex items-center justify-center">
                   <Check className="w-3 h-3 text-white" strokeWidth={3} />
                 </div>
               )}
             </button>
           );
         })}
-      </div>
-
-      {/* Helper Text Below Cards */}
-      <p className="text-xs text-muted-foreground mb-2">
-        Covers most UK garages. Choose a higher rate if you use main dealers or specialists.
-      </p>
-
-      {/* Live Price Update */}
-      <div className="text-sm font-medium text-success animate-fade-in">
-        Updated price: £{currentMonthlyPrice}/month
       </div>
     </div>
   );

@@ -12,24 +12,12 @@ interface ClaimLimitSelectorProps {
   boostPrice: number;
 }
 
-// Claim limit options - UI shows £750, £1,250, £2,000 but backend uses 1000, 2000, 3000
-// This is a UI-only display change as requested - pricing logic unchanged
+// Original claim limit options - actual backend values
 const claimLimitOptions = [
-  { value: 1000, label: '£750', displayValue: 750, name: 'AutoCare Essential' },
-  { value: 2000, label: '£1,250', displayValue: 1250, name: 'AutoCare Advantage', isPopular: true },
-  { value: 3000, label: '£2,000', displayValue: 2000, name: 'AutoCare Elite' }
+  { value: 1000, label: '£1,000', name: 'AutoCare Essential' },
+  { value: 2000, label: '£2,000', name: 'AutoCare Advantage', isPopular: true },
+  { value: 3000, label: '£3,000', name: 'AutoCare Elite' }
 ];
-
-// Map backend value to display value for UI
-const getDisplayClaimLimit = (backendValue: number | null): number => {
-  if (backendValue === 1000) return 750;
-  if (backendValue === 2000) return 1250;
-  if (backendValue === 3000) return 2000;
-  if (backendValue === 1500) return 1750; // 750 + 1000 boost
-  if (backendValue === 2500) return 2250; // 1250 + 1000 boost
-  if (backendValue === 3500) return 3000; // 2000 + 1000 boost
-  return backendValue || 0;
-};
 
 const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
   selectedClaimLimit,
@@ -63,7 +51,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
     }
   };
 
-  // Calculate final claim limit with boost applied (+£1,000 displayed, but +500 backend value)
+  // Calculate final claim limit with boost applied (+£500)
   const getFinalClaimLimit = () => {
     if (boostAddon && selectedClaimLimit && selectedClaimLimit < 3000) {
       return selectedClaimLimit + 500;
@@ -83,56 +71,57 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
   };
 
   return (
-    <div className="px-4 py-4 border-t border-border">
+    <div className="px-4 py-6 bg-white rounded-2xl border border-[#E8E8E8] mx-4 mt-4">
       {/* Heading with info icon */}
       <div className="flex items-center gap-2 mb-2">
-        <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold">
-          3
+        <div className="w-7 h-7 rounded-full bg-[#000000] text-white flex items-center justify-center text-sm font-bold">
+          4
         </div>
-        <h3 className="font-semibold text-lg text-foreground">Single repair amount per claim</h3>
+        <div className="flex items-center gap-2">
+          <span className="text-lg">🛡️</span>
+          <h3 className="font-semibold text-lg text-[#000000]">Single repair amount per claim</h3>
+        </div>
         
-        {/* Info icon */}
+        {/* Details button */}
         <button
           onClick={() => setShowExplainer(!showExplainer)}
-          className="relative flex items-center justify-center w-11 h-11 -m-2 rounded-full hover:bg-muted/50 transition-colors"
-          aria-label="What is a claim limit?"
-          aria-expanded={showExplainer}
+          className="ml-2 px-3 py-1 text-xs font-medium text-[#3A8F45] bg-[#F0FDF4] border border-[#3A8F45]/20 rounded-full hover:bg-[#E8F5E9] transition-colors"
         >
-          <Info className="w-5 h-5 text-muted-foreground" />
+          ⓘ Details
         </button>
       </div>
       
-      {/* Single helper line */}
-      <p className="text-xs text-muted-foreground mb-3">
-        Sets the maximum amount we'll pay for each claim.
+      {/* Helper line */}
+      <p className="text-sm text-[#666666] mb-4 ml-9">
+        🔧 Set your claim limit - cover up to your car's full value 🚗
       </p>
 
       {/* Expandable Explainer */}
       {showExplainer && (
-        <div className="mb-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-left animate-fade-in">
+        <div className="mb-4 p-4 rounded-xl bg-[#F5F5F5] border border-[#E8E8E8] text-left animate-fade-in">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1">
-              <h4 className="font-semibold text-sm text-foreground mb-2">What is a claim limit?</h4>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-2">
+              <h4 className="font-semibold text-sm text-[#000000] mb-2">What is a claim limit?</h4>
+              <p className="text-sm text-[#666666] leading-relaxed mb-2">
                 This is the maximum amount we'll pay towards a single repair. Claims can be made up to the value of your car.
               </p>
-              <p className="text-xs text-muted-foreground/80 leading-relaxed">
+              <p className="text-xs text-[#888888] leading-relaxed">
                 For example: with a £2,000 limit, we'll cover repairs up to £2,000 per claim.
               </p>
             </div>
             <button
               onClick={() => setShowExplainer(false)}
-              className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 transition-colors"
+              className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#E8E8E8] transition-colors"
               aria-label="Close"
             >
-              <X className="w-4 h-4 text-muted-foreground" />
+              <X className="w-4 h-4 text-[#888888]" />
             </button>
           </div>
         </div>
       )}
 
-      {/* Claim Limit Cards - Simplified */}
-      <div className="grid grid-cols-3 gap-2 mb-3">
+      {/* Claim Limit Cards */}
+      <div className="grid grid-cols-3 gap-3 mb-4">
         {claimLimitOptions.map((option) => {
           const isSelected = selectedClaimLimit === option.value;
           
@@ -141,23 +130,24 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
               key={option.value}
               onClick={() => handleSelect(option.value)}
               className={cn(
-                "relative py-3 px-2 rounded-lg border-2 text-left transition-all min-h-[70px]",
+                "relative p-4 rounded-xl border-2 text-center transition-all",
                 isSelected
-                  ? "border-success bg-success/10"
-                  : "border-border bg-card hover:border-success/50"
+                  ? "border-[#3A8F45] bg-[#F0FDF4]"
+                  : "border-[#E8E8E8] bg-white hover:border-[#3A8F45]/50"
               )}
             >
               {option.isPopular && (
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[8px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap uppercase">
+                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#E65100] text-white text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap uppercase">
                   MOST POPULAR
                 </span>
               )}
               
-              <span className="font-bold text-sm text-foreground block">{option.label}</span>
-              <span className="text-xs text-muted-foreground">{option.name}</span>
+              <p className="text-sm font-medium text-[#000000] mb-1">{option.name}</p>
+              <p className="text-2xl font-bold text-[#000000]">{option.label}</p>
+              <p className="text-xs text-[#888888]">per claim</p>
               
               {isSelected && (
-                <div className="absolute top-1 right-1 w-4 h-4 bg-success rounded-full flex items-center justify-center">
+                <div className="absolute top-2 right-2 w-5 h-5 bg-[#3A8F45] rounded-full flex items-center justify-center">
                   <Check className="w-3 h-3 text-white" strokeWidth={3} />
                 </div>
               )}
@@ -166,9 +156,10 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
         })}
       </div>
 
-      {/* Boost Add-On Section - Simplified */}
+      {/* Boost Add-On Section */}
       {canShowBoost && (
-        <div className="mt-4 pt-4 border-t border-border">
+        <div className="mt-4">
+          <p className="text-xs text-[#888888] uppercase font-semibold mb-2">OPTIONAL ADD-ON</p>
           <div 
             onClick={(e) => {
               if (!isBoostActive) {
@@ -181,21 +172,21 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
               "relative p-4 rounded-xl cursor-pointer border-2",
               "transition-all duration-300 ease-out",
               isBoostActive
-                ? "bg-success/5 border-success"
-                : "bg-card border-border hover:border-success/50"
+                ? "bg-[#F0FDF4] border-[#3A8F45]"
+                : "bg-[#F5F5F5] border-[#E8E8E8] hover:border-[#3A8F45]/50"
             )}
           >
             <div className="flex items-center justify-between gap-4">
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-bold text-foreground mb-0.5">
-                  🚀 Boost your cover by £1,000
+                <h4 className="text-sm font-bold text-[#000000] mb-0.5">
+                  ⚡ Add +£500 extra cover
                 </h4>
-                <p className="text-sm text-muted-foreground">
-                  Upgrade to £{(getDisplayClaimLimit(selectedClaimLimit) + 1000).toLocaleString()} per claim
+                <p className="text-sm text-[#666666]">
+                  Upgrade to £{((selectedClaimLimit || 0) + 500).toLocaleString()} per claim
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Just £{boostPrice}/month × 12 payments
+                <p className="text-xs text-[#888888] mt-1">
+                  +£{boostPrice}/month × 12 payments
                 </p>
               </div>
               
@@ -206,8 +197,8 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
                     "relative inline-flex items-center rounded-full transition-all duration-300",
                     "w-[52px] h-[28px]",
                     isBoostActive 
-                      ? "bg-success" 
-                      : "bg-muted"
+                      ? "bg-[#3A8F45]" 
+                      : "bg-[#CCCCCC]"
                   )}
                 >
                   {/* Toggle Knob */}
@@ -222,26 +213,12 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
                     )}
                   >
                     {isBoostActive && (
-                      <Check className="w-3 h-3 text-success" strokeWidth={3} />
+                      <Check className="w-3 h-3 text-[#3A8F45]" strokeWidth={3} />
                     )}
                   </span>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Final Claim Limit Summary */}
-      {selectedClaimLimit !== null && (
-        <div className="mt-3 p-3 bg-muted/50 rounded-lg border border-border">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-foreground">
-              Claim limit: <span className="font-bold">£{getDisplayClaimLimit(finalClaimLimit).toLocaleString()}</span> per claim
-            </span>
-            <span className="text-sm font-medium text-success">
-              £{currentMonthlyPrice}/month
-            </span>
           </div>
         </div>
       )}
