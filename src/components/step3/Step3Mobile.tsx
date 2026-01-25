@@ -367,7 +367,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
   const showRestrictionAlert = availableDurations.length < 3;
 
   return (
-    <div className="min-h-screen bg-background pb-32">
+    <div className="min-h-screen bg-background pb-32 px-2 sm:px-0">
       <Step3Header currentStep={0} />
       
       <div className="max-w-2xl mx-auto">
