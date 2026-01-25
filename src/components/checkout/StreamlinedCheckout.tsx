@@ -1668,7 +1668,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   <span className="flex items-center justify-center gap-2">
                     <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
                     {selectedPayment === 'monthly' 
-                      ? 'Complete Monthly Checkout' 
+                      ? `Pay £${monthlyPrice} today` 
                       : selectedPayment === 'full'
                       ? 'Complete One-Time Payment'
                       : 'Select a payment option'}
