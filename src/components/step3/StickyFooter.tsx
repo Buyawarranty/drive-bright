@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ArrowRight, Lock, ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowRight, Lock, ChevronUp, ChevronDown, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { calculateCPMWithGuardrail } from '@/lib/cpmUtils';
@@ -58,7 +58,6 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
   
   const payInFull = totalPrice;
   const coverMonths = paymentPeriod === '12months' ? 12 : paymentPeriod === '24months' ? 24 : 36;
-  // Use guardrail CPM: ensures CPM × years >= monthly instalment
   const calculatedCostPerMonth = costPerMonthOfCover ?? calculateCPMWithGuardrail(payInFull, coverMonths, monthlyPrice);
 
   const toggleMobileExpand = useCallback(() => {
@@ -73,13 +72,13 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
   const savings = payInFull - payInFullPrice;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-[#F7F7F7] border-t border-[#DDDDDD] z-50">
-      {/* Desktop Layout */}
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-[#3A8F45] shadow-lg z-50">
+      {/* Desktop Layout - Original Design */}
       <div className="hidden md:block max-w-6xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between gap-6">
           
-          {/* Far Left Section - Trustpilot + Cancel */}
-          <div className="flex flex-col items-start gap-1.5 min-w-[140px] pr-6 border-r border-[#DDDDDD]">
+          {/* Left Section - Trustpilot */}
+          <div className="flex items-center gap-3">
             <a 
               href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
               target="_blank" 
@@ -91,51 +90,40 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             <span className="text-xs text-[#777777]">14 days to cancel</span>
           </div>
 
-          {/* Main Pricing Section (Centre-Left) */}
-          <div className="flex flex-col items-start gap-0.5 px-6 border-r border-[#DDDDDD]">
-            {/* Large headline: £X/month for 12 months */}
-            <p className={cn(
-              "text-xl font-bold text-[#000000] transition-all duration-300",
-              isPulsing && "animate-pulse"
-            )}>
-              £{monthlyPrice} x 12 payments
-            </p>
-            
-            {/* Average price line */}
-            <p className="text-sm text-[#333333]">
-              <span className="font-semibold text-[#000000]">£{calculatedCostPerMonth}/month</span> average
-            </p>
-            
-            {/* £0 in year 2 & year 3 - for multi-year plans */}
-            {paymentPeriod !== '12months' && (
-              <p className="text-sm font-semibold text-[#333333]">
-                £0 in year {paymentPeriod === '24months' ? '2' : '2 & year 3'}
+          {/* Centre Section - Main Pricing */}
+          <div className="flex flex-col items-start">
+            <p className="text-xs text-[#666666] mb-0.5">Your Platinum Plan</p>
+            <div className="flex items-baseline gap-2">
+              <p className={cn(
+                "text-2xl font-bold text-[#000000] transition-all duration-300",
+                isPulsing && "animate-pulse"
+              )}>
+                Total: £{monthlyPrice}/month
               </p>
+              <span className="text-sm text-[#666666]">(Only 12 payments)</span>
+            </div>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-sm text-[#999999] line-through">£{payInFull.toLocaleString()}</span>
+              <span className="text-sm font-semibold text-[#3A8F45]">£{payInFullPrice} (Save £{savings})</span>
+              <span className="text-xs text-[#666666]">– {coverText}</span>
+            </div>
+          </div>
+
+          {/* Right Section - Year FREE + CTA */}
+          <div className="flex items-center gap-4">
+            {paymentPeriod !== '12months' && (
+              <div className="text-right">
+                <p className="text-sm font-bold text-[#3A8F45]">
+                  Year {paymentPeriod === '24months' ? '2' : '2 & 3'} FREE 🎉
+                </p>
+                <p className="text-xs text-[#666666]">{coverText}</p>
+              </div>
             )}
             
-            {/* Total */}
-            <p className="text-sm text-[#333333]">
-              Total: <span className="font-semibold">£{payInFull.toLocaleString()}</span>
-            </p>
-          </div>
-
-          {/* Right-Hand Savings Section */}
-          <div className="flex flex-col items-start gap-1 px-6 border-r border-[#DDDDDD]">
-            <p className="text-sm font-bold text-[#000000]">{coverText}</p>
-            <p className="text-sm text-[#333333]">
-              Pay in full and <span className="font-semibold text-[#3A8F45]">save £{savings}</span>
-            </p>
-            <p className="text-sm text-[#333333]">
-              <span className="font-semibold text-[#000000]">£{payInFullPrice.toLocaleString()}</span> today <span className="text-[#777777]">(was £{payInFull.toLocaleString()})</span>
-            </p>
-          </div>
-
-          {/* Far Right CTA Section */}
-          <div className="flex flex-col items-end gap-2 min-w-[180px]">
             <Button
               onClick={onContinue}
               disabled={isLoading || !isValid}
-              className="bg-[#3A8F45] hover:bg-[#2E7A38] text-white font-semibold py-5 px-6 rounded-lg text-sm gap-2 shadow-md"
+              className="bg-[#E65100] hover:bg-[#D84600] text-white font-semibold py-5 px-6 rounded-lg text-sm gap-2 shadow-md"
             >
               {isLoading ? (
                 'Loading...'
@@ -146,15 +134,17 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
                 </>
               )}
             </Button>
-            <div className="flex items-center gap-1.5 text-xs text-[#777777]">
-              <Lock className="w-3 h-3" />
-              <span>Secure checkout – No hidden fees</span>
-            </div>
           </div>
+        </div>
+        
+        {/* Security line */}
+        <div className="flex items-center justify-end gap-1.5 mt-2 text-xs text-[#777777]">
+          <Lock className="w-3 h-3" />
+          <span>Secure checkout – SSL encrypted</span>
         </div>
       </div>
 
-      {/* Mobile Layout - Collapsible */}
+      {/* Mobile Layout - Original Design */}
       <div className="md:hidden">
         {/* Expanded Panel */}
         <div 
@@ -163,43 +153,32 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             isMobileExpanded ? "max-h-[280px] opacity-100" : "max-h-0 opacity-0"
           )}
         >
-          <div className="px-4 pt-4 pb-2 space-y-2">
-            {/* Actual payment - BOLD AND LARGE - First */}
-            <div className={cn(
-              "text-center transition-all duration-300",
-              isPulsing && "animate-pulse"
-            )}>
-              <p className="text-lg font-bold text-[#000000]">
-                £{monthlyPrice}/month for 12 months
+          <div className="px-4 pt-4 pb-2 space-y-3">
+            {/* Plan info */}
+            <div className="text-center">
+              <p className="text-xs text-[#666666]">Your Platinum Plan</p>
+              <p className={cn(
+                "text-xl font-bold text-[#000000] transition-all duration-300",
+                isPulsing && "animate-pulse"
+              )}>
+                Total: £{monthlyPrice}/month
               </p>
+              <p className="text-sm text-[#666666]">(Only 12 payments)</p>
             </div>
             
-            {/* Average per month */}
-            <p className="text-center text-sm text-[#555555]">
-              <span className="font-semibold text-[#000000]">£{calculatedCostPerMonth}/month</span> average
-            </p>
-            
-            {/* £0 in year 2 & year 3 */}
+            {/* Savings */}
+            <div className="text-center">
+              <span className="text-sm text-[#999999] line-through">£{payInFull.toLocaleString()}</span>
+              <span className="text-sm font-semibold text-[#3A8F45] ml-2">Save £{savings}</span>
+              <p className="text-xs text-[#666666]">{coverText}</p>
+            </div>
+
+            {/* Benefits */}
             {paymentPeriod !== '12months' && (
-              <p className="text-center text-sm text-[#555555]">
-                £0 in year {paymentPeriod === '24months' ? '2' : '2 & year 3'}
+              <p className="text-center text-sm text-[#3A8F45] font-medium">
+                ✓ You're covered in 60 seconds – no payment taken until confirmation
               </p>
             )}
-            
-            {/* Total */}
-            <p className="text-center text-sm font-semibold text-[#000000]">
-              Total: £{payInFull.toLocaleString()}
-            </p>
-
-            {/* Pay in full savings */}
-            <div className="text-center pt-2 border-t border-[#DDDDDD]">
-              <p className="text-sm text-[#333333]">
-                Pay in full and <span className="font-semibold text-[#3A8F45]">save £{savings}</span>
-              </p>
-              <p className="text-sm text-[#333333]">
-                <span className="font-bold text-[#000000]">£{payInFullPrice.toLocaleString()}</span> today <span className="text-[#777777]">(was £{payInFull.toLocaleString()})</span>
-              </p>
-            </div>
           </div>
         </div>
 
@@ -229,27 +208,27 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           <div className="flex items-center justify-between gap-3">
             {/* Left: Price summary */}
             <div className="flex-shrink-0">
-              <p className="text-xs font-bold text-[#000000]">{coverText}</p>
+              <p className="text-xs text-[#666666]">Your Platinum Plan</p>
               <div className={cn(
                 "transition-all duration-300",
                 isPulsing && "animate-pulse"
               )}>
-                <p className="text-sm font-bold text-[#000000]">£{monthlyPrice} x 12 payments</p>
+                <p className="text-lg font-bold text-[#000000]">Total: £{monthlyPrice}/month</p>
               </div>
-              <p className="text-xs text-[#555555]">Total: £{payInFull.toLocaleString()}</p>
+              <p className="text-xs text-[#666666]">(Only 12 payments)</p>
             </div>
 
             {/* Right: CTA Button */}
             <Button
               onClick={onContinue}
               disabled={isLoading || !isValid}
-              className="bg-white hover:bg-[#EFEFEF] text-[#000000] font-semibold py-3 px-4 rounded-lg text-sm gap-1.5 border border-[#000000] shadow-none flex-shrink-0"
+              className="bg-[#E65100] hover:bg-[#D84600] text-white font-semibold py-3 px-4 rounded-lg text-sm gap-1.5 shadow-md flex-shrink-0"
             >
               {isLoading ? (
                 'Loading...'
               ) : (
                 <>
-                  Checkout
+                  Continue to secure payment
                   <ArrowRight className="w-4 h-4" strokeWidth={2} />
                 </>
               )}
@@ -259,7 +238,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           {/* Security reassurance */}
           <div className="flex items-center justify-center gap-1.5 mt-2 text-xs text-[#777777]">
             <Lock className="w-3 h-3" />
-            <span>Secure checkout – Easy claims</span>
+            <span>Secure checkout – SSL encrypted</span>
           </div>
         </div>
       </div>

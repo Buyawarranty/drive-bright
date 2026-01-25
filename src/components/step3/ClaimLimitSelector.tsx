@@ -12,11 +12,11 @@ interface ClaimLimitSelectorProps {
   boostPrice: number;
 }
 
-// Updated claim limit options: £1,000 / £2,000 / £3,000 only
+// Original claim limit options: £750 / £1,250 / £2,000
 const claimLimitOptions = [
-  { value: 1000, label: '£1,000', name: 'AutoCare Essential' },
-  { value: 2000, label: '£2,000', name: 'AutoCare Advantage', isPopular: true },
-  { value: 3000, label: '£3,000', name: 'AutoCare Elite' }
+  { value: 750, label: '£750', name: 'AutoCare Essential' },
+  { value: 1250, label: '£1,250', name: 'AutoCare Advantage', isPopular: true },
+  { value: 2000, label: '£2,000', name: 'AutoCare Elite' }
 ];
 
 const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
@@ -42,26 +42,26 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
     });
   }, []);
 
-  // Direct selection - no automatic boost for £3,000
+  // Direct selection - no automatic boost for £2,000
   const handleSelect = (limit: number) => {
     onClaimLimitChange(limit);
-    // Disable boost if £3,000 is selected (maximum limit)
-    if (limit === 3000 && boostAddon) {
+    // Disable boost if £2,000 is selected (maximum limit)
+    if (limit === 2000 && boostAddon) {
       onBoostChange(false);
     }
   };
 
-  // Calculate final claim limit with boost applied
+  // Calculate final claim limit with boost applied (+£1,000 boost)
   const getFinalClaimLimit = () => {
-    if (boostAddon && selectedClaimLimit && selectedClaimLimit < 3000) {
-      return selectedClaimLimit + 500;
+    if (boostAddon && selectedClaimLimit && selectedClaimLimit < 2000) {
+      return selectedClaimLimit + 1000;
     }
     return selectedClaimLimit;
   };
 
   const finalClaimLimit = getFinalClaimLimit();
-  const isBoostActive = boostAddon && selectedClaimLimit !== null && selectedClaimLimit < 3000;
-  const canShowBoost = selectedClaimLimit !== null && selectedClaimLimit < 3000;
+  const isBoostActive = boostAddon && selectedClaimLimit !== null && selectedClaimLimit < 2000;
+  const canShowBoost = selectedClaimLimit !== null && selectedClaimLimit < 2000;
 
   const handleBoostToggle = (checked: boolean, event?: React.MouseEvent) => {
     if (checked && event) {
@@ -177,13 +177,13 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <h4 className="text-sm font-bold text-foreground mb-0.5">
-                  Add £500 extra cover
+                  🚀 Boost your cover by £1,000
                 </h4>
                 <p className="text-sm text-muted-foreground">
-                  Upgrade to £{((selectedClaimLimit || 0) + 500).toLocaleString()} per claim
+                  Upgrade to £{((selectedClaimLimit || 0) + 1000).toLocaleString()} per claim
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  +£{boostPrice}/month · 12 payments
+                  Just £{boostPrice}/month × 12 payments
                 </p>
               </div>
               
