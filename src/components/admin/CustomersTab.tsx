@@ -308,7 +308,6 @@ export const CustomersTab = () => {
   const [filterByStatus, setFilterByStatus] = useState('all');
   const [filterByTag, setFilterByTag] = useState('all');
   const [filterBySource, setFilterBySource] = useState('all_view'); // Default to All View
-  const [filterByDuration, setFilterByDuration] = useState('all'); // Warranty duration filter
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [availableTags, setAvailableTags] = useState<any[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -511,15 +510,6 @@ export const CustomersTab = () => {
       });
     }
 
-    // Apply duration filter
-    if (filterByDuration !== 'all') {
-      filtered = filtered.filter(customer => {
-        const durationMonths = getWarrantyDurationInMonths(customer.payment_type || '');
-        const filterMonths = parseInt(filterByDuration, 10);
-        return durationMonths === filterMonths;
-      });
-    }
-
     // Apply sorting
     filtered.sort((a, b) => {
       const dateA = new Date(a.signup_date).getTime();
@@ -542,7 +532,7 @@ export const CustomersTab = () => {
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByDuration, dateRange]);
+  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, dateRange]);
 
   const getCurrentUser = async () => {
     try {
@@ -2364,48 +2354,12 @@ export const CustomersTab = () => {
                   </SelectContent>
                 </Select>
               </div>
-
-              {/* Filter by Warranty Duration */}
-              <div className="space-y-1">
-                <Label htmlFor="durationFilter" className="text-sm font-medium">Warranty Duration</Label>
-                <Select value={filterByDuration} onValueChange={setFilterByDuration}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-3 w-3 text-gray-400" />
-                        All Durations
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="12">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-3 w-3 text-gray-500" />
-                        1 Year (12 months)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="24">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-3 w-3 text-blue-500" />
-                        2 Year (24 months)
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="36">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-3 w-3 text-green-500" />
-                        3 Year (36 months)
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
             {/* Results Summary and Bulk Actions */}
             <div className="flex items-center justify-between text-sm text-gray-600 pt-2 border-t">
               <div className="flex items-center gap-4">
-                {filterBySource === 'all_view' && filterByDuration === 'all' ? (
+                {filterBySource === 'all_view' ? (
                   <span>
                     Today's activity: 3 new warranty purchases • Weekly overview: 12 cover plans purchased • Monthly overview: 48 active sales
                     {searchTerm && ` • searching "${searchTerm}"`}
@@ -2422,9 +2376,6 @@ export const CustomersTab = () => {
                     {filterByTag !== 'all' && ` • filtered by tag`}
                     {filterBySource === 'website' && ` • Website (BAW)`}
                     {filterBySource === 'quote_order' && ` • Quote & Orders (ADM)`}
-                    {filterByDuration === '12' && ` • 1 Year warranty`}
-                    {filterByDuration === '24' && ` • 2 Year warranty`}
-                    {filterByDuration === '36' && ` • 3 Year warranty`}
                     {dateRange?.from && ` • ${format(dateRange.from, 'dd MMM yyyy')}${dateRange.to ? ` - ${format(dateRange.to, 'dd MMM yyyy')}` : ''}`}
                   </span>
                 )}
@@ -2481,7 +2432,6 @@ export const CustomersTab = () => {
                     setFilterByStatus('all');
                     setFilterByTag('all');
                     setFilterBySource('website'); // Reset to default Website (BAW)
-                    setFilterByDuration('all');
                     setDateRange(undefined);
                     setSelectedCustomers(new Set());
                   }}

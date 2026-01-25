@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Loader2, Check, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -38,8 +39,6 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   disabled = false,
   onLookupError,
 }) => {
-  // Debug mount
-  console.log('[AddressAutocomplete] Component mounting/rendering');
   // IMPORTANT: Never clear inputValue except when user types - this preserves partial entries
   const [inputValue, setInputValue] = useState(initialValue);
   const [suggestions, setSuggestions] = useState<AutocompleteSuggestion[]>([]);
@@ -97,21 +96,17 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
       return;
     }
 
-    console.log('[AddressAutocomplete] Fetching suggestions for:', term);
     setIsLoading(true);
     // Don't reset lookupFailed here - only set it on actual failure
     
     try {
-      console.log('[AddressAutocomplete] Calling supabase edge function...');
       const { data, error } = await supabase.functions.invoke('getaddress-lookup', {
         body: { action: 'autocomplete', term }
       });
-      
-      console.log('[AddressAutocomplete] Response:', { data, error });
 
       if (error) {
         // API call failed - show fallback message but NEVER clear input
-        console.error('[AddressAutocomplete] Error fetching suggestions:', error);
+        console.error('Error fetching suggestions:', error);
         setSuggestions([]);
         setLookupFailed(true);
         onLookupError?.(true);
@@ -150,39 +145,37 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
 
   // Handle input change with debounce
   // IMPORTANT: User input is ALWAYS preserved - we only update inputValue, never clear it
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    
-    // CRITICAL DEBUG: Log immediately on any input
-    console.log('[AddressAutocomplete] handleInputChange TRIGGERED - value:', value, 'length:', value.length);
-    
-    setInputValue(value); // Always preserve what user types
-    setHasSelected(false);
-    setSelectedIndex(-1);
-    
-    // Reset lookup failed state when user clears input or starts fresh
-    if (value.length < 3) {
-      setLookupFailed(false);
-      onLookupError?.(false);
-      setSuggestions([]);
-      setShowDropdown(false);
-      console.log('[AddressAutocomplete] Input too short, clearing suggestions');
-      return;
-    }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const value = e.target.value;
+      setInputValue(value); // Always preserve what user types
+      setHasSelected(false);
+      setSelectedIndex(-1);
+      
+      // Reset lookup failed state when user clears input or starts fresh
+      if (value.length < 3) {
+        setLookupFailed(false);
+        onLookupError?.(false);
+        setSuggestions([]);
+        setShowDropdown(false);
+      }
 
-    // Clear previous debounce
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-      console.log('[AddressAutocomplete] Cleared previous debounce');
-    }
+      // Clear previous debounce
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
 
-    // Debounce API call - only if they've typed enough
-    console.log('[AddressAutocomplete] Setting debounce timer for:', value);
-    debounceRef.current = setTimeout(() => {
-      console.log('[AddressAutocomplete] Debounce complete, calling fetchSuggestions for:', value);
-      fetchSuggestions(value);
-    }, 300);
-  }, [fetchSuggestions, onLookupError]);
+      // Debounce API call - only if they've typed enough
+      if (value.length >= 3) {
+        debounceRef.current = setTimeout(() => {
+          fetchSuggestions(value);
+        }, 300);
+      }
+    } catch (err) {
+      // Never crash on input change
+      console.error('Error in handleInputChange:', err);
+    }
+  };
 
   // Fetch full address details when user selects a suggestion
   // IMPORTANT: If this fails, we keep whatever the user typed - never clear
@@ -273,55 +266,16 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
     };
   }, []);
 
-  // Debug: log on every render to confirm component is alive
-  console.log('[AddressAutocomplete] RENDER - inputValue:', inputValue, 'disabled:', disabled);
-
   return (
     <div className="relative w-full">
       <div className="relative">
-        <input
+        <Input
           ref={inputRef}
           type="text"
-          inputMode="text"
-          name={`address-search-${Math.random().toString(36).slice(2, 9)}`}
           value={inputValue}
-          onChange={(e) => {
-            console.log('[AddressAutocomplete] onChange fired:', e.target.value);
-            handleInputChange(e);
-          }}
-          onInput={(e) => {
-            // Safari fix: onInput is more reliable on Safari/Mac
-            const target = e.target as HTMLInputElement;
-            const newValue = target.value;
-            console.log('[AddressAutocomplete] onInput fired:', newValue);
-            
-            // Only process if value actually changed (prevents double-firing)
-            if (newValue !== inputValue) {
-              setInputValue(newValue);
-              setHasSelected(false);
-              setSelectedIndex(-1);
-              
-              if (newValue.length < 3) {
-                setLookupFailed(false);
-                onLookupError?.(false);
-                setSuggestions([]);
-                setShowDropdown(false);
-                return;
-              }
-              
-              if (debounceRef.current) {
-                clearTimeout(debounceRef.current);
-              }
-              
-              debounceRef.current = setTimeout(() => {
-                console.log('[AddressAutocomplete] Triggering fetch from onInput for:', newValue);
-                fetchSuggestions(newValue);
-              }, 300);
-            }
-          }}
+          onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => {
-            console.log('[AddressAutocomplete] Input focused');
             try {
               if (suggestions.length > 0 && !hasSelected) {
                 setShowDropdown(true);
@@ -332,18 +286,13 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           }}
           placeholder={placeholder}
           className={cn(
-            "flex h-10 w-full rounded-md border border-gray-200 bg-[#F5F5F5] px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pr-9",
+            "pr-9",
             error && "border-destructive",
             lookupFailed && !error && "border-amber-400",
             className
           )}
           disabled={disabled}
-          autoComplete="new-password"
-          autoCorrect="off"
-          autoCapitalize="off"
-          spellCheck={false}
-          data-lpignore="true"
-          data-form-type="other"
+          autoComplete="off"
         />
         {isLoading && (
           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
@@ -378,57 +327,47 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
           ref={dropdownRef}
           className="absolute z-50 w-full mt-1 bg-background border border-border rounded-lg shadow-lg max-h-60 overflow-auto"
           style={{ WebkitOverflowScrolling: 'touch' }}
-          onMouseDown={(e) => {
-            // Prevent any mousedown from bubbling and closing dropdown
-            e.preventDefault();
-          }}
         >
-          {suggestions.map((suggestion, index) => {
-            // Use a ref to track if this specific item was touched
-            const handleSelection = () => {
-              isSelectingRef.current = true;
-              handleSelectAddress(suggestion);
-              setTimeout(() => { isSelectingRef.current = false; }, 500);
-            };
-
-            return (
-              <div
-                key={suggestion.id || index}
-                role="button"
-                tabIndex={0}
-                className={cn(
-                  "w-full px-4 py-4 text-left text-sm hover:bg-accent active:bg-accent transition-colors cursor-pointer select-none",
-                  index === selectedIndex && "bg-accent",
-                  index !== suggestions.length - 1 && "border-b border-border/50"
-                )}
-                style={{ 
-                  WebkitTapHighlightColor: 'transparent',
-                  WebkitTouchCallout: 'none',
-                  WebkitUserSelect: 'none',
-                  touchAction: 'manipulation'
-                }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleSelection();
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleSelection();
-                  }
-                }}
-                onMouseDown={(e) => {
-                  // Prevent blur on input before click completes (Safari/iOS fix)
-                  e.preventDefault();
-                  e.stopPropagation();
-                  isSelectingRef.current = true;
-                }}
-              >
-                <span className="text-foreground">{suggestion.address}</span>
-              </div>
-            );
-          })}
+          {suggestions.map((suggestion, index) => (
+            <button
+              key={suggestion.id || index}
+              type="button"
+              className={cn(
+                "w-full px-4 py-4 text-left text-sm hover:bg-accent active:bg-accent transition-colors touch-manipulation cursor-pointer select-none",
+                index === selectedIndex && "bg-accent",
+                index !== suggestions.length - 1 && "border-b border-border/50"
+              )}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                isSelectingRef.current = true;
+                handleSelectAddress(suggestion);
+                // Reset after a small delay
+                setTimeout(() => { isSelectingRef.current = false; }, 300);
+              }}
+              onMouseDown={(e) => {
+                // Prevent blur on input before click completes (Safari fix)
+                e.preventDefault();
+                isSelectingRef.current = true;
+              }}
+              onMouseUp={() => {
+                setTimeout(() => { isSelectingRef.current = false; }, 300);
+              }}
+              onTouchStart={(e) => {
+                // Mark that we're selecting to prevent dropdown close
+                isSelectingRef.current = true;
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSelectAddress(suggestion);
+                // Reset after selection completes
+                setTimeout(() => { isSelectingRef.current = false; }, 300);
+              }}
+            >
+              <span className="text-foreground">{suggestion.address}</span>
+            </button>
+          ))}
         </div>
       )}
     </div>

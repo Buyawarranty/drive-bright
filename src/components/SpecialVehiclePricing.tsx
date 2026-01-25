@@ -49,7 +49,7 @@ const SpecialVehiclePricing: React.FC<SpecialVehiclePricingProps> = ({ vehicleDa
   const [plans, setPlans] = useState<SpecialPlan[]>([]);
   const [paymentType, setPaymentType] = useState<'yearly' | 'two_yearly' | 'three_yearly'>('two_yearly');
   const [voluntaryExcess, setVoluntaryExcess] = useState<number>(100);
-  const [selectedClaimLimit, setSelectedClaimLimit] = useState<number>(1000);
+  const [selectedClaimLimit, setSelectedClaimLimit] = useState<number>(1250);
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [isFloatingBarVisible, setIsFloatingBarVisible] = useState(false);
@@ -259,8 +259,8 @@ const SpecialVehiclePricing: React.FC<SpecialVehiclePricingProps> = ({ vehicleDa
       };
       
       // Create plan name based on claim limit
-      const planName = claimLimit === 1000 ? `${getVehicleTypeTitle()} Essential` :
-                      claimLimit === 2000 ? `${getVehicleTypeTitle()} Advantage` :
+      const planName = claimLimit === 750 ? `${getVehicleTypeTitle()} Essential` :
+                      claimLimit === 1250 ? `${getVehicleTypeTitle()} Advantage` :
                       `${getVehicleTypeTitle()} Elite`;
       
       onPlanSelected(selectedPlan.id, paymentType, planName, pricingData);
@@ -438,70 +438,70 @@ const SpecialVehiclePricing: React.FC<SpecialVehiclePricingProps> = ({ vehicleDa
                 3
               </div>
               <h2 className="text-2xl font-bold text-gray-900">
-                Single repair amount per claim
+                Choose Your Claim Limit
               </h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Essential Plan - £1,000 */}
+              {/* Essential Plan - £750 */}
               <div className={`border-2 rounded-xl p-6 cursor-pointer transition-all duration-200 ${
-                selectedClaimLimit === 1000 
+                selectedClaimLimit === 750 
                   ? 'border-orange-500 bg-orange-50' 
                   : 'border-gray-200 bg-white hover:border-orange-300'
               }`}
-              onClick={() => setSelectedClaimLimit(1000)}>
+              onClick={() => setSelectedClaimLimit(750)}>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="text-2xl font-bold text-black">£1,000 per repair</div>
+                  <div className="text-2xl font-bold text-black">£750 per claim</div>
                   <Info className="w-5 h-5 text-gray-400" />
                 </div>
                 <div className="text-lg font-semibold text-gray-700 mb-2">
                   {getVehicleTypeTitle()} Essential
                 </div>
                 <div className="text-gray-600">
-                  Standard cover for common repairs. A sensible choice for reliable vehicles.
+                  Confidence for the everyday drive.
                 </div>
               </div>
 
-              {/* Advantage Plan - £2,000 */}
+              {/* Advantage Plan - £1,250 */}
               <div className={`border-2 rounded-xl p-6 cursor-pointer transition-all duration-200 relative ${
-                selectedClaimLimit === 2000 
+                selectedClaimLimit === 1250 
                   ? 'border-orange-500 bg-orange-50' 
                   : 'border-gray-200 bg-white hover:border-orange-300'
               }`}
-              onClick={() => setSelectedClaimLimit(2000)}>
+              onClick={() => setSelectedClaimLimit(1250)}>
                 <div className="absolute -top-2 right-4">
                   <Badge className="bg-orange-500 text-white font-bold px-3 py-1">
                     MOST POPULAR
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="text-2xl font-bold text-black">£2,000 per repair</div>
+                  <div className="text-2xl font-bold text-black">£1,250 cover</div>
                   <Info className="w-5 h-5 text-gray-400" />
                 </div>
                 <div className="text-lg font-semibold text-gray-700 mb-2">
                   {getVehicleTypeTitle()} Advantage
                 </div>
                 <div className="text-gray-600">
-                  Our most popular option. Covers major component failures including engine and gearbox.
+                  Balanced protection for life's bigger bumps.
                 </div>
               </div>
 
-              {/* Elite Plan - £3,000 */}
+              {/* Elite Plan - £2,000 */}
               <div className={`border-2 rounded-xl p-6 cursor-pointer transition-all duration-200 ${
-                selectedClaimLimit === 3000 
+                selectedClaimLimit === 2000 
                   ? 'border-orange-500 bg-orange-50' 
                   : 'border-gray-200 bg-white hover:border-orange-300'
               }`}
-              onClick={() => setSelectedClaimLimit(3000)}>
+              onClick={() => setSelectedClaimLimit(2000)}>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="text-2xl font-bold text-black">£3,000 per repair</div>
+                  <div className="text-2xl font-bold text-black">£2,000 cover</div>
                   <Info className="w-5 h-5 text-gray-400" />
                 </div>
                 <div className="text-lg font-semibold text-gray-700 mb-2">
                   {getVehicleTypeTitle()} Elite
                 </div>
                 <div className="text-gray-600">
-                  Maximum protection for high-value repairs. Best for luxury and performance vehicles.
+                  Top-tier cover for total peace of mind.
                 </div>
               </div>
             </div>

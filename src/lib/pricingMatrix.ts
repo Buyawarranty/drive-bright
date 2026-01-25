@@ -2,12 +2,12 @@
  * Centralized pricing matrix and utilities for warranty pricing.
  * 
  * PRICING RULES (UPDATED JAN 2026):
- * - BASE prices are from CURRENT_PRICE_JAN_2026.xlsx at £70/hr labour rate (DEFAULT), £100 excess, £2000 claim limit
+ * - BASE prices are from CURRENT_PRICE_JAN_2026.xlsx at £70/hr labour rate (DEFAULT), £100 excess, £1250 claim limit
  * - Labour rate £50/hr = -£5/month for duration (BELOW base)
  * - Labour rate £70/hr = base price (no adjustment) - DEFAULT
- * - Labour rate £100/hr = +£4/month for duration (UPDATED from £8)
+ * - Labour rate £100/hr = +£8/month for duration
  * - Labour rate £200/hr = +£24/month for duration
- * - Boost claim limit (+£500) = FIXED £3/month × 12 payments = £36 total (NOT multiplied by cover duration)
+ * - Boost claim limit (+£1000) = +£5/month for duration
  * - All payments are ALWAYS 12 monthly installments
  * - Monthly = Math.floor(total / 12) - always round DOWN
  * - "Was" price = total + marketing savings (£100 for 2yr, £200 for 3yr) - display only
@@ -15,28 +15,26 @@
  * - Transfer Cover = +£19 one-off (not monthly)
  */
 
-// Base pricing matrix from BRAND_NEW_PRICES_JAN_2026.xlsx
+// Base pricing matrix from CURRENT_PRICE_DEC_2025 (ORIGINAL PRICING)
 // These are the base prices at £70/hr labour rate (DEFAULT)
-// Excess keys: 0, 100, 250 (mapped from £200), 500
-// Claim limit keys: 1000, 2000, 3000
 export const BASE_PRICING_MATRIX = {
   '12months': {
-    0: { 1000: 492, 2000: 528, 3000: 612 },      // £0 excess
-    100: { 1000: 468, 2000: 492, 3000: 576 },    // £100 excess (DEFAULT)
-    250: { 1000: 420, 2000: 444, 3000: 540 },    // £250 excess (from £200 Excel row)
-    500: { 1000: 396, 2000: 420, 3000: 504 }     // £500 excess
+    0: { 750: 467, 1250: 497, 2000: 587 },
+    50: { 750: 437, 1250: 457, 2000: 547 },
+    100: { 750: 387, 1250: 417, 2000: 507 },
+    150: { 750: 367, 1250: 387, 2000: 477 }
   },
   '24months': {
-    0: { 1000: 852, 2000: 890, 3000: 976 },      // £0 excess
-    100: { 1000: 786, 2000: 833, 3000: 909 },    // £100 excess (DEFAULT)
-    250: { 1000: 700, 2000: 748, 3000: 833 },    // £250 excess (from £200 Excel row)
-    500: { 1000: 662, 2000: 700, 3000: 786 }     // £500 excess
+    0: { 750: 897, 1250: 937, 2000: 1027 },
+    50: { 750: 827, 1250: 877, 2000: 957 },
+    100: { 750: 737, 1250: 787, 2000: 877 },
+    150: { 750: 697, 1250: 737, 2000: 827 }
   },
   '36months': {
-    0: { 1000: 1246, 2000: 1292, 3000: 1385 },   // £0 excess
-    100: { 1000: 1153, 2000: 1198, 3000: 1292 }, // £100 excess (DEFAULT)
-    250: { 1000: 1015, 2000: 1089, 3000: 1181 }, // £250 excess (from £200 Excel row)
-    500: { 1000: 968, 2000: 1015, 3000: 1107 }   // £500 excess
+    0: { 750: 1347, 1250: 1397, 2000: 1497 },
+    50: { 750: 1247, 1250: 1297, 2000: 1397 },
+    100: { 750: 1097, 1250: 1177, 2000: 1277 },
+    150: { 750: 1047, 1250: 1097, 2000: 1197 }
   }
 } as const;
 
@@ -59,7 +57,7 @@ export const DURATION_MONTHS = {
 export const LABOUR_RATE_MONTHLY_ADJUSTMENT: Record<number, number> = {
   50: -5,  // £5 LESS per month (below base)
   70: 0,   // Base rate, no adjustment (DEFAULT)
-  100: 4,  // £4 more per month (UPDATED from £8)
+  100: 8,  // £8 more per month
   200: 24  // £24 more per month (for main dealers and specialists)
 };
 
@@ -69,30 +67,14 @@ export const DEFAULT_LABOUR_RATE = 70;
 // Default excess is £100
 export const DEFAULT_EXCESS = 100;
 
-// Default claim limit is £2000 (updated Jan 2026)
-export const DEFAULT_CLAIM_LIMIT = 2000;
+// Default claim limit is £1250
+export const DEFAULT_CLAIM_LIMIT = 1250;
 
-// Boost claim limit adds +£500 to selected limit, costs £3/month (UPDATED from £5)
-export const BOOST_CLAIM_LIMIT_MONTHLY = 3;
-export const BOOST_CLAIM_LIMIT_AMOUNT = 500;
+// Boost claim limit adds £5/month
+export const BOOST_CLAIM_LIMIT_MONTHLY = 5;
 
 // Transfer Cover one-off price (not monthly)
 export const TRANSFER_COVER_PRICE = 19;
-
-// Excess monthly adjustment values (for UI display and calculations)
-export const EXCESS_MONTHLY_ADJUSTMENT: Record<number, number> = {
-  0: 6,     // +£6/month
-  100: 0,   // Default (no adjustment)
-  250: -4,  // -£4/month
-  500: -8   // -£8/month
-};
-
-// Claim limit monthly adjustment values (for UI display and calculations)
-export const CLAIM_LIMIT_MONTHLY_ADJUSTMENT: Record<number, number> = {
-  1000: 0,  // Default (no adjustment)
-  2000: 6,  // +£6/month
-  3000: 10  // +£10/month
-};
 
 export type PaymentPeriod = keyof typeof BASE_PRICING_MATRIX;
 export type ExcessAmount = keyof typeof BASE_PRICING_MATRIX['12months'];
@@ -107,12 +89,8 @@ export function getBasePrice(
   claimLimit: number
 ): number {
   const periodData = BASE_PRICING_MATRIX[paymentPeriod] || BASE_PRICING_MATRIX['12months'];
-  // Map excess to nearest valid key
-  const validExcess = [0, 100, 250, 500].includes(voluntaryExcess) ? voluntaryExcess : DEFAULT_EXCESS;
-  const excessData = periodData[validExcess as ExcessAmount] || periodData[DEFAULT_EXCESS];
-  // Map claim limit to nearest valid key
-  const validClaimLimit = [1000, 2000, 3000].includes(claimLimit) ? claimLimit : DEFAULT_CLAIM_LIMIT;
-  return excessData[validClaimLimit as ClaimLimit] || excessData[DEFAULT_CLAIM_LIMIT];
+  const excessData = periodData[voluntaryExcess as ExcessAmount] || periodData[DEFAULT_EXCESS];
+  return excessData[claimLimit as ClaimLimit] || excessData[DEFAULT_CLAIM_LIMIT];
 }
 
 /**
@@ -131,20 +109,18 @@ export function calculateLabourRateAdjustment(
 }
 
 /**
- * Calculate boost claim limit adjustment (+£500 claim limit for £3/month FIXED)
- * IMPORTANT: Boost is ALWAYS £3/month × 12 payments = £36 total, regardless of cover duration
+ * Calculate boost claim limit adjustment (+£1000 claim limit for £5/month)
  * @param boostEnabled Whether boost is enabled
- * @param paymentPeriod The warranty duration (not used for cost calculation, but kept for API compatibility)
- * @returns Total boost cost (always £36 for 12 payments)
+ * @param paymentPeriod The warranty duration
+ * @returns Total boost cost
  */
 export function calculateBoostAdjustment(
   boostEnabled: boolean,
   paymentPeriod: PaymentPeriod
 ): number {
   if (!boostEnabled) return 0;
-  // FIXED: Boost is always £3/month × 12 payments = £36 total
-  // NOT multiplied by cover duration (24 or 36 months)
-  return BOOST_CLAIM_LIMIT_MONTHLY * 12;
+  const durationMonths = DURATION_MONTHS[paymentPeriod];
+  return BOOST_CLAIM_LIMIT_MONTHLY * durationMonths;
 }
 
 /**

@@ -365,11 +365,10 @@ serve(async (req) => {
     });
 
     // Get claim limit from policy or customer data
-    // Valid claim limits for new business: 1000, 1500, 2000, 2500, 3000 (includes boost combinations)
-    // Legacy claim limits (750, 1250) preserved for existing policies - pass through unchanged
+    // Valid claim limits are 750, 1250, 2000
     const policyClaimLimit = policy?.claim_limit;
     const customerClaimLimit = customer?.claim_limit;
-    const finalClaimLimit = policyClaimLimit ?? customerClaimLimit ?? 1000; // Default 1000 (updated Jan 2026)
+    const finalClaimLimit = policyClaimLimit ?? customerClaimLimit ?? 1250;
     
     // Get voluntary excess from policy or customer data - EXACT same pattern as claim limit
     const policyVoluntaryExcess = policy?.voluntary_excess;
@@ -500,12 +499,9 @@ serve(async (req) => {
           notesStr += ` | PROMOTION: ${bonusMonths} Months FREE Bonus - Total ${parseInt(coverageMonths) + bonusMonths} months coverage`;
         }
         
-        // Get notes from multiple sources: request body (customNotes) OR policy.additional_notes
-        const effectiveNotes = customNotes || policy?.additional_notes || '';
-        
         // Append custom notes from admin (Additional Notes for Warranties 2000)
-        if (effectiveNotes && effectiveNotes.trim()) {
-          notesStr += ` | NOTES: ${effectiveNotes.trim()}`;
+        if (customNotes && customNotes.trim()) {
+          notesStr += ` | NOTES: ${customNotes.trim()}`;
         }
         
         return notesStr;

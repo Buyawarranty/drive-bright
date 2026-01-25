@@ -2,14 +2,13 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { validateVehicleEligibility, calculateVehiclePriceAdjustment, applyPriceAdjustment } from '@/lib/vehicleValidation';
-import { getAutoIncludedAddOns } from '@/lib/addOnsUtils';
+import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { 
   BASE_PRICING_MATRIX, 
   DURATION_MONTHS,
   calculateLabourRateAdjustment,
   calculateBoostAdjustment,
-  BOOST_CLAIM_LIMIT_AMOUNT,
-  BOOST_CLAIM_LIMIT_MONTHLY,
+  getMarketingSavings,
   type PaymentPeriod
 } from '@/lib/pricingMatrix';
 import { trackStepCompletion, trackBeginCheckout } from '@/utils/analytics';
@@ -23,6 +22,7 @@ import TermSelector from './TermSelector';
 import ExcessSelector from './ExcessSelector';
 import ClaimLimitSelector from './ClaimLimitSelector';
 import LabourRateSelector from './LabourRateSelector';
+import ExtrasSelector from './ExtrasSelector';
 import CoverageTransparency from './CoverageTransparency';
 import StickyFooter from './StickyFooter';
 
@@ -82,7 +82,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     previousVoluntaryExcess !== undefined ? previousVoluntaryExcess : 100
   );
   const [selectedClaimLimit, setSelectedClaimLimit] = useState<number | null>(
-    previousClaimLimit || 2000
+    previousClaimLimit || 1250
   );
   const [selectedLabourRate, setSelectedLabourRate] = useState<number>(
     previousLabourRate ?? 70
@@ -196,12 +196,8 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
   // Get base price from centralized pricing matrix (no local duplicate needed)
   const getBasePrice = useCallback((term: string, excess: number, claimLimit: number) => {
     const periodData = BASE_PRICING_MATRIX[term as PaymentPeriod] || BASE_PRICING_MATRIX['12months'];
-    // Map excess to valid keys (0, 100, 250, 500)
-    const validExcess = [0, 100, 250, 500].includes(excess) ? excess : 100;
-    const excessData = periodData[validExcess as keyof typeof periodData] || periodData[100];
-    // Map claim limit to valid keys (1000, 2000, 3000)
-    const validClaimLimit = [1000, 2000, 3000].includes(claimLimit) ? claimLimit : 1000;
-    return excessData[validClaimLimit as keyof typeof excessData] || excessData[1000];
+    const excessData = periodData[excess as keyof typeof periodData] || periodData[100];
+    return excessData[claimLimit as keyof typeof excessData] || excessData[1250];
   }, []);
 
   // Calculate vehicle price adjustment
@@ -211,19 +207,23 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
   }, [vehicleData, paymentType]);
 
   // Calculate total price for a term using centralized functions
-  // NOTE: Add-ons removed from new business per Jan 2026 update
   const calculateTotalPrice = useCallback((term: string = paymentType || '24months') => {
-    const basePrice = getBasePrice(term, voluntaryExcess || 100, selectedClaimLimit || 1000);
+    const basePrice = getBasePrice(term, voluntaryExcess || 100, selectedClaimLimit || 1250);
     const adjustedPrice = applyPriceAdjustment(basePrice, vehiclePriceAdjustment);
 
-    // Boost addon using centralized function: +£3/month for duration (updated from £5)
+    const durationMonths = DURATION_MONTHS[term as PaymentPeriod] || 12;
+    
+    // Add-on prices
+    const addOnPrice = calculateAddOnPrice(selectedProtectionAddOns, term, durationMonths);
+
+    // Boost addon using centralized function: +£5/month for duration
     const boostCost = calculateBoostAdjustment(boostAddon, term as PaymentPeriod);
 
     // Labour rate adjustment using centralized function
     const labourAdjust = calculateLabourRateAdjustment(selectedLabourRate, term as PaymentPeriod);
 
-    return adjustedPrice + boostCost + labourAdjust;
-  }, [paymentType, voluntaryExcess, selectedClaimLimit, vehiclePriceAdjustment, boostAddon, selectedLabourRate, getBasePrice]);
+    return adjustedPrice + addOnPrice + boostCost + labourAdjust;
+  }, [paymentType, voluntaryExcess, selectedClaimLimit, vehiclePriceAdjustment, selectedProtectionAddOns, boostAddon, selectedLabourRate, getBasePrice]);
 
   // Calculate monthly price (total / 12, ALWAYS rounded DOWN)
   const calculateMonthlyPrice = useCallback((term: string = paymentType || '24months') => {
@@ -273,24 +273,24 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
       const basePrice = getBasePrice(term, voluntaryExcess!, selectedClaimLimit!);
       const adjustedPrice = applyPriceAdjustment(basePrice, vehiclePriceAdjustment);
 
-      // Add-ons removed from new business per Jan 2026 update
+      // No additional discounts - base prices from Excel are already final
+      const addOnPrice = calculateAddOnPrice(selectedProtectionAddOns, term, durationMonths);
       
-      // Boost addon: FIXED £3/month × 12 payments = £36 total (not multiplied by cover duration)
-      const boostCost = boostAddon ? (BOOST_CLAIM_LIMIT_MONTHLY * 12) : 0;
+      // Boost addon: +£5/month for duration
+      const boostCost = boostAddon ? (5 * durationMonths) : 0;
       
-      // Labour rate adjustment: £50=-£5/mo, £70=base(0), £100=+£4/mo, £200=+£24/mo
-      const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 4 : selectedLabourRate === 200 ? 24 : 0;
+      // Labour rate adjustment: £50=-£5/mo, £70=base(0), £100=+£8/mo, £200=+£24/mo
+      const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
       const labourAdjust = labourMonthlyAdjust * durationMonths;
 
-      const rawTotalPrice = adjustedPrice + boostCost + labourAdjust;
+      const rawTotalPrice = adjustedPrice + addOnPrice + boostCost + labourAdjust;
       
       // CRITICAL: Use Math.floor for monthly price to match display exactly
       // This ensures Step 3 and Step 4 display identical prices
       const monthlyPrice = Math.floor(rawTotalPrice / 12);
       const totalPrice = rawTotalPrice; // Pass raw total, Step 4 will normalize
       
-      // Boost adds +£500 to selected claim limit (updated from +£1000)
-      const effectiveClaimLimit = boostAddon ? selectedClaimLimit! + BOOST_CLAIM_LIMIT_AMOUNT : selectedClaimLimit!;
+      const effectiveClaimLimit = boostAddon ? selectedClaimLimit! + 1000 : selectedClaimLimit!;
 
       // Track analytics
       trackStepCompletion(3, 'plan_selection', {
@@ -409,7 +409,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
           currentMonthlyPrice={currentMonthlyPrice}
           boostAddon={boostAddon}
           onBoostChange={setBoostAddon}
-          boostPrice={BOOST_CLAIM_LIMIT_MONTHLY}
+          boostPrice={paymentType === '36months' ? 15 : paymentType === '24months' ? 10 : 5}
         />
 
         <LabourRateSelector
@@ -418,7 +418,12 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
           currentMonthlyPrice={currentMonthlyPrice}
         />
 
-        {/* Add-ons removed from new business per Jan 2026 update */}
+        <ExtrasSelector
+          selectedAddOns={selectedProtectionAddOns}
+          onAddOnChange={handleAddOnChange}
+          paymentType={paymentType || '24months'}
+          currentMonthlyPrice={currentMonthlyPrice}
+        />
 
         <CoverageTransparency
           platinumDocUrl={platinumDocUrl}

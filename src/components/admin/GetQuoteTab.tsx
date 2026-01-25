@@ -17,7 +17,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LeadSearchPopover, LeadData } from './LeadSearchPopover';
-import { PromoCodeSection } from '@/components/quote/PromoCodeSection';
 import MileageSlider from '@/components/MileageSlider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -43,49 +42,27 @@ interface VehicleData {
   vehicleType?: string;
 }
 
-// Step 3 exact options - UPDATED JAN 2026 to match main site
+// Step 3 exact options
 const termOptions = [
   { id: '12months', label: '1-Year Cover', months: 12, bonus: 3 },
   { id: '24months', label: '2-Year Cover', months: 24, bonus: 3, isPopular: true },
   { id: '36months', label: '3-Year Cover', months: 36, bonus: 3, isBestValue: true }
 ];
 
-// Excess options - UPDATED to match Step 3 (£0, £100, £250, £500)
-const excessOptions = [
-  { value: 0, label: '£0', description: 'No upfront cost' },
-  { value: 100, label: '£100', description: 'Best value overall', isPopular: true },
-  { value: 250, label: '£250', description: 'Lower monthly price' },
-  { value: 500, label: '£500', description: 'Cheapest monthly' }
-];
+const excessOptions = [0, 50, 100, 150];
 
-// Claim limit options - Extended for admin quotes (matches W2000 options)
 const claimLimitOptions = [
-  { value: 500, label: '£500', name: 'AutoCare Starter' },
-  { value: 750, label: '£750', name: 'AutoCare Basic' },
-  { value: 1000, label: '£1,000', name: 'AutoCare Essential' },
-  { value: 1200, label: '£1,200', name: 'AutoCare Standard' },
-  { value: 1250, label: '£1,250', name: 'AutoCare Standard+' },
-  { value: 1500, label: '£1,500', name: 'AutoCare Plus' },
-  { value: 1750, label: '£1,750', name: 'AutoCare Select' },
-  { value: 2000, label: '£2,000', name: 'AutoCare Advantage', isPopular: true },
-  { value: 2250, label: '£2,250', name: 'AutoCare Premium' },
-  { value: 2500, label: '£2,500', name: 'AutoCare Premium+' },
-  { value: 3000, label: '£3,000', name: 'AutoCare Elite' },
-  { value: 4000, label: '£4,000', name: 'AutoCare Ultra' },
-  { value: 5000, label: '£5,000', name: 'AutoCare Ultimate' }
+  { value: 750, label: '£750', description: 'Minor repairs' },
+  { value: 1250, label: '£1,250', description: 'Most popular' },
+  { value: 2000, label: '£2,000', description: 'Comprehensive' }
 ];
 
-// Labour rate options - UPDATED to match Step 3 (£50/£70/£100/£200)
 const labourRateOptions = [
-  { rate: 50, label: '£50/hr', description: 'Local Garages' },
+  { rate: 50, label: '£50/hr', description: 'Local Garages', isBestValue: true },
   { rate: 70, label: '£70/hr', description: 'Independent Garages', isPopular: true },
   { rate: 100, label: '£100/hr', description: 'Approved Garages' },
   { rate: 200, label: '£200/hr', description: 'Expert Garages' }
 ];
-
-// Boost adds +£500 at £3/month fixed (12 payments = £36 total)
-const BOOST_ADDON_MONTHLY = 3;
-const BOOST_ADDON_AMOUNT = 500;
 
 // Mileage dropdown options (10,000 to 140,000 in 1,000 increments)
 const mileageDropdownOptions = Array.from({ length: 131 }, (_, i) => 10000 + (i * 1000));
@@ -103,18 +80,16 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
   const [customerEmail, setCustomerEmail] = useState('');
-  const [customerFirstName, setCustomerFirstName] = useState('');
-  const [customerLastName, setCustomerLastName] = useState('');
+  const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
   const [excessAmount, setExcessAmount] = useState(100);
-  const [claimLimit, setClaimLimit] = useState(2000); // Updated default to £2,000
+  const [claimLimit, setClaimLimit] = useState(1250);
   const [labourRate, setLabourRate] = useState(70);
   const [boostAddon, setBoostAddon] = useState(false);
   const [selectedAddOns, setSelectedAddOns] = useState<{ [key: string]: boolean }>({});
   const [additionalNotes, setAdditionalNotes] = useState('');
-  const [discountCode, setDiscountCode] = useState('');
   const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months'>('none');
   const [includePayInFullDiscount, setIncludePayInFullDiscount] = useState(false); // Default OFF - must opt-in to give 10% discount
   
@@ -148,7 +123,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [paymentNotes, setPaymentNotes] = useState('');
-  const [sendToW2k, setSendToW2k] = useState(false); // Default OFF - user must opt-in
+  const [sendToW2k, setSendToW2k] = useState(true);
   const [sendWelcomeEmail, setSendWelcomeEmail] = useState(true);
   const [existingPolicyWarning, setExistingPolicyWarning] = useState<string | null>(null);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
@@ -187,8 +162,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const handleLeadSelect = (lead: LeadData) => {
     setSelectedLeadId(lead.id);
     setCustomerEmail(lead.email);
-    setCustomerFirstName(lead.first_name || '');
-    setCustomerLastName(lead.last_name || '');
+    setCustomerName(`${lead.first_name || ''} ${lead.last_name || ''}`.trim());
     setCustomerPhone(lead.phone || '');
     
     if (lead.vehicle_reg) {
@@ -267,16 +241,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       const numMileage = parseInt(String(savedQuote.vehicleData.mileage).replace(/,/g, ''), 10);
       if (!isNaN(numMileage)) setSliderMileage(numMileage);
     }
-    // Handle backward compatibility: split customerName into first/last if they're not separate
-    if (savedQuote.customerFirstName !== undefined) {
-      setCustomerFirstName(savedQuote.customerFirstName || '');
-      setCustomerLastName(savedQuote.customerLastName || '');
-    } else {
-      // Legacy: split full name
-      const nameParts = (savedQuote.customerName || '').trim().split(' ');
-      setCustomerFirstName(nameParts[0] || '');
-      setCustomerLastName(nameParts.slice(1).join(' ') || '');
-    }
+    setCustomerName(savedQuote.customerName || '');
     setCustomerEmail(savedQuote.customerEmail || '');
     setCustomerPhone(savedQuote.customerPhone || '');
     setPaymentType(savedQuote.paymentType || '24months');
@@ -656,13 +621,10 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     }
   };
 
-  // Helper to get full customer name
-  const getFullCustomerName = () => `${customerFirstName} ${customerLastName}`.trim();
-
   const handleCalculateQuote = () => {
     let hasError = false;
     
-    if (!customerFirstName.trim()) {
+    if (!customerName.trim()) {
       setShowNameError(true);
       hasError = true;
     } else {
@@ -753,9 +715,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
           cc: allCcEmails.length > 0 ? allCcEmails : undefined,
           subject: emailSubject,
           quoteLink: quoteLink,
-          customerName: getFullCustomerName(),
-          customerFirstName,
-          customerLastName,
+          customerName,
           vehicleData,
           quoteDetails: {
             plan: 'Platinum',
@@ -819,7 +779,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       const { error: quoteError } = await supabase
         .from('admin_sent_quotes')
         .insert({
-          customer_name: getFullCustomerName(),
+          customer_name: customerName,
           customer_email: customerEmail,
           vehicle_reg: vehicleData?.regNumber || '',
           vehicle_make: vehicleData?.make,
@@ -861,7 +821,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         .from('abandoned_carts')
         .insert({
           email: customerEmail,
-          full_name: getFullCustomerName(),
+          full_name: customerName,
           phone: '',
           vehicle_reg: vehicleData?.regNumber,
           vehicle_make: vehicleData?.make,
@@ -902,8 +862,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       setSliderMileage(0);
       setVehicleData(null);
       setCustomerEmail('');
-      setCustomerFirstName('');
-      setCustomerLastName('');
+      setCustomerName('');
       setPaymentType('24months');
       setExcessAmount(100);
       setClaimLimit(1250);
@@ -1000,7 +959,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     const bonus = termOption?.bonus || 3;
     const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
     
-    const content = `Hi ${customerFirstName || 'there'},
+    const content = `Hi ${customerName.split(' ')[0]},
 
 Here's your warranty quote for ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber}):
 
@@ -1026,13 +985,13 @@ Questions? Call 0330 229 5040`;
 
   // Auto-generate quote link when entering step 3
   useEffect(() => {
-    if (step === 3 && customerEmail && customerFirstName && vehicleData && !quoteGenerated) {
+    if (step === 3 && customerEmail && customerName && vehicleData && !quoteGenerated) {
       generateQuoteLink();
     }
-  }, [step, customerEmail, customerFirstName, vehicleData]);
+  }, [step, customerEmail, customerName, vehicleData]);
 
   const generateQuoteLink = async () => {
-    if (!customerEmail || !customerFirstName || !vehicleData) return;
+    if (!customerEmail || !customerName || !vehicleData) return;
     
     setIsGeneratingQuoteLink(true);
     setQuoteLink(null);
@@ -1043,9 +1002,7 @@ Questions? Call 0330 229 5040`;
     try {
       const { data, error } = await supabase.functions.invoke('create-live-quote', {
         body: {
-          customerName: getFullCustomerName(),
-          customerFirstName,
-          customerLastName,
+          customerName,
           customerEmail,
           customerPhone: '',
           vehicleData: {
@@ -1148,7 +1105,7 @@ Questions? Call 0330 229 5040`;
 
   // Open payment confirmation dialog with validation
   const handleOpenConfirmPaymentDialog = async () => {
-    if (!customerEmail || !customerFirstName || !vehicleData) {
+    if (!customerEmail || !customerName || !vehicleData) {
       toast({
         title: "Incomplete Quote",
         description: "Please complete all customer and vehicle details first",
@@ -1169,7 +1126,7 @@ Questions? Call 0330 229 5040`;
     setExternalPaymentStep('details');
     
     // Initialize editable fields with current values
-    setEditableCustomerName(getFullCustomerName());
+    setEditableCustomerName(customerName);
     setEditableCustomerEmail(customerEmail);
     setEditableCustomerPhone(customerPhone);
     setEditableMileage(vehicleData?.mileage || mileage);
@@ -1199,9 +1156,7 @@ Questions? Call 0330 229 5040`;
 
     return {
       customer: {
-        firstName: customerFirstName.trim() || 'Customer',
-        lastName: customerLastName.trim() || '',
-        name: `${customerFirstName.trim() || 'Customer'} ${customerLastName.trim()}`.trim(),
+        name: editableCustomerName || customerName,
         email: (editableCustomerEmail || customerEmail).toLowerCase(),
         phone: editableCustomerPhone || customerPhone || 'Not provided',
         address: skipAddressDetails 
@@ -1255,29 +1210,38 @@ Questions? Call 0330 229 5040`;
     };
   };
 
-  // Validate payment confirmation form - simplified, only essential fields
+  // Validate payment confirmation form
   const isPaymentFormValid = () => {
     return (
       paymentSource.trim() !== '' &&
+      paymentReference.trim() !== '' &&
       paymentAmount.trim() !== '' &&
+      warrantyStartDate !== undefined &&
       paymentConfirmed === true
     );
   };
 
   // Handle confirm external payment - atomic operation
   const handleConfirmExternalPayment = async () => {
-    // Only check essential validation
-    if (!paymentConfirmed) {
+    if (!isPaymentFormValid()) {
       toast({
-        title: "Confirmation Required",
-        description: "Please tick the confirmation checkbox to proceed",
+        title: "Incomplete Form",
+        description: "Please fill in all required fields and confirm payment",
         variant: "destructive",
       });
       return;
     }
 
-    // Use defaults if fields are empty
-    const confirmedAmount = parseFloat(paymentAmount) || currentPrice.totalPrice;
+    // Price validation
+    const confirmedAmount = parseFloat(paymentAmount);
+    if (Math.abs(confirmedAmount - currentPrice.totalPrice) > 1 && !paymentNotes) {
+      toast({
+        title: "Price Mismatch",
+        description: "Payment amount differs from quoted price. Please add a note explaining the difference.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsConfirmingPaid(true);
     const warrantyReference = generateWarrantyReference();
@@ -1313,21 +1277,14 @@ Questions? Call 0330 229 5040`;
       let customerId: string;
       
       // Use editable fields for final data
-      const finalName = editableCustomerName || getFullCustomerName();
+      const finalName = editableCustomerName || customerName;
       const finalPhone = editableCustomerPhone || customerPhone;
       const finalRegNumber = (editableRegNumber || vehicleData.regNumber)?.toUpperCase();
       const finalMileage = editableMileage || vehicleData.mileage;
       
       // 2. Customer record data with payment confirmation details
-      // Extract first and last name from editable name or state
-      const nameParts = finalName.trim().split(/\s+/);
-      const finalFirstName = customerFirstName.trim() || nameParts[0] || 'Customer';
-      const finalLastName = customerLastName.trim() || nameParts.slice(1).join(' ') || '';
-      
       const customerData: Record<string, any> = {
         name: finalName,
-        first_name: finalFirstName,
-        last_name: finalLastName || null,
         email: finalEmail.toLowerCase(),
         phone: finalPhone || null,
         registration_plate: finalRegNumber || null,
@@ -1391,9 +1348,6 @@ Questions? Call 0330 229 5040`;
       const isFutureStartDate = !isToday(warrantyStartDate) && warrantyStartDate > new Date();
 
       // 5. Create policy record with payment confirmation metadata
-      // Note: status constraint only allows 'active', 'cancelled', 'expired'
-      // Future start dates are tracked via policy_start_date and warranties_2000_scheduled_for
-      // W2000 status uses existing database values: 'not_sent', 'sent', 'failed', 'blocked_test_data'
       const policyData: Record<string, any> = {
         customer_id: customerId,
         email: finalEmail.toLowerCase(),
@@ -1404,7 +1358,7 @@ Questions? Call 0330 229 5040`;
         warranty_number: warrantyReference, // Use same reference to prevent trigger from generating a duplicate
         policy_start_date: startDate.toISOString(),
         policy_end_date: endDate.toISOString(),
-        status: 'active', // Constraint only allows: active, cancelled, expired
+        status: isFutureStartDate ? 'scheduled' : 'active',
         voluntary_excess: excessAmount,
         claim_limit: displayClaimLimit,
         payment_amount: confirmedAmount,
@@ -1412,8 +1366,9 @@ Questions? Call 0330 229 5040`;
         vehicle_rental: getAutoIncludedAddOns(paymentType).includes('rental'),
         is_manual_entry: true,
         payment_verified: true,
-        // W2000 scheduling - use database default 'not_sent' for now, edge function will update status
+        // W2000 scheduling for future start dates
         warranties_2000_scheduled_for: isFutureStartDate ? startDate.toISOString() : null,
+        warranties_2000_status: sendToW2k ? (isFutureStartDate ? 'scheduled' : 'pending') : null,
         // Include additional notes and bonus months from quote
         additional_notes: additionalNotes || null,
         seasonal_bonus_months: freeExtendedCover === '6months' ? 6 : freeExtendedCover === '3months' ? 3 : 0,
@@ -1430,18 +1385,13 @@ Questions? Call 0330 229 5040`;
         };
       }
       
-      console.log('[DEBUG] Policy data being inserted:', JSON.stringify(policyData, null, 2));
-      
       const { data: newPolicy, error: policyError } = await supabase
         .from('customer_policies')
         .insert(policyData as any)
         .select('id')
         .single();
 
-      if (policyError) {
-        console.error('[DEBUG] Policy insert error:', policyError);
-        throw policyError;
-      }
+      if (policyError) throw policyError;
 
       // 6. Add admin note with payment confirmation details
       await supabase
@@ -1515,14 +1465,6 @@ Questions? Call 0330 229 5040`;
           w2000SentSuccess = false;
         }
       } else if (sendToW2k && isFutureStartDate) {
-        // Mark policy for future W2000 processing - edge function will handle it on the scheduled date
-        await supabase
-          .from('customer_policies')
-          .update({ 
-            warranties_2000_status: 'not_sent', // Will be processed by scheduled function
-            warranties_2000_scheduled_for: startDate.toISOString()
-          })
-          .eq('id', newPolicy.id);
         console.log('W2000 submission scheduled for future start date:', format(startDate, 'yyyy-MM-dd'));
         w2000SentSuccess = null; // Scheduled, not sent yet
       }
@@ -1592,8 +1534,7 @@ Questions? Call 0330 229 5040`;
     setSliderMileage(0);
     setVehicleData(null);
     setCustomerEmail('');
-    setCustomerFirstName('');
-    setCustomerLastName('');
+    setCustomerName('');
     setCustomerPhone('');
     setPaymentType('24months');
     setExcessAmount(100);
@@ -1727,15 +1668,15 @@ Questions? Call 0330 229 5040`;
                       className="text-lg py-4 flex-1"
                     />
                     <Select
-                      value={sliderMileage > 0 ? sliderMileage.toString() : ''}
+                      value={sliderMileage.toString()}
                       onValueChange={(value) => {
                         const numValue = parseInt(value, 10);
                         setSliderMileage(numValue);
                         setMileage(numValue.toLocaleString());
                       }}
                     >
-                      <SelectTrigger className="w-[180px] bg-orange-50 border-orange-300 hover:border-orange-400 focus:border-orange-500">
-                        <SelectValue placeholder="Select" />
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Quick select" />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
                         {mileageDropdownOptions.map((miles) => (
@@ -1840,10 +1781,6 @@ Questions? Call 0330 229 5040`;
                     >
                       ← Back
                     </Button>
-                    <LeadSearchPopover
-                      onSelectLead={handleLeadSelect}
-                      className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                    />
                     <Button 
                       variant="ghost" 
                       size="sm"
@@ -1863,18 +1800,17 @@ Questions? Call 0330 229 5040`;
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-
-                {/* Customer Info - First Name & Last Name */}
+                {/* Customer Info */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>First Name <span className="text-red-500">*</span></Label>
+                    <Label>Customer Name <span className="text-red-500">*</span></Label>
                     <Input
-                      value={customerFirstName}
+                      value={customerName}
                       onChange={(e) => {
-                        setCustomerFirstName(e.target.value);
+                        setCustomerName(e.target.value);
                         if (showNameError && e.target.value.trim()) setShowNameError(false);
                       }}
-                      placeholder="e.g. John"
+                      placeholder="e.g. John Smith"
                       className={cn(
                         "bg-blue-50 border-blue-200 focus:border-blue-400",
                         showNameError && "border-red-500 bg-red-50"
@@ -1882,24 +1818,10 @@ Questions? Call 0330 229 5040`;
                     />
                     {showNameError && (
                       <p className="text-sm text-red-500 flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> First name is required
+                        <AlertCircle className="w-3 h-3" /> Customer name is required
                       </p>
                     )}
                   </div>
-                  <div className="space-y-2">
-                    <Label>Last Name <span className="text-muted-foreground text-xs">(optional)</span></Label>
-                    <Input
-                      value={customerLastName}
-                      onChange={(e) => setCustomerLastName(e.target.value)}
-                      placeholder="e.g. Smith"
-                      className="bg-blue-50 border-blue-200 focus:border-blue-400"
-                    />
-                    <p className="text-xs text-muted-foreground">Required for Bumper, leave blank if unknown</p>
-                  </div>
-                </div>
-
-                {/* Email & Phone */}
-                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Customer Email <span className="text-red-500">*</span></Label>
                     <Input
@@ -1921,37 +1843,11 @@ Questions? Call 0330 229 5040`;
                       </p>
                     )}
                   </div>
-                  <div className="space-y-2">
-                    <Label>Phone Number</Label>
-                    <Input
-                      type="tel"
-                      value={customerPhone}
-                      onChange={(e) => setCustomerPhone(e.target.value)}
-                      placeholder="e.g. 07123 456789"
-                      className="bg-blue-50 border-blue-200 focus:border-blue-400"
-                    />
-                  </div>
                 </div>
 
-                {/* Promo Code Section */}
-                <div className="space-y-2">
-                  <Label className="text-base font-semibold">Promo Code (Optional)</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={discountCode}
-                      onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
-                      placeholder="Enter promo code"
-                      className="flex-1 bg-green-50 border-green-200"
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">If the customer has a promo code, enter it here to apply to the quote.</p>
-                </div>
-
-                {/* SECTION ORDER: Duration → Labour Rate → Excess → Claim Limit + Boost → Add-ons */}
-
-                {/* 1. Duration - Quick Select Chips */}
+                {/* Duration - Quick Select Chips */}
                 <div className="space-y-3">
-                  <Label className="text-base font-semibold">1. Cover Duration</Label>
+                  <Label className="text-base font-semibold">Cover Duration</Label>
                   <div className="grid grid-cols-3 gap-3">
                     {termOptions.map((term) => (
                       <button
@@ -1980,9 +1876,9 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
 
-                {/* 2. Labour Rate - Quick Select Chips */}
+                {/* Labour Rate - Quick Select Chips */}
                 <div className="space-y-3">
-                  <Label className="text-base font-semibold">2. Labour Rate</Label>
+                  <Label className="text-base font-semibold">Labour Rate</Label>
                   <div className="grid grid-cols-4 gap-2">
                     {labourRateOptions.map((option) => (
                       <button
@@ -1995,6 +1891,11 @@ Questions? Call 0330 229 5040`;
                             : "border-border hover:border-primary/50"
                         )}
                       >
+                        {option.isBestValue && (
+                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-success text-success-foreground text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
+                            BEST VALUE
+                          </span>
+                        )}
                         {option.isPopular && (
                           <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
                             POPULAR
@@ -2005,105 +1906,56 @@ Questions? Call 0330 229 5040`;
                       </button>
                     ))}
                   </div>
-                  <p className="text-xs text-muted-foreground">Higher rate = more garage choice. £70/hr is the default.</p>
+                  <p className="text-xs text-muted-foreground">Higher rate = more garage choice</p>
                 </div>
 
-                {/* 3. Excess - Quick Select Chips */}
+                {/* Excess - Quick Select Chips */}
                 <div className="space-y-3">
-                  <Label className="text-base font-semibold">3. Excess Amount</Label>
+                  <Label className="text-base font-semibold">Excess Amount</Label>
                   <div className="grid grid-cols-4 gap-2">
-                    {excessOptions.map((option) => (
+                    {excessOptions.map((excess) => (
                       <button
-                        key={option.value}
-                        onClick={() => setExcessAmount(option.value)}
+                        key={excess}
+                        onClick={() => setExcessAmount(excess)}
                         className={cn(
-                          "relative py-3 px-2 rounded-lg border-2 text-center transition-all min-h-[70px] flex flex-col items-center justify-center",
-                          excessAmount === option.value
+                          "py-3 px-2 rounded-lg border-2 text-center font-semibold transition-all",
+                          excessAmount === excess
                             ? "border-primary bg-primary/10"
                             : "border-border hover:border-primary/50"
                         )}
                       >
-                        {option.isPopular && (
-                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
-                            MOST POPULAR
-                          </span>
+                        £{excess}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Lower excess = higher monthly cost</p>
+                </div>
+
+                {/* Claim Limit - Quick Select Chips */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">Claim Limit 🚗</Label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {claimLimitOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => setClaimLimit(option.value)}
+                        className={cn(
+                          "py-3 px-2 rounded-lg border-2 text-center transition-all",
+                          claimLimit === option.value
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50"
                         )}
+                      >
                         <div className="font-semibold">{option.label}</div>
                         <div className="text-xs text-muted-foreground">{option.description}</div>
                       </button>
                     ))}
                   </div>
-                  <p className="text-xs text-muted-foreground">Higher excess = lower monthly cost. £100 is the default.</p>
                 </div>
 
-                {/* 4. Claim Limit + Boost - Grouped together */}
-                <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-border">
-                  <Label className="text-base font-semibold">4. Single repair amount per claim</Label>
-                  <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-2">
-                    {claimLimitOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => {
-                          setClaimLimit(option.value);
-                          // Disable boost if £3,000 is selected (maximum limit)
-                          if (option.value === 3000 && boostAddon) {
-                            setBoostAddon(false);
-                          }
-                        }}
-                        className={cn(
-                          "relative py-3 px-2 rounded-lg border-2 text-center transition-all min-h-[70px] flex flex-col items-center justify-center",
-                          claimLimit === option.value
-                            ? "border-success bg-success/10"
-                            : "border-border hover:border-success/50"
-                        )}
-                      >
-                        {option.isPopular && (
-                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
-                            MOST POPULAR
-                          </span>
-                        )}
-                        <div className="font-semibold">{option.label}</div>
-                        <div className="text-xs text-muted-foreground">{option.name}</div>
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground">Maximum we'll pay for each claim. £2,000 is the default.</p>
-                  
-                  {/* Boost Addon - directly after claim limit */}
-                  {claimLimit < 3000 && (
-                    <div 
-                      onClick={() => setBoostAddon(!boostAddon)}
-                      className={cn(
-                        "relative p-4 rounded-xl cursor-pointer border-2 transition-all mt-3",
-                        boostAddon
-                          ? "bg-success/5 border-success"
-                          : "bg-card border-border hover:border-success/50"
-                      )}
-                    >
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-bold text-foreground mb-0.5">
-                            Add £500 extra cover
-                          </h4>
-                          <p className="text-sm text-muted-foreground">
-                            Upgrade to £{(claimLimit + BOOST_ADDON_AMOUNT).toLocaleString()} per claim
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            +£{BOOST_ADDON_MONTHLY}/month · 12 payments = £{BOOST_ADDON_MONTHLY * 12} total
-                          </p>
-                        </div>
-                        <Switch
-                          checked={boostAddon}
-                          onCheckedChange={setBoostAddon}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* 5. Optional Add-ons Section */}
+                {/* Optional Add-ons Section */}
                 <div className="space-y-3">
-                  <Label className="text-base font-semibold">5. Optional Add-ons</Label>
+                  <Label className="text-base font-semibold">Optional Add-ons</Label>
                   
                   {/* Auto-Included Add-ons Display */}
                   {getAutoIncludedAddOns(paymentType).length > 0 && (
@@ -2162,27 +2014,40 @@ Questions? Call 0330 229 5040`;
                     })}
                   </div>
                 </div>
+
+                {/* Boost Addon - directly below Optional Add-ons */}
+                <div className="flex items-center justify-between p-4 rounded-lg border-2 border-dashed border-amber-400 bg-amber-50">
+                  <div className="flex items-center gap-3">
+                    <Zap className="w-5 h-5 text-amber-500" />
+                    <div>
+                      <div className="font-semibold">Boost Claim Limit (+£1,000)</div>
+                      <div className="text-sm text-muted-foreground">
+                        +£{5 * DURATION_MONTHS[paymentType]} total (+£5/month × {DURATION_MONTHS[paymentType]} months)
+                      </div>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={boostAddon}
+                    onCheckedChange={setBoostAddon}
+                  />
+                </div>
+
                 {/* Free Extended Cover Option - PROMINENT */}
                 <div className={cn(
-                  "space-y-3 p-4 rounded-lg border-2 transition-all bg-white",
+                  "space-y-3 p-4 rounded-lg border-2 transition-all",
                   freeExtendedCover !== 'none' 
-                    ? "border-green-500" 
-                    : "border-dashed border-gray-300"
+                    ? "border-green-500 bg-green-50" 
+                    : "border-dashed border-gray-300 bg-gray-50"
                 )}>
-                  <div className={cn(
-                    "flex items-center gap-2 -mx-4 -mt-4 px-4 py-2 rounded-t-md",
-                    freeExtendedCover !== 'none' ? "bg-green-500" : "bg-gray-100"
-                  )}>
-                    <Gift className={cn("w-5 h-5", freeExtendedCover !== 'none' ? "text-white" : "text-green-600")} />
-                    <Label className={cn("text-base font-semibold", freeExtendedCover !== 'none' ? "text-white" : "text-foreground")}>
-                      Free Extended Cover
-                    </Label>
+                  <Label className="text-base font-semibold flex items-center gap-2">
+                    <Gift className="w-5 h-5 text-green-600" />
+                    Free Extended Cover
                     {freeExtendedCover !== 'none' && (
-                      <Badge className="bg-white text-green-600 ml-2">
+                      <Badge className="bg-green-600 text-white ml-2">
                         +{freeExtendedCover === '3months' ? '3' : '6'} MONTHS ACTIVE
                       </Badge>
                     )}
-                  </div>
+                  </Label>
                   <p className="text-sm text-muted-foreground">
                     <strong>IMPORTANT:</strong> Click a button below to add free months. This will show in the customer's email AND their quote page.
                   </p>
@@ -2260,14 +2125,14 @@ Questions? Call 0330 229 5040`;
 
                 {/* Additional Notes */}
                 <div className="space-y-2">
-                  <Label className="text-base font-semibold">Additional Notes (for W2000)</Label>
+                  <Label className="text-base font-semibold">Additional Notes (for Warranties 2000)</Label>
                   <Textarea
                     value={additionalNotes}
                     onChange={(e) => setAdditionalNotes(e.target.value)}
                     placeholder="Any special notes for this warranty (e.g., specific conditions, customer requests)..."
                     rows={3}
                   />
-                  <p className="text-xs text-muted-foreground">These notes will be sent to W2000 when the customer completes their purchase</p>
+                  <p className="text-xs text-muted-foreground">These notes will be sent to Warranties 2000 when the customer completes their purchase</p>
                   
                   {/* Warning if admin types about free months without selecting the toggle */}
                   {freeExtendedCover === 'none' && 
@@ -2364,8 +2229,8 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
 
-                {/* Fixed Price Summary Bar - sticks to viewport bottom */}
-                <div className="fixed bottom-0 left-0 right-0 p-4 bg-gray-50 shadow-lg border-t-4 border-green-400 z-50">
+                {/* Sticky Price Summary Bar */}
+                <div className="sticky bottom-0 -mx-6 -mb-6 p-4 bg-gray-50 rounded-b-lg shadow-lg border-t-4 border-green-400">
                   <div className="flex items-center justify-center gap-6 text-center">
                     <div>
                       <div className="text-sm text-gray-700 font-medium">Monthly (12 payments via Bumper)</div>
@@ -2386,7 +2251,7 @@ Questions? Call 0330 229 5040`;
                     <div className="text-gray-400 text-2xl">|</div>
                     <div className="text-sm text-gray-700 font-medium">
                       <div>Total: £{currentPrice.monthlyPrice * 12}</div>
-                      <div>Claim: £{(boostAddon ? claimLimit + 500 : claimLimit).toLocaleString()} | Labour: £{labourRate}/hr</div>
+                      <div>Claim: £{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()} | Labour: £{labourRate}/hr</div>
                     </div>
                   </div>
                 </div>
@@ -2404,8 +2269,7 @@ Questions? Call 0330 229 5040`;
                       // Save quote data to localStorage for later
                       const savedQuote = {
                         vehicleData,
-                        customerFirstName,
-                        customerLastName,
+                        customerName,
                         customerEmail,
                         customerPhone,
                         paymentType,
@@ -2493,7 +2357,7 @@ Questions? Call 0330 229 5040`;
                 <div className="bg-muted p-4 rounded-lg">
                   <h3 className="font-semibold mb-2">Order Summary</h3>
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <p><strong>Customer:</strong> {getFullCustomerName()}</p>
+                    <p><strong>Customer:</strong> {customerName}</p>
                     <p><strong>Email:</strong> {customerEmail}</p>
                     <p><strong>Vehicle:</strong> {vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
                     <p><strong>Registration:</strong> {vehicleData?.regNumber}</p>
@@ -2570,7 +2434,7 @@ Questions? Call 0330 229 5040`;
                         </Button>
                         <Button 
                           onClick={() => {
-                            const message = `Hi ${customerFirstName || 'there'},\n\nYour warranty quote for ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber}) is ready!\n\n💰 £${currentPrice.monthlyPrice}/month via Bumper\n💳 £${currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)} pay in full (10% off)\n\n🔗 Complete your purchase: ${quoteLink}\n\nBuyawarranty Customer Care\n📞 0330 229 5040`;
+                            const message = `Hi ${customerName?.split(' ')[0] || 'there'},\n\nYour warranty quote for ${vehicleData?.make} ${vehicleData?.model} (${vehicleData?.regNumber}) is ready!\n\n💰 £${currentPrice.monthlyPrice}/month via Bumper\n💳 £${currentPrice.payInFullPrice || Math.floor(currentPrice.totalPrice * 0.9)} pay in full (10% off)\n\n🔗 Complete your purchase: ${quoteLink}\n\nBuyawarranty Customer Care\n📞 0330 229 5040`;
                             const encodedMessage = encodeURIComponent(message);
                             window.open(`https://api.whatsapp.com/send?text=${encodedMessage}`, '_blank');
                           }}
@@ -2809,7 +2673,7 @@ Questions? Call 0330 229 5040`;
                       
                       {/* Greeting */}
                       <div className="mb-4">
-                        <p className="text-gray-800">Hi {customerFirstName || 'there'},</p>
+                        <p className="text-gray-800">Hi {customerName?.split(' ')[0] || 'there'},</p>
                         <p className="text-gray-600 text-sm mt-2">
                           Thanks for requesting your personalised warranty quote. Please review your cover details below.
                         </p>
@@ -2892,7 +2756,7 @@ Questions? Call 0330 229 5040`;
                       <h4 className="font-semibold text-blue-900 mb-2">👤 Customer Details</h4>
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <span className="text-blue-700">Name:</span>
-                        <span className="font-medium">{getFullCustomerName() || 'Not provided'}</span>
+                        <span className="font-medium">{customerName || 'Not provided'}</span>
                         <span className="text-blue-700">Email:</span>
                         <span className="font-medium">{customerEmail}</span>
                         <span className="text-blue-700">Phone:</span>
@@ -3016,90 +2880,66 @@ Questions? Call 0330 229 5040`;
 
               {externalPaymentStep === 'details' ? (
                 <div className="space-y-4">
-                  {/* Vehicle Details - Pre-populated from DVLA (read-only display) */}
-                  <div className="p-4 bg-white border border-gray-200 rounded-lg space-y-3">
-                    <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-                      🚗 Vehicle Details
-                      <span className="text-xs font-normal text-green-600 bg-green-50 px-2 py-0.5 rounded">Pre-filled from DVLA</span>
-                    </h4>
-                    <div className="grid grid-cols-3 gap-3 text-sm">
-                      <div>
-                        <span className="text-gray-600 font-medium">Registration:</span>
-                        <p className="text-gray-900 font-mono font-semibold">{vehicleData?.regNumber || regNumber}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-600 font-medium">Vehicle:</span>
-                        <p className="text-gray-900">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-600 font-medium">Mileage:</span>
-                        <p className="text-gray-900">{parseInt(vehicleData?.mileage || mileage || '0').toLocaleString()} miles</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Customer Details - Editable */}
-                  <div className="p-4 bg-white border border-gray-200 rounded-lg space-y-3">
-                    <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-                      <UserCheck className="w-4 h-4 text-gray-600" />
-                      Customer Details
+                  {/* Editable Customer & Vehicle Details */}
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
+                    <h4 className="font-semibold text-blue-900 flex items-center gap-2">
+                      <UserCheck className="w-4 h-4" />
+                      Customer & Vehicle Details
                     </h4>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <Label className="text-xs text-gray-600">First Name *</Label>
+                        <Label className="text-xs text-blue-600">Customer Name *</Label>
                         <Input
-                          value={customerFirstName}
-                          onChange={(e) => setCustomerFirstName(e.target.value)}
-                          className={cn(
-                            "bg-gray-50 border-gray-200",
-                            !customerFirstName.trim() && "border-red-300 focus:ring-red-500"
-                          )}
-                          placeholder="e.g. John"
-                        />
-                        {!customerFirstName.trim() && (
-                          <p className="text-xs text-red-600">First name is required</p>
-                        )}
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs text-gray-600">Surname</Label>
-                        <Input
-                          value={customerLastName}
-                          onChange={(e) => setCustomerLastName(e.target.value)}
-                          className="bg-gray-50 border-gray-200"
-                          placeholder="e.g. Smith"
+                          value={editableCustomerName}
+                          onChange={(e) => setEditableCustomerName(e.target.value)}
+                          className="bg-white"
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs text-gray-600">Email *</Label>
+                        <Label className="text-xs text-blue-600">Email *</Label>
                         <Input
                           value={editableCustomerEmail}
                           onChange={(e) => setEditableCustomerEmail(e.target.value)}
-                          className={cn(
-                            "bg-gray-50 border-gray-200",
-                            !editableCustomerEmail.trim() && "border-red-300 focus:ring-red-500"
-                          )}
-                          placeholder="email@example.com"
+                          className="bg-white"
                         />
-                        {!editableCustomerEmail.trim() && (
-                          <p className="text-xs text-red-600">Email is required</p>
-                        )}
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs text-gray-600">Phone</Label>
+                        <Label className="text-xs text-blue-600">Phone</Label>
                         <Input
                           value={editableCustomerPhone}
                           onChange={(e) => setEditableCustomerPhone(e.target.value)}
                           placeholder="07xxx xxxxxx"
-                          className="bg-gray-50 border-gray-200"
+                          className="bg-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-blue-600">Registration *</Label>
+                        <Input
+                          value={editableRegNumber}
+                          onChange={(e) => setEditableRegNumber(e.target.value.toUpperCase())}
+                          className="bg-white font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-blue-600">Vehicle</Label>
+                        <p className="text-sm text-blue-900 py-2">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-blue-600">Mileage</Label>
+                        <Input
+                          value={editableMileage}
+                          onChange={(e) => setEditableMileage(e.target.value.replace(/\D/g, ''))}
+                          placeholder="e.g. 45000"
+                          className="bg-white"
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* Address Section */}
-                  <div className="p-4 bg-white border border-gray-200 rounded-lg space-y-3">
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                      <h4 className="font-semibold text-amber-900 flex items-center gap-2">
                         📍 Customer Address
                       </h4>
                       <div className="flex items-center gap-2">
@@ -3108,7 +2948,7 @@ Questions? Call 0330 229 5040`;
                           checked={skipAddressDetails}
                           onCheckedChange={(checked) => setSkipAddressDetails(checked === true)}
                         />
-                        <Label htmlFor="skip-address" className="text-xs text-gray-600 cursor-pointer">
+                        <Label htmlFor="skip-address" className="text-xs text-amber-700 cursor-pointer">
                           Customer will complete in dashboard
                         </Label>
                       </div>
@@ -3117,91 +2957,77 @@ Questions? Call 0330 229 5040`;
                     {!skipAddressDetails && (
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <Label className="text-xs text-gray-600">House/Building Number</Label>
+                          <Label className="text-xs text-amber-600">House/Building Number</Label>
                           <Input
                             value={customerBuildingNumber}
                             onChange={(e) => setCustomerBuildingNumber(e.target.value)}
                             placeholder="e.g. 42"
-                            className="bg-gray-50 border-gray-200"
+                            className="bg-white"
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs text-gray-600">Street</Label>
+                          <Label className="text-xs text-amber-600">Street</Label>
                           <Input
                             value={customerStreet}
                             onChange={(e) => setCustomerStreet(e.target.value)}
                             placeholder="e.g. High Street"
-                            className="bg-gray-50 border-gray-200"
+                            className="bg-white"
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs text-gray-600">Town/City</Label>
+                          <Label className="text-xs text-amber-600">Town/City</Label>
                           <Input
                             value={customerTown}
                             onChange={(e) => setCustomerTown(e.target.value)}
                             placeholder="e.g. Manchester"
-                            className="bg-gray-50 border-gray-200"
+                            className="bg-white"
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs text-gray-600">County</Label>
+                          <Label className="text-xs text-amber-600">County</Label>
                           <Input
                             value={customerCounty}
                             onChange={(e) => setCustomerCounty(e.target.value)}
                             placeholder="e.g. Greater Manchester"
-                            className="bg-gray-50 border-gray-200"
+                            className="bg-white"
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs text-gray-600">Postcode *</Label>
+                          <Label className="text-xs text-amber-600">Postcode *</Label>
                           <Input
                             value={customerPostcode}
                             onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())}
                             placeholder="e.g. M1 1AA"
-                            className="bg-gray-50 border-gray-200"
+                            className="bg-white"
                           />
                         </div>
                       </div>
                     )}
                     
                     {skipAddressDetails && (
-                      <Alert className="bg-gray-100 border-gray-200">
-                        <Info className="h-4 w-4 text-gray-600" />
-                        <AlertDescription className="text-gray-700 text-sm">
+                      <Alert className="bg-amber-100 border-amber-300">
+                        <Info className="h-4 w-4 text-amber-600" />
+                        <AlertDescription className="text-amber-800 text-sm">
                           The customer will be prompted to complete their address when they log into their dashboard.
                         </AlertDescription>
                       </Alert>
                     )}
                   </div>
 
-                  {/* Pre-populated Policy Summary with Edit Button */}
-                  <div className="p-4 bg-white border border-gray-200 rounded-lg space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-                        <Zap className="w-4 h-4 text-gray-600" />
-                        Policy Configuration (from Step 2)
-                      </h4>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setShowConfirmPaymentDialog(false);
-                          setStep(2);
-                        }}
-                        className="h-7 px-2 text-xs"
-                      >
-                        <Pencil className="w-3 h-3 mr-1" />
-                        Edit
-                      </Button>
-                    </div>
+                  {/* Pre-populated Policy Summary */}
+                  <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg space-y-3">
+                    <h4 className="font-semibold text-purple-900 flex items-center gap-2">
+                      <Zap className="w-4 h-4" />
+                      Policy Configuration (from Step 2)
+                    </h4>
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
-                        <span className="text-gray-600 font-medium">Plan:</span>
-                        <p className="text-gray-900">Platinum</p>
+                        <span className="text-purple-600 font-medium">Plan:</span>
+                        <p className="text-purple-900">Platinum</p>
                       </div>
                       <div>
-                        <span className="text-gray-600 font-medium">Duration:</span>
-                        <p className="text-gray-900">
+                        <span className="text-purple-600 font-medium">Duration:</span>
+                        <p className="text-purple-900">
                           {termOptions.find(t => t.id === paymentType)?.label}
                           {freeExtendedCover !== 'none' && (
                             <span className="ml-1 text-green-600">+ {freeExtendedCover === '3months' ? '3' : '6'} months FREE</span>
@@ -3209,25 +3035,25 @@ Questions? Call 0330 229 5040`;
                         </p>
                       </div>
                       <div>
-                        <span className="text-gray-600 font-medium">Excess:</span>
-                        <p className="text-gray-900">£{excessAmount}</p>
+                        <span className="text-purple-600 font-medium">Excess:</span>
+                        <p className="text-purple-900">£{excessAmount}</p>
                       </div>
                       <div>
-                        <span className="text-gray-600 font-medium">Claim Limit:</span>
-                        <p className="text-gray-900">£{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}{boostAddon ? ' (boost)' : ''}</p>
+                        <span className="text-purple-600 font-medium">Claim Limit:</span>
+                        <p className="text-purple-900">£{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}{boostAddon ? ' (boost)' : ''}</p>
                       </div>
                       <div>
-                        <span className="text-gray-600 font-medium">Labour Rate:</span>
-                        <p className="text-gray-900">£{labourRate}/hr</p>
+                        <span className="text-purple-600 font-medium">Labour Rate:</span>
+                        <p className="text-purple-900">£{labourRate}/hr</p>
                       </div>
                       <div>
-                        <span className="text-gray-600 font-medium">Quoted Price:</span>
-                        <p className="text-gray-900 font-semibold">£{currentPrice.totalPrice}</p>
+                        <span className="text-purple-600 font-medium">Quoted Price:</span>
+                        <p className="text-purple-900 font-semibold">£{currentPrice.totalPrice}</p>
                       </div>
                       {getAutoIncludedAddOns(paymentType).length > 0 && (
                         <div className="col-span-2">
-                          <span className="text-gray-600 font-medium">Included Add-ons:</span>
-                          <p className="text-gray-900">
+                          <span className="text-purple-600 font-medium">Included Add-ons:</span>
+                          <p className="text-purple-900">
                             {getAutoIncludedAddOns(paymentType).includes('breakdown') && 'Vehicle Recovery'}
                             {getAutoIncludedAddOns(paymentType).includes('breakdown') && getAutoIncludedAddOns(paymentType).includes('rental') && ', '}
                             {getAutoIncludedAddOns(paymentType).includes('rental') && 'Hire Car'}
@@ -3244,10 +3070,7 @@ Questions? Call 0330 229 5040`;
                       id="payment-source"
                       value={paymentSource}
                       onChange={(e) => setPaymentSource(e.target.value)}
-                      className={cn(
-                        "w-full px-3 py-2 border rounded-md bg-background",
-                        !paymentSource && "border-red-300"
-                      )}
+                      className="w-full px-3 py-2 border rounded-md bg-background"
                     >
                       <option value="">Select payment source...</option>
                       <option value="stripe_dashboard">Stripe Dashboard</option>
@@ -3257,11 +3080,18 @@ Questions? Call 0330 229 5040`;
                       <option value="dealer_portal">Dealer Portal</option>
                       <option value="other">Other</option>
                     </select>
-                    {!paymentSource && (
-                      <p className="text-xs text-red-600">Please select a payment source</p>
-                    )}
                   </div>
 
+                  {/* Payment Reference */}
+                  <div className="space-y-2">
+                    <Label htmlFor="payment-reference">Payment Reference / Transaction ID *</Label>
+                    <Input
+                      id="payment-reference"
+                      value={paymentReference}
+                      onChange={(e) => setPaymentReference(e.target.value)}
+                      placeholder="e.g. pi_xxxx, BAC123456, etc."
+                    />
+                  </div>
 
                   {/* Amount */}
                   <div className="grid grid-cols-2 gap-4">
@@ -3273,11 +3103,7 @@ Questions? Call 0330 229 5040`;
                         value={paymentAmount}
                         onChange={(e) => setPaymentAmount(e.target.value)}
                         placeholder={currentPrice.totalPrice.toString()}
-                        className={cn(!paymentAmount && "border-red-300")}
                       />
-                      {!paymentAmount && (
-                        <p className="text-xs text-red-600">Payment amount is required</p>
-                      )}
                       {paymentAmount && Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1 && (
                         <p className="text-xs text-amber-600">
                           ⚠️ Differs from quoted price (£{currentPrice.totalPrice})
@@ -3416,36 +3242,36 @@ Questions? Call 0330 229 5040`;
                     const preview = getExternalPaymentPreviewData();
                     return (
                       <>
-                        <Alert className="bg-gray-100 border-gray-200">
-                          <Eye className="h-4 w-4 text-gray-600" />
-                          <AlertDescription className="text-gray-700">
-                            Please review all information carefully before confirming. This data will be sent to your Customer Dashboard{sendToW2k ? ' and Warranties Register' : ''}.
+                        <Alert className="bg-amber-50 border-amber-200">
+                          <Eye className="h-4 w-4 text-amber-600" />
+                          <AlertDescription className="text-amber-800">
+                            Please review all information carefully before confirming. This data will be sent to your Customer Dashboard and {sendToW2k ? 'Warranties 2000 API' : 'stored locally only'}.
                           </AlertDescription>
                         </Alert>
 
                         {/* Customer Dashboard Data */}
-                        <div className="p-4 bg-white border border-gray-200 rounded-lg space-y-3">
-                          <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-                            <UserCheck className="w-4 h-4 text-gray-600" />
+                        <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg space-y-3">
+                          <h4 className="font-semibold text-green-900 flex items-center gap-2">
+                            <UserCheck className="w-4 h-4" />
                             Customer Dashboard Record
                           </h4>
                           <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div><span className="font-medium text-gray-600">First Name:</span> {preview.customer.firstName}</div>
-                            <div><span className="font-medium text-gray-600">Surname:</span> {preview.customer.lastName || 'Not provided'}</div>
-                            <div><span className="font-medium text-gray-600">Email:</span> {preview.customer.email}</div>
-                            <div><span className="font-medium text-gray-600">Phone:</span> {preview.customer.phone}</div>
-                            <div><span className="font-medium text-gray-600">Registration:</span> {preview.vehicle.registration}</div>
-                            <div><span className="font-medium text-gray-600">Vehicle:</span> {preview.vehicle.make} {preview.vehicle.model} ({preview.vehicle.year})</div>
-                            <div><span className="font-medium text-gray-600">Mileage:</span> {preview.vehicle.mileage} miles</div>
-                            <div><span className="font-medium text-gray-600">Plan:</span> {preview.policy.planType}</div>
-                            <div><span className="font-medium text-gray-600">Duration:</span> {preview.policy.duration}</div>
-                            <div><span className="font-medium text-gray-600">Start Date:</span> {preview.policy.startDate}</div>
-                            <div><span className="font-medium text-gray-600">End Date:</span> {preview.policy.endDate}</div>
-                            <div><span className="font-medium text-gray-600">Excess:</span> £{preview.policy.excess}</div>
-                            <div><span className="font-medium text-gray-600">Claim Limit:</span> £{preview.policy.claimLimit.toLocaleString()}</div>
-                            <div><span className="font-medium text-gray-600">Labour Rate:</span> £{preview.policy.labourRate}/hr</div>
-                            <div><span className="font-medium text-gray-600">Payment Amount:</span> £{preview.payment.amount}</div>
-                            <div><span className="font-medium text-gray-600">Payment Source:</span> {preview.payment.source}</div>
+                            <div><span className="font-medium">Name:</span> {preview.customer.name}</div>
+                            <div><span className="font-medium">Email:</span> {preview.customer.email}</div>
+                            <div><span className="font-medium">Phone:</span> {preview.customer.phone}</div>
+                            <div><span className="font-medium">Registration:</span> {preview.vehicle.registration}</div>
+                            <div><span className="font-medium">Vehicle:</span> {preview.vehicle.make} {preview.vehicle.model} ({preview.vehicle.year})</div>
+                            <div><span className="font-medium">Mileage:</span> {preview.vehicle.mileage} miles</div>
+                            <div><span className="font-medium">Plan:</span> {preview.policy.planType}</div>
+                            <div><span className="font-medium">Duration:</span> {preview.policy.duration}</div>
+                            <div><span className="font-medium">Start Date:</span> {preview.policy.startDate}</div>
+                            <div><span className="font-medium">End Date:</span> {preview.policy.endDate}</div>
+                            <div><span className="font-medium">Excess:</span> £{preview.policy.excess}</div>
+                            <div><span className="font-medium">Claim Limit:</span> £{preview.policy.claimLimit.toLocaleString()}</div>
+                            <div><span className="font-medium">Labour Rate:</span> £{preview.policy.labourRate}/hr</div>
+                            <div><span className="font-medium">Payment Amount:</span> £{preview.payment.amount}</div>
+                            <div><span className="font-medium">Payment Source:</span> {preview.payment.source}</div>
+                            <div><span className="font-medium">Payment Ref:</span> {preview.payment.reference}</div>
                             {preview.policy.breakdownRecovery && <div className="text-green-700">✓ Breakdown Recovery</div>}
                             {preview.policy.vehicleRental && <div className="text-green-700">✓ Hire Car Cover</div>}
                             {preview.policy.boostAddon && <div className="text-green-700">✓ Boost Add-on</div>}
@@ -3455,7 +3281,7 @@ Questions? Call 0330 229 5040`;
                               </div>
                             )}
                             {preview.policy.isFutureStart && (
-                              <div className="col-span-2 p-2 bg-gray-100 border border-gray-200 rounded text-gray-800 text-sm">
+                              <div className="col-span-2 p-2 bg-blue-100 border border-blue-200 rounded text-blue-800 text-sm">
                                 <span className="font-medium">📅 Future Start:</span> Payment today, warranty activates on {preview.policy.startDate}
                               </div>
                             )}
@@ -3464,38 +3290,38 @@ Questions? Call 0330 229 5040`;
 
                         {/* Warranties 2000 Data */}
                         {sendToW2k && (
-                          <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg space-y-3">
-                            <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-                              <Send className="w-4 h-4 text-gray-600" />
-                              Warranties Register Payload
+                          <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg space-y-3">
+                            <h4 className="font-semibold text-blue-900 flex items-center gap-2">
+                              <Send className="w-4 h-4" />
+                              Warranties 2000 API Payload
                             </h4>
                             <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div><span className="font-medium text-gray-600">First:</span> {preview.customer.firstName}</div>
-                              <div><span className="font-medium text-gray-600">Surname:</span> {preview.customer.lastName || 'N/A'}</div>
-                              <div><span className="font-medium text-gray-600">EMail:</span> {preview.customer.email}</div>
-                              <div><span className="font-medium text-gray-600">Tel:</span> {preview.customer.phone}</div>
-                              <div><span className="font-medium text-gray-600">VRM:</span> {preview.vehicle.registration}</div>
-                              <div><span className="font-medium text-gray-600">Make:</span> {preview.vehicle.make}</div>
-                              <div><span className="font-medium text-gray-600">Model:</span> {preview.vehicle.model}</div>
-                              <div><span className="font-medium text-gray-600">Year:</span> {preview.vehicle.year}</div>
-                              <div><span className="font-medium text-gray-600">Mileage:</span> {preview.vehicle.mileage.replace(/,/g, '')}</div>
-                              <div><span className="font-medium text-gray-600">Fuel:</span> {preview.vehicle.fuelType}</div>
-                              <div><span className="font-medium text-gray-600">Transmission:</span> {preview.vehicle.transmission}</div>
-                              <div><span className="font-medium text-gray-600">Cover (months):</span> {preview.policy.durationMonths}</div>
-                              <div><span className="font-medium text-gray-600">Excess:</span> £{preview.policy.excess}</div>
-                              <div><span className="font-medium text-gray-600">Claim Limit:</span> £{preview.policy.claimLimit.toLocaleString()}</div>
-                              <div><span className="font-medium text-gray-600">Labour Rate:</span> £{preview.policy.labourRate}/hr</div>
-                              <div><span className="font-medium text-gray-600">Price:</span> £{preview.payment.amount}</div>
+                              <div><span className="font-medium">First:</span> {preview.customer.name.split(' ')[0]}</div>
+                              <div><span className="font-medium">Surname:</span> {preview.customer.name.split(' ').slice(1).join(' ') || 'N/A'}</div>
+                              <div><span className="font-medium">EMail:</span> {preview.customer.email}</div>
+                              <div><span className="font-medium">Tel:</span> {preview.customer.phone}</div>
+                              <div><span className="font-medium">VRM:</span> {preview.vehicle.registration}</div>
+                              <div><span className="font-medium">Make:</span> {preview.vehicle.make}</div>
+                              <div><span className="font-medium">Model:</span> {preview.vehicle.model}</div>
+                              <div><span className="font-medium">Year:</span> {preview.vehicle.year}</div>
+                              <div><span className="font-medium">Mileage:</span> {preview.vehicle.mileage.replace(/,/g, '')}</div>
+                              <div><span className="font-medium">Fuel:</span> {preview.vehicle.fuelType}</div>
+                              <div><span className="font-medium">Transmission:</span> {preview.vehicle.transmission}</div>
+                              <div><span className="font-medium">Cover (months):</span> {preview.policy.durationMonths}</div>
+                              <div><span className="font-medium">Excess:</span> £{preview.policy.excess}</div>
+                              <div><span className="font-medium">Claim Limit:</span> £{preview.policy.claimLimit.toLocaleString()}</div>
+                              <div><span className="font-medium">Labour Rate:</span> £{preview.policy.labourRate}/hr</div>
+                              <div><span className="font-medium">Price:</span> £{preview.payment.amount}</div>
                             </div>
                             {preview.integrations.w2kNotes && (
-                              <div className="mt-2 p-2 bg-white rounded text-sm">
-                                <span className="font-medium text-gray-600">Notes:</span>
-                                <p className="text-gray-700 mt-1">{preview.integrations.w2kNotes}</p>
+                              <div className="mt-2 p-2 bg-white/50 rounded text-sm">
+                                <span className="font-medium">Notes to W2000:</span>
+                                <p className="text-muted-foreground mt-1">{preview.integrations.w2kNotes}</p>
                               </div>
                             )}
                             {preview.policy.isFutureStart && (
-                              <div className="mt-2 p-2 bg-gray-100 border border-gray-200 rounded text-sm text-gray-700">
-                                <span className="font-medium">⏰ Scheduled:</span> Submission will be processed on {preview.policy.startDate}
+                              <div className="mt-2 p-2 bg-amber-100 border border-amber-200 rounded text-sm text-amber-800">
+                                <span className="font-medium">⏰ Scheduled:</span> W2000 submission will be processed on {preview.policy.startDate}
                               </div>
                             )}
                           </div>
@@ -3653,8 +3479,8 @@ Questions? Call 0330 229 5040`;
                     </Button>
                     <Button
                       onClick={() => setExternalPaymentStep('preview')}
-                      disabled={!paymentSource || !paymentAmount}
-                      className="bg-green-600 hover:bg-green-700 text-white"
+                      disabled={!paymentSource || !paymentReference || !paymentAmount || !paymentDate}
+                      className="bg-blue-600 hover:bg-blue-700"
                     >
                       <Eye className="w-4 h-4 mr-2" />
                       Preview Before Submit

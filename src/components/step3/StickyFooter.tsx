@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ArrowRight, Lock, ChevronUp, ChevronDown, Check } from 'lucide-react';
+import { ArrowRight, Star, Lock, ChevronUp, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { getMarketingSavings, PaymentPeriod } from '@/lib/pricingMatrix';
 import { cn } from '@/lib/utils';
-import { calculateCPMWithGuardrail } from '@/lib/cpmUtils';
 
 interface StickyFooterProps {
   monthlyPrice: number;
@@ -13,7 +13,6 @@ interface StickyFooterProps {
   isValid: boolean;
   paymentPeriod?: string;
   hasAddOnsSelected?: boolean;
-  costPerMonthOfCover?: number;
 }
 
 const StickyFooter: React.FC<StickyFooterProps> = ({
@@ -23,8 +22,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
   isLoading,
   isValid,
   paymentPeriod = '24months',
-  hasAddOnsSelected = false,
-  costPerMonthOfCover
+  hasAddOnsSelected = false
 }) => {
   const [isPulsing, setIsPulsing] = useState(false);
   const [prevPrice, setPrevPrice] = useState(monthlyPrice);
@@ -56,148 +54,162 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isMobileExpanded]);
   
-  const payInFull = totalPrice;
-  const coverMonths = paymentPeriod === '12months' ? 12 : paymentPeriod === '24months' ? 24 : 36;
-  const calculatedCostPerMonth = costPerMonthOfCover ?? calculateCPMWithGuardrail(payInFull, coverMonths, monthlyPrice);
+  // Pay in full = monthly × 12
+  const payInFull = monthlyPrice * 12;
+  
+  // Get marketing savings from centralized pricing matrix
+  const savings = getMarketingSavings(paymentPeriod as PaymentPeriod);
+  const wasPrice = payInFull + savings;
 
   const toggleMobileExpand = useCallback(() => {
     setIsMobileExpanded(prev => !prev);
   }, []);
 
-  const coverYears = paymentPeriod === '12months' ? '1' : paymentPeriod === '24months' ? '2' : '3';
+  const coverYears = paymentPeriod === '12months' ? 'One' : paymentPeriod === '24months' ? 'Two' : 'Three';
   const coverText = `${coverYears}-Year Cover`;
 
-  // Calculate pay in full savings (10%)
-  const payInFullPrice = Math.round(payInFull * 0.9);
-  const savings = payInFull - payInFullPrice;
-
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-[#E8E8E8] shadow-lg z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-[0_-8px_30px_rgba(0,0,0,0.15)] border-t border-gray-200 z-50">
       {/* Desktop Layout */}
-      <div className="hidden md:block max-w-6xl mx-auto px-6 py-4">
-        <div className="flex items-center justify-between gap-6">
+      <div className="hidden md:block max-w-6xl mx-auto px-6 py-5">
+        <div className="flex items-center justify-between gap-8">
           
           {/* Left Section - Trustpilot */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col items-start gap-1 min-w-[160px]">
             <a 
               href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 hover:opacity-70 transition-opacity"
+              className="flex flex-col items-start gap-0.5 hover:opacity-80 transition-opacity"
             >
-              <span className="text-sm font-semibold text-[#00B67A]">★ Trustpilot</span>
-            </a>
-            <span className="text-xs text-[#888888]">14 days to cancel</span>
-          </div>
-
-          {/* Centre Section - Main Pricing */}
-          <div className="flex flex-col items-start flex-1">
-            <div className="flex items-baseline gap-2">
-              <p className={cn(
-                "text-2xl font-bold text-[#000000] transition-all duration-300",
-                isPulsing && "animate-pulse"
-              )}>
-                £{monthlyPrice}/month for 12 months
-              </p>
-            </div>
-            <div className="flex items-center gap-3 mt-1">
-              <span className="text-sm text-[#666666]">£{calculatedCostPerMonth}/month average</span>
-              {paymentPeriod !== '12months' && (
-                <span className="text-sm text-[#666666]">£0 in year {paymentPeriod === '24months' ? '2' : '2 & year 3'}</span>
-              )}
-              <span className="text-sm text-[#666666]">Total: £{payInFull.toLocaleString()}</span>
-            </div>
-          </div>
-
-          {/* Right Section - Savings + CTA */}
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="text-sm text-[#666666]">Pay in full and save £{savings}</p>
-              <p className="text-sm">
-                <span className="font-bold text-[#000000]">£{payInFullPrice}</span>
-                <span className="text-[#888888] ml-1">today</span>
-                <span className="text-[#888888] line-through ml-1">(was £{payInFull})</span>
-              </p>
-            </div>
-            
-            {paymentPeriod !== '12months' && (
-              <div className="text-center px-3 py-2 bg-[#F0FDF4] rounded-lg">
-                <p className="text-sm font-bold text-[#3A8F45]">
-                  Year {paymentPeriod === '24months' ? '2' : '2 & 3'} FREE 🎉
-                </p>
-                <p className="text-xs text-[#666666]">{coverText}</p>
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-bold text-[#00b67a]">★</span>
+                <span className="text-sm font-semibold text-gray-800">Trustpilot</span>
               </div>
-            )}
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-[#00b67a] text-[#00b67a]" />
+                ))}
+              </div>
+            </a>
+          </div>
+
+          {/* Centre Section - Primary Pricing Block (Hero) */}
+          <div className="flex flex-col items-center gap-0.5">
+            {/* Monthly Price - Hero */}
+            <div className={cn(
+              "flex items-baseline gap-2 transition-all duration-300",
+              isPulsing && "animate-pulse scale-105"
+            )}>
+              <span className="text-sm font-medium text-gray-600">Total:</span>
+              <span className="text-3xl font-bold text-gray-900">£{monthlyPrice}/Month</span>
+              <span className="text-lg text-gray-600">– 0% APR</span>
+            </div>
             
+            {/* 12 Payments - Single mention */}
+            <span className="text-sm text-gray-600">12 easy payments</span>
+            
+            {/* Pay in full with savings */}
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-sm text-gray-400 line-through">£{wasPrice}</span>
+              <span className="text-sm font-semibold text-gray-800">£{payInFull}</span>
+              {savings > 0 && (
+                <span className="text-sm font-medium text-green-600">(Save £{savings})</span>
+              )}
+              <span className="text-sm text-gray-600">– {coverText}</span>
+            </div>
+          </div>
+
+          {/* Centre-Right Section - Cover Badge */}
+          <div className="flex flex-col items-center gap-1.5">
+            {paymentPeriod === '24months' && (
+              <>
+                <span className="text-lg font-bold text-gray-900">Year 2 FREE 🎉</span>
+                <span className="text-sm text-gray-600">{coverText}</span>
+              </>
+            )}
+            {paymentPeriod === '36months' && (
+              <>
+                <span className="text-lg font-bold text-gray-900">Years 2 & 3 FREE 🎉</span>
+                <span className="text-sm text-gray-600">{coverText}</span>
+              </>
+            )}
+            {paymentPeriod === '12months' && (
+              <span className="text-lg font-bold text-gray-900">{coverText}</span>
+            )}
+          </div>
+
+          {/* Right Section - CTA */}
+          <div className="flex flex-col items-end gap-2 min-w-[200px]">
             <Button
               onClick={onContinue}
               disabled={isLoading || !isValid}
-              className="bg-[#3A8F45] hover:bg-[#2E7A38] text-white font-semibold py-5 px-6 rounded-lg text-sm gap-2 shadow-md"
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-6 px-8 rounded-xl text-base gap-2 shadow-lg hover:shadow-xl transition-all"
             >
               {isLoading ? (
                 'Loading...'
               ) : (
                 <>
                   Continue to checkout
-                  <ArrowRight className="w-4 h-4 text-white" strokeWidth={2} />
+                  <ArrowRight className="w-5 h-5" strokeWidth={2.5} />
                 </>
               )}
             </Button>
+            <div className="flex items-center gap-1.5 text-xs text-gray-500">
+              <Lock className="w-3.5 h-3.5" />
+              <span>Secure checkout – No hidden fees</span>
+            </div>
           </div>
-        </div>
-        
-        {/* Security line */}
-        <div className="flex items-center justify-end gap-1.5 mt-2 text-xs text-[#888888]">
-          <Lock className="w-3 h-3" />
-          <span>Secure checkout – SSL encrypted</span>
         </div>
       </div>
 
-      {/* Mobile Layout */}
+      {/* Mobile Layout - Collapsible */}
       <div className="md:hidden">
         {/* Expanded Panel */}
         <div 
           className={cn(
             "overflow-hidden transition-all duration-300 ease-in-out",
-            isMobileExpanded ? "max-h-[280px] opacity-100" : "max-h-0 opacity-0"
+            isMobileExpanded ? "max-h-[260px] opacity-100" : "max-h-0 opacity-0"
           )}
         >
           <div className="px-4 pt-4 pb-2 space-y-3">
-            {/* Plan info */}
+            {/* Primary: Monthly Price Hero */}
             <div className="text-center">
-              <p className={cn(
-                "text-xl font-bold text-[#000000] transition-all duration-300",
+              <div className={cn(
+                "flex items-baseline justify-center gap-2 transition-all duration-300",
                 isPulsing && "animate-pulse"
               )}>
-                £{monthlyPrice}/month for 12 months
-              </p>
-              <p className="text-sm text-[#666666]">£{calculatedCostPerMonth}/month average</p>
+                <span className="text-sm font-medium text-gray-600">Total:</span>
+                <span className="text-2xl font-bold text-gray-900">£{monthlyPrice}/Month</span>
+                <span className="text-sm text-gray-600">– 0% APR</span>
+              </div>
+              <p className="text-sm text-gray-900 mt-1">Only 12 payments</p>
             </div>
-            
-            {paymentPeriod !== '12months' && (
-              <p className="text-center text-sm text-[#666666]">
-                £0 in year {paymentPeriod === '24months' ? '2' : '2 & year 3'}
-              </p>
-            )}
-            
-            <p className="text-center text-sm font-semibold text-[#000000]">
-              Total: £{payInFull.toLocaleString()}
-            </p>
 
-            {/* Pay in full savings */}
-            <div className="text-center pt-2 border-t border-[#E8E8E8]">
-              <p className="text-sm text-[#666666]">
-                Pay in full and <span className="font-semibold text-[#3A8F45]">save £{savings}</span>
-              </p>
-              <p className="text-sm text-[#666666]">
-                <span className="font-bold text-[#000000]">£{payInFullPrice}</span> today <span className="text-[#888888] line-through">(was £{payInFull})</span>
-              </p>
+            {/* Pay in full with savings */}
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-sm text-gray-400 line-through">£{wasPrice}</span>
+                <span className="text-sm font-semibold text-gray-800">£{payInFull}</span>
+                {savings > 0 && (
+                  <span className="text-sm font-medium text-green-600">(Save £{savings})</span>
+                )}
+              </div>
+              <p className="text-sm text-gray-600 mt-0.5">{coverText}</p>
             </div>
-            
-            {paymentPeriod !== '12months' && (
-              <p className="text-center text-sm text-[#3A8F45] font-medium">
-                ✓ You're covered in 60 seconds – no payment taken until confirmation
-              </p>
+
+            {/* Year 2 FREE Badge */}
+            {paymentPeriod === '24months' && (
+              <div className="text-center">
+                <span className="text-base font-bold text-gray-900">Year 2 FREE 🎉</span>
+              </div>
+            )}
+            {paymentPeriod === '36months' && (
+              <div className="text-center">
+                <span className="inline-block bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                  Best Value
+                </span>
+              </div>
             )}
           </div>
         </div>
@@ -207,7 +219,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
           {/* Expand/Collapse Toggle */}
           <button
             onClick={toggleMobileExpand}
-            className="w-full flex items-center justify-center gap-1 text-xs text-[#888888] mb-2 py-1"
+            className="w-full flex items-center justify-center gap-1 text-xs text-gray-500 mb-2 py-1"
             aria-expanded={isMobileExpanded}
             aria-label={isMobileExpanded ? "Hide details" : "Show more details"}
           >
@@ -226,42 +238,39 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
 
           {/* Main row: Price + CTA */}
           <div className="flex items-center justify-between gap-3">
-            {/* Left: Price summary */}
+            {/* Left: Price Hero */}
             <div className="flex-shrink-0">
-              <p className="text-xs font-semibold text-[#000000]">{coverText}</p>
               <div className={cn(
-                "transition-all duration-300",
+                "flex items-baseline gap-1 transition-all duration-300",
                 isPulsing && "animate-pulse"
               )}>
-                <p className="text-lg font-bold text-[#000000]">£{calculatedCostPerMonth} <span className="text-sm font-normal text-[#666666]">per month</span></p>
+                <span className="text-xs text-gray-600">Total:</span>
+                <span className="text-xl font-bold text-gray-900">£{monthlyPrice}/mo</span>
               </div>
-              <p className="text-xs text-[#666666]">Paid monthly for 12 months £{monthlyPrice} per month</p>
-              {paymentPeriod !== '12months' && (
-                <p className="text-xs text-[#666666]">No payments in year {paymentPeriod === '24months' ? '2' : '2 or 3'}</p>
-              )}
+              <p className="text-xs text-gray-900">Only 12 payments</p>
             </div>
 
             {/* Right: CTA Button */}
             <Button
               onClick={onContinue}
               disabled={isLoading || !isValid}
-              className="bg-white hover:bg-[#F5F5F5] text-[#000000] font-semibold py-3 px-4 rounded-lg text-sm gap-1.5 border border-[#000000] shadow-none flex-shrink-0"
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-5 rounded-lg text-sm gap-1.5 shadow-md flex-shrink-0"
             >
               {isLoading ? (
                 'Loading...'
               ) : (
                 <>
-                  Continue to secure payment
-                  <ArrowRight className="w-4 h-4" strokeWidth={2} />
+                  Checkout
+                  <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
                 </>
               )}
             </Button>
           </div>
 
           {/* Security reassurance */}
-          <div className="flex items-center justify-center gap-1.5 mt-2 text-xs text-[#888888]">
+          <div className="flex items-center justify-center gap-1.5 mt-2 text-xs text-gray-500">
             <Lock className="w-3 h-3" />
-            <span>Secure checkout – SSL encrypted</span>
+            <span>Secure checkout – No hidden fees</span>
           </div>
         </div>
       </div>

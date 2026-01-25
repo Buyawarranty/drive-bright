@@ -135,23 +135,10 @@ const handler = async (req: Request): Promise<Response> => {
       console.log(`Updated existing abandoned cart entry for: ${cartData.email} (step ${existingCart[0].step_abandoned} → ${cartData.step_abandoned})`);
     } else {
       // Create new abandoned cart entry with extended metadata
-      // Only insert valid columns - extra data goes in cart_metadata JSON
       const { error: insertError } = await supabase
         .from('abandoned_carts')
         .insert([{
-          email: cartData.email,
-          full_name: cartData.full_name,
-          phone: cartData.phone,
-          vehicle_reg: cartData.vehicle_reg,
-          vehicle_make: cartData.vehicle_make,
-          vehicle_model: cartData.vehicle_model,
-          vehicle_year: cartData.vehicle_year,
-          mileage: cartData.mileage,
-          plan_id: cartData.plan_id,
-          plan_name: cartData.plan_name,
-          payment_type: cartData.payment_type,
-          vehicle_type: cartData.vehicle_type,
-          step_abandoned: cartData.step_abandoned,
+          ...cartData,
           cart_metadata: {
             total_price: cartData.total_price,
             voluntary_excess: cartData.voluntary_excess,

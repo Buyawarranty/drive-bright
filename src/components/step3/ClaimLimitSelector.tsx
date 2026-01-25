@@ -1,6 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import { Check, Info, X } from 'lucide-react';
+import { ChevronDown, Check, Info, ArrowRight, Plus } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import confetti from 'canvas-confetti';
 
 interface ClaimLimitSelectorProps {
@@ -12,12 +16,15 @@ interface ClaimLimitSelectorProps {
   boostPrice: number;
 }
 
-// Original claim limit options - actual backend values
-const claimLimitOptions = [
-  { value: 1000, label: '£1,000', name: 'AutoCare Essential' },
-  { value: 2000, label: '£2,000', name: 'AutoCare Advantage', isPopular: true },
-  { value: 3000, label: '£3,000', name: 'AutoCare Elite' }
-];
+// Claim limit options including £3000 (which uses £2000 base + boost logic)
+const claimLimitOptions = [750, 1250, 2000, 3000];
+
+const claimLimitDetails: Record<number, string> = {
+  750: "Ideal for minor repairs and maintenance issues. Covers most common mechanical faults.",
+  1250: "Our most popular option. Covers major component failures including engine and gearbox.",
+  2000: "Comprehensive cover for expensive repairs. Recommended for premium vehicles.",
+  3000: "Maximum protection for high-value repairs. Best for luxury and performance vehicles."
+};
 
 const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
   selectedClaimLimit,
@@ -27,7 +34,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
   onBoostChange,
   boostPrice
 }) => {
-  const [showExplainer, setShowExplainer] = useState(false);
+  const [openDetails, setOpenDetails] = useState<number | null>(null);
   
   // Tiny spark effect when boost is clicked
   const triggerBoostSpark = useCallback((event: React.MouseEvent) => {
@@ -42,184 +49,222 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
     });
   }, []);
 
-  // Direct selection - no automatic boost for max limit (3000)
+  // Handle selection - £3000 option automatically enables boost
   const handleSelect = (limit: number) => {
-    onClaimLimitChange(limit);
-    // Disable boost if max limit is selected
-    if (limit === 3000 && boostAddon) {
+    if (limit === 3000) {
+      // £3000 = £2000 base + boost addon
+      onClaimLimitChange(2000);
+      onBoostChange(true);
+    } else {
+      onClaimLimitChange(limit);
       onBoostChange(false);
     }
   };
 
-  // Calculate final claim limit with boost applied (+£500)
-  const getFinalClaimLimit = () => {
-    if (boostAddon && selectedClaimLimit && selectedClaimLimit < 3000) {
-      return selectedClaimLimit + 500;
+  // Determine which option to highlight
+  const getDisplayedLimit = () => {
+    if (boostAddon && selectedClaimLimit === 2000) {
+      return 3000;
     }
     return selectedClaimLimit;
   };
 
-  const finalClaimLimit = getFinalClaimLimit();
-  const isBoostActive = boostAddon && selectedClaimLimit !== null && selectedClaimLimit < 3000;
-  const canShowBoost = selectedClaimLimit !== null && selectedClaimLimit < 3000;
+  const displayedLimit = getDisplayedLimit();
+  const isBoostActive = boostAddon && selectedClaimLimit === 2000;
 
   const handleBoostToggle = (checked: boolean, event?: React.MouseEvent) => {
     if (checked && event) {
       triggerBoostSpark(event);
+      onClaimLimitChange(2000);
     }
     onBoostChange(checked);
   };
 
   return (
-    <div className="px-4 py-6 bg-white rounded-2xl border border-[#E8E8E8] mx-4 mt-4">
-      {/* Heading with info icon */}
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-7 h-7 rounded-full bg-[#000000] text-white flex items-center justify-center text-sm font-bold">
-          4
+    <div className="px-4 py-4 border-t border-border">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-sm font-bold">
+          3
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-lg">🛡️</span>
-          <h3 className="font-semibold text-lg text-[#000000]">Single repair amount per claim</h3>
-        </div>
-        
-        {/* Details button */}
-        <button
-          onClick={() => setShowExplainer(!showExplainer)}
-          className="ml-2 px-3 py-1 text-xs font-medium text-[#3A8F45] bg-[#F0FDF4] border border-[#3A8F45]/20 rounded-full hover:bg-[#E8F5E9] transition-colors"
-        >
-          ⓘ Details
-        </button>
+        <h3 className="font-semibold text-lg text-foreground">Set your claim limit - cover up to your car's <span className="font-bold">full value</span> 🚗</h3>
       </div>
-      
-      {/* Helper line */}
-      <p className="text-sm text-[#666666] mb-4 ml-9">
-        🔧 Set your claim limit - cover up to your car's full value 🚗
-      </p>
-
-      {/* Expandable Explainer */}
-      {showExplainer && (
-        <div className="mb-4 p-4 rounded-xl bg-[#F5F5F5] border border-[#E8E8E8] text-left animate-fade-in">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex-1">
-              <h4 className="font-semibold text-sm text-[#000000] mb-2">What is a claim limit?</h4>
-              <p className="text-sm text-[#666666] leading-relaxed mb-2">
-                This is the maximum amount we'll pay towards a single repair. Claims can be made up to the value of your car.
-              </p>
-              <p className="text-xs text-[#888888] leading-relaxed">
-                For example: with a £2,000 limit, we'll cover repairs up to £2,000 per claim.
-              </p>
-            </div>
-            <button
-              onClick={() => setShowExplainer(false)}
-              className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#E8E8E8] transition-colors"
-              aria-label="Close"
-            >
-              <X className="w-4 h-4 text-[#888888]" />
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Claim Limit Cards */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        {claimLimitOptions.map((option) => {
-          const isSelected = selectedClaimLimit === option.value;
+      <div className="grid grid-cols-2 gap-3 mb-3">
+        {claimLimitOptions.map((limit) => {
+          const isSelected = displayedLimit === limit;
+          const isPopular = limit === 1250;
+          const isOpen = openDetails === limit;
           
           return (
-            <button
-              key={option.value}
-              onClick={() => handleSelect(option.value)}
-              className={cn(
-                "relative p-4 rounded-xl border-2 text-center transition-all",
-                isSelected
-                  ? "border-[#3A8F45] bg-[#F0FDF4]"
-                  : "border-[#E8E8E8] bg-white hover:border-[#3A8F45]/50"
-              )}
-            >
-              {option.isPopular && (
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#E65100] text-white text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap uppercase">
-                  MOST POPULAR
+            <div key={limit} className="relative pt-3">
+              {/* Tag - positioned to overlap border */}
+              {isPopular && (
+                <span className="absolute -top-0 left-3 z-10 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide">
+                  POPULAR
                 </span>
               )}
               
-              <p className="text-sm font-medium text-[#000000] mb-1">{option.name}</p>
-              <p className="text-2xl font-bold text-[#000000]">{option.label}</p>
-              <p className="text-xs text-[#888888]">per claim</p>
-              
-              {isSelected && (
-                <div className="absolute top-2 right-2 w-5 h-5 bg-[#3A8F45] rounded-full flex items-center justify-center">
-                  <Check className="w-3 h-3 text-white" strokeWidth={3} />
+              <Collapsible open={isOpen} onOpenChange={(open) => setOpenDetails(open ? limit : null)}>
+                <div
+                  className={cn(
+                    "rounded-lg border-2 transition-all bg-white shadow-sm",
+                    isSelected
+                      ? "border-success"
+                      : "border-border hover:border-success/50"
+                  )}
+                >
+                  {/* Main Card Content */}
+                  <button
+                    onClick={() => handleSelect(limit)}
+                    className="w-full p-4 text-left"
+                  >
+                    <div className="font-bold text-xl text-foreground">£{limit.toLocaleString()}</div>
+                    <div className="text-xs text-muted-foreground">per claim</div>
+                  </button>
+                  
+                  {/* Divider */}
+                  <div className="border-t border-border" />
+                  
+                  {/* View Details Trigger */}
+                  <CollapsibleTrigger className="w-full px-4 py-2 flex items-center justify-between text-sm font-semibold text-foreground hover:text-primary transition-colors">
+                    <span>View Details</span>
+                    <ChevronDown 
+                      className={cn(
+                        "w-4 h-4 transition-transform duration-200",
+                        isOpen && "rotate-180"
+                      )} 
+                    />
+                  </CollapsibleTrigger>
+                  
+                  {/* Collapsible Content */}
+                  <CollapsibleContent>
+                    <div className="px-4 pb-4 pt-2 bg-gray-50 border-t border-border">
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        {claimLimitDetails[limit]}
+                      </p>
+                    </div>
+                  </CollapsibleContent>
                 </div>
-              )}
-            </button>
+              </Collapsible>
+            </div>
           );
         })}
       </div>
 
-      {/* Boost Add-On Section */}
-      {canShowBoost && (
-        <div className="mt-4">
-          <p className="text-xs text-[#888888] uppercase font-semibold mb-2">OPTIONAL ADD-ON</p>
-          <div 
-            onClick={(e) => {
-              if (!isBoostActive) {
-                handleBoostToggle(true, e);
-              } else {
-                handleBoostToggle(false);
-              }
-            }}
-            className={cn(
-              "relative p-4 rounded-xl cursor-pointer border-2",
-              "transition-all duration-300 ease-out",
-              isBoostActive
-                ? "bg-[#F0FDF4] border-[#3A8F45]"
-                : "bg-[#F5F5F5] border-[#E8E8E8] hover:border-[#3A8F45]/50"
-            )}
-          >
-            <div className="flex items-center justify-between gap-4">
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-bold text-[#000000] mb-0.5">
-                  ⚡ Add +£500 extra cover
-                </h4>
-                <p className="text-sm text-[#666666]">
-                  Upgrade to £{((selectedClaimLimit || 0) + 500).toLocaleString()} per claim
-                </p>
-                <p className="text-xs text-[#888888] mt-1">
-                  +£{boostPrice}/month × 12 payments
-                </p>
-              </div>
-              
-              {/* Toggle Switch */}
-              <div className="flex-shrink-0">
-                <div
+      {/* Optional add-on Section */}
+      <div className="mt-4 mb-2">
+        <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Optional add-on</h4>
+        
+        {/* Add Extra Cover Card - Fully Tappable with Improved Toggle */}
+        <div 
+          onClick={(e) => {
+            if (!isBoostActive) {
+              handleBoostToggle(true, e);
+            } else {
+              handleBoostToggle(false);
+            }
+          }}
+          className={cn(
+            "relative p-4 rounded-xl cursor-pointer border-2 overflow-hidden",
+            "transition-all duration-300 ease-out transform",
+            isBoostActive
+              ? "bg-gradient-to-br from-green-50 to-green-100 border-green-500 shadow-[0_0_16px_rgba(34,197,94,0.35)] scale-[1.01]"
+              : "bg-gradient-to-br from-orange-50 to-orange-100/50 border-orange-200 hover:border-orange-400 hover:shadow-lg hover:scale-[1.005]"
+          )}
+        >
+          {/* Animated background pulse when active */}
+          {isBoostActive && (
+            <div className="absolute inset-0 bg-green-400/10 animate-pulse pointer-events-none" />
+          )}
+          
+          <div className="relative flex items-center gap-4">
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              {isBoostActive ? (
+                <>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                      <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                    </div>
+                    <h4 className="text-lg font-bold text-green-700">
+                      Upgrade Added!
+                    </h4>
+                  </div>
+                  <div className="text-base font-semibold text-green-800">
+                    Your cover is now £3,000 per claim 🚀
+                  </div>
+                  <div className="text-xs text-green-600 mt-1">
+                    Just £{boostPrice}/month × 12 payments
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h4 className="text-lg font-bold text-foreground mb-0.5">
+                    🚀 Boost your cover by £1,000
+                  </h4>
+                  <div className="text-base font-semibold text-foreground">
+                    Upgrade to £3,000 per claim
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Just £{boostPrice}/month × 12 payments
+                  </div>
+                </>
+              )}
+            </div>
+            
+            {/* Improved Toggle Switch */}
+            <div className="flex-shrink-0">
+              <div
+                className={cn(
+                  "relative inline-flex items-center justify-between rounded-full transition-all duration-300 ease-out",
+                  "w-[68px] h-[36px] px-1",
+                  isBoostActive 
+                    ? "bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.5)]" 
+                    : "bg-gray-300"
+                )}
+              >
+                {/* ON/OFF Labels */}
+                <span className={cn(
+                  "text-[11px] font-bold uppercase pl-1.5 transition-all duration-200",
+                  isBoostActive ? "text-white" : "text-transparent"
+                )}>
+                  ON
+                </span>
+                <span className={cn(
+                  "text-[11px] font-bold uppercase pr-1.5 transition-all duration-200",
+                  isBoostActive ? "text-transparent" : "text-gray-500"
+                )}>
+                  OFF
+                </span>
+                
+                {/* Toggle Knob */}
+                <span
                   className={cn(
-                    "relative inline-flex items-center rounded-full transition-all duration-300",
-                    "w-[52px] h-[28px]",
+                    "absolute inline-flex items-center justify-center rounded-full bg-white shadow-md",
+                    "w-[28px] h-[28px] top-1",
+                    "transition-all duration-300 ease-out",
                     isBoostActive 
-                      ? "bg-[#3A8F45]" 
-                      : "bg-[#CCCCCC]"
+                      ? "left-[36px] shadow-lg" 
+                      : "left-1"
                   )}
                 >
-                  {/* Toggle Knob */}
-                  <span
-                    className={cn(
-                      "absolute inline-flex items-center justify-center rounded-full bg-white shadow-sm",
-                      "w-[22px] h-[22px]",
-                      "transition-all duration-300 ease-out",
-                      isBoostActive 
-                        ? "left-[27px]" 
-                        : "left-[3px]"
-                    )}
-                  >
-                    {isBoostActive && (
-                      <Check className="w-3 h-3 text-[#3A8F45]" strokeWidth={3} />
-                    )}
-                  </span>
-                </div>
+                  {isBoostActive ? (
+                    <Check className="w-4 h-4 text-green-500" strokeWidth={3} />
+                  ) : (
+                    <Plus className="w-4 h-4 text-gray-400" strokeWidth={2} />
+                  )}
+                </span>
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Live Price Update */}
+      {selectedClaimLimit !== null && (
+        <div className="text-sm font-medium text-success animate-fade-in">
+          Updated price: £{currentMonthlyPrice}/month
         </div>
       )}
     </div>

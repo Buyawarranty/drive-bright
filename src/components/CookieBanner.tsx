@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Cookie } from "lucide-react";
 import { CookiePreferencesDialog } from "./CookiePreferencesDialog";
 
 interface CookiePreferences {
@@ -15,34 +16,34 @@ const COOKIE_PREFERENCES_KEY = "cookie_preferences";
 export function CookieBanner() {
   const [showBanner, setShowBanner] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
-  const [searchParams] = useSearchParams();
-
-  // Get current step from URL
-  const currentStep = searchParams.get('step');
-  const isCheckoutStep = currentStep === '3' || currentStep === '4' || currentStep === '5' || currentStep === '6';
+  const [showIcon, setShowIcon] = useState(false);
 
   useEffect(() => {
     const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
-    
-    // Never show on checkout steps or if already consented
-    if (consent || isCheckoutStep) {
-      setShowBanner(false);
-      return;
+    if (!consent) {
+      // Delay showing banner - 30 seconds on mobile, 15 seconds on desktop
+      // This prevents interrupting first-time visitors during their initial browsing
+      const isMobile = window.innerWidth < 768;
+      const showDelay = isMobile ? 30000 : 15000; // 30s mobile, 15s desktop
+      
+      const showTimer = setTimeout(() => {
+        setShowBanner(true);
+      }, showDelay);
+      
+      // Auto-fade after additional 15 seconds if no action taken
+      const fadeTimer = setTimeout(() => {
+        setShowBanner(false);
+        setShowIcon(true);
+      }, showDelay + 15000);
+
+      return () => {
+        clearTimeout(showTimer);
+        clearTimeout(fadeTimer);
+      };
     }
+  }, []);
 
-    // Show immediately on first visit (non-checkout pages only)
-    setShowBanner(true);
-  }, [isCheckoutStep]);
-
-  // Hide banner when navigating to checkout
-  useEffect(() => {
-    if (isCheckoutStep) {
-      setShowBanner(false);
-    }
-  }, [isCheckoutStep]);
-
-  const handleAccept = () => {
+  const handleAcceptAll = () => {
     const allAccepted: CookiePreferences = {
       essential: true,
       performance: true,
@@ -51,74 +52,72 @@ export function CookieBanner() {
     };
     localStorage.setItem(COOKIE_CONSENT_KEY, "accepted");
     localStorage.setItem(COOKIE_PREFERENCES_KEY, JSON.stringify(allAccepted));
-    
-    // Slide down animation
-    setIsClosing(true);
-    setTimeout(() => {
-      setShowBanner(false);
-      setIsClosing(false);
-    }, 300);
+    setShowBanner(false);
   };
 
   const handleSavePreferences = (preferences: CookiePreferences) => {
     localStorage.setItem(COOKIE_CONSENT_KEY, "accepted");
     localStorage.setItem(COOKIE_PREFERENCES_KEY, JSON.stringify(preferences));
-    
-    setIsClosing(true);
-    setTimeout(() => {
-      setShowBanner(false);
-      setShowPreferences(false);
-      setIsClosing(false);
-    }, 300);
+    setShowBanner(false);
+    setShowIcon(false);
   };
 
-  // Never render on checkout steps
-  if (isCheckoutStep || !showBanner) {
-    return (
-      <CookiePreferencesDialog
-        open={showPreferences}
-        onOpenChange={setShowPreferences}
-        onSave={handleSavePreferences}
-      />
-    );
+  const handleReopenFromIcon = () => {
+    setShowIcon(false);
+    setShowPreferences(true);
+  };
+
+  if (!showBanner && !showIcon) {
+    return null;
   }
 
   return (
     <>
-      {/* Slim bottom bar - 56-72px height */}
-      <div
-        className={`fixed bottom-0 left-0 right-0 z-[60] transition-transform duration-300 ease-out ${
-          isClosing ? 'translate-y-full' : 'translate-y-0'
-        }`}
-        role="region"
-        aria-label="Cookie consent banner"
-      >
-        <div 
-          className="bg-[#F9F9F9] border-t border-[#E2E2E2] py-3 px-4 md:px-6"
-          style={{ minHeight: '56px', maxHeight: '72px' }}
+      {showBanner && (
+        <div
+          className="fixed bottom-24 md:bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm z-[60] animate-fade-in"
+          role="region"
+          aria-label="Cookie consent banner"
         >
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-            {/* Text */}
-            <p className="text-sm text-[#444444] text-center sm:text-left">
-              We use cookies to improve your experience.{' '}
-              <button
-                onClick={() => setShowPreferences(true)}
-                className="text-[#666666] underline underline-offset-2 hover:text-[#333333] transition-colors"
-              >
-                Cookie settings
-              </button>
-            </p>
-            
-            {/* Accept button */}
-            <button
-              onClick={handleAccept}
-              className="bg-[#18864B] hover:bg-[#146B3D] text-white font-medium py-2 px-5 rounded-md text-sm transition-colors whitespace-nowrap"
-            >
-              Accept
-            </button>
+          <div className="bg-card border border-border rounded-lg shadow-md p-3">
+            <div className="flex items-start gap-2">
+              <Cookie className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" aria-hidden="true" />
+              <div className="flex-1 space-y-2">
+                <p className="text-xs text-foreground">
+                  We use cookies to improve your experience.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button
+                    onClick={handleAcceptAll}
+                    size="sm"
+                    className="w-full sm:w-auto bg-black text-white hover:bg-gray-800 h-8 text-xs"
+                  >
+                    Accept
+                  </Button>
+                  <Button
+                    onClick={() => setShowPreferences(true)}
+                    variant="outline"
+                    size="sm"
+                    className="w-full sm:w-auto h-8 text-xs"
+                  >
+                    Manage
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {showIcon && (
+        <button
+          onClick={handleReopenFromIcon}
+          className="fixed bottom-24 md:bottom-4 right-4 z-[60] bg-primary text-primary-foreground p-3 rounded-full shadow-lg hover:scale-110 transition-transform animate-fade-in"
+          aria-label="Open cookie preferences"
+        >
+          <Cookie className="w-5 h-5" aria-hidden="true" />
+        </button>
+      )}
 
       <CookiePreferencesDialog
         open={showPreferences}

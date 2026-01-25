@@ -330,7 +330,7 @@ serve(async (req) => {
       original_amount: customerData?.original_amount || null,
       final_amount: customerData?.final_amount || null,
       voluntary_excess: getStandardizedVoluntaryExcess(metadata, customerData, vehicleData, voluntaryExcess),
-      claim_limit: parseInt(metadata?.claim_limit || customerData?.claimLimit || claimLimit || protectionAddOns?.claimLimit || '1000'), // User-selected claim limit - default 1000 (updated Jan 2026)
+      claim_limit: parseInt(metadata?.claim_limit || customerData?.claimLimit || claimLimit || protectionAddOns?.claimLimit || '1250'), // User-selected claim limit
       warranty_reference_number: warrantyReference,
       seasonal_bonus_months: seasonalBonusMonths, // Store seasonal bonus
       labour_rate: labourRate || parseInt(metadata?.labour_rate) || 50, // Store selected labour rate (default to £50/hr)
@@ -618,7 +618,7 @@ serve(async (req) => {
         policy_start_date: policyStartDate.toISOString(),
         policy_end_date: calculatePolicyEndDate(paymentType, policyStartDate),
         status: 'active',
-        claim_limit: parseInt(metadata?.claim_limit || customerData?.claimLimit || claimLimit || protectionAddOns?.claimLimit || '1000'), // User-selected claim limit - default 1000 (updated Jan 2026)
+        claim_limit: parseInt(metadata?.claim_limit || customerData?.claimLimit || claimLimit || protectionAddOns?.claimLimit || '1250'), // User-selected claim limit
         voluntary_excess: getStandardizedVoluntaryExcess(metadata, customerData, vehicleData, voluntaryExcess), // Fixed field name
         seasonal_bonus_months: seasonalBonusMonths, // Store seasonal bonus
         bumper_order_id: effectiveBumperOrderId, // Store Bumper order ID if present
@@ -850,7 +850,7 @@ serve(async (req) => {
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Plan Type:</strong></td><td style="padding: 8px;">${planName}</td></tr>
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Payment Type:</strong></td><td style="padding: 8px;">${paymentTypeDisplay}</td></tr>
               <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Voluntary Excess:</strong></td><td style="padding: 8px;">£${customerRecord.voluntary_excess || 0}</td></tr>
-              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Claim Limit:</strong></td><td style="padding: 8px;">£${customerRecord.claim_limit || 1000}</td></tr>
+              <tr><td style="padding: 8px; background: #f3f4f6;"><strong>Claim Limit:</strong></td><td style="padding: 8px;">£${customerRecord.claim_limit || 1250}</td></tr>
             </table>
 
             <h3 style="color: #333; margin-top: 20px;">Vehicle Details</h3>
@@ -1035,10 +1035,9 @@ function normalizeDuration(paymentType: string): string {
 }
 
 function getMaxClaimAmount(planId: string, paymentType?: string): string {
-  // Return default claim limit of 1000 - user selection should override this
-  // Valid claim limits for new business: 1000, 1500, 2000, 2500, 3000 (includes boost combinations)
-  // Legacy claim limits (750, 1250) preserved for existing policies
-  return '1000';
+  // Return default claim limit of 1250 - user selection should override this
+  // Valid claim limits are 750, 1250, 2000
+  return '1250';
 }
 
 function getWarrantyType(planId: string): string {

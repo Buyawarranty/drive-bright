@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 import { trackFormSubmission, trackBumperCheckoutClick, trackStripeCheckoutClick, trackStripeCheckoutPageLoad, trackStep4EmailEntry } from '@/utils/analytics';
 import { getWarrantyDurationInMonths } from '@/lib/warrantyDurationUtils';
 import { getAddOnInfo, normalizePaymentType, calculateAddOnPrice } from '@/lib/addOnsUtils';
-import { calculateCPMWithGuardrail } from '@/lib/cpmUtils';
 import MobileNavigation from '@/components/MobileNavigation';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
@@ -315,12 +314,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     trackStripeCheckoutPageLoad();
   }, []);
 
-  // Auto-validate pre-filled fields from Step 2 and clear any errors for valid fields
+  // Auto-validate pre-filled fields from Step 2
   useEffect(() => {
     const autoValidatePrefilledFields = () => {
       const fieldsToCheck = ['first_name', 'last_name', 'email', 'phone'];
       const newValidatedFields: { [key: string]: boolean } = {};
-      const errorsToRemove: string[] = [];
 
       fieldsToCheck.forEach(field => {
         const value = customerData[field as keyof typeof customerData];
@@ -343,32 +341,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           }
           if (isValid) {
             newValidatedFields[field] = true;
-            errorsToRemove.push(field);
           }
         }
       });
 
-      // Set validated fields for green indicators
       if (Object.keys(newValidatedFields).length > 0) {
         setValidatedFields(prev => ({ ...prev, ...newValidatedFields }));
       }
-      
-      // Clear any field errors for valid prefilled fields - prevents showing errors on mount
-      if (errorsToRemove.length > 0) {
-        setFieldErrors(prev => {
-          const updated = { ...prev };
-          errorsToRemove.forEach(field => delete updated[field]);
-          return updated;
-        });
-      }
-      
-      console.log('✅ Auto-validated prefilled fields:', Object.keys(newValidatedFields));
     };
 
-    // Small delay to ensure customerData is fully initialized from localStorage
-    const timer = setTimeout(autoValidatePrefilledFields, 50);
-    return () => clearTimeout(timer);
-  }, [customerData.first_name, customerData.last_name, customerData.email, customerData.phone]);
+    autoValidatePrefilledFields();
+  }, []);
 
   // Reset loading on mount and handle bfcache restoration - CRITICAL for Stripe back-nav
   useEffect(() => {
@@ -838,9 +821,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   };
 
   const getDurationText = () => {
-    if (paymentType === '12months') return '1 Year Cover';
-    if (paymentType === '24months') return '2 Year Cover';
-    return '3 Year Cover';
+    if (paymentType === '12months') return '1 Year';
+    if (paymentType === '24months') return '2 Years';
+    return '3 Years';
   };
 
   // Collapsed section error indicator
@@ -919,24 +902,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Monthly</p>
                     <div className="flex items-baseline gap-1 flex-wrap">
                       <span className="text-2xl sm:text-3xl font-bold text-foreground">£{monthlyPrice}</span>
-                      <span className="text-sm text-muted-foreground">/month</span>
+                      <span className="text-sm text-muted-foreground">/mo</span>
                     </div>
-                    <p className="text-xs font-semibold text-muted-foreground">Paid over 12 instalments • 0% APR</p>
-                    {/* Cost per month of cover for multi-year plans */}
-                    {paymentType !== '12months' && (
-                      <div className="bg-[#F0FDF4] rounded px-2 py-1 inline-block">
-                        <p className="text-xs text-[#166534]">
-                          Equivalent to approx. <span className="font-semibold">£{calculateCPMWithGuardrail(bumperTotalPrice, paymentType === '24months' ? 24 : 36, Math.round(bumperTotalPrice / 12))}/month</span> over the cover period
-                        </p>
-                      </div>
-                    )}
-                    <p className="text-xs font-medium text-foreground">Total cost: £{bumperTotalPrice}</p>
-                    {paymentType === '24months' && (
-                      <p className="text-xs font-semibold text-primary mt-1">No payments in year 2</p>
-                    )}
-                    {paymentType === '36months' && (
-                      <p className="text-xs font-semibold text-[hsl(var(--success))] mt-1">No payments in years 2 or 3</p>
-                    )}
+                    <p className="text-xs text-muted-foreground">Total £{bumperTotalPrice}</p>
+                    <p className="text-xs text-muted-foreground">12 payments • 0% APR</p>
                   </div>
 
                   {/* Pay in Full Column */}
@@ -945,10 +914,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <div className="flex items-baseline gap-2 justify-end flex-wrap">
                       <span className="text-2xl sm:text-3xl font-bold text-foreground">£{stripeTotalPrice}</span>
                     </div>
-                    <div className="bg-[#F0FDF4] rounded px-2 py-1 inline-block">
-                      <p className="text-xs font-medium text-[#166534]">Save 10% today</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground">One-time payment</p>
+                    <p className="text-xs text-muted-foreground line-through">Was £{bumperTotalPrice}</p>
+                    <p className="text-xs font-medium text-[hsl(var(--success))]">Save £{savings} (10% off)</p>
                   </div>
                 </div>
               </CardContent>
@@ -1300,10 +1267,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           addressExpanded ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
                         }`}
                       >
-                        <div className="px-4 pb-4 pt-3 space-y-4 border-t border-border/30 bg-white">
+                        <div className="px-4 pb-4 pt-3 space-y-4 border-t border-border/30">
                           {/* Address Autocomplete Search */}
                           <div>
-                            <Label className="text-sm font-medium text-foreground flex items-center gap-2 mb-2">
+                            <Label className="text-sm font-medium text-foreground/80 flex items-center gap-2 mb-2">
                               <Search className="w-3.5 h-3.5" />
                               Find Your Address
                             </Label>
@@ -1320,7 +1287,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                   postcode: autocompleteData.postcode || '',
                                 });
                               }}
-                              className="w-full rounded-lg px-3 py-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-[#F5F5F5] border-0 min-h-[44px]"
+                              className="w-full border border-border rounded-lg px-3 py-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white min-h-[44px]"
                             />
                             <p className="text-xs text-muted-foreground mt-2">
                               Search by postcode or address, then adjust fields below if needed
@@ -1332,7 +1299,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             {/* Building Number & Name */}
                             <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <Label htmlFor="building_number" className="text-sm font-medium text-foreground">
+                                <Label htmlFor="building_number" className="text-sm font-medium text-foreground/80">
                                   Building Number
                                 </Label>
                                 <Input
@@ -1340,11 +1307,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                   placeholder="e.g. 123"
                                   value={addressData.building_number}
                                   onChange={(e) => setAddressData(prev => ({ ...prev, building_number: e.target.value }))}
-                                  className="h-11 text-sm mt-1 bg-[#F5F5F5] border-0 focus:ring-2 focus:ring-primary/20"
+                                  className="h-10 sm:h-11 text-sm mt-1 bg-white"
                                 />
                               </div>
                               <div>
-                                <Label htmlFor="building_name" className="text-sm font-medium text-foreground">
+                                <Label htmlFor="building_name" className="text-sm font-medium text-foreground/80">
                                   Building Name <span className="text-muted-foreground font-normal">(optional)</span>
                                 </Label>
                                 <Input
@@ -1352,14 +1319,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                   placeholder="e.g. Oak House"
                                   value={addressData.building_name}
                                   onChange={(e) => setAddressData(prev => ({ ...prev, building_name: e.target.value }))}
-                                  className="h-11 text-sm mt-1 bg-[#F5F5F5] border-0 focus:ring-2 focus:ring-primary/20"
+                                  className="h-10 sm:h-11 text-sm mt-1 bg-white"
                                 />
                               </div>
                             </div>
 
                             {/* Street */}
                             <div>
-                              <Label htmlFor="street" className="text-sm font-medium text-foreground">
+                              <Label htmlFor="street" className="text-sm font-medium text-foreground/80">
                                 Street
                               </Label>
                               <Input
@@ -1367,13 +1334,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                 placeholder="e.g. High Street"
                                 value={addressData.street}
                                 onChange={(e) => setAddressData(prev => ({ ...prev, street: e.target.value }))}
-                                className="h-11 text-sm mt-1 bg-[#F5F5F5] border-0 focus:ring-2 focus:ring-primary/20"
+                                className="h-10 sm:h-11 text-sm mt-1 bg-white"
                               />
                             </div>
 
                             {/* Flat Number (optional) */}
                             <div>
-                              <Label htmlFor="flat_number" className="text-sm font-medium text-foreground">
+                              <Label htmlFor="flat_number" className="text-sm font-medium text-foreground/80">
                                 Flat / Apartment <span className="text-muted-foreground font-normal">(optional)</span>
                               </Label>
                               <Input
@@ -1381,14 +1348,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                 placeholder="e.g. Flat 2"
                                 value={addressData.flat_number}
                                 onChange={(e) => setAddressData(prev => ({ ...prev, flat_number: e.target.value }))}
-                                className="h-11 text-sm mt-1 bg-[#F5F5F5] border-0 focus:ring-2 focus:ring-primary/20"
+                                className="h-10 sm:h-11 text-sm mt-1 bg-white"
                               />
                             </div>
 
                             {/* Town/City and Postcode - Side by Side */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               <div>
-                                <Label htmlFor="town" className="text-sm font-medium text-foreground">
+                                <Label htmlFor="town" className="text-sm font-medium text-foreground/80">
                                   Town / City
                                 </Label>
                                 <Input
@@ -1396,11 +1363,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                   placeholder="e.g. London"
                                   value={addressData.town}
                                   onChange={(e) => setAddressData(prev => ({ ...prev, town: e.target.value }))}
-                                  className="h-11 text-sm mt-1 bg-[#F5F5F5] border-0 focus:ring-2 focus:ring-primary/20"
+                                  className="h-10 sm:h-11 text-sm mt-1 bg-white"
                                 />
                               </div>
                               <div>
-                                <Label htmlFor="postcode" className="text-sm font-medium text-foreground">
+                                <Label htmlFor="postcode" className="text-sm font-medium text-foreground/80">
                                   Postcode
                                 </Label>
                                 <Input
@@ -1408,7 +1375,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                   placeholder="e.g. SW1A 1AA"
                                   value={addressData.postcode}
                                   onChange={(e) => setAddressData(prev => ({ ...prev, postcode: e.target.value.toUpperCase() }))}
-                                  className="h-11 text-sm mt-1 bg-[#F5F5F5] border-0 focus:ring-2 focus:ring-primary/20"
+                                  className="h-10 sm:h-11 text-sm mt-1 bg-white"
                                 />
                               </div>
                             </div>

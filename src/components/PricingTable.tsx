@@ -31,7 +31,6 @@ import {
   getMarketingSavings,
   type PaymentPeriod
 } from '@/lib/pricingMatrix';
-import { calculateCPMWithGuardrail, getCoverMonthsFromPaymentType } from '@/lib/cpmUtils';
 import pandaCarWarranty from "@/assets/panda-car-warranty-transparent.png";
 import trustpilotLogo from "@/assets/trustpilot-excellent-box.webp";
 import { trackStepCompletion, trackBeginCheckout } from '@/utils/analytics';
@@ -134,9 +133,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
     previousSelectedAddOns ? { 'platinum': previousSelectedAddOns } : {}
   );
   // Detect if boost was enabled - either from explicit prop or inferred from boosted claim limit
-  // Boost now adds +£500, so boosted limits are 1500, 2500 (not 3000 as max can't be boosted)
   const wasBoostEnabled = previousBoostAddon || 
-    (previousClaimLimit && [1500, 2500].includes(previousClaimLimit));
+    (previousClaimLimit && previousClaimLimit > 2000 && [1750, 2250, 3000].includes(previousClaimLimit));
   const [boostAddon, setBoostAddon] = useState(wasBoostEnabled || false);
   const [loading, setLoading] = useState<{[key: string]: boolean}>({});
   const [plansLoading, setPlansLoading] = useState(true);
@@ -187,18 +185,18 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isFloatingBarVisible, setIsFloatingBarVisible] = useState(false);
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
-  // Validate previousClaimLimit is a valid option (1000, 2000, 3000), otherwise default to 1000
-  // Account for boost addon which adds 500 to the claim limit value
-  const validClaimLimits = [1000, 2000, 3000];
+  // Validate previousClaimLimit is a valid option (750, 1250, 2000), otherwise default to 1250
+  // Account for boost addon which adds 1000 to the claim limit value
+  const validClaimLimits = [750, 1250, 2000];
   const getValidatedClaimLimit = (): number => {
-    if (!previousClaimLimit) return 2000;
+    if (!previousClaimLimit) return 1250;
     // Check if it's a valid base claim limit
     if (validClaimLimits.includes(previousClaimLimit)) return previousClaimLimit;
-    // Check if it's a boosted claim limit (base + 500)
-    const possibleBaseLimit = previousClaimLimit - 500;
+    // Check if it's a boosted claim limit (base + 1000)
+    const possibleBaseLimit = previousClaimLimit - 1000;
     if (validClaimLimits.includes(possibleBaseLimit)) return possibleBaseLimit;
-    // Default to 2000
-    return 2000;
+    // Default to 1250
+    return 1250;
   };
   const [selectedClaimLimit, setSelectedClaimLimit] = useState<number | null>(getValidatedClaimLimit());
   const [summaryDismissed, setSummaryDismissed] = useState(false);
@@ -259,11 +257,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
   // Benefits expansion state
   const [expandedBenefits, setExpandedBenefits] = useState<Record<string, boolean>>({});
   
-  // Claim limit dialog state - using new claim limits
+  // Claim limit dialog state
   const [claimLimitDialogOpen, setClaimLimitDialogOpen] = useState<{[key: number]: boolean}>({
-    1000: false,
-    2000: false,
-    3000: false
+    750: false,
+    1250: false,
+    2000: false
   });
   
   // Validation error states
@@ -773,15 +771,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
     }
   };
 
-  // Get pricing data using centralized pricing matrix with new claim limit keys
+  // Get pricing data using centralized pricing matrix
   const getPricingData = (excess: number, claimLimit: number, paymentPeriod: string) => {
     const periodData = BASE_PRICING_MATRIX[paymentPeriod as PaymentPeriod] || BASE_PRICING_MATRIX['12months'];
-    // Map excess to valid keys (0, 100, 250, 500)
-    const validExcess = [0, 100, 250, 500].includes(excess) ? excess : 100;
-    const excessData = periodData[validExcess as keyof typeof periodData] || periodData[100];
-    // Map claim limit to valid keys (1000, 2000, 3000)
-    const validClaimLimit = [1000, 2000, 3000].includes(claimLimit) ? claimLimit : 1000;
-    return excessData[validClaimLimit as keyof typeof excessData] || excessData[1000];
+    const excessData = periodData[excess as keyof typeof periodData] || periodData[100];
+    return excessData[claimLimit as keyof typeof excessData] || excessData[1250];
   };
 
   // Memoized price calculation to prevent pricing fluctuations
@@ -836,7 +830,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return addOnPrice - oneTimeAddOnPrice;
   }, [addOnPrice, oneTimeAddOnPrice]);
   
-  // Calculate boost addon cost using centralized function (£3/month × duration)
+  // Calculate boost addon cost using centralized function (£5/month × duration)
   const boostAddonCost = useMemo(() => {
     return calculateBoostAdjustment(boostAddon, paymentType as PaymentPeriod);
   }, [boostAddon, paymentType]);
@@ -862,14 +856,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
   }, [totalPrice, marketingSavings]);
 
   // Memoized labour rate per-month adjustment (for display in UI)
-  // £50=-5, £70=0 (default), £100=+4, £200=+24 (UPDATED: £100/hr is now +£4, not +£8)
+  // £50=-5, £70=0 (default), £100=+8, £200=+24
   const labourRateDisplayAdjustment = useMemo(() => {
-    return selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 4 : selectedLabourRate === 200 ? 24 : 0;
+    return selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
   }, [selectedLabourRate]);
 
-  // Memoized boost display adjustment (£3/month - using centralized constant)
+  // Memoized boost display adjustment (£5/month)
   const boostDisplayAdjustment = useMemo(() => {
-    return boostAddon ? 3 : 0;
+    return boostAddon ? 5 : 0;
   }, [boostAddon]);
 
   // Memoized display monthly price - ALWAYS floor(total / 12)
@@ -1003,20 +997,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
         discountedBasePrice = adjustedBasePrice - 200; // £200 discount for 3-year plans
       }
       
-      // Calculate boost addon cost (FIXED: £3/month × 12 payments = £36 total, regardless of cover duration)
-      const boostCost = boostAddon ? (3 * 12) : 0;
+      // Calculate boost addon cost (£5/month for 12 months = £60)
+      const boostCost = boostAddon ? 60 : 0;
       
-      // Calculate labour rate adjustment for duration (UPDATED: £70=base, £100=+£4/mo)
+      // Calculate labour rate display adjustment (annual)
       let labourRateAdjust = 0;
-      if (selectedLabourRate === 50) {
-        labourRateAdjust = -5 * durationMonths; // -£5/mo below base
-      } else if (selectedLabourRate === 70) {
-        labourRateAdjust = 0; // Base rate, no adjustment
+      if (selectedLabourRate === 70) {
+        labourRateAdjust = 4 * 12; // +£48 annually
       } else if (selectedLabourRate === 100) {
-        labourRateAdjust = 4 * durationMonths; // +£4/mo (UPDATED from £8)
+        labourRateAdjust = 8 * 12; // +£96 annually
       } else if (selectedLabourRate === 200) {
-        labourRateAdjust = 24 * durationMonths; // +£24/mo
+        labourRateAdjust = 24 * 12; // +£288 annually
       }
+      // £50/hr is the default with no adjustment
       
       const totalPrice = discountedBasePrice + recurringAddonTotal + oneTimeAddonTotal + boostCost + labourRateAdjust;
       
@@ -1373,7 +1366,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
         {/* Choose Warranty Duration - Moved to top */}
         <div id="duration-price-section" className="section-header rounded-lg p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-3">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
                 1
@@ -1383,42 +1376,33 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 Choose your cover duration
               </h2>
             </div>
+            <span className="text-sm text-gray-600 font-bold text-center w-full sm:w-auto sm:text-base sm:self-center">All parts included at no extra cost</span>
           </div>
           
-          {/* Interactive Info Strip - Collapsible pricing explainer */}
-          <Collapsible className="mb-6 group">
-            <CollapsibleTrigger className="w-full">
-              <div className="flex items-center justify-between min-h-[48px] py-3 px-4 rounded-xl bg-gradient-to-r from-slate-50 to-slate-100/80 border border-slate-200/80 shadow-sm hover:shadow-md hover:from-slate-100 hover:to-slate-50 transition-all duration-200 group-data-[state=open]:bg-slate-100 group-data-[state=open]:shadow-md">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-7 h-7 rounded-full bg-white shadow-sm border border-slate-200">
-                    <Info className="w-4 h-4 text-slate-500" />
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-3 text-left">
-                    <span className="text-sm font-semibold text-slate-700">How pricing works</span>
-                    <span className="text-xs text-[#555555] font-normal">• Only 12 payments • 0% APR • Pay in full & save 10%</span>
-                  </div>
-                </div>
-                <ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+          {/* Dynamic microcopy for add-ons explanation */}
+          <div className={cn(
+            "mb-6 px-4 py-3 rounded-lg text-sm transition-all duration-300",
+            hasAddOnsSelected 
+              ? "bg-green-50 border border-green-200" 
+              : "bg-gray-50 border border-gray-200"
+          )}>
+            {hasAddOnsSelected ? (
+              <div className="flex items-start gap-2">
+                <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                <p className="text-gray-800">
+                  <span className="font-medium text-green-700">Optional Add-Ons selected.</span>{' '}
+                  <span className="text-gray-600">Your updated total is shown in the summary bar below.</span>
+                </p>
               </div>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <div className="mt-2 p-4 rounded-xl bg-slate-50/80 border border-slate-200/60 space-y-3">
-                <div className="flex items-center gap-3">
-                  <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-sm text-slate-700 font-medium">12 interest-free monthly payments (0% APR)</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-sm text-slate-700 font-medium">Pay in full and save 10%</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-sm text-slate-700 font-medium">Longer cover costs less per month and saves you more money overall</span>
-                </div>
+            ) : (
+              <div className="flex items-start gap-2">
+                <Search className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5" />
+                <p className="text-gray-600">
+                  Base cover prices shown below. Any Optional Add-Ons you choose are added to the total in the summary bar.
+                </p>
               </div>
-            </CollapsibleContent>
-          </Collapsible>
-          
+            )}
+          </div>
 
           {validationErrors.paymentType && (
             <Alert variant="destructive" className="mb-6">
@@ -1476,9 +1460,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
             {[
               { 
                 id: '12months', 
-                label: '1-Year Cover', 
+                label: '1-year cover', 
                 badge: null, 
-                planName: 'Short-term protection',
+                planName: 'Platinum Complete Plan',
                 features: [
                   'All mechanical & electrical parts',
                   'Up to 10 claims per year',
@@ -1495,9 +1479,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
               },
               { 
                 id: '24months', 
-                label: '2-Year Cover', 
-                badge: 'Most Popular', 
-                planName: 'Better value per month',
+                label: '2-year cover', 
+                badge: 'MOST POPULAR', 
+                planName: 'Platinum Complete Plan',
                 features: [
                   'All mechanical & electrical parts',
                   'Unlimited Claims',
@@ -1515,9 +1499,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
               },
               { 
                 id: '36months', 
-                label: '3-Year Cover', 
-                badge: 'Best Value', 
-                planName: 'Lowest cost per month of cover',
+                label: '3-year cover', 
+                badge: 'BEST VALUE', 
+                planName: 'Platinum Complete Plan',
                 features: [
                   'All mechanical & electrical parts',
                   'Unlimited Claims',
@@ -1553,12 +1537,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // The base price already includes multi-year pricing
               const finalBasePrice = adjustedBasePrice;
               
-              // Labour rate adjustment: £50=-£5/mo, £70=base(0), £100=+£4/mo, £200=+£24/mo (UPDATED)
-              const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 4 : selectedLabourRate === 200 ? 24 : 0;
+              // Labour rate adjustment: £50=-£5/mo, £70=base(0), £100=+£8/mo, £200=+£24/mo
+              const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
               const labourTotalAdjust = labourMonthlyAdjust * durationMonths;
               
-              // Boost addon: FIXED £3/month × 12 payments = £36 total (not multiplied by cover duration)
-              const boostTotalAdjust = boostAddon ? (3 * 12) : 0;
+              // Boost addon: +£5/month for duration
+              const boostTotalAdjust = boostAddon ? (5 * durationMonths) : 0;
               
               // Get auto-included add-ons for THIS card's duration (not the selected plan)
               const thisCardAutoIncluded = getAutoIncludedAddOns(durationId);
@@ -1599,24 +1583,23 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     isUserPaymentTypeChange.current = true;
                     setPaymentType(durationId);
                   }}
-                  className={cn(
-                    "relative p-6 rounded-xl border-2 transition-all duration-200 pointer-events-auto cursor-pointer bg-white",
-                    isSelected 
-                      ? "border-orange-500 shadow-lg shadow-orange-500/30" 
-                      : "border-gray-200 hover:border-orange-300 hover:shadow-md"
-                  )}
+                  className={`relative p-6 rounded-lg border-2 transition-all bg-white pointer-events-auto cursor-pointer hover:shadow-lg ${
+                    isSelected
+                      ? 'border-orange-500 shadow-lg shadow-orange-500/30'
+                      : 'border-gray-300 hover:border-orange-300'
+                  }`}
                   style={{ position: 'relative', zIndex: 1 }}
                 >
-                  {/* BEST VALUE tag for 3-year */}
-                  {durationId === '36months' && (
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-[#3A8F45] text-white text-xs font-bold uppercase px-4 py-1.5 rounded-full shadow-sm">
-                        Best Value
-                      </span>
-                    </div>
+                  {/* Badge */}
+                  {duration.badge && (
+                    <span className={`absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
+                      durationId === '24months' ? 'bg-orange-500 text-white' : 'bg-green-600 text-white'
+                    }`}>
+                      {duration.badge}
+                    </span>
                   )}
-
-                  {/* Selection indicator - top right */}
+                  
+                  {/* Selection Checkbox - Top Right */}
                   <div 
                     className="absolute top-4 right-4 cursor-pointer"
                     onClick={(e) => {
@@ -1626,79 +1609,77 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     }}
                   >
                     <div className={cn(
-                      "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200",
+                      "w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all duration-200",
                       isSelected 
-                        ? "bg-[#2C7A2C] border-[#2C7A2C]" 
-                        : "bg-white border-[#CCCCCC] hover:border-[#999999]"
+                        ? "bg-green-500 border-green-500" 
+                        : "bg-white border-gray-300 hover:border-green-400"
                     )}>
-                      {isSelected && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
+                      {isSelected && <Check className="w-4 h-4 text-white" strokeWidth={3} />}
                     </div>
                   </div>
 
                   {/* Duration Title */}
-                  <h4 className="text-lg font-bold text-[#000000] mb-5">
+                  <h4 className="text-xl font-bold text-gray-900 mb-1">
                     {duration.label}
                   </h4>
+                  <p className="text-sm text-gray-500 mb-3">{duration.planName}</p>
                   
-                  {/* Main Price - Actual monthly payment FIRST and LARGEST */}
+                  {/* Price Section */}
                   <div className="mb-4">
-                    {/* Large headline: £X/month for 12 months */}
-                    <div className="flex items-baseline gap-1 mb-1">
-                      <span className="text-3xl font-bold text-[#000000]">£{displayedMonthlyPrice}</span>
-                      <span className="text-base text-[#333333]">/month for 12 months</span>
+                    {/* Price Headline */}
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-bold text-black">£{displayedMonthlyPrice}/month</span>
+                      <span className="text-sm font-bold text-gray-400">(12 easy payments)</span>
                     </div>
                     
-                    {/* No payments notice - for multi-year plans */}
+                    {/* Free year benefit line with tick */}
                     {durationId === '24months' && (
-                      <p className="text-sm font-semibold text-[#333333] mb-2">No payments in year 2</p>
+                      <div className="flex items-center gap-1.5 mt-2">
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                        <span className="text-sm font-medium text-black">Year 2 FREE cover</span>
+                      </div>
                     )}
                     {durationId === '36months' && (
-                      <p className="text-sm font-semibold text-[#333333] mb-2">No payments in years 2 or 3</p>
-                    )}
-                    
-                    {/* Average cost badge - soft grey pill (non-interactive) */}
-                    {(durationId === '24months' || durationId === '36months') && (
-                      <div className="inline-block bg-[#F5F5F5] border border-[#E5E5E5] rounded-full px-2.5 py-1 mb-3">
-                        <span className="text-sm font-medium text-[#333333]">
-                          Avg. <span className="font-bold">£{calculateCPMWithGuardrail(displayedAnnualPrice, durationId === '24months' ? 24 : 36, displayedMonthlyPrice)}</span>/month over {durationId === '24months' ? '2' : '3'} years
-                        </span>
+                      <div className="flex items-center gap-1.5 mt-2">
+                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                        <span className="text-sm font-medium text-black">Years 2 & 3 FREE cover</span>
                       </div>
                     )}
                     
-                    {/* Total cost */}
-                    <p className="text-sm text-[#333333]">
-                      Total cost <span className="font-semibold text-[#000000]">£{displayedAnnualPrice}</span>
-                    </p>
-                  </div>
-
-                  {/* Pay in full savings - Only for 2-year and 3-year */}
-                  {(durationId === '24months' || durationId === '36months') && (
-                    <div className="bg-[#F7F7F7] border border-[#EDEDED] rounded-lg px-4 py-3 mb-4">
-                      <ul className="space-y-1 list-disc list-inside text-sm">
-                        <li className="text-[#777777]">Or pay in full and save 10%</li>
-                        <li className="text-[#333333]">
-                          Was £{displayedAnnualPrice} – now <span className="font-semibold text-[#3A8F45]">£{Math.round(displayedAnnualPrice * 0.9)}</span>
-                        </li>
-                        <li className="font-semibold text-[#3A8F45]">You save £{Math.round(displayedAnnualPrice * 0.1)}</li>
-                      </ul>
+                    {/* Total price with was price */}
+                    <div className="text-sm mt-2">
+                      <span className="font-bold text-black">
+                        {(durationId === '24months' || durationId === '36months') ? 'Pay in full ' : 'Total: '}
+                        £{displayedAnnualPrice}
+                      </span>
+                      {savingsAmount > 0 && (
+                        <span className="text-red-500 line-through ml-1">(Was £{displayedAnnualPrice + savingsAmount})</span>
+                      )}
                     </div>
-                  )}
-
-                  {/* Benefits - Bullet points */}
-                  <ul className="space-y-2 mb-5 list-disc list-inside text-sm">
-                    {durationId === '12months' && (
-                      <li className="text-[#333333]">Ideal for short-term protection</li>
+                    
+                    {/* Savings line */}
+                    {savingsAmount > 0 && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className="text-sm font-bold text-green-600">Save £{savingsAmount} Today</span>
+                      </div>
                     )}
-                  </ul>
+                    
+                    {/* Extra benefits for 2-year and 3-year */}
+                    {(durationId === '24months' || durationId === '36months') && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className="text-sm font-medium text-gray-700">🎁 Includes extra benefits</span>
+                      </div>
+                    )}
+                  </div>
                   
-                  {/* What's Included Collapsible - Secondary CTA (grey, non-competing) */}
+                  {/* What's Included Collapsible */}
                   <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
                     <CollapsibleTrigger className="w-full mb-4">
-                      <div className="flex items-center justify-between w-full bg-white border border-[#D9D9D9] rounded-md px-4 py-3 hover:bg-[#F2F2F2] hover:border-[#C5C5C5] transition-colors">
-                        <span className="text-sm font-semibold text-[#444444] hover:text-[#222222]">See what's included</span>
+                      <div className="flex items-center justify-between w-full border border-gray-300 rounded-lg px-4 py-3 hover:border-gray-400 transition-colors">
+                        <span className="text-sm font-medium text-gray-800">See What's Included</span>
                         <ChevronDown 
                           className={cn(
-                            "w-5 h-5 text-[#666666] transition-transform duration-300",
+                            "w-5 h-5 text-gray-600 transition-transform duration-300",
                             isExpanded && "transform rotate-180"
                           )}
                         />
@@ -1706,7 +1687,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </CollapsibleTrigger>
                     
                     <CollapsibleContent className="mb-4">
-                      <div className="bg-[#F7F7F7] border border-[#EDEDED] rounded-lg p-4 space-y-2">
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
                         {duration.features.map((feature, idx) => {
                           const featureText = typeof feature === 'string' ? feature : feature.text;
                           const isExtra = typeof feature === 'object' && feature.isExtra;
@@ -1714,12 +1695,14 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           return (
                             <div key={idx} className="flex items-start gap-2">
                               {isExclusion ? (
-                                <X className="w-4 h-4 text-[#777777] mt-0.5 flex-shrink-0" />
+                                <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                              ) : isExtra ? (
+                                <span className="text-base mt-0 flex-shrink-0">⭐</span>
                               ) : (
-                                <Check className="w-4 h-4 text-[#333333] mt-0.5 flex-shrink-0" />
+                                <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                               )}
-                              <span className="text-sm text-[#333333]">
-                                {featureText}{isExtra && ' (Bonus)'}
+                              <span className="text-sm text-gray-700">
+                                {featureText}{isExtra && ' (Bonus benefit)'}
                               </span>
                             </div>
                           );
@@ -1728,7 +1711,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </CollapsibleContent>
                   </Collapsible>
                   
-                  {/* CTA Button - Primary Brand Orange */}
+                  {/* CTA Button with Hover Effect and Arrow */}
                   <Button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1736,48 +1719,46 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       setPaymentType(durationId);
                     }}
                     className={cn(
-                      "w-full mb-3 font-semibold text-sm py-5 rounded-md transition-all duration-200",
+                      "w-full mb-1.5 font-bold text-base py-6 transition-all duration-300 group",
                       isSelected
-                        ? "bg-black hover:bg-gray-800 text-white border-none"
-                        : "bg-[#eb4b00] hover:bg-[#d63f00] text-white border-none"
+                        ? "bg-black hover:bg-black/90 text-white shadow-lg border-2 border-black"
+                        : "bg-brand-orange hover:bg-brand-orange/90 text-white border-2 border-brand-orange"
                     )}
                     size="lg"
                   >
-                    {isSelected ? 'Selected' : 'Select this plan'}
+                    <div className="flex items-center justify-center gap-2">
+                      <span>{isSelected ? 'Selected' : 'Select this plan'}</span>
+                      {!isSelected && <ArrowRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" />}
+                    </div>
                   </Button>
                   
-                  {/* Links - Simple black text */}
-                  <div className="flex flex-col gap-2 items-center">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenEmailQuoteDialog(durationId);
-                      }}
-                      className="text-sm text-[#333333] hover:text-[#000000] transition-colors underline"
-                    >
-                      Email me this quote
-                    </button>
-                    
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const coverSection = document.getElementById('your-cover-details');
-                        coverSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      }}
-                      className="text-sm text-[#333333] hover:text-[#000000] transition-colors underline"
-                    >
-                      View full cover details
-                    </button>
-                  </div>
+                  {/* Email Quote Link */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenEmailQuoteDialog(durationId);
+                    }}
+                    className="w-full text-center text-sm text-black hover:text-orange-600 transition-colors pointer-events-auto flex items-center justify-center gap-1"
+                  >
+                    <Mail className="w-4 h-4 text-orange-500" />
+                    <span className="underline">Email me this quote</span>
+                  </button>
+                  
+                  {/* See Full Cover Details Link */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const coverSection = document.getElementById('your-cover-details');
+                      coverSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }}
+                    className="w-full mt-3 text-center text-sm text-black hover:text-green-600 transition-colors pointer-events-auto flex items-center justify-center gap-1"
+                  >
+                    <span>🔍 See full cover details</span>
+                  </button>
                 </div>
               );
             })}
           </div>
-          
-          {/* Global Explainer Line */}
-          <p className="text-center text-sm text-slate-500 mb-8 px-4">
-            You pay monthly for 12 months on every plan. Longer cover continues automatically with no further payments.
-          </p>
         </div>
 
         <div id="whats-covered" className="section-header rounded-lg p-4 sm:p-8 mb-8">
@@ -1788,7 +1769,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <div className="flex items-center gap-2 sm:gap-3 cursor-pointer group">
                   <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-black flex-shrink-0" />
                   <h2 className="text-lg sm:text-xl font-semibold text-black">
-                    What's covered by your warranty
+                    Comprehensive Cover
                   </h2>
                   <ChevronDown className="w-5 h-5 sm:w-8 sm:h-8 text-black transition-transform duration-300 ease-in-out group-data-[state=open]:rotate-180" />
                 </div>
@@ -2323,83 +2304,23 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </Alert>
           )}
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <button
-              onClick={() => {
-                toggleVoluntaryExcess(0);
-                setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
-              }}
-              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                voluntaryExcess === 0
-                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
-              }`}
-            >
-              <div className="mb-2">
-                <span className="text-2xl font-bold text-foreground">£0 </span>
-                <span className="text-sm font-medium text-foreground">excess</span>
-              </div>
-              <p className="text-xl font-bold text-black">Zero Excess</p>
-              <p className="text-xs text-muted-foreground mt-1">No upfront cost when you claim.</p>
-            </button>
-            
-            <button
-              onClick={() => {
-                toggleVoluntaryExcess(100);
-                setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
-              }}
-              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                voluntaryExcess === 100
-                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
-              }`}
-            >
-              <span className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">MOST POPULAR</span>
-              <div className="mb-2">
-                <span className="text-2xl font-bold text-foreground">£100 </span>
-                <span className="text-sm font-medium text-foreground">excess</span>
-              </div>
-              <p className="text-xl font-bold text-black">Best Value</p>
-              <p className="text-xs text-muted-foreground mt-1">Best value overall for most drivers.</p>
-            </button>
-            
-            <button
-              onClick={() => {
-                toggleVoluntaryExcess(250);
-                setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
-              }}
-              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                voluntaryExcess === 250
-                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
-              }`}
-            >
-              <div className="mb-2">
-                <span className="text-2xl font-bold text-foreground">£250 </span>
-                <span className="text-sm font-medium text-foreground">excess</span>
-              </div>
-              <p className="text-xl font-bold text-black">Saver Option</p>
-              <p className="text-xs text-muted-foreground mt-1">Lower monthly price.</p>
-            </button>
-            
-            <button
-              onClick={() => {
-                toggleVoluntaryExcess(500);
-                setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
-              }}
-              className={`relative bg-white p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                voluntaryExcess === 500
-                  ? 'border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
-              }`}
-            >
-              <div className="mb-2">
-                <span className="text-2xl font-bold text-foreground">£500 </span>
-                <span className="text-sm font-medium text-foreground">excess</span>
-              </div>
-              <p className="text-xl font-bold text-black">Budget Option</p>
-              <p className="text-xs text-muted-foreground mt-1">Cheapest monthly price.</p>
-            </button>
+          <div className="flex gap-1.5 flex-wrap justify-start ml-11">
+            {[0, 50, 100, 150].map((amount) => (
+              <button
+                key={amount}
+                onClick={() => {
+                  toggleVoluntaryExcess(amount);
+                  setValidationErrors(prev => ({ ...prev, voluntaryExcess: false }));
+                }}
+                className={`px-2.5 py-2 rounded-lg transition-all duration-200 text-center relative min-w-[50px] text-sm ${
+                  voluntaryExcess === amount
+                    ? 'bg-orange-500/10 border-2 border-orange-500 shadow-lg shadow-orange-500/30'
+                    : 'neutral-container shadow-lg shadow-black/15 hover:shadow-xl hover:shadow-orange-500/20'
+                }`}
+              >
+                <div className="text-base font-bold text-black">£{amount}</div>
+              </button>
+            ))}
           </div>
         </div>
 
@@ -2413,7 +2334,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             </div>
             <h2 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 flex-shrink-0" />
-              Single repair amount per claim
+              Choose your claim limit 🚗
             </h2>
             
             <Dialog>
@@ -2450,7 +2371,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       Example
                     </h4>
                     <p className="text-gray-700 text-sm leading-relaxed">
-                      With a £2,000 claim limit: if your repair costs £2,200, we pay £2,000 and you pay the remaining £200 (plus your excess).
+                      With a £1,250 claim limit: if your repair costs £1,400, we pay £1,250 and you pay the remaining £150 (plus your excess).
                     </p>
                   </div>
                   
@@ -2476,15 +2397,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Essential - £1,000 */}
+            {/* Essential */}
             <div 
               className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
-                selectedClaimLimit === 1000
+                selectedClaimLimit === 750
                   ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30'
                   : 'border-2 border-gray-200 hover:border-orange-300 hover:shadow-md'
               }`}
               onClick={() => {
-                setSelectedClaimLimit(1000);
+                setSelectedClaimLimit(750);
                 setValidationErrors(prev => ({ ...prev, claimLimit: false }));
               }}
             >
@@ -2492,18 +2413,48 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <div>
                   <h4 className="text-xl font-bold text-black mb-1">AutoCare Essential</h4>
                   <div className="text-3xl font-bold text-black">
-                    £{selectedClaimLimit === 1000 && boostAddon ? '1,500' : '1,000'} <span className="text-base">per claim</span>
+                    £{selectedClaimLimit === 750 && boostAddon ? '1,750' : '750'} <span className="text-base">per claim</span>
                   </div>
                 </div>
                 <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                  selectedClaimLimit === 1000 ? 'bg-green-500 border-green-500' : 'border-gray-300'
+                  selectedClaimLimit === 750 ? 'bg-green-500 border-green-500' : 'border-gray-300'
                 }`}>
-                  {selectedClaimLimit === 1000 && <Check className="w-4 h-4 text-white" />}
+                  {selectedClaimLimit === 750 && <Check className="w-4 h-4 text-white" />}
                 </div>
               </div>
             </div>
             
-            {/* Advantage - £2,000 */}
+            {/* Advanced */}
+            <div 
+              className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
+                selectedClaimLimit === 1250
+                  ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30'
+                  : 'border-2 border-gray-200 hover:border-orange-300 hover:shadow-md'
+              }`}
+              onClick={() => {
+                setSelectedClaimLimit(1250);
+                setValidationErrors(prev => ({ ...prev, claimLimit: false }));
+              }}
+            >
+              <div className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                MOST POPULAR
+              </div>
+              <div className="flex items-start justify-between">
+                <div>
+                  <h4 className="text-xl font-bold text-black mb-1">AutoCare Advantage</h4>
+                  <div className="text-3xl font-bold text-black">
+                    £{selectedClaimLimit === 1250 && boostAddon ? '2,250' : '1,250'} <span className="text-base">per claim</span>
+                  </div>
+                </div>
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  selectedClaimLimit === 1250 ? 'bg-green-500 border-green-500' : 'border-gray-300'
+                }`}>
+                  {selectedClaimLimit === 1250 && <Check className="w-4 h-4 text-white" />}
+                </div>
+              </div>
+            </div>
+            
+            {/* Elite */}
             <div 
               className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
                 selectedClaimLimit === 2000
@@ -2515,14 +2466,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 setValidationErrors(prev => ({ ...prev, claimLimit: false }));
               }}
             >
-              <div className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                MOST POPULAR
-              </div>
               <div className="flex items-start justify-between">
                 <div>
-                  <h4 className="text-xl font-bold text-black mb-1">AutoCare Advantage</h4>
+                  <h4 className="text-xl font-bold text-black mb-1">AutoCare Elite</h4>
                   <div className="text-3xl font-bold text-black">
-                    £{selectedClaimLimit === 2000 && boostAddon ? '2,500' : '2,000'} <span className="text-base">per claim</span>
+                    £{selectedClaimLimit === 2000 && boostAddon ? '3,000' : '2,000'} <span className="text-base">per claim</span>
                   </div>
                 </div>
                 <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
@@ -2532,143 +2480,132 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 </div>
               </div>
             </div>
+          </div>
+          
+          {/* Optional Add-ons Section */}
+          <div className="mt-4">
+            <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Optional add-on</h4>
             
-            {/* Elite - £3,000 (maximum, no boost available) */}
+            {/* Add Extra Cover Card - Fully Tappable with Improved Toggle */}
             <div 
-              className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
-                selectedClaimLimit === 3000
-                  ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'border-2 border-gray-200 hover:border-orange-300 hover:shadow-md'
-              }`}
-              onClick={() => {
-                setSelectedClaimLimit(3000);
-                // Disable boost when selecting max claim limit
-                if (boostAddon) setBoostAddon(false);
-                setValidationErrors(prev => ({ ...prev, claimLimit: false }));
-              }}
+              onClick={() => setBoostAddon(!boostAddon)}
+              className={cn(
+                "relative p-4 rounded-xl cursor-pointer border-2 overflow-hidden",
+                "transition-all duration-300 ease-out transform",
+                boostAddon
+                  ? "bg-gradient-to-br from-green-50 to-green-100 border-green-500 shadow-[0_0_16px_rgba(34,197,94,0.35)] scale-[1.01]"
+                  : "bg-gradient-to-br from-orange-50 to-orange-100/50 border-orange-200 hover:border-orange-400 hover:shadow-lg hover:scale-[1.005]"
+              )}
             >
-              <div className="flex items-start justify-between">
-                <div>
-                  <h4 className="text-xl font-bold text-black mb-1">AutoCare Elite</h4>
-                  <div className="text-3xl font-bold text-black">
-                    £3,000 <span className="text-base">per claim</span>
-                  </div>
+              {/* Animated background pulse when active */}
+              {boostAddon && (
+                <div className="absolute inset-0 bg-green-400/10 animate-pulse pointer-events-none" />
+              )}
+              
+              <div className="relative flex items-center gap-4">
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  {boostAddon ? (
+                    <>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                          <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                        </div>
+                        <h4 className="text-lg font-bold text-green-700">
+                          Upgrade Added!
+                        </h4>
+                      </div>
+                      <div className="text-base font-semibold text-green-800">
+                        Your cover is now £{(selectedClaimLimit + 1000).toLocaleString()} per claim 🚀
+                      </div>
+                      <div className="text-xs text-green-600 mt-1">
+                        Just £{paymentType === '36months' ? 15 : paymentType === '24months' ? 10 : 5}/month × 12 payments
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <h4 className="text-lg font-bold text-foreground mb-0.5">
+                        🚀 Boost your cover by £1,000
+                      </h4>
+                      <div className="text-base font-semibold text-foreground">
+                        Upgrade to £{(selectedClaimLimit + 1000).toLocaleString()} per claim
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Just £{paymentType === '36months' ? 15 : paymentType === '24months' ? 10 : 5}/month × 12 payments
+                      </div>
+                    </>
+                  )}
                 </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                  selectedClaimLimit === 3000 ? 'bg-green-500 border-green-500' : 'border-gray-300'
-                }`}>
-                  {selectedClaimLimit === 3000 && <Check className="w-4 h-4 text-white" />}
+                
+                {/* Improved Toggle Switch */}
+                <div className="flex-shrink-0">
+                  <div
+                    className={cn(
+                      "relative inline-flex items-center justify-between rounded-full transition-all duration-300 ease-out",
+                      "w-[68px] h-[36px] px-1",
+                      boostAddon 
+                        ? "bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.5)]" 
+                        : "bg-gray-300"
+                    )}
+                  >
+                    {/* ON/OFF Labels */}
+                    <span className={cn(
+                      "text-[11px] font-bold uppercase pl-1.5 transition-all duration-200",
+                      boostAddon ? "text-white" : "text-transparent"
+                    )}>
+                      ON
+                    </span>
+                    <span className={cn(
+                      "text-[11px] font-bold uppercase pr-1.5 transition-all duration-200",
+                      boostAddon ? "text-transparent" : "text-gray-500"
+                    )}>
+                      OFF
+                    </span>
+                    
+                    {/* Toggle Knob */}
+                    <span
+                      className={cn(
+                        "absolute inline-flex items-center justify-center rounded-full bg-white shadow-md",
+                        "w-[28px] h-[28px] top-1",
+                        "transition-all duration-300 ease-out",
+                        boostAddon 
+                          ? "left-[36px] shadow-lg" 
+                          : "left-1"
+                      )}
+                    >
+                      {boostAddon ? (
+                        <Check className="w-4 h-4 text-green-500" strokeWidth={3} />
+                      ) : (
+                        <Plus className="w-4 h-4 text-gray-400" strokeWidth={2} />
+                      )}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          
-          {/* Optional Add-ons Section - Only show boost for £1,000 and £2,000 */}
-          {selectedClaimLimit !== 3000 && (
-            <div className="mt-4">
-              <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Optional add-on</h4>
-              
-              {/* Add Extra Cover Card - Boost adds +£500 */}
-              <div 
-                onClick={() => setBoostAddon(!boostAddon)}
-                className={cn(
-                  "relative p-4 rounded-xl cursor-pointer border-2 overflow-hidden",
-                  "transition-all duration-300 ease-out transform",
-                  boostAddon
-                    ? "bg-gradient-to-br from-green-50 to-green-100 border-green-500 shadow-[0_0_16px_rgba(34,197,94,0.35)] scale-[1.01]"
-                    : "bg-gradient-to-br from-orange-50 to-orange-100/50 border-orange-200 hover:border-orange-400 hover:shadow-lg hover:scale-[1.005]"
-                )}
-              >
-                {/* Animated background pulse when active */}
-                {boostAddon && (
-                  <div className="absolute inset-0 bg-green-400/10 animate-pulse pointer-events-none" />
-                )}
-                
-                <div className="relative flex items-center gap-4">
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    {boostAddon ? (
-                      <>
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                            <Check className="w-4 h-4 text-white" strokeWidth={3} />
-                          </div>
-                          <h4 className="text-lg font-bold text-green-700">
-                            Boost Added!
-                          </h4>
-                        </div>
-                        <div className="text-base font-semibold text-green-800">
-                          Your cover is now £{((selectedClaimLimit || 1000) + 500).toLocaleString()} per claim 🚀
-                        </div>
-                        <div className="text-xs text-green-600 mt-1">
-                          +£3/month × 12 payments
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <h4 className="text-lg font-bold text-foreground mb-0.5">
-                          🚀 Add +£500 extra cover
-                        </h4>
-                        <div className="text-base font-semibold text-foreground">
-                          Upgrade to £{((selectedClaimLimit || 1000) + 500).toLocaleString()} per claim
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          +£3/month × 12 payments
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  
-                  {/* Improved Toggle Switch */}
-                  <div className="flex-shrink-0">
-                    <div
-                      className={cn(
-                        "relative inline-flex items-center justify-between rounded-full transition-all duration-300 ease-out",
-                        "w-[68px] h-[36px] px-1",
-                        boostAddon 
-                          ? "bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.5)]" 
-                          : "bg-gray-300"
-                      )}
-                    >
-                      {/* ON/OFF Labels */}
-                      <span className={cn(
-                        "text-[11px] font-bold uppercase pl-1.5 transition-all duration-200",
-                        boostAddon ? "text-white" : "text-transparent"
-                      )}>
-                        ON
-                      </span>
-                      <span className={cn(
-                        "text-[11px] font-bold uppercase pr-1.5 transition-all duration-200",
-                        boostAddon ? "text-transparent" : "text-gray-500"
-                      )}>
-                        OFF
-                      </span>
-                      
-                      {/* Toggle Knob */}
-                      <span
-                        className={cn(
-                          "absolute inline-flex items-center justify-center rounded-full bg-white shadow-md",
-                          "w-[28px] h-[28px] top-1",
-                          "transition-all duration-300 ease-out",
-                          boostAddon 
-                            ? "left-[36px] shadow-lg" 
-                            : "left-1"
-                        )}
-                      >
-                        {boostAddon ? (
-                          <Check className="w-4 h-4 text-green-500" strokeWidth={3} />
-                        ) : (
-                          <Plus className="w-4 h-4 text-gray-400" strokeWidth={2} />
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
-        {/* Add-ons removed from new business per Jan 2026 update */}
+        <div className="section-header rounded-lg p-4 sm:p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-semibold flex-shrink-0">
+              6
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+              <h3 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
+                <Shield className="w-5 h-5 flex-shrink-0" />
+                Optional Add-Ons
+              </h3>
+              <p className="text-muted-foreground text-base font-bold">Boost Your Cover ✨</p>
+            </div>
+          </div>
+          <AddOnProtectionPackages 
+            selectedAddOns={selectedProtectionAddOns}
+            paymentType={paymentType}
+            onAddOnChange={(addOnKey, selected) => 
+              setSelectedProtectionAddOns(prev => ({ ...prev, [addOnKey]: selected }))
+            }
+          />
+        </div>
 
         {/* Conversion-Optimized Trust & Action Section */}
         <div id="your-cover-details" className="pt-2 pb-6 md:pt-4 md:pb-10 space-y-4">
@@ -2677,108 +2614,97 @@ const PricingTable: React.FC<PricingTableProps> = ({
           <div className="bg-gradient-to-br from-green-100 via-green-50 to-white rounded-2xl border-2 border-green-200 p-6 md:p-8 shadow-lg">
             
             {/* Trust Signals Row */}
-            {(() => {
-              const payInFull = displayMonthlyPrice * 12;
-              const coverMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
-              const costPerMonthOfCover = calculateCPMWithGuardrail(payInFull, coverMonths, displayMonthlyPrice);
-              const coverYears = paymentType === '12months' ? '1' : paymentType === '24months' ? '2' : '3';
-              const savings = getMarketingSavings(paymentType as PaymentPeriod);
-              const wasPrice = payInFull + savings;
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="flex items-center gap-3 bg-white rounded-lg p-4 border border-green-100">
+                <div className="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0">
+                  <Check className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <span className="font-bold text-green-800 text-lg">94%</span>
+                  <p className="text-base text-gray-600">of claims approved fast</p>
+                </div>
+              </div>
               
-              return (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    {/* 94% Claims Approved */}
-                    <div className="flex items-center gap-3 bg-white rounded-lg p-4 border border-[#E5E5E5]">
-                      <div className="w-10 h-10 rounded-full bg-[#3A8F45] flex items-center justify-center flex-shrink-0">
-                        <Check className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <span className="font-bold text-[#3A8F45] text-lg">94%</span>
-                        <p className="text-sm text-[#555555]">of claims approved fast</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3 bg-white rounded-lg p-4 border border-[#E5E5E5]">
-                      <a 
-                        href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 w-full hover:opacity-90 transition-opacity"
-                      >
-                        <TrustpilotHeader className="scale-90" />
-                        <div>
-                          <span className="font-bold text-[#333333] text-sm">Five‑Star Service</span>
-                          <p className="text-xs text-[#777777]">Rated Excellent by UK drivers</p>
-                        </div>
-                      </a>
-                    </div>
-                    
-                    <div className="flex items-center gap-3 bg-white rounded-lg p-4 border border-[#E5E5E5]">
-                      <div className="w-10 h-10 rounded-full bg-[#FFF3E0] flex items-center justify-center flex-shrink-0">
-                        <svg className="w-6 h-6 text-[#E65100]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <span className="font-bold text-[#E65100]">14-Day</span>
-                        <p className="text-sm text-[#555555]">Money-back guarantee</p>
-                      </div>
-                    </div>
+              <div className="flex items-center gap-3 bg-white rounded-lg p-4 border border-green-100">
+                <a 
+                  href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 w-full hover:opacity-90 transition-opacity"
+                >
+                  <TrustpilotHeader className="scale-90" />
+                  <div>
+                    <span className="font-bold text-gray-800 text-sm">Five‑Star Service</span>
+                    <p className="text-xs text-gray-500">Rated Excellent by UK drivers</p>
                   </div>
+                </a>
+              </div>
+              
+              <div className="flex items-center gap-3 bg-white rounded-lg p-4 border border-green-100">
+                <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <div>
+                  <span className="font-bold text-orange-600">14-Day</span>
+                  <p className="text-sm text-gray-600">Money-back guarantee</p>
+                </div>
+              </div>
+            </div>
 
-                  {/* Price Summary & CTA */}
-                  <div className="bg-white rounded-xl border-2 border-[#E5E5E5] p-4 md:p-6">
-                    <div className="flex flex-col gap-3">
-                      <div className="flex flex-col md:flex-row md:items-stretch gap-4">
-                        <div className="flex-1">
-                          <h3 className="text-lg md:text-xl font-bold text-[#000000] mb-2">
-                            {coverYears}-Year Cover
-                          </h3>
-                          
-                          {/* Main pricing display - Cost per month of cover */}
-                          <div className="flex items-baseline gap-1 mb-2">
-                            <span className="text-2xl font-bold text-[#000000]">£{costPerMonthOfCover}</span>
-                            <span className="text-sm text-[#333333]">per month</span>
-                          </div>
-                          
-                          <p className="text-sm font-semibold text-[#333333] mb-1">
-                            Paid monthly for 12 months <span className="font-bold text-[#000000]">£{displayMonthlyPrice}</span> per month
-                          </p>
-                          
-                          {/* No payments in year 2/3 for multi-year */}
-                          {paymentType !== '12months' && (
-                            <p className="text-sm font-semibold text-[#333333]">
-                              No payments in year {paymentType === '24months' ? '2' : '2 or 3'}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <div className="flex flex-col gap-2 w-full md:w-auto md:justify-center md:mt-4">
-                          <Button
-                            onClick={handleSelectPlan}
-                            className="bg-[#FFFFFF] hover:bg-[#F3F3F3] text-[#1A1A1A] font-bold py-4 px-8 text-lg rounded-lg border-[1.5px] border-[#D9D9D9] shadow-none w-full md:w-auto"
-                          >
-                            <span className="md:hidden">Checkout securely</span>
-                            <span className="hidden md:inline">Continue to secure payment</span>
-                            <ArrowRight className="w-5 h-5 ml-2 text-[#1A1A1A]" strokeWidth={2.5} />
-                          </Button>
-                          <div className="flex items-center justify-center gap-2 text-xs text-[#777777]">
-                            <Lock className="w-3 h-3" />
-                            <span>Secure checkout – SSL encrypted</span>
-                          </div>
-                        </div>
+            {/* Price Summary & CTA */}
+            <div className="bg-white rounded-xl border-2 border-green-300 p-4 md:p-6">
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col md:flex-row md:items-stretch gap-3">
+                  <div className="flex-1">
+                    <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2">
+                      Your Platinum Plan – {paymentType === '12months' ? '1-Year' : paymentType === '24months' ? '2-Year' : '3-Year'} Cover
+                    </h3>
+                    <div className="flex flex-col">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-xl font-bold text-gray-900">
+                          {hasAddOnsSelected ? 'Total incl. add-ons:' : 'Total:'}
+                        </span>
+                        <span className="text-3xl font-bold text-gray-900">£{displayMonthlyPrice}/month</span>
                       </div>
+                      <span className="text-sm text-black">(12 easy payments)</span>
                     </div>
-                    
-                    {/* Urgency micro-copy */}
-                    <p className="text-center md:text-left text-sm text-[#3A8F45] mt-3 font-medium">
-                      ⚡ You're covered in 60 seconds – no payment taken until confirmation
-                    </p>
+                    {(() => {
+                      const payInFull = displayMonthlyPrice * 12; // monthly × 12
+                      const savings = getMarketingSavings(paymentType as PaymentPeriod);
+                      const wasPrice = payInFull + savings;
+                      const coverLabel = paymentType === '12months' ? '1-Year Cover' : paymentType === '24months' ? '2-Year Cover' : '3-Year Cover';
+                      return (
+                        <p className="text-sm text-black mt-1">
+                          {savings > 0 && <span className="line-through text-red-500">£{wasPrice}</span>} <span className="font-bold text-green-600">£{payInFull}</span> {savings > 0 && <span className="text-gray-600">(Save £{savings})</span>} <span className="text-gray-700">– {coverLabel}</span>
+                        </p>
+                      );
+                    })()}
                   </div>
-                </>
-              );
-            })()}
+                  
+                  <div className="flex flex-col gap-2 w-full md:w-auto md:justify-center md:mt-4">
+                    <Button
+                      onClick={handleSelectPlan}
+                      className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-4 px-8 text-lg shadow-lg hover:shadow-xl transition-all animate-cta-enhanced w-full md:w-auto"
+                    >
+                      <span className="md:hidden">Checkout securely</span>
+                      <span className="hidden md:inline">Continue to secure payment</span>
+                      <ArrowRight className="w-5 h-5 ml-2" strokeWidth={4.5} />
+                    </Button>
+                    <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+                      <Lock className="w-3 h-3" />
+                      <span>Secure checkout – SSL encrypted</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Urgency micro-copy */}
+              <p className="text-center md:text-left text-sm text-green-700 mt-3 font-medium">
+                ⚡ You're covered in 60 seconds – no payment taken until confirmation
+              </p>
+            </div>
           </div>
 
           {/* Crystal Clear Cover Card - Original Design */}
@@ -2886,17 +2812,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
       {/* Bottom padding for sticky bar */}
       <div className="pb-20 md:pb-24 -mt-4"></div>
 
-      {/* Sticky Total Bar - Always visible - Monochrome Design */}
+      {/* Sticky Total Bar - Always visible */}
       {!vehicleAgeError && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-[#3A8F45] z-50 shadow-lg">
+        <div className="fixed bottom-0 left-0 right-0 bg-gray-50 border-t-2 border-green-200 shadow-lg z-50">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between p-4 max-w-6xl mx-auto gap-4">
             
             {/* Loading State */}
             {plansLoading && (
               <div className="flex items-center justify-center w-full py-2">
                 <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 border-2 border-[#333333] border-t-transparent rounded-full animate-spin"></div>
-                  <span className="text-[#777777] font-medium">Loading pricing plans...</span>
+                  <div className="w-5 h-5 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-gray-600 font-medium">Loading pricing plans...</span>
                 </div>
               </div>
             )}
@@ -2908,7 +2834,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <Button
                   onClick={retryFetchPlans}
                   size="sm"
-                  className="bg-[#333333] hover:bg-[#000000] text-white"
+                  className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   <RotateCcw className="w-4 h-4 mr-2" />
                   Retry
@@ -2921,172 +2847,154 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <>
                 {/* Mobile Layout - Collapsible */}
                 {(() => {
+                  // Pay in full = monthly × 12
                   const payInFull = displayMonthlyPrice * 12;
-                  const coverMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
-                  const costPerMonthOfCover = calculateCPMWithGuardrail(payInFull, coverMonths, displayMonthlyPrice);
-                  const payInFullPrice = Math.round(payInFull * 0.9);
-                  const savings = payInFull - payInFullPrice;
-                  const coverYears = paymentType === '12months' ? '1' : paymentType === '24months' ? '2' : '3';
-                  
+                  const savings = getMarketingSavings(paymentType as PaymentPeriod);
+                  const wasPrice = payInFull + savings;
                   return (
-                    <div className="flex flex-col md:hidden w-full bg-white">
-                      {/* Collapsed State - Main Row */}
-                      <div className="flex items-center justify-between gap-3 px-1">
-                        {/* Left Side - Cover Info */}
-                        <div className="flex-shrink-0">
-                          <p className="text-sm font-bold text-[#000000]">£{displayMonthlyPrice}/mo × 12</p>
-                          <p className="text-xs text-[#333333]">
-                            <span className="font-semibold text-[#000000]">£{costPerMonthOfCover}/mo</span> avg
-                          </p>
-                          <p className="text-xs text-[#333333]">Total: £{payInFull}</p>
+                    <div className="flex flex-col md:hidden gap-2 w-full">
+                      {/* Collapsible Header */}
+                      <button
+                        onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+                        className="flex items-center justify-center w-full relative"
+                      >
+                        {/* Centered Content */}
+                        <div className="flex flex-col items-center text-center">
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-base font-bold text-gray-900">Total:</span>
+                            <span className="text-lg font-bold text-gray-900">£{displayMonthlyPrice}/mo</span>
+                            <span className="text-xs text-gray-600">0% APR</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-xs mt-0.5">
+                            {savings > 0 && <span className="line-through text-red-500">£{wasPrice}</span>}
+                            <span className="font-bold text-green-600">£{payInFull}</span>
+                            {savings > 0 && <span className="text-gray-500">(Save £{savings})</span>}
+                          </div>
+                          <div className="flex items-center gap-2 text-xs mt-1">
+                            <span className="font-semibold text-gray-800">
+                              {paymentType === '12months' && '1-Year Cover'}
+                              {paymentType === '24months' && '2-Year Cover'}
+                              {paymentType === '36months' && '3-Year Cover'}
+                            </span>
+                            <span className="text-gray-400">·</span>
+                            <span className="text-gray-500">12 easy payments</span>
+                          </div>
                         </div>
                         
-                        {/* Right Side - CTA Button */}
-                        <div className="flex flex-col items-center gap-1">
-                          <Button
-                            onClick={handleSelectPlan}
-                            className="bg-[#3A8F45] text-white font-semibold py-3 px-5 rounded-lg text-sm gap-1.5 border-none shadow-none animate-breathing"
-                          >
-                            Checkout
-                            <ArrowRight className="w-4 h-4 text-white" strokeWidth={2} />
-                          </Button>
-                          <div className="flex items-center gap-1 text-[10px] text-[#777777]">
-                            <Lock className="w-3 h-3" />
-                            <span>Secure checkout – 14 days to cancel</span>
+                        {/* Details Chevron - Positioned Right */}
+                        <div className="absolute right-0 flex flex-col items-center">
+                          <div className={`p-1.5 rounded-full bg-green-600 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-180' : 'rotate-0'}`}>
+                            <ChevronUp className="w-4 h-4 text-white" />
                           </div>
+                          <span className="text-[10px] font-medium text-green-600 mt-0.5">Details</span>
+                        </div>
+                      </button>
+                      
+                      {/* Expandable Content */}
+                      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSummaryExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+                        <div className="flex items-center justify-center gap-4 py-2 border-t border-gray-100">
+                          {/* Trustpilot */}
+                          <a 
+                            href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="hover:opacity-80 transition-opacity"
+                          >
+                            <TrustpilotHeader className="h-3 scale-[0.5] origin-center" />
+                          </a>
+                          {/* Year Free Badge */}
+                          {paymentType !== '12months' && (
+                            <span className="text-gray-900 text-xs font-medium">
+                              {paymentType === '24months' && 'Year 2 FREE 🎉'}
+                              {paymentType === '36months' && 'Years 2 & 3 FREE 🎉'}
+                            </span>
+                          )}
                         </div>
                       </div>
                       
-                      {/* Show/Hide Details Toggle */}
-                      <button
-                        onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
-                        className="w-full flex items-center justify-center gap-1 text-xs text-[#333333] py-2 mt-2 border-t border-[#E5E5E5]"
-                        aria-expanded={isSummaryExpanded}
+                      {/* CTA Button - Always visible */}
+                      <Button
+                        onClick={handleSelectPlan}
+                        size="lg"
+                        className="w-full text-base font-semibold py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl"
                       >
-                        <span>{isSummaryExpanded ? 'Hide details' : 'Show details'}</span>
-                        <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isSummaryExpanded ? 'rotate-0' : 'rotate-180'}`} />
-                      </button>
-
-                      {/* Expanded Content */}
-                      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSummaryExpanded ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                        <div className="px-4 py-4 space-y-4 bg-white border-t border-[#E5E5E5]">
-                          {/* Main headline: £X/month for 12 months */}
-                          <div className="text-center">
-                            <p className="text-lg font-bold text-[#000000]">
-                              £{displayMonthlyPrice}/month for 12 months
-                            </p>
-                          </div>
-                          
-                          {/* Average per month */}
-                          <div className="text-center">
-                            <p className="text-sm text-[#555555]">
-                              <span className="font-semibold text-[#000000]">£{costPerMonthOfCover}/month</span> average
-                            </p>
-                          </div>
-                          
-                          {/* £0 in year 2 & year 3 */}
-                          {paymentType !== '12months' && (
-                            <p className="text-center text-sm font-semibold text-[#333333]">
-                              £0 in year {paymentType === '24months' ? '2' : '2 & year 3'}
-                            </p>
-                          )}
-                          
-                          {/* Total */}
-                          <p className="text-center text-sm text-[#333333]">
-                            Total: <span className="font-semibold text-[#000000]">£{payInFull}</span>
-                          </p>
-                          
-                          {/* Pay in Full Savings */}
-                          <div className="text-center pt-3 border-t border-[#E5E5E5]">
-                            <p className="text-sm text-[#333333]">
-                              Pay in full and <span className="font-semibold text-[#3A8F45]">save £{savings}</span>
-                            </p>
-                            <p className="text-sm text-[#333333]">
-                              <span className="font-bold text-[#000000]">£{payInFullPrice}</span> today <span className="text-[#777777]">(was £{payInFull})</span>
-                            </p>
-                          </div>
-                        </div>
+                        Continue to checkout
+                        <ArrowRight className="w-4 h-4 ml-2" strokeWidth={3} />
+                      </Button>
+                      <div className="flex items-center justify-center gap-1.5 text-[10px] text-gray-500">
+                        <Lock className="h-3 w-3" />
+                        <span>Secure checkout – 14 days to cancel</span>
                       </div>
                     </div>
                   );
                 })()}
 
-                {/* Desktop Layout - Monochrome 4-Section Design */}
+                {/* Desktop Layout - Clean 4-Section Card with Equal Spacing */}
                 {(() => {
+                  // Pay in full = monthly × 12
                   const payInFull = displayMonthlyPrice * 12;
-                  const coverMonths = paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36;
-                  const costPerMonthOfCover = calculateCPMWithGuardrail(payInFull, coverMonths, displayMonthlyPrice);
-                  const payInFullPrice = Math.round(payInFull * 0.9);
-                  const savings = payInFull - payInFullPrice;
-                  const coverYears = paymentType === '12months' ? '1' : paymentType === '24months' ? '2' : '3';
-                  
+                  const savings = getMarketingSavings(paymentType as PaymentPeriod);
+                  const wasPrice = payInFull + savings;
                   return (
-                    <div className="hidden md:flex md:items-center md:justify-between w-full gap-6">
+                    <div className="hidden md:flex md:items-stretch md:justify-between w-full bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                       
-                      {/* Far Left Section - Trustpilot + Cancel */}
-                      <div className="flex flex-col items-start gap-1.5 min-w-[140px] pr-6 border-r border-[#DDDDDD]">
+                      {/* SECTION 1: Trust & Reassurance */}
+                      <div className="flex flex-col items-center justify-center px-3 lg:px-6 py-4 border-r border-gray-100 min-w-fit">
                         <a 
                           href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 hover:opacity-70 transition-opacity"
+                          className="hover:opacity-80 transition-opacity"
                         >
-                          <img 
-                            src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" 
-                            alt="Trustpilot" 
-                            className="h-6 w-auto"
-                          />
+                          <TrustpilotHeader className="flex-shrink-0 scale-[0.7] origin-center" />
                         </a>
-                        <span className="text-xs text-[#777777]">14 days to cancel</span>
+                        <div className="text-xs text-gray-500 mt-1.5 whitespace-nowrap">12 easy payments</div>
                       </div>
-
-                      {/* Main Pricing Section (Centre-Left) */}
-                      <div className="flex flex-col items-start gap-0.5 px-6 border-r border-[#DDDDDD]">
-                        {/* Large headline: £X/month for 12 months */}
-                        <p className="text-xl font-bold text-[#000000]">
-                          £{displayMonthlyPrice}/month for 12 months
-                        </p>
-                        
-                        {/* Average price line */}
-                        <p className="text-sm text-[#333333]">
-                          <span className="font-semibold text-[#000000]">£{costPerMonthOfCover}/month</span> average
-                        </p>
-                        
-                        {/* £0 in year 2 & year 3 - for multi-year plans */}
+                      
+                      {/* SECTION 2: Price */}
+                      <div className="flex-1 flex flex-col items-center justify-center px-3 lg:px-6 py-4 border-r border-gray-100 text-center min-w-0">
+                        <div className="text-xl lg:text-2xl font-bold text-gray-900 whitespace-nowrap">
+                          Total: £{displayMonthlyPrice}/Month <span className="text-sm lg:text-base font-normal text-gray-600">– 0% APR</span>
+                        </div>
+                        <div className="text-xs lg:text-sm text-gray-500 mt-0.5 whitespace-nowrap">
+                          12 easy payments
+                        </div>
+                        <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm mt-0.5 flex-wrap justify-center">
+                          {savings > 0 && <span className="line-through text-red-500">£{wasPrice}</span>}
+                          <span className="font-bold text-green-600">£{payInFull}</span>
+                          {savings > 0 && <span className="text-gray-600 whitespace-nowrap">(Save £{savings})</span>}
+                          <span className="text-gray-700">– {paymentType === '12months' ? '1-Year' : paymentType === '24months' ? '2-Year' : '3-Year'} Cover</span>
+                        </div>
+                      </div>
+                      
+                      {/* SECTION 3: Cover & Free Years */}
+                      <div className="flex flex-col items-center justify-center px-3 lg:px-6 py-4 border-r border-gray-100 text-center min-w-fit">
                         {paymentType !== '12months' && (
-                          <p className="text-sm font-semibold text-[#333333]">
-                            £0 in year {paymentType === '24months' ? '2' : '2 & year 3'}
-                          </p>
+                          <span className="text-gray-900 text-xs lg:text-sm font-medium mb-1 whitespace-nowrap">
+                            {paymentType === '24months' && 'Year 2 FREE 🎉'}
+                            {paymentType === '36months' && 'Years 2 & 3 FREE 🎉'}
+                          </span>
                         )}
-                        
-                        {/* Total */}
-                        <p className="text-sm text-[#333333]">
-                          Total: <span className="font-semibold">£{payInFull}</span>
-                        </p>
+                        <span className="font-bold text-gray-900 text-sm lg:text-base whitespace-nowrap">
+                          {paymentType === '12months' && '1-Year Cover'}
+                          {paymentType === '24months' && '2-Year Cover'}
+                          {paymentType === '36months' && '3-Year Cover'}
+                        </span>
                       </div>
-
-                      {/* Pay in Full Section */}
-                      <div className="flex flex-col items-start gap-1 px-6 border-r border-[#DDDDDD]">
-                        <p className="text-sm text-[#333333]">
-                          Pay in full and <span className="font-semibold text-[#3A8F45]">save £{savings}</span>
-                        </p>
-                        <p className="text-sm text-[#333333]">
-                          <span className="font-semibold text-[#000000]">£{payInFullPrice}</span> today <span className="text-[#777777]">(was £{payInFull})</span>
-                        </p>
-                      </div>
-
-                      {/* Far Right CTA Section */}
-                      <div className="flex flex-col items-end gap-2 min-w-[180px]">
+                      
+                      {/* SECTION 4: CTA */}
+                      <div className="flex flex-col items-center justify-center px-3 lg:px-6 py-4 min-w-fit">
                         <Button
                           onClick={handleSelectPlan}
-                          className="bg-[#3A8F45] text-white font-semibold py-5 px-6 rounded-lg text-sm gap-2 border-none shadow-none animate-breathing"
+                          size="lg"
+                          className="text-base lg:text-lg font-semibold px-4 lg:px-8 py-3 lg:py-3.5 bg-green-600 hover:bg-green-700 hover:shadow-lg text-white rounded-xl whitespace-nowrap"
                         >
                           Continue to checkout
-                          <ArrowRight className="w-4 h-4 text-white" strokeWidth={2} />
+                          <ArrowRight className="w-4 lg:w-5 h-4 lg:h-5 ml-2" strokeWidth={3} />
                         </Button>
-                        <div className="flex items-center gap-1.5 text-xs text-[#777777]">
-                          <Lock className="w-3 h-3" />
-                          <span>Secure checkout – No hidden fees</span>
+                        <div className="flex items-center gap-1.5 mt-2 text-xs text-gray-500 whitespace-nowrap">
+                          <Lock className="h-3 w-3 flex-shrink-0" />
+                          <span>Secure checkout – 14 days to cancel</span>
                         </div>
                       </div>
                     </div>
@@ -3136,57 +3044,70 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 <span className="text-gray-600">Labour Rate:</span>
                 <span className="font-bold">£{selectedLabourRate}/hr</span>
               </div>
-              {(() => {
-                // Calculate all pricing values once
-                let calculatedMonthlyPrice: number;
-                let calculatedTotalCost: number;
-                const coverMonths = emailQuoteDuration === '12months' ? 12 : emailQuoteDuration === '24months' ? 24 : 36;
-                
-                if (emailQuoteDuration === paymentType) {
-                  calculatedMonthlyPrice = monthlyPrice;
-                  calculatedTotalCost = monthlyPrice * 12;
-                } else {
-                  const warrantyYears = emailQuoteDuration === '12months' ? 1 : emailQuoteDuration === '24months' ? 2 : 3;
-                  const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
-                  const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, emailQuoteDuration);
-                  const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
-                  
-                  const durationMonths = emailQuoteDuration === '12months' ? 12 : emailQuoteDuration === '24months' ? 24 : 36;
-                  const labourRateTotalAdj = calculateLabourRateAdjustment(selectedLabourRate, emailQuoteDuration as PaymentPeriod);
-                  const boostCost = calculateBoostAdjustment(boostAddon, emailQuoteDuration as PaymentPeriod);
-                  const addOnCost = calculateAddOnPrice(selectedProtectionAddOns, emailQuoteDuration, durationMonths);
-                  
-                  const total = adjustedBasePrice + labourRateTotalAdj + boostCost + addOnCost;
-                  calculatedMonthlyPrice = Math.floor(total / 12);
-                  calculatedTotalCost = calculatedMonthlyPrice * 12;
-                }
-                
-                const costPerMonthOfCover = calculateCPMWithGuardrail(calculatedTotalCost, coverMonths, calculatedMonthlyPrice);
-                
-                return (
-                  <>
-                    <div className="flex justify-between items-start border-t pt-2 mt-2">
-                      <span className="text-gray-600">Monthly Payment:</span>
-                      <div className="text-right">
-                        <span className="font-bold text-lg">£{calculatedMonthlyPrice}/month</span>
-                        <div className="text-xs text-gray-500">(12 interest-free payments)</div>
-                      </div>
-                    </div>
+              <div className="flex justify-between items-start border-t pt-2 mt-2">
+                <span className="text-gray-600">Total Monthly Payment:</span>
+                <div className="text-right">
+                  <span className="font-bold">
+                    £{(() => {
+                      // Use the same calculation as the main pricing
+                      // If email quote duration matches current paymentType, use current monthlyPrice
+                      if (emailQuoteDuration === paymentType) {
+                        return monthlyPrice;
+                      }
+                      
+                      // Otherwise calculate for the selected duration using centralized logic
+                      const warrantyYears = emailQuoteDuration === '12months' ? 1 : emailQuoteDuration === '24months' ? 2 : 3;
+                      const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
+                      const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, emailQuoteDuration);
+                      const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
+                      
+                      // Calculate labour rate adjustment for this duration
+                      const durationMonths = emailQuoteDuration === '12months' ? 12 : emailQuoteDuration === '24months' ? 24 : 36;
+                      const labourRateTotalAdj = calculateLabourRateAdjustment(selectedLabourRate, emailQuoteDuration as PaymentPeriod);
+                      
+                      // Calculate boost addon cost
+                      const boostCost = calculateBoostAdjustment(boostAddon, emailQuoteDuration as PaymentPeriod);
+                      
+                      // Calculate add-on price including transfer cover
+                      const addOnCost = calculateAddOnPrice(selectedProtectionAddOns, emailQuoteDuration, durationMonths);
+                      
+                      // Total price for this duration
+                      const total = adjustedBasePrice + labourRateTotalAdj + boostCost + addOnCost;
+                      
+                      // Monthly = floor(total / 12)
+                      return Math.floor(total / 12);
+                    })()}/month
+                  </span>
+                  <div className="text-xs text-gray-500">(12 easy payments)</div>
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Total Cost:</span>
+                <span className="font-bold text-green-600">
+                  £{(() => {
+                    // Use the same calculation as the main pricing
+                    if (emailQuoteDuration === paymentType) {
+                      return monthlyPrice * 12;
+                    }
                     
-                    {emailQuoteDuration !== '12months' && (
-                      <div className="flex justify-between items-center bg-[#F0FDF4] rounded-lg px-3 py-2 mt-2">
-                        <span className="text-sm text-[#166534]">Works out to just</span>
-                        <span className="font-semibold text-[#166534]">£{costPerMonthOfCover}/month of cover</span>
-                      </div>
-                    )}
+                    // Otherwise calculate for the selected duration
+                    const warrantyYears = emailQuoteDuration === '12months' ? 1 : emailQuoteDuration === '24months' ? 2 : 3;
+                    const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
+                    const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, emailQuoteDuration);
+                    const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
                     
-                    <div className="flex justify-between items-center mt-2">
-                      <span className="text-gray-600">Total Cost:</span>
-                      <span className="font-bold text-[#3A8F45]">£{calculatedTotalCost}</span>
-                    </div>
-                  </>
-                );
-              })()}
+                    const durationMonths = emailQuoteDuration === '12months' ? 12 : emailQuoteDuration === '24months' ? 24 : 36;
+                    const labourRateTotalAdj = calculateLabourRateAdjustment(selectedLabourRate, emailQuoteDuration as PaymentPeriod);
+                    const boostCost = calculateBoostAdjustment(boostAddon, emailQuoteDuration as PaymentPeriod);
+                    const addOnCost = calculateAddOnPrice(selectedProtectionAddOns, emailQuoteDuration, durationMonths);
+                    
+                    const total = adjustedBasePrice + labourRateTotalAdj + boostCost + addOnCost;
+                    
+                    // Total = floor(total / 12) * 12
+                    return Math.floor(total / 12) * 12;
+                  })()}
+                </span>
+              </div>
             </div>
             
             {/* Email Input */}
