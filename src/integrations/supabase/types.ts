@@ -1459,6 +1459,7 @@ export type Database = {
           mot_fee: boolean | null
           mot_repair: boolean | null
           payment_amount: number | null
+          payment_confirmed_by: string | null
           payment_currency: string | null
           payment_type: string
           payment_verified: boolean | null
@@ -1470,6 +1471,7 @@ export type Database = {
           policy_end_date: string
           policy_number: string
           policy_start_date: string
+          quote_sent_by: string | null
           seasonal_bonus_months: number | null
           status: string
           stripe_session_id: string | null
@@ -1515,6 +1517,7 @@ export type Database = {
           mot_fee?: boolean | null
           mot_repair?: boolean | null
           payment_amount?: number | null
+          payment_confirmed_by?: string | null
           payment_currency?: string | null
           payment_type: string
           payment_verified?: boolean | null
@@ -1526,6 +1529,7 @@ export type Database = {
           policy_end_date: string
           policy_number: string
           policy_start_date?: string
+          quote_sent_by?: string | null
           seasonal_bonus_months?: number | null
           status?: string
           stripe_session_id?: string | null
@@ -1571,6 +1575,7 @@ export type Database = {
           mot_fee?: boolean | null
           mot_repair?: boolean | null
           payment_amount?: number | null
+          payment_confirmed_by?: string | null
           payment_currency?: string | null
           payment_type?: string
           payment_verified?: boolean | null
@@ -1582,6 +1587,7 @@ export type Database = {
           policy_end_date?: string
           policy_number?: string
           policy_start_date?: string
+          quote_sent_by?: string | null
           seasonal_bonus_months?: number | null
           status?: string
           stripe_session_id?: string | null
@@ -1752,12 +1758,14 @@ export type Database = {
           mot_repair: boolean | null
           name: string
           original_amount: number | null
+          payment_confirmed_by: string | null
           payment_type: string | null
           payment_verified: boolean | null
           phone: string | null
           plan_type: string
           postcode: string | null
           purchase_source: string | null
+          quote_sent_by: string | null
           registration_plate: string | null
           review_email_sent_at: string | null
           seasonal_bonus_months: number | null
@@ -1825,12 +1833,14 @@ export type Database = {
           mot_repair?: boolean | null
           name: string
           original_amount?: number | null
+          payment_confirmed_by?: string | null
           payment_type?: string | null
           payment_verified?: boolean | null
           phone?: string | null
           plan_type: string
           postcode?: string | null
           purchase_source?: string | null
+          quote_sent_by?: string | null
           registration_plate?: string | null
           review_email_sent_at?: string | null
           seasonal_bonus_months?: number | null
@@ -1898,12 +1908,14 @@ export type Database = {
           mot_repair?: boolean | null
           name?: string
           original_amount?: number | null
+          payment_confirmed_by?: string | null
           payment_type?: string | null
           payment_verified?: boolean | null
           phone?: string | null
           plan_type?: string
           postcode?: string | null
           purchase_source?: string | null
+          quote_sent_by?: string | null
           registration_plate?: string | null
           review_email_sent_at?: string | null
           seasonal_bonus_months?: number | null
@@ -1935,6 +1947,20 @@ export type Database = {
           {
             foreignKeyName: "customers_assigned_to_fkey"
             columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_payment_confirmed_by_fkey"
+            columns: ["payment_confirmed_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_quote_sent_by_fkey"
+            columns: ["quote_sent_by"]
             isOneToOne: false
             referencedRelation: "admin_users"
             referencedColumns: ["id"]

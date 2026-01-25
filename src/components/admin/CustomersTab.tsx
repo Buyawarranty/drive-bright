@@ -758,7 +758,10 @@ export const CustomersTab = () => {
           is_manual_entry: true,
           payment_verified: false,
           // Purchase source tracking
-          purchase_source: 'external' as const
+          purchase_source: 'external' as const,
+          // Sales agent attribution
+          quote_sent_by: null,
+          payment_confirmed_by: null
         }));
         
         directData = [...directData, ...orphanedAsCustomers];
