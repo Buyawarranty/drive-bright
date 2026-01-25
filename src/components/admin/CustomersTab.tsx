@@ -2479,6 +2479,7 @@ export const CustomersTab = () => {
               <TableHead className="text-center bg-green-50">Trustpilot</TableHead>
               <TableHead className="text-center bg-blue-50">Google</TableHead>
               <TableHead>Labour Rate</TableHead>
+              <TableHead>Mileage</TableHead>
               <TableHead>Tags</TableHead>
               <TableHead>Ref</TableHead>
               <TableHead>Email Status</TableHead>
@@ -2491,7 +2492,7 @@ export const CustomersTab = () => {
           <TableBody>
             {filteredCustomers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={32} className="text-center py-8">
+                <TableCell colSpan={33} className="text-center py-8">
                   <div className="space-y-4">
                     <AlertCircle className="h-12 w-12 text-gray-400 mx-auto" />
                     <div>
@@ -3898,7 +3899,10 @@ Please log in and change your password after first login.`;
                            {customer.manual_upgrade_at && (
                              <span title="Manually upgraded"><Sparkles className="h-3 w-3 text-amber-500" /></span>
                            )}
-                         </div>
+                          </div>
+                        </TableCell>
+                       <TableCell className="text-center">
+                         {customer.mileage || 'N/A'}
                        </TableCell>
                        <TableCell>
                          <CustomerTagsDisplay customerId={customer.id} maxVisible={2} />
