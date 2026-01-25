@@ -418,12 +418,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
           currentMonthlyPrice={currentMonthlyPrice}
         />
 
-        <ExtrasSelector
-          selectedAddOns={selectedProtectionAddOns}
-          onAddOnChange={handleAddOnChange}
-          paymentType={paymentType || '24months'}
-          currentMonthlyPrice={currentMonthlyPrice}
-        />
+        {/* Add-ons section removed - auto-included add-ons for 24/36 month plans are handled by getAutoIncludedAddOns in addOnsUtils.ts */}
 
         <CoverageTransparency
           platinumDocUrl={platinumDocUrl}
