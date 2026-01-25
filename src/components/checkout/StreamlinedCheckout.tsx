@@ -895,27 +895,43 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   <p className="text-xs text-muted-foreground">Includes your comprehensive {formatPlanName()} cover.</p>
                 </div>
 
-                {/* Two Column Pricing Layout */}
-                <div className="grid grid-cols-2 gap-4 sm:gap-6">
-                  {/* Monthly Column */}
-                  <div className="space-y-0.5">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Monthly</p>
+                {/* Two Column Pricing Layout - Minimalist Card Style */}
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  {/* Pay Monthly Card */}
+                  <div 
+                    className="p-3 sm:p-4 rounded-lg space-y-1"
+                    style={{ 
+                      backgroundColor: '#FFF5EC', 
+                      border: '1px solid #F6C28B' 
+                    }}
+                  >
+                    <p className="text-xs font-semibold text-foreground">Pay monthly</p>
                     <div className="flex items-baseline gap-1 flex-wrap">
                       <span className="text-2xl sm:text-3xl font-bold text-foreground">£{monthlyPrice}</span>
                       <span className="text-sm text-muted-foreground">/mo</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">Total £{bumperTotalPrice}</p>
-                    <p className="text-xs text-muted-foreground">12 payments • 0% APR</p>
+                    <p className="text-xs text-gray-500">
+                      £{monthlyPrice}/month · Total £{bumperTotalPrice} · 12 payments only · 0% APR
+                    </p>
                   </div>
 
-                  {/* Pay in Full Column */}
-                  <div className="space-y-0.5 text-right">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pay in Full</p>
-                    <div className="flex items-baseline gap-2 justify-end flex-wrap">
+                  {/* Pay in Full Card */}
+                  <div 
+                    className="p-3 sm:p-4 rounded-lg space-y-1"
+                    style={{ 
+                      backgroundColor: '#F4FFF5', 
+                      border: '1px solid #6BBF73' 
+                    }}
+                  >
+                    <p className="text-xs font-semibold text-foreground">Pay in full</p>
+                    <div className="flex items-baseline gap-1 flex-wrap">
                       <span className="text-2xl sm:text-3xl font-bold text-foreground">£{stripeTotalPrice}</span>
+                      <span className="text-xs sm:text-sm text-muted-foreground ml-1">– one-time payment</span>
                     </div>
-                    <p className="text-xs text-muted-foreground line-through">Was £{bumperTotalPrice}</p>
-                    <p className="text-xs font-medium text-[hsl(var(--success))]">Save £{savings} (10% off)</p>
+                    <p className="text-xs text-gray-500 line-through">Was £{bumperTotalPrice}</p>
+                    <p className="text-xs font-medium" style={{ color: '#28A745' }}>
+                      Save £{savings} (10% off)
+                    </p>
                   </div>
                 </div>
               </CardContent>
