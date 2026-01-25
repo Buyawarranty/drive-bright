@@ -68,6 +68,8 @@ interface Customer {
   postcode: string | null;
   // Purchase source tracking
   purchase_source?: string | null;
+  bumper_order_id?: string | null;
+  stripe_session_id?: string | null;
   // Add-ons
   tyre_cover?: boolean | null;
   wear_tear?: boolean | null;
@@ -782,7 +784,11 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                     
                     {/* Purchase Source */}
                     <TableCell className="bg-purple-50/30">
-                      <PurchaseSourceBadge source={customer.purchase_source} />
+                      <PurchaseSourceBadge 
+                        source={customer.purchase_source} 
+                        bumperOrderId={customer.bumper_order_id}
+                        stripeSessionId={customer.stripe_session_id}
+                      />
                     </TableCell>
                     
                     {/* Warranties2000 */}
