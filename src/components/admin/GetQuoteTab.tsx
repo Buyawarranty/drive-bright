@@ -1253,7 +1253,7 @@ Questions? Call 0330 229 5040`;
       const { data: { user } } = await supabase.auth.getUser();
       const adminUserId = user?.id;
       
-      // Get the admin_users.id for assigning customer to this agent
+      // Get the admin_users.id for assigning customer to this agent (confirming agent)
       let adminUserRecordId: string | null = null;
       if (adminUserId) {
         const { data: adminUser } = await supabase
@@ -1262,6 +1262,29 @@ Questions? Call 0330 229 5040`;
           .eq('user_id', adminUserId)
           .maybeSingle();
         adminUserRecordId = adminUser?.id || null;
+      }
+      
+      // Get the original quote sender from live_quotes if a quote link exists
+      let quoteSentByUserId: string | null = null;
+      if (quoteLink) {
+        const accessToken = quoteLink.split('/quote/')[1];
+        if (accessToken) {
+          const { data: originalQuote } = await supabase
+            .from('live_quotes')
+            .select('created_by')
+            .eq('access_token', accessToken)
+            .maybeSingle();
+          
+          if (originalQuote?.created_by) {
+            // Get the admin_users.id for the quote sender
+            const { data: quoteSenderAdmin } = await supabase
+              .from('admin_users')
+              .select('id')
+              .eq('user_id', originalQuote.created_by)
+              .maybeSingle();
+            quoteSentByUserId = quoteSenderAdmin?.id || null;
+          }
+        }
       }
 
       // === ATOMIC TRANSACTION START ===
@@ -1308,6 +1331,9 @@ Questions? Call 0330 229 5040`;
         vehicle_rental: getAutoIncludedAddOns(paymentType).includes('rental'),
         // Assign customer to the confirming sales agent
         assigned_to: adminUserRecordId,
+        // Sales agent attribution for commission tracking
+        quote_sent_by: quoteSentByUserId,
+        payment_confirmed_by: adminUserRecordId,
       };
       
       // Include address if provided (not skipped)
@@ -1372,6 +1398,9 @@ Questions? Call 0330 229 5040`;
         // Include additional notes and bonus months from quote
         additional_notes: additionalNotes || null,
         seasonal_bonus_months: freeExtendedCover === '6months' ? 6 : freeExtendedCover === '3months' ? 3 : 0,
+        // Sales agent attribution for commission tracking
+        quote_sent_by: quoteSentByUserId,
+        payment_confirmed_by: adminUserRecordId,
       };
       
       // Include address in policy if provided
