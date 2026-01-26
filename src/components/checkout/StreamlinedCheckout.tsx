@@ -666,10 +666,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       const firstName = customerData.first_name?.trim() || 'Customer';
       const lastName = customerData.last_name?.trim() || firstName;
       
+      // CRITICAL: Override vehicleData.mileage with user's actual input from Step 4
+      // The original vehicleData.mileage contains the representative value (100000) from Step 1
+      const vehicleDataWithActualMileage = {
+        ...vehicleData,
+        mileage: customerData.mileage || vehicleData.mileage
+      };
+      
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-bumper-checkout', {
         body: {
           planId,
-          vehicleData,
+          vehicleData: vehicleDataWithActualMileage,
           paymentType,
           voluntaryExcess: updatedPricingData.voluntaryExcess,
           claimLimit: updatedPricingData.claimLimit || 1250,
@@ -746,10 +753,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       const firstName = customerData.first_name?.trim() || '';
       const lastName = customerData.last_name?.trim() || '';
       
+      // CRITICAL: Override vehicleData.mileage with user's actual input from Step 4
+      // The original vehicleData.mileage contains the representative value (100000) from Step 1
+      const vehicleDataWithActualMileage = {
+        ...vehicleData,
+        mileage: customerData.mileage || vehicleData.mileage
+      };
+      
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
         body: {
           planId,
-          vehicleData,
+          vehicleData: vehicleDataWithActualMileage,
           paymentType,
           voluntaryExcess: updatedPricingData.voluntaryExcess,
           claimLimit: updatedPricingData.claimLimit || 1250,
