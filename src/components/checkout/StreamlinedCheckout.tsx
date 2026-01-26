@@ -358,6 +358,38 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     // Ensure loading is always false on mount - immediate
     setIsLoading(false);
     
+    const restoreJourneyState = () => {
+      try {
+        const savedState = localStorage.getItem('warranty_journey_state');
+        if (savedState) {
+          const parsed = JSON.parse(savedState);
+          console.log('📱 Step 4: Restoring journey state from localStorage', parsed);
+          
+          // Check if the saved state is recent (within 30 minutes)
+          const stateAge = Date.now() - (parsed.timestamp || 0);
+          if (stateAge < 30 * 60 * 1000) {
+            // Restore customer data if available
+            if (parsed.customerData) {
+              setCustomerData(parsed.customerData);
+            }
+            // Restore payment type if available
+            if (parsed.paymentType) {
+              setSelectedPayment(parsed.paymentType === 'monthly' ? 'monthly' : 'full');
+            }
+            // Restore discount codes if available
+            if (parsed.appliedDiscountCodes && Array.isArray(parsed.appliedDiscountCodes)) {
+              setAppliedDiscountCodes(parsed.appliedDiscountCodes);
+            }
+            console.log('✅ Step 4: Journey state restored successfully');
+          } else {
+            console.log('⚠️ Step 4: Saved state is too old, skipping restoration');
+          }
+        }
+      } catch (error) {
+        console.error('❌ Step 4: Error restoring journey state:', error);
+      }
+    };
+    
     const handlePageShow = (event: PageTransitionEvent) => {
       console.log('📱 Step 4: pageshow event, persisted:', event.persisted);
       
@@ -367,6 +399,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       // If page was restored from bfcache (e.g., back from Stripe)
       if (event.persisted) {
         console.log('📱 Step 4: Page restored from bfcache, resetting all states');
+        
+        // Restore journey state from localStorage FIRST
+        restoreJourneyState();
         
         // Use requestAnimationFrame for smoother state restoration
         requestAnimationFrame(() => {
@@ -388,6 +423,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         console.log('📱 Step 4: Page visible again, resetting loading');
         setIsLoading(false);
         setPaymentError('');
+        // Also restore state on visibility change (catches some edge cases)
+        restoreJourneyState();
       }
     };
     
