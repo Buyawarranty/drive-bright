@@ -1004,6 +1004,7 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                     <option value="">Select payment source...</option>
                     <option value="stripe_dashboard">Stripe Dashboard</option>
                     <option value="bumper_portal">Bumper Portal</option>
+                    <option value="payment_assist">Payment Assist</option>
                     <option value="bank_transfer">Bank Transfer</option>
                     <option value="phone_card">Phone Card Payment</option>
                     <option value="dealer_portal">Dealer Portal</option>
