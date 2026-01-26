@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import WarrantyCart from '@/components/WarrantyCart';
@@ -7,10 +7,14 @@ import { useCart, CartItem } from '@/contexts/CartContext';
 import { SEOHead } from '@/components/SEOHead';
 import { BackNavigationConfirmDialog } from '@/components/BackNavigationConfirmDialog';
 import { useMobileBackNavigation } from '@/hooks/useMobileBackNavigation';
+import { Loader2 } from 'lucide-react';
 
 const Cart: React.FC = () => {
   const navigate = useNavigate();
   const { items } = useCart();
+  const [isRestoringFromPayment, setIsRestoringFromPayment] = useState(false);
+  const restorationAttemptedRef = useRef(false);
+  
   const [showCheckout, setShowCheckout] = useState(() => {
     try {
       // Check if returning from payment - restore checkout view
@@ -53,8 +57,34 @@ const Cart: React.FC = () => {
     onShowConfirmDialog: () => setShowBackConfirmDialog(true)
   });
 
+  // Handle bfcache restoration - CRITICAL for returning from Stripe
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        console.log('📱 Cart: Page restored from bfcache');
+        setIsRestoringFromPayment(false);
+        restorationAttemptedRef.current = false;
+      }
+    };
+    
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('📱 Cart: Page visible again');
+        setIsRestoringFromPayment(false);
+      }
+    };
+    
+    window.addEventListener('pageshow', handlePageShow as EventListener);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow as EventListener);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   // Clear checkout flag when component unmounts
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       try {
         sessionStorage.removeItem('wasInCheckout');
@@ -105,9 +135,36 @@ const Cart: React.FC = () => {
   };
 
   if (showCheckout) {
-    // Additional guard: Don't show checkout if cart is empty
+    // Show brief loading state while cart is being restored from localStorage
+    // This prevents the "Cart Empty" error when returning from Stripe
     if (items.length === 0) {
-      console.error('❌ Checkout view with empty cart - redirecting back');
+      // Check if cart should have items (from localStorage)
+      let hasStoredItems = false;
+      try {
+        const savedCart = localStorage.getItem('warrantyCart');
+        if (savedCart) {
+          const parsed = JSON.parse(savedCart);
+          hasStoredItems = parsed && parsed.length > 0;
+        }
+      } catch (e) {
+        console.error('❌ Error checking stored cart:', e);
+      }
+      
+      // If localStorage has items but React state doesn't yet, show loading
+      if (hasStoredItems) {
+        console.log('📱 Cart: Waiting for cart restoration...');
+        return (
+          <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-gray-600">Restoring your cart...</p>
+            </div>
+          </div>
+        );
+      }
+      
+      // Actually empty - redirect back
+      console.error('❌ Checkout view with genuinely empty cart - redirecting back');
       setShowCheckout(false);
       return null;
     }
