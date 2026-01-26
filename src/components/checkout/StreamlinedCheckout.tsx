@@ -763,6 +763,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       }
 
       if (checkoutData?.url) {
+        // Save journey state for recovery when returning from Bumper
         localStorage.setItem('warranty_journey_state', JSON.stringify({
           formData: pricingData,
           vehicleData,
@@ -772,6 +773,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           appliedDiscountCodes,
           timestamp: Date.now()
         }));
+        
+        // CRITICAL: Also save the raw data that Index.tsx reads for recovery
+        // Save in raw format (not timestamped) for reliable bfcache recovery
+        localStorage.setItem('buyawarranty_vehicleData', JSON.stringify(vehicleData));
+        localStorage.setItem('buyawarranty_selectedPlan', JSON.stringify({
+          id: planId,
+          name: planName,
+          paymentType,
+          pricingData: updatedPricingData
+        }));
+        
         window.location.href = checkoutData.url;
       } else {
         toast.error('Unable to process. Please try again.');
@@ -841,6 +853,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       }
 
       if (checkoutData?.url) {
+        // Save journey state for recovery when returning from Stripe
         localStorage.setItem('warranty_journey_state', JSON.stringify({
           formData: pricingData,
           vehicleData,
@@ -850,6 +863,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           appliedDiscountCodes,
           timestamp: Date.now()
         }));
+        
+        // CRITICAL: Also save the raw data that Index.tsx reads for recovery
+        // Save in raw format (not timestamped) for reliable bfcache recovery
+        localStorage.setItem('buyawarranty_vehicleData', JSON.stringify(vehicleData));
+        localStorage.setItem('buyawarranty_selectedPlan', JSON.stringify({
+          id: planId,
+          name: planName,
+          paymentType,
+          pricingData: updatedPricingData
+        }));
+        
         window.location.href = checkoutData.url;
       } else {
         toast.error('Unable to process. Please try again.');
