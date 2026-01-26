@@ -110,8 +110,16 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
               <span className="text-lg text-gray-600">– 0% APR</span>
             </div>
             
-            {/* 12 Payments - Single mention */}
-            <span className="text-sm text-gray-600">Averages £{averageCostPerMonth}/month</span>
+            {/* Approx cost per month for multi-year plans */}
+            {paymentPeriod === '12months' && (
+              <span className="text-sm text-gray-600">12 easy payments</span>
+            )}
+            {paymentPeriod === '24months' && (
+              <span className="text-sm text-gray-600">Approx. £{Math.floor(monthlyPrice / 2)}/month over 2 years</span>
+            )}
+            {paymentPeriod === '36months' && (
+              <span className="text-sm text-gray-600">Approx. £{Math.floor(monthlyPrice / 3)}/month over 3 years</span>
+            )}
             
             {/* Pay in full with savings */}
             <div className="flex items-center gap-2 mt-1">
