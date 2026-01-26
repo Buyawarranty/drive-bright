@@ -1832,7 +1832,7 @@ Questions? Call 0330 229 5040`;
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Customer Info */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label>Customer Name <span className="text-red-500">*</span></Label>
                     <Input
@@ -1873,6 +1873,16 @@ Questions? Call 0330 229 5040`;
                         <AlertCircle className="w-3 h-3" /> Valid email address is required
                       </p>
                     )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Customer Phone</Label>
+                    <Input
+                      type="tel"
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      placeholder="07xxx xxxxxx"
+                      className="bg-blue-50 border-blue-200 focus:border-blue-400"
+                    />
                   </div>
                 </div>
 
