@@ -98,6 +98,14 @@ export const PurchaseSourceBadge: React.FC<PurchaseSourceBadgeProps> = ({
           className: 'bg-cyan-100 text-cyan-800 hover:bg-cyan-100 border-cyan-200',
           tooltip: 'Dealer portal payment'
         };
+      case 'payment_assist':
+        return {
+          label: 'Payment Assist',
+          icon: CreditCard,
+          variant: 'default' as const,
+          className: 'bg-pink-100 text-pink-800 hover:bg-pink-100 border-pink-200',
+          tooltip: 'Payment Assist finance'
+        };
       case 'other':
         return {
           label: 'Other',
