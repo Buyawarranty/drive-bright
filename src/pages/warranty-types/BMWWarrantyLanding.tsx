@@ -677,21 +677,21 @@ const BMWWarrantyLanding: React.FC = () => {
                     setSelectedModel(model);
                     scrollToQuoteForm();
                   }}
-                  className={`group bg-white rounded-xl p-5 text-center border-2 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg ${
+                  className={`group bg-brand-orange rounded-xl p-5 text-center border-2 border-brand-orange transition-all duration-200 hover:scale-[1.02] hover:shadow-lg ${
                     selectedModel === model
-                      ? 'border-brand-orange shadow-md bg-orange-50'
-                      : 'border-gray-100 hover:border-brand-orange'
+                      ? 'ring-2 ring-offset-2 ring-brand-orange shadow-md'
+                      : 'hover:bg-orange-600'
                   }`}
                   aria-label={`BMW ${model}, chassis codes ${generations.join(', ')}`}
                 >
                   {/* Model Icon */}
-                  <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center group-hover:bg-brand-orange/10 transition-colors">
-                    <Car className="w-6 h-6 text-gray-600 group-hover:text-brand-orange transition-colors" />
+                  <div className="w-12 h-12 mx-auto mb-3 bg-white/20 rounded-full flex items-center justify-center">
+                    <Car className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-brand-orange transition-colors">
+                  <h3 className="text-lg font-bold text-white mb-1">
                     BMW {model}
                   </h3>
-                  <p className="text-xs text-gray-400 font-mono">
+                  <p className="text-xs text-white/80 font-mono">
                     {generations.join(' • ')}
                   </p>
                 </button>
@@ -1024,26 +1024,26 @@ const BMWWarrantyLanding: React.FC = () => {
         </section>
 
         {/* Final CTA Section */}
-        <section className="py-16 bg-gradient-to-br from-brand-orange to-orange-600 text-white relative overflow-hidden">
+        <section className="py-16 bg-gray-100 relative overflow-hidden">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-gray-900">
               Ready to Protect Your BMW?
             </h2>
-            <p className="text-xl mb-8 opacity-90">
+            <p className="text-xl mb-8 text-gray-700">
               Get an instant quote and find the perfect warranty for your BMW today.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
                 onClick={scrollToQuoteForm}
-                className="bg-white text-brand-orange hover:bg-gray-100 font-bold text-lg px-8"
+                className="bg-brand-orange text-white hover:bg-brand-orange/90 font-bold text-lg px-8"
               >
                 Get My Instant Quote <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
               <Button
                 size="lg"
                 variant="outline"
-                className="border-2 border-white text-white hover:bg-white/10 font-bold text-lg px-8"
+                className="border-2 border-gray-900 text-gray-900 hover:bg-gray-200 font-bold text-lg px-8"
                 asChild
               >
                 <a href="tel:08009179270">
@@ -1052,7 +1052,7 @@ const BMWWarrantyLanding: React.FC = () => {
                 </a>
               </Button>
             </div>
-            <p className="text-sm mt-8 opacity-75">
+            <p className="text-sm mt-8 text-gray-500">
               Buy A Warranty arranges and administers warranty plans from trusted providers.<br />
               Not affiliated with BMW AG or BMW UK. Terms apply.
             </p>
