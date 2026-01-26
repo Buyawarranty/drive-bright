@@ -1632,6 +1632,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <span className="text-sm font-bold text-gray-400">(12 easy payments)</span>
                     </div>
                     
+                    {/* Equivalent cost per month of cover - shown for all plans */}
+                    <p className="text-sm font-bold text-gray-500 mt-1">
+                      (Equivalent to £{(totalPriceWithAdjustments / (durationId === '12months' ? 12 : durationId === '24months' ? 24 : 36)).toFixed(2)} per month of cover)
+                    </p>
+                    
                     {/* Free year benefit line with tick */}
                     {durationId === '24months' && (
                       <div className="flex items-center gap-1.5 mt-2">
