@@ -1635,7 +1635,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     {/* Equivalent cost per month of cover - shown only for multi-year plans */}
                     {(durationId === '24months' || durationId === '36months') && (
                       <p className="text-sm font-bold text-gray-500 mt-1">
-                        Approx. £{Math.floor(totalPriceWithAdjustments / (durationId === '24months' ? 24 : 36))}/month
+                        Approx. £{Math.floor(displayedMonthlyPrice / (durationId === '24months' ? 2 : 3))}/month
                       </p>
                     )}
                     
