@@ -922,9 +922,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <p className="text-xs font-semibold text-foreground">Pay monthly</p>
                     <div className="flex items-baseline gap-1 flex-wrap">
                       <span className="text-2xl sm:text-3xl font-bold text-foreground">£{monthlyPrice}</span>
-                      <span className="text-sm text-muted-foreground">/mo</span>
+                      <span className="text-sm text-foreground">/mo</span>
                     </div>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-foreground">
                       £{monthlyPrice}/month · Total £{bumperTotalPrice} · 12 payments only · 0% APR
                     </p>
                   </div>
@@ -940,9 +940,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <p className="text-xs font-semibold text-foreground">Pay in full</p>
                     <div className="flex items-baseline gap-1 flex-wrap">
                       <span className="text-2xl sm:text-3xl font-bold text-foreground">£{stripeTotalPrice}</span>
-                      <span className="text-xs sm:text-sm text-muted-foreground ml-1">– one-time payment</span>
+                      <span className="text-xs sm:text-sm text-foreground ml-1">– one-time payment</span>
                     </div>
-                    <p className="text-xs text-gray-500 line-through">Was £{bumperTotalPrice}</p>
+                    <p className="text-xs text-foreground line-through">Was £{bumperTotalPrice}</p>
                     <p className="text-xs font-medium" style={{ color: '#28A745' }}>
                       Save £{savings} (10% off)
                     </p>
