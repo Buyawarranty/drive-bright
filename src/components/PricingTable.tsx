@@ -2940,7 +2940,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                         >
                           <TrustpilotHeader className="flex-shrink-0 scale-[0.7] origin-center" />
                         </a>
-                        <div className="text-xs text-gray-500 mt-1.5 whitespace-nowrap">12 easy payments</div>
+                        <div className="text-xs text-gray-500 mt-1.5 whitespace-nowrap">Easy Claims</div>
                       </div>
                       
                       {/* SECTION 2: Price */}
@@ -2949,29 +2949,29 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           Total: £{displayMonthlyPrice}/Month <span className="text-sm lg:text-base font-normal text-gray-600">– 0% APR</span>
                         </div>
                         <div className="text-xs lg:text-sm text-gray-500 mt-0.5 whitespace-nowrap">
-                          12 easy payments
+                          Only 12 payments
                         </div>
                         <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm mt-0.5 flex-wrap justify-center">
                           {savings > 0 && <span className="line-through text-red-500">£{wasPrice}</span>}
                           <span className="font-bold text-green-600">£{payInFull}</span>
                           {savings > 0 && <span className="text-gray-600 whitespace-nowrap">(Save £{savings})</span>}
-                          <span className="text-gray-700">– {paymentType === '12months' ? '1-Year' : paymentType === '24months' ? '2-Year' : '3-Year'} Cover</span>
+                          <span className="text-gray-500">– One-time payment</span>
                         </div>
                       </div>
                       
                       {/* SECTION 3: Cover & Free Years */}
                       <div className="flex flex-col items-center justify-center px-3 lg:px-6 py-4 border-r border-gray-100 text-center min-w-fit">
-                        {paymentType !== '12months' && (
-                          <span className="text-gray-900 text-xs lg:text-sm font-medium mb-1 whitespace-nowrap">
-                            {paymentType === '24months' && 'Year 2 FREE 🎉'}
-                            {paymentType === '36months' && 'Years 2 & 3 FREE 🎉'}
-                          </span>
-                        )}
                         <span className="font-bold text-gray-900 text-sm lg:text-base whitespace-nowrap">
                           {paymentType === '12months' && '1-Year Cover'}
                           {paymentType === '24months' && '2-Year Cover'}
                           {paymentType === '36months' && '3-Year Cover'}
                         </span>
+                        {paymentType !== '12months' && (
+                          <span className="text-gray-900 text-xs lg:text-sm font-bold mt-1 whitespace-nowrap">
+                            {paymentType === '24months' && 'No payments in year 2'}
+                            {paymentType === '36months' && 'No payments in years 2 & 3'}
+                          </span>
+                        )}
                       </div>
                       
                       {/* SECTION 4: CTA */}
