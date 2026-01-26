@@ -57,6 +57,10 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
   // Pay in full = monthly × 12
   const payInFull = monthlyPrice * 12;
   
+  // Calculate average cost per month of cover
+  const coverMonths = paymentPeriod === '12months' ? 12 : paymentPeriod === '24months' ? 24 : 36;
+  const averageCostPerMonth = Math.floor(payInFull / coverMonths);
+  
   // Get marketing savings from centralized pricing matrix
   const savings = getMarketingSavings(paymentPeriod as PaymentPeriod);
   const wasPrice = payInFull + savings;
@@ -107,7 +111,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             </div>
             
             {/* 12 Payments - Single mention */}
-            <span className="text-sm text-gray-600">12 easy payments</span>
+            <span className="text-sm text-gray-600">Averages £{averageCostPerMonth}/month</span>
             
             {/* Pay in full with savings */}
             <div className="flex items-center gap-2 mt-1">
