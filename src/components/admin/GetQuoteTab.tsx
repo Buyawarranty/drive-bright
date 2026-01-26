@@ -7,9 +7,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText } from 'lucide-react';
 import { PaidOrdersTab } from './PaidOrdersTab';
 import CustomerLoginsTab from './CustomerLoginsTab';
+import CustomerPolicyUpdateTab from './CustomerPolicyUpdateTab';
 import { format, addDays, isBefore, startOfDay, isToday } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -1593,7 +1594,7 @@ Questions? Call 0330 229 5040`;
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4 h-auto">
+        <TabsList className="grid w-full grid-cols-5 h-auto">
           <TabsTrigger value="new" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
             <Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Quote / Confirm</span>
@@ -1615,6 +1616,11 @@ Questions? Call 0330 229 5040`;
             <KeyRound className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Customer Logins</span>
             <span className="sm:hidden">Logins</span>
+          </TabsTrigger>
+          <TabsTrigger value="update" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+            <Pencil className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Update</span>
+            <span className="sm:hidden">Update</span>
           </TabsTrigger>
         </TabsList>
 
@@ -3865,6 +3871,11 @@ Questions? Call 0330 229 5040`;
         {/* Customer Logins Tab */}
         <TabsContent value="logins" className="space-y-6 mt-6">
           <CustomerLoginsTab />
+        </TabsContent>
+
+        {/* Update Policy Tab */}
+        <TabsContent value="update" className="space-y-6 mt-6">
+          <CustomerPolicyUpdateTab />
         </TabsContent>
       </Tabs>
     </div>
