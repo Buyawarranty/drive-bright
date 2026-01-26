@@ -195,7 +195,15 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
                 <span className="text-2xl font-bold text-gray-900">£{monthlyPrice}/Month</span>
                 <span className="text-sm text-gray-600">– 0% APR</span>
               </div>
-              <p className="text-sm text-gray-900 mt-1">Only 12 payments</p>
+              {paymentPeriod === '12months' && (
+                <p className="text-sm text-gray-900 mt-1">12 easy payments</p>
+              )}
+              {paymentPeriod === '24months' && (
+                <p className="text-sm text-gray-900 mt-1">Approx. £{Math.floor(monthlyPrice / 2)}/month over 2 years</p>
+              )}
+              {paymentPeriod === '36months' && (
+                <p className="text-sm text-gray-900 mt-1">Approx. £{Math.floor(monthlyPrice / 3)}/month over 3 years</p>
+              )}
             </div>
 
             {/* Pay in full with savings */}
@@ -259,7 +267,15 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
                 <span className="text-xs text-gray-600">Total:</span>
                 <span className="text-xl font-bold text-gray-900">£{monthlyPrice}/mo</span>
               </div>
-              <p className="text-xs text-gray-900">Only 12 payments</p>
+              {paymentPeriod === '12months' && (
+                <p className="text-xs text-gray-900">12 easy payments</p>
+              )}
+              {paymentPeriod === '24months' && (
+                <p className="text-xs text-gray-900">Approx. £{Math.floor(monthlyPrice / 2)}/month over 2 years</p>
+              )}
+              {paymentPeriod === '36months' && (
+                <p className="text-xs text-gray-900">Approx. £{Math.floor(monthlyPrice / 3)}/month over 3 years</p>
+              )}
             </div>
 
             {/* Right: CTA Button */}
