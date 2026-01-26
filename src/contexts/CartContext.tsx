@@ -46,58 +46,111 @@ export const useCart = () => {
 };
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [items, setItems] = useState<CartItem[]>([]);
+  // CRITICAL: Initialize cart from localStorage SYNCHRONOUSLY to prevent race conditions
+  // when returning from external payment gateways (Stripe, Bumper)
+  const [items, setItems] = useState<CartItem[]>(() => {
+    try {
+      if (!isStorageAvailable('localStorage')) {
+        console.warn('⚠️ localStorage not available - cart will not persist');
+        return [];
+      }
+      
+      const savedCart = localStorage.getItem('warrantyCart');
+      if (savedCart) {
+        const parsedCart = JSON.parse(savedCart);
+        if (parsedCart && parsedCart.length > 0) {
+          console.log('✅ Cart initialized synchronously from localStorage:', parsedCart.length, 'items');
+          return parsedCart.map((item: any) => ({
+            ...item,
+            addedAt: new Date(item.addedAt)
+          }));
+        }
+      }
+      console.log('ℹ️ No cart data found in localStorage');
+      return [];
+    } catch (error) {
+      console.error('❌ Error loading cart:', error);
+      return [];
+    }
+  });
+  
+  const [isInitialized, setIsInitialized] = useState(true);
 
-  // Non-blocking cart restoration - runs in background without blocking app render
+  // Handle bfcache restoration - force re-read from localStorage when returning from payment gateway
   useEffect(() => {
-    // Wrap everything in try-catch to prevent app crashes
-    const safeRestore = async () => {
-      try {
-        if (!isStorageAvailable('localStorage')) {
-          console.warn('⚠️ localStorage not available - cart will not persist');
-          return;
-        }
-        
-        const savedCart = localStorage.getItem('warrantyCart');
-        if (savedCart) {
-          const parsedCart = JSON.parse(savedCart);
-          if (parsedCart && parsedCart.length > 0) {
-            console.log('✅ Cart restored from localStorage:', parsedCart.length, 'items');
-            setItems(parsedCart.map((item: any) => ({
-              ...item,
-              addedAt: new Date(item.addedAt)
-            })));
-          }
-        } else {
-          console.log('ℹ️ No cart data found in localStorage');
-        }
-      } catch (error) {
-        // Silently fail - don't crash the app
-        console.error('❌ Error loading cart:', error);
-        // Clear potentially corrupted cart data
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        console.log('📱 CartContext: Page restored from bfcache, re-syncing cart');
         try {
-          localStorage.removeItem('warrantyCart');
-        } catch (e) {
-          console.error('❌ Error clearing corrupted cart:', e);
+          const savedCart = localStorage.getItem('warrantyCart');
+          if (savedCart) {
+            const parsedCart = JSON.parse(savedCart);
+            if (parsedCart && parsedCart.length > 0) {
+              console.log('✅ Cart re-synced from bfcache:', parsedCart.length, 'items');
+              setItems(parsedCart.map((item: any) => ({
+                ...item,
+                addedAt: new Date(item.addedAt)
+              })));
+            }
+          }
+        } catch (error) {
+          console.error('❌ Error re-syncing cart from bfcache:', error);
         }
       }
     };
-
-    safeRestore();
+    
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Re-sync cart when page becomes visible (returning from Stripe)
+        try {
+          const savedCart = localStorage.getItem('warrantyCart');
+          if (savedCart) {
+            const parsedCart = JSON.parse(savedCart);
+            if (parsedCart && Array.isArray(parsedCart)) {
+              const mappedCart = parsedCart.map((item: any) => ({
+                ...item,
+                addedAt: new Date(item.addedAt)
+              }));
+              // Only update if different to prevent unnecessary re-renders
+              setItems(prev => {
+                if (JSON.stringify(prev.map(i => i.id)) !== JSON.stringify(mappedCart.map(i => i.id))) {
+                  console.log('✅ Cart re-synced on visibility change');
+                  return mappedCart;
+                }
+                return prev;
+              });
+            }
+          }
+        } catch (error) {
+          console.error('❌ Error re-syncing cart on visibility:', error);
+        }
+      }
+    };
+    
+    window.addEventListener('pageshow', handlePageShow as EventListener);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow as EventListener);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
-  // Save cart to localStorage whenever items change
+  // Save cart to localStorage whenever items change (skip if empty on first render to avoid clearing valid data)
   useEffect(() => {
     if (!isStorageAvailable('localStorage')) {
       return;
     }
     
     try {
-      localStorage.setItem('warrantyCart', JSON.stringify(items));
+      // Only save if we have items OR if this is not the initial empty state
+      if (items.length > 0 || isInitialized) {
+        localStorage.setItem('warrantyCart', JSON.stringify(items));
+      }
     } catch (error) {
       console.error('❌ Error saving cart to localStorage:', error);
     }
-  }, [items]);
+  }, [items, isInitialized]);
 
   const addToCart = (item: Omit<CartItem, 'id' | 'addedAt'>) => {
     // Check if registration plate already exists in cart
