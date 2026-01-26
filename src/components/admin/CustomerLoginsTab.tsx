@@ -583,25 +583,23 @@ const CustomerLoginsTab = () => {
                 type="email"
                 placeholder="customer@example.com"
                 value={searchEmail}
-                onChange={(e) => {
-                  setSearchEmail(e.target.value);
-                  setSearchRegPlate('');
-                }}
+                onChange={(e) => setSearchEmail(e.target.value)}
               />
             </div>
-            <div className="space-y-2">
-              <Label>Registration Plate</Label>
-              <Input
-                placeholder="AB12 CDE"
-                value={searchRegPlate}
-                onChange={(e) => {
-                  setSearchRegPlate(e.target.value.toUpperCase());
-                  setSearchEmail('');
-                }}
-              />
+            <div className="flex items-end gap-2">
+              <div className="flex-1 space-y-2">
+                <Label>Registration Plate</Label>
+                <Input
+                  placeholder="AB12 CDE"
+                  value={searchRegPlate}
+                  onChange={(e) => setSearchRegPlate(e.target.value.toUpperCase())}
+                />
+              </div>
+              <span className="text-sm text-muted-foreground pb-2.5">or</span>
             </div>
           </div>
-          <Button onClick={handleSearch} disabled={loading} className="w-full md:w-auto">
+          <p className="text-xs text-muted-foreground">Enter either email address OR registration plate to search</p>
+          <Button onClick={handleSearch} disabled={loading || (!searchEmail && !searchRegPlate)} className="w-full md:w-auto">
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -648,6 +646,28 @@ const CustomerLoginsTab = () => {
                 {policies.length > 0 && ` • ${policies.length} polic${policies.length === 1 ? 'y' : 'ies'}`}
               </CardDescription>
             </CardHeader>
+            <CardContent className="pt-0">
+              <Button 
+                variant="outline" 
+                className="gap-2 border-amber-500 text-amber-700 hover:bg-amber-50"
+                onClick={() => {
+                  // Store impersonation data
+                  sessionStorage.setItem('admin_impersonation', JSON.stringify({
+                    customerId: customer.id,
+                    customerEmail: customer.email,
+                    customerName: customer.name,
+                    isImpersonating: true,
+                    timestamp: Date.now()
+                  }));
+                  // Open customer dashboard in new tab
+                  window.open('/customer-dashboard', '_blank');
+                }}
+              >
+                <Eye className="w-4 h-4" />
+                View as Customer
+              </Button>
+              <p className="text-xs text-muted-foreground mt-2">Opens customer dashboard in new tab to see exactly what they see</p>
+            </CardContent>
           </Card>
 
           {/* Edit Customer Details */}
