@@ -57,6 +57,7 @@ export const PurchaseSourceBadge: React.FC<PurchaseSourceBadgeProps> = ({
           tooltip: 'External payment (manually confirmed)'
         };
       case 'bumper':
+      case 'bumper_portal':
         return {
           label: 'Bumper',
           icon: Banknote,
@@ -65,12 +66,45 @@ export const PurchaseSourceBadge: React.FC<PurchaseSourceBadgeProps> = ({
           tooltip: 'Bumper finance payment'
         };
       case 'stripe':
+      case 'stripe_dashboard':
         return {
           label: 'Stripe',
           icon: CreditCard,
           variant: 'default' as const,
           className: 'bg-indigo-100 text-indigo-800 hover:bg-indigo-100 border-indigo-200',
           tooltip: 'Stripe card payment'
+        };
+      case 'bank_transfer':
+        return {
+          label: 'Bank Transfer',
+          icon: Banknote,
+          variant: 'default' as const,
+          className: 'bg-teal-100 text-teal-800 hover:bg-teal-100 border-teal-200',
+          tooltip: 'Bank transfer payment'
+        };
+      case 'phone_card':
+        return {
+          label: 'Phone Card',
+          icon: Phone,
+          variant: 'default' as const,
+          className: 'bg-orange-100 text-orange-800 hover:bg-orange-100 border-orange-200',
+          tooltip: 'Phone card payment'
+        };
+      case 'dealer_portal':
+        return {
+          label: 'Dealer Portal',
+          icon: Globe,
+          variant: 'default' as const,
+          className: 'bg-cyan-100 text-cyan-800 hover:bg-cyan-100 border-cyan-200',
+          tooltip: 'Dealer portal payment'
+        };
+      case 'other':
+        return {
+          label: 'Other',
+          icon: Globe,
+          variant: 'outline' as const,
+          className: 'bg-gray-100 text-gray-600 hover:bg-gray-100 border-gray-200',
+          tooltip: 'Other payment source'
         };
       default:
         return {

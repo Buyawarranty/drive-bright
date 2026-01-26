@@ -1331,6 +1331,8 @@ Questions? Call 0330 229 5040`;
         // Sales agent attribution for commission tracking
         quote_sent_by: quoteSentByUserId,
         payment_confirmed_by: adminUserRecordId,
+        // CRITICAL: Save the selected payment source from the dropdown
+        purchase_source: paymentSource || 'external',
       };
       
       // Include address if provided (not skipped)
