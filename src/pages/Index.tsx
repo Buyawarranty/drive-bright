@@ -52,6 +52,31 @@ interface VehicleData {
   manufactureDate?: string; // Full manufacture date for precise age calculation
 }
 
+// Helper to parse stored data - handles both timestamped and raw formats
+const parseStoredDataSync = (key: string): any => {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    
+    const parsed = JSON.parse(raw);
+    
+    // Handle timestamped format (from saveWithTimestamp)
+    if (parsed && typeof parsed === 'object' && 'value' in parsed && 'timestamp' in parsed) {
+      const expiryTime = 30 * 24 * 60 * 60 * 1000;
+      if (Date.now() - parsed.timestamp > expiryTime) {
+        return null;
+      }
+      return JSON.parse(parsed.value);
+    }
+    
+    // Handle raw format (direct JSON)
+    return parsed;
+  } catch (error) {
+    console.error(`❌ Error parsing ${key}:`, error);
+    return null;
+  }
+};
+
 // Recovery fallback component - optimized for bfcache restoration
 const RecoveryFallback: React.FC<{
   onRecovered: (vehicleData: VehicleData, selectedPlan: any) => void;
@@ -80,20 +105,15 @@ const RecoveryFallback: React.FC<{
       if (recoveryCompleteRef.current) return true;
       
       try {
-        const savedVehicleData = localStorage.getItem('buyawarranty_vehicleData');
-        const savedSelectedPlan = localStorage.getItem('buyawarranty_selectedPlan');
+        const parsedVehicleData = parseStoredDataSync('buyawarranty_vehicleData');
+        const parsedSelectedPlan = parseStoredDataSync('buyawarranty_selectedPlan');
         
-        if (savedVehicleData && savedSelectedPlan) {
-          const parsedVehicleData = JSON.parse(savedVehicleData);
-          const parsedSelectedPlan = JSON.parse(savedSelectedPlan);
-          
-          // Validate the data has required fields
-          if (parsedVehicleData?.regNumber && parsedSelectedPlan?.paymentType) {
-            console.log('✅ RecoveryFallback: Recovery successful');
-            recoveryCompleteRef.current = true;
-            onRecovered(parsedVehicleData, parsedSelectedPlan);
-            return true;
-          }
+        // Validate the data has required fields
+        if (parsedVehicleData?.regNumber && parsedSelectedPlan?.paymentType) {
+          console.log('✅ RecoveryFallback: Recovery successful');
+          recoveryCompleteRef.current = true;
+          onRecovered(parsedVehicleData, parsedSelectedPlan);
+          return true;
         }
       } catch (error) {
         console.error('❌ RecoveryFallback: Error during recovery:', error);
@@ -129,24 +149,17 @@ const RecoveryFallback: React.FC<{
     const safetyTimeout = setTimeout(() => {
       if (!recoveryCompleteRef.current) {
         console.log('⚠️ RecoveryFallback: Timeout - final recovery attempt');
-        try {
-          const savedVehicleData = localStorage.getItem('buyawarranty_vehicleData');
-          const savedSelectedPlan = localStorage.getItem('buyawarranty_selectedPlan');
-          
-          if (savedVehicleData && savedSelectedPlan) {
-            const parsedVehicleData = JSON.parse(savedVehicleData);
-            const parsedSelectedPlan = JSON.parse(savedSelectedPlan);
-            
-            if (parsedVehicleData?.regNumber && parsedSelectedPlan?.paymentType) {
-              recoveryCompleteRef.current = true;
-              setShowLoadingUI(false);
-              onRecovered(parsedVehicleData, parsedSelectedPlan);
-              return;
-            }
-          }
-        } catch (error) {
-          console.error('❌ RecoveryFallback: Safety timeout failed:', error);
+        
+        const parsedVehicleData = parseStoredDataSync('buyawarranty_vehicleData');
+        const parsedSelectedPlan = parseStoredDataSync('buyawarranty_selectedPlan');
+        
+        if (parsedVehicleData?.regNumber && parsedSelectedPlan?.paymentType) {
+          recoveryCompleteRef.current = true;
+          setShowLoadingUI(false);
+          onRecovered(parsedVehicleData, parsedSelectedPlan);
+          return;
         }
+        
         // If we get here, recovery truly failed
         setRecoveryFailed(true);
         setShowLoadingUI(false);
@@ -279,15 +292,31 @@ const Index = () => {
       }
     }
     
-    // Priority 2: Check localStorage with 30-day expiry
+    // Priority 2: Check localStorage - handle both timestamped and raw formats
     try {
-      const saved = getWithTimestamp('buyawarranty_vehicleData', 30);
-      if (!saved) {
-        console.log('⏰ Vehicle data expired or not found');
+      const raw = localStorage.getItem('buyawarranty_vehicleData');
+      if (!raw) {
+        console.log('⏰ Vehicle data not found');
         return null;
       }
-      return JSON.parse(saved);
-    } catch {
+      
+      const parsed = JSON.parse(raw);
+      
+      // Handle timestamped format (from saveWithTimestamp)
+      if (parsed && typeof parsed === 'object' && 'value' in parsed && 'timestamp' in parsed) {
+        const expiryTime = 30 * 24 * 60 * 60 * 1000;
+        if (Date.now() - parsed.timestamp > expiryTime) {
+          localStorage.removeItem('buyawarranty_vehicleData');
+          console.log('⏰ Vehicle data expired');
+          return null;
+        }
+        return JSON.parse(parsed.value);
+      }
+      
+      // Handle raw format (direct JSON)
+      return parsed;
+    } catch (error) {
+      console.error('❌ Error reading vehicle data:', error);
       return null;
     }
   };
@@ -322,15 +351,31 @@ const Index = () => {
       }
     }
     
-    // Priority 2: Check localStorage with 30-day expiry
+    // Priority 2: Check localStorage - handle both timestamped and raw formats
     try {
-      const saved = getWithTimestamp('buyawarranty_selectedPlan', 30);
-      if (!saved) {
-        console.log('⏰ Selected plan expired or not found');
+      const raw = localStorage.getItem('buyawarranty_selectedPlan');
+      if (!raw) {
+        console.log('⏰ Selected plan not found');
         return null;
       }
-      return JSON.parse(saved);
-    } catch {
+      
+      const parsed = JSON.parse(raw);
+      
+      // Handle timestamped format (from saveWithTimestamp)
+      if (parsed && typeof parsed === 'object' && 'value' in parsed && 'timestamp' in parsed) {
+        const expiryTime = 30 * 24 * 60 * 60 * 1000;
+        if (Date.now() - parsed.timestamp > expiryTime) {
+          localStorage.removeItem('buyawarranty_selectedPlan');
+          console.log('⏰ Selected plan expired');
+          return null;
+        }
+        return JSON.parse(parsed.value);
+      }
+      
+      // Handle raw format (direct JSON)
+      return parsed;
+    } catch (error) {
+      console.error('❌ Error reading selected plan:', error);
       return null;
     }
   };
@@ -363,11 +408,22 @@ const Index = () => {
       }
     }
     
-    // Priority 2: Check localStorage with 30-day expiry
+    // Priority 2: Check localStorage - handle both timestamped and raw formats
     try {
-      const saved = getWithTimestamp('buyawarranty_formData', 30);
-      if (saved) {
-        return JSON.parse(saved);
+      const raw = localStorage.getItem('buyawarranty_formData');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        
+        // Handle timestamped format (from saveWithTimestamp)
+        if (parsed && typeof parsed === 'object' && 'value' in parsed && 'timestamp' in parsed) {
+          const expiryTime = 30 * 24 * 60 * 60 * 1000;
+          if (Date.now() - parsed.timestamp < expiryTime) {
+            return JSON.parse(parsed.value);
+          }
+        } else {
+          // Handle raw format (direct JSON)
+          return parsed;
+        }
       }
     } catch {
       // Continue to default
@@ -510,55 +566,90 @@ const Index = () => {
     captureGclid();
   }, []);
 
+  // Helper function to parse localStorage data (handles both timestamped and raw formats)
+  const parseStoredData = useCallback((key: string) => {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      
+      const parsed = JSON.parse(raw);
+      
+      // Handle timestamped format (from saveWithTimestamp)
+      if (parsed && typeof parsed === 'object' && 'value' in parsed && 'timestamp' in parsed) {
+        // Check 30-day expiry
+        const expiryTime = 30 * 24 * 60 * 60 * 1000;
+        if (Date.now() - parsed.timestamp > expiryTime) {
+          localStorage.removeItem(key);
+          return null;
+        }
+        return JSON.parse(parsed.value);
+      }
+      
+      // Handle raw format (direct JSON)
+      return parsed;
+    } catch (error) {
+      console.error(`❌ Error parsing ${key}:`, error);
+      return null;
+    }
+  }, []);
+
   // Handle bfcache restoration (when user navigates back from payment gateway)
   // This MUST run synchronously to prevent RecoveryFallback from flashing
   useEffect(() => {
+    const recoverStateFromStorage = () => {
+      const urlStep = parseInt(searchParams.get('step') || '1');
+      
+      if (urlStep === 4) {
+        console.log('📱 Index: Attempting state recovery for step 4');
+        
+        const parsedVehicleData = parseStoredData('buyawarranty_vehicleData');
+        const parsedSelectedPlan = parseStoredData('buyawarranty_selectedPlan');
+        
+        if (parsedVehicleData?.regNumber && parsedSelectedPlan?.paymentType) {
+          console.log('✅ Index: State recovered successfully');
+          setVehicleData(parsedVehicleData);
+          setSelectedPlan(parsedSelectedPlan);
+          return true;
+        }
+      }
+      return false;
+    };
+    
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
         console.log('📱 Index: Page restored from bfcache');
+        recoverStateFromStorage();
         
-        // Get current step from URL
-        const urlStep = parseInt(searchParams.get('step') || '1');
-        
-        // ALWAYS attempt recovery on step 4, even if state appears to exist
-        // This handles edge cases where React's state is stale
-        if (urlStep === 4) {
-          console.log('📱 Index: Step 4 bfcache restore - forcing state recovery');
-          
-          try {
-            const savedVehicleData = localStorage.getItem('buyawarranty_vehicleData');
-            const savedSelectedPlan = localStorage.getItem('buyawarranty_selectedPlan');
-            
-            if (savedVehicleData && savedSelectedPlan) {
-              const parsedVehicleData = JSON.parse(savedVehicleData);
-              const parsedSelectedPlan = JSON.parse(savedSelectedPlan);
-              
-              if (parsedVehicleData?.regNumber && parsedSelectedPlan?.paymentType) {
-                console.log('✅ Index: Recovered state from localStorage on bfcache');
-                
-                // Use flushSync-like behavior by setting state immediately
-                // React 18 batches updates, but bfcache requires immediate response
-                setVehicleData(parsedVehicleData);
-                setSelectedPlan(parsedSelectedPlan);
-                
-                // Force a re-render to ensure state is applied
-                requestAnimationFrame(() => {
-                  setVehicleData(parsedVehicleData);
-                  setSelectedPlan(parsedSelectedPlan);
-                });
-              }
-            }
-          } catch (error) {
-            console.error('❌ Index: Error recovering state on bfcache restore:', error);
-          }
-        }
+        // Force a re-render after a frame to ensure state is applied
+        requestAnimationFrame(() => {
+          recoverStateFromStorage();
+        });
       }
     };
     
-    // Add listener immediately - don't wait for dependencies
-    window.addEventListener('pageshow', handlePageShow);
-    return () => window.removeEventListener('pageshow', handlePageShow);
-  }, [searchParams]); // Minimal dependencies to ensure listener is stable
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('📱 Index: Page visible again');
+        recoverStateFromStorage();
+      }
+    };
+    
+    const handleFocus = () => {
+      console.log('📱 Index: Window focused');
+      recoverStateFromStorage();
+    };
+    
+    // Add all listeners immediately
+    window.addEventListener('pageshow', handlePageShow as EventListener);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow as EventListener);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [searchParams, parseStoredData]);
 
   // Quote restoration effect - optimized with memoization
   useEffect(() => {
