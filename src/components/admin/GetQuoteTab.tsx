@@ -86,7 +86,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
   const [excessAmount, setExcessAmount] = useState(100);
-  const [claimLimit, setClaimLimit] = useState(1250);
+  // PROMO: Default to £2000 for 2yr/3yr plans (priced at £1250 rate)
+  const [claimLimit, setClaimLimit] = useState(2000);
   const [labourRate, setLabourRate] = useState(70);
   const [boostAddon, setBoostAddon] = useState(false);
   const [selectedAddOns, setSelectedAddOns] = useState<{ [key: string]: boolean }>({});
@@ -244,9 +245,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     setCustomerName(savedQuote.customerName || '');
     setCustomerEmail(savedQuote.customerEmail || '');
     setCustomerPhone(savedQuote.customerPhone || '');
-    setPaymentType(savedQuote.paymentType || '24months');
+    const loadedPaymentType = savedQuote.paymentType || '24months';
+    setPaymentType(loadedPaymentType);
     setExcessAmount(savedQuote.excessAmount || 100);
-    setClaimLimit(savedQuote.claimLimit || 1250);
+    // PROMO: Use saved claim limit or default based on payment type
+    const isMultiYear = loadedPaymentType === '24months' || loadedPaymentType === '36months';
+    setClaimLimit(savedQuote.claimLimit || (isMultiYear ? 2000 : 1250));
     setLabourRate(savedQuote.labourRate || 70);
     setBoostAddon(savedQuote.boostAddon || false);
     setSelectedAddOns(savedQuote.selectedAddOns || {});
@@ -375,6 +379,17 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   useEffect(() => {
     setIsPriceOverridden(false);
   }, [paymentType, excessAmount, claimLimit, labourRate, boostAddon, selectedAddOns]);
+
+  // PROMO: Update claim limit default when payment type changes
+  // 2yr/3yr default to £2000 (at £1250 price), 1yr defaults to £1250
+  useEffect(() => {
+    const isMultiYear = paymentType === '24months' || paymentType === '36months';
+    const promoDefault = isMultiYear ? 2000 : 1250;
+    // Only auto-update if current selection matches the opposite default
+    if ((isMultiYear && claimLimit === 1250) || (!isMultiYear && claimLimit === 2000)) {
+      setClaimLimit(promoDefault);
+    }
+  }, [paymentType]);
 
   // Auto-populate custom price fields when selections change (if not manually overridden)
   useEffect(() => {
@@ -864,7 +879,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       setCustomerName('');
       setPaymentType('24months');
       setExcessAmount(100);
-      setClaimLimit(1250);
+      // PROMO: 2yr/3yr defaults to £2000 claim limit
+      setClaimLimit(2000);
       setLabourRate(70);
       setBoostAddon(false);
       setAdditionalNotes('');
@@ -1565,7 +1581,8 @@ Questions? Call 0330 229 5040`;
     setCustomerPhone('');
     setPaymentType('24months');
     setExcessAmount(100);
-    setClaimLimit(1250);
+    // PROMO: 2yr/3yr defaults to £2000 claim limit
+    setClaimLimit(2000);
     setLabourRate(70);
     setBoostAddon(false);
     setSelectedAddOns({});
