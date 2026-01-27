@@ -1296,9 +1296,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
                     {/* Optional Address Section - Collapsible */}
                     <div 
-                      className="rounded-xl overflow-hidden transition-all duration-200"
+                      className="rounded-xl overflow-hidden transition-all duration-200 bg-white"
                       style={{ 
-                        backgroundColor: '#F8F8F8', 
                         border: '1px solid #E5E5E5' 
                       }}
                     >
