@@ -954,7 +954,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <span className="text-muted-foreground">•</span>
                     <span className="text-muted-foreground">{getDurationText()}</span>
                     <span className="text-muted-foreground">•</span>
-                    <span className="font-semibold text-foreground uppercase tracking-wide">{vehicleData.regNumber}</span>
+                    <span 
+                      className="font-mono font-bold text-foreground uppercase tracking-wide px-2 py-0.5 rounded border-2 border-black"
+                      style={{ backgroundColor: '#FCD34D' }}
+                    >
+                      {vehicleData.regNumber}
+                    </span>
                   </div>
                   <button 
                     onClick={onBack}
