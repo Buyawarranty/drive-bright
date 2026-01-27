@@ -410,6 +410,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
           boostAddon={boostAddon}
           onBoostChange={setBoostAddon}
           boostPrice={paymentType === '36months' ? 15 : paymentType === '24months' ? 10 : 5}
+          paymentType={paymentType}
         />
 
         <LabourRateSelector

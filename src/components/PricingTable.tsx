@@ -2431,9 +2431,26 @@ const PricingTable: React.FC<PricingTableProps> = ({
           <p className="text-lg font-medium text-gray-600 mb-4 flex items-center gap-2">
             <Wrench className="w-5 h-5 flex-shrink-0" /> Set your claim limit - cover up to your car's <span className="font-bold">full value</span> 🚗
           </p>
+
+          {/* Multi-year upgrade message */}
+          {(paymentType === '24months' || paymentType === '36months') && (
+            <div className="mb-4 p-4 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                <Gift className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-base font-semibold text-green-800">
+                  Free upgrade on multi-year plans!
+                </p>
+                <p className="text-sm text-green-700 mt-0.5">
+                  Your cover is upgraded to £2,000 per claim at no extra cost.
+                </p>
+              </div>
+            </div>
+          )}
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Essential */}
+            {/* Essential - £750 */}
             <div 
               className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
                 selectedClaimLimit === 750
@@ -2460,37 +2477,39 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
             </div>
             
-            {/* Advanced */}
-            <div 
-              className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
-                selectedClaimLimit === 1250
-                  ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'border-2 border-gray-200 hover:border-orange-300 hover:shadow-md'
-              }`}
-              onClick={() => {
-                setSelectedClaimLimit(1250);
-                setValidationErrors(prev => ({ ...prev, claimLimit: false }));
-              }}
-            >
-              <div className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                MOST POPULAR
-              </div>
-              <div className="flex items-start justify-between">
-                <div>
-                  <h4 className="text-xl font-bold text-black mb-1">AutoCare Advantage</h4>
-                  <div className="text-3xl font-bold text-black">
-                    £{selectedClaimLimit === 1250 && boostAddon ? '2,250' : '1,250'} <span className="text-base">per claim</span>
+            {/* Advanced - £1,250 (hidden for multi-year plans) */}
+            {paymentType === '12months' && (
+              <div 
+                className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
+                  selectedClaimLimit === 1250
+                    ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30'
+                    : 'border-2 border-gray-200 hover:border-orange-300 hover:shadow-md'
+                }`}
+                onClick={() => {
+                  setSelectedClaimLimit(1250);
+                  setValidationErrors(prev => ({ ...prev, claimLimit: false }));
+                }}
+              >
+                <div className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                  MOST POPULAR
+                </div>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h4 className="text-xl font-bold text-black mb-1">AutoCare Advantage</h4>
+                    <div className="text-3xl font-bold text-black">
+                      £{selectedClaimLimit === 1250 && boostAddon ? '2,250' : '1,250'} <span className="text-base">per claim</span>
+                    </div>
+                  </div>
+                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                    selectedClaimLimit === 1250 ? 'bg-green-500 border-green-500' : 'border-gray-300'
+                  }`}>
+                    {selectedClaimLimit === 1250 && <Check className="w-4 h-4 text-white" />}
                   </div>
                 </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                  selectedClaimLimit === 1250 ? 'bg-green-500 border-green-500' : 'border-gray-300'
-                }`}>
-                  {selectedClaimLimit === 1250 && <Check className="w-4 h-4 text-white" />}
-                </div>
               </div>
-            </div>
+            )}
             
-            {/* Elite */}
+            {/* Elite - £2,000 */}
             <div 
               className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
                 selectedClaimLimit === 2000
@@ -2502,6 +2521,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 setValidationErrors(prev => ({ ...prev, claimLimit: false }));
               }}
             >
+              {/* Show MOST POPULAR badge for multi-year plans */}
+              {(paymentType === '24months' || paymentType === '36months') && (
+                <div className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                  MOST POPULAR
+                </div>
+              )}
               <div className="flex items-start justify-between">
                 <div>
                   <h4 className="text-xl font-bold text-black mb-1">AutoCare Elite</h4>
