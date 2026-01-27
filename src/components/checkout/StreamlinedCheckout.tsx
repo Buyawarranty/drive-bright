@@ -896,9 +896,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   };
 
   const getDurationText = () => {
-    if (paymentType === '12months') return '1 Year';
-    if (paymentType === '24months') return '2 Years';
-    return '3 Years';
+    if (paymentType === '12months') return '1 Year Cover';
+    if (paymentType === '24months') return '2 Year Cover';
+    return '3 Year Cover';
   };
 
   // Collapsed section error indicator
@@ -952,7 +952,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
                     <span className="font-bold text-foreground">{formatPlanName()}</span>
                     <span className="text-muted-foreground">•</span>
-                    <span className="text-muted-foreground">{getDurationText()}</span>
+                    <span className="font-bold text-foreground">{getDurationText()}</span>
                     <span className="text-muted-foreground">•</span>
                     <span 
                       className="font-mono font-bold text-foreground uppercase tracking-wide px-2 py-0.5 rounded border-2 border-black"
@@ -987,11 +987,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   >
                     <p className="text-xs font-semibold text-foreground">Pay monthly</p>
                     <div className="flex items-baseline gap-1 flex-wrap">
-                      <span className="text-2xl sm:text-3xl font-bold text-foreground">£{monthlyPrice}</span>
-                      <span className="text-sm text-foreground">/mo</span>
+                      <span className="text-2xl sm:text-3xl font-bold text-foreground">£{monthlyPrice}/month</span>
                     </div>
                     <p className="text-xs text-foreground">
-                      £{monthlyPrice}/month · Total £{bumperTotalPrice} · 12 payments only · 0% APR
+                      Total £{bumperTotalPrice} · 12 payments only · 0% APR
                     </p>
                   </div>
 
