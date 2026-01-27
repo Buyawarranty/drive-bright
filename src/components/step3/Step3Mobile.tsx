@@ -409,7 +409,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
           currentMonthlyPrice={currentMonthlyPrice}
           boostAddon={boostAddon}
           onBoostChange={setBoostAddon}
-          boostPrice={paymentType === '36months' ? 15 : paymentType === '24months' ? 10 : 5}
+          boostPrice={5}
           paymentType={paymentType}
         />
 
