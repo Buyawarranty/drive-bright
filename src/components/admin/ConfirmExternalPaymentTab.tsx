@@ -96,9 +96,10 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const [currentAdminUserId, setCurrentAdminUserId] = useState<string>('');
   
   // Policy configuration
+  // PROMO: Default to £2000 for 2yr/3yr plans (priced at £1250 rate)
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
   const [excessAmount, setExcessAmount] = useState(100);
-  const [claimLimit, setClaimLimit] = useState(1250);
+  const [claimLimit, setClaimLimit] = useState(2000);
   const [labourRate, setLabourRate] = useState(70);
   const [boostAddon, setBoostAddon] = useState(false);
   const [freeExtendedCover, setFreeExtendedCover] = useState<'none' | '3months' | '6months'>('none');
@@ -170,6 +171,17 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     };
     fetchAdminUsers();
   }, []);
+
+  // PROMO: Update claim limit default when payment type changes
+  // 2yr/3yr default to £2000 (at £1250 price), 1yr defaults to £1250
+  useEffect(() => {
+    const isMultiYear = paymentType === '24months' || paymentType === '36months';
+    const promoDefault = isMultiYear ? 2000 : 1250;
+    // Only auto-update if current selection matches the opposite default
+    if ((isMultiYear && claimLimit === 1250) || (!isMultiYear && claimLimit === 2000)) {
+      setClaimLimit(promoDefault);
+    }
+  }, [paymentType]);
 
   // Calculate price
   const currentPrice = vehicleData ? calculateTotalWarrantyPrice({
@@ -442,7 +454,8 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     setSelectedLeadId(null);
     setPaymentType('24months');
     setExcessAmount(100);
-    setClaimLimit(1250);
+    // PROMO: 2yr/3yr defaults to £2000 claim limit
+    setClaimLimit(2000);
     setLabourRate(70);
     setBoostAddon(false);
     setFreeExtendedCover('none');

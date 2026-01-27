@@ -185,18 +185,21 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isFloatingBarVisible, setIsFloatingBarVisible] = useState(false);
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
-  // Validate previousClaimLimit is a valid option (750, 1250, 2000), otherwise default to 1250
+  // Validate previousClaimLimit is a valid option (750, 1250, 2000), otherwise default based on duration
   // Account for boost addon which adds 1000 to the claim limit value
+  // PROMO: 2yr/3yr plans default to £2000 claim limit (at £1250 price), 1yr defaults to £1250
   const validClaimLimits = [750, 1250, 2000];
   const getValidatedClaimLimit = (): number => {
-    if (!previousClaimLimit) return 1250;
-    // Check if it's a valid base claim limit
-    if (validClaimLimits.includes(previousClaimLimit)) return previousClaimLimit;
-    // Check if it's a boosted claim limit (base + 1000)
-    const possibleBaseLimit = previousClaimLimit - 1000;
-    if (validClaimLimits.includes(possibleBaseLimit)) return possibleBaseLimit;
-    // Default to 1250
-    return 1250;
+    if (previousClaimLimit) {
+      // Check if it's a valid base claim limit
+      if (validClaimLimits.includes(previousClaimLimit)) return previousClaimLimit;
+      // Check if it's a boosted claim limit (base + 1000)
+      const possibleBaseLimit = previousClaimLimit - 1000;
+      if (validClaimLimits.includes(possibleBaseLimit)) return possibleBaseLimit;
+    }
+    // PROMO: Default to £2000 for 2yr/3yr, £1250 for 1yr
+    const effectivePaymentType = previousPaymentType || '24months';
+    return (effectivePaymentType === '24months' || effectivePaymentType === '36months') ? 2000 : 1250;
   };
   const [selectedClaimLimit, setSelectedClaimLimit] = useState<number | null>(getValidatedClaimLimit());
   const [summaryDismissed, setSummaryDismissed] = useState(false);
@@ -588,6 +591,21 @@ const PricingTable: React.FC<PricingTableProps> = ({
     setSummaryDismissed(false);
   }, [selectedClaimLimit, paymentType, voluntaryExcess, selectedProtectionAddOns]);
 
+  // PROMO: Update claim limit default when payment type changes
+  // 2yr/3yr default to £2000, 1yr defaults to £1250
+  useEffect(() => {
+    // Only update if the user hasn't explicitly selected a claim limit different from the promo default
+    // and only on user-initiated payment type changes
+    if (!isRestoringFromPrevious.current && isUserPaymentTypeChange.current) {
+      const isMultiYear = paymentType === '24months' || paymentType === '36months';
+      const promoDefault = isMultiYear ? 2000 : 1250;
+      // Only auto-update if current selection matches the opposite default (user hasn't manually changed it)
+      if ((isMultiYear && selectedClaimLimit === 1250) || (!isMultiYear && selectedClaimLimit === 2000)) {
+        setSelectedClaimLimit(promoDefault);
+      }
+    }
+  }, [paymentType]);
+
   // Auto-include add-ons for 2-year and 3-year plans using imported utility
   // ONLY runs when user explicitly changes payment type via UI, not on restoration
   useEffect(() => {
@@ -772,10 +790,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
   };
 
   // Get pricing data using centralized pricing matrix
+  // PROMO: For 2yr/3yr plans, if claim limit is £2000, use £1250 price (customer gets £2000 for price of £1250)
   const getPricingData = (excess: number, claimLimit: number, paymentPeriod: string) => {
     const periodData = BASE_PRICING_MATRIX[paymentPeriod as PaymentPeriod] || BASE_PRICING_MATRIX['12months'];
     const excessData = periodData[excess as keyof typeof periodData] || periodData[100];
-    return excessData[claimLimit as keyof typeof excessData] || excessData[1250];
+    
+    // PROMO LOGIC: For 2yr/3yr plans with £2000 claim limit, use £1250 pricing
+    const isMultiYearPlan = paymentPeriod === '24months' || paymentPeriod === '36months';
+    const pricingClaimLimit = (isMultiYearPlan && claimLimit === 2000) ? 1250 : claimLimit;
+    
+    return excessData[pricingClaimLimit as keyof typeof excessData] || excessData[1250];
   };
 
   // Memoized price calculation to prevent pricing fluctuations

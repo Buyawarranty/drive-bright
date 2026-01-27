@@ -82,6 +82,8 @@ export type ClaimLimit = keyof typeof BASE_PRICING_MATRIX['12months'][0];
 
 /**
  * Get base price from the pricing matrix
+ * PROMO: For 2yr/3yr plans with £2000 claim limit, use £1250 pricing
+ * (customer gets £2000 coverage for the price of £1250)
  */
 export function getBasePrice(
   paymentPeriod: PaymentPeriod,
@@ -90,7 +92,12 @@ export function getBasePrice(
 ): number {
   const periodData = BASE_PRICING_MATRIX[paymentPeriod] || BASE_PRICING_MATRIX['12months'];
   const excessData = periodData[voluntaryExcess as ExcessAmount] || periodData[DEFAULT_EXCESS];
-  return excessData[claimLimit as ClaimLimit] || excessData[DEFAULT_CLAIM_LIMIT];
+  
+  // PROMO LOGIC: For 2yr/3yr plans with £2000 claim limit, use £1250 pricing
+  const isMultiYearPlan = paymentPeriod === '24months' || paymentPeriod === '36months';
+  const pricingClaimLimit = (isMultiYearPlan && claimLimit === 2000) ? 1250 : claimLimit;
+  
+  return excessData[pricingClaimLimit as ClaimLimit] || excessData[DEFAULT_CLAIM_LIMIT];
 }
 
 /**
