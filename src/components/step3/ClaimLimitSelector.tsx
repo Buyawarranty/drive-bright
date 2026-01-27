@@ -115,7 +115,10 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
       )}
 
       {/* Claim Limit Cards */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className={cn(
+        "gap-3 mb-3",
+        isMultiYear ? "grid grid-cols-3" : "grid grid-cols-2"
+      )}>
         {visibleClaimLimits.map((limit) => {
           const isSelected = displayedLimit === limit;
           const isPopular = limit === 1250;
@@ -139,15 +142,20 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
                       : "border-border hover:border-success/50"
                   )}
                 >
-                  {/* Main Card Content */}
                   <button
                     onClick={() => handleSelect(limit)}
                     className="w-full p-4 text-left"
                   >
-                    <div className="font-bold text-xl text-foreground">£{limit.toLocaleString()}</div>
+                    <div className={cn(
+                      "font-bold text-foreground",
+                      isMultiYear ? "text-lg" : "text-xl"
+                    )}>£{limit.toLocaleString()}</div>
                     <div className="text-xs text-muted-foreground">per claim</div>
+                    {/* Show upgrade price for £3000 on multi-year plans */}
+                    {isMultiYear && limit === 3000 && (
+                      <div className="text-xs text-primary font-medium mt-1">+£5/month</div>
+                    )}
                   </button>
-                  
                   {/* Divider */}
                   <div className="border-t border-border" />
                   
@@ -177,114 +185,116 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
         })}
       </div>
 
-      {/* Optional add-on Section */}
-      <div className="mt-4 mb-2">
-        <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Optional add-on</h4>
-        
-        {/* Add Extra Cover Card - Fully Tappable with Improved Toggle */}
-        <div 
-          onClick={(e) => {
-            if (!isBoostActive) {
-              handleBoostToggle(true, e);
-            } else {
-              handleBoostToggle(false);
-            }
-          }}
-          className={cn(
-            "relative p-4 rounded-xl cursor-pointer border-2 overflow-hidden",
-            "transition-all duration-300 ease-out transform",
-            isBoostActive
-              ? "bg-gradient-to-br from-green-50 to-green-100 border-green-500 shadow-[0_0_16px_rgba(34,197,94,0.35)] scale-[1.01]"
-              : "bg-gradient-to-br from-orange-50 to-orange-100/50 border-orange-200 hover:border-orange-400 hover:shadow-lg hover:scale-[1.005]"
-          )}
-        >
-          {/* Animated background pulse when active */}
-          {isBoostActive && (
-            <div className="absolute inset-0 bg-green-400/10 animate-pulse pointer-events-none" />
-          )}
+      {/* Optional add-on Section - Only show for 1-year plans */}
+      {!isMultiYear && (
+        <div className="mt-4 mb-2">
+          <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Optional add-on</h4>
           
-          <div className="relative flex items-center gap-4">
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-              {isBoostActive ? (
-                <>
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                      <Check className="w-4 h-4 text-white" strokeWidth={3} />
-                    </div>
-                    <h4 className="text-lg font-bold text-green-700">
-                      Upgrade Added!
-                    </h4>
-                  </div>
-                  <div className="text-base font-semibold text-green-800">
-                    Your cover is now £3,000 per claim 🚀
-                  </div>
-                  <div className="text-xs text-green-600 mt-1">
-                    Just £{boostPrice}/month × 12 payments
-                  </div>
-                </>
-              ) : (
-                <>
-                  <h4 className="text-lg font-bold text-foreground mb-0.5">
-                    🚀 Boost your cover by £1,000
-                  </h4>
-                  <div className="text-base font-semibold text-foreground">
-                    Upgrade to £3,000 per claim
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    Just £{boostPrice}/month × 12 payments
-                  </div>
-                </>
-              )}
-            </div>
+          {/* Add Extra Cover Card - Fully Tappable with Improved Toggle */}
+          <div 
+            onClick={(e) => {
+              if (!isBoostActive) {
+                handleBoostToggle(true, e);
+              } else {
+                handleBoostToggle(false);
+              }
+            }}
+            className={cn(
+              "relative p-4 rounded-xl cursor-pointer border-2 overflow-hidden",
+              "transition-all duration-300 ease-out transform",
+              isBoostActive
+                ? "bg-gradient-to-br from-green-50 to-green-100 border-green-500 shadow-[0_0_16px_rgba(34,197,94,0.35)] scale-[1.01]"
+                : "bg-gradient-to-br from-orange-50 to-orange-100/50 border-orange-200 hover:border-orange-400 hover:shadow-lg hover:scale-[1.005]"
+            )}
+          >
+            {/* Animated background pulse when active */}
+            {isBoostActive && (
+              <div className="absolute inset-0 bg-green-400/10 animate-pulse pointer-events-none" />
+            )}
             
-            {/* Improved Toggle Switch */}
-            <div className="flex-shrink-0">
-              <div
-                className={cn(
-                  "relative inline-flex items-center justify-between rounded-full transition-all duration-300 ease-out",
-                  "w-[68px] h-[36px] px-1",
-                  isBoostActive 
-                    ? "bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.5)]" 
-                    : "bg-gray-300"
+            <div className="relative flex items-center gap-4">
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                {isBoostActive ? (
+                  <>
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                        <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                      </div>
+                      <h4 className="text-lg font-bold text-green-700">
+                        Upgrade Added!
+                      </h4>
+                    </div>
+                    <div className="text-base font-semibold text-green-800">
+                      Your cover is now £3,000 per claim 🚀
+                    </div>
+                    <div className="text-xs text-green-600 mt-1">
+                      Just £{boostPrice}/month × 12 payments
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h4 className="text-lg font-bold text-foreground mb-0.5">
+                      🚀 Boost your cover by £1,000
+                    </h4>
+                    <div className="text-base font-semibold text-foreground">
+                      Upgrade to £3,000 per claim
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Just £{boostPrice}/month × 12 payments
+                    </div>
+                  </>
                 )}
-              >
-                {/* ON/OFF Labels */}
-                <span className={cn(
-                  "text-[11px] font-bold uppercase pl-1.5 transition-all duration-200",
-                  isBoostActive ? "text-white" : "text-transparent"
-                )}>
-                  ON
-                </span>
-                <span className={cn(
-                  "text-[11px] font-bold uppercase pr-1.5 transition-all duration-200",
-                  isBoostActive ? "text-transparent" : "text-gray-500"
-                )}>
-                  OFF
-                </span>
-                
-                {/* Toggle Knob */}
-                <span
+              </div>
+              
+              {/* Improved Toggle Switch */}
+              <div className="flex-shrink-0">
+                <div
                   className={cn(
-                    "absolute inline-flex items-center justify-center rounded-full bg-white shadow-md",
-                    "w-[28px] h-[28px] top-1",
-                    "transition-all duration-300 ease-out",
+                    "relative inline-flex items-center justify-between rounded-full transition-all duration-300 ease-out",
+                    "w-[68px] h-[36px] px-1",
                     isBoostActive 
-                      ? "left-[36px] shadow-lg" 
-                      : "left-1"
+                      ? "bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.5)]" 
+                      : "bg-gray-300"
                   )}
                 >
-                  {isBoostActive ? (
-                    <Check className="w-4 h-4 text-green-500" strokeWidth={3} />
-                  ) : (
-                    <Plus className="w-4 h-4 text-gray-400" strokeWidth={2} />
-                  )}
-                </span>
+                  {/* ON/OFF Labels */}
+                  <span className={cn(
+                    "text-[11px] font-bold uppercase pl-1.5 transition-all duration-200",
+                    isBoostActive ? "text-white" : "text-transparent"
+                  )}>
+                    ON
+                  </span>
+                  <span className={cn(
+                    "text-[11px] font-bold uppercase pr-1.5 transition-all duration-200",
+                    isBoostActive ? "text-transparent" : "text-gray-500"
+                  )}>
+                    OFF
+                  </span>
+                  
+                  {/* Toggle Knob */}
+                  <span
+                    className={cn(
+                      "absolute inline-flex items-center justify-center rounded-full bg-white shadow-md",
+                      "w-[28px] h-[28px] top-1",
+                      "transition-all duration-300 ease-out",
+                      isBoostActive 
+                        ? "left-[36px] shadow-lg" 
+                        : "left-1"
+                    )}
+                  >
+                    {isBoostActive ? (
+                      <Check className="w-4 h-4 text-green-500" strokeWidth={3} />
+                    ) : (
+                      <Plus className="w-4 h-4 text-gray-400" strokeWidth={2} />
+                    )}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Live Price Update */}
       {selectedClaimLimit !== null && (
