@@ -125,7 +125,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   
   // Section states for collapsible accordion
   const [detailsOpen, setDetailsOpen] = useState(true);
-  const [addressExpanded, setAddressExpanded] = useState(false);
+  const [addressExpanded, setAddressExpanded] = useState(true);
   
   // Address fields state - using canonical database field names
   const [addressData, setAddressData] = useState({
@@ -1382,7 +1382,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                   postcode: autocompleteData.postcode || '',
                                 });
                               }}
-                              className="w-full border border-border rounded-lg px-3 py-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white min-h-[44px]"
+                              className="w-full border border-gray-200 rounded-lg px-3 py-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-[#F5F5F5] focus:bg-white min-h-[44px] transition-colors"
                             />
                             <p className="text-xs text-muted-foreground mt-2">
                               Search by postcode or address, then adjust fields below if needed
@@ -1402,7 +1402,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                   placeholder="e.g. 123"
                                   value={addressData.building_number}
                                   onChange={(e) => setAddressData(prev => ({ ...prev, building_number: e.target.value }))}
-                                  className="h-10 sm:h-11 text-sm mt-1 bg-white"
+                                  className="h-10 sm:h-11 text-sm mt-1 bg-[#F5F5F5] border-gray-200 focus:bg-white transition-colors"
                                 />
                               </div>
                               <div>
@@ -1414,7 +1414,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                   placeholder="e.g. Oak House"
                                   value={addressData.building_name}
                                   onChange={(e) => setAddressData(prev => ({ ...prev, building_name: e.target.value }))}
-                                  className="h-10 sm:h-11 text-sm mt-1 bg-white"
+                                  className="h-10 sm:h-11 text-sm mt-1 bg-[#F5F5F5] border-gray-200 focus:bg-white transition-colors"
                                 />
                               </div>
                             </div>
@@ -1429,7 +1429,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                 placeholder="e.g. High Street"
                                 value={addressData.street}
                                 onChange={(e) => setAddressData(prev => ({ ...prev, street: e.target.value }))}
-                                className="h-10 sm:h-11 text-sm mt-1 bg-white"
+                                className="h-10 sm:h-11 text-sm mt-1 bg-[#F5F5F5] border-gray-200 focus:bg-white transition-colors"
                               />
                             </div>
 
@@ -1443,7 +1443,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                 placeholder="e.g. Flat 2"
                                 value={addressData.flat_number}
                                 onChange={(e) => setAddressData(prev => ({ ...prev, flat_number: e.target.value }))}
-                                className="h-10 sm:h-11 text-sm mt-1 bg-white"
+                                className="h-10 sm:h-11 text-sm mt-1 bg-[#F5F5F5] border-gray-200 focus:bg-white transition-colors"
                               />
                             </div>
 
@@ -1458,7 +1458,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                   placeholder="e.g. London"
                                   value={addressData.town}
                                   onChange={(e) => setAddressData(prev => ({ ...prev, town: e.target.value }))}
-                                  className="h-10 sm:h-11 text-sm mt-1 bg-white"
+                                  className="h-10 sm:h-11 text-sm mt-1 bg-[#F5F5F5] border-gray-200 focus:bg-white transition-colors"
                                 />
                               </div>
                               <div>
@@ -1470,7 +1470,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                   placeholder="e.g. SW1A 1AA"
                                   value={addressData.postcode}
                                   onChange={(e) => setAddressData(prev => ({ ...prev, postcode: e.target.value.toUpperCase() }))}
-                                  className="h-10 sm:h-11 text-sm mt-1 bg-white"
+                                  className="h-10 sm:h-11 text-sm mt-1 bg-[#F5F5F5] border-gray-200 focus:bg-white transition-colors"
                                 />
                               </div>
                             </div>
