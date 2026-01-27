@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import { ChevronDown, Check, Info, ArrowRight, Plus } from 'lucide-react';
+import { ChevronDown, Check, Info, ArrowRight, Plus, Gift } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,7 @@ interface ClaimLimitSelectorProps {
   boostAddon: boolean;
   onBoostChange: (boost: boolean) => void;
   boostPrice: number;
+  paymentType?: '12months' | '24months' | '36months';
 }
 
 // Claim limit options including £3000 (which uses £2000 base + boost logic)
@@ -32,8 +33,15 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
   currentMonthlyPrice,
   boostAddon,
   onBoostChange,
-  boostPrice
+  boostPrice,
+  paymentType = '12months'
 }) => {
+  const isMultiYear = paymentType === '24months' || paymentType === '36months';
+  
+  // Filter options: hide £1250 for multi-year plans
+  const visibleClaimLimits = isMultiYear 
+    ? claimLimitOptions.filter(limit => limit !== 1250)
+    : claimLimitOptions;
   const [openDetails, setOpenDetails] = useState<number | null>(null);
   
   // Tiny spark effect when boost is clicked
@@ -89,9 +97,26 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
         <h3 className="font-semibold text-lg text-foreground">Set your claim limit - cover up to your car's <span className="font-bold">full value</span> 🚗</h3>
       </div>
 
+      {/* Multi-year upgrade message */}
+      {isMultiYear && (
+        <div className="mb-4 p-3 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 flex items-start gap-3">
+          <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+            <Gift className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-green-800">
+              Free upgrade on multi-year plans!
+            </p>
+            <p className="text-xs text-green-700 mt-0.5">
+              Your cover is upgraded to £2,000 per claim at no extra cost.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Claim Limit Cards */}
       <div className="grid grid-cols-2 gap-3 mb-3">
-        {claimLimitOptions.map((limit) => {
+        {visibleClaimLimits.map((limit) => {
           const isSelected = displayedLimit === limit;
           const isPopular = limit === 1250;
           const isOpen = openDetails === limit;

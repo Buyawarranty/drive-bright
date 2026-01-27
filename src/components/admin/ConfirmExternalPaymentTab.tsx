@@ -53,11 +53,19 @@ const termOptions = [
 
 const excessOptions = [0, 50, 100, 150];
 
-const claimLimitOptions = [
+const claimLimitOptionsBase = [
   { value: 750, label: '£750', description: 'Minor repairs' },
   { value: 1250, label: '£1,250', description: 'Most popular' },
   { value: 2000, label: '£2,000', description: 'Comprehensive' }
 ];
+
+// Helper to get visible claim limits based on payment type
+const getVisibleClaimLimits = (paymentType: string) => {
+  const isMultiYear = paymentType === '24months' || paymentType === '36months';
+  return isMultiYear 
+    ? claimLimitOptionsBase.filter(opt => opt.value !== 1250)
+    : claimLimitOptionsBase;
+};
 
 const labourRateOptions = [
   { rate: 50, label: '£50/hr', description: 'Local Garages', isBestValue: true },
@@ -695,13 +703,16 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {claimLimitOptions.map((opt) => (
+                          {getVisibleClaimLimits(paymentType).map((opt) => (
                             <SelectItem key={opt.value} value={opt.value.toString()}>
                               {opt.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                      {(paymentType === '24months' || paymentType === '36months') && (
+                        <p className="text-xs text-green-600 font-medium">✨ Free upgrade to £2,000 on multi-year plans!</p>
+                      )}
                     </div>
                     
                     {/* Labour Rate */}

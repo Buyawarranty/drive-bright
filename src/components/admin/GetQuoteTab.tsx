@@ -52,11 +52,19 @@ const termOptions = [
 
 const excessOptions = [0, 50, 100, 150];
 
-const claimLimitOptions = [
+const claimLimitOptionsBase = [
   { value: 750, label: '£750', description: 'Minor repairs' },
   { value: 1250, label: '£1,250', description: 'Most popular' },
   { value: 2000, label: '£2,000', description: 'Comprehensive' }
 ];
+
+// Helper to get visible claim limits based on payment type
+const getVisibleClaimLimits = (paymentType: string) => {
+  const isMultiYear = paymentType === '24months' || paymentType === '36months';
+  return isMultiYear 
+    ? claimLimitOptionsBase.filter(opt => opt.value !== 1250)
+    : claimLimitOptionsBase;
+};
 
 const labourRateOptions = [
   { rate: 50, label: '£50/hr', description: 'Local Garages', isBestValue: true },
@@ -1992,8 +2000,11 @@ Questions? Call 0330 229 5040`;
                 {/* Claim Limit - Quick Select Chips */}
                 <div className="space-y-3">
                   <Label className="text-base font-semibold">Claim Limit 🚗</Label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {claimLimitOptions.map((option) => (
+                  {(paymentType === '24months' || paymentType === '36months') && (
+                    <p className="text-xs text-green-600 font-medium bg-green-50 p-2 rounded-lg">✨ Free upgrade to £2,000 on multi-year plans!</p>
+                  )}
+                  <div className="grid grid-cols-3 gap-2">
+                    {getVisibleClaimLimits(paymentType).map((option) => (
                       <button
                         key={option.value}
                         onClick={() => setClaimLimit(option.value)}
