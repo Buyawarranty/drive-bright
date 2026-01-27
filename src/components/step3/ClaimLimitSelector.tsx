@@ -168,8 +168,8 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
                   
                   {/* Collapsible Content */}
                   <CollapsibleContent>
-                    <div className="px-4 pb-4 pt-2 bg-gray-50 border-t border-border">
-                      <p className="text-sm text-gray-700 leading-relaxed">
+                    <div className="px-3 pb-3 pt-2 bg-gray-50 border-t border-border">
+                      <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">
                         {claimLimitDetails[limit]}
                       </p>
                     </div>
