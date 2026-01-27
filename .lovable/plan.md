@@ -1,69 +1,177 @@
 
-# Fix Boost Pricing for Multi-Year Plans
 
-## Problem Identified
+# Embedded Stripe Payment Integration
 
-The upgrade from £2,000 to £3,000 claim limit on 2-year and 3-year plans is charging too much:
+## Overview
+This plan implements Stripe's embedded checkout experience using **Stripe Payment Element**, allowing customers to complete payments directly on buyawarranty.co.uk without being redirected to Stripe's hosted checkout page.
 
-| Current Behavior | Expected Behavior |
-|-----------------|-------------------|
-| 2-year: £5/month × 24 months = £120 total | 2-year: £5/month × 12 months = £60 total |
-| 3-year: £5/month × 36 months = £180 total | 3-year: £5/month × 12 months = £60 total |
-| Price jumps from £98/month to £113/month (£15 difference) | Price should only increase by £5/month |
+## Current State
+- **Current Flow**: Users click "Complete checkout" → Redirected to Stripe's hosted checkout page → After payment, redirected back to `/thank-you`
+- **Current Functions**: `create-checkout` creates a Stripe Checkout Session with `mode: "payment"` and returns a redirect URL
+- **Webhook**: `stripe-webhook` listens for `checkout.session.completed` and processes the payment via `handle-successful-payment`
 
-## Root Cause
-
-The `calculateBoostAdjustment` function in `src/lib/pricingMatrix.ts` multiplies the £5/month boost price by the warranty duration, but all payments are always made over 12 months. This means the boost should always be £5/month × 12 = £60 total, regardless of cover length.
-
-## Changes Required
-
-### 1. Update Pricing Logic (src/lib/pricingMatrix.ts)
-
-Modify `calculateBoostAdjustment` function to use a fixed 12-month multiplier instead of the duration:
+## Proposed Architecture
 
 ```text
-Current:
-  durationMonths = DURATION_MONTHS[paymentPeriod];  // 12, 24, or 36
-  return BOOST_CLAIM_LIMIT_MONTHLY * durationMonths;
+┌─────────────────────────────────────────────────────────────────┐
+│                    CURRENT FLOW (Redirect)                       │
+├─────────────────────────────────────────────────────────────────┤
+│  User clicks Pay → create-checkout → Stripe Redirect → Thank You│
+└─────────────────────────────────────────────────────────────────┘
 
-Fixed:
-  return BOOST_CLAIM_LIMIT_MONTHLY * 12;  // Always £60 total
+                              ↓ BECOMES ↓
+
+┌─────────────────────────────────────────────────────────────────┐
+│                    NEW FLOW (Embedded)                           │
+├─────────────────────────────────────────────────────────────────┤
+│  User clicks Pay → create-payment-intent → Modal with Stripe    │
+│  Payment Element → Confirm Payment → Webhook → Thank You        │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-Update the file comment to document this rule:
-- Boost claim limit: +£5/month × 12 payments = £60 (same for all durations)
+## Implementation Steps
 
-### 2. Remove "+£5/month" Label (src/components/step3/ClaimLimitSelector.tsx)
+### Phase 1: Dependencies & Setup
 
-Remove lines 154-157 which display the upgrade price under the £3,000 option for multi-year plans:
+1. **Add Stripe.js to frontend**
+   - Install `@stripe/stripe-js` and `@stripe/react-stripe-js` packages
+   - Create a `StripeProvider` wrapper component
 
-```text
-Remove:
-  {isMultiYear && limit === 3000 && (
-    <div className="text-xs text-primary font-medium mt-1">+£5/month</div>
-  )}
-```
+### Phase 2: New Edge Function
+
+2. **Create `create-payment-intent` edge function**
+   - Creates a Stripe PaymentIntent instead of Checkout Session
+   - Returns the `client_secret` for frontend use
+   - Stores all metadata (customer data, vehicle data, add-ons, pricing) in the PaymentIntent
+   - Performs same server-side price validation as current `create-checkout`
+
+### Phase 3: Frontend Components
+
+3. **Create `StripePaymentForm` component**
+   - Wraps Stripe's `PaymentElement`
+   - Handles payment confirmation
+   - Shows loading states and error handling
+   - Matches existing Step 4 UX styling
+
+4. **Create `EmbeddedCheckoutModal` component**
+   - Modal that appears on Step 4 when user clicks "Pay in full"
+   - Contains the `StripePaymentForm`
+   - Provides clear branding (BuyAWarranty logo, secure payment messaging)
+   - Exit confirmation dialog if user tries to close mid-payment
+
+### Phase 4: Webhook Updates
+
+5. **Update `stripe-webhook` to handle `payment_intent.succeeded`**
+   - Currently handles `checkout.session.completed`
+   - Add handler for `payment_intent.succeeded` event
+   - Extract metadata from PaymentIntent
+   - Call `handle-successful-payment` with the same data structure
+
+### Phase 5: Integration
+
+6. **Update `StreamlinedCheckout.tsx`**
+   - Replace `processStripeCheckout` redirect flow with embedded modal flow
+   - When user clicks "Complete One-Time Payment":
+     - Call `create-payment-intent` to get client_secret
+     - Open modal with embedded Stripe Payment Element
+     - On successful payment, navigate to `/thank-you`
+
+---
 
 ## Technical Details
 
-### Files to Modify
+### New Edge Function: `create-payment-intent`
 
-| File | Change |
-|------|--------|
-| `src/lib/pricingMatrix.ts` | Fix `calculateBoostAdjustment` to use fixed 12-month multiplier |
-| `src/components/step3/ClaimLimitSelector.tsx` | Remove "+£5/month" label from £3,000 option |
+```typescript
+// Key differences from create-checkout:
+// - Uses stripe.paymentIntents.create() instead of stripe.checkout.sessions.create()
+// - Returns { clientSecret, paymentIntentId } instead of { url }
+// - All metadata stored on PaymentIntent for webhook retrieval
+```
 
-### Pricing Propagation
+### Frontend Components
 
-Because this change is in the centralized `pricingMatrix.ts`, it will automatically propagate to:
-- Step 3 (PricingTable.tsx)
-- Step 4 (StreamlinedCheckout.tsx)
-- Admin Dashboard (GetQuoteTab.tsx, ConfirmExternalPaymentTab.tsx)
-- Email Quote functionality
+**StripeProvider.tsx**
+- Initializes Stripe with publishable key
+- Wraps payment components with Elements provider
 
-### Expected Result
+**StripePaymentForm.tsx**
+- Uses `useStripe()` and `useElements()` hooks
+- Renders `PaymentElement` with British styling
+- Handles `stripe.confirmPayment()` with proper error handling
 
-For a £2,000 base claim limit quote at £98/month:
-- Selecting £3,000 will now show £103/month (£98 + £5)
-- Total boost cost: £60 (£5 × 12 payments)
-- Same pricing applies to both 2-year and 3-year plans
+**EmbeddedCheckoutModal.tsx**
+- Modal using existing Radix Dialog pattern
+- Shows order summary (vehicle, plan, price)
+- Contains StripePaymentForm
+- Loading state during payment processing
+- Success/error state handling
+
+### Webhook Handler Updates
+
+```typescript
+// Add to stripe-webhook/index.ts:
+if (event.type === "payment_intent.succeeded") {
+  const paymentIntent = event.data.object as Stripe.PaymentIntent;
+  // Extract metadata and process same as checkout.session.completed
+}
+```
+
+---
+
+## Secret Required
+
+**STRIPE_PUBLISHABLE_KEY**: Required for frontend Stripe.js initialization
+- Currently only `STRIPE_SECRET_KEY` exists in secrets
+- Need to add the publishable key (starts with `pk_`)
+
+---
+
+## UX Flow
+
+1. User fills in customer details on Step 4
+2. User selects "Pay in full" option
+3. User clicks "Complete One-Time Payment"
+4. Modal opens with embedded Stripe payment form
+5. User enters card details directly on buyawarranty.co.uk
+6. Payment processes in the background
+7. On success: Modal shows confirmation, then redirects to /thank-you
+8. On failure: Error message displayed, user can retry
+
+---
+
+## Benefits
+
+- **No redirect**: Customers stay on your site throughout checkout
+- **Better conversion**: Fewer drop-offs from external redirects
+- **Brand consistency**: Payment experience matches BuyAWarranty design
+- **Mobile-friendly**: Works better on mobile without app switching
+- **Faster**: No page loads to external domains
+
+---
+
+## Files to Create
+
+| File | Purpose |
+|------|---------|
+| `supabase/functions/create-payment-intent/index.ts` | New edge function for Payment Intents |
+| `src/components/stripe/StripeProvider.tsx` | Stripe Elements provider wrapper |
+| `src/components/stripe/StripePaymentForm.tsx` | Payment Element form component |
+| `src/components/stripe/EmbeddedCheckoutModal.tsx` | Modal container for embedded checkout |
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `package.json` | Add `@stripe/stripe-js`, `@stripe/react-stripe-js` |
+| `supabase/functions/stripe-webhook/index.ts` | Add `payment_intent.succeeded` handler |
+| `src/components/checkout/StreamlinedCheckout.tsx` | Integrate embedded checkout flow |
+
+---
+
+## Backward Compatibility
+
+- Bumper monthly payments continue to work as-is (separate flow)
+- Existing webhook handler for `checkout.session.completed` remains functional
+- Can easily fall back to redirect flow if embedded fails
+
