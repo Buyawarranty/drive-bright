@@ -1565,8 +1565,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
               const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
               const labourTotalAdjust = labourMonthlyAdjust * durationMonths;
               
-              // Boost addon: +£5/month for duration
-              const boostTotalAdjust = boostAddon ? (5 * durationMonths) : 0;
+              // Boost addon: +£5/month × 12 payments = £60 total (same for all durations)
+              const boostTotalAdjust = boostAddon ? 60 : 0;
               
               // Get auto-included add-ons for THIS card's duration (not the selected plan)
               const thisCardAutoIncluded = getAutoIncludedAddOns(durationId);
