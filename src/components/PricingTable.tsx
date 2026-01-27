@@ -2563,7 +2563,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <div className="text-3xl font-bold text-black">
                       £3,000 <span className="text-base">per claim</span>
                     </div>
-                    <div className="text-sm text-primary font-medium mt-1">+£5/month</div>
                   </div>
                   <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                     selectedClaimLimit === 2000 && boostAddon ? 'bg-green-500 border-green-500' : 'border-gray-300'
