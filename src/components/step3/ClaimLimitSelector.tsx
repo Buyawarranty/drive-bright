@@ -151,10 +151,6 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
                       isMultiYear ? "text-lg" : "text-xl"
                     )}>£{limit.toLocaleString()}</div>
                     <div className="text-xs text-muted-foreground">per claim</div>
-                    {/* Show upgrade price for £3000 on multi-year plans */}
-                    {isMultiYear && limit === 3000 && (
-                      <div className="text-xs text-primary font-medium mt-1">+£5/month</div>
-                    )}
                   </button>
                   {/* Divider */}
                   <div className="border-t border-border" />
