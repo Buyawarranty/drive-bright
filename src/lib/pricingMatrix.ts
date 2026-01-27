@@ -7,7 +7,7 @@
  * - Labour rate £70/hr = base price (no adjustment) - DEFAULT
  * - Labour rate £100/hr = +£8/month for duration
  * - Labour rate £200/hr = +£24/month for duration
- * - Boost claim limit (+£1000) = +£5/month for duration
+ * - Boost claim limit (+£1000) = +£5/month × 12 payments = £60 total (same for all durations)
  * - All payments are ALWAYS 12 monthly installments
  * - Monthly = Math.floor(total / 12) - always round DOWN
  * - "Was" price = total + marketing savings (£100 for 2yr, £200 for 3yr) - display only
@@ -126,8 +126,9 @@ export function calculateBoostAdjustment(
   paymentPeriod: PaymentPeriod
 ): number {
   if (!boostEnabled) return 0;
-  const durationMonths = DURATION_MONTHS[paymentPeriod];
-  return BOOST_CLAIM_LIMIT_MONTHLY * durationMonths;
+  // Always £5/month × 12 payments = £60 total, regardless of cover duration
+  // All payments are made over 12 months, so boost cost is always the same
+  return BOOST_CLAIM_LIMIT_MONTHLY * 12;
 }
 
 /**
