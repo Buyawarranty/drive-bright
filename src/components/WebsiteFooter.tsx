@@ -24,11 +24,11 @@ const WebsiteFooter = () => {
               Get your free quote
             </button>
             <a 
-              href="tel:03302295040" 
+              href="tel:08004947477" 
               className="text-white font-semibold text-lg hover:text-white/80 transition-colors flex items-center gap-2"
             >
               <Phone className="w-5 h-5" />
-              0330 229 5040
+              0800 494 7477
             </a>
           </div>
         </div>
@@ -43,11 +43,11 @@ const WebsiteFooter = () => {
             </h2>
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-6">
               <a 
-                href="tel:03302295040" 
+                href="tel:08004947477" 
                 className="flex items-center text-sm font-semibold text-[#eb4b00] hover:text-[#d63f00] transition-colors"
               >
                 <Phone className="w-4 h-4 mr-1.5" />
-                Call us: 0330 229 5040
+                Call us: 0800 494 7477
               </a>
               <a 
                 href="mailto:support@buyawarranty.co.uk" 
@@ -115,11 +115,11 @@ const WebsiteFooter = () => {
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900">Sales Enquiries:</p>
-                  <p className="text-lg font-bold text-[#eb4b00]">0330 229 5040</p>
+                  <p className="text-lg font-bold text-[#eb4b00]">0800 494 7477</p>
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900">Claims Hotline:</p>
-                  <p className="text-lg font-bold text-[#eb4b00]">0330 229 5045</p>
+                  <p className="text-lg font-bold text-[#eb4b00]">0800 494 7980</p>
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900">Email Support:</p>
