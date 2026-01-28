@@ -524,6 +524,50 @@ export type Database = {
           },
         ]
       }
+      agent_distribution_caps: {
+        Row: {
+          admin_user_id: string
+          assigned_today: number | null
+          cap_reset_date: string | null
+          created_at: string | null
+          daily_cap: number | null
+          id: string
+          last_assigned_at: string | null
+          paused: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          admin_user_id: string
+          assigned_today?: number | null
+          cap_reset_date?: string | null
+          created_at?: string | null
+          daily_cap?: number | null
+          id?: string
+          last_assigned_at?: string | null
+          paused?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          admin_user_id?: string
+          assigned_today?: number | null
+          cap_reset_date?: string | null
+          created_at?: string | null
+          daily_cap?: number | null
+          id?: string
+          last_assigned_at?: string | null
+          paused?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_distribution_caps_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blocked_ips: {
         Row: {
           blocked_at: string
@@ -2650,6 +2694,56 @@ export type Database = {
           },
         ]
       }
+      lead_assignment_audit: {
+        Row: {
+          agent_assigned_today_at_time: number | null
+          agent_cap_at_time: number | null
+          agent_presence_status: string | null
+          assigned_by: string | null
+          assigned_to_id: string | null
+          assignment_type: string
+          created_at: string | null
+          eligible_agents_count: number | null
+          id: string
+          lead_id: string
+          reason: string | null
+        }
+        Insert: {
+          agent_assigned_today_at_time?: number | null
+          agent_cap_at_time?: number | null
+          agent_presence_status?: string | null
+          assigned_by?: string | null
+          assigned_to_id?: string | null
+          assignment_type: string
+          created_at?: string | null
+          eligible_agents_count?: number | null
+          id?: string
+          lead_id: string
+          reason?: string | null
+        }
+        Update: {
+          agent_assigned_today_at_time?: number | null
+          agent_cap_at_time?: number | null
+          agent_presence_status?: string | null
+          assigned_by?: string | null
+          assigned_to_id?: string | null
+          assignment_type?: string
+          created_at?: string | null
+          eligible_agents_count?: number | null
+          id?: string
+          lead_id?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_assignment_audit_assigned_to_id_fkey"
+            columns: ["assigned_to_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_call_logs: {
         Row: {
           agent_id: string | null
@@ -2691,6 +2785,51 @@ export type Database = {
           {
             foreignKeyName: "lead_call_logs_agent_id_fkey"
             columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_distribution_settings: {
+        Row: {
+          active_only_distribution: boolean | null
+          created_at: string | null
+          id: string
+          overflow_recipient_id: string | null
+          solo_agent_id: string | null
+          solo_mode_enabled: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          active_only_distribution?: boolean | null
+          created_at?: string | null
+          id?: string
+          overflow_recipient_id?: string | null
+          solo_agent_id?: string | null
+          solo_mode_enabled?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          active_only_distribution?: boolean | null
+          created_at?: string | null
+          id?: string
+          overflow_recipient_id?: string | null
+          solo_agent_id?: string | null
+          solo_mode_enabled?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_distribution_settings_overflow_recipient_id_fkey"
+            columns: ["overflow_recipient_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_distribution_settings_solo_agent_id_fkey"
+            columns: ["solo_agent_id"]
             isOneToOne: false
             referencedRelation: "admin_users"
             referencedColumns: ["id"]
@@ -4439,12 +4578,16 @@ export type Database = {
           current_tab: string | null
           device_info: Json | null
           id: string
+          interaction_count: number | null
+          is_paused_receiving: boolean | null
           last_activity_at: string
+          last_interaction_at: string | null
           last_seen_at: string
           session_started_at: string | null
           status: string
           updated_at: string
           user_id: string
+          visibility_state: string | null
         }
         Insert: {
           admin_user_id?: string | null
@@ -4452,12 +4595,16 @@ export type Database = {
           current_tab?: string | null
           device_info?: Json | null
           id?: string
+          interaction_count?: number | null
+          is_paused_receiving?: boolean | null
           last_activity_at?: string
+          last_interaction_at?: string | null
           last_seen_at?: string
           session_started_at?: string | null
           status?: string
           updated_at?: string
           user_id: string
+          visibility_state?: string | null
         }
         Update: {
           admin_user_id?: string | null
@@ -4465,12 +4612,16 @@ export type Database = {
           current_tab?: string | null
           device_info?: Json | null
           id?: string
+          interaction_count?: number | null
+          is_paused_receiving?: boolean | null
           last_activity_at?: string
+          last_interaction_at?: string | null
           last_seen_at?: string
           session_started_at?: string | null
           status?: string
           updated_at?: string
           user_id?: string
+          visibility_state?: string | null
         }
         Relationships: [
           {
@@ -4806,6 +4957,10 @@ export type Database = {
         Args: { payment_type: string; start_date: string }
         Returns: string
       }
+      claim_lead_for_agent: {
+        Args: { p_agent_id: string; p_lead_id: string }
+        Returns: Json
+      }
       fix_customer_role: { Args: { p_user_id: string }; Returns: undefined }
       generate_policy_number: { Args: never; Returns: string }
       generate_random_password: { Args: never; Returns: string }
@@ -4824,6 +4979,10 @@ export type Database = {
         Args: { p_column: string; p_user_id: string }
         Returns: string
       }
+      get_next_eligible_agent: {
+        Args: { p_exclude_agent_id?: string }
+        Returns: string
+      }
       get_next_sales_user: { Args: never; Returns: string }
       get_next_warranty_serial: { Args: never; Returns: number }
       get_user_permissions: { Args: { p_user_id: string }; Returns: Json }
@@ -4838,6 +4997,10 @@ export type Database = {
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_blog_writer: { Args: { user_id: string }; Returns: boolean }
       is_ip_blocked: { Args: { check_ip: unknown }; Returns: boolean }
+      log_agent_interaction: {
+        Args: { p_event_type?: string }
+        Returns: undefined
+      }
       log_click_activity: {
         Args: {
           p_action_type: string
@@ -4859,6 +5022,7 @@ export type Database = {
         Returns: string
       }
       make_user_admin: { Args: { user_email: string }; Returns: undefined }
+      reset_daily_caps: { Args: never; Returns: undefined }
       restore_customer: { Args: { customer_uuid: string }; Returns: undefined }
       set_user_offline: { Args: never; Returns: undefined }
       soft_delete_customer: {
