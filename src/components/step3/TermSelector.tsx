@@ -94,30 +94,6 @@ const TermSelector: React.FC<TermSelectorProps> = ({
         <span className="text-sm text-gray-600 font-bold text-center w-full sm:w-auto sm:text-base sm:self-center flex items-center gap-1">All parts included at no extra cost</span>
       </div>
       
-      {/* Dynamic microcopy for add-ons explanation */}
-      <div className={cn(
-        "mb-4 px-3 py-2.5 rounded-lg text-sm transition-all duration-300",
-        hasAddOnsSelected 
-          ? "bg-success/10 border border-success/30" 
-          : "bg-muted/50 border border-border"
-      )}>
-        {hasAddOnsSelected ? (
-          <div className="flex items-start gap-2">
-            <CheckCircle className="w-4 h-4 text-success flex-shrink-0 mt-0.5" />
-            <p className="text-foreground">
-              <span className="font-medium">Optional Add-Ons selected.</span>{' '}
-              <span className="text-muted-foreground">Your updated total is shown in the summary below.</span>
-            </p>
-          </div>
-        ) : (
-          <div className="flex items-start gap-2">
-            <Search className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-            <p className="text-muted-foreground">
-              Base cover prices shown below. Any Optional Add-Ons you choose are added to the total in the summary bar.
-            </p>
-          </div>
-        )}
-      </div>
 
       <div className="space-y-3">
         {visibleTerms.map((term) => {
