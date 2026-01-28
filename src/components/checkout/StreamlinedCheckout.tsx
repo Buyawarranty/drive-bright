@@ -138,6 +138,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     postcode: '',
   });
   
+  // Address field errors
+  const [addressErrors, setAddressErrors] = useState<{[key: string]: string}>({});
+  const [addressValidated, setAddressValidated] = useState<{[key: string]: boolean}>({});
+  
+  // Track if address lookup failed (for showing manual entry)
+  const [addressLookupFailed, setAddressLookupFailed] = useState(false);
+  
   // Form states
   const [showValidation, setShowValidation] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
@@ -272,7 +279,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     ? Math.floor(discountedBumperPrice / 12) 
     : monthlyPrice;
 
-  // Check section completion status
+  // Check section completion status - now includes address fields
   const personalDetailsComplete = useMemo(() => {
     return !!(
       customerData.first_name?.trim() &&
@@ -285,6 +292,29 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       customerData.mileage
     );
   }, [customerData.first_name, customerData.last_name, customerData.email, customerData.phone, customerData.mileage]);
+  
+  // Check if address is complete (required fields)
+  const addressComplete = useMemo(() => {
+    const ukPostcodeRegex = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
+    return !!(
+      (addressData.building_number?.trim() || addressData.building_name?.trim()) &&
+      addressData.street?.trim() &&
+      addressData.town?.trim() &&
+      addressData.postcode?.trim() &&
+      ukPostcodeRegex.test(addressData.postcode.replace(/\s/g, ''))
+    );
+  }, [addressData]);
+  
+  // Count missing address fields
+  const addressFieldsMissing = useMemo(() => {
+    let count = 0;
+    const ukPostcodeRegex = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
+    if (!addressData.building_number?.trim() && !addressData.building_name?.trim()) count++;
+    if (!addressData.street?.trim()) count++;
+    if (!addressData.town?.trim()) count++;
+    if (!addressData.postcode?.trim() || !ukPostcodeRegex.test(addressData.postcode.replace(/\s/g, ''))) count++;
+    return count;
+  }, [addressData]);
 
   // Count missing fields
   const personalDetailsMissing = useMemo(() => {
@@ -615,6 +645,60 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     return isValid;
   };
 
+  // Validate address field
+  const validateAddressField = (field: string): boolean => {
+    let isValid = true;
+    let error = '';
+    const ukPostcodeRegex = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
+
+    switch (field) {
+      case 'building_number':
+        // Building number OR building name is required
+        if (!addressData.building_number?.trim() && !addressData.building_name?.trim()) {
+          error = 'Enter your building number.';
+          isValid = false;
+        }
+        break;
+      case 'street':
+        if (!addressData.street?.trim()) {
+          error = 'Enter your street name.';
+          isValid = false;
+        }
+        break;
+      case 'town':
+        if (!addressData.town?.trim()) {
+          error = 'Enter your town or city.';
+          isValid = false;
+        }
+        break;
+      case 'postcode':
+        if (!addressData.postcode?.trim()) {
+          error = 'Enter a valid UK postcode.';
+          isValid = false;
+        } else if (!ukPostcodeRegex.test(addressData.postcode.replace(/\s/g, ''))) {
+          error = 'Enter a valid UK postcode.';
+          isValid = false;
+        }
+        break;
+    }
+
+    setAddressErrors(prev => ({ ...prev, [field]: error }));
+    setAddressValidated(prev => ({ ...prev, [field]: isValid }));
+    return isValid;
+  };
+
+  // Validate all address fields
+  const validateAddressForm = (): boolean => {
+    const requiredFields = ['building_number', 'street', 'town', 'postcode'];
+    let allValid = true;
+    
+    requiredFields.forEach(field => {
+      if (!validateAddressField(field)) allValid = false;
+    });
+    
+    return allValid;
+  };
+
   const validateForm = (): boolean => {
     const requiredFields = ['first_name', 'last_name', 'email', 'phone', 'mileage'];
     let allValid = true;
@@ -622,6 +706,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     requiredFields.forEach(field => {
       if (!validateField(field)) allValid = false;
     });
+    
+    // Also validate address fields
+    if (!validateAddressForm()) allValid = false;
     
     return allValid;
   };
@@ -634,6 +721,16 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       return 'border-green-500 bg-green-50/30';
     }
     return '';
+  };
+
+  const getAddressInputValidationClass = (field: string) => {
+    if (showValidation && addressErrors[field]) {
+      return 'border-red-500 ring-2 ring-red-200 bg-red-50/50 focus:ring-red-300 focus:border-red-500';
+    }
+    if (addressValidated[field]) {
+      return 'border-green-500 bg-green-50/30';
+    }
+    return 'bg-[#F5F5F5] border-gray-200 focus:bg-white';
   };
 
   const applyPromoCode = async () => {
@@ -691,10 +788,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     
     if (!validateForm()) {
       if (!personalDetailsComplete) setDetailsOpen(true);
+      // Also expand address section if address fields are incomplete
+      if (!addressComplete) setAddressExpanded(true);
       
       const formSection = document.getElementById('customer-form');
       formSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      toast.error('Please complete all required fields above.');
+      toast.error('Please complete all required fields including your address.');
       return;
     }
     
@@ -1308,11 +1407,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       )}
                     </div>
 
-                    {/* Optional Address Section - Collapsible */}
+                    {/* Required Address Section - Collapsible */}
                     <div 
-                      className="rounded-xl overflow-hidden transition-all duration-200 bg-white"
+                      className={`rounded-xl overflow-hidden transition-all duration-200 bg-white ${
+                        showValidation && !addressComplete ? 'ring-2 ring-red-200' : ''
+                      }`}
                       style={{ 
-                        border: '1px solid #E5E5E5' 
+                        border: showValidation && !addressComplete ? '1px solid #EF4444' : '1px solid #E5E5E5'
                       }}
                     >
                       {/* Collapsed Header */}
@@ -1325,25 +1426,42 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       >
                         <div className="flex items-center gap-3">
                           <div 
-                            className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                            style={{ backgroundColor: '#EFEFEF' }}
+                            className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                              addressComplete 
+                                ? 'bg-[hsl(var(--success)/0.15)] border border-[hsl(var(--success)/0.3)]' 
+                                : showValidation && !addressComplete 
+                                ? 'bg-destructive/10 border border-destructive/20' 
+                                : ''
+                            }`}
+                            style={!addressComplete && !showValidation ? { backgroundColor: '#EFEFEF' } : undefined}
                           >
-                            <MapPin className="w-4 h-4" style={{ color: '#8A8A8A' }} />
+                            <MapPin className={`w-4 h-4 ${
+                              addressComplete 
+                                ? 'text-[hsl(var(--success))]' 
+                                : showValidation && !addressComplete 
+                                ? 'text-destructive' 
+                                : ''
+                            }`} style={!addressComplete && !showValidation ? { color: '#8A8A8A' } : undefined} />
                           </div>
                           <div>
                             <p className="text-sm font-medium text-foreground">
-                              {addressExpanded ? 'Your Address' : 'No address needed now'}
+                              Your Address <span className="text-destructive">*</span>
                             </p>
                             <p className="text-xs text-muted-foreground mt-0.5">
                               {addressExpanded 
                                 ? 'Search or enter your address below' 
-                                : 'You can add it later from your dashboard — or enter it now if you prefer.'
+                                : 'Required for your policy documents'
                               }
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
                           {!addressExpanded && (
+                            showValidation && addressFieldsMissing > 0 
+                              ? <SectionErrorBadge count={addressFieldsMissing} />
+                              : addressComplete && <SectionCompleteBadge />
+                          )}
+                          {!addressExpanded && !addressComplete && !showValidation && (
                             <span 
                               className="text-xs font-medium px-4 py-2 rounded-full transition-colors whitespace-nowrap"
                               style={{ 
@@ -1352,14 +1470,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                 border: '1px solid #D0D0D0'
                               }}
                             >
-                              Add address now
+                              Enter address
                             </span>
                           )}
                           {addressExpanded && (
                             <span 
                               className="text-xs font-medium text-muted-foreground"
                             >
-                              Hide
+                              Collapse
                             </span>
                           )}
                           <ChevronDown 
@@ -1372,7 +1490,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       <div 
                         id="address-fields"
                         className={`overflow-hidden transition-all duration-200 ease-in-out ${
-                          addressExpanded ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
+                          addressExpanded ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
                         }`}
                       >
                         <div className="px-4 pb-4 pt-3 space-y-4 border-t border-border/30">
@@ -1394,7 +1512,16 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                   county: autocompleteData.county || '',
                                   postcode: autocompleteData.postcode || '',
                                 });
+                                // Clear errors on successful selection
+                                setAddressErrors({});
+                                setAddressValidated({
+                                  building_number: true,
+                                  street: true,
+                                  town: true,
+                                  postcode: true,
+                                });
                               }}
+                              onLookupError={(hasError) => setAddressLookupFailed(hasError)}
                               className="w-full border border-gray-200 rounded-lg px-3 py-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-[#F5F5F5] focus:bg-white min-h-[44px] transition-colors"
                             />
                             <p className="text-xs text-muted-foreground mt-2">
@@ -1408,15 +1535,27 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             <div className="grid grid-cols-2 gap-3">
                               <div>
                                 <Label htmlFor="building_number" className="text-sm font-medium text-foreground/80">
-                                  Building Number
+                                  Building Number <span className="text-destructive">*</span>
                                 </Label>
                                 <Input
                                   id="building_number"
                                   placeholder="e.g. 123"
                                   value={addressData.building_number}
-                                  onChange={(e) => setAddressData(prev => ({ ...prev, building_number: e.target.value }))}
-                                  className="h-10 sm:h-11 text-sm mt-1 bg-[#F5F5F5] border-gray-200 focus:bg-white transition-colors"
+                                  onChange={(e) => {
+                                    setAddressData(prev => ({ ...prev, building_number: e.target.value }));
+                                    if (addressErrors.building_number) {
+                                      setAddressErrors(prev => ({ ...prev, building_number: '' }));
+                                    }
+                                  }}
+                                  onBlur={() => validateAddressField('building_number')}
+                                  className={`h-10 sm:h-11 text-sm mt-1 transition-colors ${getAddressInputValidationClass('building_number')}`}
                                 />
+                                {showValidation && addressErrors.building_number && (
+                                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                                    <AlertCircle className="w-3.5 h-3.5" />
+                                    {addressErrors.building_number}
+                                  </p>
+                                )}
                               </div>
                               <div>
                                 <Label htmlFor="building_name" className="text-sm font-medium text-foreground/80">
@@ -1426,7 +1565,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                   id="building_name"
                                   placeholder="e.g. Oak House"
                                   value={addressData.building_name}
-                                  onChange={(e) => setAddressData(prev => ({ ...prev, building_name: e.target.value }))}
+                                  onChange={(e) => {
+                                    setAddressData(prev => ({ ...prev, building_name: e.target.value }));
+                                    // If building name is filled, clear building number error
+                                    if (e.target.value.trim() && addressErrors.building_number) {
+                                      setAddressErrors(prev => ({ ...prev, building_number: '' }));
+                                    }
+                                  }}
                                   className="h-10 sm:h-11 text-sm mt-1 bg-[#F5F5F5] border-gray-200 focus:bg-white transition-colors"
                                 />
                               </div>
@@ -1435,15 +1580,27 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             {/* Street */}
                             <div>
                               <Label htmlFor="street" className="text-sm font-medium text-foreground/80">
-                                Street
+                                Street <span className="text-destructive">*</span>
                               </Label>
                               <Input
                                 id="street"
                                 placeholder="e.g. High Street"
                                 value={addressData.street}
-                                onChange={(e) => setAddressData(prev => ({ ...prev, street: e.target.value }))}
-                                className="h-10 sm:h-11 text-sm mt-1 bg-[#F5F5F5] border-gray-200 focus:bg-white transition-colors"
+                                onChange={(e) => {
+                                  setAddressData(prev => ({ ...prev, street: e.target.value }));
+                                  if (addressErrors.street) {
+                                    setAddressErrors(prev => ({ ...prev, street: '' }));
+                                  }
+                                }}
+                                onBlur={() => validateAddressField('street')}
+                                className={`h-10 sm:h-11 text-sm mt-1 transition-colors ${getAddressInputValidationClass('street')}`}
                               />
+                              {showValidation && addressErrors.street && (
+                                <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                                  <AlertCircle className="w-3.5 h-3.5" />
+                                  {addressErrors.street}
+                                </p>
+                              )}
                             </div>
 
                             {/* Flat Number (optional) */}
@@ -1464,34 +1621,58 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               <div>
                                 <Label htmlFor="town" className="text-sm font-medium text-foreground/80">
-                                  Town / City
+                                  Town / City <span className="text-destructive">*</span>
                                 </Label>
                                 <Input
                                   id="town"
                                   placeholder="e.g. London"
                                   value={addressData.town}
-                                  onChange={(e) => setAddressData(prev => ({ ...prev, town: e.target.value }))}
-                                  className="h-10 sm:h-11 text-sm mt-1 bg-[#F5F5F5] border-gray-200 focus:bg-white transition-colors"
+                                  onChange={(e) => {
+                                    setAddressData(prev => ({ ...prev, town: e.target.value }));
+                                    if (addressErrors.town) {
+                                      setAddressErrors(prev => ({ ...prev, town: '' }));
+                                    }
+                                  }}
+                                  onBlur={() => validateAddressField('town')}
+                                  className={`h-10 sm:h-11 text-sm mt-1 transition-colors ${getAddressInputValidationClass('town')}`}
                                 />
+                                {showValidation && addressErrors.town && (
+                                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                                    <AlertCircle className="w-3.5 h-3.5" />
+                                    {addressErrors.town}
+                                  </p>
+                                )}
                               </div>
                               <div>
                                 <Label htmlFor="postcode" className="text-sm font-medium text-foreground/80">
-                                  Postcode
+                                  Postcode <span className="text-destructive">*</span>
                                 </Label>
                                 <Input
                                   id="postcode"
                                   placeholder="e.g. SW1A 1AA"
                                   value={addressData.postcode}
-                                  onChange={(e) => setAddressData(prev => ({ ...prev, postcode: e.target.value.toUpperCase() }))}
-                                  className="h-10 sm:h-11 text-sm mt-1 bg-[#F5F5F5] border-gray-200 focus:bg-white transition-colors"
+                                  onChange={(e) => {
+                                    setAddressData(prev => ({ ...prev, postcode: e.target.value.toUpperCase() }));
+                                    if (addressErrors.postcode) {
+                                      setAddressErrors(prev => ({ ...prev, postcode: '' }));
+                                    }
+                                  }}
+                                  onBlur={() => validateAddressField('postcode')}
+                                  className={`h-10 sm:h-11 text-sm mt-1 transition-colors ${getAddressInputValidationClass('postcode')}`}
                                 />
+                                {showValidation && addressErrors.postcode && (
+                                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                                    <AlertCircle className="w-3.5 h-3.5" />
+                                    {addressErrors.postcode}
+                                  </p>
+                                )}
                               </div>
                             </div>
                           </div>
 
-                          {/* Reassuring Note */}
+                          {/* Required Note */}
                           <p className="text-xs text-muted-foreground pt-1">
-                            Your address is optional — you can always update it later in your dashboard.
+                            <span className="text-destructive">*</span> Required fields for your warranty policy documents.
                           </p>
                         </div>
                       </div>
