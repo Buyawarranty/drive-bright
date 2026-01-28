@@ -1,15 +1,19 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Users, CreditCard, PoundSterling, Globe, Phone } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LabelList } from 'recharts';
+import { Users, CreditCard, PoundSterling, Globe, Phone, X, Calendar, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { toast } from 'sonner';
 import { ApiConnectivityTest } from './ApiConnectivityTest';
 import { DateRangeFilter } from './DateRangeFilter';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { DateRange } from 'react-day-picker';
+import { Button } from '@/components/ui/button';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Badge } from '@/components/ui/badge';
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, subWeeks, subMonths, subYears, isSameWeek, isSameMonth, isSameYear } from 'date-fns';
 
 interface Customer {
   id: string;
@@ -46,6 +50,9 @@ export const AnalyticsTab = () => {
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [sourceFilter, setSourceFilter] = useState<string>('all');
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [comparisonPeriod, setComparisonPeriod] = useState<'week' | 'month' | 'year' | null>(null);
+
 
   useEffect(() => {
     fetchAnalyticsData();
@@ -84,14 +91,86 @@ export const AnalyticsTab = () => {
     }
   };
 
+  // Handle bar chart click - filter to selected month
+  const handleBarClick = useCallback((data: any) => {
+    if (data && data.activePayload && data.activePayload[0]) {
+      const clickedData = data.activePayload[0].payload;
+      if (selectedMonth === clickedData.monthKey) {
+        // If clicking the same month, clear the selection
+        setSelectedMonth(null);
+      } else {
+        setSelectedMonth(clickedData.monthKey);
+        // Clear date range when selecting a specific month from chart
+        setDateRange(undefined);
+      }
+    }
+  }, [selectedMonth]);
+
+  // Clear selected month
+  const clearSelectedMonth = useCallback(() => {
+    setSelectedMonth(null);
+  }, []);
+
+  // Handle period comparison selection
+  const handlePeriodComparison = useCallback((period: 'week' | 'month' | 'year' | null) => {
+    if (comparisonPeriod === period) {
+      setComparisonPeriod(null);
+      setDateRange(undefined);
+    } else {
+      setComparisonPeriod(period);
+      setSelectedMonth(null);
+      
+      const now = new Date();
+      let from: Date, to: Date;
+      
+      switch (period) {
+        case 'week':
+          from = startOfWeek(now, { weekStartsOn: 1 });
+          to = endOfWeek(now, { weekStartsOn: 1 });
+          break;
+        case 'month':
+          from = startOfMonth(now);
+          to = endOfMonth(now);
+          break;
+        case 'year':
+          from = startOfYear(now);
+          to = endOfYear(now);
+          break;
+        default:
+          return;
+      }
+      
+      setDateRange({ from, to });
+    }
+  }, [comparisonPeriod]);
+
+  // Get the effective date filter (combining dateRange, selectedMonth, and comparison period)
+  const effectiveDateRange = useMemo(() => {
+    if (selectedMonth) {
+      // Parse the monthKey (format: "YYYY-MM")
+      const [year, month] = selectedMonth.split('-').map(Number);
+      const from = new Date(year, month - 1, 1);
+      const to = endOfMonth(from);
+      return { from, to };
+    }
+    return dateRange;
+  }, [selectedMonth, dateRange]);
+
   // Filter customers based on date range and source
   const filteredCustomers = useMemo(() => {
     return customers.filter(customer => {
       // Date filter
-      if (dateRange?.from) {
+      if (effectiveDateRange?.from) {
         const signupDate = new Date(customer.signup_date);
-        if (signupDate < dateRange.from) return false;
-        if (dateRange.to && signupDate > dateRange.to) return false;
+        const fromStart = new Date(effectiveDateRange.from);
+        fromStart.setHours(0, 0, 0, 0);
+        if (signupDate < fromStart) return false;
+        
+        if (effectiveDateRange.to) {
+          const toEnd = new Date(effectiveDateRange.to);
+          toEnd.setHours(23, 59, 59, 999);
+          if (signupDate > toEnd) return false;
+        }
       }
 
       // Source filter
@@ -112,7 +191,8 @@ export const AnalyticsTab = () => {
 
       return true;
     });
-  }, [customers, dateRange, sourceFilter]);
+  }, [customers, effectiveDateRange, sourceFilter]);
+
 
   // Helper function to categorize customer by source
   const getCustomerSource = (customer: Customer): 'website' | 'sales_team' | 'unknown' => {
@@ -130,14 +210,21 @@ export const AnalyticsTab = () => {
   const paidOrders = filteredCustomers.filter(c => c.final_amount && Number(c.final_amount) > 0);
   const overallAOV = paidOrders.length > 0 ? Math.round(totalRevenue / paidOrders.length) : 0;
 
-  // Calculate AOV by source (using all customers, respecting date filter only)
+  // Calculate AOV by source (using effectiveDateRange for both chart clicks and date picker)
   const sourceMetrics = useMemo(() => {
-    // Filter by date only for source breakdown
+    // Filter by effective date range (includes selected month from chart click)
     const dateFilteredCustomers = customers.filter(customer => {
-      if (dateRange?.from) {
+      if (effectiveDateRange?.from) {
         const signupDate = new Date(customer.signup_date);
-        if (signupDate < dateRange.from) return false;
-        if (dateRange.to && signupDate > dateRange.to) return false;
+        const fromStart = new Date(effectiveDateRange.from);
+        fromStart.setHours(0, 0, 0, 0);
+        if (signupDate < fromStart) return false;
+        
+        if (effectiveDateRange.to) {
+          const toEnd = new Date(effectiveDateRange.to);
+          toEnd.setHours(23, 59, 59, 999);
+          if (signupDate > toEnd) return false;
+        }
       }
       return true;
     });
@@ -160,7 +247,7 @@ export const AnalyticsTab = () => {
         aov: salesTeamCustomers.length > 0 ? Math.round(salesTeamRevenue / salesTeamCustomers.length) : 0
       }
     };
-  }, [customers, dateRange]);
+  }, [customers, effectiveDateRange]);
 
   // Plan distribution data
   const planDistribution = filteredCustomers.reduce((acc: Record<string, number>, customer) => {
@@ -196,7 +283,7 @@ export const AnalyticsTab = () => {
     return months;
   }, [filteredCustomers]);
 
-  // Monthly revenue data (last 12 months)
+  // Monthly revenue data (last 12 months) - uses ALL customers (not filtered) for chart display
   const monthlyRevenue = useMemo(() => {
     const months = Array.from({ length: 12 }, (_, i) => {
       const date = new Date();
@@ -204,11 +291,13 @@ export const AnalyticsTab = () => {
       return {
         month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
         monthKey: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
-        revenue: 0
+        revenue: 0,
+        isSelected: false
       };
     }).reverse();
 
-    filteredCustomers.forEach(customer => {
+    // Use all customers for chart display (not filtered customers)
+    customers.forEach(customer => {
       if (customer.final_amount && customer.signup_date) {
         const signupDate = new Date(customer.signup_date);
         const monthKey = `${signupDate.getFullYear()}-${String(signupDate.getMonth() + 1).padStart(2, '0')}`;
@@ -219,8 +308,16 @@ export const AnalyticsTab = () => {
       }
     });
 
+    // Mark selected month
+    if (selectedMonth) {
+      const selected = months.find(m => m.monthKey === selectedMonth);
+      if (selected) {
+        selected.isSelected = true;
+      }
+    }
+
     return months;
-  }, [filteredCustomers]);
+  }, [customers, selectedMonth]);
 
   const COLORS = ['#f97316', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
@@ -242,9 +339,29 @@ export const AnalyticsTab = () => {
         
         {/* Filters Row */}
         <div className="flex flex-wrap gap-4 items-end p-4 bg-muted/30 rounded-lg border">
+          {/* Period Comparison Toggle */}
+          <div className="space-y-1">
+            <Label className="text-sm font-medium">Quick Period</Label>
+            <ToggleGroup type="single" value={comparisonPeriod || ''} onValueChange={(val) => handlePeriodComparison(val as 'week' | 'month' | 'year' | null)}>
+              <ToggleGroupItem value="week" aria-label="This Week" className="px-3">
+                This Week
+              </ToggleGroupItem>
+              <ToggleGroupItem value="month" aria-label="This Month" className="px-3">
+                This Month
+              </ToggleGroupItem>
+              <ToggleGroupItem value="year" aria-label="This Year" className="px-3">
+                This Year
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+          
           <DateRangeFilter 
             dateRange={dateRange} 
-            onDateRangeChange={setDateRange}
+            onDateRangeChange={(range) => {
+              setDateRange(range);
+              setSelectedMonth(null);
+              setComparisonPeriod(null);
+            }}
             className="min-w-[280px]"
           />
           
@@ -274,7 +391,23 @@ export const AnalyticsTab = () => {
             </Select>
           </div>
           
-          {(dateRange || sourceFilter !== 'all') && (
+          {/* Selected Month Indicator */}
+          {selectedMonth && (
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 gap-1 py-1.5">
+                <Calendar className="h-3 w-3" />
+                {format(new Date(parseInt(selectedMonth.split('-')[0]), parseInt(selectedMonth.split('-')[1]) - 1), 'MMMM yyyy')}
+                <button 
+                  onClick={clearSelectedMonth}
+                  className="ml-1 hover:bg-emerald-200 rounded-full p-0.5"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            </div>
+          )}
+          
+          {(effectiveDateRange || sourceFilter !== 'all') && (
             <div className="text-sm text-muted-foreground">
               Showing <span className="font-semibold text-foreground">{filteredCustomers.length}</span> of {customers.length} customers
             </div>
@@ -379,20 +512,58 @@ export const AnalyticsTab = () => {
 
       {/* Monthly Revenue Chart */}
       <Card>
-        <CardHeader>
-          <CardTitle>Total Revenue by Month (Last 12 Months)</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Total Revenue by Month (Last 12 Months)</CardTitle>
+            <CardDescription className="mt-1">
+              Click on any bar to filter all data by that month
+            </CardDescription>
+          </div>
+          {selectedMonth && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={clearSelectedMonth}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Clear selection
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={350}>
-            <BarChart data={monthlyRevenue}>
+            <BarChart 
+              data={monthlyRevenue} 
+              onClick={handleBarClick}
+              style={{ cursor: 'pointer' }}
+            >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" tick={{ fontSize: 12 }} />
               <YAxis tickFormatter={(value) => `£${value.toLocaleString()}`} />
               <Tooltip 
                 formatter={(value: number) => [`£${value.toLocaleString('en-GB', { minimumFractionDigits: 0 })}`, 'Revenue']}
                 labelStyle={{ fontWeight: 'bold' }}
+                contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
               />
-              <Bar dataKey="revenue" fill="#10b981" radius={[4, 4, 0, 0]} />
+              <Bar 
+                dataKey="revenue" 
+                radius={[4, 4, 0, 0]}
+                fill="#10b981"
+              >
+                {monthlyRevenue.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={entry.isSelected ? '#059669' : '#10b981'}
+                    stroke={entry.isSelected ? '#047857' : 'transparent'}
+                    strokeWidth={entry.isSelected ? 2 : 0}
+                    style={{ 
+                      cursor: 'pointer',
+                      filter: entry.isSelected ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' : 'none'
+                    }}
+                  />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
