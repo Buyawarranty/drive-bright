@@ -747,19 +747,28 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       });
       
       if (error || !data?.valid) {
-        setPromoCodeError(data?.message || 'Invalid promo code');
+        setPromoCodeError(data?.error || data?.message || 'Invalid promo code');
         return;
       }
       
-      const discountAmount = data.type === 'percentage' 
-        ? bumperTotalPrice * (data.value / 100)
-        : data.value;
+      // Access discount code details from the nested discountCode object
+      const discountCode = data.discountCode;
+      if (!discountCode) {
+        setPromoCodeError('Invalid discount code response');
+        return;
+      }
+      
+      const discountAmount = discountCode.type === 'percentage' 
+        ? bumperTotalPrice * (discountCode.value / 100)
+        : discountCode.value;
       
       setAppliedDiscountCodes(prev => [...prev, {
         code: promoCodeInput.toUpperCase(),
-        type: data.type,
-        value: data.value,
-        discountAmount
+        type: discountCode.type,
+        value: discountCode.value,
+        discountAmount,
+        stripe_coupon_id: discountCode.stripe_coupon_id,
+        stripe_promo_code_id: discountCode.stripe_promo_code_id
       }]);
       
       setPromoCodeInput('');
