@@ -2,7 +2,7 @@ import React, { useState, memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Phone, Plus, Minus, AlertTriangle, PhoneMissed } from 'lucide-react';
+import { Phone, Plus, Minus, AlertTriangle, ClipboardList } from 'lucide-react';
 import { Lead, LeadStatus } from '@/hooks/useLeads';
 import { CallAttemptDialog } from './CallAttemptDialog';
 import { CallOutcome, useLeadCallTracking } from '@/hooks/useLeadCallTracking';
@@ -44,7 +44,34 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({
     ? `${lead.first_name || ''} ${lead.last_name || ''}`.trim()
     : lead.full_name || lead.email;
 
-  const handleQuickIncrement = () => {
+  // Quick increment without dialog
+  const handleQuickIncrement = async () => {
+    if (isMaxReached) {
+      toast.warning(`Max call attempts reached (${settings.max_call_attempts}). Move lead to next status.`);
+      return;
+    }
+    
+    const newAttemptNumber = callCount + 1;
+    
+    // Log the call attempt with default outcome
+    const { success } = await logCallAttempt({
+      leadId: lead.id,
+      attemptNumber: newAttemptNumber,
+      outcome: 'no_answer',
+      notes: '',
+      agentId,
+      agentName
+    });
+
+    if (success) {
+      onUpdateCallCount(1);
+      onLogActivity('call_attempt', `Call attempt #${newAttemptNumber}: no answer`);
+      toast.success(`Call Attempts: ${newAttemptNumber}`);
+    }
+  };
+
+  // Open dialog for detailed logging
+  const handleOpenDialog = () => {
     if (isMaxReached) {
       toast.warning(`Max call attempts reached (${settings.max_call_attempts}). Move lead to next status.`);
       return;
@@ -146,26 +173,46 @@ export const CallCountCell: React.FC<CallCountCellProps> = memo(({
             </SelectContent>
           </Select>
         ) : (
-          <Tooltip delayDuration={100}>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  "h-6 w-6 hover:bg-green-50",
-                  isNearMax 
-                    ? "text-amber-600 hover:text-amber-700" 
-                    : "text-green-600 hover:text-green-700"
-                )}
-                onClick={handleQuickIncrement}
-              >
-                <Plus className="h-3 w-3" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs">
-              {isNearMax ? 'Last attempt before max' : '+1 Call attempt'}
-            </TooltipContent>
-          </Tooltip>
+          <>
+            {/* Quick +1 button (no dialog) */}
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "h-6 w-6 hover:bg-green-50",
+                    isNearMax 
+                      ? "text-amber-600 hover:text-amber-700" 
+                      : "text-green-600 hover:text-green-700"
+                  )}
+                  onClick={handleQuickIncrement}
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                {isNearMax ? 'Last attempt before max' : 'Quick +1 call'}
+              </TooltipContent>
+            </Tooltip>
+            
+            {/* Detailed log button (opens dialog) */}
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                  onClick={handleOpenDialog}
+                >
+                  <ClipboardList className="h-3 w-3" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                Log with details
+              </TooltipContent>
+            </Tooltip>
+          </>
         )}
       </div>
 
