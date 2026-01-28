@@ -246,14 +246,18 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     return startOfDay(new Date());
   });
 
-  // Calculate prices - ALWAYS use totalPrice from Step 3 as source of truth
-  // The totalPrice is the exact price from Step 3's sticky footer/price summary
+  // Calculate prices - ALWAYS use monthlyPrice from Step 3 as source of truth
+  // Step 3 displays: monthlyPrice = Math.floor(totalPrice / 12), and Total = monthlyPrice * 12
+  // So Step 4 MUST use the same formula to match exactly
   const baseTotalPrice = updatedPricingData.totalPrice;
   const monthlyPrice = updatedPricingData.monthlyPrice ?? Math.floor(baseTotalPrice / 12);
   
-  // For monthly payments via Bumper: use the exact totalPrice from Step 3 (not monthlyPrice * 12)
-  // This ensures "How To Pay" matches the "Price Summary" exactly
-  const bumperTotalPrice = baseTotalPrice;
+  // CRITICAL: For monthly payments, the displayed total MUST be monthlyPrice * 12
+  // This matches Step 3's "Total: £X" which is calculated as monthlyPrice * 12
+  // NOT the raw totalPrice (which may differ due to flooring)
+  const bumperTotalPrice = monthlyPrice * 12;
+  
+  // Pay in full uses 10% discount on the floored monthly total
   const stripeTotalPrice = Math.floor(bumperTotalPrice * 0.90);
 
   // Calculate discounts
