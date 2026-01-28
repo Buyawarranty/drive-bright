@@ -114,9 +114,13 @@ const CustomerPolicyUpdateTab = () => {
         .eq('is_deleted', false);
 
       if (searchEmail) {
-        customerQuery = customerQuery.ilike('email', searchEmail.trim());
+        customerQuery = customerQuery.ilike('email', `%${searchEmail.trim()}%`);
       } else if (searchRegPlate) {
-        customerQuery = customerQuery.ilike('registration_plate', searchRegPlate.trim().replace(/\s/g, ''));
+        // Use wildcards for partial matching - handles spaces and partial plate searches
+        const normalizedSearch = searchRegPlate.trim().replace(/\s/g, '');
+        customerQuery = customerQuery.or(
+          `registration_plate.ilike.%${searchRegPlate.trim()}%,registration_plate.ilike.%${normalizedSearch}%`
+        );
       }
 
       const { data: customerData, error: customerError } = await customerQuery.limit(1).single();
