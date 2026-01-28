@@ -331,7 +331,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const hasMountedRef = React.useRef(false);
   const [isPageRestored, setIsPageRestored] = useState(false);
 
-  // Auto-collapse details section when complete (only after initial render, not on bfcache restore)
+  // Auto-collapse details section when BOTH personal details AND address are complete
+  // CRITICAL: Do NOT close until address is fully completed - user must enter all required address fields
   useEffect(() => {
     // Skip auto-collapse on initial mount or bfcache restore to prevent freezing
     if (!hasMountedRef.current) {
@@ -345,13 +346,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       return;
     }
     
-    if (personalDetailsComplete && detailsOpen) {
+    // Only collapse when BOTH personal details AND address are complete
+    if (personalDetailsComplete && addressComplete && detailsOpen) {
       const timer = setTimeout(() => {
         setDetailsOpen(false);
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [personalDetailsComplete]);
+  }, [personalDetailsComplete, addressComplete]);
 
   // Track page load
   useEffect(() => {
