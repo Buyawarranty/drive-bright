@@ -11,8 +11,8 @@ import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 
 interface LeadsFiltersProps {
-  filter: LeadStatus | 'all' | 'high_priority';
-  onFilterChange: (filter: LeadStatus | 'all' | 'high_priority') => void;
+  filter: LeadStatus | 'all' | 'high_priority' | 'fake';
+  onFilterChange: (filter: LeadStatus | 'all' | 'high_priority' | 'fake') => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
   onRefresh: () => void;
@@ -26,6 +26,7 @@ interface LeadsFiltersProps {
     paid: number;
     lost: number;
     high_priority: number;
+    fake: number;
   };
   dateRange?: { from: Date | undefined; to: Date | undefined };
   onDateRangeChange?: (range: { from: Date | undefined; to: Date | undefined }) => void;
@@ -74,8 +75,8 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   return (
     <div className="space-y-4">
       {/* Tabs for status filter */}
-      <Tabs value={filter} onValueChange={(v) => onFilterChange(v as LeadStatus | 'all' | 'high_priority')}>
-        <TabsList className="grid w-full grid-cols-7">
+      <Tabs value={filter} onValueChange={(v) => onFilterChange(v as LeadStatus | 'all' | 'high_priority' | 'fake')}>
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="all" className="relative">
             All
             <Badge variant="secondary" className="ml-1 h-5 px-1.5">{leadCounts.all}</Badge>
@@ -101,8 +102,12 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-gray-100">{leadCounts.lost}</Badge>
           </TabsTrigger>
           <TabsTrigger value="high_priority">
-            🔥 High Priority
+            🔥 Priority
             <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-red-100">{leadCounts.high_priority}</Badge>
+          </TabsTrigger>
+          <TabsTrigger value="fake">
+            Fake
+            <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-orange-100">{leadCounts.fake}</Badge>
           </TabsTrigger>
         </TabsList>
       </Tabs>
