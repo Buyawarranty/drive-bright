@@ -262,6 +262,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const discountedBumperPrice = Math.floor(bumperTotalPrice - totalDiscountAmount);
   const discountedStripePrice = Math.floor(stripeTotalPrice - totalDiscountAmount);
   const savings = bumperTotalPrice - stripeTotalPrice;
+  
+  // Calculate discounted monthly price - use Step 3 monthly price when no discounts, otherwise recalculate
+  const discountedMonthlyPrice = hasValidDiscountCodes 
+    ? Math.floor(discountedBumperPrice / 12) 
+    : monthlyPrice;
 
   // Check section completion status
   const personalDetailsComplete = useMemo(() => {
@@ -1554,7 +1559,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     {/* Price Display */}
                     <div className="mt-3 mb-3">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-2xl sm:text-3xl font-bold text-gray-900">£{Math.floor(discountedBumperPrice / 12)}</span>
+                        <span className="text-2xl sm:text-3xl font-bold text-gray-900">£{discountedMonthlyPrice}</span>
                         <span className="text-sm font-medium text-gray-500">/mo</span>
                       </div>
                       <p className="text-sm text-gray-500 mt-1">Total £{discountedBumperPrice}</p>
