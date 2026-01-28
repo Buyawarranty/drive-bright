@@ -150,12 +150,21 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     if (dateRange.from || dateRange.to) {
       result = result.filter(lead => {
         const leadDate = new Date(lead.created_at);
-        if (dateRange.from && leadDate < dateRange.from) return false;
-        if (dateRange.to) {
-          const endOfToday = new Date(dateRange.to);
-          endOfToday.setHours(23, 59, 59, 999);
-          if (leadDate > endOfToday) return false;
+        
+        // Compare using start of day for 'from' date
+        if (dateRange.from) {
+          const fromStart = new Date(dateRange.from);
+          fromStart.setHours(0, 0, 0, 0);
+          if (leadDate < fromStart) return false;
         }
+        
+        // Compare using end of day for 'to' date
+        if (dateRange.to) {
+          const toEnd = new Date(dateRange.to);
+          toEnd.setHours(23, 59, 59, 999);
+          if (leadDate > toEnd) return false;
+        }
+        
         return true;
       });
     }
