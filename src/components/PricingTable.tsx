@@ -1551,7 +1551,16 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // Calculate pricing for this duration
               const warrantyYears = durationId === '12months' ? 1 : durationId === '24months' ? 2 : 3;
               const vehicleAdjustment = calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
-              const basePrice = getPricingData(voluntaryExcess, selectedClaimLimit, durationId);
+              
+              // CRITICAL: Each card uses its OWN appropriate claim limit, not the globally selected one
+              // For the currently selected plan, use the user's selection
+              // For non-selected plans, use the appropriate default for that duration
+              // 1-year: default £1250, 2-year/3-year: promotional default £2000
+              const cardClaimLimit = durationId === paymentType 
+                ? selectedClaimLimit 
+                : (durationId === '24months' || durationId === '36months') ? 2000 : 1250;
+              
+              const basePrice = getPricingData(voluntaryExcess, cardClaimLimit, durationId);
               const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
               
               // Calculate duration months for adjustments
@@ -1562,11 +1571,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
               const finalBasePrice = adjustedBasePrice;
               
               // Labour rate adjustment: £50=-£5/mo, £70=base(0), £100=+£8/mo, £200=+£24/mo
-              const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
+              // Only apply user's selection to the selected plan; non-selected plans show default (£70 = 0)
+              const cardLabourRate = durationId === paymentType ? selectedLabourRate : 70;
+              const labourMonthlyAdjust = cardLabourRate === 50 ? -5 : cardLabourRate === 70 ? 0 : cardLabourRate === 100 ? 8 : cardLabourRate === 200 ? 24 : 0;
               const labourTotalAdjust = labourMonthlyAdjust * durationMonths;
               
               // Boost addon: +£5/month × 12 payments = £60 total (same for all durations)
-              const boostTotalAdjust = boostAddon ? 60 : 0;
+              // Only apply boost to the selected plan; non-selected plans show base price without boost
+              const cardBoostAddon = durationId === paymentType ? boostAddon : false;
+              const boostTotalAdjust = cardBoostAddon ? 60 : 0;
               
               // Get auto-included add-ons for THIS card's duration (not the selected plan)
               const thisCardAutoIncluded = getAutoIncludedAddOns(durationId);
