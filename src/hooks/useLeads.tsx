@@ -162,13 +162,16 @@ export const useLeads = () => {
             .order('created_at', { ascending: false })
             .limit(500); // Limit initial fetch for performance
 
-          if (filter !== 'all' && filter !== 'high_priority' && filter !== 'fake') {
-            // Cast to any to allow custom status values not yet in database types
-            query = query.eq('status', filter as any);
+          if (filter === 'all') {
+            // Exclude lost and fake leads from the main "All" view
+            query = query.not('status', 'in', '("lost","fake_lead")');
           } else if (filter === 'high_priority') {
             query = query.in('priority', ['high', 'urgent']);
           } else if (filter === 'fake') {
             query = query.eq('status', 'fake_lead' as any);
+          } else {
+            // Cast to any to allow custom status values not yet in database types
+            query = query.eq('status', filter as any);
           }
 
           return query;
@@ -290,8 +293,21 @@ export const useLeads = () => {
       });
 
       // Combine and sort by created_at (newest first)
-      const allLeads = [...salesLeadsWithFlags, ...cartsAsLeads]
+      let allLeads = [...salesLeadsWithFlags, ...cartsAsLeads]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      
+      // For "all" filter, exclude lost and fake leads (they have their own tabs)
+      if (filter === 'all') {
+        allLeads = allLeads.filter((lead: any) => 
+          lead.status !== 'lost' && lead.status !== 'fake_lead'
+        );
+      } else if (filter === 'fake') {
+        // Only show fake leads
+        allLeads = allLeads.filter((lead: any) => lead.status === 'fake_lead');
+      } else if (filter === 'lost') {
+        // Only show lost leads
+        allLeads = allLeads.filter((lead: any) => lead.status === 'lost');
+      }
 
       // Calculate application count per email (how many times this email has applied)
       const emailCounts: Record<string, number> = {};
