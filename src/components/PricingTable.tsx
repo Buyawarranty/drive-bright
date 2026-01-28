@@ -1571,15 +1571,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
               const finalBasePrice = adjustedBasePrice;
               
               // Labour rate adjustment: £50=-£5/mo, £70=base(0), £100=+£8/mo, £200=+£24/mo
-              // Only apply user's selection to the selected plan; non-selected plans show default (£70 = 0)
-              const cardLabourRate = durationId === paymentType ? selectedLabourRate : 70;
-              const labourMonthlyAdjust = cardLabourRate === 50 ? -5 : cardLabourRate === 70 ? 0 : cardLabourRate === 100 ? 8 : cardLabourRate === 200 ? 24 : 0;
+              // Apply user's selection consistently to all cards for fair comparison
+              const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
               const labourTotalAdjust = labourMonthlyAdjust * durationMonths;
               
               // Boost addon: +£5/month × 12 payments = £60 total (same for all durations)
-              // Only apply boost to the selected plan; non-selected plans show base price without boost
-              const cardBoostAddon = durationId === paymentType ? boostAddon : false;
-              const boostTotalAdjust = cardBoostAddon ? 60 : 0;
+              // Apply user's selection consistently to all cards for fair comparison
+              const boostTotalAdjust = boostAddon ? 60 : 0;
               
               // Get auto-included add-ons for THIS card's duration (not the selected plan)
               const thisCardAutoIncluded = getAutoIncludedAddOns(durationId);

@@ -206,22 +206,18 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     return calculateVehiclePriceAdjustment(vehicleData as any, warrantyYears);
   }, [vehicleData, paymentType]);
 
-  // Get the appropriate claim limit for a specific term
-  // Multi-year plans (24/36 months) use promotional pricing logic
-  const getClaimLimitForTerm = useCallback((term: string): number => {
-    // For multi-year plans, use the default promotional claim limit (1250 backend value = £2000 display)
-    // For 1-year, use the currently selected claim limit
-    if (term === '24months' || term === '36months') {
-      return 1250; // Default promotional claim limit for multi-year
-    }
-    return selectedClaimLimit || 1250;
-  }, [selectedClaimLimit]);
 
   // Calculate total price for a term using centralized functions
-  // IMPORTANT: Each term uses its OWN claim limit, not the globally selected one
+  // IMPORTANT: Each term uses its OWN appropriate claim limit
+  // But user's other selections (labour rate, boost, excess) apply consistently to all cards
   const calculateTotalPrice = useCallback((term: string = paymentType || '24months') => {
     // Get the appropriate claim limit for THIS specific term
-    const termClaimLimit = term === paymentType ? (selectedClaimLimit || 1250) : getClaimLimitForTerm(term);
+    // For the selected term: use user's selection
+    // For non-selected terms: use the appropriate default for that duration
+    const isSelectedTerm = term === paymentType;
+    const termClaimLimit = isSelectedTerm 
+      ? (selectedClaimLimit || 1250) 
+      : (term === '24months' || term === '36months') ? 2000 : 1250;
     
     const basePrice = getBasePrice(term, voluntaryExcess || 100, termClaimLimit);
     
@@ -232,23 +228,14 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
 
     const durationMonths = DURATION_MONTHS[term as PaymentPeriod] || 12;
     
-    // For card display, only include base price adjustments (no add-ons)
-    // Add-ons are shown separately in the summary
-    const isCurrentlySelectedTerm = term === paymentType;
+    // Apply user's selections consistently to ALL cards for fair comparison
+    // Only claim limit differs between cards (based on promo defaults)
+    const addOnPrice = calculateAddOnPrice(selectedProtectionAddOns, term, durationMonths);
+    const boostCost = calculateBoostAdjustment(boostAddon, term as PaymentPeriod);
+    const labourAdjust = calculateLabourRateAdjustment(selectedLabourRate, term as PaymentPeriod);
     
-    if (isCurrentlySelectedTerm) {
-      // For the selected term, include all add-ons and adjustments
-      const addOnPrice = calculateAddOnPrice(selectedProtectionAddOns, term, durationMonths);
-      const boostCost = calculateBoostAdjustment(boostAddon, term as PaymentPeriod);
-      const labourAdjust = calculateLabourRateAdjustment(selectedLabourRate, term as PaymentPeriod);
-      return adjustedPrice + addOnPrice + boostCost + labourAdjust;
-    } else {
-      // For non-selected terms in the card display, show base price only
-      // with default labour rate adjustment
-      const labourAdjust = calculateLabourRateAdjustment(70, term as PaymentPeriod); // Default £70/hr
-      return adjustedPrice + labourAdjust;
-    }
-  }, [paymentType, voluntaryExcess, selectedClaimLimit, vehicleData, selectedProtectionAddOns, boostAddon, selectedLabourRate, getBasePrice, getClaimLimitForTerm]);
+    return adjustedPrice + addOnPrice + boostCost + labourAdjust;
+  }, [paymentType, voluntaryExcess, selectedClaimLimit, vehicleData, selectedProtectionAddOns, boostAddon, selectedLabourRate, getBasePrice]);
 
   // Calculate monthly price (total / 12, ALWAYS rounded DOWN)
   const calculateMonthlyPrice = useCallback((term: string = paymentType || '24months') => {
