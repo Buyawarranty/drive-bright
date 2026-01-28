@@ -117,7 +117,7 @@ export const useLeads = () => {
   const [tags, setTags] = useState<LeadTag[]>([]);
   const [salesUsers, setSalesUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<LeadStatus | 'all' | 'high_priority'>('all');
+  const [filter, setFilter] = useState<LeadStatus | 'all' | 'high_priority' | 'fake'>('all');
   
   // Cache sales users for optimistic updates
   const salesUsersRef = useRef<AdminUser[]>([]);
@@ -162,11 +162,13 @@ export const useLeads = () => {
             .order('created_at', { ascending: false })
             .limit(500); // Limit initial fetch for performance
 
-          if (filter !== 'all' && filter !== 'high_priority') {
+          if (filter !== 'all' && filter !== 'high_priority' && filter !== 'fake') {
             // Cast to any to allow custom status values not yet in database types
             query = query.eq('status', filter as any);
           } else if (filter === 'high_priority') {
             query = query.in('priority', ['high', 'urgent']);
+          } else if (filter === 'fake') {
+            query = query.eq('status', 'fake_lead' as any);
           }
 
           return query;

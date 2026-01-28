@@ -196,6 +196,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     paid: leads.filter(l => l.is_paid === true).length,
     lost: leads.filter(l => l.status === 'lost').length,
     high_priority: leads.filter(l => l.priority === 'high' || l.priority === 'urgent').length,
+    fake: leads.filter(l => l.status === 'fake_lead').length,
   }), [leads]);
 
   // Memoize handlers to prevent re-renders
