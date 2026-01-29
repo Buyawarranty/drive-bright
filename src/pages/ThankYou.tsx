@@ -35,6 +35,13 @@ const ThankYou = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
+  // CRITICAL: Check for Stripe redirect status FIRST
+  // For redirect-based payments (PayPal, Revolut), Stripe adds these parameters:
+  // - redirect_status: 'succeeded' | 'failed' | 'pending'
+  // - payment_intent: the PI ID
+  const redirectStatus = searchParams.get('redirect_status');
+  const paymentIntentId = searchParams.get('payment_intent');
+  
   // Extract ALL URL params for order summary display
   const plan = searchParams.get('plan') || 'Platinum';
   const duration = searchParams.get('duration') || searchParams.get('payment') || searchParams.get('paymentType') || '';
@@ -59,12 +66,44 @@ const ThankYou = () => {
   const source = searchParams.get('source') || 
     (searchParams.get('bumper_order_id') ? 'bumper' : null) ||
     (sessionId && sessionId.startsWith('cs_') ? 'stripe' : null) ||
-    (sessionId && sessionId.startsWith('VW-') ? 'bumper' : null);
+    (sessionId && sessionId.startsWith('VW-') ? 'bumper' : null) ||
+    (paymentIntentId ? 'stripe' : null);
   
   const [isProcessing, setIsProcessing] = useState(true);
   const [policyNumber, setPolicyNumber] = useState<string>('');
   const [timeRemaining, setTimeRemaining] = useState<string>('');
   const [isGtagReady, setIsGtagReady] = useState(false);
+  
+  // CRITICAL: Handle failed/cancelled redirect payments IMMEDIATELY
+  // This prevents showing the thank-you page for incomplete payments
+  useEffect(() => {
+    // If we have redirect_status from Stripe and it's not 'succeeded', redirect back to checkout
+    if (redirectStatus && redirectStatus !== 'succeeded') {
+      console.log('[THANK-YOU] Redirect payment not successful, status:', redirectStatus);
+      
+      // Show appropriate message
+      if (redirectStatus === 'failed') {
+        toast.error('Payment failed. Please try again or use a different payment method.');
+      } else if (redirectStatus === 'pending') {
+        toast.info('Payment is pending. Please wait or try again.');
+      } else {
+        toast.error('Payment was not completed. Please try again.');
+      }
+      
+      // Redirect back to Step 4 checkout
+      navigate('/?step=4', { replace: true });
+      return;
+    }
+    
+    // Also check: If we have a payment_intent but no redirect_status AND no valid source,
+    // this could be a cancelled payment (user clicked back from PayPal/Revolut)
+    if (paymentIntentId && !redirectStatus && !sessionId && !source) {
+      console.log('[THANK-YOU] Incomplete redirect payment detected, redirecting to checkout');
+      toast.error('Payment was not completed. Please try again.');
+      navigate('/?step=4', { replace: true });
+      return;
+    }
+  }, [redirectStatus, paymentIntentId, sessionId, source, navigate]);
 
   // Load Google Ads gtag script on page load
   useEffect(() => {

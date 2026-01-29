@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Shield, Check, Lock, Star, ArrowLeft, Car, Clock, CreditCard, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { StripeProvider } from '@/components/stripe/StripeProvider';
 import { StripePaymentForm } from '@/components/stripe/StripePaymentForm';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
+import { toast } from 'sonner';
 
 interface PaymentData {
   clientSecret: string;
@@ -28,10 +29,39 @@ interface PaymentData {
 const StripePayment: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Check for redirect status from PayPal/Revolut returns
+  const redirectStatus = searchParams.get('redirect_status');
+  const paymentIntentId = searchParams.get('payment_intent');
+  
+  // Handle redirect-based payment returns (PayPal, Revolut, etc.)
+  useEffect(() => {
+    // If user is returning from a redirect-based payment
+    if (redirectStatus) {
+      if (redirectStatus === 'succeeded') {
+        // Payment successful! Redirect to thank-you
+        console.log('✅ Redirect payment succeeded, navigating to thank-you');
+        localStorage.removeItem('stripe_payment_data');
+        navigate('/thank-you?source=stripe', { replace: true });
+        return;
+      } else if (redirectStatus === 'failed') {
+        // Payment failed
+        console.log('❌ Redirect payment failed');
+        toast.error('Payment failed. Please try again or use a different payment method.');
+        // Clear the URL params but stay on page to retry
+        navigate('/checkout/payment/', { replace: true });
+      } else if (redirectStatus === 'pending') {
+        // Payment is pending
+        console.log('⏳ Redirect payment pending');
+        toast.info('Your payment is being processed. Please wait...');
+      }
+    }
+  }, [redirectStatus, navigate]);
 
   // Load payment data from location state or localStorage
   useEffect(() => {
