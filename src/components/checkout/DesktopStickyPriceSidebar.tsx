@@ -95,34 +95,34 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
 
           <div className="h-px bg-[#E5E5E5]" />
 
-          {/* Selected Payment Display */}
+          {/* Selected Payment Display - Solid fill with tick */}
           <div className="space-y-2">
             {selectedPayment === 'monthly' && (
-              <div className="bg-orange-50 border border-[#FF6B00] rounded-lg p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-[#1a1a1a]">Pay Monthly</p>
-                    <p className="text-lg font-bold text-[#1a1a1a]">£{monthlyPrice}/month</p>
-                    <p className="text-xs text-gray-600 mt-0.5">12 payments · 0% APR</p>
-                  </div>
-                  <Check className="w-5 h-5 text-[#0BA360]" />
+              <div className="bg-[#FF6B00] rounded-xl p-3 relative">
+                <div className="absolute top-2 right-2 w-5 h-5 bg-[#0BA360] rounded-full flex items-center justify-center">
+                  <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">Pay Monthly</p>
+                  <p className="text-lg font-bold text-white">£{monthlyPrice}/month</p>
+                  <p className="text-xs text-white/80 mt-0.5">12 payments · 0% APR</p>
                 </div>
               </div>
             )}
             {selectedPayment === 'full' && (
-              <div className="bg-green-50 border border-[#0BA360] rounded-lg p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-[#1a1a1a]">Pay in Full</p>
-                    <p className="text-lg font-bold text-[#1a1a1a]">£{fullPrice}</p>
-                    <p className="text-xs text-[#0BA360] font-medium mt-0.5">Save £{savings} (10% off)</p>
-                  </div>
-                  <Check className="w-5 h-5 text-[#0BA360]" />
+              <div className="bg-[#0BA360] rounded-xl p-3 relative">
+                <div className="absolute top-2 right-2 w-5 h-5 bg-white rounded-full flex items-center justify-center">
+                  <Check className="w-3 h-3 text-[#0BA360]" strokeWidth={3} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">Pay in Full</p>
+                  <p className="text-lg font-bold text-white">£{fullPrice}</p>
+                  <p className="text-xs text-white/80 mt-0.5">Save £{savings} (10% off)</p>
                 </div>
               </div>
             )}
             {!selectedPayment && (
-              <div className="bg-gray-50 border border-[#E5E5E5] rounded-lg p-3 text-center">
+              <div className="bg-gray-50 border border-[#E5E5E5] rounded-xl p-3 text-center">
                 <p className="text-sm text-gray-600">Select payment method on left</p>
               </div>
             )}
