@@ -137,13 +137,17 @@ serve(async (req) => {
     }
 
     // Create PaymentIntent with all metadata needed for webhook processing
+    // Explicitly enable payment methods for UK customers
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
       currency: "gbp",
       customer: customerId,
-      automatic_payment_methods: {
-        enabled: true,
-      },
+      payment_method_types: [
+        'card',
+        'paypal',
+        'revolut_pay',
+        'link',
+      ],
       metadata: {
         // Plan details
         plan_id: planType,
