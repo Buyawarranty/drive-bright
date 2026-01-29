@@ -14,6 +14,7 @@ interface PlanSummaryCardProps {
   selectedPayment: 'monthly' | 'full' | null;
   monthlyPrice: number;
   totalPrice: number;
+  onPaymentChange: (payment: 'monthly' | 'full') => void;
   onChangePlan: () => void;
 }
 
@@ -29,6 +30,7 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
   selectedPayment,
   monthlyPrice,
   totalPrice,
+  onPaymentChange,
   onChangePlan,
 }) => {
   // Map claim limit display values
@@ -42,6 +44,7 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
   const vehicleDisplay = [vehicleMake, vehicleModel].filter(Boolean).join(' ') || vehicleReg;
   const originalPrice = totalPrice;
   const discountedPrice = Math.round(totalPrice * 0.9);
+  const savings = originalPrice - discountedPrice;
 
   return (
     <Card className="bg-white border border-border shadow-sm overflow-hidden">
@@ -71,7 +74,7 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
           <span className="text-sm text-green-800">Cancel anytime within 14 days for a full refund</span>
         </div>
 
-        {/* Plan Details List */}
+        {/* Order Summary - Combined Details */}
         <div className="space-y-3 mb-5">
           <div className="flex justify-between items-center py-1">
             <span className="text-muted-foreground">Plan:</span>
@@ -86,6 +89,15 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
             <span className="font-semibold text-foreground uppercase">{vehicleDisplay}</span>
           </div>
           <div className="flex justify-between items-center py-1">
+            <span className="text-muted-foreground">Registration:</span>
+            <span 
+              className="font-mono font-bold text-xs uppercase px-2 py-1 rounded border-2 border-black tracking-wider"
+              style={{ backgroundColor: '#FCD34D' }}
+            >
+              {vehicleReg}
+            </span>
+          </div>
+          <div className="flex justify-between items-center py-1">
             <span className="text-muted-foreground">Claim Limit:</span>
             <span className="font-semibold text-foreground">{displayClaimLimit()}</span>
           </div>
@@ -97,20 +109,19 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
             <span className="text-muted-foreground">Excess:</span>
             <span className="font-semibold text-foreground">£{excess}</span>
           </div>
-          <div className="flex justify-between items-center py-1">
-            <span className="text-muted-foreground">Registration:</span>
-            <span className="font-semibold text-foreground uppercase tracking-wide">{vehicleReg}</span>
-          </div>
         </div>
 
-        {/* Pricing Options */}
+        {/* Payment Options */}
         <div className="space-y-3 pt-4 border-t border-border">
+          <p className="text-sm font-medium text-muted-foreground mb-2">Choose payment method:</p>
+          
           {/* Monthly Option */}
-          <div 
-            className={`rounded-lg px-4 py-3 ${
+          <button 
+            onClick={() => onPaymentChange('monthly')}
+            className={`w-full text-left rounded-lg px-4 py-3 transition-all ${
               selectedPayment === 'monthly' 
-                ? 'bg-orange-50 border-2 border-orange-300' 
-                : 'bg-orange-50/50 border border-orange-100'
+                ? 'bg-orange-50 border-2 border-orange-400' 
+                : 'bg-orange-50/50 border border-orange-100 hover:border-orange-200'
             }`}
           >
             <div className="flex flex-wrap items-baseline gap-x-2">
@@ -119,14 +130,15 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
                 Total £{totalPrice} – 0% APR, 12 payments
               </span>
             </div>
-          </div>
+          </button>
 
           {/* Pay in Full Option */}
-          <div 
-            className={`rounded-lg px-4 py-3 relative ${
+          <button 
+            onClick={() => onPaymentChange('full')}
+            className={`w-full text-left rounded-lg px-4 py-3 relative transition-all ${
               selectedPayment === 'full' 
-                ? 'bg-green-50 border-2 border-green-300' 
-                : 'bg-green-50/50 border border-green-100'
+                ? 'bg-green-50 border-2 border-green-400' 
+                : 'bg-green-50/50 border border-green-100 hover:border-green-200'
             }`}
           >
             <div className="absolute top-2 right-2">
@@ -134,13 +146,13 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
                 BEST VALUE
               </span>
             </div>
-            <div className="flex flex-wrap items-baseline gap-x-2 pr-20">
+            <div className="flex flex-wrap items-baseline gap-x-2 pr-24">
               <span className="font-bold text-foreground">Pay in Full: £{discountedPrice}</span>
               <span className="text-muted-foreground text-sm">
-                (Was £{totalPrice}, Now £{discountedPrice} with extra 10% off)
+                Save £{savings} (10% off)
               </span>
             </div>
-          </div>
+          </button>
         </div>
       </CardContent>
     </Card>
