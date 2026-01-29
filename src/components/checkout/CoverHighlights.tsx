@@ -21,7 +21,7 @@ const CoverHighlights: React.FC<CoverHighlightsProps> = ({ planName }) => {
     },
     {
       icon: Phone,
-      text: 'UK-based claims team – no overseas call centres',
+      text: 'UK-based claims team',
     },
   ];
 
