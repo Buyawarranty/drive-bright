@@ -1135,21 +1135,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 <CollapsibleTrigger className="w-full">
                   <div className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
                     <div className="flex items-center gap-3">
-                      <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-colors ${
-                        personalDetailsComplete 
-                          ? 'bg-[hsl(var(--success)/0.15)] border border-[hsl(var(--success)/0.3)]' 
-                          : showValidation && !personalDetailsComplete 
-                          ? 'bg-destructive/10 border border-destructive/20' 
-                          : 'bg-muted border border-border'
-                      }`}>
-                        <User className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                          personalDetailsComplete 
-                            ? 'text-[hsl(var(--success))]' 
-                            : showValidation && !personalDetailsComplete 
-                            ? 'text-destructive' 
-                            : 'text-muted-foreground'
-                        }`} />
-                      </div>
                       <div className="text-left">
                         <h2 className="text-base font-semibold text-foreground">Customer Details</h2>
                         <p className="text-xs text-muted-foreground mt-0.5">Just a few quick fields to complete.</p>
@@ -1383,20 +1368,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         aria-controls="address-fields"
                       >
                         <div className="flex items-center gap-3">
-                          <div 
-                            className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                              addressComplete 
-                                ? 'bg-[hsl(var(--success)/0.15)] border border-[hsl(var(--success)/0.3)]' 
-                                : ''
-                            }`}
-                            style={!addressComplete ? { backgroundColor: '#EFEFEF' } : undefined}
-                          >
-                            {addressComplete ? (
-                              <Check className="w-4 h-4 text-[hsl(var(--success))]" />
-                            ) : (
-                              <MapPin className="w-4 h-4" style={{ color: '#8A8A8A' }} />
-                            )}
-                          </div>
                           <div>
                             <p className="text-sm font-medium text-foreground">
                               Your Address <span className="text-destructive">*</span>
