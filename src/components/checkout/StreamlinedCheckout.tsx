@@ -1019,6 +1019,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             excess: updatedPricingData.voluntaryExcess || 100,
             customerName: `${customerData.first_name} ${customerData.last_name}`.trim(),
             customerEmail: customerData.email,
+            isMonthly: selectedPayment === 'monthly',
+            monthlyPrice: discountedMonthlyPrice,
           }
         });
         setIsLoading(false);

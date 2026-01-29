@@ -5,6 +5,7 @@ import { Loader2, Lock, AlertCircle } from 'lucide-react';
 
 interface StripePaymentFormProps {
   amount: number;
+  isMonthly?: boolean;
   onSuccess: () => void;
   onError: (error: string) => void;
   isProcessing: boolean;
@@ -13,6 +14,7 @@ interface StripePaymentFormProps {
 
 export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   amount,
+  isMonthly = false,
   onSuccess,
   onError,
   isProcessing,
@@ -115,7 +117,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         ) : (
           <span className="flex items-center justify-center gap-2 text-white">
             <Lock className="w-5 h-5" />
-            Pay £{amount.toFixed(2)} now
+            {isMonthly ? `Pay £${amount.toFixed(2)} today` : `Pay £${amount.toFixed(2)} now`}
           </span>
         )}
       </Button>
