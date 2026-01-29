@@ -1217,560 +1217,421 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           </section>
 
           {/* ==================== SECTION 2: CUSTOMER DETAILS ==================== */}
-          <section>
-            <Card id="customer-form" className="border border-border shadow-sm overflow-hidden bg-card">
-              <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
-                <CollapsibleTrigger className="w-full">
-                  <div className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="text-left">
-                        <h2 className="text-lg sm:text-xl font-bold text-[#1a1a1a]">Customer Details</h2>
-                        <p className="text-xs text-muted-foreground mt-0.5">Just a few quick fields to complete.</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      {!detailsOpen && (
-                        showValidation && personalDetailsMissing > 0 
-                          ? <SectionErrorBadge count={personalDetailsMissing} />
-                          : personalDetailsComplete && <SectionCompleteBadge />
-                      )}
-                      <div className="text-muted-foreground">
-                        {detailsOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                      </div>
-                    </div>
-                  </div>
-                </CollapsibleTrigger>
-                
-                <CollapsibleContent>
-                  <div className="px-4 pb-5 space-y-4 border-t border-border/50 pt-4">
-                    {/* Name Fields - Side by Side */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* First Name */}
-                      <div>
-                        <Label htmlFor="first_name" className="text-sm font-medium text-foreground/80">First Name *</Label>
-                        <div className="relative mt-1.5">
-                          <Input
-                            id="first_name"
-                            placeholder="John"
-                            value={customerData.first_name}
-                            onChange={(e) => handleInputChange('first_name', e.target.value)}
-                            onBlur={() => handleFieldBlur('first_name')}
-                            required
-                            className={`h-11 sm:h-12 text-base ${getInputValidationClass('first_name')}`}
-                          />
-                          {validatedFields.first_name && !fieldErrors.first_name && (
-                            <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
-                          )}
-                        </div>
-                        {showValidation && fieldErrors.first_name && (
-                          <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                            <AlertCircle className="w-3.5 h-3.5" />
-                            {fieldErrors.first_name}
-                          </p>
-                        )}
-                      </div>
+          <section id="customer-form" className="bg-white rounded-xl border border-border p-5 sm:p-6">
+            
+            {/* Section Header: Customer Details */}
+            <div className="mb-6">
+              <h2 className="text-lg font-bold text-[#1a1a1a]">Customer Details</h2>
+              <div className="h-px bg-border mt-3" />
+            </div>
 
-                      {/* Last Name */}
-                      <div>
-                        <Label htmlFor="last_name" className="text-sm font-medium text-foreground/80">Last Name *</Label>
-                        <div className="relative mt-1.5">
-                          <Input
-                            id="last_name"
-                            placeholder="Enter surname"
-                            value={customerData.last_name}
-                            onChange={(e) => handleInputChange('last_name', e.target.value)}
-                            onBlur={() => handleFieldBlur('last_name')}
-                            required
-                            className={`h-11 sm:h-12 text-base ${getInputValidationClass('last_name')}`}
-                          />
-                          {validatedFields.last_name && !fieldErrors.last_name && (
-                            <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
-                          )}
-                        </div>
-                        {showValidation && fieldErrors.last_name && (
-                          <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                            <AlertCircle className="w-3.5 h-3.5" />
-                            {fieldErrors.last_name}
-                          </p>
-                        )}
-                      </div>
-                    </div>
+            <div className="space-y-5">
+              {/* Name Fields - Side by Side */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* First Name */}
+                <div>
+                  <Label htmlFor="first_name" className="text-sm font-medium text-foreground/80">First Name *</Label>
+                  <Input
+                    id="first_name"
+                    placeholder="John"
+                    value={customerData.first_name}
+                    onChange={(e) => handleInputChange('first_name', e.target.value)}
+                    onBlur={() => handleFieldBlur('first_name')}
+                    required
+                    className={`h-11 sm:h-12 text-base mt-1.5 ${getInputValidationClass('first_name')}`}
+                  />
+                  {showValidation && fieldErrors.first_name && (
+                    <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      {fieldErrors.first_name}
+                    </p>
+                  )}
+                </div>
 
-                    {/* Email */}
-                    <div>
-                      <Label htmlFor="email" className="text-sm font-medium text-foreground/80">Email Address *</Label>
-                      <p className="text-xs text-muted-foreground mt-0.5 mb-1.5">We'll send your policy documents here.</p>
-                      <div className="relative">
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="john.smith@email.com"
-                          value={customerData.email}
-                          onChange={(e) => handleInputChange('email', e.target.value)}
-                          onBlur={() => handleFieldBlur('email')}
-                          required
-                          className={`h-11 sm:h-12 text-base ${getInputValidationClass('email')}`}
-                        />
-                        {validatedFields.email && !fieldErrors.email && (
-                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
-                        )}
-                      </div>
-                      {showValidation && fieldErrors.email && (
-                        <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          {fieldErrors.email}
-                        </p>
-                      )}
-                    </div>
+                {/* Last Name */}
+                <div>
+                  <Label htmlFor="last_name" className="text-sm font-medium text-foreground/80">Last Name *</Label>
+                  <Input
+                    id="last_name"
+                    placeholder="Smith"
+                    value={customerData.last_name}
+                    onChange={(e) => handleInputChange('last_name', e.target.value)}
+                    onBlur={() => handleFieldBlur('last_name')}
+                    required
+                    className={`h-11 sm:h-12 text-base mt-1.5 ${getInputValidationClass('last_name')}`}
+                  />
+                  {showValidation && fieldErrors.last_name && (
+                    <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      {fieldErrors.last_name}
+                    </p>
+                  )}
+                </div>
+              </div>
 
-                    {/* Phone */}
-                    <div>
-                      <Label htmlFor="phone" className="text-sm font-medium text-foreground/80">Phone Number *</Label>
-                      <div className="relative mt-1.5">
-                        <Input
-                          id="phone"
-                          type="tel"
-                          placeholder="07123 456789"
-                          value={customerData.phone}
-                          onChange={(e) => handleInputChange('phone', e.target.value)}
-                          onBlur={() => handleFieldBlur('phone')}
-                          required
-                          className={`h-11 sm:h-12 text-base ${getInputValidationClass('phone')}`}
-                        />
-                        {validatedFields.phone && !fieldErrors.phone && (
-                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
-                        )}
-                      </div>
-                      {showValidation && fieldErrors.phone && (
-                        <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          {fieldErrors.phone}
-                        </p>
-                      )}
-                    </div>
+              {/* Email */}
+              <div>
+                <Label htmlFor="email" className="text-sm font-medium text-foreground/80">Email Address *</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">We'll send your policy documents here.</p>
+                <div className="relative mt-1.5">
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="john.smith@email.com"
+                    value={customerData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    onBlur={() => handleFieldBlur('email')}
+                    required
+                    className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('email')}`}
+                  />
+                  {validatedFields.email && !fieldErrors.email && (
+                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
+                  )}
+                </div>
+                {showValidation && fieldErrors.email && (
+                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {fieldErrors.email}
+                  </p>
+                )}
+              </div>
 
-                    {/* Mileage */}
-                    <div>
-                      <Label htmlFor="mileage" className="text-sm font-medium text-foreground/80">Current Mileage *</Label>
-                      <div className="flex gap-2 mt-1.5">
-                        <div className="relative flex-1">
-                          {motLoading ? (
-                            <div className="h-11 sm:h-12 flex items-center gap-2 px-3 border border-border rounded-lg bg-muted/30">
-                              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                              <span className="text-sm text-muted-foreground">Fetching from MOT history...</span>
-                            </div>
-                          ) : (
-                            <Input
-                              id="mileage"
-                              type="text"
-                              inputMode="numeric"
-                              placeholder="e.g. 52,000"
-                              value={customerData.mileage ? Number(customerData.mileage).toLocaleString('en-GB') : ''}
-                              onChange={(e) => {
-                                const rawValue = e.target.value.replace(/[^0-9]/g, '');
-                                handleInputChange('mileage', rawValue);
-                                setMileagePreFilled(false); // User is editing, so clear the pre-filled state
-                              }}
-                              onBlur={() => handleFieldBlur('mileage')}
-                              required
-                              className={`h-11 sm:h-12 text-base ${getInputValidationClass('mileage')}`}
-                            />
-                          )}
-                          {!motLoading && validatedFields.mileage && !fieldErrors.mileage && (
-                            <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
-                          )}
-                        </div>
-                        <select
-                          value=""
-                          onChange={(e) => {
-                            if (e.target.value) {
-                              handleInputChange('mileage', e.target.value);
-                              setValidatedFields(prev => ({ ...prev, mileage: true }));
-                              setMileagePreFilled(false);
-                            }
-                          }}
-                          className="h-11 sm:h-12 px-3 rounded-lg border border-border bg-card text-sm cursor-pointer hover:border-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary"
-                        >
-                          <option value="">Quick</option>
-                          {Array.from({ length: 131 }, (_, i) => {
-                            const value = 10000 + (i * 1000);
-                            return <option key={value} value={value}>{value.toLocaleString('en-GB')}</option>;
-                          })}
-                        </select>
-                      </div>
-                      
-                      {/* MOT Pre-fill Info Badge */}
-                      {mileagePreFilled && motMileage && motDate && (
-                        <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
-                          <Info className="w-3.5 h-3.5" />
-                          <span>
-                            Pre-filled from your last MOT ({format(new Date(motDate), 'MMM yyyy')}) — feel free to update
-                          </span>
-                        </div>
-                      )}
-                      
-                      {customerData.mileage && Number(customerData.mileage) > 150000 && (
-                        <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2 mt-2">
-                          <p className="text-destructive text-sm font-medium">
-                            Sorry, we only cover vehicles under 150,000 miles.
-                          </p>
-                        </div>
-                      )}
-                      {/* High Mileage Surcharge Banner */}
-                      {highMileageSurchargeApplied && (
-                        <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 mt-2">
-                          <div className="flex items-start gap-2 sm:gap-3">
-                            <Info className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                            <div>
-                              <p className="text-sm font-medium text-amber-800">
-                                Higher mileage? No problem!
-                              </p>
-                              <p className="text-xs text-amber-700 mt-0.5">
-                                As your mileage is over 120,000 miles, we've updated your quote to include our higher mileage cover. Your new price is shown above.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      {showValidation && fieldErrors.mileage && (
-                        <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          {fieldErrors.mileage}
-                        </p>
-                      )}
-                    </div>
+              {/* Phone */}
+              <div>
+                <Label htmlFor="phone" className="text-sm font-medium text-foreground/80">Phone Number *</Label>
+                <div className="relative mt-1.5">
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="07123 456789"
+                    value={customerData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    onBlur={() => handleFieldBlur('phone')}
+                    required
+                    className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('phone')}`}
+                  />
+                  {validatedFields.phone && !fieldErrors.phone && (
+                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
+                  )}
+                </div>
+                {showValidation && fieldErrors.phone && (
+                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {fieldErrors.phone}
+                  </p>
+                )}
+              </div>
+            </div>
 
-                    {/* Required Address Section - Collapsible */}
-                    <div 
-                      className="rounded-xl overflow-hidden transition-all duration-200 bg-white"
-                      style={{ 
-                        border: '1px solid #E5E5E5'
+            {/* Section Divider - Vehicle Details */}
+            <div className="mt-10 mb-6">
+              <h2 className="text-lg font-bold text-[#1a1a1a]">Vehicle Details</h2>
+              <div className="h-px bg-border mt-3" />
+            </div>
+
+            {/* Mileage */}
+            <div>
+              <Label htmlFor="mileage" className="text-sm font-medium text-foreground/80">Current Mileage *</Label>
+              <div className="flex gap-2 mt-1.5">
+                <div className="relative flex-1">
+                  {motLoading ? (
+                    <div className="h-11 sm:h-12 flex items-center gap-2 px-3 border border-border rounded-lg bg-muted/30">
+                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Fetching from MOT history...</span>
+                    </div>
+                  ) : (
+                    <Input
+                      id="mileage"
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="e.g. 52,000"
+                      value={customerData.mileage ? Number(customerData.mileage).toLocaleString('en-GB') : ''}
+                      onChange={(e) => {
+                        const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                        handleInputChange('mileage', rawValue);
+                        setMileagePreFilled(false);
                       }}
-                    >
-                      {/* Collapsed Header */}
-                      <button
-                        type="button"
-                        onClick={() => setAddressExpanded(!addressExpanded)}
-                        className="w-full p-4 flex items-center justify-between text-left transition-colors hover:bg-muted/60"
-                        aria-expanded={addressExpanded}
-                        aria-controls="address-fields"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div>
-                            <h2 className="text-base font-semibold text-foreground">
-                              Your Address <span className="text-destructive">*</span>
-                            </h2>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {addressExpanded 
-                                ? 'Enter your postcode to find your address' 
-                                : 'Required for your policy documents'
-                              }
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          {!addressExpanded && (
-                            showValidation && addressFieldsMissing > 0 
-                              ? <SectionErrorBadge count={addressFieldsMissing} />
-                              : addressComplete && <SectionCompleteBadge />
-                          )}
-                          {!addressExpanded && !addressComplete && !showValidation && (
-                            <span 
-                              className="text-xs font-medium px-4 py-2 rounded-full transition-colors whitespace-nowrap"
-                              style={{ 
-                                backgroundColor: '#FFFFFF', 
-                                color: '#666666',
-                                border: '1px solid #D0D0D0'
-                              }}
-                            >
-                              Enter address
-                            </span>
-                          )}
-                          {addressExpanded && (
-                            <span 
-                              className="text-xs font-medium text-muted-foreground"
-                            >
-                              Collapse
-                            </span>
-                          )}
-                          <ChevronDown 
-                            className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${addressExpanded ? 'rotate-180' : ''}`} 
-                          />
-                        </div>
-                      </button>
-
-                      {/* Expanded Address Fields */}
-                      <div 
-                        id="address-fields"
-                        className={`overflow-hidden transition-all duration-200 ease-in-out ${
-                          addressExpanded ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
-                        }`}
-                      >
-                        <div className="px-4 pb-4 pt-3 space-y-4 border-t border-border/30">
-                          {/* Postcode Entry with Find Address Button */}
-                          <div>
-                            <Label className="text-sm font-medium text-foreground/80 flex items-center gap-2 mb-2">
-                              <MapPin className="w-4 h-4 text-[#FF6B00]" />
-                              Enter your postcode <span className="text-destructive">*</span>
-                            </Label>
-                            <div className="flex gap-2">
-                              <div className="relative flex-1">
-                                <Input
-                                  id="postcode-lookup"
-                                  type="text"
-                                  value={postcodeInput}
-                                  onChange={(e) => {
-                                    const value = e.target.value.toUpperCase();
-                                    setPostcodeInput(value);
-                                    // Also update addressData postcode
-                                    setAddressData(prev => ({ ...prev, postcode: value }));
-                                  }}
-                                  placeholder="e.g. SW1A 1AA"
-                                  maxLength={8}
-                                  className="h-12 text-base font-medium uppercase tracking-wider bg-white border-2 border-[#FF6B00] focus:ring-2 focus:ring-[#FF6B00]/20 pr-10"
-                                  disabled={isLookingUp}
-                                />
-                                {/^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i.test(postcodeInput.replace(/\s/g, '')) && (
-                                  <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-green-600" />
-                                )}
-                              </div>
-                              <Button
-                                type="button"
-                                onClick={async () => {
-                                  if (!postcodeInput.trim()) return;
-                                  setIsLookingUp(true);
-                                  setAddressLookupFailed(false);
-                                  try {
-                                    const { data, error } = await supabase.functions.invoke('getaddress-lookup', {
-                                      body: { action: 'find', postcode: postcodeInput }
-                                    });
-                                    if (error || !data?.addresses?.length) {
-                                      setAddressLookupFailed(true);
-                                      setShowAddressFields(true);
-                                      // Save the postcode
-                                      const formatted = postcodeInput.replace(/\s/g, '').toUpperCase();
-                                      const displayPostcode = formatted.length > 3 
-                                        ? formatted.slice(0, -3) + ' ' + formatted.slice(-3) 
-                                        : formatted;
-                                      setAddressData(prev => ({ ...prev, postcode: displayPostcode }));
-                                      setAddressValidated(prev => ({ ...prev, postcode: true }));
-                                    } else {
-                                      setAddressSuggestions(data.addresses);
-                                      setShowAddressDropdown(true);
-                                      // Save the postcode
-                                      setAddressData(prev => ({ ...prev, postcode: data.postcode || postcodeInput }));
-                                      setAddressValidated(prev => ({ ...prev, postcode: true }));
-                                    }
-                                  } catch (err) {
-                                    setAddressLookupFailed(true);
-                                    setShowAddressFields(true);
-                                  } finally {
-                                    setIsLookingUp(false);
-                                  }
-                                }}
-                                disabled={isLookingUp || !postcodeInput.trim()}
-                                className="h-12 px-6 bg-[#FF6B00] hover:bg-[#E55D00] text-white font-semibold whitespace-nowrap"
-                              >
-                                {isLookingUp ? (
-                                  <Loader2 className="w-5 h-5 animate-spin" />
-                                ) : (
-                                  <>
-                                    <Search className="w-4 h-4 mr-2" />
-                                    Find Address
-                                  </>
-                                )}
-                              </Button>
-                            </div>
-                            
-                            {/* Address Suggestions Dropdown */}
-                            {showAddressDropdown && addressSuggestions.length > 0 && (
-                              <div className="mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto z-50">
-                                {addressSuggestions.map((addr, index) => {
-                                  const displayAddress = addr.formatted_address?.filter(Boolean).join(', ') || 
-                                    [addr.line_1, addr.line_2, addr.town_or_city].filter(Boolean).join(', ');
-                                  return (
-                                    <button
-                                      key={index}
-                                      type="button"
-                                      onClick={() => {
-                                        // Populate address fields
-                                        const line1Parts = [
-                                          addr.building_number,
-                                          addr.building_name,
-                                          addr.thoroughfare || addr.line_1
-                                        ].filter(Boolean).join(' ').trim() || addr.line_1 || '';
-                                        
-                                        setAddressData({
-                                          postcode: addr.postcode || addressData.postcode,
-                                          address_line_1: line1Parts,
-                                          address_line_2: addr.line_2 || addr.sub_building_name || '',
-                                          town: addr.town_or_city || addr.locality || '',
-                                          county: addr.county || '',
-                                        });
-                                        setAddressValidated({
-                                          address_line_1: true,
-                                          town: true,
-                                          postcode: true,
-                                        });
-                                        setAddressErrors({});
-                                        setShowAddressDropdown(false);
-                                        setShowAddressFields(true);
-                                      }}
-                                      className="w-full px-4 py-3 text-left text-sm hover:bg-accent transition-colors border-b border-gray-100 last:border-b-0"
-                                    >
-                                      {displayAddress}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            )}
-                            
-                            {/* Enter address manually link */}
-                            {!showAddressFields && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setShowAddressFields(true);
-                                  setShowAddressDropdown(false);
-                                  // Save postcode if valid
-                                  if (/^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i.test(postcodeInput.replace(/\s/g, ''))) {
-                                    const formatted = postcodeInput.replace(/\s/g, '').toUpperCase();
-                                    const displayPostcode = formatted.length > 3 
-                                      ? formatted.slice(0, -3) + ' ' + formatted.slice(-3) 
-                                      : formatted;
-                                    setAddressData(prev => ({ ...prev, postcode: displayPostcode }));
-                                    setAddressValidated(prev => ({ ...prev, postcode: true }));
-                                  }
-                                }}
-                                className="mt-3 text-sm text-[#FF6B00] hover:underline font-medium"
-                              >
-                                Enter address manually
-                              </button>
-                            )}
-                          </div>
-
-                          {/* Address Fields - Shown after lookup or manual entry click */}
-                          {showAddressFields && (
-                            <div className="grid grid-cols-1 gap-3 pt-2 border-t border-border/30">
-
-                              {/* Address Line 1 */}
-                              <div>
-                                <Label htmlFor="address_line_1" className="text-sm font-medium text-foreground/80">
-                                  Address Line 1 <span className="text-destructive">*</span>
-                                </Label>
-                                <div className="relative">
-                                  <Input
-                                    id="address_line_1"
-                                    placeholder="e.g. 123 High Street"
-                                    value={addressData.address_line_1}
-                                    onChange={(e) => {
-                                      setAddressData(prev => ({ ...prev, address_line_1: e.target.value }));
-                                      if (addressErrors.address_line_1) {
-                                        setAddressErrors(prev => ({ ...prev, address_line_1: '' }));
-                                      }
-                                    }}
-                                    onBlur={() => validateAddressField('address_line_1')}
-                                    className={`h-10 sm:h-11 text-sm mt-1 pr-10 transition-colors ${getAddressInputValidationClass('address_line_1')}`}
-                                  />
-                                  {addressValidated.address_line_1 && !addressErrors.address_line_1 && addressData.address_line_1 && (
-                                    <Check className="absolute right-3 top-1/2 translate-y-[-30%] h-5 w-5 text-green-600" />
-                                  )}
-                                </div>
-                                {showValidation && addressErrors.address_line_1 && (
-                                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                                    <AlertCircle className="w-3.5 h-3.5" />
-                                    {addressErrors.address_line_1}
-                                  </p>
-                                )}
-                              </div>
-
-                              {/* Address Line 2 (optional) */}
-                              <div>
-                                <Label htmlFor="address_line_2" className="text-sm font-medium text-foreground/80">
-                                  Address Line 2 <span className="text-muted-foreground font-normal">(optional)</span>
-                                </Label>
-                                <Input
-                                  id="address_line_2"
-                                  placeholder="e.g. Flat 2, Oak House"
-                                  value={addressData.address_line_2}
-                                  onChange={(e) => setAddressData(prev => ({ ...prev, address_line_2: e.target.value }))}
-                                  className="h-10 sm:h-11 text-sm mt-1 bg-[#F5F5F5] border-gray-200 focus:bg-white transition-colors"
-                                />
-                              </div>
-
-                              {/* Town/City */}
-                              <div>
-                                <Label htmlFor="town" className="text-sm font-medium text-foreground/80">
-                                  Town / City <span className="text-destructive">*</span>
-                                </Label>
-                                <div className="relative">
-                                  <Input
-                                    id="town"
-                                    placeholder="e.g. London"
-                                    value={addressData.town}
-                                    onChange={(e) => {
-                                      setAddressData(prev => ({ ...prev, town: e.target.value }));
-                                      if (addressErrors.town) {
-                                        setAddressErrors(prev => ({ ...prev, town: '' }));
-                                      }
-                                    }}
-                                    onBlur={() => validateAddressField('town')}
-                                    className={`h-10 sm:h-11 text-sm mt-1 pr-10 transition-colors ${getAddressInputValidationClass('town')}`}
-                                  />
-                                  {addressValidated.town && !addressErrors.town && addressData.town && (
-                                    <Check className="absolute right-3 top-1/2 translate-y-[-30%] h-5 w-5 text-green-600" />
-                                  )}
-                                </div>
-                                {showValidation && addressErrors.town && (
-                                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                                    <AlertCircle className="w-3.5 h-3.5" />
-                                    {addressErrors.town}
-                                  </p>
-                                )}
-                              </div>
-
-                              {/* Postcode (read-only display) */}
-                              <div>
-                                <Label htmlFor="postcode-display" className="text-sm font-medium text-foreground/80">
-                                  Postcode <span className="text-destructive">*</span>
-                                </Label>
-                                <div className="relative">
-                                  <Input
-                                    id="postcode-display"
-                                    value={addressData.postcode}
-                                    onChange={(e) => {
-                                      setAddressData(prev => ({ ...prev, postcode: e.target.value.toUpperCase() }));
-                                      setPostcodeInput(e.target.value.toUpperCase());
-                                    }}
-                                    onBlur={() => validateAddressField('postcode')}
-                                    maxLength={8}
-                                    className={`h-10 sm:h-11 text-sm mt-1 pr-10 transition-colors uppercase ${getAddressInputValidationClass('postcode')}`}
-                                  />
-                                  {addressValidated.postcode && !addressErrors.postcode && addressData.postcode && (
-                                    <Check className="absolute right-3 top-1/2 translate-y-[-30%] h-5 w-5 text-green-600" />
-                                  )}
-                                </div>
-                                {showValidation && addressErrors.postcode && (
-                                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                                    <AlertCircle className="w-3.5 h-3.5" />
-                                    {addressErrors.postcode}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Required Note */}
-                          <p className="text-xs text-muted-foreground pt-1">
-                            <span className="text-destructive">*</span> Required fields for your warranty policy documents.
-                          </p>
-                        </div>
-                      </div>
+                      onBlur={() => handleFieldBlur('mileage')}
+                      required
+                      className={`h-11 sm:h-12 text-base ${getInputValidationClass('mileage')}`}
+                    />
+                  )}
+                </div>
+                <select
+                  value=""
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      handleInputChange('mileage', e.target.value);
+                      setValidatedFields(prev => ({ ...prev, mileage: true }));
+                      setMileagePreFilled(false);
+                    }
+                  }}
+                  className="h-11 sm:h-12 px-4 rounded-lg border border-border bg-muted/50 text-sm font-medium cursor-pointer hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary text-muted-foreground"
+                >
+                  <option value="">Quick select</option>
+                  {Array.from({ length: 131 }, (_, i) => {
+                    const value = 10000 + (i * 1000);
+                    return <option key={value} value={value}>{value.toLocaleString('en-GB')}</option>;
+                  })}
+                </select>
+              </div>
+              
+              {/* MOT Pre-fill Info Badge */}
+              {mileagePreFilled && motMileage && motDate && (
+                <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+                  <Info className="w-3.5 h-3.5" />
+                  <span>
+                    Pre-filled from your last MOT ({format(new Date(motDate), 'MMM yyyy')})
+                  </span>
+                </div>
+              )}
+              
+              {customerData.mileage && Number(customerData.mileage) > 150000 && (
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2 mt-2">
+                  <p className="text-destructive text-sm font-medium">
+                    Sorry, we only cover vehicles under 150,000 miles.
+                  </p>
+                </div>
+              )}
+              {/* High Mileage Surcharge Banner */}
+              {highMileageSurchargeApplied && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 mt-2">
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <Info className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-amber-800">
+                        Higher mileage? No problem!
+                      </p>
+                      <p className="text-xs text-amber-700 mt-0.5">
+                        As your mileage is over 120,000 miles, we've updated your quote to include our higher mileage cover.
+                      </p>
                     </div>
                   </div>
-                </CollapsibleContent>
-              </Collapsible>
-            </Card>
+                </div>
+              )}
+              {showValidation && fieldErrors.mileage && (
+                <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {fieldErrors.mileage}
+                </p>
+              )}
+            </div>
+
+            {/* Section Divider - Address */}
+            <div className="mt-10 mb-6">
+              <h2 className="text-lg font-bold text-[#1a1a1a]">Address</h2>
+              <div className="h-px bg-border mt-3" />
+            </div>
+
+            {/* Address Section - Always visible */}
+            <div id="address-fields" className="space-y-4">
+              {/* Postcode Lookup */}
+              <div>
+                <Label className="text-sm font-medium text-foreground/80">Postcode *</Label>
+                <div className="flex gap-2 mt-1.5">
+                  <div className="relative flex-1">
+                    <Input
+                      id="postcode-lookup"
+                      type="text"
+                      value={postcodeInput}
+                      onChange={(e) => {
+                        const value = e.target.value.toUpperCase();
+                        setPostcodeInput(value);
+                        setAddressData(prev => ({ ...prev, postcode: value }));
+                      }}
+                      placeholder="e.g. SW1A 1AA"
+                      maxLength={8}
+                      className="h-11 sm:h-12 text-base font-medium uppercase tracking-wider pr-10"
+                      disabled={isLookingUp}
+                    />
+                    {/^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i.test(postcodeInput.replace(/\s/g, '')) && (
+                      <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-green-600" />
+                    )}
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={async () => {
+                      if (!postcodeInput.trim()) return;
+                      setIsLookingUp(true);
+                      setAddressLookupFailed(false);
+                      try {
+                        const { data, error } = await supabase.functions.invoke('getaddress-lookup', {
+                          body: { action: 'find', postcode: postcodeInput }
+                        });
+                        if (error || !data?.addresses?.length) {
+                          setAddressLookupFailed(true);
+                          setShowAddressFields(true);
+                          const formatted = postcodeInput.replace(/\s/g, '').toUpperCase();
+                          const displayPostcode = formatted.length > 3 
+                            ? formatted.slice(0, -3) + ' ' + formatted.slice(-3) 
+                            : formatted;
+                          setAddressData(prev => ({ ...prev, postcode: displayPostcode }));
+                          setAddressValidated(prev => ({ ...prev, postcode: true }));
+                        } else {
+                          setAddressSuggestions(data.addresses);
+                          setShowAddressDropdown(true);
+                          setAddressData(prev => ({ ...prev, postcode: data.postcode || postcodeInput }));
+                          setAddressValidated(prev => ({ ...prev, postcode: true }));
+                        }
+                      } catch (err) {
+                        setAddressLookupFailed(true);
+                        setShowAddressFields(true);
+                      } finally {
+                        setIsLookingUp(false);
+                      }
+                    }}
+                    disabled={isLookingUp || !postcodeInput.trim()}
+                    className="h-11 sm:h-12 px-5 bg-[#FF6B00] hover:bg-[#E55D00] text-white font-semibold whitespace-nowrap"
+                  >
+                    {isLookingUp ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      'Find Address'
+                    )}
+                  </Button>
+                </div>
+                
+                {/* Address Suggestions Dropdown */}
+                {showAddressDropdown && addressSuggestions.length > 0 && (
+                  <div className="mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto z-50">
+                    {addressSuggestions.map((addr, index) => {
+                      const displayAddress = addr.formatted_address?.filter(Boolean).join(', ') || 
+                        [addr.line_1, addr.line_2, addr.town_or_city].filter(Boolean).join(', ');
+                      return (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => {
+                            const line1Parts = [
+                              addr.building_number,
+                              addr.building_name,
+                              addr.thoroughfare || addr.line_1
+                            ].filter(Boolean).join(' ').trim() || addr.line_1 || '';
+                            
+                            setAddressData({
+                              postcode: addr.postcode || addressData.postcode,
+                              address_line_1: line1Parts,
+                              address_line_2: addr.line_2 || addr.sub_building_name || '',
+                              town: addr.town_or_city || addr.locality || '',
+                              county: addr.county || '',
+                            });
+                            setAddressValidated({
+                              address_line_1: true,
+                              town: true,
+                              postcode: true,
+                            });
+                            setAddressErrors({});
+                            setShowAddressDropdown(false);
+                            setShowAddressFields(true);
+                          }}
+                          className="w-full px-4 py-3 text-left text-sm hover:bg-accent transition-colors border-b border-gray-100 last:border-b-0"
+                        >
+                          {displayAddress}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                
+                {/* Enter address manually link */}
+                {!showAddressFields && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddressFields(true);
+                      setShowAddressDropdown(false);
+                      if (/^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i.test(postcodeInput.replace(/\s/g, ''))) {
+                        const formatted = postcodeInput.replace(/\s/g, '').toUpperCase();
+                        const displayPostcode = formatted.length > 3 
+                          ? formatted.slice(0, -3) + ' ' + formatted.slice(-3) 
+                          : formatted;
+                        setAddressData(prev => ({ ...prev, postcode: displayPostcode }));
+                        setAddressValidated(prev => ({ ...prev, postcode: true }));
+                      }
+                    }}
+                    className="mt-2 text-sm text-muted-foreground hover:text-foreground underline"
+                  >
+                    Enter address manually
+                  </button>
+                )}
+              </div>
+
+              {/* Address Fields - Shown after lookup or manual entry click */}
+              {showAddressFields && (
+                <div className="space-y-4 pt-2">
+                  {/* Address Line 1 */}
+                  <div>
+                    <Label htmlFor="address_line_1" className="text-sm font-medium text-foreground/80">
+                      Address Line 1 *
+                    </Label>
+                    <Input
+                      id="address_line_1"
+                      placeholder="e.g. 123 High Street"
+                      value={addressData.address_line_1}
+                      onChange={(e) => {
+                        setAddressData(prev => ({ ...prev, address_line_1: e.target.value }));
+                        if (addressErrors.address_line_1) {
+                          setAddressErrors(prev => ({ ...prev, address_line_1: '' }));
+                        }
+                      }}
+                      onBlur={() => validateAddressField('address_line_1')}
+                      className={`h-11 sm:h-12 text-base mt-1.5 ${getAddressInputValidationClass('address_line_1')}`}
+                    />
+                    {showValidation && addressErrors.address_line_1 && (
+                      <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        {addressErrors.address_line_1}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Address Line 2 (optional) */}
+                  <div>
+                    <Label htmlFor="address_line_2" className="text-sm font-medium text-foreground/80">
+                      Address Line 2 <span className="text-muted-foreground font-normal">(optional)</span>
+                    </Label>
+                    <Input
+                      id="address_line_2"
+                      placeholder="e.g. Flat 2, Oak House"
+                      value={addressData.address_line_2}
+                      onChange={(e) => setAddressData(prev => ({ ...prev, address_line_2: e.target.value }))}
+                      className="h-11 sm:h-12 text-base mt-1.5"
+                    />
+                  </div>
+
+                  {/* Town/City */}
+                  <div>
+                    <Label htmlFor="town" className="text-sm font-medium text-foreground/80">
+                      Town / City *
+                    </Label>
+                    <Input
+                      id="town"
+                      placeholder="e.g. London"
+                      value={addressData.town}
+                      onChange={(e) => {
+                        setAddressData(prev => ({ ...prev, town: e.target.value }));
+                        if (addressErrors.town) {
+                          setAddressErrors(prev => ({ ...prev, town: '' }));
+                        }
+                      }}
+                      onBlur={() => validateAddressField('town')}
+                      className={`h-11 sm:h-12 text-base mt-1.5 ${getAddressInputValidationClass('town')}`}
+                    />
+                    {showValidation && addressErrors.town && (
+                      <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        {addressErrors.town}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Required Note */}
+            <p className="text-xs text-muted-foreground mt-6">
+              * Required fields for your warranty policy documents.
+            </p>
           </section>
 
           {/* TRUST SIGNALS */}
