@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Lock, RefreshCw } from 'lucide-react';
+import { Shield, Zap } from 'lucide-react';
 
 interface TrustBarProps {
   variant?: 'default' | 'compact';
@@ -8,19 +8,14 @@ interface TrustBarProps {
 const TrustBar: React.FC<TrustBarProps> = ({ variant = 'default' }) => {
   const trustItems = [
     {
-      icon: RefreshCw,
-      text: '14-day money-back guarantee',
-      shortText: '14-day refund',
-    },
-    {
-      icon: Lock,
-      text: 'Secure checkout',
-      shortText: 'Secure',
-    },
-    {
       icon: Shield,
       text: 'No hidden fees',
       shortText: 'No hidden fees',
+    },
+    {
+      icon: Zap,
+      text: 'Easy claims, Fast Payout',
+      shortText: 'Fast Payout',
     },
   ];
 
