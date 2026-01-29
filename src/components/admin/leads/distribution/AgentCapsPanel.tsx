@@ -6,8 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { PresenceBadge } from './PresenceBadge';
-import { RefreshCw, Save, UserPlus } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Save, UserPlus, Trash2, Info, Zap } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { formatDistanceToNow } from 'date-fns';
 
 interface AgentCap {
   id: string;
@@ -38,6 +41,7 @@ interface AgentCapsPanelProps {
   salesUsers: Array<{ id: string; email: string; first_name?: string | null; last_name?: string | null }>;
   onUpdateCap: (adminUserId: string, updates: Partial<AgentCap>) => Promise<boolean>;
   onTogglePause: (adminUserId: string) => Promise<boolean>;
+  onDeleteAgent: (adminUserId: string) => Promise<boolean>;
   getAgentPresenceStatus: (adminUserId: string) => 'active' | 'idle' | 'offline';
   onInitializeCaps: () => Promise<void>;
 }
@@ -48,11 +52,13 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
   salesUsers,
   onUpdateCap,
   onTogglePause,
+  onDeleteAgent,
   getAgentPresenceStatus,
   onInitializeCaps
 }) => {
   const [editedCaps, setEditedCaps] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   const handleCapChange = (adminUserId: string, value: string) => {
     const numValue = parseInt(value, 10);
@@ -82,6 +88,12 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
     setSaving(null);
   };
 
+  const handleDeleteAgent = async (adminUserId: string) => {
+    setDeleting(adminUserId);
+    await onDeleteAgent(adminUserId);
+    setDeleting(null);
+  };
+
   // Get agent name
   const getAgentName = (cap: AgentCap) => {
     if (cap.admin_user?.first_name) {
@@ -95,15 +107,50 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
     return agentPresences.find(p => p.admin_user_id === adminUserId);
   };
 
+  // Get activity description
+  const getActivityDescription = (adminUserId: string) => {
+    const presence = getPresence(adminUserId);
+    const status = getAgentPresenceStatus(adminUserId);
+    
+    if (!presence?.last_interaction_at) {
+      return 'No recent activity';
+    }
+    
+    const lastInteraction = new Date(presence.last_interaction_at);
+    const timeAgo = formatDistanceToNow(lastInteraction, { addSuffix: true });
+    
+    if (status === 'active') {
+      return `Working on leads now (last action ${timeAgo})`;
+    } else if (status === 'idle') {
+      return `Idle - last action ${timeAgo}`;
+    }
+    return `Offline - last seen ${timeAgo}`;
+  };
+
   // Find unconfigured agents
   const configuredAgentIds = new Set(agentCaps.map(c => c.admin_user_id));
   const unconfiguredAgents = salesUsers.filter(u => !configuredAgentIds.has(u.id));
 
   return (
     <div className="mt-6 space-y-4">
+      {/* Active Status Explanation */}
+      <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+        <div className="flex items-start gap-2">
+          <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+          <div className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
+            <p className="font-medium">What does "Active" mean?</p>
+            <ul className="list-disc list-inside space-y-0.5 text-blue-700 dark:text-blue-300">
+              <li><strong className="text-green-600">Active (green)</strong>: Agent clicked, scrolled or typed within the last 90 seconds — they're actively working leads</li>
+              <li><strong className="text-yellow-600">Idle (yellow)</strong>: No interaction for 90 seconds to 5 minutes — browser open but not working</li>
+              <li><strong className="text-gray-500">Offline (gray)</strong>: No interaction for 5+ minutes or tab closed</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       {/* Header with refresh */}
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-medium">Per-Agent Settings</h4>
+        <h4 className="text-sm font-medium">Agent Settings</h4>
         {unconfiguredAgents.length > 0 && (
           <Button variant="outline" size="sm" onClick={onInitializeCaps} className="gap-2">
             <UserPlus className="h-4 w-4" />
@@ -134,76 +181,136 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
             return (
               <div
                 key={cap.id}
-                className="p-3 border rounded-lg bg-card hover:bg-accent/5 transition-colors"
+                className={`p-4 border rounded-lg transition-colors ${
+                  cap.paused 
+                    ? 'bg-muted/50 opacity-75' 
+                    : status === 'active' 
+                      ? 'bg-green-50/50 dark:bg-green-950/20 border-green-200 dark:border-green-800' 
+                      : 'bg-card hover:bg-accent/5'
+                }`}
               >
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex items-start justify-between gap-4">
                   {/* Agent info */}
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <PresenceBadge
-                      status={status}
-                      size="md"
-                      lastInteractionAt={presence?.last_interaction_at}
-                    />
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                    <div className="mt-0.5">
+                      <PresenceBadge
+                        status={status}
+                        size="md"
+                        lastInteractionAt={presence?.last_interaction_at}
+                      />
+                    </div>
                     <div className="min-w-0">
-                      <div className="font-medium text-sm truncate">
-                        {getAgentName(cap)}
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm truncate">
+                          {getAgentName(cap)}
+                        </span>
+                        {status === 'active' && !cap.paused && (
+                          <Badge variant="default" className="text-[10px] px-1.5 py-0 bg-green-600 hover:bg-green-600">
+                            <Zap className="h-2.5 w-2.5 mr-0.5" />
+                            LIVE
+                          </Badge>
+                        )}
                       </div>
                       <div className="text-xs text-muted-foreground truncate">
                         {cap.admin_user?.email}
                       </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {getActivityDescription(cap.admin_user_id)}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Status badges */}
-                  <div className="flex items-center gap-2">
-                    {cap.paused && (
-                      <Badge variant="secondary" className="text-xs">Paused</Badge>
-                    )}
-                    {presence?.is_paused_receiving && (
-                      <Badge variant="outline" className="text-xs">Not receiving</Badge>
-                    )}
-                  </div>
+                  {/* On/Off Toggle */}
+                  <div className="flex flex-col items-end gap-2">
+                    <div className="flex items-center gap-2">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-xs font-medium ${cap.paused ? 'text-red-600' : 'text-green-600'}`}>
+                              {cap.paused ? 'OFF' : 'ON'}
+                            </span>
+                            <Switch
+                              checked={!cap.paused}
+                              onCheckedChange={() => handleTogglePause(cap.admin_user_id)}
+                              disabled={saving === cap.admin_user_id}
+                              className="data-[state=checked]:bg-green-600"
+                            />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="left" className="text-xs">
+                          {cap.paused 
+                            ? 'Agent is switched OFF - will not receive leads' 
+                            : 'Agent is switched ON - receiving leads'}
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
 
-                  {/* Pause toggle */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">Paused</span>
-                    <Switch
-                      checked={cap.paused}
-                      onCheckedChange={() => handleTogglePause(cap.admin_user_id)}
-                      disabled={saving === cap.admin_user_id}
-                    />
+                    {/* Delete button */}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-7 px-2 text-muted-foreground hover:text-red-600 hover:bg-red-50"
+                          disabled={deleting === cap.admin_user_id}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Remove agent from distribution?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will remove <strong>{getAgentName(cap)}</strong> from the lead distribution system. 
+                            They will no longer receive auto-assigned leads. This can be undone by adding them back.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => handleDeleteAgent(cap.admin_user_id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Remove Agent
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
 
                 {/* Progress and cap controls */}
-                <div className="mt-3 space-y-2">
+                <div className="mt-4 space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">
                       Assigned today: <span className="font-medium text-foreground">{cap.assigned_today}</span>
                     </span>
                     <span className="text-muted-foreground">
-                      Cap: <span className="font-medium text-foreground">{cap.daily_cap}</span>
+                      Daily cap: <span className="font-medium text-foreground">{cap.daily_cap}</span>
                     </span>
                   </div>
 
-                  <Progress value={Math.min(progressPercent, 100)} className="h-1.5" />
+                  <Progress 
+                    value={Math.min(progressPercent, 100)} 
+                    className={`h-2 ${progressPercent >= 100 ? '[&>div]:bg-red-500' : progressPercent >= 80 ? '[&>div]:bg-yellow-500' : ''}`}
+                  />
 
-                  <div className="flex items-center gap-2 mt-2">
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs text-muted-foreground">Daily cap:</span>
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t">
+                    <div className="flex items-center gap-2 flex-1">
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">Leads per day:</span>
                       <Input
                         type="number"
                         min={0}
                         value={editedCap ?? cap.daily_cap}
                         onChange={(e) => handleCapChange(cap.admin_user_id, e.target.value)}
-                        className="w-20 h-7 text-xs"
+                        className="w-20 h-8 text-sm"
                       />
                     </div>
                     {hasChanges && (
                       <Button
                         size="sm"
                         variant="default"
-                        className="h-7 gap-1"
+                        className="h-8 gap-1"
                         onClick={() => handleSaveCap(cap.admin_user_id)}
                         disabled={saving === cap.admin_user_id}
                       >
@@ -221,8 +328,10 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
 
       {/* Summary */}
       <Separator />
-      <div className="text-xs text-muted-foreground space-y-1">
-        <p>• Agents marked as <strong>Paused</strong> will not receive auto-assigned leads.</p>
+      <div className="text-xs text-muted-foreground space-y-1.5 bg-muted/30 p-3 rounded-lg">
+        <p><strong>How it works:</strong></p>
+        <p>• Agents switched <strong>OFF</strong> will not receive any auto-assigned leads.</p>
+        <p>• <strong>Leads per day</strong> sets the maximum leads an agent can receive daily.</p>
         <p>• The overflow recipient can exceed their cap for overflow leads.</p>
         <p>• Caps reset automatically at midnight (server time).</p>
       </div>

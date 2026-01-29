@@ -26,6 +26,7 @@ export const LeadDistributionControlBar: React.FC<LeadDistributionControlBarProp
     updateSettings,
     updateAgentCap,
     toggleAgentPause,
+    deleteAgentFromDistribution,
     getAgentPresenceStatus,
     initializeAgentCaps
   } = useLeadDistribution();
@@ -203,6 +204,7 @@ export const LeadDistributionControlBar: React.FC<LeadDistributionControlBarProp
               salesUsers={salesUsers}
               onUpdateCap={updateAgentCap}
               onTogglePause={toggleAgentPause}
+              onDeleteAgent={deleteAgentFromDistribution}
               getAgentPresenceStatus={getAgentPresenceStatus}
               onInitializeCaps={initializeAgentCaps}
             />
