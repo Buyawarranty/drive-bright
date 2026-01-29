@@ -100,7 +100,7 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
 
             <div className="h-px bg-[#DADADA]" />
 
-            {/* Payment Option Selectors - Flat styled cards */}
+            {/* Payment Option Selectors - Solid border when selected */}
             <div className="space-y-3">
               {/* Pay Monthly Option */}
               <button
@@ -108,21 +108,21 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
                 onClick={() => onPaymentChange?.('monthly')}
                 className={`w-full text-left p-3 rounded-lg border-2 transition-all duration-150 ${
                   selectedPayment === 'monthly'
-                    ? 'bg-[#1a1a1a] border-[#1a1a1a]'
+                    ? 'bg-orange-50 border-[#FF6B00]'
                     : 'bg-[#FFF8F5] border-[#FFD9BF] hover:border-[#FF9A4C]'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className={`text-sm font-semibold ${selectedPayment === 'monthly' ? 'text-white' : 'text-[#1a1a1a]'}`}>
+                    <p className="text-sm font-semibold text-[#1a1a1a]">
                       Pay Monthly: £{monthlyPrice}/month
                     </p>
-                    <p className={`text-xs mt-0.5 ${selectedPayment === 'monthly' ? 'text-white/70' : 'text-[#1a1a1a]'}`}>
+                    <p className="text-xs mt-0.5 text-[#1a1a1a]">
                       Total £{originalPrice} – 0% APR, 12 payments
                     </p>
                   </div>
                   {selectedPayment === 'monthly' && (
-                    <Check className="w-5 h-5 text-white flex-shrink-0" />
+                    <Check className="w-5 h-5 flex-shrink-0" style={{ color: '#0BA360' }} />
                   )}
                 </div>
               </button>
@@ -133,40 +133,35 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
                 onClick={() => onPaymentChange?.('full')}
                 className={`w-full text-left p-3 rounded-lg border-2 transition-all duration-150 ${
                   selectedPayment === 'full'
-                    ? 'bg-[#1a1a1a] border-[#1a1a1a]'
+                    ? 'bg-green-50 border-[#0BA360]'
                     : 'bg-[#F0FDF4] border-[#C8F3D2] hover:border-[#7AD69D]'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <p className={`text-sm font-semibold ${selectedPayment === 'full' ? 'text-white' : 'text-[#1a1a1a]'}`}>
-                        Pay in Full: £{fullPrice}
-                      </p>
-                      <p className={`text-xs mt-0.5 ${selectedPayment === 'full' ? 'text-white/70' : 'text-[#1a1a1a]'}`}>
-                        Save £{savings} (10% off)
-                      </p>
-                    </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#1a1a1a]">
+                      Pay in Full: £{fullPrice}
+                    </p>
+                    <p className="text-xs mt-0.5 text-[#1a1a1a]">
+                      Save £{savings} (10% off)
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span 
                       className="text-xs font-bold px-2 py-0.5 rounded"
-                      style={{ 
-                        backgroundColor: selectedPayment === 'full' ? '#0BA360' : '#0BA360', 
-                        color: '#FFFFFF' 
-                      }}
+                      style={{ backgroundColor: '#0BA360', color: '#FFFFFF' }}
                     >
                       BEST VALUE
                     </span>
                     {selectedPayment === 'full' && (
-                      <Check className="w-5 h-5 text-white flex-shrink-0" />
+                      <Check className="w-5 h-5 flex-shrink-0" style={{ color: '#0BA360' }} />
                     )}
                   </div>
                 </div>
               </button>
             </div>
 
-            {/* CTA Button - Black when selected */}
+            {/* CTA Button - Orange for monthly, Green for full */}
             <Button
               onClick={onPayClick}
               disabled={isLoading || !selectedPayment}
@@ -174,8 +169,10 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
               style={{
                 backgroundColor: !selectedPayment 
                   ? '#CCCCCC' 
-                  : '#1a1a1a',
-                color: !selectedPayment ? '#666666' : '#FFFFFF',
+                  : selectedPayment === 'monthly'
+                    ? '#FF6B00'
+                    : '#0BA360',
+                color: '#FFFFFF',
                 boxShadow: 'none',
               }}
             >
