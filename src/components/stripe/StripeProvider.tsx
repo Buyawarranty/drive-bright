@@ -21,7 +21,7 @@ const getStripe = () => {
 const appearance = {
   theme: 'stripe' as const,
   variables: {
-    colorPrimary: '#E65100',
+    colorPrimary: '#0BA360',
     colorBackground: '#ffffff',
     colorText: '#1a1a1a',
     colorDanger: '#dc2626',
@@ -32,13 +32,14 @@ const appearance = {
   },
   rules: {
     '.Input': {
-      border: '1px solid #e5e7eb',
+      border: '1px solid #DADADA',
       boxShadow: 'none',
       padding: '12px 14px',
+      color: '#1a1a1a',
     },
     '.Input:focus': {
-      border: '2px solid #E65100',
-      boxShadow: '0 0 0 1px #E65100',
+      border: '2px solid #0BA360',
+      boxShadow: 'none',
     },
     '.Input--invalid': {
       border: '1px solid #dc2626',
@@ -46,10 +47,32 @@ const appearance = {
     '.Label': {
       fontWeight: '500',
       marginBottom: '8px',
+      color: '#1a1a1a',
     },
     '.Error': {
       color: '#dc2626',
       fontSize: '14px',
+    },
+    '.Tab': {
+      border: '1px solid #DADADA',
+      boxShadow: 'none',
+      color: '#1a1a1a',
+    },
+    '.Tab:hover': {
+      border: '1px solid #DADADA',
+      color: '#1a1a1a',
+    },
+    '.Tab--selected': {
+      border: '2px solid #0BA360',
+      boxShadow: 'none',
+      color: '#1a1a1a',
+    },
+    '.TabLabel': {
+      color: '#1a1a1a',
+      fontWeight: '500',
+    },
+    '.TabIcon': {
+      fill: '#1a1a1a',
     },
   },
 };

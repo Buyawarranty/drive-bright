@@ -283,23 +283,23 @@ const StripePayment: React.FC = () => {
                 </CardContent>
               </Card>
 
-              {/* Trust Elements */}
-              <Card className="bg-white border border-green-200">
+              {/* Trust Elements - Grey text */}
+              <Card className="bg-white border border-[#DADADA]">
                 <CardContent className="p-5">
                   <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div className="flex items-center gap-2 text-green-700">
+                    <div className="flex items-center gap-2 text-gray-500">
                       <Check className="w-4 h-4" />
                       <span>Instant cover</span>
                     </div>
-                    <div className="flex items-center gap-2 text-green-700">
-                      <Clock className="w-4 h-4" />
-                      <span>24hr claims</span>
+                    <div className="flex items-center gap-2 text-gray-500">
+                      <Check className="w-4 h-4" />
+                      <span>Easy claims</span>
                     </div>
-                    <div className="flex items-center gap-2 text-green-700">
+                    <div className="flex items-center gap-2 text-gray-500">
                       <Check className="w-4 h-4" />
                       <span>Any garage</span>
                     </div>
-                    <div className="flex items-center gap-2 text-green-700">
+                    <div className="flex items-center gap-2 text-gray-500">
                       <Check className="w-4 h-4" />
                       <span>UK support</span>
                     </div>
