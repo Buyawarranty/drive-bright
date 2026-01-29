@@ -1,0 +1,124 @@
+import React from 'react';
+import { Check } from 'lucide-react';
+
+interface PaymentMethodSelectorProps {
+  selectedPayment: 'monthly' | 'full' | null;
+  onPaymentChange: (payment: 'monthly' | 'full') => void;
+  monthlyPrice: number;
+  totalPrice: number;
+}
+
+const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
+  selectedPayment,
+  onPaymentChange,
+  monthlyPrice,
+  totalPrice,
+}) => {
+  const discountedPrice = Math.round(totalPrice * 0.9);
+  const savings = totalPrice - discountedPrice;
+
+  return (
+    <div className="bg-white border border-[#E5E5E5] rounded-xl p-5 sm:p-6">
+      {/* Step Header */}
+      <div className="mb-5">
+        <h2 className="text-lg sm:text-xl font-bold text-[#1a1a1a]">
+          Step 1 — Choose how you want to pay
+          <span className="text-[#FF6B00] ml-1">(Required)</span>
+        </h2>
+      </div>
+
+      {/* Payment Cards */}
+      <div className="space-y-3">
+        {/* Pay Monthly Card */}
+        <button
+          onClick={() => onPaymentChange('monthly')}
+          className={`w-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all ${
+            selectedPayment === 'monthly'
+              ? 'border-[#0BA360] bg-green-50/30'
+              : 'border-[#E5E5E5] bg-white hover:border-gray-300'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 sm:gap-4">
+              {/* Radio/Check indicator */}
+              <div
+                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  selectedPayment === 'monthly'
+                    ? 'bg-[#0BA360] border-[#0BA360]'
+                    : 'border-gray-300 bg-white'
+                }`}
+              >
+                {selectedPayment === 'monthly' && (
+                  <Check className="w-4 h-4 text-white" />
+                )}
+              </div>
+
+              {/* Content */}
+              <div>
+                <p className="text-lg sm:text-xl font-bold text-[#1a1a1a]">
+                  Pay Monthly: £{monthlyPrice}/month
+                </p>
+                <p className="text-sm text-gray-600 mt-0.5">
+                  Total £{totalPrice} – 0% APR, 12 payments
+                </p>
+              </div>
+            </div>
+          </div>
+        </button>
+
+        {/* Pay in Full Card */}
+        <button
+          onClick={() => onPaymentChange('full')}
+          className={`w-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all relative ${
+            selectedPayment === 'full'
+              ? 'border-[#0BA360] bg-green-50/30'
+              : 'border-[#E5E5E5] bg-white hover:border-gray-300'
+          }`}
+        >
+          {/* Best Value Badge */}
+          <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+            <span className="bg-[#0BA360] text-white text-xs font-bold px-2.5 py-1 rounded-md">
+              BEST VALUE
+            </span>
+          </div>
+
+          <div className="flex items-center">
+            <div className="flex items-center gap-3 sm:gap-4">
+              {/* Radio/Check indicator */}
+              <div
+                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  selectedPayment === 'full'
+                    ? 'bg-[#0BA360] border-[#0BA360]'
+                    : 'border-gray-300 bg-white'
+                }`}
+              >
+                {selectedPayment === 'full' && (
+                  <Check className="w-4 h-4 text-white" />
+                )}
+              </div>
+
+              {/* Content */}
+              <div>
+                <p className="text-lg sm:text-xl font-bold text-[#1a1a1a]">
+                  Pay in Full: £{discountedPrice}
+                </p>
+                <p className="text-sm text-gray-600 mt-0.5">
+                  Save £{savings} (10% off)
+                </p>
+              </div>
+            </div>
+          </div>
+        </button>
+      </div>
+
+      {/* Helper Text */}
+      {!selectedPayment && (
+        <p className="text-sm text-gray-600 mt-4 text-center">
+          Select a payment option to continue.
+        </p>
+      )}
+    </div>
+  );
+};
+
+export default PaymentMethodSelector;

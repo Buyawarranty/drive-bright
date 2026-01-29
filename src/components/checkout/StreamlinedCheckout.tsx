@@ -24,6 +24,7 @@ import CoverHighlights from '@/components/checkout/CoverHighlights';
 import TrustBar from '@/components/checkout/TrustBar';
 import DesktopStickyPriceSidebar from '@/components/checkout/DesktopStickyPriceSidebar';
 import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
+import PaymentMethodSelector from '@/components/checkout/PaymentMethodSelector';
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
   vehicleData: {
@@ -1104,9 +1105,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           {/* Main Content Column */}
           <div className="flex-1 max-w-2xl space-y-6 sm:space-y-8 pb-32 md:pb-8">
           
-          {/* ==================== SECTION 1: PLAN SUMMARY ==================== */}
-          <section className="space-y-4">
-            {/* Compact Plan Summary Card */}
+          {/* ==================== MOBILE: PLAN SUMMARY ACCORDION ==================== */}
+          <section className="lg:hidden">
             <PlanSummaryCard
               planName={formatPlanName()}
               vehicleReg={vehicleData.regNumber}
@@ -1123,17 +1123,52 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               onPaymentChange={setSelectedPayment}
               onPayClick={processPayment}
               onChangePlan={onBack}
+              isMobile={true}
             />
+          </section>
 
-            {/* Key Cover Highlights */}
-            <CoverHighlights planName={formatPlanName()} />
+          {/* ==================== DESKTOP: PLAN HEADER ==================== */}
+          <section className="hidden lg:block">
+            <PlanSummaryCard
+              planName={formatPlanName()}
+              vehicleReg={vehicleData.regNumber}
+              vehicleMake={vehicleData.make}
+              vehicleModel={vehicleData.model}
+              duration={getDurationText()}
+              claimLimit={updatedPricingData.claimLimit || 1250}
+              labourRate={pricingData.labourRate || 50}
+              excess={updatedPricingData.voluntaryExcess || 100}
+              selectedPayment={selectedPayment}
+              monthlyPrice={discountedMonthlyPrice}
+              totalPrice={bumperTotalPrice}
+              isLoading={isLoading}
+              onPaymentChange={setSelectedPayment}
+              onPayClick={processPayment}
+              onChangePlan={onBack}
+              isMobile={false}
+            />
+          </section>
 
-            {/* Trust Bar */}
-            <TrustBar />
+          {/* ==================== SECTION 1: PAYMENT METHOD SELECTOR ==================== */}
+          <section>
+            <PaymentMethodSelector
+              selectedPayment={selectedPayment}
+              onPaymentChange={setSelectedPayment}
+              monthlyPrice={discountedMonthlyPrice}
+              totalPrice={bumperTotalPrice}
+            />
+          </section>
 
-            {/* Cover Start Date */}
-            <Card className="border border-border bg-card shadow-sm">
-              <CardContent className="p-3 sm:p-4">
+          {/* Key Cover Highlights */}
+          <CoverHighlights planName={formatPlanName()} />
+
+          {/* Trust Bar */}
+          <TrustBar />
+
+          {/* Cover Start Date */}
+          <section>
+            <Card className="border border-[#E5E5E5] bg-white rounded-xl">
+              <CardContent className="p-4 sm:p-5">
                 <StartDatePicker
                   value={startDate}
                   onChange={(date) => {

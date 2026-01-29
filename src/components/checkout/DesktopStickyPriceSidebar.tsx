@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Lock, Star } from 'lucide-react';
+import { Check, Lock, Star, Shield, Clock, Wrench, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface DesktopStickyPriceSidebarProps {
@@ -50,7 +50,7 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
       <div className="bg-white border border-[#E5E5E5] rounded-xl overflow-hidden">
         {/* Header */}
         <div className="p-4 border-b border-[#E5E5E5]">
-          <h3 className="text-base font-semibold text-[#1a1a1a]">Order Summary</h3>
+          <h3 className="text-sm font-semibold text-[#1a1a1a]">Order Summary</h3>
         </div>
 
         <div className="p-4 space-y-4">
@@ -98,26 +98,30 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
           {/* Selected Payment Display */}
           <div className="space-y-2">
             {selectedPayment === 'monthly' && (
-              <div className="bg-orange-50 border border-[#FF6B00] rounded-lg p-3">
+              <div className="bg-green-50/50 border border-[#0BA360] rounded-lg p-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-semibold text-[#1a1a1a]">Pay Monthly</p>
                     <p className="text-lg font-bold text-[#1a1a1a]">£{monthlyPrice}/month</p>
                     <p className="text-xs text-gray-600 mt-0.5">12 payments · 0% APR</p>
                   </div>
-                  <Check className="w-5 h-5 text-[#0BA360]" />
+                  <div className="w-5 h-5 rounded-full bg-[#0BA360] flex items-center justify-center">
+                    <Check className="w-3 h-3 text-white" />
+                  </div>
                 </div>
               </div>
             )}
             {selectedPayment === 'full' && (
-              <div className="bg-green-50 border border-[#0BA360] rounded-lg p-3">
+              <div className="bg-green-50/50 border border-[#0BA360] rounded-lg p-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-semibold text-[#1a1a1a]">Pay in Full</p>
                     <p className="text-lg font-bold text-[#1a1a1a]">£{fullPrice}</p>
                     <p className="text-xs text-[#0BA360] font-medium mt-0.5">Save £{savings} (10% off)</p>
                   </div>
-                  <Check className="w-5 h-5 text-[#0BA360]" />
+                  <div className="w-5 h-5 rounded-full bg-[#0BA360] flex items-center justify-center">
+                    <Check className="w-3 h-3 text-white" />
+                  </div>
                 </div>
               </div>
             )}
@@ -153,14 +157,34 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
                 {selectedPayment === 'monthly' 
                   ? `Pay £${monthlyPrice} today` 
                   : selectedPayment === 'full'
-                  ? 'Complete one-time payment'
+                  ? `Pay £${fullPrice} now`
                   : 'Select payment option'}
               </span>
             )}
           </Button>
 
+          {/* Green Reassurance Icons */}
+          <div className="grid grid-cols-2 gap-2 pt-2">
+            <div className="flex items-center gap-1.5 text-xs text-gray-600">
+              <Shield className="w-3.5 h-3.5 text-[#0BA360]" />
+              <span>Instant cover</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-gray-600">
+              <Clock className="w-3.5 h-3.5 text-[#0BA360]" />
+              <span>14-day refund</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-gray-600">
+              <Wrench className="w-3.5 h-3.5 text-[#0BA360]" />
+              <span>Easy claims</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-gray-600">
+              <Users className="w-3.5 h-3.5 text-[#0BA360]" />
+              <span>UK-based team</span>
+            </div>
+          </div>
+
           {/* Trust Strip */}
-          <div className="text-center space-y-2 pt-2">
+          <div className="text-center space-y-2 pt-2 border-t border-[#E5E5E5]">
             <p className="text-xs text-gray-600 flex items-center justify-center gap-1">
               <Lock className="w-3 h-3 text-[#0BA360]" />
               256-bit SSL encryption
