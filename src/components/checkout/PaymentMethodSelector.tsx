@@ -19,11 +19,10 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
 
   return (
     <div className="bg-white border border-[#E5E5E5] rounded-xl p-5 sm:p-6">
-      {/* Step Header */}
+      {/* Header */}
       <div className="mb-5">
         <h2 className="text-lg sm:text-xl font-bold text-[#1a1a1a]">
-          Step 1 — Choose how you want to pay
-          <span className="text-[#FF6B00] ml-1">(Required)</span>
+          Choose how you want to pay
         </h2>
       </div>
 
