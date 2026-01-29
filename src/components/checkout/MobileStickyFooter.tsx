@@ -27,7 +27,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#E5E5E5] lg:hidden">
-      <div className="px-4 py-3">
+      <div className="px-4 py-2">
         {/* CTA Button */}
         <Button
           onClick={onPayClick}
@@ -60,7 +60,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
         </Button>
 
         {/* Trust Strip */}
-        <div className="flex items-center justify-center gap-2 mt-2.5 text-xs text-gray-600">
+        <div className="flex items-center justify-center gap-2 mt-1.5 text-xs text-gray-600">
           <span className="flex items-center gap-1">
             <Shield className="w-3 h-3 text-[#0BA360]" />
             Instant cover
