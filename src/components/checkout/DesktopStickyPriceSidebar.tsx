@@ -98,14 +98,14 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
           {/* Selected Payment Display */}
           <div className="space-y-2">
             {selectedPayment === 'monthly' && (
-              <div className="bg-green-50/50 border border-[#0BA360] rounded-lg p-3">
+              <div className="bg-orange-50 border border-[#FF6B00] rounded-lg p-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-semibold text-[#1a1a1a]">Pay Monthly</p>
                     <p className="text-lg font-bold text-[#1a1a1a]">£{monthlyPrice}/month</p>
                     <p className="text-xs text-gray-600 mt-0.5">12 payments · 0% APR</p>
                   </div>
-                  <div className="w-5 h-5 rounded-full bg-[#0BA360] flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-full bg-[#FF6B00] flex items-center justify-center">
                     <Check className="w-3 h-3 text-white" />
                   </div>
                 </div>
