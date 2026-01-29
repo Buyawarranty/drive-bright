@@ -68,21 +68,22 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Payment Element */}
-      <div className="bg-white rounded-lg">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Payment Element - Stripe handles wallet buttons internally */}
+      <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
         <PaymentElement 
           onReady={() => setIsReady(true)}
           options={{
             layout: 'tabs',
             business: { name: 'BuyAWarranty' },
+            paymentMethodOrder: ['apple_pay', 'google_pay', 'card'],
           }}
         />
       </div>
 
       {/* Error Message */}
       {errorMessage && (
-        <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+        <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
           <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-red-800">Payment failed</p>
@@ -92,24 +93,27 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
       )}
 
       {/* Security Notice */}
-      <div className="flex items-center gap-2 text-xs text-muted-foreground justify-center">
-        <Lock className="w-3.5 h-3.5" />
+      <div className="flex items-center gap-2 text-xs text-muted-foreground justify-center py-2">
+        <Lock className="w-3.5 h-3.5 text-green-600" />
         <span>Secured by Stripe. Your card details are encrypted.</span>
       </div>
 
-      {/* Submit Button */}
+      {/* Submit Button - Brand Orange */}
       <Button
         type="submit"
         disabled={!stripe || !elements || isProcessing || !isReady}
-        className="w-full h-14 text-lg font-semibold bg-[#E65100] hover:bg-[#D84700] text-white rounded-xl shadow-lg"
+        className="w-full h-14 text-lg font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl"
+        style={{
+          backgroundColor: '#E65100',
+        }}
       >
         {isProcessing ? (
-          <span className="flex items-center gap-2">
+          <span className="flex items-center justify-center gap-2 text-white">
             <Loader2 className="w-5 h-5 animate-spin" />
-            Processing...
+            Processing payment...
           </span>
         ) : (
-          <span className="flex items-center gap-2">
+          <span className="flex items-center justify-center gap-2 text-white">
             <Lock className="w-5 h-5" />
             Pay £{amount.toFixed(2)} now
           </span>
