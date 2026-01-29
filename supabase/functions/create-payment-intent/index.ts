@@ -137,17 +137,16 @@ serve(async (req) => {
     }
 
     // Create PaymentIntent with all metadata needed for webhook processing
-    // Explicitly enable payment methods for UK customers
+    // Payment methods: Use automatic_payment_methods to let Stripe show the best options
+    // Apple Pay/Google Pay are handled via 'card' with wallet detection
+    // Order preference is set in the PaymentElement on the frontend
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
       currency: "gbp",
       customer: customerId,
-      payment_method_types: [
-        'card',
-        'paypal',
-        'revolut_pay',
-        'link',
-      ],
+      automatic_payment_methods: {
+        enabled: true,
+      },
       metadata: {
         // Plan details
         plan_id: planType,
