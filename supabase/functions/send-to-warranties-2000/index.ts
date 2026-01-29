@@ -435,9 +435,13 @@ serve(async (req) => {
       First: customer.first_name || customer.name?.split(' ')[0] || "Customer",
       Surname: customer.last_name || customer.name?.split(' ').slice(1).join(' ') || "Name",
       // Fix address mapping - handle all address field combinations properly
+      // Now supports address_line_1 and address_line_2 format from checkout
       Addr1: (() => {
         let address1 = "";
-        if (customer.building_number && customer.street) {
+        // Prefer new address_line_1 format
+        if (customer.address_line_1) {
+          address1 = customer.address_line_1;
+        } else if (customer.building_number && customer.street) {
           address1 = `${customer.building_number} ${customer.street}`;
         } else if (customer.street) {
           address1 = customer.street;
@@ -449,7 +453,11 @@ serve(async (req) => {
         return address1;
       })(),
       Addr2: (() => {
-        // Use flat number, building name, or leave empty if already used in Addr1
+        // Prefer new address_line_2 format
+        if (customer.address_line_2) {
+          return customer.address_line_2;
+        }
+        // Fallback to legacy format
         if (customer.flat_number && customer.building_name && !customer.street) {
           return `${customer.flat_number}, ${customer.building_name}`;
         } else if (customer.flat_number) {

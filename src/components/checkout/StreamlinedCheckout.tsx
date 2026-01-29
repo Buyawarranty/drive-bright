@@ -132,15 +132,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const [detailsOpen, setDetailsOpen] = useState(true);
   const [addressExpanded, setAddressExpanded] = useState(true);
   
-  // Address fields state - using canonical database field names
+  // Address fields state - simplified to match API requirements
+  // Addr1 = address_line_1, Addr2 = address_line_2, Town = town, PCode = postcode
   const [addressData, setAddressData] = useState({
-    street: '',
-    building_name: '',
-    building_number: '',
-    flat_number: '',
+    postcode: '',
+    address_line_1: '',  // Maps to street/building_number combo for W2000 Addr1
+    address_line_2: '',  // Maps to flat_number/building_name for W2000 Addr2 (optional)
     town: '',
     county: '',
-    postcode: '',
   });
   
   // Address field errors
@@ -303,11 +302,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   }, [customerData.first_name, customerData.last_name, customerData.email, customerData.phone, customerData.mileage]);
   
   // Check if address is complete (required fields)
+  // Check if address is complete - simplified fields
   const addressComplete = useMemo(() => {
     const ukPostcodeRegex = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
     return !!(
-      (addressData.building_number?.trim() || addressData.building_name?.trim()) &&
-      addressData.street?.trim() &&
+      addressData.address_line_1?.trim() &&
       addressData.town?.trim() &&
       addressData.postcode?.trim() &&
       ukPostcodeRegex.test(addressData.postcode.replace(/\s/g, ''))
@@ -318,8 +317,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const addressFieldsMissing = useMemo(() => {
     let count = 0;
     const ukPostcodeRegex = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
-    if (!addressData.building_number?.trim() && !addressData.building_name?.trim()) count++;
-    if (!addressData.street?.trim()) count++;
+    if (!addressData.address_line_1?.trim()) count++;
     if (!addressData.town?.trim()) count++;
     if (!addressData.postcode?.trim() || !ukPostcodeRegex.test(addressData.postcode.replace(/\s/g, ''))) count++;
     return count;
@@ -663,16 +661,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     const ukPostcodeRegex = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
 
     switch (field) {
-      case 'building_number':
-        // Building number OR building name is required
-        if (!addressData.building_number?.trim() && !addressData.building_name?.trim()) {
-          error = 'Enter your building number.';
-          isValid = false;
-        }
-        break;
-      case 'street':
-        if (!addressData.street?.trim()) {
-          error = 'Enter your street name.';
+      case 'address_line_1':
+        if (!addressData.address_line_1?.trim()) {
+          error = 'Enter your address.';
           isValid = false;
         }
         break;
@@ -856,14 +847,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             first_name: firstName,
             last_name: lastName,
             final_amount: finalPrice,
-            // Address fields with canonical database names
-            street: addressData.street || '',
-            building_name: addressData.building_name || '',
-            building_number: addressData.building_number || '',
-            flat_number: addressData.flat_number || '',
+            // Address fields - mapped for API compatibility
+            // Addr1 = address_line_1 (street + building), Addr2 = address_line_2 (optional)
+            street: addressData.address_line_1 || '',
+            building_name: '',
+            building_number: '',
+            flat_number: addressData.address_line_2 || '',
             town: addressData.town || '',
             county: addressData.county || '',
             postcode: addressData.postcode || '',
+            address_line_1: addressData.address_line_1 || '',
+            address_line_2: addressData.address_line_2 || '',
           },
           discountCode: appliedDiscountCodes.map(code => code.code).join(', '),
           finalAmount: finalPrice,
@@ -957,14 +951,16 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             first_name: firstName,
             last_name: lastName,
             final_amount: finalPrice,
-            // Address fields with canonical database names
-            street: addressData.street || '',
-            building_name: addressData.building_name || '',
-            building_number: addressData.building_number || '',
-            flat_number: addressData.flat_number || '',
+            // Address fields - mapped for API compatibility
+            street: addressData.address_line_1 || '',
+            building_name: '',
+            building_number: '',
+            flat_number: addressData.address_line_2 || '',
             town: addressData.town || '',
             county: addressData.county || '',
             postcode: addressData.postcode || '',
+            address_line_1: addressData.address_line_1 || '',
+            address_line_2: addressData.address_line_2 || '',
           },
           discountCode: appliedDiscountCodes.map(code => code.code).join(', '),
           finalAmount: finalPrice,
@@ -1373,11 +1369,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
                     {/* Required Address Section - Collapsible */}
                     <div 
-                      className={`rounded-xl overflow-hidden transition-all duration-200 bg-white ${
-                        showValidation && !addressComplete ? 'ring-2 ring-red-200' : ''
-                      }`}
+                      className="rounded-xl overflow-hidden transition-all duration-200 bg-white"
                       style={{ 
-                        border: showValidation && !addressComplete ? '1px solid #EF4444' : '1px solid #E5E5E5'
+                        border: '1px solid #E5E5E5'
                       }}
                     >
                       {/* Collapsed Header */}
@@ -1393,19 +1387,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                               addressComplete 
                                 ? 'bg-[hsl(var(--success)/0.15)] border border-[hsl(var(--success)/0.3)]' 
-                                : showValidation && !addressComplete 
-                                ? 'bg-destructive/10 border border-destructive/20' 
                                 : ''
                             }`}
-                            style={!addressComplete && !showValidation ? { backgroundColor: '#EFEFEF' } : undefined}
+                            style={!addressComplete ? { backgroundColor: '#EFEFEF' } : undefined}
                           >
-                            <MapPin className={`w-4 h-4 ${
-                              addressComplete 
-                                ? 'text-[hsl(var(--success))]' 
-                                : showValidation && !addressComplete 
-                                ? 'text-destructive' 
-                                : ''
-                            }`} style={!addressComplete && !showValidation ? { color: '#8A8A8A' } : undefined} />
+                            {addressComplete ? (
+                              <Check className="w-4 h-4 text-[hsl(var(--success))]" />
+                            ) : (
+                              <MapPin className="w-4 h-4" style={{ color: '#8A8A8A' }} />
+                            )}
                           </div>
                           <div>
                             <p className="text-sm font-medium text-foreground">
@@ -1413,7 +1403,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             </p>
                             <p className="text-xs text-muted-foreground mt-0.5">
                               {addressExpanded 
-                                ? 'Search or enter your address below' 
+                                ? 'Enter your postcode to find your address' 
                                 : 'Required for your policy documents'
                               }
                             </p>
@@ -1458,29 +1448,33 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         }`}
                       >
                         <div className="px-4 pb-4 pt-3 space-y-4 border-t border-border/30">
-                          {/* Address Autocomplete Search */}
+                          {/* Postcode with Find Address button */}
                           <div>
-                            <Label className="text-sm font-medium text-foreground/80 flex items-center gap-2 mb-2">
+                            <Label htmlFor="postcode-search" className="text-sm font-medium text-foreground/80 flex items-center gap-2 mb-2">
                               <Search className="w-3.5 h-3.5" />
-                              Find Your Address
+                              Postcode
                             </Label>
                             <AddressAutocomplete
-                              placeholder="Start typing your postcode or address..."
+                              placeholder="Enter your postcode (e.g. SW1A 1AA)"
                               onAddressSelect={(autocompleteData: AddressData) => {
+                                // Combine line_1 fields for address_line_1
+                                const line1Parts = [
+                                  autocompleteData.building_number,
+                                  autocompleteData.building_name,
+                                  autocompleteData.line_1
+                                ].filter(Boolean).join(' ').trim() || autocompleteData.line_1 || '';
+                                
                                 setAddressData({
-                                  street: autocompleteData.line_1 || '',
-                                  building_name: autocompleteData.building_name || '',
-                                  building_number: autocompleteData.building_number || '',
-                                  flat_number: autocompleteData.line_2 || '',
+                                  postcode: autocompleteData.postcode || '',
+                                  address_line_1: line1Parts,
+                                  address_line_2: autocompleteData.line_2 || '',
                                   town: autocompleteData.town || '',
                                   county: autocompleteData.county || '',
-                                  postcode: autocompleteData.postcode || '',
                                 });
                                 // Clear errors on successful selection
                                 setAddressErrors({});
                                 setAddressValidated({
-                                  building_number: true,
-                                  street: true,
+                                  address_line_1: true,
                                   town: true,
                                   postcode: true,
                                 });
@@ -1489,128 +1483,18 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                               className="w-full border border-gray-200 rounded-lg px-3 py-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-[#F5F5F5] focus:bg-white min-h-[44px] transition-colors"
                             />
                             <p className="text-xs text-muted-foreground mt-2">
-                              Search by postcode or address, then adjust fields below if needed
+                              Type your postcode to find your address, or enter manually below
                             </p>
                           </div>
 
-                          {/* Manual Address Fields */}
+                          {/* Manual Address Fields - Postcode first (already filled from lookup) */}
                           <div className="grid grid-cols-1 gap-3">
-                            {/* Building Number & Name */}
-                            <div className="grid grid-cols-2 gap-3">
-                              <div>
-                                <Label htmlFor="building_number" className="text-sm font-medium text-foreground/80">
-                                  Building Number <span className="text-destructive">*</span>
-                                </Label>
-                                <Input
-                                  id="building_number"
-                                  placeholder="e.g. 123"
-                                  value={addressData.building_number}
-                                  onChange={(e) => {
-                                    setAddressData(prev => ({ ...prev, building_number: e.target.value }));
-                                    if (addressErrors.building_number) {
-                                      setAddressErrors(prev => ({ ...prev, building_number: '' }));
-                                    }
-                                  }}
-                                  onBlur={() => validateAddressField('building_number')}
-                                  className={`h-10 sm:h-11 text-sm mt-1 transition-colors ${getAddressInputValidationClass('building_number')}`}
-                                />
-                                {showValidation && addressErrors.building_number && (
-                                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                                    <AlertCircle className="w-3.5 h-3.5" />
-                                    {addressErrors.building_number}
-                                  </p>
-                                )}
-                              </div>
-                              <div>
-                                <Label htmlFor="building_name" className="text-sm font-medium text-foreground/80">
-                                  Building Name <span className="text-muted-foreground font-normal">(optional)</span>
-                                </Label>
-                                <Input
-                                  id="building_name"
-                                  placeholder="e.g. Oak House"
-                                  value={addressData.building_name}
-                                  onChange={(e) => {
-                                    setAddressData(prev => ({ ...prev, building_name: e.target.value }));
-                                    // If building name is filled, clear building number error
-                                    if (e.target.value.trim() && addressErrors.building_number) {
-                                      setAddressErrors(prev => ({ ...prev, building_number: '' }));
-                                    }
-                                  }}
-                                  className="h-10 sm:h-11 text-sm mt-1 bg-[#F5F5F5] border-gray-200 focus:bg-white transition-colors"
-                                />
-                              </div>
-                            </div>
-
-                            {/* Street */}
+                            {/* Postcode Field (read-only or manual entry) */}
                             <div>
-                              <Label htmlFor="street" className="text-sm font-medium text-foreground/80">
-                                Street <span className="text-destructive">*</span>
+                              <Label htmlFor="postcode" className="text-sm font-medium text-foreground/80">
+                                Postcode <span className="text-destructive">*</span>
                               </Label>
-                              <Input
-                                id="street"
-                                placeholder="e.g. High Street"
-                                value={addressData.street}
-                                onChange={(e) => {
-                                  setAddressData(prev => ({ ...prev, street: e.target.value }));
-                                  if (addressErrors.street) {
-                                    setAddressErrors(prev => ({ ...prev, street: '' }));
-                                  }
-                                }}
-                                onBlur={() => validateAddressField('street')}
-                                className={`h-10 sm:h-11 text-sm mt-1 transition-colors ${getAddressInputValidationClass('street')}`}
-                              />
-                              {showValidation && addressErrors.street && (
-                                <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                                  <AlertCircle className="w-3.5 h-3.5" />
-                                  {addressErrors.street}
-                                </p>
-                              )}
-                            </div>
-
-                            {/* Flat Number (optional) */}
-                            <div>
-                              <Label htmlFor="flat_number" className="text-sm font-medium text-foreground/80">
-                                Flat / Apartment <span className="text-muted-foreground font-normal">(optional)</span>
-                              </Label>
-                              <Input
-                                id="flat_number"
-                                placeholder="e.g. Flat 2"
-                                value={addressData.flat_number}
-                                onChange={(e) => setAddressData(prev => ({ ...prev, flat_number: e.target.value }))}
-                                className="h-10 sm:h-11 text-sm mt-1 bg-[#F5F5F5] border-gray-200 focus:bg-white transition-colors"
-                              />
-                            </div>
-
-                            {/* Town/City and Postcode - Side by Side */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              <div>
-                                <Label htmlFor="town" className="text-sm font-medium text-foreground/80">
-                                  Town / City <span className="text-destructive">*</span>
-                                </Label>
-                                <Input
-                                  id="town"
-                                  placeholder="e.g. London"
-                                  value={addressData.town}
-                                  onChange={(e) => {
-                                    setAddressData(prev => ({ ...prev, town: e.target.value }));
-                                    if (addressErrors.town) {
-                                      setAddressErrors(prev => ({ ...prev, town: '' }));
-                                    }
-                                  }}
-                                  onBlur={() => validateAddressField('town')}
-                                  className={`h-10 sm:h-11 text-sm mt-1 transition-colors ${getAddressInputValidationClass('town')}`}
-                                />
-                                {showValidation && addressErrors.town && (
-                                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                                    <AlertCircle className="w-3.5 h-3.5" />
-                                    {addressErrors.town}
-                                  </p>
-                                )}
-                              </div>
-                              <div>
-                                <Label htmlFor="postcode" className="text-sm font-medium text-foreground/80">
-                                  Postcode <span className="text-destructive">*</span>
-                                </Label>
+                              <div className="relative">
                                 <Input
                                   id="postcode"
                                   placeholder="e.g. SW1A 1AA"
@@ -1622,15 +1506,94 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                     }
                                   }}
                                   onBlur={() => validateAddressField('postcode')}
-                                  className={`h-10 sm:h-11 text-sm mt-1 transition-colors ${getAddressInputValidationClass('postcode')}`}
+                                  className={`h-10 sm:h-11 text-sm mt-1 pr-10 transition-colors ${getAddressInputValidationClass('postcode')}`}
                                 />
-                                {showValidation && addressErrors.postcode && (
-                                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                                    <AlertCircle className="w-3.5 h-3.5" />
-                                    {addressErrors.postcode}
-                                  </p>
+                                {addressValidated.postcode && !addressErrors.postcode && addressData.postcode && (
+                                  <Check className="absolute right-3 top-1/2 translate-y-[-30%] h-5 w-5 text-green-600" />
                                 )}
                               </div>
+                              {showValidation && addressErrors.postcode && (
+                                <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                                  <AlertCircle className="w-3.5 h-3.5" />
+                                  {addressErrors.postcode}
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Address Line 1 */}
+                            <div>
+                              <Label htmlFor="address_line_1" className="text-sm font-medium text-foreground/80">
+                                Address Line 1 <span className="text-destructive">*</span>
+                              </Label>
+                              <div className="relative">
+                                <Input
+                                  id="address_line_1"
+                                  placeholder="e.g. 123 High Street"
+                                  value={addressData.address_line_1}
+                                  onChange={(e) => {
+                                    setAddressData(prev => ({ ...prev, address_line_1: e.target.value }));
+                                    if (addressErrors.address_line_1) {
+                                      setAddressErrors(prev => ({ ...prev, address_line_1: '' }));
+                                    }
+                                  }}
+                                  onBlur={() => validateAddressField('address_line_1')}
+                                  className={`h-10 sm:h-11 text-sm mt-1 pr-10 transition-colors ${getAddressInputValidationClass('address_line_1')}`}
+                                />
+                                {addressValidated.address_line_1 && !addressErrors.address_line_1 && addressData.address_line_1 && (
+                                  <Check className="absolute right-3 top-1/2 translate-y-[-30%] h-5 w-5 text-green-600" />
+                                )}
+                              </div>
+                              {showValidation && addressErrors.address_line_1 && (
+                                <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                                  <AlertCircle className="w-3.5 h-3.5" />
+                                  {addressErrors.address_line_1}
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Address Line 2 (optional) */}
+                            <div>
+                              <Label htmlFor="address_line_2" className="text-sm font-medium text-foreground/80">
+                                Address Line 2 <span className="text-muted-foreground font-normal">(optional)</span>
+                              </Label>
+                              <Input
+                                id="address_line_2"
+                                placeholder="e.g. Flat 2, Oak House"
+                                value={addressData.address_line_2}
+                                onChange={(e) => setAddressData(prev => ({ ...prev, address_line_2: e.target.value }))}
+                                className="h-10 sm:h-11 text-sm mt-1 bg-[#F5F5F5] border-gray-200 focus:bg-white transition-colors"
+                              />
+                            </div>
+
+                            {/* Town/City */}
+                            <div>
+                              <Label htmlFor="town" className="text-sm font-medium text-foreground/80">
+                                Town / City <span className="text-destructive">*</span>
+                              </Label>
+                              <div className="relative">
+                                <Input
+                                  id="town"
+                                  placeholder="e.g. London"
+                                  value={addressData.town}
+                                  onChange={(e) => {
+                                    setAddressData(prev => ({ ...prev, town: e.target.value }));
+                                    if (addressErrors.town) {
+                                      setAddressErrors(prev => ({ ...prev, town: '' }));
+                                    }
+                                  }}
+                                  onBlur={() => validateAddressField('town')}
+                                  className={`h-10 sm:h-11 text-sm mt-1 pr-10 transition-colors ${getAddressInputValidationClass('town')}`}
+                                />
+                                {addressValidated.town && !addressErrors.town && addressData.town && (
+                                  <Check className="absolute right-3 top-1/2 translate-y-[-30%] h-5 w-5 text-green-600" />
+                                )}
+                              </div>
+                              {showValidation && addressErrors.town && (
+                                <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                                  <AlertCircle className="w-3.5 h-3.5" />
+                                  {addressErrors.town}
+                                </p>
+                              )}
                             </div>
                           </div>
 
