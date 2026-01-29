@@ -26,7 +26,7 @@ const TrustBar: React.FC<TrustBarProps> = ({ variant = 'default' }) => {
 
   if (variant === 'compact') {
     return (
-      <div className="flex items-center justify-center gap-3 py-2 text-xs text-muted-foreground">
+      <div className="flex items-center justify-center gap-3 py-2 text-xs text-gray-600">
         {trustItems.map((item, index) => (
           <React.Fragment key={index}>
             <span className="flex items-center gap-1">
@@ -42,7 +42,7 @@ const TrustBar: React.FC<TrustBarProps> = ({ variant = 'default' }) => {
 
   return (
     <div className="bg-muted/40 border border-border rounded-lg p-3 sm:p-4">
-      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-gray-600">
         {trustItems.map((item, index) => (
           <div key={index} className="flex items-center gap-2">
             <item.icon className="w-4 h-4 text-green-600" />

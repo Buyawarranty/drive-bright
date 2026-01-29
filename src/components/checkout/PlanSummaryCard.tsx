@@ -66,7 +66,7 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
           </div>
           <button
             onClick={onChangePlan}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-muted/50 transition-colors"
+            className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-muted/50 transition-colors"
           >
             <ExternalLink className="w-4 h-4" />
             Change
@@ -82,19 +82,19 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
         {/* Order Summary - Combined Details */}
         <div className="space-y-3 mb-5">
           <div className="flex justify-between items-center py-1">
-            <span className="text-muted-foreground">Plan:</span>
+            <span className="text-gray-600">Plan:</span>
             <span className="font-semibold text-foreground">Platinum</span>
           </div>
           <div className="flex justify-between items-center py-1">
-            <span className="text-muted-foreground">Duration:</span>
+            <span className="text-gray-600">Duration:</span>
             <span className="font-semibold text-foreground">{duration}</span>
           </div>
           <div className="flex justify-between items-center py-1">
-            <span className="text-muted-foreground">Vehicle:</span>
+            <span className="text-gray-600">Vehicle:</span>
             <span className="font-semibold text-foreground uppercase">{vehicleDisplay}</span>
           </div>
           <div className="flex justify-between items-center py-1">
-            <span className="text-muted-foreground">Registration:</span>
+            <span className="text-gray-600">Registration:</span>
             <span 
               className="font-mono font-bold text-xs uppercase px-2 py-1 rounded border-2 border-black tracking-wider"
               style={{ backgroundColor: '#FCD34D' }}
@@ -103,22 +103,22 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
             </span>
           </div>
           <div className="flex justify-between items-center py-1">
-            <span className="text-muted-foreground">Claim Limit:</span>
+            <span className="text-gray-600">Claim Limit:</span>
             <span className="font-semibold text-foreground">{displayClaimLimit()}</span>
           </div>
           <div className="flex justify-between items-center py-1">
-            <span className="text-muted-foreground">Labour Rate:</span>
+            <span className="text-gray-600">Labour Rate:</span>
             <span className="font-semibold text-foreground">£{labourRate}/hour</span>
           </div>
           <div className="flex justify-between items-center py-1">
-            <span className="text-muted-foreground">Excess:</span>
+            <span className="text-gray-600">Excess:</span>
             <span className="font-semibold text-foreground">£{excess}</span>
           </div>
         </div>
 
         {/* Payment Options */}
         <div className="space-y-3 pt-4 border-t border-border">
-          <p className="text-sm font-medium text-muted-foreground mb-2">Choose payment method:</p>
+          <p className="text-sm font-semibold text-[#1a1a1a] mb-2">Choose payment method:</p>
           
           {/* Monthly Option */}
           <button 
@@ -130,8 +130,8 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
             }`}
           >
             <div className="flex flex-wrap items-baseline gap-x-2">
-              <span className="font-bold text-foreground">Pay Monthly: £{monthlyPrice}/month</span>
-              <span className="text-muted-foreground text-sm">
+              <span className="font-bold text-[#1a1a1a]">Pay Monthly: £{monthlyPrice}/month</span>
+              <span className="text-gray-600 text-sm">
                 Total £{totalPrice} – 0% APR, 12 payments
               </span>
             </div>
@@ -152,8 +152,8 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
               </span>
             </div>
             <div className="flex flex-wrap items-baseline gap-x-2 pr-24">
-              <span className="font-bold text-foreground">Pay in Full: £{discountedPrice}</span>
-              <span className="text-muted-foreground text-sm">
+              <span className="font-bold text-[#1a1a1a]">Pay in Full: £{discountedPrice}</span>
+              <span className="text-gray-600 text-sm">
                 Save £{savings} (10% off)
               </span>
             </div>
@@ -191,7 +191,7 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
                 </span>
               )}
             </Button>
-            <p className="text-center text-xs text-muted-foreground mt-3">
+            <p className="text-center text-xs text-gray-600 mt-3">
               🔒 Secure checkout · 14-day money-back guarantee
             </p>
           </div>
