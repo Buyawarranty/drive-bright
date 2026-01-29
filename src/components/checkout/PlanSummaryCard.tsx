@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Car, Calendar, CreditCard, Wrench, AlertCircle, ArrowRight } from 'lucide-react';
+import { Shield, Check, ExternalLink } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface PlanSummaryCardProps {
@@ -31,17 +31,6 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
   totalPrice,
   onChangePlan,
 }) => {
-  // Format plan name for display
-  const formatPlanName = (name: string) => {
-    return name
-      .replace(/vehicle/gi, '')
-      .replace(/car/gi, '')
-      .replace(/bike/gi, '')
-      .replace(/plan/gi, '')
-      .replace(/premium/gi, 'Platinum')
-      .trim() || 'Platinum Comprehensive';
-  };
-
   // Map claim limit display values
   const displayClaimLimit = () => {
     if (claimLimit === 750) return '£1,000';
@@ -50,97 +39,106 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
     return `£${claimLimit.toLocaleString()}`;
   };
 
+  const vehicleDisplay = [vehicleMake, vehicleModel].filter(Boolean).join(' ') || vehicleReg;
+  const originalPrice = totalPrice;
+  const discountedPrice = Math.round(totalPrice * 0.9);
+
   return (
-    <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent shadow-lg overflow-hidden">
-      <CardContent className="p-0">
-        {/* Header with Plan Name */}
-        <div className="bg-primary/10 px-4 py-3 sm:px-5 sm:py-4 border-b border-primary/10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h2 className="text-base sm:text-lg font-bold text-foreground">
-                  {formatPlanName(planName)} Plan
-                </h2>
-                <p className="text-xs text-muted-foreground">Comprehensive Warranty Cover</p>
-              </div>
+    <Card className="bg-white border border-border shadow-sm overflow-hidden">
+      <CardContent className="p-5 sm:p-6">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 flex items-center justify-center">
+              <Shield className="w-7 h-7 text-orange-500 fill-orange-100" />
             </div>
-            <button
-              onClick={onChangePlan}
-              className="text-sm text-primary hover:text-primary/80 font-medium underline underline-offset-2 flex items-center gap-1"
-            >
-              Change plan
-            </button>
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+              Your platinum vehicle plan is ready
+            </h2>
+          </div>
+          <button
+            onClick={onChangePlan}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-muted/50 transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Change
+          </button>
+        </div>
+
+        {/* 14-day guarantee banner */}
+        <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 mb-5 flex items-center gap-2">
+          <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+          <span className="text-sm text-green-800">Cancel anytime within 14 days for a full refund</span>
+        </div>
+
+        {/* Plan Details List */}
+        <div className="space-y-3 mb-5">
+          <div className="flex justify-between items-center py-1">
+            <span className="text-muted-foreground">Plan:</span>
+            <span className="font-semibold text-foreground">Platinum</span>
+          </div>
+          <div className="flex justify-between items-center py-1">
+            <span className="text-muted-foreground">Duration:</span>
+            <span className="font-semibold text-foreground">{duration}</span>
+          </div>
+          <div className="flex justify-between items-center py-1">
+            <span className="text-muted-foreground">Vehicle:</span>
+            <span className="font-semibold text-foreground uppercase">{vehicleDisplay}</span>
+          </div>
+          <div className="flex justify-between items-center py-1">
+            <span className="text-muted-foreground">Claim Limit:</span>
+            <span className="font-semibold text-foreground">{displayClaimLimit()}</span>
+          </div>
+          <div className="flex justify-between items-center py-1">
+            <span className="text-muted-foreground">Labour Rate:</span>
+            <span className="font-semibold text-foreground">£{labourRate}/hour</span>
+          </div>
+          <div className="flex justify-between items-center py-1">
+            <span className="text-muted-foreground">Excess:</span>
+            <span className="font-semibold text-foreground">£{excess}</span>
+          </div>
+          <div className="flex justify-between items-center py-1">
+            <span className="text-muted-foreground">Registration:</span>
+            <span className="font-semibold text-foreground uppercase tracking-wide">{vehicleReg}</span>
           </div>
         </div>
 
-        {/* Summary Grid */}
-        <div className="p-4 sm:p-5 space-y-4">
-          {/* Vehicle & Duration Row */}
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Car className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Vehicle</p>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span 
-                    className="font-mono font-bold text-sm uppercase tracking-wide px-2 py-0.5 rounded border-2 border-black"
-                    style={{ backgroundColor: '#FCD34D' }}
-                  >
-                    {vehicleReg}
-                  </span>
-                  {(vehicleMake || vehicleModel) && (
-                    <span className="text-sm text-foreground">
-                      {vehicleMake} {vehicleModel}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground">Duration</p>
-              <p className="text-sm font-semibold text-foreground">{duration}</p>
+        {/* Pricing Options */}
+        <div className="space-y-3 pt-4 border-t border-border">
+          {/* Monthly Option */}
+          <div 
+            className={`rounded-lg px-4 py-3 ${
+              selectedPayment === 'monthly' 
+                ? 'bg-orange-50 border-2 border-orange-300' 
+                : 'bg-orange-50/50 border border-orange-100'
+            }`}
+          >
+            <div className="flex flex-wrap items-baseline gap-x-2">
+              <span className="font-bold text-foreground">Pay Monthly: £{monthlyPrice}/month</span>
+              <span className="text-muted-foreground text-sm">
+                Total £{totalPrice} – 0% APR, 12 payments
+              </span>
             </div>
           </div>
 
-          {/* Coverage Details Grid */}
-          <div className="grid grid-cols-3 gap-3 pt-3 border-t border-border/50">
-            <div className="text-center p-2 bg-muted/30 rounded-lg">
-              <p className="text-xs text-muted-foreground mb-0.5">Claim Limit</p>
-              <p className="text-sm font-bold text-foreground">{displayClaimLimit()}</p>
+          {/* Pay in Full Option */}
+          <div 
+            className={`rounded-lg px-4 py-3 relative ${
+              selectedPayment === 'full' 
+                ? 'bg-green-50 border-2 border-green-300' 
+                : 'bg-green-50/50 border border-green-100'
+            }`}
+          >
+            <div className="absolute top-2 right-2">
+              <span className="bg-green-600 text-white text-xs font-bold px-2 py-1 rounded">
+                BEST VALUE
+              </span>
             </div>
-            <div className="text-center p-2 bg-muted/30 rounded-lg">
-              <p className="text-xs text-muted-foreground mb-0.5">Labour Rate</p>
-              <p className="text-sm font-bold text-foreground">£{labourRate}/hr</p>
-            </div>
-            <div className="text-center p-2 bg-muted/30 rounded-lg">
-              <p className="text-xs text-muted-foreground mb-0.5">Excess</p>
-              <p className="text-sm font-bold text-foreground">£{excess}</p>
-            </div>
-          </div>
-
-          {/* Pricing Selection Indicator */}
-          <div className="pt-3 border-t border-border/50">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Payment option:</span>
-              </div>
-              <div className="text-right">
-                {selectedPayment === 'monthly' ? (
-                  <span className="text-sm font-semibold text-foreground">
-                    £{monthlyPrice}/month <span className="text-xs text-muted-foreground">(12 payments)</span>
-                  </span>
-                ) : selectedPayment === 'full' ? (
-                  <span className="text-sm font-semibold text-foreground">
-                    £{totalPrice} <span className="text-xs text-muted-foreground">(one-time)</span>
-                  </span>
-                ) : (
-                  <span className="text-sm text-muted-foreground italic">Select below</span>
-                )}
-              </div>
+            <div className="flex flex-wrap items-baseline gap-x-2 pr-20">
+              <span className="font-bold text-foreground">Pay in Full: £{discountedPrice}</span>
+              <span className="text-muted-foreground text-sm">
+                (Was £{totalPrice}, Now £{discountedPrice} with extra 10% off)
+              </span>
             </div>
           </div>
         </div>
