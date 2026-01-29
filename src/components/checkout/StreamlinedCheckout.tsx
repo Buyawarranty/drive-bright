@@ -152,6 +152,16 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   
   // Track if address lookup failed (for showing manual entry)
   const [addressLookupFailed, setAddressLookupFailed] = useState(false);
+  // Track if address fields should be shown (after lookup or manual entry click)
+  const [showAddressFields, setShowAddressFields] = useState(
+    // Show if address is already populated
+    !!(addressData.address_line_1 && addressData.town && addressData.postcode)
+  );
+  // Postcode input for lookup
+  const [postcodeInput, setPostcodeInput] = useState(addressData.postcode || '');
+  const [isLookingUp, setIsLookingUp] = useState(false);
+  const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
+  const [showAddressDropdown, setShowAddressDropdown] = useState(false);
   
   // Form states
   const [showValidation, setShowValidation] = useState(false);
@@ -1497,164 +1507,258 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         }`}
                       >
                         <div className="px-4 pb-4 pt-3 space-y-4 border-t border-border/30">
-                          {/* Address Autocomplete - Type to search */}
+                          {/* Postcode Entry with Find Address Button */}
                           <div>
                             <Label className="text-sm font-medium text-foreground/80 flex items-center gap-2 mb-2">
-                              <Search className="w-3.5 h-3.5" />
-                              Find Your Address
+                              <MapPin className="w-4 h-4 text-[#FF6B00]" />
+                              Enter your postcode <span className="text-destructive">*</span>
                             </Label>
-                            <AddressAutocomplete
-                              placeholder="Start typing your postcode or address..."
-                              onAddressSelect={(autocompleteData: AddressData) => {
-                                // Combine line_1 fields for address_line_1
-                                const line1Parts = [
-                                  autocompleteData.building_number,
-                                  autocompleteData.building_name,
-                                  autocompleteData.line_1
-                                ].filter(Boolean).join(' ').trim() || autocompleteData.line_1 || '';
-                                
-                                setAddressData({
-                                  postcode: autocompleteData.postcode || '',
-                                  address_line_1: line1Parts,
-                                  address_line_2: autocompleteData.line_2 || '',
-                                  town: autocompleteData.town || '',
-                                  county: autocompleteData.county || '',
-                                });
-                                // Clear errors on successful selection
-                                setAddressErrors({});
-                                setAddressValidated({
-                                  address_line_1: true,
-                                  town: true,
-                                  postcode: true,
-                                });
-                              }}
-                              onLookupError={(hasError) => setAddressLookupFailed(hasError)}
-                              onPostcodeValidation={(isValid, postcode) => {
-                                // When API fails but postcode is valid, save just the postcode
-                                if (isValid && addressLookupFailed) {
-                                  setAddressData(prev => ({ ...prev, postcode: postcode.toUpperCase() }));
-                                  setAddressValidated(prev => ({ ...prev, postcode: true }));
-                                  setAddressErrors(prev => ({ ...prev, postcode: '' }));
-                                }
-                              }}
-                              className="w-full border border-gray-200 rounded-lg px-3 py-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-[#F5F5F5] focus:bg-white min-h-[44px] transition-colors"
-                            />
-                            <p className="text-xs text-muted-foreground mt-2">
-                              Search by postcode or address, then adjust fields below if needed
-                            </p>
-                          </div>
-
-                          {/* Manual Address Fields - Always visible for adjustment */}
-                          <div className="grid grid-cols-1 gap-3">
-
-                            {/* Address Line 1 */}
-                            <div>
-                              <Label htmlFor="address_line_1" className="text-sm font-medium text-foreground/80">
-                                Address Line 1 <span className="text-destructive">*</span>
-                              </Label>
-                              <div className="relative">
+                            <div className="flex gap-2">
+                              <div className="relative flex-1">
                                 <Input
-                                  id="address_line_1"
-                                  placeholder="e.g. 123 High Street"
-                                  value={addressData.address_line_1}
+                                  id="postcode-lookup"
+                                  type="text"
+                                  value={postcodeInput}
                                   onChange={(e) => {
-                                    setAddressData(prev => ({ ...prev, address_line_1: e.target.value }));
-                                    if (addressErrors.address_line_1) {
-                                      setAddressErrors(prev => ({ ...prev, address_line_1: '' }));
-                                    }
+                                    const value = e.target.value.toUpperCase();
+                                    setPostcodeInput(value);
+                                    // Also update addressData postcode
+                                    setAddressData(prev => ({ ...prev, postcode: value }));
                                   }}
-                                  onBlur={() => validateAddressField('address_line_1')}
-                                  className={`h-10 sm:h-11 text-sm mt-1 pr-10 transition-colors ${getAddressInputValidationClass('address_line_1')}`}
-                                />
-                                {addressValidated.address_line_1 && !addressErrors.address_line_1 && addressData.address_line_1 && (
-                                  <Check className="absolute right-3 top-1/2 translate-y-[-30%] h-5 w-5 text-green-600" />
-                                )}
-                              </div>
-                              {showValidation && addressErrors.address_line_1 && (
-                                <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                                  <AlertCircle className="w-3.5 h-3.5" />
-                                  {addressErrors.address_line_1}
-                                </p>
-                              )}
-                            </div>
-
-                            {/* Address Line 2 (optional) */}
-                            <div>
-                              <Label htmlFor="address_line_2" className="text-sm font-medium text-foreground/80">
-                                Address Line 2 <span className="text-muted-foreground font-normal">(optional)</span>
-                              </Label>
-                              <Input
-                                id="address_line_2"
-                                placeholder="e.g. Flat 2, Oak House"
-                                value={addressData.address_line_2}
-                                onChange={(e) => setAddressData(prev => ({ ...prev, address_line_2: e.target.value }))}
-                                className="h-10 sm:h-11 text-sm mt-1 bg-[#F5F5F5] border-gray-200 focus:bg-white transition-colors"
-                              />
-                            </div>
-
-                            {/* Town/City */}
-                            <div>
-                              <Label htmlFor="town" className="text-sm font-medium text-foreground/80">
-                                Town / City <span className="text-destructive">*</span>
-                              </Label>
-                              <div className="relative">
-                                <Input
-                                  id="town"
-                                  placeholder="e.g. London"
-                                  value={addressData.town}
-                                  onChange={(e) => {
-                                    setAddressData(prev => ({ ...prev, town: e.target.value }));
-                                    if (addressErrors.town) {
-                                      setAddressErrors(prev => ({ ...prev, town: '' }));
-                                    }
-                                  }}
-                                  onBlur={() => validateAddressField('town')}
-                                  className={`h-10 sm:h-11 text-sm mt-1 pr-10 transition-colors ${getAddressInputValidationClass('town')}`}
-                                />
-                                {addressValidated.town && !addressErrors.town && addressData.town && (
-                                  <Check className="absolute right-3 top-1/2 translate-y-[-30%] h-5 w-5 text-green-600" />
-                                )}
-                              </div>
-                              {showValidation && addressErrors.town && (
-                                <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                                  <AlertCircle className="w-3.5 h-3.5" />
-                                  {addressErrors.town}
-                                </p>
-                              )}
-                            </div>
-
-                            {/* Postcode */}
-                            <div>
-                              <Label htmlFor="postcode" className="text-sm font-medium text-foreground/80">
-                                Postcode <span className="text-destructive">*</span>
-                              </Label>
-                              <div className="relative">
-                                <Input
-                                  id="postcode"
                                   placeholder="e.g. SW1A 1AA"
-                                  value={addressData.postcode}
-                                  onChange={(e) => {
-                                    setAddressData(prev => ({ ...prev, postcode: e.target.value.toUpperCase() }));
-                                    if (addressErrors.postcode) {
-                                      setAddressErrors(prev => ({ ...prev, postcode: '' }));
-                                    }
-                                  }}
-                                  onBlur={() => validateAddressField('postcode')}
                                   maxLength={8}
-                                  className={`h-10 sm:h-11 text-sm mt-1 pr-10 transition-colors uppercase ${getAddressInputValidationClass('postcode')}`}
+                                  className="h-12 text-base font-medium uppercase tracking-wider bg-white border-2 border-[#FF6B00] focus:ring-2 focus:ring-[#FF6B00]/20 pr-10"
+                                  disabled={isLookingUp}
                                 />
-                                {addressValidated.postcode && !addressErrors.postcode && addressData.postcode && (
-                                  <Check className="absolute right-3 top-1/2 translate-y-[-30%] h-5 w-5 text-green-600" />
+                                {/^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i.test(postcodeInput.replace(/\s/g, '')) && (
+                                  <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-green-600" />
                                 )}
                               </div>
-                              {showValidation && addressErrors.postcode && (
-                                <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                                  <AlertCircle className="w-3.5 h-3.5" />
-                                  {addressErrors.postcode}
-                                </p>
-                              )}
+                              <Button
+                                type="button"
+                                onClick={async () => {
+                                  if (!postcodeInput.trim()) return;
+                                  setIsLookingUp(true);
+                                  setAddressLookupFailed(false);
+                                  try {
+                                    const { data, error } = await supabase.functions.invoke('getaddress-lookup', {
+                                      body: { action: 'find', postcode: postcodeInput }
+                                    });
+                                    if (error || !data?.addresses?.length) {
+                                      setAddressLookupFailed(true);
+                                      setShowAddressFields(true);
+                                      // Save the postcode
+                                      const formatted = postcodeInput.replace(/\s/g, '').toUpperCase();
+                                      const displayPostcode = formatted.length > 3 
+                                        ? formatted.slice(0, -3) + ' ' + formatted.slice(-3) 
+                                        : formatted;
+                                      setAddressData(prev => ({ ...prev, postcode: displayPostcode }));
+                                      setAddressValidated(prev => ({ ...prev, postcode: true }));
+                                    } else {
+                                      setAddressSuggestions(data.addresses);
+                                      setShowAddressDropdown(true);
+                                      // Save the postcode
+                                      setAddressData(prev => ({ ...prev, postcode: data.postcode || postcodeInput }));
+                                      setAddressValidated(prev => ({ ...prev, postcode: true }));
+                                    }
+                                  } catch (err) {
+                                    setAddressLookupFailed(true);
+                                    setShowAddressFields(true);
+                                  } finally {
+                                    setIsLookingUp(false);
+                                  }
+                                }}
+                                disabled={isLookingUp || !postcodeInput.trim()}
+                                className="h-12 px-6 bg-[#FF6B00] hover:bg-[#E55D00] text-white font-semibold whitespace-nowrap"
+                              >
+                                {isLookingUp ? (
+                                  <Loader2 className="w-5 h-5 animate-spin" />
+                                ) : (
+                                  <>
+                                    <Search className="w-4 h-4 mr-2" />
+                                    Find Address
+                                  </>
+                                )}
+                              </Button>
                             </div>
+                            
+                            {/* Address Suggestions Dropdown */}
+                            {showAddressDropdown && addressSuggestions.length > 0 && (
+                              <div className="mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto z-50">
+                                {addressSuggestions.map((addr, index) => {
+                                  const displayAddress = addr.formatted_address?.filter(Boolean).join(', ') || 
+                                    [addr.line_1, addr.line_2, addr.town_or_city].filter(Boolean).join(', ');
+                                  return (
+                                    <button
+                                      key={index}
+                                      type="button"
+                                      onClick={() => {
+                                        // Populate address fields
+                                        const line1Parts = [
+                                          addr.building_number,
+                                          addr.building_name,
+                                          addr.thoroughfare || addr.line_1
+                                        ].filter(Boolean).join(' ').trim() || addr.line_1 || '';
+                                        
+                                        setAddressData({
+                                          postcode: addr.postcode || addressData.postcode,
+                                          address_line_1: line1Parts,
+                                          address_line_2: addr.line_2 || addr.sub_building_name || '',
+                                          town: addr.town_or_city || addr.locality || '',
+                                          county: addr.county || '',
+                                        });
+                                        setAddressValidated({
+                                          address_line_1: true,
+                                          town: true,
+                                          postcode: true,
+                                        });
+                                        setAddressErrors({});
+                                        setShowAddressDropdown(false);
+                                        setShowAddressFields(true);
+                                      }}
+                                      className="w-full px-4 py-3 text-left text-sm hover:bg-accent transition-colors border-b border-gray-100 last:border-b-0"
+                                    >
+                                      {displayAddress}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                            
+                            {/* Enter address manually link */}
+                            {!showAddressFields && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setShowAddressFields(true);
+                                  setShowAddressDropdown(false);
+                                  // Save postcode if valid
+                                  if (/^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i.test(postcodeInput.replace(/\s/g, ''))) {
+                                    const formatted = postcodeInput.replace(/\s/g, '').toUpperCase();
+                                    const displayPostcode = formatted.length > 3 
+                                      ? formatted.slice(0, -3) + ' ' + formatted.slice(-3) 
+                                      : formatted;
+                                    setAddressData(prev => ({ ...prev, postcode: displayPostcode }));
+                                    setAddressValidated(prev => ({ ...prev, postcode: true }));
+                                  }
+                                }}
+                                className="mt-3 text-sm text-[#FF6B00] hover:underline font-medium"
+                              >
+                                Enter address manually
+                              </button>
+                            )}
                           </div>
+
+                          {/* Address Fields - Shown after lookup or manual entry click */}
+                          {showAddressFields && (
+                            <div className="grid grid-cols-1 gap-3 pt-2 border-t border-border/30">
+
+                              {/* Address Line 1 */}
+                              <div>
+                                <Label htmlFor="address_line_1" className="text-sm font-medium text-foreground/80">
+                                  Address Line 1 <span className="text-destructive">*</span>
+                                </Label>
+                                <div className="relative">
+                                  <Input
+                                    id="address_line_1"
+                                    placeholder="e.g. 123 High Street"
+                                    value={addressData.address_line_1}
+                                    onChange={(e) => {
+                                      setAddressData(prev => ({ ...prev, address_line_1: e.target.value }));
+                                      if (addressErrors.address_line_1) {
+                                        setAddressErrors(prev => ({ ...prev, address_line_1: '' }));
+                                      }
+                                    }}
+                                    onBlur={() => validateAddressField('address_line_1')}
+                                    className={`h-10 sm:h-11 text-sm mt-1 pr-10 transition-colors ${getAddressInputValidationClass('address_line_1')}`}
+                                  />
+                                  {addressValidated.address_line_1 && !addressErrors.address_line_1 && addressData.address_line_1 && (
+                                    <Check className="absolute right-3 top-1/2 translate-y-[-30%] h-5 w-5 text-green-600" />
+                                  )}
+                                </div>
+                                {showValidation && addressErrors.address_line_1 && (
+                                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                                    <AlertCircle className="w-3.5 h-3.5" />
+                                    {addressErrors.address_line_1}
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Address Line 2 (optional) */}
+                              <div>
+                                <Label htmlFor="address_line_2" className="text-sm font-medium text-foreground/80">
+                                  Address Line 2 <span className="text-muted-foreground font-normal">(optional)</span>
+                                </Label>
+                                <Input
+                                  id="address_line_2"
+                                  placeholder="e.g. Flat 2, Oak House"
+                                  value={addressData.address_line_2}
+                                  onChange={(e) => setAddressData(prev => ({ ...prev, address_line_2: e.target.value }))}
+                                  className="h-10 sm:h-11 text-sm mt-1 bg-[#F5F5F5] border-gray-200 focus:bg-white transition-colors"
+                                />
+                              </div>
+
+                              {/* Town/City */}
+                              <div>
+                                <Label htmlFor="town" className="text-sm font-medium text-foreground/80">
+                                  Town / City <span className="text-destructive">*</span>
+                                </Label>
+                                <div className="relative">
+                                  <Input
+                                    id="town"
+                                    placeholder="e.g. London"
+                                    value={addressData.town}
+                                    onChange={(e) => {
+                                      setAddressData(prev => ({ ...prev, town: e.target.value }));
+                                      if (addressErrors.town) {
+                                        setAddressErrors(prev => ({ ...prev, town: '' }));
+                                      }
+                                    }}
+                                    onBlur={() => validateAddressField('town')}
+                                    className={`h-10 sm:h-11 text-sm mt-1 pr-10 transition-colors ${getAddressInputValidationClass('town')}`}
+                                  />
+                                  {addressValidated.town && !addressErrors.town && addressData.town && (
+                                    <Check className="absolute right-3 top-1/2 translate-y-[-30%] h-5 w-5 text-green-600" />
+                                  )}
+                                </div>
+                                {showValidation && addressErrors.town && (
+                                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                                    <AlertCircle className="w-3.5 h-3.5" />
+                                    {addressErrors.town}
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Postcode (read-only display) */}
+                              <div>
+                                <Label htmlFor="postcode-display" className="text-sm font-medium text-foreground/80">
+                                  Postcode <span className="text-destructive">*</span>
+                                </Label>
+                                <div className="relative">
+                                  <Input
+                                    id="postcode-display"
+                                    value={addressData.postcode}
+                                    onChange={(e) => {
+                                      setAddressData(prev => ({ ...prev, postcode: e.target.value.toUpperCase() }));
+                                      setPostcodeInput(e.target.value.toUpperCase());
+                                    }}
+                                    onBlur={() => validateAddressField('postcode')}
+                                    maxLength={8}
+                                    className={`h-10 sm:h-11 text-sm mt-1 pr-10 transition-colors uppercase ${getAddressInputValidationClass('postcode')}`}
+                                  />
+                                  {addressValidated.postcode && !addressErrors.postcode && addressData.postcode && (
+                                    <Check className="absolute right-3 top-1/2 translate-y-[-30%] h-5 w-5 text-green-600" />
+                                  )}
+                                </div>
+                                {showValidation && addressErrors.postcode && (
+                                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                                    <AlertCircle className="w-3.5 h-3.5" />
+                                    {addressErrors.postcode}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          )}
 
                           {/* Required Note */}
                           <p className="text-xs text-muted-foreground pt-1">
