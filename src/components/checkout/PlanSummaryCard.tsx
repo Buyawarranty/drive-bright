@@ -112,65 +112,56 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
           </div>
         </div>
 
-        {/* Payment Options - Solid fill when selected */}
+        {/* Payment Options - Flat design */}
         <div className="space-y-3 pt-4 border-t border-[#E5E5E5]">
           <p className="text-sm font-semibold text-[#1a1a1a] mb-2">Choose payment method:</p>
           
           {/* Monthly Option */}
           <button 
             onClick={() => onPaymentChange('monthly')}
-            className={`w-full text-left rounded-xl px-4 py-4 border-2 transition-all relative ${
+            className={`w-full text-left rounded-lg px-4 py-3 border-2 transition-all ${
               selectedPayment === 'monthly' 
-                ? 'bg-[#FF6B00] border-[#FF6B00]' 
-                : 'bg-white border-[#E5E5E5] hover:border-[#FF6B00]'
+                ? 'bg-orange-50 border-[#FF6B00]' 
+                : 'bg-[#FFF8F5] border-[#FFD9BF] hover:border-[#FF9A4C]'
             }`}
           >
-            {/* Green tick in corner when selected */}
-            {selectedPayment === 'monthly' && (
-              <div className="absolute top-2 right-2 w-6 h-6 bg-[#0BA360] rounded-full flex items-center justify-center">
-                <Check className="w-4 h-4 text-white" strokeWidth={3} />
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="font-bold text-[#1a1a1a]">Pay Monthly: £{monthlyPrice}/month</span>
+                <p className="text-gray-600 text-sm mt-0.5">
+                  Total £{totalPrice} – 0% APR, 12 payments
+                </p>
               </div>
-            )}
-            <div>
-              <span className={`font-bold ${selectedPayment === 'monthly' ? 'text-white' : 'text-[#1a1a1a]'}`}>
-                Pay Monthly: £{monthlyPrice}/month
-              </span>
-              <p className={`text-sm mt-0.5 ${selectedPayment === 'monthly' ? 'text-white/90' : 'text-gray-600'}`}>
-                Total £{totalPrice} – 0% APR, 12 payments
-              </p>
+              {selectedPayment === 'monthly' && (
+                <Check className="w-5 h-5 flex-shrink-0 text-[#0BA360]" />
+              )}
             </div>
           </button>
 
           {/* Pay in Full Option */}
           <button 
             onClick={() => onPaymentChange('full')}
-            className={`w-full text-left rounded-xl px-4 py-4 border-2 relative transition-all ${
+            className={`w-full text-left rounded-lg px-4 py-3 border-2 relative transition-all ${
               selectedPayment === 'full' 
-                ? 'bg-[#0BA360] border-[#0BA360]' 
-                : 'bg-white border-[#E5E5E5] hover:border-[#0BA360]'
+                ? 'bg-green-50 border-[#0BA360]' 
+                : 'bg-[#F0FDF4] border-[#C8F3D2] hover:border-[#7AD69D]'
             }`}
           >
-            {/* Green tick in corner when selected */}
-            {selectedPayment === 'full' && (
-              <div className="absolute top-2 right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                <Check className="w-4 h-4 text-[#0BA360]" strokeWidth={3} />
-              </div>
-            )}
-            {/* Best Value badge - only show when not selected */}
-            {selectedPayment !== 'full' && (
-              <div className="absolute top-2 right-2">
-                <span className="bg-[#0BA360] text-white text-xs font-bold px-2 py-1 rounded">
-                  BEST VALUE
-                </span>
-              </div>
-            )}
-            <div className="pr-20">
-              <span className={`font-bold ${selectedPayment === 'full' ? 'text-white' : 'text-[#1a1a1a]'}`}>
-                Pay in Full: £{discountedPrice}
+            <div className="absolute top-2 right-2">
+              <span className="bg-[#0BA360] text-white text-xs font-bold px-2 py-1 rounded">
+                BEST VALUE
               </span>
-              <p className={`text-sm mt-0.5 ${selectedPayment === 'full' ? 'text-white/90' : 'text-gray-600'}`}>
-                Save £{savings} (10% off)
-              </p>
+            </div>
+            <div className="flex items-center justify-between pr-24">
+              <div>
+                <span className="font-bold text-[#1a1a1a]">Pay in Full: £{discountedPrice}</span>
+                <p className="text-gray-600 text-sm mt-0.5">
+                  Save £{savings} (10% off)
+                </p>
+              </div>
+              {selectedPayment === 'full' && (
+                <Check className="w-5 h-5 flex-shrink-0 text-[#0BA360]" />
+              )}
             </div>
           </button>
         </div>
