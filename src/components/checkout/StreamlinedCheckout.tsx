@@ -1157,9 +1157,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           {/* Key Cover Highlights */}
           <CoverHighlights planName={formatPlanName()} />
 
-          {/* Trust Bar */}
-          <TrustBar />
-
           {/* Cover Start Date */}
           <section>
             <Card className="border border-[#E5E5E5] bg-white rounded-xl">
@@ -1190,7 +1187,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   <div className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
                     <div className="flex items-center gap-3">
                       <div className="text-left">
-                        <h2 className="text-base font-semibold text-foreground">Customer Details</h2>
+                        <h2 className="text-lg sm:text-xl font-bold text-[#1a1a1a]">Customer Details</h2>
                         <p className="text-xs text-muted-foreground mt-0.5">Just a few quick fields to complete.</p>
                       </div>
                     </div>
