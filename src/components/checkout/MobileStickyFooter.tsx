@@ -163,7 +163,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
         </div>
 
         {/* Trust line */}
-        <p className="text-center text-xs text-muted-foreground mt-2">
+        <p className="text-center text-xs text-gray-600 mt-2">
           🔒 Secure checkout · 14-day money-back guarantee
         </p>
       </div>

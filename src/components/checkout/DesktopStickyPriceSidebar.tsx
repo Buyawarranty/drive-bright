@@ -62,11 +62,11 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
             {/* Plan Details */}
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Plan</span>
-                <span className="font-medium text-foreground">{planName || 'Platinum'}</span>
+                <span className="text-gray-600">Plan</span>
+                <span className="font-medium text-[#1a1a1a]">{planName || 'Platinum'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Vehicle</span>
+                <span className="text-gray-600">Vehicle</span>
                 <span 
                   className="font-mono font-bold text-xs uppercase px-1.5 py-0.5 rounded border border-black"
                   style={{ backgroundColor: '#FCD34D' }}
@@ -75,8 +75,8 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Duration</span>
-                <span className="font-medium text-foreground">{duration}</span>
+                <span className="text-gray-600">Duration</span>
+                <span className="font-medium text-[#1a1a1a]">{duration}</span>
               </div>
             </div>
 
@@ -85,16 +85,16 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
             {/* Coverage */}
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Claim limit</span>
-                <span className="font-medium text-foreground">{displayClaimLimit()}</span>
+                <span className="text-gray-600">Claim limit</span>
+                <span className="font-medium text-[#1a1a1a]">{displayClaimLimit()}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Labour rate</span>
-                <span className="font-medium text-foreground">£{labourRate}/hr</span>
+                <span className="text-gray-600">Labour rate</span>
+                <span className="font-medium text-[#1a1a1a]">£{labourRate}/hr</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Excess</span>
-                <span className="font-medium text-foreground">£{excess}</span>
+                <span className="text-gray-600">Excess</span>
+                <span className="font-medium text-[#1a1a1a]">£{excess}</span>
               </div>
             </div>
 
@@ -195,7 +195,7 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
 
             {/* Trust Elements */}
             <div className="text-center space-y-2">
-              <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+              <p className="text-xs text-gray-600 flex items-center justify-center gap-1">
                 <Lock className="w-3 h-3" style={{ color: '#0BA360' }} />
                 256-bit SSL encryption
               </p>
@@ -204,7 +204,7 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
                   href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                  className="flex items-center gap-1 text-xs text-gray-600 hover:text-foreground"
                 >
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
