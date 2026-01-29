@@ -317,6 +317,123 @@ serve(async (req) => {
       }
     }
 
+    // Handle embedded checkout payment_intent.succeeded events
+    if (event.type === "payment_intent.succeeded") {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      
+      logStep("Processing PaymentIntent succeeded", { 
+        paymentIntentId: paymentIntent.id,
+        amount: paymentIntent.amount,
+        isEmbeddedCheckout: paymentIntent.metadata?.is_embedded_checkout
+      });
+
+      // Only process embedded checkout payments (not other PaymentIntents)
+      if (paymentIntent.metadata?.is_embedded_checkout === 'true') {
+        const metadata = paymentIntent.metadata;
+        
+        // Extract vehicle data from metadata
+        const vehicleData = {
+          regNumber: metadata.vehicle_reg || '',
+          mileage: metadata.vehicle_mileage || '',
+          make: metadata.vehicle_make || '',
+          model: metadata.vehicle_model || '',
+          year: metadata.vehicle_year || '',
+          fuelType: metadata.vehicle_fuel_type || '',
+          transmission: metadata.vehicle_transmission || '',
+          vehicleType: metadata.vehicle_type || 'standard',
+          fullName: metadata.customer_name || '',
+          phone: metadata.customer_phone || '',
+          address: `${metadata.customer_street || ''} ${metadata.customer_town || ''} ${metadata.customer_county || ''} ${metadata.customer_postcode || ''}`.trim(),
+          email: metadata.customer_email || ''
+        };
+
+        // Extract customer data from metadata
+        const customerData = {
+          first_name: metadata.customer_first_name || '',
+          last_name: metadata.customer_last_name || '',
+          mobile: metadata.customer_phone || '',
+          street: metadata.customer_street || '',
+          town: metadata.customer_town || '',
+          county: metadata.customer_county || '',
+          postcode: metadata.customer_postcode || '',
+          country: metadata.customer_country || 'United Kingdom',
+          building_name: metadata.customer_building_name || '',
+          flat_number: metadata.customer_flat_number || '',
+          building_number: metadata.customer_building_number || '',
+          vehicle_reg: metadata.vehicle_reg || '',
+          discount_code: metadata.discount_code || '',
+          final_amount: parseFloat(metadata.final_amount || '0'),
+          fullName: metadata.customer_name || '',
+          phone: metadata.customer_phone || '',
+          address: `${metadata.customer_street || ''}, ${metadata.customer_town || ''}, ${metadata.customer_county || ''}, ${metadata.customer_postcode || ''}`.replace(/^,\s*|,\s*$/g, '').replace(/,\s*,/g, ',').trim()
+        };
+
+        logStep("Extracted customer and vehicle data from PaymentIntent", { vehicleData, customerData });
+
+        // Extract add-ons from metadata
+        const protectionAddOns = {
+          tyre: metadata.addon_tyre_cover === 'true',
+          wearTear: metadata.addon_wear_tear === 'true',
+          european: metadata.addon_europe_cover === 'true',
+          transfer: metadata.addon_transfer_cover === 'true',
+          breakdown: metadata.addon_breakdown_recovery === 'true',
+          rental: metadata.addon_vehicle_rental === 'true',
+          motFee: metadata.addon_mot_fee === 'true',
+          motRepair: metadata.addon_mot_repair === 'true',
+          lostKey: metadata.addon_lost_key === 'true',
+          consequential: metadata.addon_consequential === 'true'
+        };
+
+        const claimLimit = parseInt(metadata.claim_limit || '1250');
+        const labourRate = parseInt(metadata.labour_rate || '50');
+        const seasonalBonusMonths = parseInt(metadata.seasonal_bonus_months || '0');
+        const startDate = metadata.start_date || null;
+        
+        logStep("Extracted add-ons, claim limit, labour rate from PaymentIntent", { 
+          protectionAddOns, claimLimit, labourRate, seasonalBonusMonths, startDate 
+        });
+
+        // Call handle-successful-payment
+        const { data: processData, error: processError } = await supabaseClient.functions.invoke('handle-successful-payment', {
+          body: {
+            planId: metadata.plan_id || metadata.plan_type,
+            paymentType: metadata.payment_type,
+            userEmail: vehicleData.email,
+            userId: metadata.user_id || null,
+            stripeSessionId: paymentIntent.id, // Use PaymentIntent ID as session ID
+            vehicleData: vehicleData,
+            customerData: customerData,
+            protectionAddOns: protectionAddOns,
+            claimLimit: claimLimit,
+            labourRate: labourRate,
+            seasonalBonusMonths: seasonalBonusMonths,
+            startDate: startDate,
+            metadata: metadata,
+            skipEmail: false
+          }
+        });
+
+        if (processError) {
+          logStep("Error processing embedded payment via handle-successful-payment", processError);
+          throw new Error(`Embedded payment processing failed: ${processError.message}`);
+        }
+
+        logStep("Embedded payment processed successfully via webhook", processData);
+        
+        // Fire server-side Google Ads conversion
+        await fireServerSideConversion(
+          { id: paymentIntent.id, metadata }, // Mock session object structure
+          vehicleData.email,
+          parseFloat(metadata.final_amount || '0'),
+          processData?.warrantyNumber || processData?.policyNumber || ''
+        );
+      } else {
+        logStep("PaymentIntent succeeded but not from embedded checkout, skipping", { 
+          paymentIntentId: paymentIntent.id 
+        });
+      }
+    }
+
     // Handle subscription events if needed
     if (event.type === "invoice.payment_succeeded") {
       const invoice = event.data.object as Stripe.Invoice;

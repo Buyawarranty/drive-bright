@@ -17,6 +17,7 @@ import { StartDatePicker } from '@/components/checkout/StartDatePicker';
 import { startOfDay, format, isToday } from 'date-fns';
 import { useMotMileage } from '@/hooks/useMotMileage';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
+import { EmbeddedCheckoutModal } from '@/components/stripe';
 
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
@@ -151,6 +152,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const [validatedFields, setValidatedFields] = useState<{[key: string]: boolean}>({});
   const [isLoading, setIsLoading] = useState(false);
   const [paymentError, setPaymentError] = useState('');
+  
+  // Embedded Stripe checkout modal state
+  const [showEmbeddedCheckout, setShowEmbeddedCheckout] = useState(false);
+  const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
   
   // Promo code states (collapsed by default)
   const [promoOpen, setPromoOpen] = useState(false);
@@ -933,9 +938,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         mileage: customerData.mileage || vehicleData.mileage
       };
       
-      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
+      // Create PaymentIntent for embedded checkout (no redirect)
+      const { data: paymentIntentData, error: paymentIntentError } = await supabase.functions.invoke('create-payment-intent', {
         body: {
           planId,
+          planName,
           vehicleData: vehicleDataWithActualMileage,
           paymentType,
           voluntaryExcess: updatedPricingData.voluntaryExcess,
@@ -966,18 +973,22 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             transfer: updatedPricingData.protectionAddOns?.transfer || false,
             motRepair: false,
             motFee: updatedPricingData.protectionAddOns?.motFee || false,
-          }
+          },
+          // Tracking data for conversions
+          gclid: localStorage.getItem('gclid') || '',
+          gaClientId: localStorage.getItem('ga_client_id') || '',
         }
       });
 
-      if (checkoutError) {
+      if (paymentIntentError) {
+        console.error('PaymentIntent creation error:', paymentIntentError);
         toast.error('Unable to process. Please try again.');
         setIsLoading(false);
         return;
       }
 
-      if (checkoutData?.url) {
-        // Save journey state for recovery when returning from Stripe
+      if (paymentIntentData?.clientSecret) {
+        // Save journey state for recovery
         localStorage.setItem('warranty_journey_state', JSON.stringify({
           formData: pricingData,
           vehicleData,
@@ -988,26 +999,32 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           timestamp: Date.now()
         }));
         
-        // CRITICAL: Also save the raw data that Index.tsx reads for recovery
-        // Save in raw format (not timestamped) for reliable bfcache recovery
-        localStorage.setItem('buyawarranty_vehicleData', JSON.stringify(vehicleData));
-        localStorage.setItem('buyawarranty_selectedPlan', JSON.stringify({
-          id: planId,
-          name: planName,
-          paymentType,
-          pricingData: updatedPricingData
-        }));
-        
-        window.location.href = checkoutData.url;
+        // Set the client secret and open embedded checkout modal
+        setStripeClientSecret(paymentIntentData.clientSecret);
+        setShowEmbeddedCheckout(true);
+        setIsLoading(false);
       } else {
         toast.error('Unable to process. Please try again.');
         setIsLoading(false);
       }
     } catch (error) {
+      console.error('Stripe checkout error:', error);
       toast.error('Unable to process. Please try again.');
       setIsLoading(false);
     }
   };
+
+  // Order summary for embedded checkout modal
+  const embeddedCheckoutOrderSummary = useMemo(() => ({
+    vehicleReg: vehicleData.regNumber,
+    vehicleMake: vehicleData.make,
+    vehicleModel: vehicleData.model || '',
+    planName: planName,
+    duration: paymentType === '12months' ? '1 Year Cover' : paymentType === '24months' ? '2 Year Cover' : '3 Year Cover',
+    amount: discountedStripePrice,
+    originalAmount: bumperTotalPrice,
+    savings: bumperTotalPrice - discountedStripePrice,
+  }), [vehicleData, planName, paymentType, discountedStripePrice, bumperTotalPrice]);
 
   const formatPlanName = () => {
     return planName
@@ -1997,6 +2014,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Embedded Stripe Checkout Modal */}
+      <EmbeddedCheckoutModal
+        isOpen={showEmbeddedCheckout}
+        onClose={() => {
+          setShowEmbeddedCheckout(false);
+          setStripeClientSecret(null);
+        }}
+        clientSecret={stripeClientSecret}
+        orderSummary={embeddedCheckoutOrderSummary}
+      />
     </div>
   );
 };
