@@ -57,7 +57,7 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
                 <p className="text-lg sm:text-xl font-bold text-[#1a1a1a]">
                   Pay Monthly: £{monthlyPrice}/month
                 </p>
-                <p className="text-sm text-gray-600 mt-0.5">
+                <p className="text-sm text-[#1a1a1a] mt-0.5">
                   Total £{totalPrice} – 0% APR, 12 payments
                 </p>
               </div>
@@ -102,8 +102,8 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
                   <p className="text-lg sm:text-xl font-bold text-[#1a1a1a]">
                     Pay in Full: £{discountedPrice}
                   </p>
-                  <p className="text-sm text-gray-600 mt-0.5">
-                    Save £{savings} (10% off)
+                  <p className="text-sm text-[#1a1a1a] mt-0.5">
+                    <span className="text-gray-500">Was £{totalPrice}</span> Save £{savings} (10% off)
                   </p>
                 </div>
               </div>
