@@ -1654,8 +1654,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </p>
           </section>
 
-          {/* TRUST SIGNALS */}
-          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 py-5 border-t border-border">
+          {/* TRUST SIGNALS - Desktop only, mobile shows in sticky footer */}
+          <div className="hidden lg:flex flex-wrap justify-center gap-4 sm:gap-6 py-5 border-t border-border">
             <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
               <Lock className="w-4 h-4" />
               <span>256-bit encryption</span>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lock, Check, Star, Shield, Clock } from 'lucide-react';
+import { Lock, Shield, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface MobileStickyFooterProps {
@@ -28,6 +28,27 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#E5E5E5] lg:hidden">
       <div className="px-4 py-2">
+        {/* Trust Signals Row */}
+        <div className="flex items-center justify-center gap-3 mb-1.5 text-xs text-gray-600">
+          <span className="flex items-center gap-1">
+            <Lock className="w-3 h-3 text-[#0BA360]" />
+            256-bit encryption
+          </span>
+          <a 
+            href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 hover:opacity-80"
+          >
+            <img 
+              src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" 
+              alt="Trustpilot" 
+              className="h-4 object-contain"
+            />
+            <span className="underline underline-offset-2">Rated Excellent</span>
+          </a>
+        </div>
+
         {/* CTA Button */}
         <Button
           onClick={onPayClick}
