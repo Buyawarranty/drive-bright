@@ -18,7 +18,11 @@ import { startOfDay, format, isToday } from 'date-fns';
 import { useMotMileage } from '@/hooks/useMotMileage';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 import { EmbeddedCheckoutModal } from '@/components/stripe';
-
+import PlanSummaryCard from '@/components/checkout/PlanSummaryCard';
+import CoverHighlights from '@/components/checkout/CoverHighlights';
+import TrustBar from '@/components/checkout/TrustBar';
+import DesktopStickyPriceSidebar from '@/components/checkout/DesktopStickyPriceSidebar';
+import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
   vehicleData: {
@@ -1060,8 +1064,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
   return (
     <div className="min-h-screen bg-background px-2 sm:px-0">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
-        {/* Back Link */}
+      {/* Desktop: Two-column layout with sticky sidebar */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
+        {/* Back Link - Full width */}
         <div className="flex items-center justify-between mb-4 sm:mb-6">
           <Button
             variant="ghost"
@@ -1078,105 +1083,36 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           <MobileNavigation />
         </div>
 
-        <div className="space-y-6 sm:space-y-8">
+        <div className="flex gap-8">
+          {/* Main Content Column */}
+          <div className="flex-1 max-w-2xl space-y-6 sm:space-y-8 pb-32 md:pb-8">
           
-          {/* ==================== SECTION 1: VEHICLE PLAN DETAILS ==================== */}
-          <section>
-            <h2 className="text-base font-semibold text-foreground mb-3">Vehicle Plan Details</h2>
-            
-            {/* Plan Summary Card */}
-            <Card className="border border-border bg-card shadow-sm">
-              <CardContent className="p-4 sm:p-5">
-                {/* Plan Header with Change Link */}
-                <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/50">
-                  <div className="flex items-center gap-2 flex-wrap text-sm">
-                    <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
-                    <span className="font-bold text-foreground">{formatPlanName()}</span>
-                    <span className="text-muted-foreground">•</span>
-                    <span className="font-bold text-foreground">{getDurationText()}</span>
-                    <span className="text-muted-foreground">•</span>
-                    <span 
-                      className="font-mono font-bold text-foreground uppercase tracking-wide px-2 py-0.5 rounded border-2 border-black"
-                      style={{ backgroundColor: '#FCD34D' }}
-                    >
-                      {vehicleData.regNumber}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={onBack}
-                    className="text-primary hover:text-primary/80 text-sm font-medium underline underline-offset-2 flex-shrink-0"
-                  >
-                    Change
-                  </button>
-                </div>
+          {/* ==================== SECTION 1: PLAN SUMMARY ==================== */}
+          <section className="space-y-4">
+            {/* Compact Plan Summary Card */}
+            <PlanSummaryCard
+              planName={formatPlanName()}
+              vehicleReg={vehicleData.regNumber}
+              vehicleMake={vehicleData.make}
+              vehicleModel={vehicleData.model}
+              duration={getDurationText()}
+              claimLimit={updatedPricingData.claimLimit || 1250}
+              labourRate={pricingData.labourRate || 50}
+              excess={updatedPricingData.voluntaryExcess || 100}
+              selectedPayment={selectedPayment}
+              monthlyPrice={discountedMonthlyPrice}
+              totalPrice={discountedStripePrice}
+              onChangePlan={onBack}
+            />
 
-                {/* Price Summary Label */}
-                <div className="mb-3">
-                  <p className="text-sm font-semibold text-foreground mb-0.5">Price Summary</p>
-                  <p className="text-xs text-muted-foreground">Includes your comprehensive {formatPlanName()} cover.</p>
-                </div>
+            {/* Key Cover Highlights */}
+            <CoverHighlights planName={formatPlanName()} />
 
-                {/* Two Column Pricing Layout - Minimalist Card Style */}
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                  {/* Pay Monthly Card */}
-                  <div 
-                    className="p-3 sm:p-4 rounded-lg space-y-1"
-                    style={{ 
-                      backgroundColor: '#FFF5EC', 
-                      border: '1px solid #F6C28B' 
-                    }}
-                  >
-                    <p className="text-xs font-semibold text-foreground">Pay monthly</p>
-                    <div className="flex items-baseline gap-1 flex-wrap">
-                      <span className="text-2xl sm:text-3xl font-bold text-foreground">£{monthlyPrice}/month</span>
-                    </div>
-                    <p className="text-xs text-foreground">
-                      Total £{bumperTotalPrice} · 12 payments only · 0% APR
-                    </p>
-                  </div>
-
-                  {/* Pay in Full Card */}
-                  <div 
-                    className="p-3 sm:p-4 rounded-lg space-y-1"
-                    style={{ 
-                      backgroundColor: '#F4FFF5', 
-                      border: '1px solid #6BBF73' 
-                    }}
-                  >
-                    <p className="text-xs font-semibold text-foreground">Pay in full</p>
-                    <div className="flex items-baseline gap-1 flex-wrap">
-                      <span className="text-2xl sm:text-3xl font-bold text-foreground">£{stripeTotalPrice}</span>
-                      <span className="text-xs sm:text-sm text-foreground ml-1">– one-time payment</span>
-                    </div>
-                    <p className="text-xs text-foreground line-through">Was £{bumperTotalPrice}</p>
-                    <p className="text-xs font-medium" style={{ color: '#28A745' }}>
-                      Save £{savings} (10% off)
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Reassurance Bar - Subtle, muted */}
-            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 py-2.5 px-3 mt-3 bg-muted/40 rounded-lg border border-border text-xs text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5 text-muted-foreground" />
-                14-day money-back guarantee
-              </span>
-              <span className="hidden sm:inline">•</span>
-              <span className="flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5 text-muted-foreground" />
-                No hidden fees
-              </span>
-              <span className="hidden sm:inline">•</span>
-              <span className="flex items-center gap-1.5">
-                <Lock className="w-3.5 h-3.5 text-muted-foreground" />
-                Secure checkout
-              </span>
-            </div>
+            {/* Trust Bar */}
+            <TrustBar />
 
             {/* Cover Start Date */}
-            <Card className="border border-border bg-card shadow-sm mt-3">
+            <Card className="border border-border bg-card shadow-sm">
               <CardContent className="p-3 sm:p-4">
                 <StartDatePicker
                   value={startDate}
@@ -1868,10 +1804,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               </button>
             </div>
 
-            {/* Promo Code - Collapsed */}
-            <div className="pt-2">
+            {/* Required fields note */}
+            <p className="text-xs text-muted-foreground italic mt-4 mb-4">
+              * Required fields for your warranty policy documents.
+            </p>
+
+            {/* Promo Code - Collapsed - Moved below required fields note */}
+            <div className="pt-2 border-t border-border/50">
               <Collapsible open={promoOpen} onOpenChange={setPromoOpen}>
-                <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-2">
                   <Tag className="w-4 h-4" />
                   <span>Have a promo code?</span>
                   {promoOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -1940,8 +1881,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               )}
             </div>
 
-            {/* PRIMARY CTA BUTTON - Dynamic based on selection */}
-            <div className="pt-4">
+            {/* PRIMARY CTA BUTTON - Desktop only (mobile uses sticky footer) */}
+            <div className="pt-4 hidden lg:block">
               <Button
                 onClick={processPayment}
                 disabled={isLoading || !selectedPayment}
@@ -1969,9 +1910,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   <span className="flex items-center justify-center gap-2">
                     <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
                     {selectedPayment === 'monthly' 
-                      ? `Pay £${monthlyPrice} today` 
+                      ? `Pay £${discountedMonthlyPrice} today` 
                       : selectedPayment === 'full'
-                      ? 'Complete One-Time Payment'
+                      ? 'Complete one-time payment'
                       : 'Select a payment option'}
                   </span>
                 )}
@@ -2012,8 +1953,38 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               <span className="underline underline-offset-2">Rated Excellent</span>
             </a>
           </div>
+          </div>
+          
+          {/* Desktop: Sticky Right Sidebar */}
+          <div className="hidden lg:block w-80 flex-shrink-0">
+            <DesktopStickyPriceSidebar
+              planName={formatPlanName()}
+              vehicleReg={vehicleData.regNumber}
+              duration={getDurationText()}
+              claimLimit={updatedPricingData.claimLimit || 1250}
+              labourRate={pricingData.labourRate || 50}
+              excess={updatedPricingData.voluntaryExcess || 100}
+              monthlyPrice={discountedMonthlyPrice}
+              fullPrice={discountedStripePrice}
+              originalPrice={bumperTotalPrice}
+              selectedPayment={selectedPayment}
+              isLoading={isLoading}
+              isFormValid={personalDetailsComplete && addressComplete}
+              onPayClick={processPayment}
+            />
+          </div>
         </div>
       </div>
+      
+      {/* Mobile: Sticky Footer */}
+      <MobileStickyFooter
+        selectedPayment={selectedPayment}
+        monthlyPrice={discountedMonthlyPrice}
+        fullPrice={discountedStripePrice}
+        isLoading={isLoading}
+        isFormValid={personalDetailsComplete && addressComplete}
+        onPayClick={processPayment}
+      />
 
       {/* Embedded Stripe Checkout Modal */}
       <EmbeddedCheckoutModal
