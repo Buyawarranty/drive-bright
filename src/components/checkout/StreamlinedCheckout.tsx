@@ -1219,9 +1219,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           {/* ==================== SECTION 2: CUSTOMER DETAILS ==================== */}
           <section id="customer-form" className="bg-white rounded-xl border border-border p-5 sm:p-6">
             
-            {/* Section Header: Customer Details */}
+            {/* Section Header: About you */}
             <div className="mb-6">
-              <h2 className="text-lg font-bold text-[#1a1a1a]">Customer Details</h2>
+              <h2 className="text-lg font-bold text-[#1a1a1a]">About you</h2>
               <div className="h-px bg-border mt-3" />
             </div>
 
@@ -1323,9 +1323,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               </div>
             </div>
 
-            {/* Section Divider - Vehicle Details */}
+            {/* Section Divider - Your Vehicle */}
             <div className="mt-10 mb-6">
-              <h2 className="text-lg font-bold text-[#1a1a1a]">Vehicle Details</h2>
+              <h2 className="text-lg font-bold text-[#1a1a1a]">Your Vehicle</h2>
               <div className="h-px bg-border mt-3" />
             </div>
 
@@ -1417,9 +1417,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               )}
             </div>
 
-            {/* Section Divider - Address */}
+            {/* Section Divider - Your Address */}
             <div className="mt-10 mb-6">
-              <h2 className="text-lg font-bold text-[#1a1a1a]">Address</h2>
+              <h2 className="text-lg font-bold text-[#1a1a1a]">Your Address</h2>
               <div className="h-px bg-border mt-3" />
             </div>
 
