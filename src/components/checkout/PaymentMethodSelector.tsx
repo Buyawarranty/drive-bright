@@ -66,20 +66,22 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
         </button>
 
         {/* Pay in Full Card */}
-        <button
-          onClick={() => onPaymentChange('full')}
-          className={`w-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all relative ${
-            selectedPayment === 'full'
-              ? 'border-[#0BA360] bg-green-50/30'
-              : 'border-[#E5E5E5] bg-white hover:border-gray-300'
-          }`}
-        >
-          {/* Best Value Badge */}
-          <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
-            <span className="bg-[#0BA360] text-white text-xs font-bold px-2.5 py-1 rounded-md">
+        <div className="relative mt-4">
+          {/* Best Value Badge - positioned outside the card */}
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+            <span className="bg-[#0BA360] text-white text-xs font-bold px-4 py-1.5 rounded-full whitespace-nowrap">
               BEST VALUE
             </span>
           </div>
+          
+          <button
+            onClick={() => onPaymentChange('full')}
+            className={`w-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all ${
+              selectedPayment === 'full'
+                ? 'border-[#0BA360] bg-green-50/30'
+                : 'border-[#E5E5E5] bg-white hover:border-gray-300'
+            }`}
+          >
 
           <div className="flex items-center">
             <div className="flex items-center gap-3 sm:gap-4">
@@ -107,7 +109,8 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
               </div>
             </div>
           </div>
-        </button>
+          </button>
+        </div>
       </div>
 
       {/* Helper Text */}
