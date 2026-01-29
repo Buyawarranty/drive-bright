@@ -801,8 +801,31 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       // Also expand address section if address fields are incomplete
       if (!addressComplete) setAddressExpanded(true);
       
-      const formSection = document.getElementById('customer-form');
-      formSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Determine which section to scroll to based on what's missing
+      // Prioritize: personal details first, then address (starting with postcode)
+      setTimeout(() => {
+        if (!personalDetailsComplete) {
+          // Find first invalid personal field
+          const personalFields = ['first_name', 'last_name', 'email', 'phone', 'mileage'];
+          for (const field of personalFields) {
+            if (fieldErrors[field] || !customerData[field as keyof typeof customerData]) {
+              const element = document.getElementById(field);
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.focus();
+                break;
+              }
+            }
+          }
+        } else if (!addressComplete) {
+          // Scroll to address section - prioritize postcode first
+          const addressSection = document.getElementById('address-fields');
+          if (addressSection) {
+            addressSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      }, 100);
+      
       toast.error('Please complete all required fields including your address.');
       return;
     }
