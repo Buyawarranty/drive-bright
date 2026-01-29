@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -84,6 +85,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   onBack, 
   onNext 
 }) => {
+  const navigate = useNavigate();
+  
   // Pre-populate from Step 2 data in localStorage
   const [customerData, setCustomerData] = useState(() => {
     try {
@@ -999,9 +1002,25 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           timestamp: Date.now()
         }));
         
-        // Set the client secret and open embedded checkout modal
-        setStripeClientSecret(paymentIntentData.clientSecret);
-        setShowEmbeddedCheckout(true);
+        // Navigate to dedicated Stripe payment page
+        const durationText = paymentType === '12months' ? '1 Year Cover' : paymentType === '24months' ? '2 Year Cover' : '3 Year Cover';
+        navigate('/checkout/payment/', {
+          state: {
+            clientSecret: paymentIntentData.clientSecret,
+            amount: discountedStripePrice,
+            originalAmount: bumperTotalPrice,
+            vehicleReg: vehicleData.regNumber,
+            vehicleMake: vehicleData.make,
+            vehicleModel: vehicleData.model || '',
+            planName: formatPlanName(),
+            duration: durationText,
+            claimLimit: updatedPricingData.claimLimit || 1250,
+            labourRate: pricingData.labourRate || 50,
+            excess: updatedPricingData.voluntaryExcess || 100,
+            customerName: `${customerData.first_name} ${customerData.last_name}`.trim(),
+            customerEmail: customerData.email,
+          }
+        });
         setIsLoading(false);
       } else {
         toast.error('Unable to process. Please try again.');
