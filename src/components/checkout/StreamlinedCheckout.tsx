@@ -1097,7 +1097,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               excess={updatedPricingData.voluntaryExcess || 100}
               selectedPayment={selectedPayment}
               monthlyPrice={discountedMonthlyPrice}
-              totalPrice={discountedStripePrice}
+              totalPrice={bumperTotalPrice}
+              onPaymentChange={setSelectedPayment}
               onChangePlan={onBack}
             />
 
