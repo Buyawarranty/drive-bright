@@ -39,7 +39,7 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
   onChangePlan,
   isMobile = false,
 }) => {
-  const [isOpen, setIsOpen] = React.useState(!isMobile);
+  const [isOpen, setIsOpen] = React.useState(true);
 
   // Map claim limit display values
   const displayClaimLimit = () => {
