@@ -19,10 +19,23 @@ const formatPostcode = (postcode: string): string => {
   return cleaned.slice(0, -3) + ' ' + cleaned.slice(-3);
 };
 
-interface AddressResult {
-  address: string;
-  id: string;
-  url?: string;
+interface ExpandedAddress {
+  formatted_address?: string[];
+  line_1?: string;
+  line_2?: string;
+  line_3?: string;
+  line_4?: string;
+  locality?: string;
+  town_or_city?: string;
+  county?: string;
+  district?: string;
+  country?: string;
+  building_name?: string;
+  building_number?: string;
+  sub_building_name?: string;
+  sub_building_number?: string;
+  thoroughfare?: string;
+  postcode?: string;
 }
 
 interface AddressData {
@@ -58,20 +71,23 @@ export const PostcodeFirstAddressLookup: React.FC<PostcodeFirstAddressLookupProp
   );
   const [postcodeInput, setPostcodeInput] = useState(addressData.postcode || '');
   const [postcodeError, setPostcodeError] = useState('');
-  const [addressResults, setAddressResults] = useState<AddressResult[]>([]);
+  // Store full address data from API
+  const [cachedAddresses, setCachedAddresses] = useState<ExpandedAddress[]>([]);
   const [selectedAddressIndex, setSelectedAddressIndex] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [apiError, setApiError] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handlePostcodeChange = (value: string) => {
     const formatted = value.toUpperCase();
     setPostcodeInput(formatted);
     setPostcodeError('');
+    setApiError('');
     // Reset state if they clear the postcode
     if (!formatted.trim()) {
       setLookupState('initial');
-      setAddressResults([]);
+      setCachedAddresses([]);
     }
   };
 
@@ -90,42 +106,40 @@ export const PostcodeFirstAddressLookup: React.FC<PostcodeFirstAddressLookupProp
     setIsLoading(true);
     setLookupState('loading');
     setPostcodeError('');
+    setApiError('');
 
     try {
       const { data, error } = await supabase.functions.invoke('getaddress-lookup', {
         body: { action: 'find', postcode: postcodeInput }
       });
 
+      console.log('getaddress-lookup response:', data, error);
+
       if (error) {
         console.error('Postcode lookup error:', error);
-        // API failed - allow manual entry
+        setApiError('Address lookup temporarily unavailable. Please enter your address manually.');
         setLookupState('manual');
         onAddressChange({ ...addressData, postcode: formatPostcode(postcodeInput) });
         return;
       }
 
       if (data?.addresses && Array.isArray(data.addresses) && data.addresses.length > 0) {
-        // Transform the expanded addresses into our format
-        const results: AddressResult[] = data.addresses.map((addr: any, index: number) => ({
-          address: addr.formatted_address?.filter(Boolean).join(', ') || 
-                   [addr.line_1, addr.line_2, addr.town_or_city].filter(Boolean).join(', '),
-          id: `${index}`,
-          // Store the full address data for later selection
-          _data: addr
-        }));
-        
-        setAddressResults(results);
+        // Cache the full address data
+        setCachedAddresses(data.addresses);
         setLookupState('results');
         setShowDropdown(true);
         // Save the validated postcode
         onAddressChange({ ...addressData, postcode: data.postcode || formatPostcode(postcodeInput) });
       } else {
-        // No addresses found - allow manual entry
+        // No addresses found - show message and allow manual entry
+        console.log('No addresses found for postcode:', postcodeInput);
+        setApiError('No addresses found for this postcode. Please enter your address manually below.');
         setLookupState('manual');
         onAddressChange({ ...addressData, postcode: formatPostcode(postcodeInput) });
       }
     } catch (err) {
       console.error('Postcode lookup failed:', err);
+      setApiError('Address lookup failed. Please enter your address manually.');
       setLookupState('manual');
       onAddressChange({ ...addressData, postcode: formatPostcode(postcodeInput) });
     } finally {
@@ -133,53 +147,43 @@ export const PostcodeFirstAddressLookup: React.FC<PostcodeFirstAddressLookupProp
     }
   };
 
-  const handleSelectAddress = async (result: AddressResult, index: number) => {
+  const handleSelectAddress = (index: number) => {
     setSelectedAddressIndex(index);
     setShowDropdown(false);
-    setIsLoading(true);
+    
+    const addr = cachedAddresses[index];
+    if (!addr) return;
 
-    try {
-      // For 'find' endpoint, the addresses are already expanded
-      // We need to get the full address from the original result
-      const { data, error } = await supabase.functions.invoke('getaddress-lookup', {
-        body: { action: 'find', postcode: postcodeInput }
-      });
+    // Build address_line_1 from components
+    const line1Parts = [
+      addr.building_number,
+      addr.building_name,
+      addr.thoroughfare || addr.line_1
+    ].filter(Boolean).join(' ').trim() || addr.line_1 || '';
 
-      if (data?.addresses && data.addresses[index]) {
-        const addr = data.addresses[index];
-        
-        // Build address_line_1 from components
-        const line1Parts = [
-          addr.building_number,
-          addr.building_name,
-          addr.thoroughfare || addr.line_1
-        ].filter(Boolean).join(' ').trim() || addr.line_1 || '';
+    const newAddressData: AddressData = {
+      postcode: addr.postcode || addressData.postcode || formatPostcode(postcodeInput),
+      address_line_1: line1Parts,
+      address_line_2: addr.line_2 || addr.sub_building_name || '',
+      town: addr.town_or_city || addr.locality || '',
+      county: addr.county || '',
+    };
 
-        const newAddressData: AddressData = {
-          postcode: addr.postcode || addressData.postcode,
-          address_line_1: line1Parts,
-          address_line_2: addr.line_2 || addr.sub_building_name || '',
-          town: addr.town_or_city || addr.locality || '',
-          county: addr.county || '',
-        };
+    onAddressChange(newAddressData);
+    setLookupState('complete');
+  };
 
-        onAddressChange(newAddressData);
-        setLookupState('complete');
-      } else {
-        // Fallback - show manual entry with what we have
-        setLookupState('manual');
-      }
-    } catch (err) {
-      console.error('Error fetching address details:', err);
-      setLookupState('manual');
-    } finally {
-      setIsLoading(false);
+  const getDisplayAddress = (addr: ExpandedAddress): string => {
+    if (addr.formatted_address && Array.isArray(addr.formatted_address)) {
+      return addr.formatted_address.filter(Boolean).join(', ');
     }
+    return [addr.line_1, addr.line_2, addr.town_or_city].filter(Boolean).join(', ');
   };
 
   const handleEnterManually = () => {
     setLookupState('manual');
     setShowDropdown(false);
+    setApiError('');
     // Keep the postcode if it's valid
     if (isValidUKPostcode(postcodeInput)) {
       onAddressChange({ ...addressData, postcode: formatPostcode(postcodeInput) });
@@ -188,9 +192,10 @@ export const PostcodeFirstAddressLookup: React.FC<PostcodeFirstAddressLookupProp
 
   const handleChangePostcode = () => {
     setLookupState('initial');
-    setAddressResults([]);
+    setCachedAddresses([]);
     setSelectedAddressIndex(null);
     setShowDropdown(false);
+    setApiError('');
   };
 
   const getInputClass = (field: string) => {
@@ -296,26 +301,26 @@ export const PostcodeFirstAddressLookup: React.FC<PostcodeFirstAddressLookupProp
             >
               <span className={selectedAddressIndex !== null ? "text-foreground font-medium" : "text-muted-foreground"}>
                 {selectedAddressIndex !== null 
-                  ? addressResults[selectedAddressIndex]?.address 
-                  : `Select from ${addressResults.length} addresses found`}
+                  ? getDisplayAddress(cachedAddresses[selectedAddressIndex]) 
+                  : `Select from ${cachedAddresses.length} addresses found`}
               </span>
               <ChevronDown className={cn("w-5 h-5 transition-transform", showDropdown && "rotate-180")} />
             </button>
 
             {showDropdown && (
               <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
-                {addressResults.map((result, index) => (
+                {cachedAddresses.map((addr, index) => (
                   <button
-                    key={result.id}
+                    key={index}
                     type="button"
-                    onClick={() => handleSelectAddress(result, index)}
+                    onClick={() => handleSelectAddress(index)}
                     className={cn(
                       "w-full px-4 py-3 text-left text-sm hover:bg-accent transition-colors",
                       index === selectedAddressIndex && "bg-accent",
-                      index !== addressResults.length - 1 && "border-b border-gray-100"
+                      index !== cachedAddresses.length - 1 && "border-b border-gray-100"
                     )}
                   >
-                    {result.address}
+                    {getDisplayAddress(addr)}
                   </button>
                 ))}
               </div>
