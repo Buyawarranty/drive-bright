@@ -1117,7 +1117,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               selectedPayment={selectedPayment}
               monthlyPrice={discountedMonthlyPrice}
               totalPrice={bumperTotalPrice}
+              isLoading={isLoading}
               onPaymentChange={setSelectedPayment}
+              onPayClick={processPayment}
               onChangePlan={onBack}
             />
 

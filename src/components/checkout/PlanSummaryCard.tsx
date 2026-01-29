@@ -1,6 +1,7 @@
 import React from 'react';
-import { Shield, Check, ExternalLink } from 'lucide-react';
+import { Shield, Check, ExternalLink, Lock, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 interface PlanSummaryCardProps {
   planName: string;
@@ -14,7 +15,9 @@ interface PlanSummaryCardProps {
   selectedPayment: 'monthly' | 'full' | null;
   monthlyPrice: number;
   totalPrice: number;
+  isLoading?: boolean;
   onPaymentChange: (payment: 'monthly' | 'full') => void;
+  onPayClick?: () => void;
   onChangePlan: () => void;
 }
 
@@ -30,7 +33,9 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
   selectedPayment,
   monthlyPrice,
   totalPrice,
+  isLoading = false,
   onPaymentChange,
+  onPayClick,
   onChangePlan,
 }) => {
   // Map claim limit display values
@@ -154,6 +159,43 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
             </div>
           </button>
         </div>
+
+        {/* CTA Button - visible on all screen sizes */}
+        {onPayClick && (
+          <div className="pt-5">
+            <Button
+              onClick={onPayClick}
+              disabled={isLoading || !selectedPayment}
+              className="w-full py-6 text-base font-bold rounded-xl shadow-lg"
+              style={{
+                backgroundColor: !selectedPayment 
+                  ? '#CCCCCC' 
+                  : selectedPayment === 'monthly' 
+                    ? '#FF6B00' 
+                    : '#28A745',
+              }}
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Processing...
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  <Lock className="w-5 h-5" />
+                  {selectedPayment === 'monthly' 
+                    ? `Pay £${monthlyPrice} today` 
+                    : selectedPayment === 'full'
+                    ? 'Complete one-time payment'
+                    : 'Select payment option'}
+                </span>
+              )}
+            </Button>
+            <p className="text-center text-xs text-muted-foreground mt-3">
+              🔒 Secure checkout · 14-day money-back guarantee
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

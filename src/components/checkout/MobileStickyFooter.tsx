@@ -35,7 +35,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] md:hidden">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] lg:hidden">
       <div className="px-4 py-3">
         {/* Price and CTA Row */}
         <div className="flex items-center justify-between gap-3">
