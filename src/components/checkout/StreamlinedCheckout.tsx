@@ -28,6 +28,7 @@ import DesktopStickyPriceSidebar from '@/components/checkout/DesktopStickyPriceS
 import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
 import DesktopStickyBottomBar from '@/components/checkout/DesktopStickyBottomBar';
 import PaymentMethodSelector from '@/components/checkout/PaymentMethodSelector';
+import HowToPaySection from '@/components/checkout/HowToPaySection';
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
   vehicleData: {
@@ -1697,6 +1698,32 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </p>
           </section>
 
+          {/* ==================== HOW TO PAY SECTION (BOTTOM) ==================== */}
+          <HowToPaySection
+            selectedPayment={selectedPayment}
+            onPaymentChange={(payment) => {
+              setSelectedPayment(payment);
+              setPaymentError('');
+            }}
+            monthlyPrice={discountedMonthlyPrice}
+            totalPrice={bumperTotalPrice}
+            fullPrice={discountedStripePrice}
+            originalPrice={bumperTotalPrice}
+            savings={savings}
+            isLoading={isLoading}
+            onPayClick={processPayment}
+            promoOpen={promoOpen}
+            setPromoOpen={setPromoOpen}
+            promoCodeInput={promoCodeInput}
+            setPromoCodeInput={setPromoCodeInput}
+            promoCodeError={promoCodeError}
+            isValidatingPromoCode={isValidatingPromoCode}
+            onApplyPromoCode={applyPromoCode}
+            appliedDiscountCodes={appliedDiscountCodes}
+            onRemoveDiscountCode={removePromoCode}
+            totalDiscountAmount={totalDiscountAmount}
+          />
+
           {/* ==================== INLINE STRIPE PAYMENT ==================== */}
           {showEmbeddedCheckout && stripeClientSecret && selectedPayment === 'full' && (
             <section id="inline-stripe-payment" className="bg-white rounded-xl border border-[#E5E5E5] p-5 sm:p-6">
@@ -1739,27 +1766,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               </StripeProvider>
             </section>
           )}
-
-          {/* TRUST SIGNALS */}
-          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 py-5 border-t border-border">
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
-              <Lock className="w-4 h-4" />
-              <span>256-bit encryption</span>
-            </div>
-            <a 
-              href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <img 
-                src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" 
-                alt="Trustpilot" 
-                className="h-5 object-contain"
-              />
-              <span className="underline underline-offset-2">Rated Excellent</span>
-            </a>
-          </div>
           </div>
           
           {/* Desktop: Sticky Right Sidebar */}
