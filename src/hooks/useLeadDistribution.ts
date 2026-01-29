@@ -161,6 +161,26 @@ export const useLeadDistribution = () => {
     return updateAgentCap(adminUserId, { paused: !currentCap?.paused });
   }, [agentCaps, updateAgentCap]);
 
+  // Delete agent from distribution
+  const deleteAgentFromDistribution = useCallback(async (adminUserId: string) => {
+    try {
+      const { error } = await supabase
+        .from('agent_distribution_caps')
+        .delete()
+        .eq('admin_user_id', adminUserId);
+
+      if (error) throw error;
+
+      await fetchAgentCaps();
+      toast({ title: 'Agent removed', description: 'Agent has been removed from lead distribution.' });
+      return true;
+    } catch (error) {
+      console.error('Error deleting agent from distribution:', error);
+      toast({ title: 'Error', description: 'Failed to remove agent.', variant: 'destructive' });
+      return false;
+    }
+  }, [fetchAgentCaps]);
+
   // Claim next available lead
   const claimNextLead = useCallback(async () => {
     try {
@@ -343,6 +363,7 @@ export const useLeadDistribution = () => {
     updateSettings,
     updateAgentCap,
     toggleAgentPause,
+    deleteAgentFromDistribution,
     claimNextLead,
     togglePauseReceiving,
     initializeAgentCaps,
