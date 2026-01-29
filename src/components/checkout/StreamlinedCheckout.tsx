@@ -802,7 +802,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     if (!selectedPayment) {
       setPaymentError('Please choose a payment option to continue.');
       const paymentSection = document.getElementById('payment-section');
-      paymentSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      paymentSection?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       return;
     }
     
@@ -813,7 +813,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       
       // Determine which section to scroll to based on what's missing
       // Prioritize: personal details first, then address (starting with postcode)
-      setTimeout(() => {
+      // Use requestAnimationFrame for smoother scroll after DOM updates
+      requestAnimationFrame(() => {
         if (!personalDetailsComplete) {
           // Find first invalid personal field
           const personalFields = ['first_name', 'last_name', 'email', 'phone', 'mileage'];
@@ -821,7 +822,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             if (fieldErrors[field] || !customerData[field as keyof typeof customerData]) {
               const element = document.getElementById(field);
               if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Use 'nearest' to avoid unnecessary scrolling - only scroll if element is out of view
+                element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 element.focus();
                 break;
               }
@@ -829,16 +831,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           }
         } else if (!addressComplete) {
           // Scroll to address section - prioritize postcode input first
-          const postcodeInput = document.getElementById('postcode-lookup');
+          const postcodeInputEl = document.getElementById('postcode-lookup');
           const addressSection = document.getElementById('address-fields');
-          if (postcodeInput) {
-            postcodeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            postcodeInput.focus();
+          if (postcodeInputEl) {
+            // Use 'nearest' to keep page position stable
+            postcodeInputEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            postcodeInputEl.focus();
           } else if (addressSection) {
-            addressSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            addressSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
           }
         }
-      }, 100);
+      });
       
       toast.error('Please complete all required fields including your address.');
       return;
@@ -1457,26 +1460,44 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       try {
                         // Use the free postcodes.io API to get town/city
                         const cleanPostcode = postcodeInput.replace(/\s/g, '').toUpperCase();
+                        console.log('🔍 Postcode lookup starting for:', cleanPostcode);
                         const response = await fetch(`https://api.postcodes.io/postcodes/${cleanPostcode}`);
                         
                         if (response.ok) {
                           const data = await response.json();
+                          console.log('📍 Postcode API response:', data);
                           if (data.result) {
                             // Format postcode with space
                             const displayPostcode = data.result.postcode || postcodeInput;
-                            const town = data.result.admin_district || data.result.parish || data.result.admin_ward || '';
+                            // Try multiple fields to get the best town/city value
+                            const town = data.result.admin_district || 
+                                         data.result.parish || 
+                                         data.result.admin_ward || 
+                                         data.result.nuts || 
+                                         '';
+                            
+                            console.log('🏘️ Setting town to:', town);
                             
                             // Pre-populate town and postcode, show address fields
-                            setAddressData(prev => ({ 
-                              ...prev, 
-                              postcode: displayPostcode,
-                              town: town
-                            }));
+                            // Use functional update to ensure we get latest state
+                            setAddressData(prev => {
+                              const newData = { 
+                                ...prev, 
+                                postcode: displayPostcode,
+                                town: town
+                              };
+                              console.log('📝 New addressData:', newData);
+                              return newData;
+                            });
                             setAddressValidated(prev => ({ 
                               ...prev, 
                               postcode: true,
                               town: !!town
                             }));
+                            // Clear any existing town error since we just populated it
+                            if (town) {
+                              setAddressErrors(prev => ({ ...prev, town: '' }));
+                            }
                             setShowAddressFields(true);
                           } else {
                             setAddressLookupFailed(true);
@@ -1484,6 +1505,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                           }
                         } else {
                           // Fallback: still show address fields with formatted postcode
+                          console.log('⚠️ Postcode API returned non-OK status:', response.status);
                           setAddressLookupFailed(true);
                           setShowAddressFields(true);
                           const formatted = cleanPostcode.length > 3 
