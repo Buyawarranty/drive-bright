@@ -36,14 +36,14 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
     setErrorMessage(null);
 
     try {
-      // For redirect-based payments (PayPal, Revolut), Stripe will redirect to return_url
+      // For redirect-based payments (PayPal), Stripe will redirect to return_url
       // with query params: payment_intent, payment_intent_client_secret, redirect_status
       // redirect_status will be 'succeeded', 'failed', or 'pending'
-      // We redirect back to the payment page to handle the status properly
+      // We redirect back to step 4 to handle the status properly
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/checkout/payment/`,
+          return_url: `${window.location.origin}/?step=4&payment_return=true`,
         },
         redirect: 'if_required',
       });
@@ -74,15 +74,23 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-4">
       {/* Payment Element - Flat design with grey border */}
+      {/* Apple Pay/Google Pay will show first when available, then Card, then PayPal */}
+      {/* Revolut shows as fallback when wallets aren't available (handled by Stripe automatically) */}
       <div className="bg-white rounded-lg border border-[#DADADA]">
         <PaymentElement 
           onReady={() => setIsReady(true)}
           options={{
             layout: 'tabs',
             business: { name: 'BuyAWarranty' },
-            paymentMethodOrder: ['apple_pay', 'google_pay', 'card'],
+            // Wallet methods (Apple Pay, Google Pay) are shown first automatically when available
+            // Card shows next, then alternative payment methods
+            paymentMethodOrder: ['apple_pay', 'google_pay', 'card', 'paypal'],
+            wallets: {
+              applePay: 'auto',
+              googlePay: 'auto',
+            },
           }}
         />
       </div>

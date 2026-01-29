@@ -19,6 +19,8 @@ import { startOfDay, format, isToday } from 'date-fns';
 import { useMotMileage } from '@/hooks/useMotMileage';
 import { AddressAutocomplete, AddressData } from '@/components/ui/address-autocomplete';
 import { EmbeddedCheckoutModal } from '@/components/stripe';
+import { StripeProvider } from '@/components/stripe/StripeProvider';
+import { StripePaymentForm } from '@/components/stripe/StripePaymentForm';
 import PlanSummaryCard from '@/components/checkout/PlanSummaryCard';
 import CoverHighlights from '@/components/checkout/CoverHighlights';
 import TrustBar from '@/components/checkout/TrustBar';
@@ -1067,28 +1069,18 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           timestamp: Date.now()
         }));
         
-        // Navigate to dedicated Stripe payment page
-        const durationText = paymentType === '12months' ? '1 Year Cover' : paymentType === '24months' ? '2 Year Cover' : '3 Year Cover';
-        navigate('/checkout/payment/', {
-          state: {
-            clientSecret: paymentIntentData.clientSecret,
-            amount: discountedStripePrice,
-            originalAmount: bumperTotalPrice,
-            vehicleReg: vehicleData.regNumber,
-            vehicleMake: vehicleData.make,
-            vehicleModel: vehicleData.model || '',
-            planName: formatPlanName(),
-            duration: durationText,
-            claimLimit: updatedPricingData.claimLimit || 1250,
-            labourRate: pricingData.labourRate || 50,
-            excess: updatedPricingData.voluntaryExcess || 100,
-            customerName: `${customerData.first_name} ${customerData.last_name}`.trim(),
-            customerEmail: customerData.email,
-            isMonthly: selectedPayment === 'monthly',
-            monthlyPrice: discountedMonthlyPrice,
-          }
-        });
+        // Show inline Stripe payment instead of navigating away
+        setStripeClientSecret(paymentIntentData.clientSecret);
+        setShowEmbeddedCheckout(true);
         setIsLoading(false);
+        
+        // Scroll to payment section
+        setTimeout(() => {
+          const paymentSection = document.getElementById('inline-stripe-payment');
+          if (paymentSection) {
+            paymentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 100);
       } else {
         toast.error('Unable to process. Please try again.');
         setIsLoading(false);
@@ -1705,6 +1697,49 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </p>
           </section>
 
+          {/* ==================== INLINE STRIPE PAYMENT ==================== */}
+          {showEmbeddedCheckout && stripeClientSecret && selectedPayment === 'full' && (
+            <section id="inline-stripe-payment" className="bg-white rounded-xl border border-[#E5E5E5] p-5 sm:p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <Lock className="w-6 h-6" style={{ color: '#0BA360' }} />
+                  <div>
+                    <h2 className="font-semibold text-foreground text-base" style={{ color: '#0BA360' }}>
+                      Secure Payment
+                    </h2>
+                    <p className="text-xs text-muted-foreground">256-bit SSL encryption</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-muted-foreground">Powered by</span>
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" 
+                    alt="Stripe" 
+                    className="h-5"
+                  />
+                </div>
+              </div>
+
+              <StripeProvider clientSecret={stripeClientSecret}>
+                <StripePaymentForm
+                  amount={discountedStripePrice}
+                  isMonthly={false}
+                  onSuccess={() => {
+                    // Clear cached payment data and navigate to thank-you
+                    localStorage.removeItem('stripe_payment_data');
+                    navigate('/thank-you?source=stripe');
+                  }}
+                  onError={(error) => {
+                    console.error('Payment error:', error);
+                    toast.error('Payment failed. Please try again.');
+                  }}
+                  isProcessing={isLoading}
+                  setIsProcessing={setIsLoading}
+                />
+              </StripeProvider>
+            </section>
+          )}
+
           {/* TRUST SIGNALS */}
           <div className="flex flex-wrap justify-center gap-4 sm:gap-6 py-5 border-t border-border">
             <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
@@ -1778,16 +1813,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         isVisible={showDesktopStickyBar}
       />
 
-      {/* Embedded Stripe Checkout Modal */}
-      <EmbeddedCheckoutModal
-        isOpen={showEmbeddedCheckout}
-        onClose={() => {
-          setShowEmbeddedCheckout(false);
-          setStripeClientSecret(null);
-        }}
-        clientSecret={stripeClientSecret}
-        orderSummary={embeddedCheckoutOrderSummary}
-      />
+      {/* Note: EmbeddedCheckoutModal removed - Stripe payment is now inline in Step 4 */}
     </div>
   );
 };

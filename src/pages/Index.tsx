@@ -565,6 +565,38 @@ const Index = () => {
   useEffect(() => {
     captureGclid();
   }, []);
+  
+  // Handle PayPal/redirect payment returns
+  // When users return from PayPal, Stripe redirects to /?step=4&payment_return=true&redirect_status=...
+  useEffect(() => {
+    const redirectStatus = searchParams.get('redirect_status');
+    const paymentReturn = searchParams.get('payment_return');
+    
+    if (paymentReturn && redirectStatus) {
+      console.log('💳 Payment redirect return detected:', redirectStatus);
+      
+      if (redirectStatus === 'succeeded') {
+        // Payment successful! Redirect to thank-you
+        console.log('✅ Redirect payment succeeded, navigating to thank-you');
+        navigate('/thank-you?source=stripe', { replace: true });
+        return;
+      } else if (redirectStatus === 'failed') {
+        // Payment failed - show error and let them retry
+        console.log('❌ Redirect payment failed');
+        // Clean URL but stay on step 4
+        const newParams = new URLSearchParams();
+        newParams.set('step', '4');
+        setSearchParams(newParams, { replace: true });
+        // Toast will be shown by StreamlinedCheckout
+      } else if (redirectStatus === 'pending') {
+        console.log('⏳ Redirect payment pending');
+        // Clean URL but stay on step 4
+        const newParams = new URLSearchParams();
+        newParams.set('step', '4');
+        setSearchParams(newParams, { replace: true });
+      }
+    }
+  }, [searchParams, navigate, setSearchParams]);
 
   // Helper function to parse localStorage data (handles both timestamped and raw formats)
   const parseStoredData = useCallback((key: string) => {
