@@ -18,6 +18,13 @@ export function CookieBanner() {
   const [showPreferences, setShowPreferences] = useState(false);
   const [showIcon, setShowIcon] = useState(false);
 
+  // Hide cookie banner/icon on Step 3 and Step 4 of checkout
+  const isCheckoutStep = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const step = urlParams.get('step');
+    return step === '3' || step === '4';
+  };
+
   useEffect(() => {
     const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
     if (!consent) {
@@ -27,13 +34,17 @@ export function CookieBanner() {
       const showDelay = isMobile ? 30000 : 15000; // 30s mobile, 15s desktop
       
       const showTimer = setTimeout(() => {
-        setShowBanner(true);
+        if (!isCheckoutStep()) {
+          setShowBanner(true);
+        }
       }, showDelay);
       
       // Auto-fade after additional 15 seconds if no action taken
       const fadeTimer = setTimeout(() => {
         setShowBanner(false);
-        setShowIcon(true);
+        if (!isCheckoutStep()) {
+          setShowIcon(true);
+        }
       }, showDelay + 15000);
 
       return () => {
@@ -66,6 +77,11 @@ export function CookieBanner() {
     setShowIcon(false);
     setShowPreferences(true);
   };
+
+  // Don't render on checkout steps 3 and 4
+  if (isCheckoutStep()) {
+    return null;
+  }
 
   if (!showBanner && !showIcon) {
     return null;
