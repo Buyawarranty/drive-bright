@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Lock, RefreshCw, CreditCard } from 'lucide-react';
+import { Shield, Lock, RefreshCw } from 'lucide-react';
 
 interface TrustBarProps {
   variant?: 'default' | 'compact';
@@ -41,12 +41,12 @@ const TrustBar: React.FC<TrustBarProps> = ({ variant = 'default' }) => {
   }
 
   return (
-    <div className="bg-muted/40 border border-border rounded-lg p-3 sm:p-4">
+    <div className="bg-white border border-[#E5E5E5] rounded-xl p-3 sm:p-4">
       <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-gray-600">
         {trustItems.map((item, index) => (
           <div key={index} className="flex items-center gap-2">
-            <item.icon className="w-4 h-4 text-green-600" />
-            <span>{item.text}</span>
+            <item.icon className="w-4 h-4 text-[#0BA360]" />
+            <span className="text-[#1a1a1a]">{item.text}</span>
           </div>
         ))}
       </div>
