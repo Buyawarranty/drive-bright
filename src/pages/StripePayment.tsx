@@ -286,23 +286,30 @@ const StripePayment: React.FC = () => {
 
             {/* Right Column - Payment Form */}
             <div className="lg:sticky lg:top-24 lg:self-start">
-              <Card className="border-2 border-slate-200 shadow-2xl overflow-hidden">
-                <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-5">
+              <Card className="bg-white border border-border rounded-2xl shadow-lg overflow-hidden">
+                {/* Clean, Light Header */}
+                <div className="px-6 py-5 border-b border-border bg-gradient-to-r from-green-50 to-white">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <Lock className="w-5 h-5 text-green-400" />
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <Lock className="w-5 h-5 text-green-600" />
+                      </div>
                       <div>
-                        <h2 className="font-bold text-white">Payment Details</h2>
-                        <p className="text-sm text-slate-300">256-bit SSL encryption</p>
+                        <h2 className="font-bold text-foreground text-lg">Secure Payment</h2>
+                        <p className="text-sm text-muted-foreground">256-bit SSL encryption</p>
                       </div>
                     </div>
-                    <img 
-                      src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" 
-                      alt="Stripe" 
-                      className="h-6 opacity-80"
-                    />
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                      <span className="text-xs">Powered by</span>
+                      <img 
+                        src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" 
+                        alt="Stripe" 
+                        className="h-5"
+                      />
+                    </div>
                   </div>
                 </div>
+
                 <CardContent className="p-6 sm:p-8">
                   {paymentData.clientSecret ? (
                     <StripeProvider clientSecret={paymentData.clientSecret}>
@@ -320,35 +327,47 @@ const StripePayment: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Additional Security Info */}
-                  <div className="mt-6 pt-6 border-t border-border">
-                    <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Lock className="w-3 h-3" />
-                        <span>Secure</span>
+                  {/* Reassurance Bar */}
+                  <div className="mt-6 pt-5 border-t border-border">
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div className="flex flex-col items-center gap-1.5">
+                        <div className="w-8 h-8 bg-green-50 rounded-full flex items-center justify-center">
+                          <Shield className="w-4 h-4 text-green-600" />
+                        </div>
+                        <span className="text-xs font-medium text-foreground">Instant cover</span>
                       </div>
-                      <div className="w-px h-3 bg-border" />
-                      <div className="flex items-center gap-1">
-                        <Shield className="w-3 h-3" />
-                        <span>PCI Compliant</span>
+                      <div className="flex flex-col items-center gap-1.5">
+                        <div className="w-8 h-8 bg-orange-50 rounded-full flex items-center justify-center">
+                          <Clock className="w-4 h-4 text-orange-600" />
+                        </div>
+                        <span className="text-xs font-medium text-foreground">14-day refund</span>
                       </div>
-                      <div className="w-px h-3 bg-border" />
-                      <div className="flex items-center gap-1">
-                        <Check className="w-3 h-3" />
-                        <span>Verified</span>
+                      <div className="flex flex-col items-center gap-1.5">
+                        <div className="w-8 h-8 bg-green-50 rounded-full flex items-center justify-center">
+                          <Lock className="w-4 h-4 text-green-600" />
+                        </div>
+                        <span className="text-xs font-medium text-foreground">Secure checkout</span>
                       </div>
                     </div>
                   </div>
+
+                  {/* Policy Confirmation */}
+                  <div className="mt-5 text-center">
+                    <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      Your policy is emailed instantly
+                    </p>
+                  </div>
+
+                  {/* Payment Logos */}
+                  <div className="flex items-center justify-center gap-4 mt-6 pt-5 border-t border-border">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-5 opacity-70 hover:opacity-100 transition-opacity" />
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-7 opacity-70 hover:opacity-100 transition-opacity" />
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4 opacity-70 hover:opacity-100 transition-opacity" />
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple Pay" className="h-4 opacity-70 hover:opacity-100 transition-opacity" />
+                  </div>
                 </CardContent>
               </Card>
-
-              {/* Payment Icons */}
-              <div className="flex items-center justify-center gap-3 mt-6 opacity-60">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-6" />
-                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-8" />
-                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-5" />
-                <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple Pay" className="h-5" />
-              </div>
             </div>
           </div>
         </main>
