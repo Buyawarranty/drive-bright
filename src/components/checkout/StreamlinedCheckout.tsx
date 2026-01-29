@@ -1091,7 +1091,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               localStorage.removeItem('buyawarranty_originalPricingData');
               onBack();
             }}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground hover:bg-muted px-2 sm:px-3 py-2 -ml-2"
+            className="flex items-center gap-2 text-gray-600 hover:text-foreground hover:bg-muted px-2 sm:px-3 py-2 -ml-2"
           >
             <ArrowLeft className="w-4 h-4" />
             <span className="hidden sm:inline">Back to Plan Selection</span>
