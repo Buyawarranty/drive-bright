@@ -28,7 +28,15 @@ interface AddressAutocompleteProps {
   initialValue?: string;
   disabled?: boolean;
   onLookupError?: (hasError: boolean) => void;
+  onPostcodeValidation?: (isValid: boolean, postcode: string) => void;
 }
+
+// UK postcode validation regex
+const UK_POSTCODE_REGEX = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
+
+const isValidUKPostcode = (postcode: string): boolean => {
+  return UK_POSTCODE_REGEX.test(postcode.replace(/\s/g, ''));
+};
 
 export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   onAddressSelect,
@@ -38,6 +46,7 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   initialValue = "",
   disabled = false,
   onLookupError,
+  onPostcodeValidation,
 }) => {
   // IMPORTANT: Never clear inputValue except when user types - this preserves partial entries
   const [inputValue, setInputValue] = useState(initialValue);
@@ -47,11 +56,19 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [hasSelected, setHasSelected] = useState(false);
   const [lookupFailed, setLookupFailed] = useState(false);
+  const [postcodeValid, setPostcodeValid] = useState(false);
   
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout>();
   const isSelectingRef = useRef(false); // Prevent closing during selection
+
+  // Check postcode validity whenever input changes
+  useEffect(() => {
+    const isValid = isValidUKPostcode(inputValue);
+    setPostcodeValid(isValid);
+    onPostcodeValidation?.(isValid, inputValue);
+  }, [inputValue, onPostcodeValidation]);
 
   // Close dropdown when clicking/tapping outside (iOS/Safari compatible)
   useEffect(() => {
@@ -300,7 +317,11 @@ export const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
         {hasSelected && !isLoading && (
           <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-600" />
         )}
-        {lookupFailed && !isLoading && !hasSelected && (
+        {/* Show green tick for valid postcode when lookup failed but postcode format is correct */}
+        {lookupFailed && !isLoading && !hasSelected && postcodeValid && (
+          <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-600" />
+        )}
+        {lookupFailed && !isLoading && !hasSelected && !postcodeValid && inputValue.length > 2 && (
           <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500" />
         )}
       </div>

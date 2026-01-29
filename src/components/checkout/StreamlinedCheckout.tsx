@@ -1369,9 +1369,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       >
                         <div className="flex items-center gap-3">
                           <div>
-                            <p className="text-sm font-medium text-foreground">
+                            <h2 className="text-base font-semibold text-foreground">
                               Your Address <span className="text-destructive">*</span>
-                            </p>
+                            </h2>
                             <p className="text-xs text-muted-foreground mt-0.5">
                               {addressExpanded 
                                 ? 'Enter your postcode to find your address' 
@@ -1419,11 +1419,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         }`}
                       >
                         <div className="px-4 pb-4 pt-3 space-y-4 border-t border-border/30">
-                          {/* Postcode with Find Address button */}
+                          {/* Postcode with Find Address - Single unified field */}
                           <div>
                             <Label htmlFor="postcode-search" className="text-sm font-medium text-foreground/80 flex items-center gap-2 mb-2">
                               <Search className="w-3.5 h-3.5" />
-                              Postcode
+                              Postcode <span className="text-destructive">*</span>
                             </Label>
                             <AddressAutocomplete
                               placeholder="Enter your postcode (e.g. SW1A 1AA)"
@@ -1451,6 +1451,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                                 });
                               }}
                               onLookupError={(hasError) => setAddressLookupFailed(hasError)}
+                              onPostcodeValidation={(isValid, postcode) => {
+                                // When API fails but postcode is valid, save just the postcode
+                                if (isValid && addressLookupFailed) {
+                                  setAddressData(prev => ({ ...prev, postcode: postcode.toUpperCase() }));
+                                  setAddressValidated(prev => ({ ...prev, postcode: true }));
+                                  setAddressErrors(prev => ({ ...prev, postcode: '' }));
+                                }
+                              }}
                               className="w-full border border-gray-200 rounded-lg px-3 py-3 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-[#F5F5F5] focus:bg-white min-h-[44px] transition-colors"
                             />
                             <p className="text-xs text-muted-foreground mt-2">
@@ -1458,38 +1466,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                             </p>
                           </div>
 
-                          {/* Manual Address Fields - Postcode first (already filled from lookup) */}
+                          {/* Manual Address Fields */}
                           <div className="grid grid-cols-1 gap-3">
-                            {/* Postcode Field (read-only or manual entry) */}
-                            <div>
-                              <Label htmlFor="postcode" className="text-sm font-medium text-foreground/80">
-                                Postcode <span className="text-destructive">*</span>
-                              </Label>
-                              <div className="relative">
-                                <Input
-                                  id="postcode"
-                                  placeholder="e.g. SW1A 1AA"
-                                  value={addressData.postcode}
-                                  onChange={(e) => {
-                                    setAddressData(prev => ({ ...prev, postcode: e.target.value.toUpperCase() }));
-                                    if (addressErrors.postcode) {
-                                      setAddressErrors(prev => ({ ...prev, postcode: '' }));
-                                    }
-                                  }}
-                                  onBlur={() => validateAddressField('postcode')}
-                                  className={`h-10 sm:h-11 text-sm mt-1 pr-10 transition-colors ${getAddressInputValidationClass('postcode')}`}
-                                />
-                                {addressValidated.postcode && !addressErrors.postcode && addressData.postcode && (
-                                  <Check className="absolute right-3 top-1/2 translate-y-[-30%] h-5 w-5 text-green-600" />
-                                )}
-                              </div>
-                              {showValidation && addressErrors.postcode && (
-                                <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                                  <AlertCircle className="w-3.5 h-3.5" />
-                                  {addressErrors.postcode}
-                                </p>
-                              )}
-                            </div>
 
                             {/* Address Line 1 */}
                             <div>
