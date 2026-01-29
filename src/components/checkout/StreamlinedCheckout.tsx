@@ -24,6 +24,7 @@ import CoverHighlights from '@/components/checkout/CoverHighlights';
 import TrustBar from '@/components/checkout/TrustBar';
 import DesktopStickyPriceSidebar from '@/components/checkout/DesktopStickyPriceSidebar';
 import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
+import DesktopStickyBottomBar from '@/components/checkout/DesktopStickyBottomBar';
 import PaymentMethodSelector from '@/components/checkout/PaymentMethodSelector';
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
@@ -174,6 +175,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const [showEmbeddedCheckout, setShowEmbeddedCheckout] = useState(false);
   const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
   
+  // Desktop sticky bottom bar visibility (shows when sidebar is out of view)
+  const [showDesktopStickyBar, setShowDesktopStickyBar] = useState(false);
+  
   // Promo code states (collapsed by default)
   const [promoOpen, setPromoOpen] = useState(false);
   const [promoCodeInput, setPromoCodeInput] = useState('');
@@ -262,7 +266,32 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     }
   }, [customerData.mileage, originalMileageWasUnder120k, paymentType, pricingData.totalPrice]);
 
-  // Start date state
+  // Track scroll position to show desktop sticky bar when sidebar is out of view
+  useEffect(() => {
+    const handleScroll = () => {
+      // Only track on desktop (lg breakpoint = 1024px)
+      if (window.innerWidth < 1024) {
+        setShowDesktopStickyBar(false);
+        return;
+      }
+      
+      // Show sticky bar when user has scrolled down past a threshold
+      // The sidebar is sticky at top:4 (16px), so check if we're past the main content area
+      const scrollThreshold = 600; // Show after scrolling 600px
+      setShowDesktopStickyBar(window.scrollY > scrollThreshold);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll);
+    
+    // Initial check
+    handleScroll();
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, []);
   const [startDate, setStartDate] = useState<Date | undefined>(() => {
     try {
       const savedStartDate = localStorage.getItem('buyawarranty_startDate');
@@ -1736,6 +1765,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           setSelectedPayment(payment);
           setPaymentError('');
         }}
+      />
+
+      {/* Desktop: Sticky Bottom Bar (shows when scrolled past sidebar) */}
+      <DesktopStickyBottomBar
+        selectedPayment={selectedPayment}
+        monthlyPrice={discountedMonthlyPrice}
+        fullPrice={discountedStripePrice}
+        isLoading={isLoading}
+        isFormValid={personalDetailsComplete && addressComplete}
+        onPayClick={processPayment}
+        isVisible={showDesktopStickyBar}
       />
 
       {/* Embedded Stripe Checkout Modal */}
