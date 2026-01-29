@@ -357,13 +357,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       return;
     }
     
-    // Only collapse when BOTH personal details AND address are complete
-    if (personalDetailsComplete && addressComplete && detailsOpen) {
-      const timer = setTimeout(() => {
-        setDetailsOpen(false);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
+    // Keep address section open for customer review - do NOT auto-collapse
+    // Users need to confirm their details before proceeding
   }, [personalDetailsComplete, addressComplete]);
 
   // Track page load
