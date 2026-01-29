@@ -52,6 +52,7 @@ const FAQ = lazy(() => import("./pages/FAQ"));
 const LiveQuotePage = lazy(() => import("./pages/LiveQuotePage"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
 const PaymentFallback = lazy(() => import("./pages/PaymentFallback"));
+const StripePayment = lazy(() => import("./pages/StripePayment"));
 const Cart = lazy(() => import("./pages/Cart"));
 const Widget = lazy(() => import("./pages/Widget"));
 const Terms = lazy(() => import("./pages/Terms"));
@@ -152,6 +153,7 @@ const App = () => {
                     <Route path="/faq/" element={<FAQ />} />
                     <Route path="/thank-you/" element={<ThankYou />} />
                     <Route path="/payment-fallback/" element={<PaymentFallback />} />
+                    <Route path="/checkout/payment/" element={<StripePayment />} />
                     <Route path="/cart/" element={<Cart />} />
                     <Route path="/widget/" element={<Widget />} />
                     
