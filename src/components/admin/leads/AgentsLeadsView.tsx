@@ -5,10 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Lead, AdminUser } from '@/hooks/useLeads';
+import { useLeadDistribution } from '@/hooks/useLeadDistribution';
+import { AgentCapsPanel } from './distribution/AgentCapsPanel';
 import { 
   Users, ChevronDown, ChevronRight, Phone, Mail, Car, 
-  Calendar, UserCircle, AlertCircle
+  Calendar, UserCircle, AlertCircle, Settings2
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -48,6 +51,18 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
 }) => {
   const [selectedAgent, setSelectedAgent] = useState<string>('all');
   const [expandedAgents, setExpandedAgents] = useState<Set<string>>(new Set(['unassigned']));
+  const [capsSheetOpen, setCapsSheetOpen] = useState(false);
+
+  // Lead distribution hook for agent caps
+  const {
+    agentCaps,
+    agentPresences,
+    updateAgentCap,
+    toggleAgentPause,
+    deleteAgentFromDistribution,
+    getAgentPresenceStatus,
+    initializeAgentCaps
+  } = useLeadDistribution();
 
   // Group leads by agent
   const agentGroups = useMemo((): AgentLeadGroup[] => {
@@ -202,6 +217,37 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
         </div>
         
         <div className="flex items-center gap-2">
+          <Sheet open={capsSheetOpen} onOpenChange={setCapsSheetOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Settings2 className="h-4 w-4" />
+                Agent Caps
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle>Agent Distribution Caps</SheetTitle>
+                <SheetDescription>
+                  Set daily lead caps and manage agent availability for round-robin distribution.
+                </SheetDescription>
+              </SheetHeader>
+              <AgentCapsPanel
+                agentCaps={agentCaps}
+                agentPresences={agentPresences}
+                salesUsers={salesUsers.map(u => ({
+                  id: u.id,
+                  email: u.email,
+                  first_name: u.first_name,
+                  last_name: u.last_name
+                }))}
+                onUpdateCap={updateAgentCap}
+                onTogglePause={toggleAgentPause}
+                onDeleteAgent={deleteAgentFromDistribution}
+                getAgentPresenceStatus={getAgentPresenceStatus}
+                onInitializeCaps={initializeAgentCaps}
+              />
+            </SheetContent>
+          </Sheet>
           <Button variant="outline" size="sm" onClick={expandAll}>
             Expand All
           </Button>
