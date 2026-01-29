@@ -17,6 +17,7 @@ interface DesktopStickyPriceSidebarProps {
   isLoading: boolean;
   isFormValid: boolean;
   onPayClick: () => void;
+  onPaymentChange?: (payment: 'monthly' | 'full') => void;
 }
 
 const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
@@ -33,6 +34,7 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
   isLoading,
   isFormValid,
   onPayClick,
+  onPaymentChange,
 }) => {
   // Map claim limit display values
   const displayClaimLimit = () => {
@@ -46,12 +48,12 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
 
   return (
     <div className="sticky top-4">
-      <Card className="border-2 border-primary/20 shadow-xl overflow-hidden">
+      <Card className="border border-[#DADADA] shadow-sm overflow-hidden">
         <CardContent className="p-0">
           {/* Header */}
-          <div className="bg-primary/10 p-4 border-b border-primary/10">
+          <div className="bg-white p-4 border-b border-[#DADADA]">
             <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-primary" />
+              <Shield className="w-5 h-5" style={{ color: '#0BA360' }} />
               <h3 className="font-bold text-foreground">Order Summary</h3>
             </div>
           </div>
@@ -78,7 +80,7 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
               </div>
             </div>
 
-            <div className="h-px bg-border" />
+            <div className="h-px bg-[#DADADA]" />
 
             {/* Coverage */}
             <div className="space-y-2 text-sm">
@@ -96,43 +98,85 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
               </div>
             </div>
 
-            <div className="h-px bg-border" />
+            <div className="h-px bg-[#DADADA]" />
 
-            {/* Price Display */}
+            {/* Payment Option Selectors - Flat styled cards */}
             <div className="space-y-3">
-              {selectedPayment === 'monthly' && (
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                  <p className="text-xs text-muted-foreground">Monthly payments</p>
-                  <p className="text-2xl font-bold text-foreground">£{monthlyPrice}/month</p>
-                  <p className="text-xs text-muted-foreground">12 payments · 0% APR</p>
+              {/* Pay Monthly Option */}
+              <button
+                type="button"
+                onClick={() => onPaymentChange?.('monthly')}
+                className={`w-full text-left p-3 rounded-lg border-2 transition-all duration-150 ${
+                  selectedPayment === 'monthly'
+                    ? 'bg-[#1a1a1a] border-[#1a1a1a]'
+                    : 'bg-[#FFF8F5] border-[#FFD9BF] hover:border-[#FF9A4C]'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-sm font-semibold ${selectedPayment === 'monthly' ? 'text-white' : 'text-[#1a1a1a]'}`}>
+                      Pay Monthly: £{monthlyPrice}/month
+                    </p>
+                    <p className={`text-xs mt-0.5 ${selectedPayment === 'monthly' ? 'text-white/70' : 'text-[#1a1a1a]'}`}>
+                      Total £{originalPrice} – 0% APR, 12 payments
+                    </p>
+                  </div>
+                  {selectedPayment === 'monthly' && (
+                    <Check className="w-5 h-5 text-white flex-shrink-0" />
+                  )}
                 </div>
-              )}
-              {selectedPayment === 'full' && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                  <p className="text-xs text-muted-foreground">Pay in full</p>
-                  <p className="text-2xl font-bold text-foreground">£{fullPrice}</p>
-                  <p className="text-xs text-muted-foreground line-through">Was £{originalPrice}</p>
-                  <p className="text-xs font-medium text-green-600">Save £{savings} (10% off)</p>
+              </button>
+
+              {/* Pay in Full Option */}
+              <button
+                type="button"
+                onClick={() => onPaymentChange?.('full')}
+                className={`w-full text-left p-3 rounded-lg border-2 transition-all duration-150 ${
+                  selectedPayment === 'full'
+                    ? 'bg-[#1a1a1a] border-[#1a1a1a]'
+                    : 'bg-[#F0FDF4] border-[#C8F3D2] hover:border-[#7AD69D]'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <p className={`text-sm font-semibold ${selectedPayment === 'full' ? 'text-white' : 'text-[#1a1a1a]'}`}>
+                        Pay in Full: £{fullPrice}
+                      </p>
+                      <p className={`text-xs mt-0.5 ${selectedPayment === 'full' ? 'text-white/70' : 'text-[#1a1a1a]'}`}>
+                        Save £{savings} (10% off)
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span 
+                      className="text-xs font-bold px-2 py-0.5 rounded"
+                      style={{ 
+                        backgroundColor: selectedPayment === 'full' ? '#0BA360' : '#0BA360', 
+                        color: '#FFFFFF' 
+                      }}
+                    >
+                      BEST VALUE
+                    </span>
+                    {selectedPayment === 'full' && (
+                      <Check className="w-5 h-5 text-white flex-shrink-0" />
+                    )}
+                  </div>
                 </div>
-              )}
-              {!selectedPayment && (
-                <div className="bg-muted/50 rounded-lg p-3 text-center">
-                  <p className="text-sm text-muted-foreground">Select a payment option below</p>
-                </div>
-              )}
+              </button>
             </div>
 
-            {/* CTA Button */}
+            {/* CTA Button - Black when selected */}
             <Button
               onClick={onPayClick}
               disabled={isLoading || !selectedPayment}
-              className="w-full py-5 text-base font-bold rounded-xl shadow-lg"
+              className="w-full py-5 text-base font-bold rounded-xl transition-all duration-150"
               style={{
                 backgroundColor: !selectedPayment 
                   ? '#CCCCCC' 
-                  : selectedPayment === 'monthly' 
-                    ? '#FF6B00' 
-                    : '#28A745',
+                  : '#1a1a1a',
+                color: !selectedPayment ? '#666666' : '#FFFFFF',
+                boxShadow: 'none',
               }}
             >
               {isLoading ? (
@@ -146,7 +190,7 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
                   {selectedPayment === 'monthly' 
                     ? `Pay £${monthlyPrice} today` 
                     : selectedPayment === 'full'
-                    ? 'Complete one-time payment'
+                    ? `Pay £${fullPrice} now`
                     : 'Select payment option'}
                 </span>
               )}
@@ -155,7 +199,7 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
             {/* Trust Elements */}
             <div className="text-center space-y-2">
               <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
-                <Lock className="w-3 h-3" />
+                <Lock className="w-3 h-3" style={{ color: '#0BA360' }} />
                 256-bit SSL encryption
               </p>
               <div className="flex items-center justify-center gap-2">
