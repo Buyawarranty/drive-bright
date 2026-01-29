@@ -1,7 +1,5 @@
 import React from 'react';
-import { Shield, Check, ExternalLink, Lock, Loader2 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Shield, Check, ExternalLink } from 'lucide-react';
 
 interface PlanSummaryCardProps {
   planName: string;
@@ -52,21 +50,19 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
   const savings = originalPrice - discountedPrice;
 
   return (
-    <Card className="bg-white border border-border shadow-sm overflow-hidden">
-      <CardContent className="p-5 sm:p-6">
+    <div className="bg-white border border-[#E5E5E5] rounded-xl overflow-hidden">
+      <div className="p-5 sm:p-6">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 flex items-center justify-center">
-              <Shield className="w-7 h-7 text-orange-500 fill-orange-100" />
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-              Your platinum vehicle plan is ready
+            <Shield className="w-6 h-6 text-[#0BA360] flex-shrink-0" />
+            <h2 className="text-lg sm:text-xl font-bold text-[#1a1a1a]">
+              Your comprehensive vehicle plan is ready
             </h2>
           </div>
           <button
             onClick={onChangePlan}
-            className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-muted/50 transition-colors"
+            className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-[#1a1a1a] border border-[#E5E5E5] rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors"
           >
             <ExternalLink className="w-4 h-4" />
             Change
@@ -74,24 +70,24 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
         </div>
 
         {/* 14-day guarantee banner */}
-        <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 mb-5 flex items-center gap-2">
-          <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-          <span className="text-sm text-green-800">Cancel anytime within 14 days for a full refund</span>
+        <div className="bg-[#F0FDF4] border border-[#C8F3D2] rounded-lg px-4 py-3 mb-5 flex items-center gap-2">
+          <Check className="w-5 h-5 text-[#0BA360] flex-shrink-0" />
+          <span className="text-sm text-[#1a1a1a]">Cancel anytime within 14 days for a full refund</span>
         </div>
 
         {/* Order Summary - Combined Details */}
         <div className="space-y-3 mb-5">
           <div className="flex justify-between items-center py-1">
             <span className="text-gray-600">Plan:</span>
-            <span className="font-semibold text-foreground">Platinum</span>
+            <span className="font-semibold text-[#1a1a1a]">Comprehensive</span>
           </div>
           <div className="flex justify-between items-center py-1">
             <span className="text-gray-600">Duration:</span>
-            <span className="font-semibold text-foreground">{duration}</span>
+            <span className="font-semibold text-[#1a1a1a]">{duration}</span>
           </div>
           <div className="flex justify-between items-center py-1">
             <span className="text-gray-600">Vehicle:</span>
-            <span className="font-semibold text-foreground uppercase">{vehicleDisplay}</span>
+            <span className="font-semibold text-[#1a1a1a] uppercase">{vehicleDisplay}</span>
           </div>
           <div className="flex justify-between items-center py-1">
             <span className="text-gray-600">Registration:</span>
@@ -104,100 +100,73 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
           </div>
           <div className="flex justify-between items-center py-1">
             <span className="text-gray-600">Claim Limit:</span>
-            <span className="font-semibold text-foreground">{displayClaimLimit()}</span>
+            <span className="font-semibold text-[#1a1a1a]">{displayClaimLimit()}</span>
           </div>
           <div className="flex justify-between items-center py-1">
             <span className="text-gray-600">Labour Rate:</span>
-            <span className="font-semibold text-foreground">£{labourRate}/hour</span>
+            <span className="font-semibold text-[#1a1a1a]">£{labourRate}/hour</span>
           </div>
           <div className="flex justify-between items-center py-1">
             <span className="text-gray-600">Excess:</span>
-            <span className="font-semibold text-foreground">£{excess}</span>
+            <span className="font-semibold text-[#1a1a1a]">£{excess}</span>
           </div>
         </div>
 
-        {/* Payment Options */}
-        <div className="space-y-3 pt-4 border-t border-border">
+        {/* Payment Options - Flat design */}
+        <div className="space-y-3 pt-4 border-t border-[#E5E5E5]">
           <p className="text-sm font-semibold text-[#1a1a1a] mb-2">Choose payment method:</p>
           
           {/* Monthly Option */}
           <button 
             onClick={() => onPaymentChange('monthly')}
-            className={`w-full text-left rounded-lg px-4 py-3 transition-all ${
+            className={`w-full text-left rounded-lg px-4 py-3 border-2 transition-all ${
               selectedPayment === 'monthly' 
-                ? 'bg-orange-50 border-2 border-orange-400' 
-                : 'bg-orange-50/50 border border-orange-100 hover:border-orange-200'
+                ? 'bg-orange-50 border-[#FF6B00]' 
+                : 'bg-[#FFF8F5] border-[#FFD9BF] hover:border-[#FF9A4C]'
             }`}
           >
-            <div className="flex flex-wrap items-baseline gap-x-2">
-              <span className="font-bold text-[#1a1a1a]">Pay Monthly: £{monthlyPrice}/month</span>
-              <span className="text-gray-600 text-sm">
-                Total £{totalPrice} – 0% APR, 12 payments
-              </span>
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="font-bold text-[#1a1a1a]">Pay Monthly: £{monthlyPrice}/month</span>
+                <p className="text-gray-600 text-sm mt-0.5">
+                  Total £{totalPrice} – 0% APR, 12 payments
+                </p>
+              </div>
+              {selectedPayment === 'monthly' && (
+                <Check className="w-5 h-5 flex-shrink-0 text-[#0BA360]" />
+              )}
             </div>
           </button>
 
           {/* Pay in Full Option */}
           <button 
             onClick={() => onPaymentChange('full')}
-            className={`w-full text-left rounded-lg px-4 py-3 relative transition-all ${
+            className={`w-full text-left rounded-lg px-4 py-3 border-2 relative transition-all ${
               selectedPayment === 'full' 
-                ? 'bg-green-50 border-2 border-green-400' 
-                : 'bg-green-50/50 border border-green-100 hover:border-green-200'
+                ? 'bg-green-50 border-[#0BA360]' 
+                : 'bg-[#F0FDF4] border-[#C8F3D2] hover:border-[#7AD69D]'
             }`}
           >
             <div className="absolute top-2 right-2">
-              <span className="bg-green-600 text-white text-xs font-bold px-2 py-1 rounded">
+              <span className="bg-[#0BA360] text-white text-xs font-bold px-2 py-1 rounded">
                 BEST VALUE
               </span>
             </div>
-            <div className="flex flex-wrap items-baseline gap-x-2 pr-24">
-              <span className="font-bold text-[#1a1a1a]">Pay in Full: £{discountedPrice}</span>
-              <span className="text-gray-600 text-sm">
-                Save £{savings} (10% off)
-              </span>
+            <div className="flex items-center justify-between pr-24">
+              <div>
+                <span className="font-bold text-[#1a1a1a]">Pay in Full: £{discountedPrice}</span>
+                <p className="text-gray-600 text-sm mt-0.5">
+                  Save £{savings} (10% off)
+                </p>
+              </div>
+              {selectedPayment === 'full' && (
+                <Check className="w-5 h-5 flex-shrink-0 text-[#0BA360]" />
+              )}
             </div>
           </button>
         </div>
-
-        {/* CTA Button - visible on all screen sizes */}
-        {onPayClick && (
-          <div className="pt-5">
-            <Button
-              onClick={onPayClick}
-              disabled={isLoading || !selectedPayment}
-              className="w-full py-6 text-base font-bold rounded-xl shadow-lg"
-              style={{
-                backgroundColor: !selectedPayment 
-                  ? '#CCCCCC' 
-                  : selectedPayment === 'monthly' 
-                    ? '#FF6B00' 
-                    : '#28A745',
-              }}
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Processing...
-                </span>
-              ) : (
-                <span className="flex items-center justify-center gap-2">
-                  <Lock className="w-5 h-5" />
-                  {selectedPayment === 'monthly' 
-                    ? `Pay £${monthlyPrice} today` 
-                    : selectedPayment === 'full'
-                    ? 'Complete one-time payment'
-                    : 'Select payment option'}
-                </span>
-              )}
-            </Button>
-            <p className="text-center text-xs text-gray-600 mt-3">
-              🔒 Secure checkout · 14-day money-back guarantee
-            </p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

@@ -1,7 +1,6 @@
 import React from 'react';
-import { Shield, Check, Lock, Star, CreditCard } from 'lucide-react';
+import { Check, Lock, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 
 interface DesktopStickyPriceSidebarProps {
   planName: string;
@@ -48,176 +47,144 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
 
   return (
     <div className="sticky top-4">
-      <Card className="border border-[#DADADA] shadow-sm overflow-hidden">
-        <CardContent className="p-0">
-          {/* Header */}
-          <div className="bg-white p-4 border-b border-[#DADADA]">
-            <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5" style={{ color: '#0BA360' }} />
-              <h3 className="font-bold text-foreground">Order Summary</h3>
+      <div className="bg-white border border-[#E5E5E5] rounded-xl overflow-hidden">
+        {/* Header */}
+        <div className="p-4 border-b border-[#E5E5E5]">
+          <h3 className="text-base font-semibold text-[#1a1a1a]">Order Summary</h3>
+        </div>
+
+        <div className="p-4 space-y-4">
+          {/* Plan Details */}
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Plan</span>
+              <span className="font-medium text-[#1a1a1a]">Comprehensive</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Vehicle</span>
+              <span 
+                className="font-mono font-bold text-xs uppercase px-1.5 py-0.5 rounded border border-black"
+                style={{ backgroundColor: '#FCD34D' }}
+              >
+                {vehicleReg}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Duration</span>
+              <span className="font-medium text-[#1a1a1a]">{duration}</span>
             </div>
           </div>
 
-          <div className="p-4 space-y-4">
-            {/* Plan Details */}
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Plan</span>
-                <span className="font-medium text-[#1a1a1a]">{planName || 'Platinum'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Vehicle</span>
-                <span 
-                  className="font-mono font-bold text-xs uppercase px-1.5 py-0.5 rounded border border-black"
-                  style={{ backgroundColor: '#FCD34D' }}
-                >
-                  {vehicleReg}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Duration</span>
-                <span className="font-medium text-[#1a1a1a]">{duration}</span>
-              </div>
+          <div className="h-px bg-[#E5E5E5]" />
+
+          {/* Coverage */}
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Claim limit</span>
+              <span className="font-medium text-[#1a1a1a]">{displayClaimLimit()}</span>
             </div>
-
-            <div className="h-px bg-[#DADADA]" />
-
-            {/* Coverage */}
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Claim limit</span>
-                <span className="font-medium text-[#1a1a1a]">{displayClaimLimit()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Labour rate</span>
-                <span className="font-medium text-[#1a1a1a]">£{labourRate}/hr</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Excess</span>
-                <span className="font-medium text-[#1a1a1a]">£{excess}</span>
-              </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Labour rate</span>
+              <span className="font-medium text-[#1a1a1a]">£{labourRate}/hr</span>
             </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Excess</span>
+              <span className="font-medium text-[#1a1a1a]">£{excess}</span>
+            </div>
+          </div>
 
-            <div className="h-px bg-[#DADADA]" />
+          <div className="h-px bg-[#E5E5E5]" />
 
-            {/* Payment Option Selectors - Solid border when selected */}
-            <div className="space-y-3">
-              {/* Pay Monthly Option */}
-              <button
-                type="button"
-                onClick={() => onPaymentChange?.('monthly')}
-                className={`w-full text-left p-3 rounded-lg border-2 transition-all duration-150 ${
-                  selectedPayment === 'monthly'
-                    ? 'bg-orange-50 border-[#FF6B00]'
-                    : 'bg-[#FFF8F5] border-[#FFD9BF] hover:border-[#FF9A4C]'
-                }`}
-              >
+          {/* Selected Payment Display */}
+          <div className="space-y-2">
+            {selectedPayment === 'monthly' && (
+              <div className="bg-orange-50 border border-[#FF6B00] rounded-lg p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-[#1a1a1a]">
-                      Pay Monthly: £{monthlyPrice}/month
-                    </p>
-                    <p className="text-xs mt-0.5 text-[#1a1a1a]">
-                      Total £{originalPrice} – 0% APR, 12 payments
-                    </p>
+                    <p className="text-sm font-semibold text-[#1a1a1a]">Pay Monthly</p>
+                    <p className="text-lg font-bold text-[#1a1a1a]">£{monthlyPrice}/month</p>
+                    <p className="text-xs text-gray-600 mt-0.5">12 payments · 0% APR</p>
                   </div>
-                  {selectedPayment === 'monthly' && (
-                    <Check className="w-5 h-5 flex-shrink-0" style={{ color: '#0BA360' }} />
-                  )}
+                  <Check className="w-5 h-5 text-[#0BA360]" />
                 </div>
-              </button>
-
-              {/* Pay in Full Option */}
-              <button
-                type="button"
-                onClick={() => onPaymentChange?.('full')}
-                className={`w-full text-left p-3 rounded-lg border-2 transition-all duration-150 ${
-                  selectedPayment === 'full'
-                    ? 'bg-green-50 border-[#0BA360]'
-                    : 'bg-[#F0FDF4] border-[#C8F3D2] hover:border-[#7AD69D]'
-                }`}
-              >
+              </div>
+            )}
+            {selectedPayment === 'full' && (
+              <div className="bg-green-50 border border-[#0BA360] rounded-lg p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-[#1a1a1a]">
-                      Pay in Full: £{fullPrice}
-                    </p>
-                    <p className="text-xs mt-0.5 text-[#1a1a1a]">
-                      Save £{savings} (10% off)
-                    </p>
+                    <p className="text-sm font-semibold text-[#1a1a1a]">Pay in Full</p>
+                    <p className="text-lg font-bold text-[#1a1a1a]">£{fullPrice}</p>
+                    <p className="text-xs text-[#0BA360] font-medium mt-0.5">Save £{savings} (10% off)</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span 
-                      className="text-xs font-bold px-2 py-0.5 rounded"
-                      style={{ backgroundColor: '#0BA360', color: '#FFFFFF' }}
-                    >
-                      BEST VALUE
-                    </span>
-                    {selectedPayment === 'full' && (
-                      <Check className="w-5 h-5 flex-shrink-0" style={{ color: '#0BA360' }} />
-                    )}
-                  </div>
+                  <Check className="w-5 h-5 text-[#0BA360]" />
                 </div>
-              </button>
-            </div>
+              </div>
+            )}
+            {!selectedPayment && (
+              <div className="bg-gray-50 border border-[#E5E5E5] rounded-lg p-3 text-center">
+                <p className="text-sm text-gray-600">Select payment method on left</p>
+              </div>
+            )}
+          </div>
 
-            {/* CTA Button - Orange for monthly, Green for full */}
-            <Button
-              onClick={onPayClick}
-              disabled={isLoading || !selectedPayment}
-              className="w-full py-5 text-base font-bold rounded-xl transition-all duration-150"
-              style={{
-                backgroundColor: !selectedPayment 
-                  ? '#CCCCCC' 
-                  : selectedPayment === 'monthly'
-                    ? '#FF6B00'
-                    : '#0BA360',
-                color: '#FFFFFF',
-                boxShadow: 'none',
-              }}
+          {/* CTA Button */}
+          <Button
+            onClick={onPayClick}
+            disabled={isLoading || !selectedPayment}
+            className="w-full py-5 text-base font-bold rounded-xl transition-all duration-150"
+            style={{
+              backgroundColor: !selectedPayment 
+                ? '#CCCCCC' 
+                : selectedPayment === 'monthly'
+                  ? '#FF6B00'
+                  : '#0BA360',
+              color: '#FFFFFF',
+            }}
+          >
+            {isLoading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Processing...
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                <Lock className="w-4 h-4" />
+                {selectedPayment === 'monthly' 
+                  ? `Pay £${monthlyPrice} today` 
+                  : selectedPayment === 'full'
+                  ? 'Complete one-time payment'
+                  : 'Select payment option'}
+              </span>
+            )}
+          </Button>
+
+          {/* Trust Strip */}
+          <div className="text-center space-y-2 pt-2">
+            <p className="text-xs text-gray-600 flex items-center justify-center gap-1">
+              <Lock className="w-3 h-3 text-[#0BA360]" />
+              256-bit SSL encryption
+            </p>
+            <a 
+              href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 text-xs text-gray-600 hover:text-[#1a1a1a]"
             >
-              {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Processing...
-                </span>
-              ) : (
-                <span className="flex items-center justify-center gap-2">
-                  <Lock className="w-4 h-4" />
-                  {selectedPayment === 'monthly' 
-                    ? `Pay £${monthlyPrice} today` 
-                    : selectedPayment === 'full'
-                    ? `Pay £${fullPrice} now`
-                    : 'Select payment option'}
-                </span>
-              )}
-            </Button>
-
-            {/* Trust Elements */}
-            <div className="text-center space-y-2">
-              <p className="text-xs text-gray-600 flex items-center justify-center gap-1">
-                <Lock className="w-3 h-3" style={{ color: '#0BA360' }} />
-                256-bit SSL encryption
-              </p>
-              <div className="flex items-center justify-center gap-2">
-                <a 
-                  href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-xs text-gray-600 hover:text-foreground"
-                >
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-3 h-3 fill-green-500 text-green-500" />
-                    ))}
-                  </div>
-                  <span className="underline">Trustpilot</span>
-                </a>
+              <div className="flex">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-3 h-3 fill-[#00B67A] text-[#00B67A]" />
+                ))}
               </div>
-            </div>
+              <img 
+                src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" 
+                alt="Trustpilot" 
+                className="h-4"
+              />
+            </a>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };

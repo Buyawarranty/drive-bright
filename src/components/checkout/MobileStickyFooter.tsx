@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Lock, ArrowRight, Check, ChevronUp, ChevronDown } from 'lucide-react';
+import React from 'react';
+import { Lock, Check, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface MobileStickyFooterProps {
@@ -23,149 +23,98 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
   onPayClick,
   onPaymentChange,
 }) => {
-  const [expanded, setExpanded] = useState(false);
   const savings = (originalPrice || fullPrice * 1.1) - fullPrice;
 
-  // Determine button text based on selection
-  const getButtonText = () => {
-    if (isLoading) return 'Processing...';
-    if (selectedPayment === 'monthly') return `Pay £${monthlyPrice} today`;
-    if (selectedPayment === 'full') return `Pay £${fullPrice} now`;
-    return 'Select payment option';
-  };
-
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#DADADA] shadow-[0_-4px_20px_rgba(0,0,0,0.1)] lg:hidden">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#E5E5E5] lg:hidden">
       <div className="px-4 py-3">
-        {/* Expand/Collapse for payment options */}
-        <button
-          type="button"
-          onClick={() => setExpanded(!expanded)}
-          className="w-full flex items-center justify-between mb-3"
-        >
-          <span className="text-sm font-medium text-[#1a1a1a]">
-            {selectedPayment === 'monthly' ? 'Pay Monthly selected' : selectedPayment === 'full' ? 'Pay in Full selected' : 'Choose payment method'}
-          </span>
-          {expanded ? <ChevronDown className="w-4 h-4 text-muted-foreground" /> : <ChevronUp className="w-4 h-4 text-muted-foreground" />}
-        </button>
-
-        {/* Payment Options - Expanded */}
-        {expanded && (
-          <div className="space-y-2 mb-3">
-            {/* Pay Monthly Option */}
-            <button
-              type="button"
-              onClick={() => onPaymentChange?.('monthly')}
-              className={`w-full text-left p-3 rounded-lg border-2 transition-all duration-150 ${
-                selectedPayment === 'monthly'
-                  ? 'bg-orange-50 border-[#FF6B00]'
-                  : 'bg-[#FFF8F5] border-[#FFD9BF]'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-[#1a1a1a]">
-                    Pay Monthly: £{monthlyPrice}/month
-                  </p>
-                  <p className="text-xs mt-0.5 text-[#1a1a1a]">
-                    Total £{originalPrice || monthlyPrice * 12} – 0% APR, 12 payments
-                  </p>
-                </div>
-                {selectedPayment === 'monthly' && (
-                  <Check className="w-5 h-5 flex-shrink-0" style={{ color: '#0BA360' }} />
-                )}
-              </div>
-            </button>
-
-            {/* Pay in Full Option */}
-            <button
-              type="button"
-              onClick={() => onPaymentChange?.('full')}
-              className={`w-full text-left p-3 rounded-lg border-2 transition-all duration-150 ${
-                selectedPayment === 'full'
-                  ? 'bg-green-50 border-[#0BA360]'
-                  : 'bg-[#F0FDF4] border-[#C8F3D2]'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-[#1a1a1a]">
-                    Pay in Full: £{fullPrice}
-                  </p>
-                  <p className="text-xs mt-0.5 text-[#1a1a1a]">
-                    Save £{Math.floor(savings)} (10% off)
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span 
-                    className="text-xs font-bold px-2 py-0.5 rounded"
-                    style={{ backgroundColor: '#0BA360', color: '#FFFFFF' }}
-                  >
-                    BEST VALUE
-                  </span>
-                  {selectedPayment === 'full' && (
-                    <Check className="w-5 h-5 flex-shrink-0" style={{ color: '#0BA360' }} />
-                  )}
-                </div>
-              </div>
-            </button>
-          </div>
-        )}
-
-        {/* Price and CTA Row */}
-        <div className="flex items-center justify-between gap-3">
-          {/* Left: Price Info */}
-          <div className="flex-1 min-w-0">
-            {selectedPayment === 'monthly' && (
+        {/* Selected Payment Display */}
+        <div className="mb-3">
+          {selectedPayment === 'monthly' && (
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-lg font-bold text-foreground">£{monthlyPrice}/month</p>
-                <p className="text-xs text-[#1a1a1a]">12 payments · 0% APR</p>
+                <p className="text-lg font-bold text-[#1a1a1a]">£{monthlyPrice}/month</p>
+                <p className="text-xs text-gray-600">12 payments · 0% APR</p>
               </div>
-            )}
-            {selectedPayment === 'full' && (
+              <div className="flex items-center gap-1 text-[#0BA360]">
+                <Check className="w-4 h-4" />
+                <span className="text-xs font-medium">Monthly</span>
+              </div>
+            </div>
+          )}
+          {selectedPayment === 'full' && (
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-lg font-bold text-foreground">£{fullPrice}</p>
-                <p className="text-xs font-medium" style={{ color: '#0BA360' }}>Save 10% today</p>
+                <p className="text-lg font-bold text-[#1a1a1a]">£{fullPrice}</p>
+                <p className="text-xs font-medium text-[#0BA360]">Save £{Math.floor(savings)} (10% off)</p>
               </div>
-            )}
-            {!selectedPayment && (
-              <p className="text-sm text-[#1a1a1a]">Select payment above</p>
-            )}
-          </div>
-
-          {/* Right: CTA Button - Orange for monthly, Green for full */}
-          <Button
-            onClick={onPayClick}
-            disabled={isLoading || !selectedPayment}
-            className="px-5 py-5 text-sm font-bold rounded-xl flex-shrink-0"
-            style={{
-              backgroundColor: !selectedPayment 
-                ? '#CCCCCC' 
-                : selectedPayment === 'monthly'
-                  ? '#FF6B00'
-                  : '#0BA360',
-              color: '#FFFFFF',
-              boxShadow: 'none',
-            }}
-          >
-            {isLoading ? (
-              <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Processing...
-              </span>
-            ) : (
-              <span className="flex items-center gap-1.5">
-                <Lock className="w-4 h-4" />
-                {getButtonText()}
-              </span>
-            )}
-          </Button>
+              <div className="flex items-center gap-1 text-[#0BA360]">
+                <Check className="w-4 h-4" />
+                <span className="text-xs font-medium">Pay in Full</span>
+              </div>
+            </div>
+          )}
+          {!selectedPayment && (
+            <p className="text-sm text-gray-600 text-center">Select payment method above</p>
+          )}
         </div>
 
-        {/* Trust line */}
-        <p className="text-center text-xs text-gray-600 mt-2">
-          🔒 Secure checkout · 14-day money-back guarantee
-        </p>
+        {/* CTA Button */}
+        <Button
+          onClick={onPayClick}
+          disabled={isLoading || !selectedPayment}
+          className="w-full py-5 text-base font-bold rounded-xl"
+          style={{
+            backgroundColor: !selectedPayment 
+              ? '#CCCCCC' 
+              : selectedPayment === 'monthly'
+                ? '#FF6B00'
+                : '#0BA360',
+            color: '#FFFFFF',
+          }}
+        >
+          {isLoading ? (
+            <span className="flex items-center gap-2">
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Processing...
+            </span>
+          ) : (
+            <span className="flex items-center gap-1.5">
+              <Lock className="w-4 h-4" />
+              {selectedPayment === 'monthly' 
+                ? `Pay £${monthlyPrice} today` 
+                : selectedPayment === 'full'
+                ? 'Complete one-time payment'
+                : 'Select payment option'}
+            </span>
+          )}
+        </Button>
+
+        {/* Trust Strip */}
+        <div className="flex items-center justify-center gap-3 mt-2 text-xs text-gray-600">
+          <span className="flex items-center gap-1">
+            <Lock className="w-3 h-3 text-[#0BA360]" />
+            256-bit SSL
+          </span>
+          <span>•</span>
+          <a 
+            href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1"
+          >
+            <div className="flex">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-2.5 h-2.5 fill-[#00B67A] text-[#00B67A]" />
+              ))}
+            </div>
+            <img 
+              src="/lovable-uploads/4e4faf8a-b202-4101-a858-9c58ad0a28c5.png" 
+              alt="Trustpilot" 
+              className="h-3"
+            />
+          </a>
+        </div>
       </div>
     </div>
   );
