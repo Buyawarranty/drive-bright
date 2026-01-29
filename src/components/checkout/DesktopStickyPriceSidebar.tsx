@@ -50,7 +50,7 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
       <div className="bg-white border border-[#E5E5E5] rounded-xl overflow-hidden">
         {/* Header */}
         <div className="p-4 border-b border-[#E5E5E5]">
-          <h3 className="text-sm font-semibold text-[#1a1a1a]">Order Summary</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-[#1a1a1a]">Order Summary</h3>
         </div>
 
         <div className="p-4 space-y-4">
@@ -136,7 +136,7 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
           <Button
             onClick={onPayClick}
             disabled={isLoading || !selectedPayment}
-            className="w-full py-5 text-base font-bold rounded-xl transition-all duration-150"
+            className="w-full py-5 text-base font-bold rounded-xl animate-breathing"
             style={{
               backgroundColor: !selectedPayment 
                 ? '#CCCCCC' 
