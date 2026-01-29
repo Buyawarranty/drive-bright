@@ -36,10 +36,14 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
     setErrorMessage(null);
 
     try {
+      // For redirect-based payments (PayPal, Revolut), Stripe will redirect to return_url
+      // with query params: payment_intent, payment_intent_client_secret, redirect_status
+      // redirect_status will be 'succeeded', 'failed', or 'pending'
+      // We redirect back to the payment page to handle the status properly
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/thank-you`,
+          return_url: `${window.location.origin}/checkout/payment/`,
         },
         redirect: 'if_required',
       });
