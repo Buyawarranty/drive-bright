@@ -1455,25 +1455,45 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       setIsLookingUp(true);
                       setAddressLookupFailed(false);
                       try {
-                        const { data, error } = await supabase.functions.invoke('getaddress-lookup', {
-                          body: { action: 'find', postcode: postcodeInput }
-                        });
-                        if (error || !data?.addresses?.length) {
+                        // Use the free postcodes.io API to get town/city
+                        const cleanPostcode = postcodeInput.replace(/\s/g, '').toUpperCase();
+                        const response = await fetch(`https://api.postcodes.io/postcodes/${cleanPostcode}`);
+                        
+                        if (response.ok) {
+                          const data = await response.json();
+                          if (data.result) {
+                            // Format postcode with space
+                            const displayPostcode = data.result.postcode || postcodeInput;
+                            const town = data.result.admin_district || data.result.parish || data.result.admin_ward || '';
+                            
+                            // Pre-populate town and postcode, show address fields
+                            setAddressData(prev => ({ 
+                              ...prev, 
+                              postcode: displayPostcode,
+                              town: town
+                            }));
+                            setAddressValidated(prev => ({ 
+                              ...prev, 
+                              postcode: true,
+                              town: !!town
+                            }));
+                            setShowAddressFields(true);
+                          } else {
+                            setAddressLookupFailed(true);
+                            setShowAddressFields(true);
+                          }
+                        } else {
+                          // Fallback: still show address fields with formatted postcode
                           setAddressLookupFailed(true);
                           setShowAddressFields(true);
-                          const formatted = postcodeInput.replace(/\s/g, '').toUpperCase();
-                          const displayPostcode = formatted.length > 3 
-                            ? formatted.slice(0, -3) + ' ' + formatted.slice(-3) 
-                            : formatted;
-                          setAddressData(prev => ({ ...prev, postcode: displayPostcode }));
-                          setAddressValidated(prev => ({ ...prev, postcode: true }));
-                        } else {
-                          setAddressSuggestions(data.addresses);
-                          setShowAddressDropdown(true);
-                          setAddressData(prev => ({ ...prev, postcode: data.postcode || postcodeInput }));
+                          const formatted = cleanPostcode.length > 3 
+                            ? cleanPostcode.slice(0, -3) + ' ' + cleanPostcode.slice(-3) 
+                            : cleanPostcode;
+                          setAddressData(prev => ({ ...prev, postcode: formatted }));
                           setAddressValidated(prev => ({ ...prev, postcode: true }));
                         }
                       } catch (err) {
+                        console.error('Postcode lookup error:', err);
                         setAddressLookupFailed(true);
                         setShowAddressFields(true);
                       } finally {
@@ -1549,7 +1569,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         setAddressValidated(prev => ({ ...prev, postcode: true }));
                       }
                     }}
-                    className="mt-2 text-sm text-muted-foreground hover:text-foreground underline"
+                    className="mt-2 text-sm text-[#1a1a1a] hover:underline"
                   >
                     Enter address manually
                   </button>
