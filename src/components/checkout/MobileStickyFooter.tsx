@@ -32,7 +32,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
         <Button
           onClick={onPayClick}
           disabled={isLoading || !selectedPayment}
-          className="w-full py-5 text-base font-bold rounded-xl"
+          className="w-full py-5 text-base font-bold rounded-xl animate-breathing"
           style={{
             backgroundColor: !selectedPayment 
               ? '#CCCCCC' 
