@@ -19,7 +19,7 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
 
   return (
     <div className="bg-white border border-[#E5E5E5] rounded-xl p-5 sm:p-6">
-      {/* Header */}
+      {/* Header - same size as Plan Summary */}
       <div className="mb-5">
         <h2 className="text-lg sm:text-xl font-bold text-[#1a1a1a]">
           Choose how you want to pay
@@ -28,13 +28,13 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
 
       {/* Payment Cards */}
       <div className="space-y-3">
-        {/* Pay Monthly Card */}
+        {/* Pay Monthly Card - Light orange background */}
         <button
           onClick={() => onPaymentChange('monthly')}
           className={`w-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all ${
             selectedPayment === 'monthly'
-              ? 'border-[#0BA360] bg-green-50/30'
-              : 'border-[#E5E5E5] bg-white hover:border-gray-300'
+              ? 'border-[#0BA360] bg-[#FFF8F3]'
+              : 'border-[#E5E5E5] bg-[#FFF8F3] hover:border-gray-300'
           }`}
         >
           <div className="flex items-center justify-between">
@@ -65,11 +65,11 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
           </div>
         </button>
 
-        {/* Pay in Full Card */}
-        <div className="relative mt-4">
-          {/* Best Value Badge - positioned outside the card */}
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-            <span className="bg-[#0BA360] text-white text-xs font-bold px-4 py-1.5 rounded-full whitespace-nowrap">
+        {/* Pay in Full Card - Light green background */}
+        <div className="relative">
+          {/* Best Value Badge - positioned at top right corner */}
+          <div className="absolute -top-3 right-4 z-10">
+            <span className="bg-[#0BA360] text-white text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap">
               BEST VALUE
             </span>
           </div>
@@ -78,37 +78,36 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
             onClick={() => onPaymentChange('full')}
             className={`w-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all ${
               selectedPayment === 'full'
-                ? 'border-[#0BA360] bg-green-50/30'
-                : 'border-[#E5E5E5] bg-white hover:border-gray-300'
+                ? 'border-[#0BA360] bg-[#F0FDF4]'
+                : 'border-[#E5E5E5] bg-[#F0FDF4] hover:border-gray-300'
             }`}
           >
+            <div className="flex items-center">
+              <div className="flex items-center gap-3 sm:gap-4">
+                {/* Radio/Check indicator */}
+                <div
+                  className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                    selectedPayment === 'full'
+                      ? 'bg-[#0BA360] border-[#0BA360]'
+                      : 'border-gray-300 bg-white'
+                  }`}
+                >
+                  {selectedPayment === 'full' && (
+                    <Check className="w-4 h-4 text-white" />
+                  )}
+                </div>
 
-          <div className="flex items-center">
-            <div className="flex items-center gap-3 sm:gap-4">
-              {/* Radio/Check indicator */}
-              <div
-                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                  selectedPayment === 'full'
-                    ? 'bg-[#0BA360] border-[#0BA360]'
-                    : 'border-gray-300 bg-white'
-                }`}
-              >
-                {selectedPayment === 'full' && (
-                  <Check className="w-4 h-4 text-white" />
-                )}
-              </div>
-
-              {/* Content */}
-              <div>
-                <p className="text-lg sm:text-xl font-bold text-[#1a1a1a]">
-                  Pay in Full: £{discountedPrice}
-                </p>
-                <p className="text-sm text-gray-600 mt-0.5">
-                  Save £{savings} (10% off)
-                </p>
+                {/* Content */}
+                <div>
+                  <p className="text-lg sm:text-xl font-bold text-[#1a1a1a]">
+                    Pay in Full: £{discountedPrice}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-0.5">
+                    Save £{savings} (10% off)
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
           </button>
         </div>
       </div>
