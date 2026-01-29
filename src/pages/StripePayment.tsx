@@ -21,6 +21,8 @@ interface PaymentData {
   excess: number;
   customerName: string;
   customerEmail: string;
+  isMonthly?: boolean;
+  monthlyPrice?: number;
 }
 
 const StripePayment: React.FC = () => {
@@ -217,10 +219,44 @@ const StripePayment: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Price Summary */}
+                  {/* Payment Type & Price Summary */}
                   <div className="pt-4 border-t border-border space-y-3">
-                    {savings > 0 && (
-                      <>
+                    {/* Payment Type Badge */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Payment type:</span>
+                      {paymentData.isMonthly ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
+                          <CreditCard className="w-3.5 h-3.5" />
+                          Monthly (0% APR)
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                          <Check className="w-3.5 h-3.5" />
+                          Pay in Full (Save 10%)
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Monthly Payment Details */}
+                    {paymentData.isMonthly && paymentData.monthlyPrice && (
+                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-orange-800 font-medium">First payment today</span>
+                          <span className="text-xl font-bold text-orange-700">£{paymentData.monthlyPrice.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm text-orange-600">
+                          <span>Then 11 more payments of £{paymentData.monthlyPrice.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm pt-2 border-t border-orange-200">
+                          <span className="text-muted-foreground">Total (12 payments)</span>
+                          <span className="font-semibold text-foreground">£{paymentData.originalAmount.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Pay in Full Details */}
+                    {!paymentData.isMonthly && savings > 0 && (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-2">
                         <div className="flex justify-between items-center text-muted-foreground">
                           <span>Original price</span>
                           <span className="line-through">£{paymentData.originalAmount.toFixed(2)}</span>
@@ -229,11 +265,19 @@ const StripePayment: React.FC = () => {
                           <span className="text-green-600 font-medium">10% discount</span>
                           <span className="text-green-600 font-medium">-£{savings.toFixed(2)}</span>
                         </div>
-                      </>
+                      </div>
                     )}
+
+                    {/* Total to Pay */}
                     <div className="flex justify-between items-center pt-3 border-t border-dashed border-border">
-                      <span className="text-lg font-bold text-foreground">Total to pay</span>
-                      <span className="text-2xl font-bold text-foreground">£{paymentData.amount.toFixed(2)}</span>
+                      <span className="text-lg font-bold text-foreground">
+                        {paymentData.isMonthly ? 'Pay today' : 'Total to pay'}
+                      </span>
+                      <span className="text-2xl font-bold text-foreground">
+                        £{paymentData.isMonthly && paymentData.monthlyPrice 
+                          ? paymentData.monthlyPrice.toFixed(2) 
+                          : paymentData.amount.toFixed(2)}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -314,7 +358,10 @@ const StripePayment: React.FC = () => {
                   {paymentData.clientSecret ? (
                     <StripeProvider clientSecret={paymentData.clientSecret}>
                       <StripePaymentForm
-                        amount={paymentData.amount}
+                        amount={paymentData.isMonthly && paymentData.monthlyPrice 
+                          ? paymentData.monthlyPrice 
+                          : paymentData.amount}
+                        isMonthly={paymentData.isMonthly}
                         onSuccess={handlePaymentSuccess}
                         onError={handlePaymentError}
                         isProcessing={isProcessing}
