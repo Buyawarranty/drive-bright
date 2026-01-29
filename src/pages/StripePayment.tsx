@@ -330,21 +330,23 @@ const StripePayment: React.FC = () => {
 
             {/* Right Column - Payment Form */}
             <div className="lg:sticky lg:top-24 lg:self-start">
-              <Card className="bg-white border border-border rounded-2xl shadow-lg overflow-hidden">
-                {/* Clean, Light Header */}
-                <div className="px-6 py-5 border-b border-border bg-gradient-to-r from-green-50 to-white">
+              {/* Flat minimal card - white bg, 1px grey border, no shadow */}
+              <div className="bg-white border border-[#DADADA] rounded-xl overflow-hidden">
+                {/* Flat Header - White bg, green accents */}
+                <div className="px-6 py-4 border-b border-[#DADADA] bg-white">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                        <Lock className="w-5 h-5 text-green-600" />
-                      </div>
+                      {/* Green lock icon - flat, no background */}
+                      <Lock className="w-6 h-6" style={{ color: '#0BA360' }} />
                       <div>
-                        <h2 className="font-bold text-foreground text-lg">Secure Payment</h2>
-                        <p className="text-sm text-muted-foreground">256-bit SSL encryption</p>
+                        <h2 className="font-semibold text-foreground text-base" style={{ color: '#0BA360' }}>
+                          Secure Payment
+                        </h2>
+                        <p className="text-xs text-muted-foreground">256-bit SSL encryption</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <span className="text-xs">Powered by</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-muted-foreground">Powered by</span>
                       <img 
                         src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" 
                         alt="Stripe" 
@@ -354,7 +356,8 @@ const StripePayment: React.FC = () => {
                   </div>
                 </div>
 
-                <CardContent className="p-6 sm:p-8">
+                {/* Payment Form Container */}
+                <div className="p-6">
                   {paymentData.clientSecret ? (
                     <StripeProvider clientSecret={paymentData.clientSecret}>
                       <StripePaymentForm
@@ -370,51 +373,45 @@ const StripePayment: React.FC = () => {
                     </StripeProvider>
                   ) : (
                     <div className="flex items-center justify-center py-12">
-                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                      <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#0BA360' }} />
                     </div>
                   )}
 
-                  {/* Reassurance Bar */}
-                  <div className="mt-6 pt-5 border-t border-border">
-                    <div className="grid grid-cols-3 gap-2 text-center">
-                      <div className="flex flex-col items-center gap-1.5">
-                        <div className="w-8 h-8 bg-green-50 rounded-full flex items-center justify-center">
-                          <Shield className="w-4 h-4 text-green-600" />
-                        </div>
+                  {/* Flat Green Trust Badges */}
+                  <div className="mt-6 pt-5 border-t border-[#DADADA]">
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div className="flex flex-col items-center gap-2">
+                        <Shield className="w-5 h-5" style={{ color: '#0BA360' }} strokeWidth={1.5} />
                         <span className="text-xs font-medium text-foreground">Instant cover</span>
                       </div>
-                      <div className="flex flex-col items-center gap-1.5">
-                        <div className="w-8 h-8 bg-orange-50 rounded-full flex items-center justify-center">
-                          <Clock className="w-4 h-4 text-orange-600" />
-                        </div>
+                      <div className="flex flex-col items-center gap-2">
+                        <Clock className="w-5 h-5" style={{ color: '#0BA360' }} strokeWidth={1.5} />
                         <span className="text-xs font-medium text-foreground">14-day refund</span>
                       </div>
-                      <div className="flex flex-col items-center gap-1.5">
-                        <div className="w-8 h-8 bg-green-50 rounded-full flex items-center justify-center">
-                          <Lock className="w-4 h-4 text-green-600" />
-                        </div>
+                      <div className="flex flex-col items-center gap-2">
+                        <Lock className="w-5 h-5" style={{ color: '#0BA360' }} strokeWidth={1.5} />
                         <span className="text-xs font-medium text-foreground">Secure checkout</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Policy Confirmation */}
-                  <div className="mt-5 text-center">
-                    <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-600" />
+                  {/* Policy Confirmation - Grey subtext */}
+                  <div className="mt-4 text-center">
+                    <p className="text-xs text-muted-foreground flex items-center justify-center gap-1.5">
+                      <CheckCircle className="w-3.5 h-3.5" style={{ color: '#0BA360' }} />
                       Your policy is emailed instantly
                     </p>
                   </div>
 
-                  {/* Payment Logos */}
-                  <div className="flex items-center justify-center gap-4 mt-6 pt-5 border-t border-border">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-5 opacity-70 hover:opacity-100 transition-opacity" />
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-7 opacity-70 hover:opacity-100 transition-opacity" />
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4 opacity-70 hover:opacity-100 transition-opacity" />
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple Pay" className="h-4 opacity-70 hover:opacity-100 transition-opacity" />
+                  {/* Payment Logos - Greyscale */}
+                  <div className="flex items-center justify-center gap-5 mt-5 pt-5 border-t border-[#DADADA]">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-4 grayscale opacity-60" />
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-6 grayscale opacity-60" />
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-3.5 grayscale opacity-60" />
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple Pay" className="h-4 opacity-50" />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           </div>
         </main>

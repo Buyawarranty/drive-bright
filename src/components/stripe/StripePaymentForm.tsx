@@ -71,8 +71,8 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {/* Payment Element - Stripe handles wallet buttons internally */}
-      <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+      {/* Payment Element - Flat design with grey border */}
+      <div className="bg-white rounded-lg border border-[#DADADA]">
         <PaymentElement 
           onReady={() => setIsReady(true)}
           options={{
@@ -83,30 +83,31 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         />
       </div>
 
-      {/* Error Message */}
+      {/* Error Message - Flat design */}
       {errorMessage && (
-        <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 p-4 bg-white border border-red-300 rounded-lg">
+          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-red-800">Payment failed</p>
+            <p className="text-sm font-medium text-red-700">Payment failed</p>
             <p className="text-sm text-red-600 mt-1">{errorMessage}</p>
           </div>
         </div>
       )}
 
-      {/* Security Notice */}
-      <div className="flex items-center gap-2 text-xs text-muted-foreground justify-center py-2">
-        <Lock className="w-3.5 h-3.5 text-green-600" />
+      {/* Security Notice - Green text */}
+      <div className="flex items-center gap-2 text-xs justify-center py-2" style={{ color: '#0BA360' }}>
+        <Lock className="w-3.5 h-3.5" style={{ color: '#0BA360' }} />
         <span>Secured by Stripe. Your card details are encrypted.</span>
       </div>
 
-      {/* Submit Button - Brand Orange */}
+      {/* Submit Button - Flat Brand Orange, no shadow */}
       <Button
         type="submit"
         disabled={!stripe || !elements || isProcessing || !isReady}
-        className="w-full h-14 text-lg font-bold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl"
+        className="w-full h-14 text-lg font-bold rounded-lg border-0 transition-opacity duration-200 hover:opacity-90 disabled:opacity-50"
         style={{
-          backgroundColor: '#E65100',
+          backgroundColor: '#FF6F00',
+          boxShadow: 'none',
         }}
       >
         {isProcessing ? (
