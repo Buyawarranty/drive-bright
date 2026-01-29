@@ -132,7 +132,7 @@ const StripePayment: React.FC = () => {
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50/30">
+      <div className="min-h-screen bg-slate-50">
         {/* Header */}
         <header className="bg-white border-b border-border sticky top-0 z-50">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4">
@@ -157,70 +157,68 @@ const StripePayment: React.FC = () => {
             
             {/* Left Column - Order Summary */}
             <div className="space-y-6">
-              {/* Plan Header */}
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
-                  <Shield className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Complete Your Purchase</h1>
-                  <p className="text-muted-foreground">Secure one-time payment</p>
-                </div>
-              </div>
-
-              {/* Order Summary Card */}
-              <Card className="border-2 border-primary/10 shadow-xl overflow-hidden">
-                <div className="bg-gradient-to-r from-primary/5 to-orange-50 px-6 py-4 border-b border-border">
-                  <h2 className="font-bold text-foreground flex items-center gap-2">
-                    <CreditCard className="w-5 h-5 text-primary" />
-                    Order Summary
-                  </h2>
-                </div>
-                <CardContent className="p-6 space-y-5">
-                  {/* Vehicle Info */}
-                  <div className="flex items-center gap-4 pb-5 border-b border-border">
-                    <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center">
-                      <Car className="w-6 h-6 text-slate-600" />
+              {/* Order Summary Card - matches Step 4 styling */}
+              <Card className="bg-white border border-border shadow-sm overflow-hidden">
+                <CardContent className="p-5 sm:p-6">
+                  {/* Header - same size as Step 4 */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 flex items-center justify-center">
+                        <Shield className="w-7 h-7 text-orange-500 fill-orange-100" />
+                      </div>
+                      <h2 className="text-xl sm:text-2xl font-bold text-foreground">
+                        Order Summary
+                      </h2>
                     </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-foreground text-lg">
+                  </div>
+
+                  {/* 14-day guarantee banner */}
+                  <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 mb-5 flex items-center gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <span className="text-sm text-green-800">Cancel anytime within 14 days for a full refund</span>
+                  </div>
+
+                  {/* Plan Details */}
+                  <div className="space-y-3 mb-5">
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-muted-foreground">Plan:</span>
+                      <span className="font-semibold text-foreground">{paymentData.planName}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-muted-foreground">Duration:</span>
+                      <span className="font-semibold text-foreground">{paymentData.duration}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-muted-foreground">Vehicle:</span>
+                      <span className="font-semibold text-foreground uppercase">
                         {paymentData.vehicleMake} {paymentData.vehicleModel}
-                      </p>
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-muted-foreground">Registration:</span>
                       <span 
-                        className="inline-block font-mono font-bold text-xs uppercase tracking-wider px-2 py-1 rounded border-2 border-black mt-1"
+                        className="font-mono font-bold text-xs uppercase px-2 py-1 rounded border-2 border-black tracking-wider"
                         style={{ backgroundColor: '#FCD34D' }}
                       >
                         {paymentData.vehicleReg}
                       </span>
                     </div>
-                  </div>
-
-                  {/* Plan Details */}
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Plan</span>
-                      <span className="font-semibold text-foreground">{paymentData.planName}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Duration</span>
-                      <span className="font-semibold text-foreground">{paymentData.duration}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Claim Limit</span>
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-muted-foreground">Claim Limit:</span>
                       <span className="font-semibold text-foreground">{displayClaimLimit(paymentData.claimLimit)}</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Labour Rate</span>
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-muted-foreground">Labour Rate:</span>
                       <span className="font-semibold text-foreground">£{paymentData.labourRate}/hour</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Excess</span>
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-muted-foreground">Excess:</span>
                       <span className="font-semibold text-foreground">£{paymentData.excess}</span>
                     </div>
                   </div>
 
                   {/* Price Summary */}
-                  <div className="pt-5 border-t border-border space-y-3">
+                  <div className="pt-4 border-t border-border space-y-3">
                     {savings > 0 && (
                       <>
                         <div className="flex justify-between items-center text-muted-foreground">
@@ -242,15 +240,11 @@ const StripePayment: React.FC = () => {
               </Card>
 
               {/* Trust Elements */}
-              <Card className="bg-green-50/50 border-green-200">
+              <Card className="bg-white border border-green-200">
                 <CardContent className="p-5">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Check className="w-5 h-5 text-green-600" />
-                    <span className="font-medium text-green-800">14-day money-back guarantee</span>
-                  </div>
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div className="flex items-center gap-2 text-green-700">
-                      <Shield className="w-4 h-4" />
+                      <Check className="w-4 h-4" />
                       <span>Instant cover</span>
                     </div>
                     <div className="flex items-center gap-2 text-green-700">
