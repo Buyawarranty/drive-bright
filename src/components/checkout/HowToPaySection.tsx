@@ -15,6 +15,8 @@ interface HowToPaySectionProps {
   savings: number;
   isLoading: boolean;
   onPayClick: () => void;
+  // Plan duration for Platinum label
+  planDurationMonths?: number;
   // Promo code props
   promoOpen: boolean;
   setPromoOpen: (open: boolean) => void;
@@ -41,6 +43,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
   savings,
   isLoading,
   onPayClick,
+  planDurationMonths = 12,
   promoOpen,
   setPromoOpen,
   promoCodeInput,
@@ -52,6 +55,8 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
   onRemoveDiscountCode,
   totalDiscountAmount,
 }) => {
+  // Calculate plan duration in years
+  const planYears = Math.round(planDurationMonths / 12);
   return (
     <section className="bg-white rounded-xl border border-[#E5E5E5] p-5 sm:p-6">
       {/* Header */}
@@ -95,6 +100,13 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
 
               {/* Content */}
               <div className="flex-1">
+                {/* Platinum Plan Label */}
+                <div className="flex items-center gap-2 mb-2">
+                  <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                  <span className="text-sm font-semibold text-[#1a1a1a]">
+                    Platinum {planYears} Year
+                  </span>
+                </div>
                 <p className="text-base font-bold text-[#1a1a1a]">Monthly</p>
                 <p className="text-2xl sm:text-3xl font-bold text-[#1a1a1a] mt-1">
                   £{monthlyPrice}<span className="text-base font-normal text-gray-600">/mo</span>
@@ -159,6 +171,13 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
 
               {/* Content */}
               <div className="flex-1">
+                {/* Platinum Plan Label */}
+                <div className="flex items-center gap-2 mb-2">
+                  <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                  <span className="text-sm font-semibold text-[#1a1a1a]">
+                    Platinum {planYears} Year
+                  </span>
+                </div>
                 <p className="text-base font-bold text-[#1a1a1a]">Pay in Full</p>
                 <p className="text-sm text-gray-500 line-through mt-1">Was £{originalPrice}</p>
                 <p className="text-2xl sm:text-3xl font-bold text-[#1a1a1a]">
