@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lock, Check, Tag, ChevronDown, ChevronUp } from 'lucide-react';
+import { Lock, Check, Tag, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -247,9 +247,27 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
 
       {/* Discount Applied Row */}
       {appliedDiscountCodes.length > 0 && (
-        <div className="mt-4 border border-[#E5E5E5] rounded-lg px-4 py-3 flex items-center justify-between">
-          <span className="font-semibold text-[#1a1a1a]">Discount Applied:</span>
-          <span className="text-[#FF6B00] font-bold text-lg">-£{totalDiscountAmount}</span>
+        <div className="mt-4 border border-[#0BA360] bg-green-50 rounded-lg px-4 py-3">
+          {appliedDiscountCodes.map((discount) => (
+            <div key={discount.code} className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Tag className="w-4 h-4 text-[#0BA360]" />
+                <span className="font-semibold text-[#1a1a1a]">{discount.code}</span>
+                <span className="text-sm text-gray-600">applied</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-[#0BA360] font-bold text-lg">-£{discount.discountAmount.toFixed(2)}</span>
+                <button
+                  type="button"
+                  onClick={() => onRemoveDiscountCode(discount.code)}
+                  className="p-1 hover:bg-red-100 rounded-full transition-colors"
+                  title="Remove promo code"
+                >
+                  <X className="w-4 h-4 text-red-500" />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
