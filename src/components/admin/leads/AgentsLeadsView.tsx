@@ -4,18 +4,21 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Lead, AdminUser } from '@/hooks/useLeads';
 import { useLeadDistribution } from '@/hooks/useLeadDistribution';
 import { PresenceBadge } from './distribution/PresenceBadge';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Users, ChevronDown, ChevronRight, Phone, Mail, Car, 
-  Calendar, UserCircle, AlertCircle, Info, Trash2, Save, Zap, UserPlus,
-  RotateCcw, Percent
+  Calendar, UserCircle, Hourglass, Info, Trash2, Save, Zap, UserPlus,
+  RotateCcw, Percent, ArrowRight, AlertCircle
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
@@ -57,12 +60,17 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   salesUsers,
 }) => {
   const [selectedAgent, setSelectedAgent] = useState<string>('all');
-  const [expandedAgents, setExpandedAgents] = useState<Set<string>>(new Set(['unassigned']));
+  const [expandedAgents, setExpandedAgents] = useState<Set<string>>(new Set(['awaiting_contact']));
   const [distributionMode, setDistributionMode] = useState<DistributionMode>('round_robin');
   const [editedCaps, setEditedCaps] = useState<Record<string, number>>({});
   const [editedPercentages, setEditedPercentages] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  
+  // Reassignment dialog state
+  const [reassignDialogOpen, setReassignDialogOpen] = useState(false);
+  const [agentToDelete, setAgentToDelete] = useState<{ id: string; name: string; leadCount: number } | null>(null);
+  const [reassignTargetAgent, setReassignTargetAgent] = useState<string>('');
 
   // Lead distribution hook for agent caps
   const {
@@ -139,11 +147,58 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
     setSaving(null);
   };
 
-  // Handle delete agent
-  const handleDeleteAgent = async (adminUserId: string) => {
-    setDeleting(adminUserId);
-    await deleteAgentFromDistribution(adminUserId);
-    setDeleting(null);
+  // Open reassignment dialog before deleting
+  const openReassignDialog = (adminUserId: string) => {
+    const agent = salesUsers.find(u => u.id === adminUserId);
+    const agentLeadCount = leads.filter(l => l.assigned_to === adminUserId).length;
+    
+    setAgentToDelete({
+      id: adminUserId,
+      name: getAgentName(agent),
+      leadCount: agentLeadCount
+    });
+    setReassignTargetAgent('');
+    setReassignDialogOpen(true);
+  };
+
+  // Handle delete agent with optional reassignment
+  const handleDeleteAgent = async () => {
+    if (!agentToDelete) return;
+    
+    setDeleting(agentToDelete.id);
+    
+    try {
+      // If reassignment target is selected, reassign leads first
+      if (reassignTargetAgent && agentToDelete.leadCount > 0) {
+        const { error: reassignError } = await supabase
+          .from('sales_leads')
+          .update({ assigned_to: reassignTargetAgent })
+          .eq('assigned_to', agentToDelete.id);
+        
+        if (reassignError) throw reassignError;
+        
+        const targetAgent = salesUsers.find(u => u.id === reassignTargetAgent);
+        toast({
+          title: 'Leads reassigned',
+          description: `${agentToDelete.leadCount} leads reassigned to ${getAgentName(targetAgent)}.`
+        });
+      }
+      
+      // Now delete from distribution
+      await deleteAgentFromDistribution(agentToDelete.id);
+      
+      setReassignDialogOpen(false);
+      setAgentToDelete(null);
+    } catch (error) {
+      console.error('Error during agent deletion/reassignment:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to complete the operation.',
+        variant: 'destructive'
+      });
+    } finally {
+      setDeleting(null);
+    }
   };
 
   // Get agent name
@@ -167,7 +222,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
     salesUsers.forEach(user => {
       groupMap.set(user.id, []);
     });
-    groupMap.set(null, []); // Unassigned
+    groupMap.set(null, []); // Awaiting Contact (previously unassigned)
     
     // Group leads
     leads.forEach(lead => {
@@ -181,17 +236,17 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
     // Convert to array with agent info
     const groups: AgentLeadGroup[] = [];
     
-    // Unassigned first
-    const unassignedLeads = groupMap.get(null) || [];
+    // Awaiting Contact first (previously unassigned)
+    const awaitingContactLeads = groupMap.get(null) || [];
     groups.push({
       agent: null,
       agentId: null,
-      agentName: 'Unassigned',
-      leads: unassignedLeads,
-      newCount: unassignedLeads.filter(l => l.status === 'new').length,
-      contactedCount: unassignedLeads.filter(l => l.status === 'contacted').length,
-      convertedCount: unassignedLeads.filter(l => l.status === 'converted' || l.is_paid).length,
-      lostCount: unassignedLeads.filter(l => l.status === 'lost').length,
+      agentName: 'Awaiting Contact',
+      leads: awaitingContactLeads,
+      newCount: awaitingContactLeads.filter(l => l.status === 'new').length,
+      contactedCount: awaitingContactLeads.filter(l => l.status === 'contacted').length,
+      convertedCount: awaitingContactLeads.filter(l => l.status === 'converted' || l.is_paid).length,
+      lostCount: awaitingContactLeads.filter(l => l.status === 'lost').length,
     });
 
     // Then agents sorted by lead count
@@ -209,7 +264,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
       });
     });
 
-    // Sort by total leads (descending), but keep unassigned first
+    // Sort by total leads (descending), but keep awaiting contact first
     groups.sort((a, b) => {
       if (a.agentId === null) return -1;
       if (b.agentId === null) return 1;
@@ -222,12 +277,12 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   // Filter by selected agent
   const filteredGroups = useMemo(() => {
     if (selectedAgent === 'all') return agentGroups;
-    if (selectedAgent === 'unassigned') return agentGroups.filter(g => g.agentId === null);
+    if (selectedAgent === 'awaiting_contact') return agentGroups.filter(g => g.agentId === null);
     return agentGroups.filter(g => g.agentId === selectedAgent);
   }, [agentGroups, selectedAgent]);
 
   const toggleExpand = (agentId: string | null) => {
-    const key = agentId || 'unassigned';
+    const key = agentId || 'awaiting_contact';
     setExpandedAgents(prev => {
       const newSet = new Set(prev);
       if (newSet.has(key)) {
@@ -240,7 +295,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   };
 
   const expandAll = () => {
-    setExpandedAgents(new Set(['unassigned', ...salesUsers.map(u => u.id)]));
+    setExpandedAgents(new Set(['awaiting_contact', ...salesUsers.map(u => u.id)]));
   };
 
   const collapseAll = () => {
@@ -256,7 +311,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
 
     return {
       totalLeads: leads.length,
-      unassigned: leads.filter(l => !l.assigned_to).length,
+      awaitingContact: leads.filter(l => !l.assigned_to).length,
       assigned: leads.filter(l => l.assigned_to).length,
       agentsWithLeads: agentGroups.filter(g => g.agentId && g.leads.length > 0).length,
       totalAgents: salesUsers.length,
@@ -266,6 +321,81 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Reassignment Dialog */}
+      <Dialog open={reassignDialogOpen} onOpenChange={setReassignDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-red-600" />
+              Remove Agent from Distribution
+            </DialogTitle>
+            <DialogDescription>
+              {agentToDelete && (
+                <>
+                  You are removing <strong>{agentToDelete.name}</strong> from lead distribution.
+                  {agentToDelete.leadCount > 0 && (
+                    <span className="block mt-2 text-amber-600 font-medium">
+                      This agent has {agentToDelete.leadCount} leads assigned. You can reassign them to another agent.
+                    </span>
+                  )}
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {agentToDelete && agentToDelete.leadCount > 0 && (
+            <div className="space-y-3 py-4">
+              <Label htmlFor="reassign-target" className="text-sm font-medium">
+                Reassign {agentToDelete.leadCount} leads to:
+              </Label>
+              <Select value={reassignTargetAgent} onValueChange={setReassignTargetAgent}>
+                <SelectTrigger id="reassign-target">
+                  <SelectValue placeholder="Select agent (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">
+                    <span className="text-muted-foreground">Don't reassign (leads become awaiting contact)</span>
+                  </SelectItem>
+                  {salesUsers
+                    .filter(u => u.id !== agentToDelete.id)
+                    .map(user => (
+                      <SelectItem key={user.id} value={user.id}>
+                        <div className="flex items-center gap-2">
+                          <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-medium">
+                            {user.first_name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
+                          </div>
+                          {getAgentName(user)}
+                        </div>
+                      </SelectItem>
+                    ))
+                  }
+                </SelectContent>
+              </Select>
+              
+              {reassignTargetAgent && (
+                <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 p-2 rounded">
+                  <ArrowRight className="h-4 w-4" />
+                  {agentToDelete.leadCount} leads will be reassigned to {getAgentName(salesUsers.find(u => u.id === reassignTargetAgent))}
+                </div>
+              )}
+            </div>
+          )}
+          
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setReassignDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteAgent}
+              disabled={deleting !== null}
+            >
+              {deleting ? 'Processing...' : 'Remove Agent'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
@@ -276,8 +406,11 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Unassigned</CardDescription>
-            <CardTitle className="text-2xl text-amber-600">{totalStats.unassigned}</CardTitle>
+            <CardDescription className="flex items-center gap-1.5">
+              <Hourglass className="h-3.5 w-3.5" />
+              Awaiting Contact
+            </CardDescription>
+            <CardTitle className="text-2xl text-amber-600">{totalStats.awaitingContact}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
@@ -518,38 +651,17 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                           </Tooltip>
                         </TableCell>
 
-                        {/* Delete */}
+                        {/* Delete - Opens reassignment dialog */}
                         <TableCell className="text-center">
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="h-8 w-8 p-0 text-muted-foreground hover:text-red-600 hover:bg-red-50"
-                                disabled={deleting === cap.admin_user_id}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Remove agent from distribution?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  This will remove <strong>{getAgentName(agent)}</strong> from the lead distribution system. 
-                                  They will no longer receive auto-assigned leads. This can be undone by adding them back.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction 
-                                  onClick={() => handleDeleteAgent(cap.admin_user_id)}
-                                  className="bg-red-600 hover:bg-red-700"
-                                >
-                                  Remove Agent
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-red-600 hover:bg-red-50"
+                            disabled={deleting === cap.admin_user_id}
+                            onClick={() => openReassignDialog(cap.admin_user_id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     );
@@ -580,7 +692,12 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Agents</SelectItem>
-              <SelectItem value="unassigned">Unassigned Only</SelectItem>
+              <SelectItem value="awaiting_contact">
+                <div className="flex items-center gap-2">
+                  <Hourglass className="h-3.5 w-3.5 text-amber-600" />
+                  Awaiting Contact Only
+                </div>
+              </SelectItem>
               <div className="h-px bg-border my-1" />
               {salesUsers.map(user => (
                 <SelectItem key={user.id} value={user.id}>
@@ -609,10 +726,10 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
       {/* Agent Lead Groups */}
       <div className="space-y-3">
         {filteredGroups.map((group) => {
-          const isExpanded = expandedAgents.has(group.agentId || 'unassigned');
+          const isExpanded = expandedAgents.has(group.agentId || 'awaiting_contact');
           
           return (
-            <Card key={group.agentId || 'unassigned'} className="overflow-hidden">
+            <Card key={group.agentId || 'awaiting_contact'} className="overflow-hidden">
               <Collapsible open={isExpanded} onOpenChange={() => toggleExpand(group.agentId)}>
                 <CollapsibleTrigger asChild>
                   <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors py-3">
@@ -630,7 +747,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                           </div>
                         ) : (
                           <div className="h-9 w-9 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center">
-                            <AlertCircle className="h-5 w-5" />
+                            <Hourglass className="h-5 w-5" />
                           </div>
                         )}
                         

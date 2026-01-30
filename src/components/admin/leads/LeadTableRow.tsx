@@ -250,12 +250,12 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       {/* Assigned To - Redesigned for better discoverability */}
       <TableCell className="sticky left-0 bg-inherit z-10" onClick={(e) => e.stopPropagation()}>
         <Select
-          value={lead.assigned_to || 'unassigned'}
+          value={lead.assigned_to || 'awaiting_contact'}
           onValueChange={(value) => {
             if (value === 'auto') {
               onAutoAssign();
             } else {
-              onAssign(value === 'unassigned' ? null : value);
+              onAssign(value === 'awaiting_contact' ? null : value);
             }
           }}
         >
@@ -282,7 +282,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                     </span>
                   </>
                 ) : (
-                  // Unassigned state - clear call to action
+                  // Awaiting Contact state - clear call to action
                   <>
                     <Plus className="h-3.5 w-3.5 flex-shrink-0" />
                     <span>Assign</span>
@@ -291,7 +291,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               </div>
             </SelectTrigger>
             <SelectContent className="bg-popover border shadow-lg z-50">
-              <SelectItem value="unassigned" className="text-muted-foreground">
+              <SelectItem value="awaiting_contact" className="text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <X className="h-3.5 w-3.5" />
                   <span>Remove assignment</span>
