@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lock, Check, Tag, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Lock, Check, Tag, ChevronDown, ChevronUp, X, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -92,9 +92,9 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
               <div className="flex-1">
                 {/* Platinum Plan Label */}
                 <div className="flex items-center gap-2 mb-2">
-                  <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                  <Shield className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
                   <span className="text-sm font-semibold text-[#1a1a1a]">
-                    Platinum {planYears} Year
+                    Platinum {planYears}-Year Cover
                   </span>
                 </div>
                 <p className="text-base font-bold text-[#1a1a1a]">Monthly</p>
@@ -163,9 +163,9 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
               <div className="flex-1">
                 {/* Platinum Plan Label */}
                 <div className="flex items-center gap-2 mb-2">
-                  <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                  <Shield className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
                   <span className="text-sm font-semibold text-[#1a1a1a]">
-                    Platinum {planYears} Year
+                    Platinum {planYears}-Year Cover
                   </span>
                 </div>
                 <p className="text-base font-bold text-[#1a1a1a]">Pay in Full</p>
