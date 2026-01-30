@@ -45,11 +45,11 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
 
   return (
     <div className="hidden lg:block w-[340px] flex-shrink-0">
-      <div className="sticky top-8 pb-24">
+      <div className="sticky top-4 pb-24">
         <Card className="border border-border bg-white rounded-xl shadow-sm overflow-hidden">
           <CardContent className="p-5">
-            {/* Header */}
-            <h2 className="text-xl font-bold text-[#1a1a1a] mb-4">Order Summary</h2>
+            {/* Header - aligned with main content heading */}
+            <h2 className="text-lg sm:text-xl font-bold text-[#1a1a1a] mb-4">Order Summary</h2>
             
             {/* Plan Details */}
             <div className="border-t border-border pt-4 space-y-2.5">
