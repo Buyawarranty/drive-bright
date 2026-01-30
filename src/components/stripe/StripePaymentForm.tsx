@@ -77,15 +77,13 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Payment Element - Flat design with grey border */}
       {/* Apple Pay/Google Pay will show first when available, then Card, then PayPal */}
-      {/* Revolut shows as fallback when wallets aren't available (handled by Stripe automatically) */}
       <div className="bg-white rounded-lg border border-[#DADADA]">
         <PaymentElement 
           onReady={() => setIsReady(true)}
           options={{
             layout: 'tabs',
             business: { name: 'BuyAWarranty' },
-            // Wallet methods (Apple Pay, Google Pay) are shown first automatically when available
-            // Card shows next, then alternative payment methods
+            // Payment method order: Apple Pay, Google Pay (wallets), then Card, then PayPal
             paymentMethodOrder: ['apple_pay', 'google_pay', 'card', 'paypal'],
             wallets: {
               applePay: 'auto',
