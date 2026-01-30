@@ -90,20 +90,28 @@ export const StripeProvider: React.FC<StripeProviderProps> = ({ children, client
   useEffect(() => {
     const loadStripeInstance = async () => {
       try {
+        console.log('🔐 StripeProvider: Starting to load Stripe...');
+        console.log('🔐 StripeProvider: Publishable key present:', !!stripePublishableKey);
+        console.log('🔐 StripeProvider: Client secret present:', !!clientSecret);
+        
         if (!stripePublishableKey) {
-          setError('Stripe publishable key not configured. Please add VITE_STRIPE_PUBLISHABLE_KEY to your environment.');
+          const errorMsg = 'Stripe publishable key not configured. Please add VITE_STRIPE_PUBLISHABLE_KEY to your environment.';
+          console.error('🔐 StripeProvider ERROR:', errorMsg);
+          setError(errorMsg);
           setIsLoading(false);
           return;
         }
 
         const stripeInstance = await getStripe();
         if (stripeInstance) {
+          console.log('🔐 StripeProvider: Stripe loaded successfully');
           setStripe(stripeInstance);
         } else {
+          console.error('🔐 StripeProvider ERROR: Failed to initialize Stripe - no instance returned');
           setError('Failed to initialize Stripe');
         }
       } catch (err) {
-        console.error('Error loading Stripe:', err);
+        console.error('🔐 StripeProvider ERROR: Error loading Stripe:', err);
         setError('Failed to load payment system');
       } finally {
         setIsLoading(false);
@@ -111,7 +119,9 @@ export const StripeProvider: React.FC<StripeProviderProps> = ({ children, client
     };
 
     loadStripeInstance();
-  }, []);
+  }, [clientSecret]);
+
+  console.log('🔐 StripeProvider render state:', { isLoading, hasStripe: !!stripe, hasError: !!error, hasClientSecret: !!clientSecret });
 
   if (isLoading) {
     return (
@@ -127,6 +137,10 @@ export const StripeProvider: React.FC<StripeProviderProps> = ({ children, client
       <div className="p-4 text-center text-red-600 bg-red-50 rounded-lg">
         <p className="font-medium">Payment system unavailable</p>
         <p className="text-sm mt-1">{error || 'Please contact support.'}</p>
+        <p className="text-xs mt-2 text-gray-500">
+          Debug: Key present: {stripePublishableKey ? 'Yes' : 'No'}, 
+          Client secret: {clientSecret ? 'Yes' : 'No'}
+        </p>
       </div>
     );
   }
