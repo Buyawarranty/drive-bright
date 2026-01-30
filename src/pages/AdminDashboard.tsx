@@ -240,12 +240,18 @@ const AdminDashboard = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'customers':
-        // Check if user has "own customers only" permission
+        // Check if user has "own customers only" permission explicitly set
         const hasOwnOnlyPermission = userPermissions && userPermissions['tab_customers_own-only'] === true;
+        const hasFullAccessPermission = userPermissions && userPermissions['tab_customers_own-only'] === false;
         const isNonAdminRole = userRole !== 'admin';
         
-        // If user has own-only permission OR is sales role, show restricted view
-        if ((hasOwnOnlyPermission && isNonAdminRole) || userRole === 'sales') {
+        // Priority: explicit permission setting > role-based default
+        // If user explicitly has own-only = false, they get full access regardless of role
+        // If user has own-only = true OR (is sales role AND no explicit permission set), show restricted view
+        if (hasFullAccessPermission) {
+          return <CustomersTab />;
+        }
+        if (hasOwnOnlyPermission || (userRole === 'sales' && !hasFullAccessPermission)) {
           return <SalesCustomerManagement />;
         }
         return <CustomersTab />;
