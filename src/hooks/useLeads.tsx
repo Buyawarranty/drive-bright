@@ -488,11 +488,23 @@ export const useLeads = () => {
     try {
       if (isAbandonedCart) {
         // Update abandoned_carts table - uses contacted_by field for assignment
+        // IMPORTANT: contacted_by references auth.users(id), so we need to get the user_id
+        // from admin_users, not the admin_users.id directly
+        let authUserId: string | null = null;
+        if (userId) {
+          const { data: adminUser } = await supabase
+            .from('admin_users')
+            .select('user_id')
+            .eq('id', userId)
+            .maybeSingle();
+          authUserId = adminUser?.user_id || null;
+        }
+        
         const { error } = await supabase
           .from('abandoned_carts')
           .update({
-            contacted_by: userId,
-            last_contacted_at: userId ? now : null,
+            contacted_by: authUserId,
+            last_contacted_at: authUserId ? now : null,
             updated_at: now
           })
           .eq('id', actualId);
