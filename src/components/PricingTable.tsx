@@ -1086,14 +1086,18 @@ const PricingTable: React.FC<PricingTableProps> = ({
       // Calculate boosted claim limit if boost addon is selected
       const effectiveClaimLimit = boostAddon ? selectedClaimLimit + 1000 : selectedClaimLimit;
       
-      // Use displayTotalPrice and displayMonthlyPrice to match what's shown in Step 3
+      // Use displayMonthlyPrice * 12 as totalPrice to match what's shown in Step 3
+      // Step 3 displays: "£X/month (12 payments)" with total = monthlyPrice × 12
+      // This ensures Step 4 receives the EXACT same values
+      const consistentTotalPrice = displayMonthlyPrice * 12;
+      
       onPlanSelected?.(
         selectedPlan.id, 
         selectedPaymentType, 
         selectedPlan.name,
         {
-          totalPrice: displayTotalPrice, 
-          monthlyPrice: displayMonthlyPrice, 
+          totalPrice: consistentTotalPrice, 
+          monthlyPrice: displayMonthlyPrice,
           voluntaryExcess,
           selectedAddOns: selectedAddOns[selectedPlan.id] || {},
           protectionAddOns: selectedProtectionAddOns,
