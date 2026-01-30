@@ -5,10 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Search, RefreshCw, Upload, Download, CalendarIcon, X } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Search, RefreshCw, Upload, Download, CalendarIcon, X, Filter } from 'lucide-react';
 import { LeadStatus } from '@/hooks/useLeads';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { DateRange } from 'react-day-picker';
+
+export type AssignmentFilter = 'all' | 'total' | 'awaiting_contact' | 'assigned';
 
 interface LeadsFiltersProps {
   filter: LeadStatus | 'all' | 'high_priority' | 'fake';
@@ -30,6 +33,13 @@ interface LeadsFiltersProps {
   };
   dateRange?: { from: Date | undefined; to: Date | undefined };
   onDateRangeChange?: (range: { from: Date | undefined; to: Date | undefined }) => void;
+  assignmentFilter?: AssignmentFilter;
+  onAssignmentFilterChange?: (filter: AssignmentFilter) => void;
+  assignmentCounts?: {
+    total: number;
+    awaiting_contact: number;
+    assigned: number;
+  };
 }
 
 export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
@@ -42,7 +52,10 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   onExport,
   leadCounts,
   dateRange,
-  onDateRangeChange
+  onDateRangeChange,
+  assignmentFilter = 'all',
+  onAssignmentFilterChange,
+  assignmentCounts
 }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
@@ -125,6 +138,50 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             />
           </div>
           
+          {/* Assignment Status Filter */}
+          {onAssignmentFilterChange && (
+            <Select value={assignmentFilter} onValueChange={(v) => onAssignmentFilterChange(v as AssignmentFilter)}>
+              <SelectTrigger className="w-[180px] h-9">
+                <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
+                <SelectValue placeholder="Filter by assignment" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  <span className="flex items-center justify-between w-full">
+                    All Leads
+                    {assignmentCounts && (
+                      <Badge variant="secondary" className="ml-2 h-5 px-1.5">{leadCounts.all}</Badge>
+                    )}
+                  </span>
+                </SelectItem>
+                <SelectItem value="total">
+                  <span className="flex items-center justify-between w-full">
+                    Total Leads
+                    {assignmentCounts && (
+                      <Badge variant="secondary" className="ml-2 h-5 px-1.5">{assignmentCounts.total}</Badge>
+                    )}
+                  </span>
+                </SelectItem>
+                <SelectItem value="awaiting_contact">
+                  <span className="flex items-center justify-between w-full">
+                    Awaiting Contact
+                    {assignmentCounts && (
+                      <Badge variant="secondary" className="ml-2 h-5 px-1.5 bg-amber-100">{assignmentCounts.awaiting_contact}</Badge>
+                    )}
+                  </span>
+                </SelectItem>
+                <SelectItem value="assigned">
+                  <span className="flex items-center justify-between w-full">
+                    Assigned
+                    {assignmentCounts && (
+                      <Badge variant="secondary" className="ml-2 h-5 px-1.5 bg-green-100">{assignmentCounts.assigned}</Badge>
+                    )}
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+
           {/* Date Range Filter */}
           <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
             <PopoverTrigger asChild>
