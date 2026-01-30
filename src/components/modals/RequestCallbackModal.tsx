@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Phone, Loader2, CheckCircle } from 'lucide-react';
+import { Phone, Loader2, CheckCircle, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,24 +17,17 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
 
   // UK phone validation - supports various formats
   const validateUKPhone = (phoneNumber: string): boolean => {
-    // Remove all spaces and dashes
     const cleaned = phoneNumber.replace(/[\s\-]/g, '');
-    
-    // UK phone patterns:
-    // 07xxx xxxxxx (mobile)
-    // 01xxx xxxxxx or 02xxx xxxxxx (landline)
-    // +44 7xxx xxxxxx
     const ukMobilePattern = /^(07\d{9}|(\+44|0044)7\d{9})$/;
     const ukLandlinePattern = /^(0[1-9]\d{8,9}|(\+44|0044)[1-9]\d{8,9})$/;
-    
     return ukMobilePattern.test(cleaned) || ukLandlinePattern.test(cleaned);
   };
 
   const formatPhoneForDisplay = (value: string): string => {
-    // Just clean and format for display
     const cleaned = value.replace(/[^\d+]/g, '');
     return cleaned;
   };
@@ -62,13 +55,12 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
     setError('');
     
     try {
-      // Insert into abandoned_carts as "Urgent Callback" lead
       const { error: insertError } = await supabase
         .from('abandoned_carts')
         .insert({
           phone: phone.trim(),
-          email: '', // Email left blank as per requirements
-          step_abandoned: 0, // Special step for callback requests
+          email: '',
+          step_abandoned: 0,
           contact_status: 'urgent_callback',
           contact_notes: 'Urgent Callback - Requested from homepage',
           full_name: 'Callback Request',
@@ -81,10 +73,9 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
       setIsSuccess(true);
       toast({
         title: "Request received!",
-        description: "We'll call you back as soon as possible.",
+        description: "We'll call you back shortly.",
       });
       
-      // Reset after 3 seconds and close
       setTimeout(() => {
         setIsSuccess(false);
         setPhone('');
@@ -114,55 +105,67 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="w-[90vw] max-w-md mx-auto bg-white rounded-xl p-6 sm:p-8">
-        <DialogHeader>
-          <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Phone className="w-6 h-6 text-brand-green" />
-            Request a call-back
+      <DialogContent className="w-[90vw] max-w-md mx-auto bg-white rounded-2xl p-6 sm:p-8 overflow-hidden">
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-full bg-brand-green/10 flex items-center justify-center animate-pulse">
+              <Phone className="w-5 h-5 text-brand-green" />
+            </div>
+            Request a call back
           </DialogTitle>
-          <DialogDescription className="text-gray-600 text-sm sm:text-base mt-2">
-            We'll give you a quick call to help with your vehicle or customise your warranty.
-            <br />
-            <span className="font-medium">Just enter your phone number — we'll do the rest.</span>
+          <DialogDescription className="text-gray-600 text-sm sm:text-base leading-relaxed">
+            Tell us your number and we'll give you a quick call to help with your vehicle or your warranty options.
           </DialogDescription>
         </DialogHeader>
         
         {isSuccess ? (
-          <div className="py-8 text-center space-y-4">
-            <CheckCircle className="w-16 h-16 text-brand-green mx-auto" />
+          <div className="py-10 text-center space-y-4 animate-in fade-in-0 zoom-in-95 duration-300">
+            <div className="relative inline-block">
+              <CheckCircle className="w-16 h-16 text-brand-green mx-auto" />
+              <Sparkles className="w-6 h-6 text-brand-orange absolute -top-1 -right-1 animate-bounce" />
+            </div>
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-gray-900">Request received!</h3>
-              <p className="text-gray-600">We'll get back to you as soon as possible.</p>
-              <p className="text-sm text-brand-orange font-medium">Your request has been marked as urgent.</p>
+              <h3 className="text-lg font-bold text-gray-900">We've got your request!</h3>
+              <p className="text-gray-600">We'll call you back shortly.</p>
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <form onSubmit={handleSubmit} className="mt-6 space-y-5">
             <div className="space-y-2">
-              <label htmlFor="callback-phone" className="text-sm font-medium text-gray-700">
+              <label htmlFor="callback-phone" className="text-sm font-semibold text-gray-700">
                 Phone number
               </label>
-              <div className="relative">
+              <div 
+                className={`relative transition-all duration-200 ${isFocused ? 'transform scale-[1.02]' : ''}`}
+              >
                 <Input
                   id="callback-phone"
                   type="tel"
                   value={phone}
                   onChange={handlePhoneChange}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
                   placeholder="07xxx xxxxxx"
-                  className={`h-12 text-lg pl-4 pr-4 ${error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
+                  className={`h-14 text-lg pl-4 pr-4 rounded-xl transition-all duration-200 ${
+                    error 
+                      ? 'border-red-500 focus:ring-red-500' 
+                      : isFocused 
+                        ? 'border-brand-green ring-2 ring-brand-green/20' 
+                        : 'border-gray-200'
+                  }`}
                   disabled={isSubmitting}
                   autoComplete="tel"
                 />
               </div>
               {error && (
-                <p className="text-sm text-red-500 font-medium">{error}</p>
+                <p className="text-sm text-red-500 font-medium animate-in slide-in-from-top-1 duration-200">{error}</p>
               )}
             </div>
             
             <Button
               type="submit"
               disabled={isSubmitting || !phone.trim()}
-              className="w-full h-12 bg-brand-orange hover:bg-brand-orange/90 text-white font-semibold text-base rounded-lg"
+              className="w-full h-14 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-base rounded-xl shadow-lg shadow-brand-orange/25 transition-all duration-200 hover:shadow-xl hover:shadow-brand-orange/30 hover:-translate-y-0.5 active:translate-y-0 disabled:shadow-none disabled:translate-y-0"
             >
               {isSubmitting ? (
                 <>
@@ -174,17 +177,17 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
               )}
             </Button>
             
-            <div className="text-center space-y-2 pt-2">
+            <div className="text-center space-y-1 pt-1">
               <p className="text-sm text-gray-600">
-                We'll get back to you as soon as possible.
+                We'll get back to you shortly.
               </p>
-              <p className="text-sm text-brand-orange font-medium">
-                Your request will be marked as urgent.
+              <p className="text-sm text-brand-green font-semibold">
+                Your request will be prioritised.
               </p>
             </div>
             
-            <p className="text-xs text-gray-500 text-center pt-2 border-t border-gray-100">
-              No email required. We only use your number to return your call.
+            <p className="text-xs text-gray-500 text-center pt-3 border-t border-gray-100">
+              No email needed. We only use your number to call you back.
             </p>
           </form>
         )}
