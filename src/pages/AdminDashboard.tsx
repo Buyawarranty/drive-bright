@@ -3,7 +3,7 @@ import ContactSubmissionsTab from '@/components/admin/ContactSubmissionsTab';
 import { AbandonedCartsTab } from '@/components/admin/AbandonedCartsTab';
 import { GetQuoteTab } from '@/components/admin/GetQuoteTab';
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SEOHead } from '@/components/SEOHead';
@@ -54,14 +54,17 @@ interface LeadForQuote {
 }
 
 const AdminDashboard = () => {
-  // Initialize with null to prevent rendering wrong tab before role check
-  const [activeTab, setActiveTab] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  // Initialize with URL tab param if present, otherwise null
+  const urlTab = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState<string | null>(urlTab);
   const [isCheckingRole, setIsCheckingRole] = useState(true);
   const [hasAdminAccess, setHasAdminAccess] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userPermissions, setUserPermissions] = useState<Record<string, boolean> | null>(null);
-  const [hasSetInitialTab, setHasSetInitialTab] = useState(false);
+  // If URL has tab param, consider initial tab already set
+  const [hasSetInitialTab, setHasSetInitialTab] = useState(!!urlTab);
   const [selectedLeadForQuote, setSelectedLeadForQuote] = useState<LeadForQuote | null>(null);
   const navigate = useNavigate();
   const { session, loading: authLoading } = useAuth();
@@ -75,7 +78,7 @@ const AdminDashboard = () => {
   // Track tab history for back navigation
   const [tabHistory, setTabHistory] = useState<string[]>([]);
 
-  // Handle tab changes and update history
+  // Handle tab changes and update history + URL
   const handleTabChange = useCallback((newTab: string, leadData?: LeadForQuote) => {
     setTabHistory(prev => {
       // Don't add duplicate consecutive tabs
@@ -89,7 +92,9 @@ const AdminDashboard = () => {
       setSelectedLeadForQuote(null);
     }
     setActiveTab(newTab);
-  }, []);
+    // Persist tab to URL so refresh maintains state
+    setSearchParams({ tab: newTab }, { replace: true });
+  }, [setSearchParams]);
 
   // Back navigation guard - prevent leaving admin dashboard
   useEffect(() => {
@@ -208,6 +213,8 @@ const AdminDashboard = () => {
         console.log('🎯 Setting default tab for role', primaryRole, ':', defaultTab);
         setActiveTab(defaultTab);
         setTabHistory([defaultTab]);
+        // Also update URL with the default tab
+        setSearchParams({ tab: defaultTab }, { replace: true });
       }
     } catch (error) {
       console.error('💥 Error checking admin access:', error);
