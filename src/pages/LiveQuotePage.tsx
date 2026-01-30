@@ -570,6 +570,14 @@ export default function LiveQuotePage() {
                 <h4 className="text-lg font-bold text-gray-900">Pay Monthly</h4>
               </Label>
 
+              {/* Plan Duration Display */}
+              <div className="flex items-center gap-2 mb-3">
+                <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                <span className="text-sm font-semibold text-gray-900">
+                  Platinum {Math.round(quote.cover.durationMonths / 12)} Year
+                </span>
+              </div>
+
               <div className="mb-4">
                 <div className="text-sm text-gray-600 font-bold">Total: £{bumperMonthlyTotal}</div>
                 <div className="text-2xl font-bold text-gray-900">£{quote.pricing.monthlyPrice}/month</div>
@@ -638,6 +646,14 @@ export default function LiveQuotePage() {
               <Label htmlFor="stripe-option" className="block cursor-pointer mb-3">
                 <h4 className="text-lg font-bold text-gray-900">Pay in Full</h4>
               </Label>
+
+              {/* Plan Duration Display */}
+              <div className="flex items-center gap-2 mb-3">
+                <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                <span className="text-sm font-semibold text-gray-900">
+                  Platinum {Math.round(quote.cover.durationMonths / 12)} Year
+                </span>
+              </div>
 
               <div className="mb-4">
                 <div className="text-sm text-gray-600 font-bold line-through">Was: £{bumperMonthlyTotal}</div>
@@ -897,7 +913,49 @@ export default function LiveQuotePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Name Row */}
+                {/* Email - Pre-populated from quote */}
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email *</Label>
+                  <div className="relative">
+                    <Input
+                      id="email"
+                      type="email"
+                      value={customerData.email}
+                      onChange={(e) => setCustomerData(prev => ({ ...prev, email: e.target.value }))}
+                      onBlur={() => handleFieldBlur('email')}
+                      className={`pr-10 ${shouldShowError('email') ? 'border-red-500' : isFieldValid('email') ? 'border-green-500' : ''}`}
+                    />
+                    {isFieldValid('email') && (
+                      <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                    )}
+                  </div>
+                  {shouldShowError('email') && (
+                    <p className="text-xs text-red-500">{fieldErrors.email}</p>
+                  )}
+                </div>
+
+                {/* Phone - Pre-populated from quote */}
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone *</Label>
+                  <div className="relative">
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={customerData.phone}
+                      onChange={(e) => setCustomerData(prev => ({ ...prev, phone: e.target.value }))}
+                      onBlur={() => handleFieldBlur('phone')}
+                      className={`pr-10 ${shouldShowError('phone') ? 'border-red-500' : isFieldValid('phone') ? 'border-green-500' : ''}`}
+                    />
+                    {isFieldValid('phone') && (
+                      <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                    )}
+                  </div>
+                  {shouldShowError('phone') && (
+                    <p className="text-xs text-red-500">{fieldErrors.phone}</p>
+                  )}
+                </div>
+
+                {/* Name Row - Pre-populated from quote */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="firstName">First Name *</Label>
@@ -937,49 +995,115 @@ export default function LiveQuotePage() {
                   </div>
                 </div>
 
-                {/* Contact Row */}
-                <div className="grid grid-cols-2 gap-4">
+                <Separator />
+
+                {/* Address Section - Postcode First */}
+                <div className="space-y-4">
+                  <Label className="font-semibold flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-orange-600" />
+                    Your Address
+                  </Label>
+
+                  {/* Postcode with auto-lookup */}
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
+                    <Label htmlFor="postcodeDisplay" className="flex items-center gap-2">
+                      Postcode *
+                      {isLookingUpPostcode && (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          Looking up...
+                        </span>
+                      )}
+                    </Label>
                     <div className="relative">
                       <Input
-                        id="email"
-                        type="email"
-                        value={customerData.email}
-                        onChange={(e) => setCustomerData(prev => ({ ...prev, email: e.target.value }))}
-                        onBlur={() => handleFieldBlur('email')}
-                        className={`pr-10 ${shouldShowError('email') ? 'border-red-500' : isFieldValid('email') ? 'border-green-500' : ''}`}
+                        id="postcodeDisplay"
+                        value={customerData.postcode}
+                        onChange={(e) => handlePostcodeChange(e.target.value)}
+                        onBlur={() => {
+                          handleFieldBlur('postcode');
+                          // Trigger lookup on blur if valid format
+                          if (postcodeRegexForLookup.test(customerData.postcode.trim()) && !customerData.city) {
+                            lookupPostcode(customerData.postcode);
+                          }
+                        }}
+                        className={`pr-10 ${shouldShowError('postcode') ? 'border-red-500' : isFieldValid('postcode') ? 'border-green-500' : ''}`}
+                        placeholder="e.g. SW1A 1AA"
                       />
-                      {isFieldValid('email') && (
+                      {isLookingUpPostcode ? (
+                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-500 animate-spin" />
+                      ) : isFieldValid('postcode') ? (
                         <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
-                      )}
+                      ) : null}
                     </div>
-                    {shouldShowError('email') && (
-                      <p className="text-xs text-red-500">{fieldErrors.email}</p>
+                    {shouldShowError('postcode') && (
+                      <p className="text-xs text-red-500">{fieldErrors.postcode}</p>
+                    )}
+                    {postcodeLookupError && !shouldShowError('postcode') && (
+                      <p className="text-xs text-amber-600">{postcodeLookupError}</p>
+                    )}
+                    {!isLookingUpPostcode && isFieldValid('postcode') && customerData.city && (
+                      <p className="text-xs text-green-600 flex items-center gap-1">
+                        <Check className="h-3 w-3" />
+                        Address details auto-filled
+                      </p>
                     )}
                   </div>
+
+                  {/* Address Line 1 */}
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone *</Label>
+                    <Label htmlFor="addressLine1">Address Line 1 *</Label>
                     <div className="relative">
                       <Input
-                        id="phone"
-                        type="tel"
-                        value={customerData.phone}
-                        onChange={(e) => setCustomerData(prev => ({ ...prev, phone: e.target.value }))}
-                        onBlur={() => handleFieldBlur('phone')}
-                        className={`pr-10 ${shouldShowError('phone') ? 'border-red-500' : isFieldValid('phone') ? 'border-green-500' : ''}`}
+                        id="addressLine1"
+                        value={customerData.addressLine1}
+                        onChange={(e) => setCustomerData(prev => ({ ...prev, addressLine1: e.target.value }))}
+                        onBlur={() => handleFieldBlur('addressLine1')}
+                        className={`pr-10 ${shouldShowError('addressLine1') ? 'border-red-500' : isFieldValid('addressLine1') ? 'border-green-500' : ''}`}
                       />
-                      {isFieldValid('phone') && (
+                      {isFieldValid('addressLine1') && (
                         <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
                       )}
                     </div>
-                    {shouldShowError('phone') && (
-                      <p className="text-xs text-red-500">{fieldErrors.phone}</p>
+                    {shouldShowError('addressLine1') && (
+                      <p className="text-xs text-red-500">{fieldErrors.addressLine1}</p>
+                    )}
+                  </div>
+
+                  {/* Address Line 2 */}
+                  <div className="space-y-2">
+                    <Label htmlFor="addressLine2">Address Line 2</Label>
+                    <Input
+                      id="addressLine2"
+                      value={customerData.addressLine2}
+                      onChange={(e) => setCustomerData(prev => ({ ...prev, addressLine2: e.target.value }))}
+                    />
+                  </div>
+
+                  {/* Town/City */}
+                  <div className="space-y-2">
+                    <Label htmlFor="city">Town/City *</Label>
+                    <div className="relative">
+                      <Input
+                        id="city"
+                        value={customerData.city}
+                        onChange={(e) => setCustomerData(prev => ({ ...prev, city: e.target.value }))}
+                        onBlur={() => handleFieldBlur('city')}
+                        className={`pr-10 ${shouldShowError('city') ? 'border-red-500' : isFieldValid('city') ? 'border-green-500' : ''}`}
+                      />
+                      {isFieldValid('city') && (
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
+                      )}
+                    </div>
+                    {shouldShowError('city') && (
+                      <p className="text-xs text-red-500">{fieldErrors.city}</p>
                     )}
                   </div>
                 </div>
 
-                {/* Mileage with dropdown like Step 4 */}
+                <Separator />
+
+                {/* Mileage - Last */}
                 <div className="space-y-2">
                   <Label htmlFor="mileage">Current Mileage *</Label>
                   <div className="flex gap-2">
@@ -1043,108 +1167,6 @@ export default function LiveQuotePage() {
                   )}
                 </div>
 
-                <Separator />
-
-                {/* Address Section */}
-                <div className="space-y-4">
-                  <Label className="font-semibold flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-orange-600" />
-                    Your Address
-                  </Label>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="addressLine1">Address Line 1 *</Label>
-                    <div className="relative">
-                      <Input
-                        id="addressLine1"
-                        value={customerData.addressLine1}
-                        onChange={(e) => setCustomerData(prev => ({ ...prev, addressLine1: e.target.value }))}
-                        onBlur={() => handleFieldBlur('addressLine1')}
-                        className={`pr-10 ${shouldShowError('addressLine1') ? 'border-red-500' : isFieldValid('addressLine1') ? 'border-green-500' : ''}`}
-                      />
-                      {isFieldValid('addressLine1') && (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
-                      )}
-                    </div>
-                    {shouldShowError('addressLine1') && (
-                      <p className="text-xs text-red-500">{fieldErrors.addressLine1}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="addressLine2">Address Line 2</Label>
-                    <Input
-                      id="addressLine2"
-                      value={customerData.addressLine2}
-                      onChange={(e) => setCustomerData(prev => ({ ...prev, addressLine2: e.target.value }))}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="city">Town/City *</Label>
-                      <div className="relative">
-                        <Input
-                          id="city"
-                          value={customerData.city}
-                          onChange={(e) => setCustomerData(prev => ({ ...prev, city: e.target.value }))}
-                          onBlur={() => handleFieldBlur('city')}
-                          className={`pr-10 ${shouldShowError('city') ? 'border-red-500' : isFieldValid('city') ? 'border-green-500' : ''}`}
-                        />
-                        {isFieldValid('city') && (
-                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
-                        )}
-                      </div>
-                      {shouldShowError('city') && (
-                        <p className="text-xs text-red-500">{fieldErrors.city}</p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="postcodeDisplay" className="flex items-center gap-2">
-                        Postcode *
-                        {isLookingUpPostcode && (
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                            Looking up...
-                          </span>
-                        )}
-                      </Label>
-                      <div className="relative">
-                        <Input
-                          id="postcodeDisplay"
-                          value={customerData.postcode}
-                          onChange={(e) => handlePostcodeChange(e.target.value)}
-                          onBlur={() => {
-                            handleFieldBlur('postcode');
-                            // Trigger lookup on blur if valid format
-                            if (postcodeRegexForLookup.test(customerData.postcode.trim()) && !customerData.city) {
-                              lookupPostcode(customerData.postcode);
-                            }
-                          }}
-                          className={`pr-10 ${shouldShowError('postcode') ? 'border-red-500' : isFieldValid('postcode') ? 'border-green-500' : ''}`}
-                          placeholder="e.g. SW1A 1AA"
-                        />
-                        {isLookingUpPostcode ? (
-                          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-500 animate-spin" />
-                        ) : isFieldValid('postcode') ? (
-                          <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
-                        ) : null}
-                      </div>
-                      {shouldShowError('postcode') && (
-                        <p className="text-xs text-red-500">{fieldErrors.postcode}</p>
-                      )}
-                      {postcodeLookupError && !shouldShowError('postcode') && (
-                        <p className="text-xs text-amber-600">{postcodeLookupError}</p>
-                      )}
-                      {!isLookingUpPostcode && isFieldValid('postcode') && customerData.city && (
-                        <p className="text-xs text-green-600 flex items-center gap-1">
-                          <Check className="h-3 w-3" />
-                          Address details auto-filled
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
               </CardContent>
             </Card>
 
