@@ -46,6 +46,7 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
     updateLeadNotes,
     markContactedAt,
     logActivity,
+    fetchLeads,
   } = useLeads();
 
   // Use fetched data or props
@@ -313,6 +314,7 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
               mileage: lead.mileage,
               plan_interest: lead.plan_interest,
             })}
+            onRefresh={fetchLeads}
           />
         </TabsContent>
 

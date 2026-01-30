@@ -16,10 +16,11 @@ import {
 } from '@/components/ui/select';
 import { Lead, LeadTag, LeadStatus } from '@/hooks/useLeads';
 import { 
-  Phone, Mail, MessageSquare, FileText, 
-  Clock, AlertTriangle, Search, Users, Minus, Plus
+  Phone, Mail, FileText, 
+  Clock, AlertTriangle, Search, Users, Minus, Plus, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { format, isToday, isPast, formatDistanceToNow } from 'date-fns';
+import { LeadDetailsPanel } from '../leads/LeadDetailsPanel';
 
 interface LeadHandlers {
   updateLeadStatus: (leadId: string, status: LeadStatus) => Promise<void>;
@@ -36,6 +37,7 @@ interface SalesAgentLeadsTableProps {
   currentUserId: string;
   handlers: LeadHandlers;
   onSendQuote: (lead: Lead) => void;
+  onRefresh?: () => void;
 }
 
 export const SalesAgentLeadsTable: React.FC<SalesAgentLeadsTableProps> = ({
@@ -43,10 +45,12 @@ export const SalesAgentLeadsTable: React.FC<SalesAgentLeadsTableProps> = ({
   tags,
   currentUserId,
   handlers,
-  onSendQuote
+  onSendQuote,
+  onRefresh
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
   const filteredLeads = leads.filter(lead => {
     const matchesSearch = !searchTerm || 
@@ -60,6 +64,10 @@ export const SalesAgentLeadsTable: React.FC<SalesAgentLeadsTableProps> = ({
     
     return matchesSearch && matchesStatus;
   });
+
+  const handleToggleExpand = useCallback((leadId: string) => {
+    setExpandedLead(prev => prev === leadId ? null : leadId);
+  }, []);
 
   const getUrgencyBadge = (lead: Lead) => {
     if (!lead.next_action_date) return null;
@@ -134,11 +142,12 @@ export const SalesAgentLeadsTable: React.FC<SalesAgentLeadsTableProps> = ({
           </Select>
         </div>
 
-        {/* Table - Restricted columns for sales agents */}
+        {/* Table - With expandable rows for notes */}
         <div className="rounded-md border overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[40px]"></TableHead>
                 <TableHead>Customer</TableHead>
                 <TableHead>Contact</TableHead>
                 <TableHead>Vehicle</TableHead>
@@ -150,117 +159,154 @@ export const SalesAgentLeadsTable: React.FC<SalesAgentLeadsTableProps> = ({
             </TableHeader>
             <TableBody>
               {filteredLeads.map((lead) => (
-                <TableRow key={lead.id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">
-                        {lead.first_name || 'Unknown'} {lead.last_name || ''}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {lead.plan_interest || 'No plan specified'}
-                      </p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <p className="text-sm">{lead.email}</p>
-                      {lead.phone && (
-                        <p className="text-xs text-muted-foreground">{lead.phone}</p>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {lead.vehicle_reg ? (
-                      <div>
-                        <p className="font-mono text-sm">{lead.vehicle_reg}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {lead.vehicle_make} {lead.vehicle_model}
-                        </p>
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-center gap-1">
+                <React.Fragment key={lead.id}>
+                  <TableRow 
+                    className={expandedLead === lead.id ? 'bg-muted/50' : 'cursor-pointer hover:bg-muted/30'}
+                    onClick={() => handleToggleExpand(lead.id)}
+                  >
+                    <TableCell>
                       <Button
                         size="icon"
                         variant="ghost"
                         className="h-6 w-6"
-                        onClick={() => handlers.updateCallCount?.(lead.id, -1)}
-                        disabled={!lead.call_count || lead.call_count <= 0}
-                      >
-                        <Minus className="h-3 w-3" />
-                      </Button>
-                      <span className="w-6 text-center font-medium text-sm">
-                        {lead.call_count || 0}
-                      </span>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-6 w-6 text-green-600 hover:text-green-700 hover:bg-green-50"
-                        onClick={() => handlers.updateCallCount?.(lead.id, 1)}
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Select 
-                      value={lead.status} 
-                      onValueChange={(value) => handlers.updateLeadStatus(lead.id, value as LeadStatus)}
-                    >
-                      <SelectTrigger className="w-[130px] h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="new">New</SelectItem>
-                        <SelectItem value="contacted">Contacted</SelectItem>
-                        <SelectItem value="follow_up">Follow Up</SelectItem>
-                        <SelectItem value="quoted">Quoted</SelectItem>
-                        <SelectItem value="converted">Converted</SelectItem>
-                        <SelectItem value="lost">Lost</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    {getUrgencyBadge(lead)}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        className="h-8 w-8"
-                        onClick={() => {
-                          if (lead.phone) window.open(`tel:${lead.phone}`);
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleExpand(lead.id);
                         }}
-                        disabled={!lead.phone}
-                        title="Call"
                       >
-                        <Phone className="h-4 w-4" />
+                        {expandedLead === lead.id ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
                       </Button>
-                      <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        className="h-8 w-8"
-                        onClick={() => window.open(`mailto:${lead.email}`)}
-                        title="Email"
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">
+                          {lead.first_name || 'Unknown'} {lead.last_name || ''}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {lead.plan_interest || 'No plan specified'}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <p className="text-sm">{lead.email}</p>
+                        {lead.phone && (
+                          <p className="text-xs text-muted-foreground">{lead.phone}</p>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {lead.vehicle_reg ? (
+                        <div>
+                          <p className="font-mono text-sm">{lead.vehicle_reg}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {lead.vehicle_make} {lead.vehicle_model}
+                          </p>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-center gap-1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6"
+                          onClick={() => handlers.updateCallCount?.(lead.id, -1)}
+                          disabled={!lead.call_count || lead.call_count <= 0}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <span className="w-6 text-center font-medium text-sm">
+                          {lead.call_count || 0}
+                        </span>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6 text-green-600 hover:text-green-700 hover:bg-green-50"
+                          onClick={() => handlers.updateCallCount?.(lead.id, 1)}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Select 
+                        value={lead.status} 
+                        onValueChange={(value) => handlers.updateLeadStatus(lead.id, value as LeadStatus)}
                       >
-                        <Mail className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        className="h-8 gap-1"
-                        onClick={() => onSendQuote(lead)}
-                      >
-                        <FileText className="h-3 w-3" />
-                        Quote
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
+                        <SelectTrigger className="w-[130px] h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="new">New</SelectItem>
+                          <SelectItem value="contacted">Contacted</SelectItem>
+                          <SelectItem value="follow_up">Follow Up</SelectItem>
+                          <SelectItem value="quoted">Quoted</SelectItem>
+                          <SelectItem value="converted">Converted</SelectItem>
+                          <SelectItem value="lost">Lost</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      {getUrgencyBadge(lead)}
+                    </TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-1">
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          className="h-8 w-8"
+                          onClick={() => {
+                            if (lead.phone) window.open(`tel:${lead.phone}`);
+                          }}
+                          disabled={!lead.phone}
+                          title="Call"
+                        >
+                          <Phone className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          className="h-8 w-8"
+                          onClick={() => window.open(`mailto:${lead.email}`)}
+                          title="Email"
+                        >
+                          <Mail className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          className="h-8 gap-1"
+                          onClick={() => onSendQuote(lead)}
+                        >
+                          <FileText className="h-3 w-3" />
+                          Quote
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                  
+                  {/* Expanded row with LeadDetailsPanel */}
+                  {expandedLead === lead.id && (
+                    <TableRow>
+                      <TableCell colSpan={8} className="p-0 bg-muted/20">
+                        <LeadDetailsPanel
+                          lead={lead}
+                          onUpdateNotes={handlers.updateLeadNotes}
+                          onLogActivity={handlers.logActivity}
+                          onRefresh={onRefresh}
+                          onNavigateToQuote={() => onSendQuote(lead)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
               ))}
             </TableBody>
           </Table>
