@@ -553,7 +553,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                       onClick={() => setShowCallbackModal(true)}
                       className="text-brand-orange hover:text-brand-orange/80 font-semibold underline underline-offset-2 transition-colors"
                     >
-                      request a callback
+                      Request a callback
                     </button>
                   </div>
                 </div>
