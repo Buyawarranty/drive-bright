@@ -240,9 +240,17 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
 
     // Filter by active/archive tab
     if (activeTab === 'active') {
-      filtered = filtered.filter(c => c.status !== 'cancelled' && c.status !== 'inactive');
+      // Active tab shows active, pending, and refunded (refunded customers should still be visible!)
+      filtered = filtered.filter(c => {
+        const status = c.status?.toLowerCase();
+        return status !== 'cancelled' && status !== 'inactive';
+      });
     } else {
-      filtered = filtered.filter(c => c.status === 'cancelled' || c.status === 'inactive');
+      // Archive shows cancelled and inactive
+      filtered = filtered.filter(c => {
+        const status = c.status?.toLowerCase();
+        return status === 'cancelled' || status === 'inactive';
+      });
     }
 
     // Search filter
@@ -341,7 +349,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
   };
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case 'active':
         return <Badge className="bg-green-500 text-white">Active</Badge>;
       case 'inactive':
@@ -350,6 +358,8 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
         return <Badge className="bg-yellow-500 text-white">Pending</Badge>;
       case 'cancelled':
         return <Badge variant="destructive">Cancelled</Badge>;
+      case 'refunded':
+        return <Badge className="bg-amber-500 text-white">💰 Refunded</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }

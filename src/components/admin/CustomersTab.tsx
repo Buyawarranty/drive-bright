@@ -2263,6 +2263,7 @@ export const CustomersTab = () => {
                     <SelectItem value="inactive">Inactive</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="cancelled">Cancelled</SelectItem>
+                    <SelectItem value="refunded">Refunded</SelectItem>
                     <SelectItem value="claim_made">Claim Made</SelectItem>
                   </SelectContent>
                 </Select>
@@ -2513,7 +2514,13 @@ export const CustomersTab = () => {
               </TableRow>
             ) : (
               filteredCustomers.map((customer) => (
-                <TableRow key={customer.id}>
+                <TableRow 
+                  key={customer.id}
+                  className={cn(
+                    customer.status?.toLowerCase() === 'cancelled' && 'bg-red-50/50 border-l-4 border-l-red-400',
+                    customer.status?.toLowerCase() === 'refunded' && 'bg-amber-50/50 border-l-4 border-l-amber-400'
+                  )}
+                >
                   <TableCell>
                     <Checkbox
                       checked={selectedCustomers.has(customer.id)}
@@ -3038,6 +3045,8 @@ Please log in and change your password after first login.`;
                                             <SelectItem value="Active">Active</SelectItem>
                                             <SelectItem value="Inactive">Inactive</SelectItem>
                                             <SelectItem value="Pending">Pending</SelectItem>
+                                            <SelectItem value="Cancelled">Cancelled</SelectItem>
+                                            <SelectItem value="Refunded">Refunded</SelectItem>
                                           </SelectContent>
                                         </Select>
                                       </div>
@@ -3998,7 +4007,14 @@ Please log in and change your password after first login.`;
                      </div>
                    </TableCell>
                   <TableCell>
-                    <Badge variant={customer.status === 'Active' ? 'default' : 'destructive'}>
+                    <Badge 
+                      variant={customer.status === 'Active' ? 'default' : 'destructive'}
+                      className={cn(
+                        customer.status?.toLowerCase() === 'refunded' && 'bg-amber-500 hover:bg-amber-600 text-white',
+                        customer.status?.toLowerCase() === 'cancelled' && 'bg-red-500 hover:bg-red-600 text-white'
+                      )}
+                    >
+                      {customer.status?.toLowerCase() === 'refunded' && '💰 '}
                       {customer.status}
                     </Badge>
                    </TableCell>
