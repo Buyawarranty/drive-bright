@@ -84,20 +84,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 : 'border-[#E5E5E5] bg-white hover:border-gray-300'
             }`}
           >
-            <div className="flex items-start gap-3">
-              {/* Radio/Check indicator */}
-              <div
-                className={`w-6 h-6 mt-0.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                  selectedPayment === 'monthly'
-                    ? 'bg-[#FF6B00] border-[#FF6B00]'
-                    : 'border-gray-300 bg-white'
-                }`}
-              >
-                {selectedPayment === 'monthly' && (
-                  <Check className="w-4 h-4 text-white" />
-                )}
-              </div>
-
+            <div className="flex items-start justify-between gap-3">
               {/* Content */}
               <div className="flex-1">
                 {/* Platinum Plan Label */}
@@ -134,6 +121,19 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                   />
                 </div>
               </div>
+
+              {/* Radio/Check indicator - on right */}
+              <div
+                className={`w-6 h-6 mt-0.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  selectedPayment === 'monthly'
+                    ? 'bg-[#FF6B00] border-[#FF6B00]'
+                    : 'border-gray-300 bg-white'
+                }`}
+              >
+                {selectedPayment === 'monthly' && (
+                  <Check className="w-4 h-4 text-white" />
+                )}
+              </div>
             </div>
           </button>
         </div>
@@ -155,20 +155,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 : 'border-[#E5E5E5] bg-white hover:border-gray-300'
             }`}
           >
-            <div className="flex items-start gap-3">
-              {/* Radio/Check indicator */}
-              <div
-                className={`w-6 h-6 mt-0.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                  selectedPayment === 'full'
-                    ? 'bg-[#0BA360] border-[#0BA360]'
-                    : 'border-gray-300 bg-white'
-                }`}
-              >
-                {selectedPayment === 'full' && (
-                  <Check className="w-4 h-4 text-white" />
-                )}
-              </div>
-
+            <div className="flex items-start justify-between gap-3">
               {/* Content */}
               <div className="flex-1">
                 {/* Platinum Plan Label */}
@@ -201,6 +188,19 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 <div className="mt-4">
                   <span className="text-[#635BFF] font-semibold text-sm">stripe</span>
                 </div>
+              </div>
+
+              {/* Radio/Check indicator - on right */}
+              <div
+                className={`w-6 h-6 mt-0.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  selectedPayment === 'full'
+                    ? 'bg-[#0BA360] border-[#0BA360]'
+                    : 'border-gray-300 bg-white'
+                }`}
+              >
+                {selectedPayment === 'full' && (
+                  <Check className="w-4 h-4 text-white" />
+                )}
               </div>
             </div>
           </button>
