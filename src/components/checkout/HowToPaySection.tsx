@@ -277,15 +277,14 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
           <Button
             onClick={onPayClick}
             disabled={isLoading || !selectedPayment}
-            className="w-full py-6 text-lg font-bold rounded-xl animate-breathing"
-            style={{
-              backgroundColor: !selectedPayment 
-                ? '#CCCCCC' 
+            className={`w-full py-6 text-lg font-bold rounded-xl animate-breathing hover:opacity-90 ${
+              !selectedPayment 
+                ? 'bg-gray-400' 
                 : selectedPayment === 'full'
-                ? '#0BA360'
-                : '#FF6B00',
-              color: '#FFFFFF',
-            }}
+                ? 'bg-[#0BA360] hover:bg-[#099355]'
+                : 'bg-[#FF6B00] hover:bg-[#e56000]'
+            }`}
+            style={{ color: '#FFFFFF' }}
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
