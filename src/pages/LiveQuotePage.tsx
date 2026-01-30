@@ -934,7 +934,7 @@ export default function LiveQuotePage() {
                           });
                         }
                       }}
-                      className="h-10 px-3 py-2 rounded-md border border-gray-200 bg-[#F5F5F5] text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 cursor-pointer"
+                      className="h-10 px-3 py-2 rounded-md border border-gray-200 bg-[#F5F5F5] text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-200 cursor-pointer"
                     >
                       <option value="">Quick select</option>
                       {mileageOptions.map(value => (
