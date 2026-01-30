@@ -1701,9 +1701,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           {/* ==================== HOW TO PAY SECTION (BOTTOM) ==================== */}
           <HowToPaySection
             selectedPayment={selectedPayment}
-            onPaymentChange={(payment) => {
+            onPaymentChange={async (payment) => {
               setSelectedPayment(payment);
               setPaymentError('');
+              
+              // Auto-trigger Stripe checkout when "Pay in Full" is selected
+              if (payment === 'full') {
+                // Small delay to allow state to update
+                setTimeout(() => {
+                  processPayment();
+                }, 100);
+              }
             }}
             monthlyPrice={discountedMonthlyPrice}
             totalPrice={bumperTotalPrice}
