@@ -8,3 +8,5 @@ export { default as LabourRateSelector } from './LabourRateSelector';
 export { default as ExtrasSelector } from './ExtrasSelector';
 export { default as CoverageTransparency } from './CoverageTransparency';
 export { default as StickyFooter } from './StickyFooter';
+export { default as PriceHelpPanel } from './PriceHelpPanel';
+export { default as PriceHelpTrigger } from './PriceHelpTrigger';
