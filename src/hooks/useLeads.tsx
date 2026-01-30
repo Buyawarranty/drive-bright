@@ -144,7 +144,7 @@ export const useLeads = () => {
     try {
       setLoading(true);
       
-      // Use Promise.all to fetch both data sources in parallel for better performance
+      // Use Promise.all to fetch all data sources in parallel for better performance
       const [salesLeadsResult, abandonedCartsResult] = await Promise.all([
         // Fetch sales_leads with optimized column selection
         (async () => {
@@ -196,6 +196,27 @@ export const useLeads = () => {
       const { data: abandonedCartsData, error: cartsError } = abandonedCartsResult;
       if (cartsError) throw cartsError;
 
+      // Build a map of auth.user_id -> admin_user for abandoned cart assignments
+      // contacted_by stores auth.users.id, we need to map to admin_users
+      const contactedByIds = (abandonedCartsData || [])
+        .filter((cart: any) => cart.contacted_by)
+        .map((cart: any) => cart.contacted_by);
+      
+      let adminUsersByAuthId: Record<string, any> = {};
+      if (contactedByIds.length > 0) {
+        const { data: adminUsersForCarts } = await supabase
+          .from('admin_users')
+          .select('id, user_id, first_name, last_name, email')
+          .in('user_id', contactedByIds);
+        
+        // Create map: auth.user_id -> admin_user
+        (adminUsersForCarts || []).forEach((user: any) => {
+          if (user.user_id) {
+            adminUsersByAuthId[user.user_id] = user;
+          }
+        });
+      }
+
       // Get IDs of abandoned carts already linked to sales_leads
       const linkedCartIds = new Set(
         (salesLeadsData || [])
@@ -218,6 +239,9 @@ export const useLeads = () => {
           const fullName = cart.full_name || '';
           const isFakeLead = isTestLead(fullName, cart.phone) || cart.contact_status === 'fake_lead';
           
+          // Get the admin user from the contacted_by auth.user_id
+          const assignedAdminUser = cart.contacted_by ? adminUsersByAuthId[cart.contacted_by] : null;
+          
           return {
             id: `cart_${cart.id}`,
             first_name: fullName.split(' ')[0] || null,
@@ -229,44 +253,51 @@ export const useLeads = () => {
             status: isFakeLead ? 'fake_lead' as LeadStatus : 
                     cart.contact_status === 'contacted' ? 'contacted' as LeadStatus : 'new' as LeadStatus,
             priority: 'medium' as LeadPriority,
-          priority_score: 0,
-          plan_interest: cart.plan_name,
-          cart_value: null,
-          quote_amount: null,
-          vehicle_reg: cart.vehicle_reg,
-          vehicle_make: cart.vehicle_make,
-          vehicle_model: cart.vehicle_model,
-          vehicle_year: cart.vehicle_year,
-          vehicle_type: cart.vehicle_type,
-          mileage: cart.mileage,
-          assigned_to: cart.contacted_by,
-          assigned_at: cart.last_contacted_at,
-          next_action_type: null,
-          next_action_date: null,
-          follow_up_status: 'none',
-          last_activity_date: cart.updated_at,
-          last_contacted_at: cart.last_contacted_at,
-          notes: cart.contact_notes,
-          converted_at: null,
-          lost_at: null,
-          lost_reason: null,
-          abandoned_cart_id: cart.id,
-          created_at: cart.created_at,
-          updated_at: cart.updated_at,
-          plan_name: cart.plan_name,
-          payment_type: cart.payment_type,
-          step_abandoned: cart.step_abandoned,
-          contact_status: cart.contact_status,
-          is_from_abandoned_cart: true,
-          is_paid: false,
-          payment_amount: null,
-          payment_method: null,
-          payment_date: null,
-          step_two_completed_at: null,
-          call_count: cart.call_count || 0,
-          cart_metadata: cart.cart_metadata || null,
-          assigned_user: null,
-          tags: []
+            priority_score: 0,
+            plan_interest: cart.plan_name,
+            cart_value: null,
+            quote_amount: null,
+            vehicle_reg: cart.vehicle_reg,
+            vehicle_make: cart.vehicle_make,
+            vehicle_model: cart.vehicle_model,
+            vehicle_year: cart.vehicle_year,
+            vehicle_type: cart.vehicle_type,
+            mileage: cart.mileage,
+            // Use admin_users.id for assigned_to (consistent with sales_leads)
+            assigned_to: assignedAdminUser?.id || null,
+            assigned_at: cart.last_contacted_at,
+            next_action_type: null,
+            next_action_date: null,
+            follow_up_status: 'none',
+            last_activity_date: cart.updated_at,
+            last_contacted_at: cart.last_contacted_at,
+            notes: cart.contact_notes,
+            converted_at: null,
+            lost_at: null,
+            lost_reason: null,
+            abandoned_cart_id: cart.id,
+            created_at: cart.created_at,
+            updated_at: cart.updated_at,
+            plan_name: cart.plan_name,
+            payment_type: cart.payment_type,
+            step_abandoned: cart.step_abandoned,
+            contact_status: cart.contact_status,
+            is_from_abandoned_cart: true,
+            is_paid: false,
+            payment_amount: null,
+            payment_method: null,
+            payment_date: null,
+            step_two_completed_at: null,
+            call_count: cart.call_count || 0,
+            cart_metadata: cart.cart_metadata || null,
+            // Set the assigned_user from our lookup
+            assigned_user: assignedAdminUser ? {
+              id: assignedAdminUser.id,
+              first_name: assignedAdminUser.first_name,
+              last_name: assignedAdminUser.last_name,
+              email: assignedAdminUser.email
+            } : null,
+            tags: []
           };
         });
 
