@@ -113,22 +113,25 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [activeTab, setActiveTab] = useState('active');
   const [currentUserId, setCurrentUserId] = useState<string | null>(propUserId || null);
+  const [currentAuthUserId, setCurrentAuthUserId] = useState<string | null>(null);
   
   const [editDetailsDialog, setEditDetailsDialog] = useState<{
     open: boolean;
     customer: Customer | null;
   }>({ open: false, customer: null });
 
-  // Fetch current user's admin ID if not provided
+  // Fetch current user's admin ID and auth user ID
   useEffect(() => {
     const fetchCurrentUserId = async () => {
-      if (propUserId) {
-        setCurrentUserId(propUserId);
-        return;
-      }
-      
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        setCurrentAuthUserId(user.id);
+        
+        if (propUserId) {
+          setCurrentUserId(propUserId);
+          return;
+        }
+        
         const { data: adminUser } = await supabase
           .from('admin_users')
           .select('id')
@@ -145,11 +148,11 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
   }, [propUserId]);
 
   useEffect(() => {
-    if (currentUserId) {
+    if (currentUserId && currentAuthUserId) {
       fetchCustomers();
       fetchTags();
     }
-  }, [currentUserId]);
+  }, [currentUserId, currentAuthUserId]);
 
 
   const fetchTags = async () => {
@@ -171,40 +174,54 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
     try {
       setLoading(true);
       
-      // Get customers assigned to this user
-      const { data: customerData, error: customersError } = await supabase
-        .from('customers')
-        .select(`
-          *,
-          customer_tag_assignments (
-            tag_id,
-            customer_tags (id, name, color, category)
-          )
-        `)
-        .eq('assigned_to', currentUserId)
-        .eq('is_deleted', false)
-        .order('created_at', { ascending: false });
+      // Fetch in parallel: customers assigned to this user AND assigned leads
+      const [customersResult, leadsResult] = await Promise.all([
+        // Get customers assigned to this user (by admin_users.id)
+        supabase
+          .from('customers')
+          .select(`
+            *,
+            customer_tag_assignments (
+              tag_id,
+              customer_tags (id, name, color, category)
+            )
+          `)
+          .eq('assigned_to', currentUserId)
+          .eq('is_deleted', false)
+          .order('created_at', { ascending: false }),
+        
+        // Get leads assigned to this user (by auth.user_id in contacted_by)
+        supabase
+          .from('abandoned_carts')
+          .select('*')
+          .eq('contacted_by', currentAuthUserId)
+          .eq('is_converted', false)
+          .order('created_at', { ascending: false })
+      ]);
 
-      if (customersError) throw customersError;
+      if (customersResult.error) throw customersResult.error;
+      if (leadsResult.error) throw leadsResult.error;
 
-      if (!customerData || customerData.length === 0) {
-        setCustomers([]);
-        return;
+      const customerData = customersResult.data || [];
+      const leadsData = leadsResult.data || [];
+
+      // Get policies for customers if we have any
+      let policies: any[] = [];
+      if (customerData.length > 0) {
+        const customerIds = customerData.map(c => c.id);
+        const { data: policiesData, error: policiesError } = await supabase
+          .from('customer_policies')
+          .select('*')
+          .in('customer_id', customerIds)
+          .eq('is_deleted', false);
+
+        if (policiesError) throw policiesError;
+        policies = policiesData || [];
       }
-
-      // Get policies for these customers
-      const customerIds = customerData.map(c => c.id);
-      const { data: policies, error: policiesError } = await supabase
-        .from('customer_policies')
-        .select('*')
-        .in('customer_id', customerIds)
-        .eq('is_deleted', false);
-
-      if (policiesError) throw policiesError;
 
       // Map customers with their policies and tags
       const customersWithData: Customer[] = customerData.map(c => {
-        const policy = policies?.find(p => p.customer_id === c.id);
+        const policy = policies.find(p => p.customer_id === c.id);
         const tags = c.customer_tag_assignments
           ?.map((ta: any) => ta.customer_tags)
           .filter(Boolean) || [];
@@ -226,7 +243,46 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
         };
       });
 
-      setCustomers(customersWithData);
+      // Convert leads to customer-like format for display
+      const leadsAsCustomers: Customer[] = leadsData.map(lead => ({
+        id: lead.id,
+        name: lead.full_name || lead.email?.split('@')[0] || 'Unknown',
+        first_name: null,
+        last_name: null,
+        email: lead.email || '',
+        phone: lead.phone || null,
+        registration_plate: lead.vehicle_reg || null,
+        vehicle_make: lead.vehicle_make || null,
+        vehicle_model: lead.vehicle_model || null,
+        vehicle_year: lead.vehicle_year || null,
+        plan_type: lead.plan_name || 'Lead',
+        payment_type: lead.payment_type || null,
+        status: 'lead', // Mark as lead
+        signup_date: lead.created_at,
+        created_at: lead.created_at,
+        claim_limit: null,
+        voluntary_excess: null,
+        labour_rate: null,
+        mileage: lead.mileage || null,
+        flat_number: null,
+        building_name: null,
+        building_number: null,
+        street: null,
+        town: null,
+        county: null,
+        postcode: null,
+        purchase_source: 'lead',
+        policy: null,
+        tags: [],
+      }));
+
+      // Combine customers and leads, with customers first
+      const allData = [...customersWithData, ...leadsAsCustomers];
+      
+      // Sort by created_at descending
+      allData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      setCustomers(allData);
     } catch (error) {
       console.error('Error fetching customers:', error);
       toast.error('Failed to load customers');
@@ -360,6 +416,8 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
         return <Badge variant="destructive">Cancelled</Badge>;
       case 'refunded':
         return <Badge className="bg-amber-500 text-white">💰 Refunded</Badge>;
+      case 'lead':
+        return <Badge className="bg-blue-500 text-white">📋 Lead</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -464,6 +522,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="lead">📋 Lead</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="inactive">Inactive</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
