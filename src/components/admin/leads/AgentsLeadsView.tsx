@@ -61,11 +61,11 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
 }) => {
   const [selectedAgent, setSelectedAgent] = useState<string>('all');
   const [expandedAgents, setExpandedAgents] = useState<Set<string>>(new Set(['awaiting_contact']));
-  const [distributionMode, setDistributionMode] = useState<DistributionMode>('round_robin');
   const [editedCaps, setEditedCaps] = useState<Record<string, number>>({});
   const [editedPercentages, setEditedPercentages] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [savingMode, setSavingMode] = useState(false);
   
   // Reassignment dialog state
   const [reassignDialogOpen, setReassignDialogOpen] = useState(false);
@@ -74,14 +74,46 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
 
   // Lead distribution hook for agent caps
   const {
+    settings,
     agentCaps,
     agentPresences,
     updateAgentCap,
+    updateSettings,
     toggleAgentPause,
     deleteAgentFromDistribution,
     getAgentPresenceStatus,
-    initializeAgentCaps
+    initializeAgentCaps,
+    loading
   } = useLeadDistribution();
+
+  // Get distribution mode from settings (persisted in DB)
+  const distributionMode = (settings?.distribution_mode as DistributionMode) || 'round_robin';
+  
+  // Track local mode changes before save
+  const [pendingMode, setPendingMode] = useState<DistributionMode | null>(null);
+  const displayMode = pendingMode ?? distributionMode;
+  const hasPendingModeChange = pendingMode !== null && pendingMode !== distributionMode;
+
+  // Handle distribution mode change
+  const handleModeChange = (mode: DistributionMode) => {
+    if (mode !== distributionMode) {
+      setPendingMode(mode);
+    } else {
+      setPendingMode(null);
+    }
+  };
+
+  // Save distribution mode to database
+  const handleSaveMode = async () => {
+    if (!pendingMode || pendingMode === distributionMode) return;
+    
+    setSavingMode(true);
+    const success = await updateSettings({ distribution_mode: pendingMode });
+    if (success) {
+      setPendingMode(null);
+    }
+    setSavingMode(false);
+  };
 
   // Get presence for agent
   const getPresence = (adminUserId: string) => {
@@ -487,24 +519,38 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
             <span className="text-sm font-medium">Distribution Mode:</span>
             <div className="flex gap-2">
               <Button
-                variant={distributionMode === 'round_robin' ? 'default' : 'outline'}
+                variant={displayMode === 'round_robin' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setDistributionMode('round_robin')}
+                onClick={() => handleModeChange('round_robin')}
                 className="gap-2"
               >
                 <RotateCcw className="h-4 w-4" />
                 Round Robin
               </Button>
               <Button
-                variant={distributionMode === 'percentage' ? 'default' : 'outline'}
+                variant={displayMode === 'percentage' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setDistributionMode('percentage')}
+                onClick={() => handleModeChange('percentage')}
                 className="gap-2"
               >
                 <Percent className="h-4 w-4" />
                 Percentage Split
               </Button>
             </div>
+            {hasPendingModeChange && (
+              <Button 
+                size="sm" 
+                onClick={handleSaveMode}
+                disabled={savingMode}
+                className="gap-2 bg-green-600 hover:bg-green-700"
+              >
+                <Save className="h-4 w-4" />
+                {savingMode ? 'Saving...' : 'Save Mode'}
+              </Button>
+            )}
+            {loading && (
+              <span className="text-sm text-muted-foreground">Loading...</span>
+            )}
           </div>
 
           {/* Agent Controls Table */}
@@ -515,7 +561,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                   <TableHead className="w-[250px]">Agent</TableHead>
                   <TableHead className="w-[100px]">Status</TableHead>
                   <TableHead className="w-[140px]">
-                    {distributionMode === 'round_robin' ? 'Leads per day' : 'Percentage (%)'}
+                    {displayMode === 'round_robin' ? 'Leads per day' : 'Percentage (%)'}
                   </TableHead>
                   <TableHead className="w-[100px]">Today</TableHead>
                   <TableHead className="w-[120px]">ON/OFF</TableHead>
@@ -523,13 +569,23 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {agentCaps.length === 0 ? (
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      <p>Loading agent distribution settings...</p>
+                    </TableCell>
+                  </TableRow>
+                ) : agentCaps.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                       <p className="mb-2">No agents configured for lead distribution.</p>
-                      <Button variant="outline" size="sm" onClick={initializeAgentCaps}>
-                        Initialize Agent Caps
-                      </Button>
+                      {salesUsers.length > 0 ? (
+                        <Button variant="outline" size="sm" onClick={initializeAgentCaps}>
+                          Add {salesUsers.length} Agent(s) to Distribution
+                        </Button>
+                      ) : (
+                        <p className="text-sm">No sales agents available.</p>
+                      )}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -582,7 +638,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                         {/* Leads per day / Percentage */}
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            {distributionMode === 'round_robin' ? (
+                            {displayMode === 'round_robin' ? (
                               <>
                                 <Input
                                   type="number"
