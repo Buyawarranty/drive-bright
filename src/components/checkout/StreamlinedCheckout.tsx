@@ -1360,15 +1360,20 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 {/* First Name */}
                 <div>
                   <Label htmlFor="first_name" className="text-sm font-medium text-foreground/80">First Name *</Label>
-                  <Input
-                    id="first_name"
-                    placeholder="John"
-                    value={customerData.first_name}
-                    onChange={(e) => handleInputChange('first_name', e.target.value)}
-                    onBlur={() => handleFieldBlur('first_name')}
-                    required
-                    className={`h-11 sm:h-12 text-base mt-1.5 ${getInputValidationClass('first_name')}`}
-                  />
+                  <div className="relative mt-1.5">
+                    <Input
+                      id="first_name"
+                      placeholder="John"
+                      value={customerData.first_name}
+                      onChange={(e) => handleInputChange('first_name', e.target.value)}
+                      onBlur={() => handleFieldBlur('first_name')}
+                      required
+                      className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('first_name')}`}
+                    />
+                    {validatedFields.first_name && customerData.first_name?.trim()?.length >= 2 && !fieldErrors.first_name && (
+                      <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
+                    )}
+                  </div>
                   {showValidation && fieldErrors.first_name && (
                     <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5" />
@@ -1380,15 +1385,20 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 {/* Last Name */}
                 <div>
                   <Label htmlFor="last_name" className="text-sm font-medium text-foreground/80">Last Name *</Label>
-                  <Input
-                    id="last_name"
-                    placeholder="Smith"
-                    value={customerData.last_name}
-                    onChange={(e) => handleInputChange('last_name', e.target.value)}
-                    onBlur={() => handleFieldBlur('last_name')}
-                    required
-                    className={`h-11 sm:h-12 text-base mt-1.5 ${getInputValidationClass('last_name')}`}
-                  />
+                  <div className="relative mt-1.5">
+                    <Input
+                      id="last_name"
+                      placeholder="Smith"
+                      value={customerData.last_name}
+                      onChange={(e) => handleInputChange('last_name', e.target.value)}
+                      onBlur={() => handleFieldBlur('last_name')}
+                      required
+                      className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('last_name')}`}
+                    />
+                    {validatedFields.last_name && customerData.last_name?.trim()?.length >= 2 && !fieldErrors.last_name && (
+                      <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
+                    )}
+                  </div>
                   {showValidation && fieldErrors.last_name && (
                     <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5" />
@@ -1507,19 +1517,25 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <Label htmlFor="address_line_1" className="text-sm font-medium text-foreground/80">
                       Address Line 1 *
                     </Label>
-                    <Input
-                      id="address_line_1"
-                      placeholder="e.g. 123 High Street"
-                      value={addressData.address_line_1}
-                      onChange={(e) => {
-                        setAddressData(prev => ({ ...prev, address_line_1: e.target.value }));
-                        if (addressErrors.address_line_1) {
-                          setAddressErrors(prev => ({ ...prev, address_line_1: '' }));
-                        }
-                      }}
-                      onBlur={() => validateAddressField('address_line_1')}
-                      className={`h-11 sm:h-12 text-base mt-1.5 ${getAddressInputValidationClass('address_line_1')}`}
-                    />
+                    <div className="relative mt-1.5">
+                      <Input
+                        id="address_line_1"
+                        placeholder="e.g. 123 High Street"
+                        value={addressData.address_line_1}
+                        onChange={(e) => {
+                          setAddressData(prev => ({ ...prev, address_line_1: e.target.value }));
+                          setAddressValidated(prev => ({ ...prev, address_line_1: !!e.target.value.trim() }));
+                          if (addressErrors.address_line_1) {
+                            setAddressErrors(prev => ({ ...prev, address_line_1: '' }));
+                          }
+                        }}
+                        onBlur={() => validateAddressField('address_line_1')}
+                        className={`h-11 sm:h-12 text-base pr-10 ${getAddressInputValidationClass('address_line_1')}`}
+                      />
+                      {addressData.address_line_1?.trim() && !addressErrors.address_line_1 && (
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
+                      )}
+                    </div>
                     {showValidation && addressErrors.address_line_1 && (
                       <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5" />
@@ -1547,19 +1563,25 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <Label htmlFor="town" className="text-sm font-medium text-foreground/80">
                       Town / City *
                     </Label>
-                    <Input
-                      id="town"
-                      placeholder="e.g. London"
-                      value={addressData.town}
-                      onChange={(e) => {
-                        setAddressData(prev => ({ ...prev, town: e.target.value }));
-                        if (addressErrors.town) {
-                          setAddressErrors(prev => ({ ...prev, town: '' }));
-                        }
-                      }}
-                      onBlur={() => validateAddressField('town')}
-                      className={`h-11 sm:h-12 text-base mt-1.5 ${getAddressInputValidationClass('town')}`}
-                    />
+                    <div className="relative mt-1.5">
+                      <Input
+                        id="town"
+                        placeholder="e.g. London"
+                        value={addressData.town}
+                        onChange={(e) => {
+                          setAddressData(prev => ({ ...prev, town: e.target.value }));
+                          setAddressValidated(prev => ({ ...prev, town: !!e.target.value.trim() }));
+                          if (addressErrors.town) {
+                            setAddressErrors(prev => ({ ...prev, town: '' }));
+                          }
+                        }}
+                        onBlur={() => validateAddressField('town')}
+                        className={`h-11 sm:h-12 text-base pr-10 ${getAddressInputValidationClass('town')}`}
+                      />
+                      {addressData.town?.trim() && !addressErrors.town && (
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
+                      )}
+                    </div>
                     {showValidation && addressErrors.town && (
                       <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5" />
@@ -1588,21 +1610,26 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       <span className="text-sm text-muted-foreground">Fetching from MOT history...</span>
                     </div>
                   ) : (
-                    <Input
-                      id="mileage"
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="e.g. 52,000"
-                      value={customerData.mileage ? Number(customerData.mileage).toLocaleString('en-GB') : ''}
-                      onChange={(e) => {
-                        const rawValue = e.target.value.replace(/[^0-9]/g, '');
-                        handleInputChange('mileage', rawValue);
-                        setMileagePreFilled(false);
-                      }}
-                      onBlur={() => handleFieldBlur('mileage')}
-                      required
-                      className={`h-11 sm:h-12 text-base ${getInputValidationClass('mileage')}`}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="mileage"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="e.g. 52,000"
+                        value={customerData.mileage ? Number(customerData.mileage).toLocaleString('en-GB') : ''}
+                        onChange={(e) => {
+                          const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                          handleInputChange('mileage', rawValue);
+                          setMileagePreFilled(false);
+                        }}
+                        onBlur={() => handleFieldBlur('mileage')}
+                        required
+                        className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('mileage')}`}
+                      />
+                      {customerData.mileage && Number(customerData.mileage) > 0 && Number(customerData.mileage) <= 150000 && !fieldErrors.mileage && (
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
+                      )}
+                    </div>
                   )}
                 </div>
                 <select
