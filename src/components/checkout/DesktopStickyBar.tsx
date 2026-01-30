@@ -88,8 +88,8 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
               onClick={onPayClick}
               disabled={isLoading}
               size="lg"
-              className="text-base lg:text-lg font-semibold px-6 lg:px-8 py-3 lg:py-3.5 text-white rounded-xl whitespace-nowrap"
-              style={{ backgroundColor: '#0BA360' }}
+              className="text-base lg:text-lg font-semibold px-6 lg:px-8 py-3 lg:py-3.5 text-white rounded-xl whitespace-nowrap animate-breathing"
+              style={{ backgroundColor: selectedPayment === 'monthly' ? '#FF6B00' : '#0BA360' }}
             >
               {selectedPayment === 'full' 
                 ? `Pay £${fullPrice} now`

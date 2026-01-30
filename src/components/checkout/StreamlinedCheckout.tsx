@@ -27,6 +27,7 @@ import PaymentMethodSelector from '@/components/checkout/PaymentMethodSelector';
 import HowToPaySection from '@/components/checkout/HowToPaySection';
 import DesktopOrderSummary from '@/components/checkout/DesktopOrderSummary';
 import DesktopStickyBar from '@/components/checkout/DesktopStickyBar';
+import DesktopPlanHeader from '@/components/checkout/DesktopPlanHeader';
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
   vehicleData: {
@@ -1219,25 +1220,19 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             />
           </section>
 
-          {/* ==================== DESKTOP: PLAN HEADER ==================== */}
+          {/* ==================== DESKTOP: PLAN HEADER (NEW SIMPLIFIED VERSION) ==================== */}
           <section className="hidden lg:block">
-            <PlanSummaryCard
-              planName={formatPlanName()}
+            <DesktopPlanHeader
               vehicleReg={vehicleData.regNumber}
               vehicleMake={vehicleData.make}
               vehicleModel={vehicleData.model}
               duration={getDurationText()}
-              claimLimit={updatedPricingData.claimLimit || 1250}
-              labourRate={pricingData.labourRate || 50}
-              excess={updatedPricingData.voluntaryExcess || 100}
-              selectedPayment={selectedPayment}
-              monthlyPrice={discountedMonthlyPrice}
-              totalPrice={bumperTotalPrice}
-              isLoading={isLoading}
-              onPaymentChange={setSelectedPayment}
-              onPayClick={processPayment}
-              onChangePlan={onBack}
-              isMobile={false}
+              startDate={startDate}
+              onChangeDate={() => {
+                // Scroll to the date picker or toggle it
+                const dateSection = document.getElementById('start-date-section');
+                dateSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }}
             />
           </section>
 
@@ -1251,11 +1246,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             />
           </section>
 
-          {/* Key Cover Highlights */}
-          <CoverHighlights planName={formatPlanName()} />
+          {/* Key Cover Highlights - Mobile Only */}
+          <section className="lg:hidden">
+            <CoverHighlights planName={formatPlanName()} />
+          </section>
 
-          {/* Cover Start Date */}
-          <section>
+          {/* Cover Start Date - Mobile Only (Desktop has it integrated in header) */}
+          <section id="start-date-section" className="lg:hidden">
             <Card className="border border-[#E5E5E5] bg-white rounded-xl">
               <CardContent className="p-4 sm:p-5">
                 <StartDatePicker
@@ -1722,6 +1719,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           <DesktopOrderSummary
             planName={formatPlanName()}
             vehicleReg={vehicleData.regNumber}
+            vehicleMake={vehicleData.make}
+            vehicleModel={vehicleData.model}
             duration={getDurationText()}
             claimLimit={updatedPricingData.claimLimit || 1250}
             labourRate={pricingData.labourRate || 70}
