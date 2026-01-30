@@ -519,43 +519,42 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   isRegValid={regNumber.replace(/\s/g, '').length >= 5}
                 />
                 
-                {/* How our pricing works & Contact section */}
-                <div className="mt-4 sm:mt-6 space-y-3 text-center lg:text-left">
-                  {/* Intro line */}
-                  <p className="text-gray-700 text-xs sm:text-sm font-medium">
-                    Fair and flexible pricing based on your car — no surprises.
+                {/* Pricing Reassurance Section - Conversion Optimised */}
+                <div className="mt-5 sm:mt-7 space-y-3 text-center lg:text-left">
+                  {/* Bold Headline - Trust & Clarity */}
+                  <h2 className="text-sm sm:text-base font-bold text-gray-900">
+                    Your price. Your choice. No hidden fees.
+                  </h2>
+                  
+                  {/* Short Sub-line - Emotional Reassurance */}
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    We calculate your quote based on your car and how you drive. Adjust cover, excess and claim limits to suit your budget.
                   </p>
                   
-                  {/* How pricing works link */}
-                  <button
-                    onClick={() => setShowPricingModal(true)}
-                    className="text-brand-green hover:text-brand-green/80 text-xs sm:text-sm font-semibold inline-flex items-center gap-1 transition-colors"
-                  >
-                    How our pricing works
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                  
-                  {/* Need to speak to us section */}
-                  <div className="pt-2 border-t border-gray-100">
-                    <p className="text-gray-600 text-xs sm:text-sm mb-2">
-                      Need to speak to us about a particular vehicle or want to customise your warranty?
-                    </p>
-                    <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs sm:text-sm">
-                      <span className="text-gray-700">Call</span>
-                      <a 
-                        href="tel:08004947477" 
-                        className="font-bold text-brand-green hover:underline"
-                      >
-                        0800 494 7477
-                      </a>
-                      <span className="text-gray-500">or</span>
-                      <button
-                        onClick={() => setShowCallbackModal(true)}
-                        className="text-brand-orange hover:text-brand-orange/80 font-semibold underline underline-offset-2 transition-colors"
-                      >
-                        request a callback
-                      </button>
-                    </div>
+                  {/* Compact Support Line with CTA */}
+                  <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-1.5 gap-y-1 text-xs sm:text-sm">
+                    <button
+                      onClick={() => setShowPricingModal(true)}
+                      className="text-brand-green hover:text-brand-green/80 font-semibold inline-flex items-center gap-1 transition-colors underline underline-offset-2"
+                    >
+                      See how pricing works
+                      <ArrowRight className="w-3 h-3" />
+                    </button>
+                    <span className="text-gray-400">|</span>
+                    <span className="text-gray-600">Speak to an expert:</span>
+                    <a 
+                      href="tel:08004947477" 
+                      className="font-bold text-brand-green hover:underline"
+                    >
+                      0800 494 7477
+                    </a>
+                    <span className="text-gray-400">or</span>
+                    <button
+                      onClick={() => setShowCallbackModal(true)}
+                      className="text-brand-orange hover:text-brand-orange/80 font-semibold underline underline-offset-2 transition-colors"
+                    >
+                      request a callback
+                    </button>
                   </div>
                 </div>
               </div>

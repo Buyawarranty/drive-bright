@@ -114,7 +114,7 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="max-w-md mx-auto bg-white rounded-xl p-6">
+      <DialogContent className="w-[90vw] max-w-md mx-auto bg-white rounded-xl p-6 sm:p-8">
         <DialogHeader>
           <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Phone className="w-6 h-6 text-brand-green" />
