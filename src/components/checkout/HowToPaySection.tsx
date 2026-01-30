@@ -31,6 +31,8 @@ interface HowToPaySectionProps {
   }>;
   onRemoveDiscountCode: (code: string) => void;
   totalDiscountAmount: number;
+  // Hide CTA when embedded checkout is showing
+  hidePayButton?: boolean;
 }
 
 const HowToPaySection: React.FC<HowToPaySectionProps> = ({
@@ -54,6 +56,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
   appliedDiscountCodes,
   onRemoveDiscountCode,
   totalDiscountAmount,
+  hidePayButton = false,
 }) => {
   // Calculate plan duration in years
   const planYears = Math.round(planDurationMonths / 12);
@@ -250,42 +253,46 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
         </div>
       )}
 
-      {/* Pay Button */}
-      <div className="mt-6">
-        <Button
-          onClick={onPayClick}
-          disabled={isLoading || !selectedPayment}
-          className="w-full py-6 text-lg font-bold rounded-xl animate-breathing"
-          style={{
-            backgroundColor: !selectedPayment 
-              ? '#CCCCCC' 
-              : '#FF6B00',
-            color: '#FFFFFF',
-          }}
-        >
-          {isLoading ? (
-            <span className="flex items-center gap-2">
-              <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Processing...
-            </span>
-          ) : (
-            <span className="flex items-center gap-2">
-              <Lock className="w-5 h-5" />
-              {selectedPayment === 'monthly' 
-                ? `Pay £${monthlyPrice} today` 
-                : selectedPayment === 'full'
-                ? `Pay £${fullPrice} now`
-                : 'Select payment option'}
-            </span>
-          )}
-        </Button>
-      </div>
+      {/* Pay Button - Hidden when embedded checkout is showing */}
+      {!hidePayButton && (
+        <div className="mt-6">
+          <Button
+            onClick={onPayClick}
+            disabled={isLoading || !selectedPayment}
+            className="w-full py-6 text-lg font-bold rounded-xl animate-breathing"
+            style={{
+              backgroundColor: !selectedPayment 
+                ? '#CCCCCC' 
+                : '#FF6B00',
+              color: '#FFFFFF',
+            }}
+          >
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Processing...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <Lock className="w-5 h-5" />
+                {selectedPayment === 'monthly' 
+                  ? `Pay £${monthlyPrice} today` 
+                  : selectedPayment === 'full'
+                  ? `Pay £${fullPrice} now`
+                  : 'Select payment option'}
+              </span>
+            )}
+          </Button>
+        </div>
+      )}
 
-      {/* Secure Checkout Text */}
-      <div className="flex items-center justify-center gap-2 mt-4 text-sm text-gray-600">
-        <Lock className="w-4 h-4 text-gray-400" />
-        <span>Secure checkout processing</span>
-      </div>
+      {/* Secure Checkout Text - Only show when button is visible */}
+      {!hidePayButton && (
+        <div className="flex items-center justify-center gap-2 mt-4 text-sm text-gray-600">
+          <Lock className="w-4 h-4 text-gray-400" />
+          <span>Secure checkout processing</span>
+        </div>
+      )}
 
       {/* Divider */}
       <div className="h-px bg-border mt-6 mb-5" />
