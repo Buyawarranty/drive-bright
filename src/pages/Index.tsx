@@ -506,6 +506,8 @@ const Index = () => {
   const [currentStep, setCurrentStep] = useState(getStepFromUrl());
   const [showDiscountPopup, setShowDiscountPopup] = useState(false);
   const isNavigatingRef = useRef(false);
+  // Track previous step to only scroll when step actually changes, not on every state update
+  const previousStepRef = useRef<number | null>(null);
   
   const { restoreQuoteData } = useQuoteRestoration();
 
@@ -906,7 +908,13 @@ const Index = () => {
     console.log('useEffect triggered, current URL:', window.location.href);
     console.log('searchParams:', Object.fromEntries(searchParams.entries()));
     console.log('currentStep:', currentStep);
-    window.scrollTo(0, 0);
+    
+    // Only scroll to top when the step actually changes, not on every state update
+    // This prevents the annoying scroll-to-top on mobile when interacting with form fields
+    if (previousStepRef.current !== null && previousStepRef.current !== currentStep) {
+      window.scrollTo(0, 0);
+    }
+    previousStepRef.current = currentStep;
     
     // Check for quote parameter from email links FIRST
     const quoteParam = searchParams.get('quote');
