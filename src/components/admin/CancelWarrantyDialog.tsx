@@ -6,8 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { AlertTriangle, Ban, UserX } from 'lucide-react';
+import { AlertTriangle, Ban, UserX, PoundSterling } from 'lucide-react';
 
 interface CancelWarrantyDialogProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ interface CancelWarrantyDialogProps {
 const CANCELLATION_REASONS = [
   'Customer requested cancellation',
   'Cooling-off period cancellation (14 days)',
+  'Customer refund processed',
   'Non-payment / Failed payments',
   'Fraudulent application',
   'Vehicle sold',
@@ -44,7 +46,17 @@ export const CancelWarrantyDialog: React.FC<CancelWarrantyDialogProps> = ({
   const [cancellationReason, setCancellationReason] = useState('');
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [revokePortalAccess, setRevokePortalAccess] = useState(false);
+  const [markAsRefunded, setMarkAsRefunded] = useState(false);
+  const [refundAmount, setRefundAmount] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Auto-check refund option when refund reason is selected
+  const handleReasonChange = (reason: string) => {
+    setCancellationReason(reason);
+    if (reason === 'Customer refund processed' || reason === 'Cooling-off period cancellation (14 days)') {
+      setMarkAsRefunded(true);
+    }
+  };
 
   const handleCancel = async () => {
     if (!cancellationReason) {
@@ -55,23 +67,26 @@ export const CancelWarrantyDialog: React.FC<CancelWarrantyDialogProps> = ({
     setIsProcessing(true);
 
     try {
-      // 1. Update policy status to cancelled
+      // Determine the new status based on refund option
+      const newStatus = markAsRefunded ? 'refunded' : 'cancelled';
+
+      // 1. Update policy status
       const { error: policyError } = await supabase
         .from('customer_policies')
         .update({ 
-          status: 'cancelled',
+          status: newStatus,
           updated_at: new Date().toISOString()
         })
         .eq('id', policy.id);
 
       if (policyError) throw policyError;
 
-      // 2. Update customer status if customer_id exists
+      // 2. Update customer status if customer_id exists (NOT soft delete - keep visible!)
       if (policy.customer_id) {
         const { error: customerError } = await supabase
           .from('customers')
           .update({ 
-            status: 'Cancelled',
+            status: markAsRefunded ? 'Refunded' : 'Cancelled',
             updated_at: new Date().toISOString()
           })
           .eq('id', policy.customer_id);
@@ -96,11 +111,12 @@ export const CancelWarrantyDialog: React.FC<CancelWarrantyDialogProps> = ({
 
       // 4. Log the cancellation as a note if customer_id exists
       if (policy.customer_id) {
-        const noteText = `WARRANTY CANCELLED\n` +
+        const noteText = `WARRANTY ${markAsRefunded ? 'REFUNDED' : 'CANCELLED'}\n` +
           `Reason: ${cancellationReason}\n` +
+          `${markAsRefunded && refundAmount ? `Refund Amount: £${refundAmount}\n` : ''}` +
           `${additionalNotes ? `Notes: ${additionalNotes}\n` : ''}` +
           `Portal Access Revoked: ${revokePortalAccess ? 'Yes' : 'No'}\n` +
-          `Cancelled at: ${new Date().toLocaleString()}`;
+          `Processed at: ${new Date().toLocaleString()}`;
 
         await supabase
           .from('admin_notes')
@@ -111,9 +127,9 @@ export const CancelWarrantyDialog: React.FC<CancelWarrantyDialogProps> = ({
       }
 
       toast.success(
-        revokePortalAccess 
-          ? 'Warranty cancelled and portal access revoked' 
-          : 'Warranty cancelled successfully'
+        markAsRefunded 
+          ? 'Customer marked as refunded - still visible in dashboard' 
+          : 'Warranty cancelled - customer remains visible in dashboard'
       );
       
       onSuccess();
@@ -123,6 +139,8 @@ export const CancelWarrantyDialog: React.FC<CancelWarrantyDialogProps> = ({
       setCancellationReason('');
       setAdditionalNotes('');
       setRevokePortalAccess(false);
+      setMarkAsRefunded(false);
+      setRefundAmount('');
 
     } catch (error) {
       console.error('Error cancelling warranty:', error);
@@ -149,19 +167,19 @@ export const CancelWarrantyDialog: React.FC<CancelWarrantyDialogProps> = ({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          {/* Warning Alert */}
-          <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-amber-800">
-              <p className="font-medium">This action cannot be easily undone</p>
-              <p className="text-xs mt-1">The customer will no longer have an active warranty. Make sure this is the correct action.</p>
+          {/* Info Alert - Customer remains visible */}
+          <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <AlertTriangle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-blue-800">
+              <p className="font-medium">Customer will remain visible</p>
+              <p className="text-xs mt-1">Cancelled/refunded customers stay in the dashboard with highlighted status. Use "Archive" to hide them.</p>
             </div>
           </div>
 
           {/* Cancellation Reason */}
           <div className="space-y-2">
             <Label htmlFor="reason">Cancellation Reason *</Label>
-            <Select value={cancellationReason} onValueChange={setCancellationReason}>
+            <Select value={cancellationReason} onValueChange={handleReasonChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Select a reason..." />
               </SelectTrigger>
@@ -173,6 +191,44 @@ export const CancelWarrantyDialog: React.FC<CancelWarrantyDialogProps> = ({
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Mark as Refunded Option */}
+          <div className="flex items-start gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <Checkbox
+              id="markRefunded"
+              checked={markAsRefunded}
+              onCheckedChange={(checked) => setMarkAsRefunded(checked === true)}
+              className="mt-0.5"
+            />
+            <div className="flex-1 space-y-2">
+              <Label 
+                htmlFor="markRefunded" 
+                className="text-sm font-medium text-green-800 cursor-pointer flex items-center gap-2"
+              >
+                <PoundSterling className="h-4 w-4" />
+                Mark as Refunded
+              </Label>
+              <p className="text-xs text-green-600">
+                This will set the status to "Refunded" instead of "Cancelled".
+              </p>
+              {markAsRefunded && (
+                <div className="pt-2">
+                  <Label htmlFor="refundAmount" className="text-xs text-green-700">Refund Amount (optional)</Label>
+                  <div className="relative mt-1">
+                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm text-green-600">£</span>
+                    <Input
+                      id="refundAmount"
+                      type="number"
+                      value={refundAmount}
+                      onChange={(e) => setRefundAmount(e.target.value)}
+                      placeholder="0.00"
+                      className="pl-6 h-8 text-sm"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Additional Notes */}
@@ -221,7 +277,7 @@ export const CancelWarrantyDialog: React.FC<CancelWarrantyDialogProps> = ({
             onClick={handleCancel}
             disabled={isProcessing || !cancellationReason}
           >
-            {isProcessing ? 'Processing...' : 'Cancel Warranty'}
+            {isProcessing ? 'Processing...' : markAsRefunded ? 'Mark as Refunded' : 'Cancel Warranty'}
           </Button>
         </DialogFooter>
       </DialogContent>

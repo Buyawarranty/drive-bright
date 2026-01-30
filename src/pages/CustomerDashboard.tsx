@@ -1340,13 +1340,17 @@ const CustomerDashboard = () => {
                                 <p className={`text-lg font-bold mt-1 flex items-center justify-center sm:justify-end gap-2 ${
                                   selectedPolicy.status === 'active' ? 'text-green-600' : 
                                   selectedPolicy.status === 'expired' ? 'text-red-600' : 
-                                  selectedPolicy.status === 'cancelled' ? 'text-gray-600' : 'text-yellow-600'
+                                  selectedPolicy.status === 'cancelled' ? 'text-gray-600' : 
+                                  selectedPolicy.status === 'refunded' ? 'text-amber-600' : 'text-yellow-600'
                                 }`}>
                                   {selectedPolicy.status === 'active' && <CheckCircle className="h-5 w-5" />}
                                   {selectedPolicy.status === 'expired' && <X className="h-5 w-5" />}
                                   {selectedPolicy.status === 'cancelled' && <X className="h-5 w-5" />}
+                                  {selectedPolicy.status === 'refunded' && <X className="h-5 w-5" />}
                                   {selectedPolicy.status === 'pending' && <AlertCircle className="h-5 w-5" />}
-                                  {selectedPolicy.status === 'cancelled' ? 'INACTIVE' : selectedPolicy.status.toUpperCase()}
+                                  {selectedPolicy.status === 'cancelled' || selectedPolicy.status === 'refunded' 
+                                    ? (selectedPolicy.status === 'refunded' ? 'REFUNDED' : 'INACTIVE')
+                                    : selectedPolicy.status.toUpperCase()}
                                 </p>
                               </div>
                             </div>
