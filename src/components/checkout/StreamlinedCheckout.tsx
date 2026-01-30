@@ -25,6 +25,8 @@ import PlanSummaryCard from '@/components/checkout/PlanSummaryCard';
 import CoverHighlights from '@/components/checkout/CoverHighlights';
 import PaymentMethodSelector from '@/components/checkout/PaymentMethodSelector';
 import HowToPaySection from '@/components/checkout/HowToPaySection';
+import DesktopOrderSummary from '@/components/checkout/DesktopOrderSummary';
+import DesktopStickyBar from '@/components/checkout/DesktopStickyBar';
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
   vehicleData: {
@@ -1194,8 +1196,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
         <div className="flex gap-8">
           {/* Main Content Column */}
-          <div className="flex-1 max-w-2xl space-y-6 sm:space-y-8 pb-32 md:pb-8">
-          
+          <div className="flex-1 max-w-2xl space-y-6 sm:space-y-8 pb-32 lg:pb-32">
           {/* ==================== MOBILE: PLAN SUMMARY ACCORDION ==================== */}
           <section className="lg:hidden">
             <PlanSummaryCard
@@ -1716,10 +1717,38 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </section>
           )}
           </div>
+          
+          {/* Desktop: Right side Order Summary Sidebar */}
+          <DesktopOrderSummary
+            planName={formatPlanName()}
+            vehicleReg={vehicleData.regNumber}
+            duration={getDurationText()}
+            claimLimit={updatedPricingData.claimLimit || 1250}
+            labourRate={pricingData.labourRate || 70}
+            excess={updatedPricingData.voluntaryExcess || 100}
+            selectedPayment={selectedPayment}
+            monthlyPrice={discountedMonthlyPrice}
+            totalPrice={bumperTotalPrice}
+            fullPrice={discountedStripePrice}
+            savings={savings}
+            isLoading={isLoading}
+            onPayClick={processPayment}
+          />
         </div>
       </div>
 
-      {/* Note: Order Summary sidebar, Mobile Sticky Footer, and Desktop Sticky Bar removed - HowToPaySection handles all payment UI */}
+      {/* Desktop Sticky Bottom Bar */}
+      <DesktopStickyBar
+        selectedPayment={selectedPayment}
+        monthlyPrice={discountedMonthlyPrice}
+        totalPrice={bumperTotalPrice}
+        fullPrice={discountedStripePrice}
+        savings={savings}
+        duration={getDurationText()}
+        paymentType={paymentType as '12months' | '24months' | '36months'}
+        isLoading={isLoading}
+        onPayClick={processPayment}
+      />
     </div>
   );
 };
