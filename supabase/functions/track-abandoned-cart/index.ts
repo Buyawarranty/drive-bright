@@ -156,6 +156,39 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       console.log('Created new abandoned cart entry for:', cartData.email);
+
+      // Trigger WhatsApp welcome message for new cart entries with phone numbers
+      if (cartData.phone && cartData.phone.trim() !== '') {
+        try {
+          console.log(`📱 Triggering WhatsApp welcome message for: ${cartData.phone}`);
+          
+          // Call send-uchat-whatsapp function asynchronously (don't await to avoid blocking)
+          const whatsappPayload = {
+            phone: cartData.phone,
+            firstName: cartData.full_name?.split(' ')[0] || 'there',
+            vehicleMake: cartData.vehicle_make,
+            vehicleModel: cartData.vehicle_model,
+            abandonedCartId: null // We don't have the ID here since we used insert without returning
+          };
+
+          // Fire and forget - don't block the cart tracking response
+          fetch(`${supabaseUrl}/functions/v1/send-uchat-whatsapp`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseServiceKey}`
+            },
+            body: JSON.stringify(whatsappPayload)
+          }).then(response => {
+            console.log(`📱 WhatsApp trigger response status: ${response.status}`);
+          }).catch(err => {
+            console.error('📱 WhatsApp trigger error (non-blocking):', err);
+          });
+        } catch (whatsappError) {
+          // Log but don't fail the cart tracking
+          console.error('Error triggering WhatsApp message (non-blocking):', whatsappError);
+        }
+      }
     }
 
     return new Response(

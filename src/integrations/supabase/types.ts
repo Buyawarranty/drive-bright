@@ -4929,6 +4929,60 @@ export type Database = {
           },
         ]
       }
+      whatsapp_message_log: {
+        Row: {
+          abandoned_cart_id: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          lead_id: string | null
+          message_type: string
+          normalized_phone: string
+          phone: string
+          status: string
+          uchat_response: Json | null
+        }
+        Insert: {
+          abandoned_cart_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          lead_id?: string | null
+          message_type?: string
+          normalized_phone: string
+          phone: string
+          status?: string
+          uchat_response?: Json | null
+        }
+        Update: {
+          abandoned_cart_id?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          lead_id?: string | null
+          message_type?: string
+          normalized_phone?: string
+          phone?: string
+          status?: string
+          uchat_response?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_message_log_abandoned_cart_id_fkey"
+            columns: ["abandoned_cart_id"]
+            isOneToOne: false
+            referencedRelation: "abandoned_carts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_message_log_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "sales_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       monthly_claims_stats: {
