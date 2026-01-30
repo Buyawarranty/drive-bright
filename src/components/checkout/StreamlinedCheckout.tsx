@@ -1032,6 +1032,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
   const processStripeCheckout = async () => {
     try {
+      console.log('💳 processStripeCheckout: Starting...');
       const finalPrice = discountedStripePrice;
       
       const firstName = customerData.first_name?.trim() || '';
@@ -1043,6 +1044,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         ...vehicleData,
         mileage: customerData.mileage || vehicleData.mileage
       };
+      
+      console.log('💳 processStripeCheckout: Calling create-payment-intent API...');
       
       // Create PaymentIntent for embedded checkout (no redirect)
       const { data: paymentIntentData, error: paymentIntentError } = await supabase.functions.invoke('create-payment-intent', {
@@ -1088,14 +1091,23 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         }
       });
 
+      console.log('💳 processStripeCheckout: API response:', { 
+        hasData: !!paymentIntentData, 
+        hasError: !!paymentIntentError,
+        clientSecret: paymentIntentData?.clientSecret ? 'present' : 'missing',
+        error: paymentIntentError 
+      });
+
       if (paymentIntentError) {
-        console.error('PaymentIntent creation error:', paymentIntentError);
+        console.error('💳 processStripeCheckout: PaymentIntent creation error:', paymentIntentError);
         toast.error('Unable to process. Please try again.');
         setIsLoading(false);
         return;
       }
 
       if (paymentIntentData?.clientSecret) {
+        console.log('💳 processStripeCheckout: Got clientSecret, saving state and showing payment form...');
+        
         // Save journey state for recovery
         localStorage.setItem('warranty_journey_state', JSON.stringify({
           formData: pricingData,
@@ -1108,23 +1120,30 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         }));
         
         // Show inline Stripe payment instead of navigating away
+        console.log('💳 processStripeCheckout: Setting stripeClientSecret and showEmbeddedCheckout...');
         setStripeClientSecret(paymentIntentData.clientSecret);
         setShowEmbeddedCheckout(true);
         setIsLoading(false);
         
+        console.log('💳 processStripeCheckout: State updated, scrolling to payment section...');
+        
         // Scroll to payment section
         setTimeout(() => {
           const paymentSection = document.getElementById('inline-stripe-payment');
+          console.log('💳 processStripeCheckout: Payment section element:', paymentSection);
           if (paymentSection) {
             paymentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } else {
+            console.warn('💳 processStripeCheckout: Payment section element NOT found in DOM!');
           }
         }, 100);
       } else {
+        console.error('💳 processStripeCheckout: No clientSecret in response');
         toast.error('Unable to process. Please try again.');
         setIsLoading(false);
       }
     } catch (error) {
-      console.error('Stripe checkout error:', error);
+      console.error('💳 processStripeCheckout: Stripe checkout error:', error);
       toast.error('Unable to process. Please try again.');
       setIsLoading(false);
     }
@@ -1672,6 +1691,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           />
 
           {/* ==================== INLINE STRIPE PAYMENT ==================== */}
+          {(() => {
+            // Debug log for payment section rendering
+            console.log('💳 Payment section render check:', { 
+              showEmbeddedCheckout, 
+              hasClientSecret: !!stripeClientSecret, 
+              selectedPayment,
+              shouldRender: showEmbeddedCheckout && stripeClientSecret && selectedPayment === 'full'
+            });
+            return null;
+          })()}
+          
           {showEmbeddedCheckout && stripeClientSecret && selectedPayment === 'full' && (
             <section id="inline-stripe-payment" className="bg-white rounded-xl border border-[#E5E5E5] p-5 sm:p-6">
               <div className="flex items-center justify-between mb-4">
