@@ -3,7 +3,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLeads, Lead } from '@/hooks/useLeads';
 import { LeadsTable } from './LeadsTable';
-import { LeadsFilters } from './LeadsFilters';
+import { LeadsFilters, AssignmentFilter } from './LeadsFilters';
 import { LeadsTableControlBar } from './LeadsTableControlBar';
 import { LeadsTableFooter } from './LeadsTableFooter';
 import { SalespersonDashboard } from './SalespersonDashboard';
@@ -121,6 +121,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({ from: undefined, to: undefined });
+  const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [capsSheetOpen, setCapsSheetOpen] = useState(false);
 
   // Lead distribution hook for agent caps
@@ -163,7 +164,15 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const filteredLeads = useMemo(() => {
     let result = leads;
     
-    // Apply date range filter first (most selective)
+    // Apply assignment filter
+    if (assignmentFilter === 'awaiting_contact') {
+      result = result.filter(lead => !lead.assigned_to);
+    } else if (assignmentFilter === 'assigned') {
+      result = result.filter(lead => !!lead.assigned_to);
+    }
+    // 'all' and 'total' show all leads (total is same as all, just labeled differently)
+    
+    // Apply date range filter
     if (dateRange.from || dateRange.to) {
       result = result.filter(lead => {
         const leadDate = new Date(lead.created_at);
@@ -200,7 +209,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
     
     return result;
-  }, [leads, debouncedSearchTerm, dateRange]);
+  }, [leads, debouncedSearchTerm, dateRange, assignmentFilter]);
 
   // Pagination for leads table
   const pagination = usePagination(filteredLeads, { initialPageSize: 50 });
@@ -214,6 +223,13 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     lost: leads.filter(l => l.status === 'lost').length,
     high_priority: leads.filter(l => l.priority === 'high' || l.priority === 'urgent').length,
     fake: leads.filter(l => l.status === 'fake_lead').length,
+  }), [leads]);
+
+  // Assignment counts for the filter dropdown
+  const assignmentCounts = useMemo(() => ({
+    total: leads.length,
+    awaiting_contact: leads.filter(l => !l.assigned_to).length,
+    assigned: leads.filter(l => !!l.assigned_to).length,
   }), [leads]);
 
   // Memoize handlers to prevent re-renders
@@ -531,6 +547,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             leadCounts={leadCounts}
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
+            assignmentFilter={assignmentFilter}
+            onAssignmentFilterChange={setAssignmentFilter}
+            assignmentCounts={assignmentCounts}
           />
           
           <Card className="overflow-hidden">
