@@ -499,17 +499,72 @@ export const useLeads = () => {
 
         if (error) throw error;
       } else {
-        // Update sales_leads table
-        const { error } = await supabase
-          .from('sales_leads')
-          .update({
-            assigned_to: userId,
-            assigned_at: userId ? now : null,
-            updated_at: now
-          })
-          .eq('id', actualId);
+        // Get current user's admin ID to check if this is a self-assignment
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        
+        if (authUser && userId) {
+          // Check if this is self-assignment by comparing to current user's admin_users.id
+          const { data: currentAdminUser } = await supabase
+            .from('admin_users')
+            .select('id')
+            .eq('user_id', authUser.id)
+            .maybeSingle();
+          
+          const isSelfAssignment = currentAdminUser?.id === userId;
+          
+          // Get the current lead to check if it's unassigned
+          const { data: currentLead } = await supabase
+            .from('sales_leads')
+            .select('assigned_to')
+            .eq('id', actualId)
+            .maybeSingle();
+          
+          const isUnassignedLead = currentLead?.assigned_to === null;
+          
+          // Use RPC for self-assignment of unassigned leads (bypasses RLS issues)
+          if (isSelfAssignment && isUnassignedLead) {
+            // Force presence update before claiming
+            await supabase.rpc('log_agent_interaction', { p_event_type: 'claim_attempt' });
+            
+            const { data: result, error: claimError } = await supabase
+              .rpc('claim_lead_for_agent', {
+                p_lead_id: actualId,
+                p_agent_id: userId
+              });
+            
+            if (claimError) throw claimError;
+            
+            const claimResult = result as { success: boolean; error?: string; message?: string };
+            
+            if (!claimResult.success) {
+              throw new Error(claimResult.error || 'Failed to claim lead');
+            }
+          } else {
+            // Regular update for admins or reassignments
+            const { error } = await supabase
+              .from('sales_leads')
+              .update({
+                assigned_to: userId,
+                assigned_at: now,
+                updated_at: now
+              })
+              .eq('id', actualId);
 
-        if (error) throw error;
+            if (error) throw error;
+          }
+        } else if (userId === null) {
+          // Removing assignment
+          const { error } = await supabase
+            .from('sales_leads')
+            .update({
+              assigned_to: null,
+              assigned_at: null,
+              updated_at: now
+            })
+            .eq('id', actualId);
+
+          if (error) throw error;
+        }
 
         if (userId && user) {
           logActivity(leadId, 'assignment', `Assigned to ${user.first_name || user.email || 'Unknown'}`);
