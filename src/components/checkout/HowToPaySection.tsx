@@ -263,6 +263,8 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
             style={{
               backgroundColor: !selectedPayment 
                 ? '#CCCCCC' 
+                : selectedPayment === 'full'
+                ? '#0BA360'
                 : '#FF6B00',
               color: '#FFFFFF',
             }}
