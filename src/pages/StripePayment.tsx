@@ -36,11 +36,11 @@ const StripePayment: React.FC = () => {
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Check for redirect status from PayPal/Revolut returns
+  // Check for redirect status from PayPal returns
   const redirectStatus = searchParams.get('redirect_status');
   const paymentIntentId = searchParams.get('payment_intent');
   
-  // Handle redirect-based payment returns (PayPal, Revolut, etc.)
+  // Handle redirect-based payment returns (PayPal, etc.)
   useEffect(() => {
     // If user is returning from a redirect-based payment
     if (redirectStatus) {
