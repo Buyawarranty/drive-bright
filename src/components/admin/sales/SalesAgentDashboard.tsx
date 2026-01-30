@@ -73,9 +73,10 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
   }, []);
 
   // Filter leads to only show those assigned to current user - CRITICAL SECURITY
+  // Also exclude fake_lead status as they should only appear in the Fake tab
   const myLeads = useMemo(() => {
     if (!currentUserId) return [];
-    return leads.filter(l => l.assigned_to === currentUserId);
+    return leads.filter(l => l.assigned_to === currentUserId && l.status !== 'fake_lead');
   }, [currentUserId, leads]);
 
   const todayFollowUps = useMemo(() => 
