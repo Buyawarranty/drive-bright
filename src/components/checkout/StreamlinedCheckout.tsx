@@ -1688,6 +1688,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             appliedDiscountCodes={appliedDiscountCodes}
             onRemoveDiscountCode={removePromoCode}
             totalDiscountAmount={totalDiscountAmount}
+            hidePayButton={showEmbeddedCheckout && selectedPayment === 'full'}
           />
 
           {/* ==================== INLINE STRIPE PAYMENT ==================== */}
