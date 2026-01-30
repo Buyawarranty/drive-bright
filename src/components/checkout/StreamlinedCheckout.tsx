@@ -1468,7 +1468,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   </p>
                 )}
                 
-                {/* Enter address manually link */}
+                {/* Postcode validation error */}
+                {showValidation && addressErrors.postcode && (
+                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {addressErrors.postcode}
+                  </p>
+                )}
+                
+                {/* Enter your address link */}
                 {!showAddressFields && !isLookingUp && (
                   <button
                     type="button"
@@ -1486,7 +1494,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     }}
                     className="mt-2 text-sm text-[#1a1a1a] hover:underline font-medium"
                   >
-                    Enter address manually
+                    Enter your address
                   </button>
                 )}
               </div>
