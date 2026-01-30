@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck } from 'lucide-react';
+import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck, Key, Copy, Check } from 'lucide-react';
 import { AccessRequestsPanel } from './AccessRequestsPanel';
 import { TeamActivityPanel } from './TeamActivityPanel';
 import { useAuth } from '@/hooks/useAuth';
@@ -96,6 +96,11 @@ export const UserPermissionsTab = () => {
     role: 'member' as 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales',
     permissions: {} as Record<string, boolean>
   });
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [passwordUser, setPasswordUser] = useState<AdminUser | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [settingPassword, setSettingPassword] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -305,6 +310,69 @@ export const UserPermissionsTab = () => {
   const openEditDialog = (user: AdminUser) => {
     setEditingUser({ ...user, permissions: user.permissions || {} });
     setShowEditDialog(true);
+  };
+
+  const openPasswordDialog = (user: AdminUser) => {
+    setPasswordUser(user);
+    setNewPassword('');
+    setShowPasswordDialog(true);
+  };
+
+  const handleSetPassword = async () => {
+    if (!passwordUser || !newPassword) {
+      toast.error('Please enter a password');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+
+    setSettingPassword(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('set-admin-password', {
+        body: { 
+          userId: passwordUser.user_id,
+          email: passwordUser.email,
+          password: newPassword
+        }
+      });
+
+      if (error) throw error;
+      
+      toast.success(`Password set successfully for ${passwordUser.email}`, {
+        duration: 5000
+      });
+      setShowPasswordDialog(false);
+      setPasswordUser(null);
+      setNewPassword('');
+    } catch (error: any) {
+      console.error('Error setting password:', error);
+      toast.error(error.message || 'Failed to set password');
+    } finally {
+      setSettingPassword(false);
+    }
+  };
+
+  const copyToClipboard = async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+      toast.success('Copied to clipboard');
+    } catch (err) {
+      toast.error('Failed to copy');
+    }
+  };
+
+  const generateRandomPassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setNewPassword(password);
   };
 
   const toggleTabPermission = (tabId: string, isEditing: boolean) => {
@@ -692,6 +760,88 @@ export const UserPermissionsTab = () => {
         </Dialog>
       </div>
 
+      {/* Set Password Dialog */}
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Key className="h-5 w-5" />
+              Set Password
+            </DialogTitle>
+          </DialogHeader>
+          {passwordUser && (
+            <div className="space-y-4">
+              <div className="p-4 bg-muted rounded-lg space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">User:</span>
+                  <span className="font-medium">{passwordUser.first_name} {passwordUser.last_name}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Email (Username):</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-sm">{passwordUser.email}</span>
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="h-6 w-6 p-0"
+                      onClick={() => copyToClipboard(passwordUser.email, 'email')}
+                    >
+                      {copiedField === 'email' ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="newPassword">New Password</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="newPassword"
+                    type="text"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password"
+                    className="font-mono"
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={generateRandomPassword}
+                  >
+                    Generate
+                  </Button>
+                </div>
+                {newPassword && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="h-6 px-2 text-xs"
+                      onClick={() => copyToClipboard(newPassword, 'password')}
+                    >
+                      {copiedField === 'password' ? <Check className="h-3 w-3 text-green-500 mr-1" /> : <Copy className="h-3 w-3 mr-1" />}
+                      Copy Password
+                    </Button>
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Minimum 6 characters. Share this password securely with the user.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                <Button variant="outline" onClick={() => setShowPasswordDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSetPassword} disabled={settingPassword || !newPassword}>
+                  {settingPassword ? 'Setting...' : 'Set Password'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Edit Permissions Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
@@ -752,6 +902,7 @@ export const UserPermissionsTab = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>User</TableHead>
+                <TableHead>Login Email</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Tab Access</TableHead>
                 <TableHead>Status</TableHead>
@@ -763,9 +914,24 @@ export const UserPermissionsTab = () => {
               {users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>
-                    <div>
-                      <div className="font-medium">{user.first_name} {user.last_name}</div>
-                      <div className="text-sm text-muted-foreground">{user.email}</div>
+                    <div className="font-medium">
+                      {user.first_name} {user.last_name}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
+                        {user.email}
+                      </code>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="h-6 w-6 p-0"
+                        onClick={() => copyToClipboard(user.email, `email-${user.id}`)}
+                        title="Copy email"
+                      >
+                        {copiedField === `email-${user.id}` ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                      </Button>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -821,10 +987,19 @@ export const UserPermissionsTab = () => {
                       <Button
                         size="sm"
                         variant="secondary"
-                        onClick={() => handleResetPassword(user.id, user.email)}
-                        title="Reset Password"
+                        onClick={() => handleResetPassword(user.user_id || user.id, user.email)}
+                        title="Reset Password (Sends Email)"
                       >
                         <RotateCcw className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="default"
+                        onClick={() => openPasswordDialog(user)}
+                        title="Set Password Manually"
+                        className="bg-orange-500 hover:bg-orange-600"
+                      >
+                        <Key className="h-4 w-4" />
                       </Button>
                       <Button
                         size="sm"
