@@ -1,194 +1,109 @@
 
-# uChat WhatsApp Welcome Message Integration
+# uChat WhatsApp Integration Implementation
 
-## Overview
-Implement automated WhatsApp welcome messages for new leads using uChat's Inbound Webhook feature. When a new lead is captured (either via `abandoned_carts` or `sales_leads`), the system will automatically send a personalized WhatsApp message through uChat.
+## Webhook URL Received
+The uChat webhook URL has been provided:
+`https://www.uchat.com.au/api/iwh/cc070b383e47c30ea831c93ed24aa7ba`
 
-## How uChat Inbound Webhooks Work
-uChat's Inbound Webhook allows external systems to trigger WhatsApp messages by sending a POST request with lead data. The webhook:
-1. Receives lead data (phone, name, etc.)
-2. Creates or finds a user profile in uChat using the phone number
-3. Triggers a flow that sends the WhatsApp template message
+## Implementation Steps
 
-## Implementation Components
+### Step 1: Add Secret
+Add the `UCHAT_WEBHOOK_URL` secret to Supabase with the provided webhook URL.
 
-### 1. New Edge Function: `send-uchat-whatsapp`
-Create a new Supabase Edge Function that sends lead data to uChat's inbound webhook.
+### Step 2: Create Database Table
+Create the `whatsapp_message_log` table for tracking messages and deduplication:
 
+```sql
+CREATE TABLE public.whatsapp_message_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  lead_id UUID REFERENCES public.sales_leads(id) ON DELETE SET NULL,
+  abandoned_cart_id UUID REFERENCES public.abandoned_carts(id) ON DELETE SET NULL,
+  phone TEXT NOT NULL,
+  normalized_phone TEXT NOT NULL,
+  message_type TEXT NOT NULL DEFAULT 'welcome',
+  status TEXT NOT NULL DEFAULT 'pending',
+  uchat_response JSONB,
+  error_message TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Index for deduplication checks
+CREATE INDEX idx_whatsapp_log_phone_type ON public.whatsapp_message_log(normalized_phone, message_type, status);
+CREATE INDEX idx_whatsapp_log_created ON public.whatsapp_message_log(created_at DESC);
+
+-- Enable RLS
+ALTER TABLE public.whatsapp_message_log ENABLE ROW LEVEL SECURITY;
+
+-- Admin-only access policy
+CREATE POLICY "Admin users can view whatsapp logs" ON public.whatsapp_message_log
+  FOR SELECT USING (public.is_admin(auth.uid()));
+```
+
+### Step 3: Create Edge Function
+Create `supabase/functions/send-uchat-whatsapp/index.ts`:
+
+- Accept lead data (phone, firstName, vehicleMake, vehicleModel)
+- Normalize UK phone numbers to international format (+44...)
+- Check for existing welcome message in last 7 days (deduplication)
+- POST to uChat webhook with lead data
+- Log result to `whatsapp_message_log` table
+
+### Step 4: Update track-abandoned-cart
+Modify `supabase/functions/track-abandoned-cart/index.ts` to trigger WhatsApp welcome message when:
+- Phone number is provided
+- This is a new cart entry (not an update)
+
+The trigger will call the `send-uchat-whatsapp` function asynchronously so it doesn't block the cart tracking.
+
+## Technical Details
+
+### Phone Number Normalization
 ```text
-supabase/functions/send-uchat-whatsapp/index.ts
-├── Accept lead data (phone, firstName, vehicleMake, vehicleModel, etc.)
-├── Format phone number to international format (+44...)
-├── Send POST request to uChat inbound webhook URL
-├── Log success/failure to whatsapp_message_log table
-└── Return response status
+07xxx → +447xxx
+0xxx  → +44xxx
+44xxx → +44xxx
 ```
 
-**Message Template:**
-```
-Hey {firstName},
+### Deduplication Logic
+- Query `whatsapp_message_log` for matching `normalized_phone`
+- Check for `message_type = 'welcome'` and `status = 'sent'`
+- Only within last 7 days
+- Skip sending if match found
 
-Welcome to Buy A Warranty 🚗
-
-Great news! You're just minutes away from securing reliable vehicle cover and protecting yourself against unexpected repair costs.
-
-We're getting in touch regarding the quote you recently requested for your vehicle. If you have any questions or need any help in the meantime, simply reply to this WhatsApp message or email and we'll be happy to assist.
-
-Thank you for choosing Buy A Warranty, we look forward to helping you get covered.
-
-Kind regards,
-
-James Reed
-James.Reed@buyawarranty.co.uk
-Buy A Warranty | UK Vehicle Warranty & Extended Cover 
-
-📞 0800 494 7477
-```
-
-### 2. Database Migration
-Create a table to log WhatsApp messages and track which leads have received welcome messages:
-
-```text
-whatsapp_message_log
-├── id (UUID, primary key)
-├── lead_id (UUID, nullable - for sales_leads)
-├── abandoned_cart_id (UUID, nullable - for abandoned_carts)
-├── phone (text)
-├── normalized_phone (text)
-├── message_type (text: 'welcome', 'follow_up', etc.)
-├── status (text: 'sent', 'failed', 'pending')
-├── uchat_response (jsonb)
-├── error_message (text, nullable)
-├── created_at (timestamptz)
-```
-
-### 3. Integration Points
-Modify the `track-abandoned-cart` edge function to trigger the WhatsApp welcome message:
-
-```text
-track-abandoned-cart/index.ts
-├── [Existing logic] Create/update abandoned cart
-├── [NEW] Check if welcome message already sent for this phone
-├── [NEW] If new lead with phone number → call send-uchat-whatsapp
-└── [NEW] Log the message attempt
-```
-
-### 4. Required uChat Setup (User Action)
-The user will need to configure uChat:
-
-1. **Create Inbound Webhook in uChat**
-   - Go to Flow Builder → Tools → Inbound Webhooks
-   - Create new webhook named "BuyaWarranty New Lead"
-   - Note the webhook URL (e.g., `https://app.uchat.com.au/webhook/abc123...`)
-
-2. **Configure Webhook Fields**
-   - Map `phone` field for user identification
-   - Map `firstName`, `vehicleMake`, `vehicleModel` for personalization
-
-3. **Create WhatsApp Template**
-   - Submit template to Facebook/Meta for approval (required for initiating WhatsApp conversations)
-   - Template must match the message format above
-
-4. **Build Flow**
-   - Create flow triggered by inbound webhook
-   - Send the approved template message with dynamic variables
-
-### 5. Required Secret
-Add a new secret to Supabase for the uChat webhook URL:
-- **Secret Name:** `UCHAT_WEBHOOK_URL`
-- **Value:** The inbound webhook URL from uChat
-
-## Architecture Flow
-
-```text
-┌─────────────────┐     ┌───────────────────────┐     ┌─────────────────┐
-│   User fills    │────▶│  track-abandoned-cart │────▶│ abandoned_carts │
-│   quote form    │     │    edge function      │     │     table       │
-└─────────────────┘     └───────────────────────┘     └─────────────────┘
-                                   │
-                                   │ (if phone exists & no welcome sent)
-                                   ▼
-                        ┌───────────────────────┐
-                        │  send-uchat-whatsapp  │
-                        │    edge function      │
-                        └───────────────────────┘
-                                   │
-                                   ▼
-                        ┌───────────────────────┐     ┌─────────────────┐
-                        │   uChat Inbound       │────▶│   WhatsApp      │
-                        │     Webhook           │     │   Message       │
-                        └───────────────────────┘     └─────────────────┘
-                                   │
-                                   ▼
-                        ┌───────────────────────┐
-                        │ whatsapp_message_log  │
-                        │       table           │
-                        └───────────────────────┘
+### uChat Webhook Payload
+```json
+{
+  "phone": "+447123456789",
+  "firstName": "John",
+  "vehicleMake": "BMW",
+  "vehicleModel": "3 Series"
+}
 ```
 
 ## Files to Create/Modify
 
-| File | Action | Description |
-|------|--------|-------------|
-| `supabase/functions/send-uchat-whatsapp/index.ts` | Create | New edge function to call uChat webhook |
-| `supabase/functions/track-abandoned-cart/index.ts` | Modify | Add WhatsApp trigger after cart creation |
-| Database migration | Create | Add `whatsapp_message_log` table |
+| File | Action |
+|------|--------|
+| Database migration | Create `whatsapp_message_log` table |
+| `supabase/functions/send-uchat-whatsapp/index.ts` | Create new edge function |
+| `supabase/functions/track-abandoned-cart/index.ts` | Add WhatsApp trigger |
 
-## Technical Details
+## After Implementation - Your uChat Setup
 
-### Edge Function: send-uchat-whatsapp
+Once implemented, configure uChat to handle the incoming webhook data:
 
-```typescript
-// Key logic:
-// 1. Validate phone number exists
-// 2. Format to international format (+44)
-// 3. Check if welcome message already sent (dedupe)
-// 4. POST to uChat webhook with:
-//    - phone: normalized phone
-//    - firstName: customer first name
-//    - vehicleMake: vehicle make
-//    - vehicleModel: vehicle model
-// 5. Log result to whatsapp_message_log
+1. **In uChat Flow Builder**: Create a flow triggered by the inbound webhook
+2. **Map fields**: `{{phone}}`, `{{firstName}}`, `{{vehicleMake}}`, `{{vehicleModel}}`
+3. **Send WhatsApp template** with the welcome message using dynamic variables
+
+The welcome message template in uChat should use:
 ```
+Hey {{firstName}},
 
-### Integration in track-abandoned-cart
+Welcome to Buy A Warranty 🚗
 
-```typescript
-// After successful cart insert/update:
-if (cartData.phone && !existingWelcomeMessage) {
-  await supabase.functions.invoke('send-uchat-whatsapp', {
-    body: {
-      phone: cartData.phone,
-      firstName: cartData.full_name?.split(' ')[0] || 'there',
-      vehicleMake: cartData.vehicle_make,
-      vehicleModel: cartData.vehicle_model,
-      abandonedCartId: cartId
-    }
-  });
-}
+Great news! You're just minutes away from securing reliable vehicle cover...
+
+Kind regards,
+James Reed
 ```
-
-## Deduplication Strategy
-- Check `whatsapp_message_log` by `normalized_phone` before sending
-- Only send if no 'welcome' message sent in last 7 days for this phone
-- Prevents spam if user abandons cart multiple times
-
-## Error Handling
-- Log all attempts (success/failure) to `whatsapp_message_log`
-- Don't fail the main cart tracking if WhatsApp fails
-- Include retry logic with exponential backoff (optional future enhancement)
-
-## User Setup Checklist
-Before the integration works, the user must:
-1. Set up uChat account with WhatsApp Cloud API connected
-2. Create and approve WhatsApp message template via Meta Business
-3. Create inbound webhook in uChat and configure field mappings
-4. Build flow to send template message on webhook trigger
-5. Add `UCHAT_WEBHOOK_URL` secret in Supabase
-
-## Testing Plan
-1. Add the uChat webhook URL secret
-2. Submit a test quote form with a phone number
-3. Verify WhatsApp message is received
-4. Check `whatsapp_message_log` table for entry
-5. Verify deduplication works (no duplicate messages)
