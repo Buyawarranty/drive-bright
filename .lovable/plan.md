@@ -1,202 +1,194 @@
 
-
-# Stripe Embedded Payment Integration Plan
+# uChat WhatsApp Welcome Message Integration
 
 ## Overview
-This plan implements embedded Stripe payments using the **Payment Element**, allowing customers to complete their payment directly on buyawarranty.co.uk without being redirected to Stripe's hosted checkout page. The user stays on your site throughout the entire checkout process.
+Implement automated WhatsApp welcome messages for new leads using uChat's Inbound Webhook feature. When a new lead is captured (either via `abandoned_carts` or `sales_leads`), the system will automatically send a personalized WhatsApp message through uChat.
 
-## Current Flow vs New Flow
+## How uChat Inbound Webhooks Work
+uChat's Inbound Webhook allows external systems to trigger WhatsApp messages by sending a POST request with lead data. The webhook:
+1. Receives lead data (phone, name, etc.)
+2. Creates or finds a user profile in uChat using the phone number
+3. Triggers a flow that sends the WhatsApp template message
 
-**Current Flow (Redirect-based)**
-1. User clicks "Complete One-Time Payment" 
-2. Browser redirects to Stripe's hosted checkout page
-3. User enters card details on stripe.com
-4. After payment, redirected back to /thank-you
+## Implementation Components
 
-**New Flow (Embedded)**
-1. User clicks "Complete One-Time Payment"
-2. Modal opens with embedded Stripe payment form
-3. User enters card details directly on buyawarranty.co.uk
-4. Payment processes in background
-5. Success message → redirect to /thank-you
+### 1. New Edge Function: `send-uchat-whatsapp`
+Create a new Supabase Edge Function that sends lead data to uChat's inbound webhook.
 
----
-
-## Implementation Phases
-
-### Phase 1: Dependencies & Secret Setup
-
-**Add Stripe frontend packages:**
-- `@stripe/stripe-js` - Stripe.js loader
-- `@stripe/react-stripe-js` - React components for Stripe Elements
-
-**Add Secret:**
-- `STRIPE_PUBLISHABLE_KEY` - Required for frontend Stripe.js initialization (starts with `pk_`)
-- This secret already exists in your plan.md but needs to be added to the project
-
----
-
-### Phase 2: New Edge Function
-
-**Create `create-payment-intent` edge function**
-
-This function creates a PaymentIntent instead of a Checkout Session:
-
-Key differences from `create-checkout`:
-- Uses `stripe.paymentIntents.create()` instead of `stripe.checkout.sessions.create()`
-- Returns `{ clientSecret, paymentIntentId }` instead of `{ url }`
-- Stores all metadata (customer data, vehicle data, add-ons, pricing) on the PaymentIntent for webhook retrieval
-- Performs same server-side price validation as current `create-checkout`
-
-Metadata stored on PaymentIntent:
-- Customer details (name, email, phone, address)
-- Vehicle details (reg, make, model, year, mileage)
-- Plan details (planId, paymentType, claimLimit, labourRate)
-- Add-ons (breakdown, rental, wearTear, etc.)
-- Discount codes and final amount
-
----
-
-### Phase 3: Frontend Components
-
-**1. StripeProvider.tsx**
-- Wrapper component that initializes Stripe with publishable key
-- Uses `loadStripe()` to initialize Stripe.js
-- Wraps payment components with `<Elements>` provider
-- Passes `clientSecret` and appearance options
-
-**2. StripePaymentForm.tsx**
-- Uses `useStripe()` and `useElements()` hooks
-- Renders `<PaymentElement>` with British styling (GB locale)
-- Handles `stripe.confirmPayment()` with proper error handling
-- Loading states during payment processing
-- Error display for declined cards, validation issues
-
-**3. EmbeddedCheckoutModal.tsx**
-- Dialog/Modal using existing Radix pattern
-- Shows order summary (vehicle, plan, price, discounts)
-- Contains the StripePaymentForm
-- Exit confirmation if user tries to close mid-payment
-- Success animation on payment completion
-- Branded with BuyAWarranty styling and secure messaging
-
----
-
-### Phase 4: Webhook Updates
-
-**Update `stripe-webhook` to handle `payment_intent.succeeded`**
-
-Current webhook handles:
-- `checkout.session.completed`
-
-Add handler for:
-- `payment_intent.succeeded`
-
-The new handler will:
-1. Extract metadata from the PaymentIntent
-2. Transform data to match existing `handle-successful-payment` format
-3. Call `handle-successful-payment` with same data structure
-4. Update live quote status if applicable
-5. Fire server-side conversion tracking
-
----
-
-### Phase 5: StreamlinedCheckout Integration
-
-**Modify `processStripeCheckout()` function:**
-
-Replace redirect flow:
-```
-Current: → create-checkout → redirect to Stripe URL
-New:     → create-payment-intent → open modal → confirm payment → /thank-you
+```text
+supabase/functions/send-uchat-whatsapp/index.ts
+├── Accept lead data (phone, firstName, vehicleMake, vehicleModel, etc.)
+├── Format phone number to international format (+44...)
+├── Send POST request to uChat inbound webhook URL
+├── Log success/failure to whatsapp_message_log table
+└── Return response status
 ```
 
-Integration steps:
-1. Call `create-payment-intent` to get `clientSecret`
-2. Set state to show `EmbeddedCheckoutModal`
-3. Modal opens with Stripe Payment Element
-4. User enters card details inline
-5. On successful confirmation, navigate to `/thank-you`
-6. On failure, display error and allow retry
+**Message Template:**
+```
+Hey {firstName},
 
----
+Welcome to Buy A Warranty 🚗
 
-## Files to Create
+Great news! You're just minutes away from securing reliable vehicle cover and protecting yourself against unexpected repair costs.
 
-| File | Purpose |
-|------|---------|
-| `supabase/functions/create-payment-intent/index.ts` | New edge function for Payment Intents |
-| `src/components/stripe/StripeProvider.tsx` | Stripe Elements provider wrapper |
-| `src/components/stripe/StripePaymentForm.tsx` | Payment Element form component |
-| `src/components/stripe/EmbeddedCheckoutModal.tsx` | Modal container for embedded checkout |
-| `src/components/stripe/index.ts` | Barrel export file |
+We're getting in touch regarding the quote you recently requested for your vehicle. If you have any questions or need any help in the meantime, simply reply to this WhatsApp message or email and we'll be happy to assist.
 
-## Files to Modify
+Thank you for choosing Buy A Warranty, we look forward to helping you get covered.
 
-| File | Changes |
-|------|---------|
-| `package.json` | Add `@stripe/stripe-js`, `@stripe/react-stripe-js` |
-| `supabase/functions/stripe-webhook/index.ts` | Add `payment_intent.succeeded` handler |
-| `src/components/checkout/StreamlinedCheckout.tsx` | Replace redirect flow with embedded modal |
+Kind regards,
 
----
+James Reed
+James.Reed@buyawarranty.co.uk
+Buy A Warranty | UK Vehicle Warranty & Extended Cover 
+
+📞 0800 494 7477
+```
+
+### 2. Database Migration
+Create a table to log WhatsApp messages and track which leads have received welcome messages:
+
+```text
+whatsapp_message_log
+├── id (UUID, primary key)
+├── lead_id (UUID, nullable - for sales_leads)
+├── abandoned_cart_id (UUID, nullable - for abandoned_carts)
+├── phone (text)
+├── normalized_phone (text)
+├── message_type (text: 'welcome', 'follow_up', etc.)
+├── status (text: 'sent', 'failed', 'pending')
+├── uchat_response (jsonb)
+├── error_message (text, nullable)
+├── created_at (timestamptz)
+```
+
+### 3. Integration Points
+Modify the `track-abandoned-cart` edge function to trigger the WhatsApp welcome message:
+
+```text
+track-abandoned-cart/index.ts
+├── [Existing logic] Create/update abandoned cart
+├── [NEW] Check if welcome message already sent for this phone
+├── [NEW] If new lead with phone number → call send-uchat-whatsapp
+└── [NEW] Log the message attempt
+```
+
+### 4. Required uChat Setup (User Action)
+The user will need to configure uChat:
+
+1. **Create Inbound Webhook in uChat**
+   - Go to Flow Builder → Tools → Inbound Webhooks
+   - Create new webhook named "BuyaWarranty New Lead"
+   - Note the webhook URL (e.g., `https://app.uchat.com.au/webhook/abc123...`)
+
+2. **Configure Webhook Fields**
+   - Map `phone` field for user identification
+   - Map `firstName`, `vehicleMake`, `vehicleModel` for personalization
+
+3. **Create WhatsApp Template**
+   - Submit template to Facebook/Meta for approval (required for initiating WhatsApp conversations)
+   - Template must match the message format above
+
+4. **Build Flow**
+   - Create flow triggered by inbound webhook
+   - Send the approved template message with dynamic variables
+
+### 5. Required Secret
+Add a new secret to Supabase for the uChat webhook URL:
+- **Secret Name:** `UCHAT_WEBHOOK_URL`
+- **Value:** The inbound webhook URL from uChat
+
+## Architecture Flow
+
+```text
+┌─────────────────┐     ┌───────────────────────┐     ┌─────────────────┐
+│   User fills    │────▶│  track-abandoned-cart │────▶│ abandoned_carts │
+│   quote form    │     │    edge function      │     │     table       │
+└─────────────────┘     └───────────────────────┘     └─────────────────┘
+                                   │
+                                   │ (if phone exists & no welcome sent)
+                                   ▼
+                        ┌───────────────────────┐
+                        │  send-uchat-whatsapp  │
+                        │    edge function      │
+                        └───────────────────────┘
+                                   │
+                                   ▼
+                        ┌───────────────────────┐     ┌─────────────────┐
+                        │   uChat Inbound       │────▶│   WhatsApp      │
+                        │     Webhook           │     │   Message       │
+                        └───────────────────────┘     └─────────────────┘
+                                   │
+                                   ▼
+                        ┌───────────────────────┐
+                        │ whatsapp_message_log  │
+                        │       table           │
+                        └───────────────────────┘
+```
+
+## Files to Create/Modify
+
+| File | Action | Description |
+|------|--------|-------------|
+| `supabase/functions/send-uchat-whatsapp/index.ts` | Create | New edge function to call uChat webhook |
+| `supabase/functions/track-abandoned-cart/index.ts` | Modify | Add WhatsApp trigger after cart creation |
+| Database migration | Create | Add `whatsapp_message_log` table |
 
 ## Technical Details
 
-### Payment Element Appearance
+### Edge Function: send-uchat-whatsapp
 
-Themed to match BuyAWarranty brand:
-- Orange accent colours (#E65100)
-- Clean white backgrounds
-- British formatting for card numbers
-- Mobile-optimised inputs
+```typescript
+// Key logic:
+// 1. Validate phone number exists
+// 2. Format to international format (+44)
+// 3. Check if welcome message already sent (dedupe)
+// 4. POST to uChat webhook with:
+//    - phone: normalized phone
+//    - firstName: customer first name
+//    - vehicleMake: vehicle make
+//    - vehicleModel: vehicle model
+// 5. Log result to whatsapp_message_log
+```
 
-### Error Handling
+### Integration in track-abandoned-cart
 
-- Card declined → Display friendly message, allow retry
-- Network issues → Retry button
-- Validation errors → Inline field highlighting
-- Timeout → Loading timeout with cancel option
+```typescript
+// After successful cart insert/update:
+if (cartData.phone && !existingWelcomeMessage) {
+  await supabase.functions.invoke('send-uchat-whatsapp', {
+    body: {
+      phone: cartData.phone,
+      firstName: cartData.full_name?.split(' ')[0] || 'there',
+      vehicleMake: cartData.vehicle_make,
+      vehicleModel: cartData.vehicle_model,
+      abandonedCartId: cartId
+    }
+  });
+}
+```
 
-### Security
+## Deduplication Strategy
+- Check `whatsapp_message_log` by `normalized_phone` before sending
+- Only send if no 'welcome' message sent in last 7 days for this phone
+- Prevents spam if user abandons cart multiple times
 
-- Payment confirmation happens via Stripe.js
-- Customer card data never touches your servers
-- Same webhook verification as current flow
-- PCI DSS compliance maintained
+## Error Handling
+- Log all attempts (success/failure) to `whatsapp_message_log`
+- Don't fail the main cart tracking if WhatsApp fails
+- Include retry logic with exponential backoff (optional future enhancement)
 
----
+## User Setup Checklist
+Before the integration works, the user must:
+1. Set up uChat account with WhatsApp Cloud API connected
+2. Create and approve WhatsApp message template via Meta Business
+3. Create inbound webhook in uChat and configure field mappings
+4. Build flow to send template message on webhook trigger
+5. Add `UCHAT_WEBHOOK_URL` secret in Supabase
 
-## Backward Compatibility
-
-- Bumper monthly payments continue to work exactly as-is (separate flow)
-- Existing webhook handler for `checkout.session.completed` remains functional
-- Can easily fall back to redirect flow if needed
-- No changes to database schema required
-
----
-
-## User Experience Flow
-
-1. User fills in customer details on Step 4
-2. User selects "Pay in full" option
-3. User clicks "Complete One-Time Payment"
-4. Modal opens with embedded Stripe payment form
-5. Modal shows order summary (vehicle, plan, £amount)
-6. User enters card details directly on buyawarranty.co.uk
-7. User clicks "Pay £XXX now"
-8. Loading spinner while processing
-9. On success: Modal shows confirmation tick, then redirects to /thank-you
-10. On failure: Error message displayed, user can retry
-
----
-
-## Benefits
-
-- **No redirect**: Customers stay on your site throughout checkout
-- **Better conversion**: Fewer drop-offs from external redirects
-- **Brand consistency**: Payment experience matches BuyAWarranty design
-- **Mobile-friendly**: Works better on mobile without app switching
-- **Faster**: No page loads to external domains
-- **Trust**: Users see your branding, not a foreign site
-
+## Testing Plan
+1. Add the uChat webhook URL secret
+2. Submit a test quote form with a phone number
+3. Verify WhatsApp message is received
+4. Check `whatsapp_message_log` table for entry
+5. Verify deduplication works (no duplicate messages)
