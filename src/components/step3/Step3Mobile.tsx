@@ -13,6 +13,8 @@ import {
 } from '@/lib/pricingMatrix';
 import { trackStepCompletion, trackBeginCheckout } from '@/utils/analytics';
 import { AlertCircle, ArrowLeft } from 'lucide-react';
+import PriceHelpPanel from './PriceHelpPanel';
+import PriceHelpTrigger from './PriceHelpTrigger';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -101,6 +103,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
   const [loading, setLoading] = useState(false);
   const [platinumDocUrl, setPlatinumDocUrl] = useState('');
   const [termsDocUrl, setTermsDocUrl] = useState('');
+  const [showPriceHelpPanel, setShowPriceHelpPanel] = useState(false);
 
   // Fetch documents
   useEffect(() => {
@@ -400,6 +403,11 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
           </div>
         )}
 
+        {/* Price Help Trigger */}
+        <div className="px-4 mb-4">
+          <PriceHelpTrigger onClick={() => setShowPriceHelpPanel(true)} />
+        </div>
+
         <TermSelector
           selectedTerm={paymentType}
           onTermChange={(term) => setPaymentType(term)}
@@ -448,6 +456,19 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
         isValid={isFormValid}
         paymentPeriod={paymentType}
         hasAddOnsSelected={hasAddOnsSelected}
+      />
+
+      {/* Price Help Panel - Slide-in (Desktop) / Bottom Sheet (Mobile) */}
+      <PriceHelpPanel
+        isOpen={showPriceHelpPanel}
+        onClose={() => setShowPriceHelpPanel(false)}
+        currentExcess={voluntaryExcess}
+        currentClaimLimit={selectedClaimLimit}
+        currentLabourRate={selectedLabourRate}
+        onExcessChange={setVoluntaryExcess}
+        onClaimLimitChange={setSelectedClaimLimit}
+        onLabourRateChange={setSelectedLabourRate}
+        currentMonthlyPrice={currentMonthlyPrice}
       />
     </div>
   );
