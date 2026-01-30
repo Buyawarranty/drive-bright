@@ -162,6 +162,73 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
   const [showAddressDropdown, setShowAddressDropdown] = useState(false);
+  const postcodeLookupTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  
+  // UK postcode regex for validation
+  const ukPostcodeRegex = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
+  
+  // Auto lookup postcode function
+  const performPostcodeLookup = useCallback(async (postcode: string) => {
+    const cleanPostcode = postcode.replace(/\s/g, '').toUpperCase();
+    if (!ukPostcodeRegex.test(cleanPostcode)) return;
+    
+    setIsLookingUp(true);
+    setAddressLookupFailed(false);
+    
+    try {
+      console.log('🔍 Auto postcode lookup for:', cleanPostcode);
+      const response = await fetch(`https://api.postcodes.io/postcodes/${cleanPostcode}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📍 Postcode API response:', data);
+        if (data.result) {
+          const displayPostcode = data.result.postcode || postcode;
+          const town = data.result.admin_district || 
+                       data.result.parish || 
+                       data.result.admin_ward || 
+                       data.result.nuts || 
+                       '';
+          
+          console.log('🏘️ Setting town to:', town);
+          
+          setPostcodeInput(displayPostcode);
+          setAddressData(prev => ({ 
+            ...prev, 
+            postcode: displayPostcode,
+            town: town
+          }));
+          setAddressValidated(prev => ({ 
+            ...prev, 
+            postcode: true,
+            town: !!town
+          }));
+          if (town) {
+            setAddressErrors(prev => ({ ...prev, town: '' }));
+          }
+          setShowAddressFields(true);
+        } else {
+          setAddressLookupFailed(true);
+          setShowAddressFields(true);
+        }
+      } else {
+        console.log('⚠️ Postcode API returned non-OK status:', response.status);
+        setAddressLookupFailed(true);
+        setShowAddressFields(true);
+        const formatted = cleanPostcode.length > 3 
+          ? cleanPostcode.slice(0, -3) + ' ' + cleanPostcode.slice(-3) 
+          : cleanPostcode;
+        setAddressData(prev => ({ ...prev, postcode: formatted }));
+        setAddressValidated(prev => ({ ...prev, postcode: true }));
+      }
+    } catch (err) {
+      console.error('Postcode lookup error:', err);
+      setAddressLookupFailed(true);
+      setShowAddressFields(true);
+    } finally {
+      setIsLookingUp(false);
+    }
+  }, []);
   
   // Form states
   const [showValidation, setShowValidation] = useState(false);
@@ -1218,6 +1285,59 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             </div>
 
             <div className="space-y-5">
+              {/* Email - First for cognitive ease */}
+              <div>
+                <Label htmlFor="email" className="text-sm font-medium text-foreground/80">Email Address *</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">We'll send your policy documents here.</p>
+                <div className="relative mt-1.5">
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="john.smith@email.com"
+                    value={customerData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    onBlur={() => handleFieldBlur('email')}
+                    required
+                    className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('email')}`}
+                  />
+                  {validatedFields.email && !fieldErrors.email && (
+                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
+                  )}
+                </div>
+                {showValidation && fieldErrors.email && (
+                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {fieldErrors.email}
+                  </p>
+                )}
+              </div>
+
+              {/* Phone - Second */}
+              <div>
+                <Label htmlFor="phone" className="text-sm font-medium text-foreground/80">Phone Number *</Label>
+                <div className="relative mt-1.5">
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="07123 456789"
+                    value={customerData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    onBlur={() => handleFieldBlur('phone')}
+                    required
+                    className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('phone')}`}
+                  />
+                  {validatedFields.phone && !fieldErrors.phone && (
+                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
+                  )}
+                </div>
+                {showValidation && fieldErrors.phone && (
+                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {fieldErrors.phone}
+                  </p>
+                )}
+              </div>
+
               {/* Name Fields - Side by Side */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* First Name */}
@@ -1260,153 +1380,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   )}
                 </div>
               </div>
-
-              {/* Email */}
-              <div>
-                <Label htmlFor="email" className="text-sm font-medium text-foreground/80">Email Address *</Label>
-                <p className="text-xs text-muted-foreground mt-0.5">We'll send your policy documents here.</p>
-                <div className="relative mt-1.5">
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="john.smith@email.com"
-                    value={customerData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    onBlur={() => handleFieldBlur('email')}
-                    required
-                    className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('email')}`}
-                  />
-                  {validatedFields.email && !fieldErrors.email && (
-                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
-                  )}
-                </div>
-                {showValidation && fieldErrors.email && (
-                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                    <AlertCircle className="w-3.5 h-3.5" />
-                    {fieldErrors.email}
-                  </p>
-                )}
-              </div>
-
-              {/* Phone */}
-              <div>
-                <Label htmlFor="phone" className="text-sm font-medium text-foreground/80">Phone Number *</Label>
-                <div className="relative mt-1.5">
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="07123 456789"
-                    value={customerData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    onBlur={() => handleFieldBlur('phone')}
-                    required
-                    className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('phone')}`}
-                  />
-                  {validatedFields.phone && !fieldErrors.phone && (
-                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
-                  )}
-                </div>
-                {showValidation && fieldErrors.phone && (
-                  <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                    <AlertCircle className="w-3.5 h-3.5" />
-                    {fieldErrors.phone}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Section Divider - Your Vehicle */}
-            <div className="mt-10 mb-6">
-              <h2 className="text-lg font-bold text-[#1a1a1a]">Your Vehicle</h2>
-              <div className="h-px bg-border mt-3" />
-            </div>
-
-            {/* Mileage */}
-            <div>
-              <Label htmlFor="mileage" className="text-sm font-medium text-foreground/80">Current Mileage *</Label>
-              <div className="flex gap-2 mt-1.5">
-                <div className="relative flex-1">
-                  {motLoading ? (
-                    <div className="h-11 sm:h-12 flex items-center gap-2 px-3 border border-border rounded-lg bg-muted/30">
-                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Fetching from MOT history...</span>
-                    </div>
-                  ) : (
-                    <Input
-                      id="mileage"
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="e.g. 52,000"
-                      value={customerData.mileage ? Number(customerData.mileage).toLocaleString('en-GB') : ''}
-                      onChange={(e) => {
-                        const rawValue = e.target.value.replace(/[^0-9]/g, '');
-                        handleInputChange('mileage', rawValue);
-                        setMileagePreFilled(false);
-                      }}
-                      onBlur={() => handleFieldBlur('mileage')}
-                      required
-                      className={`h-11 sm:h-12 text-base ${getInputValidationClass('mileage')}`}
-                    />
-                  )}
-                </div>
-                <select
-                  value=""
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      handleInputChange('mileage', e.target.value);
-                      setValidatedFields(prev => ({ ...prev, mileage: true }));
-                      setMileagePreFilled(false);
-                    }
-                  }}
-                  className="h-11 sm:h-12 px-4 rounded-lg border border-border bg-muted/50 text-sm font-medium cursor-pointer hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary text-muted-foreground"
-                >
-                  <option value="">Quick select</option>
-                  {Array.from({ length: 131 }, (_, i) => {
-                    const value = 10000 + (i * 1000);
-                    return <option key={value} value={value}>{value.toLocaleString('en-GB')}</option>;
-                  })}
-                </select>
-              </div>
-              
-              {/* MOT Pre-fill Info Badge */}
-              {mileagePreFilled && motMileage && motDate && (
-                <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
-                  <Info className="w-3.5 h-3.5" />
-                  <span>
-                    Pre-filled from your last MOT ({format(new Date(motDate), 'MMM yyyy')})
-                  </span>
-                </div>
-              )}
-              
-              {customerData.mileage && Number(customerData.mileage) > 150000 && (
-                <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2 mt-2">
-                  <p className="text-destructive text-sm font-medium">
-                    Sorry, we only cover vehicles under 150,000 miles.
-                  </p>
-                </div>
-              )}
-              {/* High Mileage Surcharge Banner */}
-              {highMileageSurchargeApplied && (
-                <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 mt-2">
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <Info className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-amber-800">
-                        Higher mileage? No problem!
-                      </p>
-                      <p className="text-xs text-amber-700 mt-0.5">
-                        As your mileage is over 120,000 miles, we've updated your quote to include our higher mileage cover.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {showValidation && fieldErrors.mileage && (
-                <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  {fieldErrors.mileage}
-                </p>
-              )}
             </div>
 
             {/* Section Divider - Your Address */}
@@ -1417,161 +1390,75 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
             {/* Address Section - Always visible */}
             <div id="address-fields" className="space-y-4">
-              {/* Postcode Lookup */}
+              {/* Postcode Lookup - Auto triggers on valid format or blur */}
               <div>
                 <Label className="text-sm font-medium text-foreground/80">Postcode *</Label>
-                <div className="flex gap-2 mt-1.5">
-                  <div className="relative flex-1">
-                    <Input
-                      id="postcode-lookup"
-                      type="text"
-                      value={postcodeInput}
-                      onChange={(e) => {
-                        const value = e.target.value.toUpperCase();
-                        setPostcodeInput(value);
-                        setAddressData(prev => ({ ...prev, postcode: value }));
-                      }}
-                      placeholder="e.g. SW1A 1AA"
-                      maxLength={8}
-                      className="h-11 sm:h-12 text-base font-medium uppercase tracking-wider pr-10"
-                      disabled={isLookingUp}
-                    />
-                    {/^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i.test(postcodeInput.replace(/\s/g, '')) && (
-                      <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-green-600" />
-                    )}
-                  </div>
-                  <Button
-                    type="button"
-                    onClick={async () => {
-                      if (!postcodeInput.trim()) return;
-                      setIsLookingUp(true);
-                      setAddressLookupFailed(false);
-                      try {
-                        // Use the free postcodes.io API to get town/city
-                        const cleanPostcode = postcodeInput.replace(/\s/g, '').toUpperCase();
-                        console.log('🔍 Postcode lookup starting for:', cleanPostcode);
-                        const response = await fetch(`https://api.postcodes.io/postcodes/${cleanPostcode}`);
-                        
-                        if (response.ok) {
-                          const data = await response.json();
-                          console.log('📍 Postcode API response:', data);
-                          if (data.result) {
-                            // Format postcode with space
-                            const displayPostcode = data.result.postcode || postcodeInput;
-                            // Try multiple fields to get the best town/city value
-                            const town = data.result.admin_district || 
-                                         data.result.parish || 
-                                         data.result.admin_ward || 
-                                         data.result.nuts || 
-                                         '';
-                            
-                            console.log('🏘️ Setting town to:', town);
-                            
-                            // Pre-populate town and postcode, show address fields
-                            // Use functional update to ensure we get latest state
-                            setAddressData(prev => {
-                              const newData = { 
-                                ...prev, 
-                                postcode: displayPostcode,
-                                town: town
-                              };
-                              console.log('📝 New addressData:', newData);
-                              return newData;
-                            });
-                            setAddressValidated(prev => ({ 
-                              ...prev, 
-                              postcode: true,
-                              town: !!town
-                            }));
-                            // Clear any existing town error since we just populated it
-                            if (town) {
-                              setAddressErrors(prev => ({ ...prev, town: '' }));
-                            }
-                            setShowAddressFields(true);
-                          } else {
-                            setAddressLookupFailed(true);
-                            setShowAddressFields(true);
-                          }
-                        } else {
-                          // Fallback: still show address fields with formatted postcode
-                          console.log('⚠️ Postcode API returned non-OK status:', response.status);
-                          setAddressLookupFailed(true);
-                          setShowAddressFields(true);
-                          const formatted = cleanPostcode.length > 3 
-                            ? cleanPostcode.slice(0, -3) + ' ' + cleanPostcode.slice(-3) 
-                            : cleanPostcode;
-                          setAddressData(prev => ({ ...prev, postcode: formatted }));
-                          setAddressValidated(prev => ({ ...prev, postcode: true }));
-                        }
-                      } catch (err) {
-                        console.error('Postcode lookup error:', err);
-                        setAddressLookupFailed(true);
-                        setShowAddressFields(true);
-                      } finally {
-                        setIsLookingUp(false);
+                <div className="relative mt-1.5">
+                  <Input
+                    id="postcode-lookup"
+                    type="text"
+                    value={postcodeInput}
+                    onChange={(e) => {
+                      const value = e.target.value.toUpperCase();
+                      setPostcodeInput(value);
+                      setAddressData(prev => ({ ...prev, postcode: value }));
+                      
+                      // Clear existing timeout
+                      if (postcodeLookupTimeoutRef.current) {
+                        clearTimeout(postcodeLookupTimeoutRef.current);
+                      }
+                      
+                      // Debounce: auto-lookup after 300ms if valid format
+                      const cleanValue = value.replace(/\s/g, '');
+                      if (ukPostcodeRegex.test(cleanValue)) {
+                        postcodeLookupTimeoutRef.current = setTimeout(() => {
+                          performPostcodeLookup(value);
+                        }, 300);
                       }
                     }}
-                    disabled={isLookingUp || !postcodeInput.trim()}
-                    className="h-11 sm:h-12 px-5 bg-[#FF6B00] hover:bg-[#E55D00] text-white font-semibold whitespace-nowrap"
-                  >
-                    {isLookingUp ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      'Find Address'
-                    )}
-                  </Button>
+                    onBlur={() => {
+                      // Also trigger on blur if valid format and not already looking up
+                      const cleanValue = postcodeInput.replace(/\s/g, '');
+                      if (ukPostcodeRegex.test(cleanValue) && !isLookingUp && !showAddressFields) {
+                        performPostcodeLookup(postcodeInput);
+                      }
+                    }}
+                    placeholder="e.g. SW1A 1AA"
+                    maxLength={8}
+                    className="h-11 sm:h-12 text-base font-medium uppercase tracking-wider pr-10"
+                    disabled={isLookingUp}
+                  />
+                  {isLookingUp ? (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground animate-spin" />
+                  ) : ukPostcodeRegex.test(postcodeInput.replace(/\s/g, '')) ? (
+                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-green-600" />
+                  ) : null}
                 </div>
                 
-                {/* Address Suggestions Dropdown */}
-                {showAddressDropdown && addressSuggestions.length > 0 && (
-                  <div className="mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto z-50">
-                    {addressSuggestions.map((addr, index) => {
-                      const displayAddress = addr.formatted_address?.filter(Boolean).join(', ') || 
-                        [addr.line_1, addr.line_2, addr.town_or_city].filter(Boolean).join(', ');
-                      return (
-                        <button
-                          key={index}
-                          type="button"
-                          onClick={() => {
-                            const line1Parts = [
-                              addr.building_number,
-                              addr.building_name,
-                              addr.thoroughfare || addr.line_1
-                            ].filter(Boolean).join(' ').trim() || addr.line_1 || '';
-                            
-                            setAddressData({
-                              postcode: addr.postcode || addressData.postcode,
-                              address_line_1: line1Parts,
-                              address_line_2: addr.line_2 || addr.sub_building_name || '',
-                              town: addr.town_or_city || addr.locality || '',
-                              county: addr.county || '',
-                            });
-                            setAddressValidated({
-                              address_line_1: true,
-                              town: true,
-                              postcode: true,
-                            });
-                            setAddressErrors({});
-                            setShowAddressDropdown(false);
-                            setShowAddressFields(true);
-                          }}
-                          className="w-full px-4 py-3 text-left text-sm hover:bg-accent transition-colors border-b border-gray-100 last:border-b-0"
-                        >
-                          {displayAddress}
-                        </button>
-                      );
-                    })}
-                  </div>
+                {/* Lookup status message */}
+                {isLookingUp && (
+                  <p className="text-sm text-muted-foreground mt-2 flex items-center gap-1.5">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Looking up address...
+                  </p>
+                )}
+                
+                {/* Success message when address found */}
+                {showAddressFields && !addressLookupFailed && addressData.town && (
+                  <p className="text-sm text-green-600 mt-2 flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5" />
+                    Address found - please confirm details below
+                  </p>
                 )}
                 
                 {/* Enter address manually link */}
-                {!showAddressFields && (
+                {!showAddressFields && !isLookingUp && (
                   <button
                     type="button"
                     onClick={() => {
                       setShowAddressFields(true);
                       setShowAddressDropdown(false);
-                      if (/^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i.test(postcodeInput.replace(/\s/g, ''))) {
+                      if (ukPostcodeRegex.test(postcodeInput.replace(/\s/g, ''))) {
                         const formatted = postcodeInput.replace(/\s/g, '').toUpperCase();
                         const displayPostcode = formatted.length > 3 
                           ? formatted.slice(0, -3) + ' ' + formatted.slice(-3) 
@@ -1580,7 +1467,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         setAddressValidated(prev => ({ ...prev, postcode: true }));
                       }
                     }}
-                    className="mt-2 text-sm text-[#1a1a1a] hover:underline"
+                    className="mt-2 text-sm text-[#1a1a1a] hover:underline font-medium"
                   >
                     Enter address manually
                   </button>
@@ -1659,6 +1546,100 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               )}
             </div>
 
+            {/* Section Divider - Your Vehicle */}
+            <div className="mt-10 mb-6">
+              <h2 className="text-lg font-bold text-[#1a1a1a]">Your Vehicle</h2>
+              <div className="h-px bg-border mt-3" />
+            </div>
+
+            {/* Mileage */}
+            <div>
+              <Label htmlFor="mileage" className="text-sm font-medium text-foreground/80">Current Mileage *</Label>
+              <div className="flex gap-2 mt-1.5">
+                <div className="relative flex-1">
+                  {motLoading ? (
+                    <div className="h-11 sm:h-12 flex items-center gap-2 px-3 border border-border rounded-lg bg-muted/30">
+                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Fetching from MOT history...</span>
+                    </div>
+                  ) : (
+                    <Input
+                      id="mileage"
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="e.g. 52,000"
+                      value={customerData.mileage ? Number(customerData.mileage).toLocaleString('en-GB') : ''}
+                      onChange={(e) => {
+                        const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                        handleInputChange('mileage', rawValue);
+                        setMileagePreFilled(false);
+                      }}
+                      onBlur={() => handleFieldBlur('mileage')}
+                      required
+                      className={`h-11 sm:h-12 text-base ${getInputValidationClass('mileage')}`}
+                    />
+                  )}
+                </div>
+                <select
+                  value=""
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      handleInputChange('mileage', e.target.value);
+                      setValidatedFields(prev => ({ ...prev, mileage: true }));
+                      setMileagePreFilled(false);
+                    }
+                  }}
+                  className="h-11 sm:h-12 px-4 rounded-lg border border-border bg-muted/50 text-sm font-medium cursor-pointer hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary text-gray-800"
+                >
+                  <option value="">Quick select</option>
+                  {Array.from({ length: 131 }, (_, i) => {
+                    const value = 10000 + (i * 1000);
+                    return <option key={value} value={value}>{value.toLocaleString('en-GB')}</option>;
+                  })}
+                </select>
+              </div>
+              
+              {/* MOT Pre-fill Info Badge */}
+              {mileagePreFilled && motMileage && motDate && (
+                <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+                  <Info className="w-3.5 h-3.5" />
+                  <span>
+                    Pre-filled from your last MOT ({format(new Date(motDate), 'MMM yyyy')})
+                  </span>
+                </div>
+              )}
+              
+              {customerData.mileage && Number(customerData.mileage) > 150000 && (
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2 mt-2">
+                  <p className="text-destructive text-sm font-medium">
+                    Sorry, we only cover vehicles under 150,000 miles.
+                  </p>
+                </div>
+              )}
+              {/* High Mileage Surcharge Banner */}
+              {highMileageSurchargeApplied && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 mt-2">
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <Info className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-amber-800">
+                        Higher mileage? No problem!
+                      </p>
+                      <p className="text-xs text-amber-700 mt-0.5">
+                        As your mileage is over 120,000 miles, we've updated your quote to include our higher mileage cover.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {showValidation && fieldErrors.mileage && (
+                <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {fieldErrors.mileage}
+                </p>
+              )}
+            </div>
+
             {/* Required Note */}
             <p className="text-xs text-muted-foreground mt-6">
               * Required fields for your warranty policy documents.
@@ -1679,6 +1660,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             savings={savings}
             isLoading={isLoading}
             onPayClick={processPayment}
+            planDurationMonths={paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36}
             promoOpen={promoOpen}
             setPromoOpen={setPromoOpen}
             promoCodeInput={promoCodeInput}
