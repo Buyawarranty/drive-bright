@@ -8,6 +8,7 @@ interface DistributionSettings {
   overflow_recipient_id: string | null;
   solo_agent_id: string | null;
   solo_mode_enabled: boolean;
+  distribution_mode: 'round_robin' | 'percentage';
 }
 
 interface AgentCap {
@@ -50,7 +51,12 @@ export const useLeadDistribution = () => {
         .maybeSingle();
 
       if (error) throw error;
-      setSettings(data);
+      if (data) {
+        setSettings({
+          ...data,
+          distribution_mode: (data.distribution_mode as 'round_robin' | 'percentage') || 'round_robin'
+        });
+      }
     } catch (error) {
       console.error('Error fetching distribution settings:', error);
     }

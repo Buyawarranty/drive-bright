@@ -2795,6 +2795,7 @@ export type Database = {
         Row: {
           active_only_distribution: boolean | null
           created_at: string | null
+          distribution_mode: string
           id: string
           overflow_recipient_id: string | null
           solo_agent_id: string | null
@@ -2804,6 +2805,7 @@ export type Database = {
         Insert: {
           active_only_distribution?: boolean | null
           created_at?: string | null
+          distribution_mode?: string
           id?: string
           overflow_recipient_id?: string | null
           solo_agent_id?: string | null
@@ -2813,6 +2815,7 @@ export type Database = {
         Update: {
           active_only_distribution?: boolean | null
           created_at?: string | null
+          distribution_mode?: string
           id?: string
           overflow_recipient_id?: string | null
           solo_agent_id?: string | null
