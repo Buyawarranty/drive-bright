@@ -285,7 +285,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                   // Awaiting Contact state - clear call to action
                   <>
                     <Plus className="h-3.5 w-3.5 flex-shrink-0" />
-                    <span>Assign</span>
+                    <span>Take action</span>
                   </>
                 )}
               </div>
