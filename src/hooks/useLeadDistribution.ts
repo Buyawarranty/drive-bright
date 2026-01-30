@@ -190,7 +190,23 @@ export const useLeadDistribution = () => {
   // Claim next available lead
   const claimNextLead = useCallback(async () => {
     try {
-      // First get the next eligible unassigned lead
+      // Get current user's admin ID first
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data: adminUser } = await supabase
+        .from('admin_users')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!adminUser) throw new Error('Admin user not found');
+
+      // CRITICAL: Force presence update BEFORE claiming to ensure database has latest interaction
+      // This fixes the race condition where local state shows 'active' but database is stale
+      await supabase.rpc('log_agent_interaction', { p_event_type: 'claim_attempt' });
+
+      // Get the next eligible unassigned lead
       const { data: unassignedLead, error: leadError } = await supabase
         .from('sales_leads')
         .select('id')
@@ -207,18 +223,6 @@ export const useLeadDistribution = () => {
         toast({ title: 'No leads available', description: 'There are no unassigned leads to claim.' });
         return null;
       }
-
-      // Get current user's admin ID
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const { data: adminUser } = await supabase
-        .from('admin_users')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (!adminUser) throw new Error('Admin user not found');
 
       // Attempt to claim the lead
       const { data: result, error: claimError } = await supabase
