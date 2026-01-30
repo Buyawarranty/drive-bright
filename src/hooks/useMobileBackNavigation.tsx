@@ -28,6 +28,11 @@ export const useMobileBackNavigation = ({
   const lastStepRef = useRef(currentStep);
   const historyStackRef = useRef<number[]>([]);
   const isHandlingBackRef = useRef(false);
+  const hasInitializedHistoryRef = useRef(false);
+  const lastPushedStepRef = useRef<number | null>(null);
+  // Track how many guard entries we've pushed to prevent infinite history growth
+  const guardEntriesCountRef = useRef(0);
+  const MAX_GUARD_ENTRIES = 3;
 
   // Reset confirmation flag when step changes
   useEffect(() => {
@@ -40,6 +45,8 @@ export const useMobileBackNavigation = ({
       }
       
       lastStepRef.current = currentStep;
+      // Reset guard entries count on step change
+      guardEntriesCountRef.current = 0;
     }
   }, [currentStep]);
 
@@ -56,6 +63,19 @@ export const useMobileBackNavigation = ({
     
     console.log('📱 Initialized history stack:', historyStackRef.current);
   }, []);
+
+  // Push a guard entry to prevent leaving the site
+  const pushGuardEntry = useCallback(() => {
+    if (guardEntriesCountRef.current >= MAX_GUARD_ENTRIES) {
+      console.log('📱 Max guard entries reached, using replaceState');
+      window.history.replaceState({ step: currentStep, guard: true }, '', window.location.href);
+      return;
+    }
+    
+    window.history.pushState({ step: currentStep, guard: true }, '', window.location.href);
+    guardEntriesCountRef.current++;
+    console.log('📱 Pushed guard entry, count:', guardEntriesCountRef.current);
+  }, [currentStep]);
 
   const handleBackNavigation = useCallback((event: PopStateEvent) => {
     // Prevent re-entrancy
@@ -75,10 +95,7 @@ export const useMobileBackNavigation = ({
       historyState: event.state
     });
     
-    // Always prevent leaving the site by intercepting and handling navigation ourselves
-    event.preventDefault();
-    
-    // If we're in the process of leaving (user confirmed), navigate to step 1
+    // If we're in the process of leaving (user confirmed), go to step 1
     if (isLeavingRef.current) {
       console.log('📱 User confirmed leave, going to step 1');
       isLeavingRef.current = false;
@@ -89,67 +106,44 @@ export const useMobileBackNavigation = ({
       window.history.replaceState({ step: 1 }, '', step1Url);
       onStepChange(1);
       historyStackRef.current = [1];
+      guardEntriesCountRef.current = 0;
       
       trackEvent('back_intercept_leave', {
         journey_id: journeyId,
         step: currentStep,
         step_name: `step_${currentStep}`
       });
+      
+      // Push a new guard entry for step 1
+      setTimeout(() => {
+        pushGuardEntry();
+      }, 50);
       return;
     }
     
-    // Calculate the previous step (same as internal back button)
+    // Calculate the previous step
     const previousStep = currentStep - 1;
     
     console.log('📱 Current step:', currentStep, 'Previous step would be:', previousStep);
     
-    // If we're on step 1, show confirmation or allow leave
+    // CRITICAL: If we're on step 1, ALWAYS push a guard entry to prevent leaving
     if (currentStep <= 1) {
-      console.log('📱 On step 1, re-establishing state');
+      console.log('📱 On step 1, preventing site exit');
       
-      // Stay on step 1
-      const step1Url = `${window.location.pathname}?step=1`;
-      window.history.pushState({ step: 1 }, '', step1Url);
-      isHandlingBackRef.current = false;
-      return;
-    }
-    
-    // If trying to go back from step 2 to step 1 (homepage), use pushState to allow proper navigation
-    if (previousStep === 1) {
-      console.log('📱 Navigating back to homepage (step 1)');
-      
-      // Track step change
-      trackEvent('journey_step_changed', {
-        journey_id: journeyId,
-        from_step: currentStep,
-        to_step: 1,
-        direction: 'back',
-        trigger: 'mobile_back_button'
-      });
-      
-      // Restore state for step 1 if handler provided
-      if (restoreStateFromStep) {
-        restoreStateFromStep(1);
-      }
-      
-      // Update URL to step 1 (homepage)
+      // Re-establish current state
       const step1Url = `${window.location.pathname}?step=1`;
       window.history.replaceState({ step: 1 }, '', step1Url);
       
-      // Update current step
-      onStepChange(1);
-      
-      // Reset our history stack
-      historyStackRef.current = [1];
-      
-      // Scroll to top
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Push guard entry to maintain history buffer
+      setTimeout(() => {
+        pushGuardEntry();
+      }, 50);
       
       isHandlingBackRef.current = false;
       return;
     }
     
-    // If trying to go back from step > 2, navigate to previous step
+    // If trying to go back from step 2+ to previous step
     if (previousStep >= 1) {
       console.log('📱 Navigating to previous step:', previousStep);
       
@@ -171,11 +165,17 @@ export const useMobileBackNavigation = ({
       const stepUrl = `${window.location.pathname}?step=${previousStep}`;
       window.history.replaceState({ step: previousStep }, '', stepUrl);
       
-      // Update current step (this will trigger the internal onStepChange)
+      // Update current step
       onStepChange(previousStep);
       
       // Update our history stack
       historyStackRef.current = historyStackRef.current.filter(s => s <= previousStep);
+      
+      // Reset guard count and push new guard entry
+      guardEntriesCountRef.current = 0;
+      setTimeout(() => {
+        pushGuardEntry();
+      }, 50);
       
       // Scroll to top like internal back button
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -184,13 +184,18 @@ export const useMobileBackNavigation = ({
       return;
     }
     
-    // Fallback: stay on current step
+    // Fallback: stay on current step and ensure we have guard entries
     console.log('📱 Fallback: staying on current step');
     const currentUrl = `${window.location.pathname}?step=${currentStep}`;
-    window.history.pushState({ step: currentStep }, '', currentUrl);
+    window.history.replaceState({ step: currentStep }, '', currentUrl);
+    
+    setTimeout(() => {
+      pushGuardEntry();
+    }, 50);
+    
     isHandlingBackRef.current = false;
     
-  }, [currentStep, onStepChange, restoreStateFromStep, totalSteps, isGuarded, onShowConfirmDialog, hasShownConfirmOnThisStep, journeyId]);
+  }, [currentStep, onStepChange, restoreStateFromStep, totalSteps, isGuarded, onShowConfirmDialog, hasShownConfirmOnThisStep, journeyId, pushGuardEntry]);
 
   // Method to allow leaving (called when user confirms from dialog)
   const allowLeave = useCallback(() => {
@@ -210,10 +215,16 @@ export const useMobileBackNavigation = ({
     window.history.replaceState({ step: 1 }, '', step1Url);
     onStepChange(1);
     historyStackRef.current = [1];
+    guardEntriesCountRef.current = 0;
+    
+    // Push guard entry for step 1
+    setTimeout(() => {
+      pushGuardEntry();
+    }, 50);
     
     // Reset the leaving flag
     isLeavingRef.current = false;
-  }, [currentStep, journeyId, onStepChange]);
+  }, [currentStep, journeyId, onStepChange, pushGuardEntry]);
 
   // Method to stay (called when user cancels)
   const stay = useCallback(() => {
@@ -227,14 +238,14 @@ export const useMobileBackNavigation = ({
       step_name: `step_${currentStep}`
     });
     
-    // Re-push current state to ensure history is correct
+    // Re-establish current state and push guard entry
     const currentUrl = `${window.location.pathname}?step=${currentStep}`;
-    window.history.pushState({ step: currentStep }, '', currentUrl);
-  }, [currentStep, journeyId]);
-
-  // Track if we've already pushed a guard entry for this session
-  const hasInitializedHistoryRef = useRef(false);
-  const lastPushedStepRef = useRef<number | null>(null);
+    window.history.replaceState({ step: currentStep }, '', currentUrl);
+    
+    setTimeout(() => {
+      pushGuardEntry();
+    }, 50);
+  }, [currentStep, journeyId, pushGuardEntry]);
 
   useEffect(() => {
     console.log('📱 Setting up mobile navigation listeners for step', currentStep);
@@ -254,11 +265,14 @@ export const useMobileBackNavigation = ({
       console.log('📱 Set history state for step', urlStep);
     }
     
-    // Only push guard entry once per step to prevent history pollution
-    // This prevents slow loading when returning from external sites like Stripe
+    // Push initial guard entries to create a buffer that prevents leaving the site
+    // Only do this once per step to prevent history pollution
     if (!hasInitializedHistoryRef.current || lastPushedStepRef.current !== urlStep) {
+      // Push multiple guard entries to create a buffer
       window.history.pushState({ step: urlStep, guard: true }, '', window.location.href);
-      console.log('📱 Pushed guard entry for step', urlStep);
+      window.history.pushState({ step: urlStep, guard: true }, '', window.location.href);
+      guardEntriesCountRef.current = 2;
+      console.log('📱 Pushed initial guard entries for step', urlStep);
       hasInitializedHistoryRef.current = true;
       lastPushedStepRef.current = urlStep;
     }
@@ -274,24 +288,24 @@ export const useMobileBackNavigation = ({
         isLeavingRef.current = false;
         isHandlingBackRef.current = false;
         setHasShownConfirmOnThisStep(false);
+        guardEntriesCountRef.current = 0;
         
-        // Re-establish proper history state WITHOUT pushing new entries
-        // This is the key fix - we only replaceState, not pushState
+        // Re-establish proper history state
         const urlParams = new URLSearchParams(window.location.search);
         const urlStep = parseInt(urlParams.get('step') || '1');
         
-        // Just ensure history state is correct, don't push more entries
+        // Ensure history state is correct
         window.history.replaceState({ step: urlStep }, '', window.location.href);
         
-        // Only push a guard entry if we don't already have one for this step
-        // This prevents history pollution that causes slow back navigation
-        if (lastPushedStepRef.current !== urlStep) {
-          // Use a small delay to let the page fully restore first
-          setTimeout(() => {
+        // Push fresh guard entries after a small delay to let page fully restore
+        setTimeout(() => {
+          if (lastPushedStepRef.current !== urlStep || guardEntriesCountRef.current < 2) {
             window.history.pushState({ step: urlStep, guard: true }, '', window.location.href);
+            window.history.pushState({ step: urlStep, guard: true }, '', window.location.href);
+            guardEntriesCountRef.current = 2;
             lastPushedStepRef.current = urlStep;
-          }, 100);
-        }
+          }
+        }, 100);
       }
     };
     
@@ -301,12 +315,10 @@ export const useMobileBackNavigation = ({
       }
     };
     
-    // Handle beforeunload to prevent accidental navigation away
+    // Handle beforeunload - this is a last resort to catch navigation
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (currentStep > 1 && isGuarded) {
-        // Don't show browser dialog, but ensure we can catch this
-        console.log('📱 beforeunload triggered on step', currentStep);
-      }
+      // Note: Modern browsers don't show custom messages, but this can still help
+      console.log('📱 beforeunload triggered on step', currentStep);
     };
     
     window.addEventListener('pageshow', handlePageShow);
@@ -320,7 +332,7 @@ export const useMobileBackNavigation = ({
       window.removeEventListener('pagehide', handlePageHide);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [handleBackNavigation, currentStep, isGuarded]);
+  }, [handleBackNavigation, currentStep, isGuarded, pushGuardEntry]);
 
   return {
     allowLeave,
