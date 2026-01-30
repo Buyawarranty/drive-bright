@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -91,6 +91,93 @@ export default function LiveQuotePage() {
   
   // Track which fields have been touched (blurred) for real-time validation
   const [touchedFields, setTouchedFields] = useState<{[key: string]: boolean}>({});
+  
+  // Postcode lookup state
+  const [isLookingUpPostcode, setIsLookingUpPostcode] = useState(false);
+  const [postcodeLookupError, setPostcodeLookupError] = useState<string | null>(null);
+  const postcodeDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // UK postcode regex for validation
+  const postcodeRegexForLookup = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
+  
+  // Debounced postcode lookup function
+  const lookupPostcode = useCallback(async (postcode: string) => {
+    const trimmedPostcode = postcode.trim();
+    
+    // Validate format before lookup
+    if (!postcodeRegexForLookup.test(trimmedPostcode)) {
+      return;
+    }
+    
+    setIsLookingUpPostcode(true);
+    setPostcodeLookupError(null);
+    
+    try {
+      const response = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(trimmedPostcode)}`);
+      const data = await response.json();
+      
+      if (response.ok && data.status === 200 && data.result) {
+        const result = data.result;
+        
+        // Get the town/city from various possible fields
+        const city = result.admin_district || result.parish || result.admin_ward || result.nuts || '';
+        
+        // Format the postcode properly
+        const formattedPostcode = result.postcode || trimmedPostcode.toUpperCase();
+        
+        setCustomerData(prev => ({
+          ...prev,
+          city: city,
+          postcode: formattedPostcode
+        }));
+        
+        // Mark city as touched so validation shows
+        setTouchedFields(prev => ({ ...prev, city: true }));
+        
+        // Clear any city errors
+        setFieldErrors(prev => {
+          const { city: _, ...rest } = prev;
+          return rest;
+        });
+        
+      } else {
+        setPostcodeLookupError('Postcode not found. Please enter your address manually.');
+      }
+    } catch (error) {
+      console.error('Postcode lookup error:', error);
+      setPostcodeLookupError('Unable to lookup postcode. Please enter your address manually.');
+    } finally {
+      setIsLookingUpPostcode(false);
+    }
+  }, []);
+  
+  // Handle postcode change with debounce
+  const handlePostcodeChange = useCallback((value: string) => {
+    const uppercaseValue = value.toUpperCase();
+    setCustomerData(prev => ({ ...prev, postcode: uppercaseValue }));
+    setPostcodeLookupError(null);
+    
+    // Clear existing timeout
+    if (postcodeDebounceRef.current) {
+      clearTimeout(postcodeDebounceRef.current);
+    }
+    
+    // Only trigger lookup if postcode looks valid (has enough characters)
+    if (uppercaseValue.length >= 5 && postcodeRegexForLookup.test(uppercaseValue.trim())) {
+      postcodeDebounceRef.current = setTimeout(() => {
+        lookupPostcode(uppercaseValue);
+      }, 300);
+    }
+  }, [lookupPostcode]);
+  
+  // Cleanup debounce timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (postcodeDebounceRef.current) {
+        clearTimeout(postcodeDebounceRef.current);
+      }
+    };
+  }, []);
 
   const cancelled = searchParams.get('cancelled') === '1';
   const failed = searchParams.get('failed') === '1';
@@ -1013,22 +1100,47 @@ export default function LiveQuotePage() {
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="postcodeDisplay">Postcode *</Label>
+                      <Label htmlFor="postcodeDisplay" className="flex items-center gap-2">
+                        Postcode *
+                        {isLookingUpPostcode && (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            Looking up...
+                          </span>
+                        )}
+                      </Label>
                       <div className="relative">
                         <Input
                           id="postcodeDisplay"
                           value={customerData.postcode}
-                          onChange={(e) => setCustomerData(prev => ({ ...prev, postcode: e.target.value.toUpperCase() }))}
-                          onBlur={() => handleFieldBlur('postcode')}
+                          onChange={(e) => handlePostcodeChange(e.target.value)}
+                          onBlur={() => {
+                            handleFieldBlur('postcode');
+                            // Trigger lookup on blur if valid format
+                            if (postcodeRegexForLookup.test(customerData.postcode.trim()) && !customerData.city) {
+                              lookupPostcode(customerData.postcode);
+                            }
+                          }}
                           className={`pr-10 ${shouldShowError('postcode') ? 'border-red-500' : isFieldValid('postcode') ? 'border-green-500' : ''}`}
                           placeholder="e.g. SW1A 1AA"
                         />
-                        {isFieldValid('postcode') && (
+                        {isLookingUpPostcode ? (
+                          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-500 animate-spin" />
+                        ) : isFieldValid('postcode') ? (
                           <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600" />
-                        )}
+                        ) : null}
                       </div>
                       {shouldShowError('postcode') && (
                         <p className="text-xs text-red-500">{fieldErrors.postcode}</p>
+                      )}
+                      {postcodeLookupError && !shouldShowError('postcode') && (
+                        <p className="text-xs text-amber-600">{postcodeLookupError}</p>
+                      )}
+                      {!isLookingUpPostcode && isFieldValid('postcode') && customerData.city && (
+                        <p className="text-xs text-green-600 flex items-center gap-1">
+                          <Check className="h-3 w-3" />
+                          Address details auto-filled
+                        </p>
                       )}
                     </div>
                   </div>
