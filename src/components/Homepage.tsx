@@ -13,6 +13,8 @@ import { OptimizedImage } from '@/components/OptimizedImage';
 import LazySection from './homepage/LazySection';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
+import HowPricingWorksModal from './modals/HowPricingWorksModal';
+import RequestCallbackModal from './modals/RequestCallbackModal';
 
 // Lazy load heavy components to reduce initial bundle size
 const HomepageFAQ = lazy(() => import('./HomepageFAQ'));
@@ -62,6 +64,8 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
   const [showSecondWarrantyDiscount, setShowSecondWarrantyDiscount] = useState(false);
   const [discountCode, setDiscountCode] = useState('');
   const [showEmailPopup, setShowEmailPopup] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [showCallbackModal, setShowCallbackModal] = useState(false);
   
 
   useEffect(() => {
@@ -514,6 +518,46 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   isLoading={isLookingUp}
                   isRegValid={regNumber.replace(/\s/g, '').length >= 5}
                 />
+                
+                {/* How our pricing works & Contact section */}
+                <div className="mt-4 sm:mt-6 space-y-3 text-center lg:text-left">
+                  {/* Intro line */}
+                  <p className="text-gray-700 text-xs sm:text-sm font-medium">
+                    Fair and flexible pricing based on your car — no surprises.
+                  </p>
+                  
+                  {/* How pricing works link */}
+                  <button
+                    onClick={() => setShowPricingModal(true)}
+                    className="text-brand-green hover:text-brand-green/80 text-xs sm:text-sm font-semibold inline-flex items-center gap-1 transition-colors"
+                  >
+                    How our pricing works
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                  
+                  {/* Need to speak to us section */}
+                  <div className="pt-2 border-t border-gray-100">
+                    <p className="text-gray-600 text-xs sm:text-sm mb-2">
+                      Need to speak to us about a particular vehicle or want to customise your warranty?
+                    </p>
+                    <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs sm:text-sm">
+                      <span className="text-gray-700">Call</span>
+                      <a 
+                        href="tel:08004947477" 
+                        className="font-bold text-brand-green hover:underline"
+                      >
+                        0800 494 7477
+                      </a>
+                      <span className="text-gray-500">or</span>
+                      <button
+                        onClick={() => setShowCallbackModal(true)}
+                        className="text-brand-orange hover:text-brand-orange/80 font-semibold underline underline-offset-2 transition-colors"
+                      >
+                        request a callback
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -986,6 +1030,18 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
       <EmailCapturePopup 
         isOpen={showEmailPopup}
         onClose={() => setShowEmailPopup(false)}
+      />
+      
+      {/* How Pricing Works Modal */}
+      <HowPricingWorksModal
+        isOpen={showPricingModal}
+        onClose={() => setShowPricingModal(false)}
+      />
+      
+      {/* Request Callback Modal */}
+      <RequestCallbackModal
+        isOpen={showCallbackModal}
+        onClose={() => setShowCallbackModal(false)}
       />
     </div>
   );
