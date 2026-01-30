@@ -1447,7 +1447,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 {showAddressFields && !addressLookupFailed && addressData.town && (
                   <p className="text-sm text-green-600 mt-2 flex items-center gap-1.5">
                     <Check className="w-3.5 h-3.5" />
-                    Address found - please confirm details below
+                    Please enter address line
                   </p>
                 )}
                 
