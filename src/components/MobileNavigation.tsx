@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, Phone, Clock } from 'lucide-react';
+import { Menu, Phone, Clock, PhoneCall } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Link, useNavigate } from 'react-router-dom';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
+import RequestCallbackModal from './RequestCallbackModal';
 
 const MobileNavigation: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCallbackModalOpen, setIsCallbackModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleLogoClick = (e: React.MouseEvent) => {
@@ -18,6 +19,11 @@ const MobileNavigation: React.FC = () => {
     setIsMobileMenuOpen(false);
     navigate('/', { replace: true });
     window.scrollTo(0, 0);
+  };
+
+  const handleRequestCallback = () => {
+    setIsMobileMenuOpen(false);
+    setIsCallbackModalOpen(true);
   };
 
   return (
@@ -103,7 +109,7 @@ const MobileNavigation: React.FC = () => {
                 </a>
                 <a 
                   href="tel:03302295045" 
-                  className="flex items-center p-3 rounded-lg hover:bg-gray-50"
+                  className="flex items-center p-3 rounded-lg hover:bg-gray-50 mb-2"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <Phone className="h-5 w-5 mr-3 text-orange-500" />
@@ -112,6 +118,18 @@ const MobileNavigation: React.FC = () => {
                     <div className="text-orange-500 font-semibold">0330 229 5045</div>
                   </div>
                 </a>
+                
+                {/* Request Call-Back Button */}
+                <button 
+                  onClick={handleRequestCallback}
+                  className="flex items-center w-full p-3 rounded-lg bg-brand-orange/10 hover:bg-brand-orange/20 transition-colors"
+                >
+                  <PhoneCall className="h-5 w-5 mr-3 text-brand-orange" />
+                  <div className="text-left">
+                    <div className="font-semibold text-sm text-foreground">Request Call-Back</div>
+                    <div className="text-xs text-muted-foreground">We'll call you back</div>
+                  </div>
+                </button>
               </div>
               
               <Link 
@@ -141,6 +159,12 @@ const MobileNavigation: React.FC = () => {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Request Callback Modal */}
+      <RequestCallbackModal 
+        isOpen={isCallbackModalOpen} 
+        onClose={() => setIsCallbackModalOpen(false)} 
+      />
     </>
   );
 };
