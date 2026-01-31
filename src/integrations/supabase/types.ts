@@ -5036,10 +5036,9 @@ export type Database = {
         Args: { p_column: string; p_user_id: string }
         Returns: string
       }
-      get_next_eligible_agent: {
-        Args: { p_exclude_agent_id?: string }
-        Returns: string
-      }
+      get_next_eligible_agent:
+        | { Args: { p_distribution_mode?: string }; Returns: string }
+        | { Args: { p_exclude_agent_id?: string }; Returns: string }
       get_next_sales_user: { Args: never; Returns: string }
       get_next_warranty_serial: { Args: never; Returns: number }
       get_user_permissions: { Args: { p_user_id: string }; Returns: Json }

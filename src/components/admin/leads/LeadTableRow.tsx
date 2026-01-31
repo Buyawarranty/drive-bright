@@ -252,15 +252,15 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         />
       </TableCell>
 
-      {/* Assigned To - Redesigned for better discoverability */}
+      {/* Assigned To - Shows "Assign now" for unassigned leads */}
       <TableCell className="sticky left-0 bg-inherit z-10" onClick={(e) => e.stopPropagation()}>
         <Select
-          value={lead.assigned_to || 'awaiting_contact'}
+          value={lead.assigned_to || 'unassigned'}
           onValueChange={(value) => {
             if (value === 'auto') {
               onAutoAssign();
             } else {
-              onAssign(value === 'awaiting_contact' ? null : value);
+              onAssign(value === 'unassigned' ? null : value);
             }
           }}
         >
@@ -268,7 +268,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               className={cn(
                 "w-[120px] h-8 text-xs font-medium transition-all",
                 !lead.assigned_to 
-                  ? "border-2 border-dashed border-amber-400 bg-amber-50 text-amber-700 hover:border-amber-500 hover:bg-amber-100" 
+                  ? "border-2 border-dashed border-blue-500 bg-blue-50 text-blue-700 hover:border-blue-600 hover:bg-blue-100 animate-pulse" 
                   : "border border-green-300 bg-green-50 text-green-800 hover:border-green-400"
               )}
             >
@@ -292,16 +292,16 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                     );
                   })()
                 ) : (
-                  // Awaiting Contact state - clear call to action
+                  // Unassigned state - "Assign now" call to action
                   <>
-                    <Plus className="h-3.5 w-3.5 flex-shrink-0" />
-                    <span>Take action</span>
+                    <User className="h-3.5 w-3.5 flex-shrink-0" />
+                    <span className="font-semibold">Assign now</span>
                   </>
                 )}
               </div>
             </SelectTrigger>
             <SelectContent className="bg-popover border shadow-lg z-50">
-              <SelectItem value="awaiting_contact" className="text-muted-foreground">
+              <SelectItem value="unassigned" className="text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <X className="h-3.5 w-3.5" />
                   <span>Remove assignment</span>
