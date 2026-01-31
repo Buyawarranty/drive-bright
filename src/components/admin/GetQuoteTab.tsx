@@ -3536,23 +3536,38 @@ Questions? Call 0330 229 5040`;
                 </div>
               )}
 
-              <DialogFooter className="flex gap-2">
+              <DialogFooter className="flex flex-col gap-2">
                 {externalPaymentStep === 'details' ? (
                   <>
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowConfirmPaymentDialog(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={() => setExternalPaymentStep('preview')}
-                      disabled={!paymentSource || !paymentAmount || !paymentDate}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      <Eye className="w-4 h-4 mr-2" />
-                      Preview Before Submit
-                    </Button>
+                    {/* Validation helper - show what's missing */}
+                    {(!paymentSource || !paymentAmount) && (
+                      <div className="w-full text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-md p-2 flex items-center gap-2">
+                        <span>⚠️</span>
+                        <span>
+                          {!paymentSource && !paymentAmount 
+                            ? 'Please select a payment source and enter the amount received'
+                            : !paymentSource 
+                              ? 'Please select a payment source'
+                              : 'Please enter the amount received'}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex gap-2 w-full justify-end">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowConfirmPaymentDialog(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={() => setExternalPaymentStep('preview')}
+                        disabled={!paymentSource || !paymentAmount}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        Preview Before Submit
+                      </Button>
+                    </div>
                   </>
                 ) : externalPaymentStep === 'preview' ? (
                   <>
