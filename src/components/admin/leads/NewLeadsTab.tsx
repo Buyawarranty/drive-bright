@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { useLeads, Lead } from '@/hooks/useLeads';
 import { LeadsTable } from './LeadsTable';
-import { LeadsFilters, AssignmentFilter } from './LeadsFilters';
+import { LeadsFilters, AssignmentFilter, SortOption } from './LeadsFilters';
 import { LeadsTableControlBar } from './LeadsTableControlBar';
 import { LeadsTableFooter } from './LeadsTableFooter';
 import { SalespersonDashboard } from './SalespersonDashboard';
@@ -120,6 +120,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({ from: undefined, to: undefined });
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
+  const [sortOption, setSortOption] = useState<SortOption>('newest');
 
   // Lead distribution hook no longer needed here - AgentsLeadsView has its own instance
 
@@ -196,8 +197,35 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       );
     }
     
+    // Apply sorting
+    result = [...result].sort((a, b) => {
+      switch (sortOption) {
+        case 'newest':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case 'oldest':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case 'contacted':
+          // Contacted status first, then by date
+          if (a.status === 'contacted' && b.status !== 'contacted') return -1;
+          if (a.status !== 'contacted' && b.status === 'contacted') return 1;
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case 'follow_up':
+          // Follow-up status first, then by date
+          if (a.status === 'follow_up' && b.status !== 'follow_up') return -1;
+          if (a.status !== 'follow_up' && b.status === 'follow_up') return 1;
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case 'quote_sent':
+          // Quote sent status first, then by date
+          if (a.status === 'quote_sent' && b.status !== 'quote_sent') return -1;
+          if (a.status !== 'quote_sent' && b.status === 'quote_sent') return 1;
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
+    
     return result;
-  }, [leads, debouncedSearchTerm, dateRange, assignmentFilter]);
+  }, [leads, debouncedSearchTerm, dateRange, assignmentFilter, sortOption]);
 
   // Pagination for leads table
   const pagination = usePagination(filteredLeads, { initialPageSize: 50 });
@@ -554,6 +582,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             assignmentFilter={assignmentFilter}
             onAssignmentFilterChange={setAssignmentFilter}
             assignmentCounts={assignmentCounts}
+            sortOption={sortOption}
+            onSortChange={setSortOption}
           />
           
           <Card className="overflow-hidden">

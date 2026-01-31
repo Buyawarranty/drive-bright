@@ -6,12 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, RefreshCw, Upload, Download, CalendarIcon, X, Filter } from 'lucide-react';
+import { Search, RefreshCw, Upload, Download, CalendarIcon, X, Filter, ArrowUpDown } from 'lucide-react';
 import { LeadStatus } from '@/hooks/useLeads';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 
 export type AssignmentFilter = 'all' | 'total' | 'awaiting_contact' | 'assigned';
+export type SortOption = 'newest' | 'oldest' | 'contacted' | 'follow_up' | 'quote_sent';
 
 interface LeadsFiltersProps {
   filter: LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback';
@@ -42,6 +43,8 @@ interface LeadsFiltersProps {
     awaiting_contact: number;
     assigned: number;
   };
+  sortOption?: SortOption;
+  onSortChange?: (sort: SortOption) => void;
 }
 
 export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
@@ -57,7 +60,9 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   onDateRangeChange,
   assignmentFilter = 'all',
   onAssignmentFilterChange,
-  assignmentCounts
+  assignmentCounts,
+  sortOption = 'newest',
+  onSortChange
 }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
@@ -238,6 +243,23 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
             <Button variant="ghost" size="sm" onClick={clearDateRange} className="h-8 px-2">
               <X className="h-4 w-4" />
             </Button>
+          )}
+
+          {/* Sort Dropdown */}
+          {onSortChange && (
+            <Select value={sortOption} onValueChange={(v) => onSortChange(v as SortOption)}>
+              <SelectTrigger className="w-[150px] h-9">
+                <ArrowUpDown className="h-4 w-4 mr-2 text-muted-foreground" />
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border shadow-lg z-50">
+                <SelectItem value="newest">Newest first</SelectItem>
+                <SelectItem value="oldest">Oldest first</SelectItem>
+                <SelectItem value="contacted">Contacted</SelectItem>
+                <SelectItem value="follow_up">Follow-up</SelectItem>
+                <SelectItem value="quote_sent">Quote Sent</SelectItem>
+              </SelectContent>
+            </Select>
           )}
         </div>
         
