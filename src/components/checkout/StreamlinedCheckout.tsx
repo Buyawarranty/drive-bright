@@ -1699,7 +1699,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                         className={`h-11 sm:h-12 text-base pr-10 ${getInputValidationClass('mileage')}`}
                       />
                       {customerData.mileage && Number(customerData.mileage) > 0 && Number(customerData.mileage) <= 150000 && !fieldErrors.mileage && (
-                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
+                        <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))] pointer-events-none" />
                       )}
                     </div>
                   )}
