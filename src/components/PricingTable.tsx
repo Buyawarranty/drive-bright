@@ -34,6 +34,8 @@ import {
 import pandaCarWarranty from "@/assets/panda-car-warranty-transparent.png";
 import trustpilotLogo from "@/assets/trustpilot-excellent-box.webp";
 import { trackStepCompletion, trackBeginCheckout } from '@/utils/analytics';
+import PriceHelpPanel from '@/components/step3/PriceHelpPanel';
+import PriceHelpTrigger from '@/components/step3/PriceHelpTrigger';
 
 type VehicleType = 'car' | 'motorbike' | 'phev' | 'hybrid' | 'ev';
 
@@ -293,6 +295,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
   
   // What's Covered section expansion state
   const [whatsCoveredOpen, setWhatsCoveredOpen] = useState(false);
+  
+  // Price Help Panel state
+  const [showPriceHelpPanel, setShowPriceHelpPanel] = useState(false);
   
   // Reliability score state
   const [reliabilityScore, setReliabilityScore] = useState<{
@@ -1390,6 +1395,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
               <span>Change</span>
             </button>
           </div>
+        </div>
+
+        {/* Price Help Trigger - Desktop */}
+        <div className="hidden md:block">
+          <PriceHelpTrigger onClick={() => setShowPriceHelpPanel(true)} />
         </div>
 
         {/* Choose Warranty Duration - Moved to top */}
@@ -3205,6 +3215,19 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Price Help Panel - Desktop Slide-in */}
+      <PriceHelpPanel
+        isOpen={showPriceHelpPanel}
+        onClose={() => setShowPriceHelpPanel(false)}
+        currentExcess={voluntaryExcess}
+        currentClaimLimit={selectedClaimLimit}
+        currentLabourRate={selectedLabourRate}
+        onExcessChange={setVoluntaryExcess}
+        onClaimLimitChange={setSelectedClaimLimit}
+        onLabourRateChange={setSelectedLabourRate}
+        currentMonthlyPrice={monthlyPrice}
+      />
 
     </div>
   );
