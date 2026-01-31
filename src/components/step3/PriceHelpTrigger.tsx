@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone, ChevronRight, Trophy } from 'lucide-react';
+import { Phone, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PriceHelpTriggerProps {
@@ -61,15 +61,13 @@ const PriceHelpTrigger: React.FC<PriceHelpTriggerProps> = ({ onClick, className 
           
           {/* Mobile only: Secondary line below */}
           <span className="flex md:hidden items-center gap-1 text-xs text-gray-900 mt-1">
-            <Trophy className="w-3 h-3 text-brand-orange flex-shrink-0" strokeWidth={1.5} />
-            <span>We will beat any price you already have</span>
+            <span>We will beat any price you already have 🏆</span>
           </span>
         </div>
       </div>
       
       {/* Desktop: Price beat message on right side */}
       <div className="hidden md:flex items-center gap-2 flex-shrink-0 mr-2">
-        <Trophy className="w-4 h-4 text-brand-orange flex-shrink-0" strokeWidth={2} />
         <span className="text-sm font-medium text-gray-800">
           We will beat any price you already have 🏆
         </span>
