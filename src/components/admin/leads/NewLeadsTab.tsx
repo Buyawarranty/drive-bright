@@ -13,7 +13,7 @@ import { SalesAgentDashboard } from '../sales/SalesAgentDashboard';
 import { LeadDistributionControlBar, SalesExecutiveHeader } from './distribution';
 import { AgentCapsPanel } from './distribution/AgentCapsPanel';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
-import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Trash2, UsersRound, Settings2 } from 'lucide-react';
+import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -291,12 +291,16 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
   }, [selectedLeads, filteredLeads, exportToCSV, exportToExcel]);
 
-  const handleDeleteSelected = useCallback(async () => {
+  // Archive leads (soft-archive by setting status to 'archived')
+  const handleArchiveSelected = useCallback(async () => {
     if (selectedLeads.size === 0) return;
     
-    await deleteLeads(Array.from(selectedLeads));
+    // Update status to archived instead of deleting
+    for (const leadId of selectedLeads) {
+      await updateLeadStatus(leadId, 'archived' as any);
+    }
     setSelectedLeads(new Set());
-  }, [selectedLeads, deleteLeads]);
+  }, [selectedLeads, updateLeadStatus]);
 
   // Memoize quote navigation handler
   const handleSendQuote = useCallback((lead: Lead) => {
@@ -400,29 +404,29 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
             </DropdownMenu>
           )}
 
-          {/* Delete Button - Shows when leads selected and user has delete permission */}
+          {/* Archive Button - Shows when leads selected and user has delete permission */}
           {canDelete && selectedLeads.size > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm" className="gap-2">
-                  <Trash2 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Delete ({selectedLeads.size})</span>
+                <Button variant="outline" size="sm" className="gap-2 border-orange-300 text-orange-700 hover:bg-orange-50">
+                  <Archive className="h-4 w-4" />
+                  <span className="hidden sm:inline">Archive ({selectedLeads.size})</span>
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete {selectedLeads.size} lead{selectedLeads.size > 1 ? 's' : ''}?</AlertDialogTitle>
+                  <AlertDialogTitle>Archive {selectedLeads.size} lead{selectedLeads.size > 1 ? 's' : ''}?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the selected lead{selectedLeads.size > 1 ? 's' : ''} and all associated data.
+                    This will archive the selected lead{selectedLeads.size > 1 ? 's' : ''}. They will be hidden from the main view but can be restored later. No data will be permanently deleted.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction 
-                    onClick={handleDeleteSelected}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={handleArchiveSelected}
+                    className="bg-orange-600 text-white hover:bg-orange-700"
                   >
-                    Delete
+                    Archive
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

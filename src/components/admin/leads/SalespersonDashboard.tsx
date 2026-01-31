@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { 
   TrendingUp, Users, DollarSign, Target, 
   Clock, AlertTriangle, CheckCircle, Phone,
-  Mail, Calendar, Award, Trash2, Trophy
+  Mail, Calendar, Award, Archive, Trophy
 } from 'lucide-react';
 import { LeadsTable } from './LeadsTable';
 import { MyRemindersPanel } from './MyRemindersPanel';
@@ -122,9 +122,12 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
     });
   }, []);
 
-  const handleDeleteSelected = useCallback(async () => {
+  // Archive leads instead of delete to preserve data
+  const handleArchiveSelected = useCallback(async () => {
     if (selectedLeads.size === 0) return;
-    await handlers.deleteLeads(Array.from(selectedLeads));
+    for (const leadId of selectedLeads) {
+      await handlers.updateLeadStatus(leadId, 'archived' as any);
+    }
     setSelectedLeads(new Set());
   }, [selectedLeads, handlers]);
 
@@ -311,25 +314,25 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
           {selectedLeads.size > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm" className="gap-2">
-                  <Trash2 className="h-4 w-4" />
-                  Delete ({selectedLeads.size})
+                <Button variant="outline" size="sm" className="gap-2 border-orange-300 text-orange-700 hover:bg-orange-50">
+                  <Archive className="h-4 w-4" />
+                  Archive ({selectedLeads.size})
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete {selectedLeads.size} lead{selectedLeads.size > 1 ? 's' : ''}?</AlertDialogTitle>
+                  <AlertDialogTitle>Archive {selectedLeads.size} lead{selectedLeads.size > 1 ? 's' : ''}?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the selected lead{selectedLeads.size > 1 ? 's' : ''}.
+                    This will archive the selected lead{selectedLeads.size > 1 ? 's' : ''}. They will be hidden from the main view but can be restored later. No data will be permanently deleted.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction 
-                    onClick={handleDeleteSelected}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={handleArchiveSelected}
+                    className="bg-orange-600 text-white hover:bg-orange-700"
                   >
-                    Delete
+                    Archive
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
