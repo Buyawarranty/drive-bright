@@ -90,10 +90,24 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<PaidOrder | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [allAdminUsers, setAllAdminUsers] = useState<Array<{ user_id: string; name: string }>>([]);
 
   const fetchPaidOrders = async () => {
     setIsLoading(true);
     try {
+      // Fetch all sales agents/admin users for the dropdown
+      const { data: allAdmins } = await supabase
+        .from('admin_users')
+        .select('user_id, first_name, last_name, email, role')
+        .eq('is_active', true);
+      
+      if (allAdmins) {
+        setAllAdminUsers(allAdmins.map(admin => ({
+          user_id: admin.user_id || '',
+          name: [admin.first_name, admin.last_name].filter(Boolean).join(' ') || admin.email?.split('@')[0] || 'Unknown'
+        })).filter(a => a.user_id));
+      }
+
       // Fetch paid quotes from live_quotes
       const { data: quotesData, error: quotesError } = await supabase
         .from('live_quotes')
@@ -403,6 +417,7 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
         }}
         order={selectedOrder}
         onSave={handleEditComplete}
+        adminUsers={allAdminUsers}
       />
     </Card>
   );

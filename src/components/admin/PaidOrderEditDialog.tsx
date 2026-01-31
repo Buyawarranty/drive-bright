@@ -60,6 +60,13 @@ interface PaidOrder {
     postcode?: string;
     building_number?: string;
   };
+  payment_confirmed_by?: string;
+  payment_confirmed_by_name?: string;
+}
+
+interface AdminUser {
+  user_id: string;
+  name: string;
 }
 
 interface PaidOrderEditDialogProps {
@@ -67,6 +74,7 @@ interface PaidOrderEditDialogProps {
   onClose: () => void;
   order: PaidOrder | null;
   onSave: () => void;
+  adminUsers?: AdminUser[];
 }
 
 export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
@@ -74,6 +82,7 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
   onClose,
   order,
   onSave,
+  adminUsers = [],
 }) => {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
@@ -105,6 +114,9 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
   const [breakdownIncluded, setBreakdownIncluded] = useState(false);
   const [rentalIncluded, setRentalIncluded] = useState(false);
   const [notes, setNotes] = useState('');
+  
+  // Agent attribution - who closed the deal
+  const [confirmedByAgent, setConfirmedByAgent] = useState('');
 
   // Reset form when order changes
   useEffect(() => {
@@ -130,6 +142,7 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
       setRentalIncluded(order.rental_included || false);
       setNotes(order.additional_notes || '');
       setAccessibilityNotes('');
+      setConfirmedByAgent(order.payment_confirmed_by || '');
     }
   }, [order]);
 
@@ -157,6 +170,7 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
           breakdown_included: breakdownIncluded,
           rental_included: rentalIncluded,
           additional_notes: notes,
+          payment_confirmed_by: confirmedByAgent || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', order.id);
@@ -527,6 +541,27 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
                   placeholder="Any additional notes about the order..."
                   rows={2}
                 />
+              </div>
+
+              {/* Agent Attribution */}
+              <div className="space-y-2">
+                <Label>Sales Agent Who Closed This Deal</Label>
+                <Select value={confirmedByAgent} onValueChange={setConfirmedByAgent}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select sales agent..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Not assigned</SelectItem>
+                    {adminUsers.map((user) => (
+                      <SelectItem key={user.user_id} value={user.user_id}>
+                        {user.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Select the agent who closed this deal for commission tracking
+                </p>
               </div>
 
               {/* Order Info Display */}

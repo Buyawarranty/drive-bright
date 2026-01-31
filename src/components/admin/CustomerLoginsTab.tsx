@@ -245,24 +245,49 @@ const CustomerLoginsTab = () => {
     setLoginTestResult(null);
 
     try {
+      // Normalize search term - remove spaces for reg plate comparison
+      const normalizedRegPlate = searchRegPlate?.replace(/\s/g, '').toUpperCase() || '';
+      
       let query = supabase.from('customers').select('*');
       
       if (searchEmail) {
-        query = query.ilike('email', `%${searchEmail}%`);
+        query = query.ilike('email', `%${searchEmail.trim()}%`);
       } else if (searchRegPlate) {
-        query = query.ilike('registration_plate', `%${searchRegPlate.replace(/\s/g, '')}%`);
+        // Search both with and without spaces in the registration plate
+        query = query.or(`registration_plate.ilike.%${normalizedRegPlate}%,registration_plate.ilike.%${searchRegPlate.trim()}%`);
       }
 
       const { data: customers, error } = await query.limit(1);
 
       if (error) throw error;
 
+      // If no customer found, try to find in live_quotes and offer to create customer
       if (!customers || customers.length === 0) {
-        toast({
-          title: "Customer Not Found",
-          description: "No customer found with those details",
-          variant: "destructive",
-        });
+        // Search live_quotes for this customer
+        let quoteQuery = supabase.from('live_quotes').select('*').in('status', ['paid', 'paid_externally']);
+        
+        if (searchEmail) {
+          quoteQuery = quoteQuery.ilike('customer_email', `%${searchEmail.trim()}%`);
+        } else if (searchRegPlate) {
+          quoteQuery = quoteQuery.or(`vehicle_reg.ilike.%${normalizedRegPlate}%,vehicle_reg.ilike.%${searchRegPlate.trim()}%`);
+        }
+        
+        const { data: quotes } = await quoteQuery.limit(1);
+        
+        if (quotes && quotes.length > 0) {
+          const quote = quotes[0];
+          toast({
+            title: "Found in Paid Orders",
+            description: `Customer "${quote.customer_name}" found in paid orders but not in customer database. The customer record may need to be created via the Paid Orders section.`,
+            variant: "default",
+          });
+        } else {
+          toast({
+            title: "Customer Not Found",
+            description: "No customer found with those details in customers or paid orders",
+            variant: "destructive",
+          });
+        }
         setLoading(false);
         return;
       }
