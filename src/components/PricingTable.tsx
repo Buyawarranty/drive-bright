@@ -1673,23 +1673,17 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </div>
                     )}
                     
-                    {/* Total price with was price */}
+                    {/* Total price */}
                     <div className="text-sm mt-2">
                       <span className="font-bold text-black">
-                        {(durationId === '24months' || durationId === '36months') ? 'Pay in full ' : 'Total: '}
-                        £{displayedAnnualPrice}
+                        Pay in full £{displayedAnnualPrice}
                       </span>
-                      {savingsAmount > 0 && (
-                        <span className="text-red-500 line-through ml-1">(Was £{displayedAnnualPrice + savingsAmount})</span>
-                      )}
                     </div>
                     
-                    {/* Savings line */}
-                    {savingsAmount > 0 && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <span className="text-sm font-bold text-green-600">Save £{savingsAmount} Today</span>
-                      </div>
-                    )}
+                    {/* 10% Stripe discount savings line */}
+                    <div className="flex items-center gap-1 mt-1">
+                      <span className="text-sm font-bold text-green-600">You save £{Math.floor(displayedAnnualPrice * 0.10)} today</span>
+                    </div>
                     
                     {/* Extra benefits for 2-year and 3-year */}
                     {(durationId === '24months' || durationId === '36months') && (
@@ -2737,12 +2731,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     </div>
                     {(() => {
                       const payInFull = displayMonthlyPrice * 12; // monthly × 12
-                      const savings = getMarketingSavings(paymentType as PaymentPeriod);
-                      const wasPrice = payInFull + savings;
+                      const stripeSavings = Math.floor(payInFull * 0.10);
                       const coverLabel = paymentType === '12months' ? '1-Year Cover' : paymentType === '24months' ? '2-Year Cover' : '3-Year Cover';
                       return (
                         <p className="text-sm text-black mt-1">
-                          {savings > 0 && <span className="line-through text-red-500">£{wasPrice}</span>} <span className="font-bold text-green-600">£{payInFull}</span> {savings > 0 && <span className="text-gray-600">(Save £{savings})</span>} <span className="text-gray-700">– {coverLabel}</span>
+                          <span className="font-bold text-green-600">Pay in full £{payInFull}</span> <span className="text-gray-600">– You save £{stripeSavings} today</span> <span className="text-gray-700">– {coverLabel}</span>
                         </p>
                       );
                     })()}
@@ -2914,8 +2907,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 {(() => {
                   // Pay in full = monthly × 12
                   const payInFull = displayMonthlyPrice * 12;
-                  const savings = getMarketingSavings(paymentType as PaymentPeriod);
-                  const wasPrice = payInFull + savings;
+                  const stripeSavings = Math.floor(payInFull * 0.10);
                   return (
                     <div className="flex flex-col md:hidden gap-2 w-full">
                       {/* Collapsible Header */}
@@ -2931,9 +2923,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                             <span className="text-xs text-gray-600">0% APR</span>
                           </div>
                           <div className="flex items-center gap-1 text-xs mt-0.5">
-                            {savings > 0 && <span className="line-through text-red-500">£{wasPrice}</span>}
-                            <span className="font-bold text-green-600">£{payInFull}</span>
-                            {savings > 0 && <span className="text-gray-500">(Save £{savings})</span>}
+                            <span className="font-bold text-green-600">Pay in full £{payInFull}</span>
+                            <span className="text-gray-500">– You save £{stripeSavings} today</span>
                           </div>
                           <div className="flex items-center gap-2 text-xs mt-1">
                             <span className="font-semibold text-gray-800">
@@ -2998,8 +2989,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 {(() => {
                   // Pay in full = monthly × 12
                   const payInFull = displayMonthlyPrice * 12;
-                  const savings = getMarketingSavings(paymentType as PaymentPeriod);
-                  const wasPrice = payInFull + savings;
+                  const stripeSavings = Math.floor(payInFull * 0.10);
                   return (
                     <div className="hidden md:flex md:items-stretch md:justify-between w-full bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
                       
@@ -3025,9 +3015,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           Only 12 payments
                         </div>
                         <div className="flex items-center gap-1 lg:gap-2 text-xs lg:text-sm mt-0.5 flex-wrap justify-center">
-                          {savings > 0 && <span className="line-through text-red-500">£{wasPrice}</span>}
-                          <span className="font-bold text-green-600">£{payInFull}</span>
-                          {savings > 0 && <span className="text-gray-600 whitespace-nowrap">(Save £{savings})</span>}
+                          <span className="font-bold text-green-600">Pay in full £{payInFull}</span>
+                          <span className="text-gray-600 whitespace-nowrap">– You save £{stripeSavings} today</span>
                           <span className="text-gray-500">– One-time payment</span>
                         </div>
                       </div>
