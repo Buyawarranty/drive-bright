@@ -1000,6 +1000,51 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     }
   };
 
+  // Edit a sent quote - load it into the form for modification and resend
+  const handleEditQuote = (quote: any) => {
+    // Set customer data
+    setCustomerName(quote.customer_name || '');
+    setCustomerEmail(quote.customer_email || '');
+    setCustomerPhone(''); // Not stored in sent quotes
+    
+    // Set vehicle data
+    const vehicleDataFromQuote = {
+      regNumber: quote.vehicle_reg || '',
+      mileage: quote.vehicle_mileage || '',
+      make: quote.vehicle_make || '',
+      model: quote.vehicle_model || '',
+      year: quote.vehicle_year || '',
+      fuelType: quote.vehicle_fuel_type || '',
+      transmission: quote.vehicle_transmission || '',
+      vehicleType: quote.vehicle_type || '',
+    };
+    setVehicleData(vehicleDataFromQuote);
+    setRegNumber(quote.vehicle_reg || '');
+    setMileage(quote.vehicle_mileage || '');
+    const numMileage = parseInt(String(quote.vehicle_mileage).replace(/,/g, ''), 10);
+    if (!isNaN(numMileage)) setSliderMileage(numMileage);
+    
+    // Set quote configuration
+    const duration = quote.payment_type || '24months';
+    setPaymentType(duration);
+    setExcessAmount(quote.excess_amount || 100);
+    setClaimLimit(quote.claim_limit || 2000);
+    setLabourRate(quote.labour_rate || 70);
+    setBoostAddon(quote.boost_addon || false);
+    setAdditionalNotes(quote.additional_notes || '');
+    
+    // Go to Step 2 (quote details) for editing
+    setStep(2);
+    setActiveTab('new');
+    setQuoteGenerated(false);
+    setQuoteLink(null);
+    
+    toast({
+      title: "Quote loaded for editing",
+      description: `Edit and resend quote for ${quote.customer_name}`,
+    });
+  };
+
   const generateWhatsAppMessage = () => {
     const termOption = termOptions.find(t => t.id === paymentType);
     const months = termOption?.months || 12;
@@ -1833,6 +1878,10 @@ Questions? Call 0330 229 5040`;
                     </CardDescription>
                   </div>
                   <div className="flex items-center gap-2">
+                    <LeadSearchPopover 
+                      onSelectLead={handleLeadSelect} 
+                      className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-300"
+                    />
                     {savedQuotes.length > 0 && (
                       <Button
                         variant="outline"
@@ -3926,7 +3975,7 @@ Questions? Call 0330 229 5040`;
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className="flex gap-2">
+                            <div className="flex gap-1">
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -3934,14 +3983,25 @@ Questions? Call 0330 229 5040`;
                                   setSelectedHistoryQuote(quote);
                                   setShowHistoryDialog(true);
                                 }}
+                                title="View details"
                               >
                                 <Eye className="w-4 h-4" />
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
+                                onClick={() => handleEditQuote(quote)}
+                                title="Edit & resend"
+                                className="text-blue-600 hover:bg-blue-50"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
                                 onClick={() => handleResendQuote(quote)}
                                 disabled={isSendingEmail}
+                                title="Quick resend"
                               >
                                 <RefreshCw className="w-4 h-4" />
                               </Button>
