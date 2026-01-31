@@ -30,7 +30,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   const [isPaymentComplete, setIsPaymentComplete] = useState(false);
   const hasAutoSubmittedRef = useRef(false);
 
-  // Auto-confirm payment for redirect-based methods (PayPal, Revolut)
+  // Auto-confirm payment for redirect-based methods (PayPal)
   const confirmPayment = useCallback(async () => {
     if (!stripe || !elements || isProcessing || hasAutoSubmittedRef.current) {
       return;
@@ -122,10 +122,10 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
       hasAutoSubmittedRef.current = false;
     }
     
-    // Auto-trigger for redirect-based methods (PayPal, Revolut) when they're selected and ready
-    // These methods don't require additional input - clicking them should start payment
-    if (event.complete && (event.value.type === 'paypal' || event.value.type === 'revolut_pay')) {
-      console.log(`🚀 Auto-triggering ${event.value.type} payment`);
+    // Auto-trigger for redirect-based methods (PayPal) when selected and ready
+    // PayPal doesn't require additional input - clicking it should start payment
+    if (event.complete && event.value.type === 'paypal') {
+      console.log(`🚀 Auto-triggering PayPal payment`);
       // Small delay to ensure Stripe is ready
       setTimeout(() => {
         confirmPayment();
@@ -221,9 +221,10 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         </div>
       )}
 
-      {/* Regular Payment Form - Card / PayPal / Revolut */}
+      {/* Regular Payment Form - Card / PayPal */}
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Payment Element for Card, PayPal, and Revolut */}
+        {/* Payment Element - Primary methods only: Card and PayPal */}
+        {/* Apple Pay / Google Pay handled by Express Checkout above */}
         <div className="bg-white rounded-lg border border-[#DADADA]">
           <PaymentElement 
             onReady={() => setIsReady(true)}
@@ -231,8 +232,10 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
             options={{
               layout: 'tabs',
               business: { name: 'BuyAWarranty' },
-              // Show card, PayPal and Revolut - wallets handled by Express Checkout above
-              paymentMethodOrder: ['card', 'paypal', 'revolut_pay'],
+              // Primary payment methods only: Card and PayPal
+              // Apple/Google Pay handled by ExpressCheckoutElement above
+              // Revolut hidden for cleaner mobile UX
+              paymentMethodOrder: ['card', 'paypal'],
               wallets: {
                 applePay: 'never',
                 googlePay: 'never',
@@ -242,10 +245,10 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         </div>
 
         {/* Processing indicator for redirect-based methods */}
-        {isProcessing && (selectedPaymentMethod === 'paypal' || selectedPaymentMethod === 'revolut_pay') && (
+        {isProcessing && selectedPaymentMethod === 'paypal' && (
           <div className="flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground">
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span>Redirecting to {selectedPaymentMethod === 'paypal' ? 'PayPal' : 'Revolut'}...</span>
+            <span>Redirecting to PayPal...</span>
           </div>
         )}
 
