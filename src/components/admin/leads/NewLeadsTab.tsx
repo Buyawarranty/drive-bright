@@ -12,19 +12,16 @@ import { ManagerDashboard } from './ManagerDashboard';
 import { AgentsLeadsView } from './AgentsLeadsView';
 import { SalesAgentDashboard } from '../sales/SalesAgentDashboard';
 import { LeadDistributionControlBar, SalesExecutiveHeader } from './distribution';
-import { AgentCapsPanel } from './distribution/AgentCapsPanel';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
-import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound, Settings2 } from 'lucide-react';
+import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useDataExport } from '@/hooks/useDataExport';
 import { useDebounce } from '@/hooks/useDebounce';
 import { usePagination } from '@/hooks/usePagination';
 import { useEnhancedPresence } from '@/hooks/useEnhancedPresence';
-import { useLeadDistribution } from '@/hooks/useLeadDistribution';
 
 // Lead data for quote navigation
 interface LeadForQuote {
@@ -123,18 +120,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({ from: undefined, to: undefined });
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
-  const [capsSheetOpen, setCapsSheetOpen] = useState(false);
 
-  // Lead distribution hook for agent caps
-  const {
-    agentCaps,
-    agentPresences,
-    updateAgentCap,
-    toggleAgentPause,
-    deleteAgentFromDistribution,
-    getAgentPresenceStatus,
-    initializeAgentCaps
-  } = useLeadDistribution();
+  // Lead distribution hook no longer needed here - AgentsLeadsView has its own instance
 
   const {
     leads,
@@ -526,40 +513,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 <UsersRound className="h-4 w-4" />
                 <span className="hidden sm:inline">See Agents</span>
               </Button>
-            )}
-            {/* Agent Caps - Admin only */}
-            {isAdmin && (
-              <Sheet open={capsSheetOpen} onOpenChange={setCapsSheetOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm" className="gap-2">
-                    <Settings2 className="h-4 w-4" />
-                    <span className="hidden sm:inline">Agent Caps</span>
-                  </Button>
-                </SheetTrigger>
-                <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
-                  <SheetHeader>
-                    <SheetTitle>Agent Distribution Caps</SheetTitle>
-                    <SheetDescription>
-                      Set daily lead caps and manage agent availability for round-robin distribution.
-                    </SheetDescription>
-                  </SheetHeader>
-                  <AgentCapsPanel
-                    agentCaps={agentCaps}
-                    agentPresences={agentPresences}
-                    salesUsers={salesUsers.map(u => ({
-                      id: u.id,
-                      email: u.email,
-                      first_name: u.first_name,
-                      last_name: u.last_name
-                    }))}
-                    onUpdateCap={updateAgentCap}
-                    onTogglePause={toggleAgentPause}
-                    onDeleteAgent={deleteAgentFromDistribution}
-                    getAgentPresenceStatus={getAgentPresenceStatus}
-                    onInitializeCaps={initializeAgentCaps}
-                  />
-                </SheetContent>
-              </Sheet>
             )}
           </div>
         </div>
