@@ -1253,16 +1253,9 @@ Questions? Call 0330 229 5040`;
       return;
     }
 
-    // Price validation
+    // Price validation - allow override, just show warning in UI (no blocking)
     const confirmedAmount = parseFloat(paymentAmount);
-    if (Math.abs(confirmedAmount - currentPrice.totalPrice) > 1 && !paymentNotes) {
-      toast({
-        title: "Price Mismatch",
-        description: "Payment amount differs from quoted price. Please add a note explaining the difference.",
-        variant: "destructive",
-      });
-      return;
-    }
+    const hasPriceDifference = Math.abs(confirmedAmount - currentPrice.totalPrice) > 1;
 
     setIsConfirmingPaid(true);
     const warrantyReference = generateWarrantyReference();
@@ -3304,26 +3297,37 @@ Questions? Call 0330 229 5040`;
                     </div>
                   </div>
                 </div>
-              ) : (
+              ) : externalPaymentStep === 'preview' ? (
                 /* Preview Step */
                 <div className="space-y-4">
                   {(() => {
                     const preview = getExternalPaymentPreviewData();
+                    const hasPriceDifference = Math.abs(parseFloat(paymentAmount) - currentPrice.totalPrice) > 1;
                     return (
                       <>
                         <Alert className="bg-amber-50 border-amber-200">
                           <Eye className="h-4 w-4 text-amber-600" />
                           <AlertDescription className="text-amber-800">
-                            Please review all information carefully before confirming. This data will be sent to your Customer Dashboard and {sendToW2k ? 'Warranties 2000 API' : 'stored locally only'}.
+                            Please review all information carefully before confirming. This data will be saved to your Customer Dashboard{sendToW2k ? ' and Warranties Register' : ''}.
                           </AlertDescription>
                         </Alert>
 
-                        {/* Customer Dashboard Data */}
+                        {/* Customer Dashboard Data with Edit Button */}
                         <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg space-y-3">
-                          <h4 className="font-semibold text-green-900 flex items-center gap-2">
-                            <UserCheck className="w-4 h-4" />
-                            Customer Dashboard Record
-                          </h4>
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-semibold text-green-900 flex items-center gap-2">
+                              <UserCheck className="w-4 h-4" />
+                              Customer Dashboard Record
+                            </h4>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setExternalPaymentStep('details')}
+                              className="text-xs h-7"
+                            >
+                              ✏️ Edit Details
+                            </Button>
+                          </div>
                           <div className="grid grid-cols-2 gap-2 text-sm">
                             <div><span className="font-medium">Name:</span> {preview.customer.name}</div>
                             <div><span className="font-medium">Email:</span> {preview.customer.email}</div>
@@ -3354,42 +3358,35 @@ Questions? Call 0330 229 5040`;
                               </div>
                             )}
                           </div>
+                          
+                          {/* Price difference info (non-blocking) */}
+                          {hasPriceDifference && (
+                            <div className="p-2 bg-amber-50 border border-amber-200 rounded text-amber-800 text-sm">
+                              <span className="font-medium">💰 Price Override:</span> Payment amount (£{preview.payment.amount}) differs from quoted price (£{currentPrice.totalPrice}). 
+                              {paymentNotes ? <span className="text-green-700"> Note added.</span> : <span className="text-amber-700"> Consider adding a note.</span>}
+                            </div>
+                          )}
                         </div>
 
-                        {/* Warranties 2000 Data */}
+                        {/* Warranties Register Confirmation - Simplified */}
                         {sendToW2k && (
                           <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg space-y-3">
-                            <h4 className="font-semibold text-blue-900 flex items-center gap-2">
-                              <Send className="w-4 h-4" />
-                              Warranties 2000 API Payload
-                            </h4>
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div><span className="font-medium">First:</span> {preview.customer.name.split(' ')[0]}</div>
-                              <div><span className="font-medium">Surname:</span> {preview.customer.name.split(' ').slice(1).join(' ') || 'N/A'}</div>
-                              <div><span className="font-medium">EMail:</span> {preview.customer.email}</div>
-                              <div><span className="font-medium">Tel:</span> {preview.customer.phone}</div>
-                              <div><span className="font-medium">VRM:</span> {preview.vehicle.registration}</div>
-                              <div><span className="font-medium">Make:</span> {preview.vehicle.make}</div>
-                              <div><span className="font-medium">Model:</span> {preview.vehicle.model}</div>
-                              <div><span className="font-medium">Year:</span> {preview.vehicle.year}</div>
-                              <div><span className="font-medium">Mileage:</span> {preview.vehicle.mileage.replace(/,/g, '')}</div>
-                              <div><span className="font-medium">Fuel:</span> {preview.vehicle.fuelType}</div>
-                              <div><span className="font-medium">Transmission:</span> {preview.vehicle.transmission}</div>
-                              <div><span className="font-medium">Cover (months):</span> {preview.policy.durationMonths}</div>
-                              <div><span className="font-medium">Excess:</span> £{preview.policy.excess}</div>
-                              <div><span className="font-medium">Claim Limit:</span> £{preview.policy.claimLimit.toLocaleString()}</div>
-                              <div><span className="font-medium">Labour Rate:</span> £{preview.policy.labourRate}/hr</div>
-                              <div><span className="font-medium">Price:</span> £{preview.payment.amount}</div>
+                            <div className="flex items-center gap-2">
+                              <Send className="w-4 h-4 text-blue-600" />
+                              <h4 className="font-semibold text-blue-900">Confirm on Warranties Register</h4>
                             </div>
+                            <p className="text-sm text-blue-800">
+                              The same customer and vehicle details shown above will be registered with Warranties Register for claims processing.
+                            </p>
                             {preview.integrations.w2kNotes && (
-                              <div className="mt-2 p-2 bg-white/50 rounded text-sm">
-                                <span className="font-medium">Notes to W2000:</span>
-                                <p className="text-muted-foreground mt-1">{preview.integrations.w2kNotes}</p>
+                              <div className="p-2 bg-white/50 rounded text-sm">
+                                <span className="font-medium text-blue-900">Notes:</span>
+                                <p className="text-blue-700 mt-1">{preview.integrations.w2kNotes}</p>
                               </div>
                             )}
                             {preview.policy.isFutureStart && (
-                              <div className="mt-2 p-2 bg-amber-100 border border-amber-200 rounded text-sm text-amber-800">
-                                <span className="font-medium">⏰ Scheduled:</span> W2000 submission will be processed on {preview.policy.startDate}
+                              <div className="p-2 bg-amber-100 border border-amber-200 rounded text-sm text-amber-800">
+                                <span className="font-medium">⏰ Scheduled:</span> Registration will be processed on {preview.policy.startDate}
                               </div>
                             )}
                           </div>
@@ -3423,7 +3420,7 @@ Questions? Call 0330 229 5040`;
                     );
                   })()}
                 </div>
-              )}
+              ) : null}
 
               {/* Complete Step - Show confirmation status */}
               {externalPaymentStep === 'complete' && completionStatus && (
