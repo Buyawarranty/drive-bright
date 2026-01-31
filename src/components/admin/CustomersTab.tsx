@@ -54,6 +54,7 @@ import { InlineUpgradeCell } from './InlineUpgradeCell';
 import { TrustpilotReviewDialog } from './TrustpilotReviewDialog';
 import { PurchaseSourceBadge } from './PurchaseSourceBadge';
 import { DateRangeFilter } from './DateRangeFilter';
+import { QuickCustomerSignupButton } from './QuickCustomerSignupButton';
 import { format } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
@@ -2107,6 +2108,9 @@ export const CustomersTab = () => {
           <h2 className="text-2xl font-bold text-gray-900">Customer Management</h2>
         </div>
         <div className="flex space-x-2">
+          {/* Quick Customer Signup Button */}
+          <QuickCustomerSignupButton />
+          
           <Button 
             onClick={fetchCustomers} 
             variant="outline"
