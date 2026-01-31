@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car } from 'lucide-react';
 import { PaidOrdersTab } from './PaidOrdersTab';
 import CustomerLoginsTab from './CustomerLoginsTab';
 import CustomerPolicyUpdateTab from './CustomerPolicyUpdateTab';
@@ -31,6 +31,7 @@ import {
 } from '@/lib/pricingMatrix';
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
 import { calculateVehiclePriceAdjustment } from '@/lib/vehicleValidation';
+import { useMotMileage } from '@/hooks/useMotMileage';
 
 interface VehicleData {
   regNumber: string;
@@ -157,6 +158,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [editableCustomerPhone, setEditableCustomerPhone] = useState('');
   const [editableMileage, setEditableMileage] = useState('');
   const [editableRegNumber, setEditableRegNumber] = useState('');
+  const [mileagePrefilledFromMot, setMileagePrefilledFromMot] = useState(false);
   
   // Completion status tracking
   const [completionStatus, setCompletionStatus] = useState<{
@@ -197,6 +199,17 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       handleLeadSelect(prePopulatedLead);
     }
   }, [prePopulatedLead]);
+
+  // MOT mileage lookup for external payment dialog
+  const { motMileage, motDate, isLoading: motMileageLoading } = useMotMileage(editableRegNumber);
+  
+  // Auto-prefill mileage from MOT when available
+  useEffect(() => {
+    if (motMileage && !editableMileage && !mileagePrefilledFromMot) {
+      setEditableMileage(motMileage.toString());
+      setMileagePrefilledFromMot(true);
+    }
+  }, [motMileage, editableMileage, mileagePrefilledFromMot]);
 
   // Get admin email on mount
   useEffect(() => {
@@ -1154,6 +1167,7 @@ Questions? Call 0330 229 5040`;
     setEditableCustomerPhone(customerPhone);
     setEditableMileage(vehicleData?.mileage || mileage);
     setEditableRegNumber(vehicleData?.regNumber || regNumber);
+    setMileagePrefilledFromMot(false); // Reset MOT prefill flag
     
     // Reset address fields
     setCustomerPostcode('');
@@ -2987,13 +3001,38 @@ Questions? Call 0330 229 5040`;
                         <p className="text-sm text-gray-800 py-2 px-3 bg-gray-50 rounded-md border border-gray-200">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-gray-600">Mileage</Label>
-                        <Input
-                          value={editableMileage}
-                          onChange={(e) => setEditableMileage(e.target.value.replace(/\D/g, ''))}
-                          placeholder="e.g. 45000"
-                          className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                        />
+                        <Label className="text-xs font-medium text-gray-600 flex items-center gap-2">
+                          Mileage
+                          {motMileageLoading && (
+                            <span className="flex items-center gap-1 text-xs text-blue-600">
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              Looking up MOT...
+                            </span>
+                          )}
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            value={editableMileage}
+                            onChange={(e) => {
+                              setEditableMileage(e.target.value.replace(/\D/g, ''));
+                              setMileagePrefilledFromMot(false);
+                            }}
+                            placeholder="e.g. 45000"
+                            className={cn(
+                              "bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors",
+                              mileagePrefilledFromMot && "pr-8"
+                            )}
+                          />
+                          {mileagePrefilledFromMot && (
+                            <CheckCircle2 className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
+                          )}
+                        </div>
+                        {mileagePrefilledFromMot && motDate && (
+                          <p className="text-xs text-green-600 flex items-center gap-1">
+                            <Car className="w-3 h-3" />
+                            Pre-filled from MOT ({format(new Date(motDate), 'MMM yyyy')})
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
