@@ -177,12 +177,15 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
 
       if (quoteError) throw quoteError;
 
-      // If customer exists, update customers table
-      if (order.customer_id) {
-        const nameParts = customerName.trim().split(' ');
-        const firstName = nameParts[0] || '';
-        const lastName = nameParts.slice(1).join(' ') || '';
+      // Parse customer name into first/last
+      const nameParts = customerName.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
 
+      let customerId = order.customer_id;
+
+      // If customer exists, update customers table
+      if (order.customer_id && updateDashboard) {
         const { error: customerError } = await supabase
           .from('customers')
           .update({
@@ -211,10 +214,59 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
         if (customerError) {
           console.error('Error updating customer:', customerError);
         }
+      } else if (!order.customer_id && updateDashboard) {
+        // CREATE customer record if it doesn't exist (critical fix for data integrity)
+        const { data: newCustomer, error: createError } = await supabase
+          .from('customers')
+          .insert({
+            name: customerName,
+            first_name: firstName,
+            last_name: lastName,
+            email: customerEmail,
+            phone: customerPhone,
+            registration_plate: vehicleReg.toUpperCase(),
+            vehicle_make: vehicleMake,
+            vehicle_model: vehicleModel,
+            mileage: vehicleMileage,
+            vehicle_year: vehicleYear,
+            claim_limit: claimLimit,
+            labour_rate: labourRate,
+            voluntary_excess: excessAmount,
+            street: street,
+            town: town,
+            county: county,
+            postcode: postcode,
+            building_number: buildingNumber,
+            plan_type: 'Platinum', // Default plan type
+            status: 'active',
+            payment_type: order.payment_method || order.payment_source || 'external',
+            final_amount: order.upfront_price || (order.monthly_price * 12),
+            signup_date: order.paid_at || new Date().toISOString(),
+            payment_verified: true,
+            payment_confirmed_by: confirmedByAgent || null,
+            assigned_to: confirmedByAgent || null,
+          })
+          .select('id')
+          .single();
+
+        if (createError) {
+          console.error('Error creating customer:', createError);
+          toast({
+            title: "Warning",
+            description: "Order saved but customer record could not be created. Please try again.",
+            variant: "destructive",
+          });
+        } else {
+          customerId = newCustomer?.id;
+          toast({
+            title: "Customer Created",
+            description: `Customer record created for ${customerName}. They can now be found in Customer Logins.`,
+          });
+        }
       }
 
       // If policy exists, update customer_policies table
-      if (order.policy_id) {
+      if (order.policy_id && updateDashboard) {
         const { error: policyError } = await supabase
           .from('customer_policies')
           .update({
@@ -300,6 +352,20 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
             Edit Order: {order.policy_number || order.vehicle_reg}
           </DialogTitle>
         </DialogHeader>
+
+        {/* Alert if no customer record exists */}
+        {!order.customer_id && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2">
+            <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-amber-800">Customer record missing</p>
+              <p className="text-sm text-amber-700">
+                This order has no customer dashboard record. Click "Save & Update Dashboard" to create one, 
+                enabling the customer to log in and access their policy.
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="grid gap-4 sm:gap-6 mt-4">
           {/* Section A: Customer Details */}
