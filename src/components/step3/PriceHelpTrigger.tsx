@@ -58,8 +58,8 @@ const PriceHelpTrigger: React.FC<PriceHelpTriggerProps> = ({ onClick, className 
             </span>
           </span>
           
-          {/* Secondary line - smaller and muted */}
-          <span className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
+          {/* Secondary line - smaller but readable */}
+          <span className="flex items-center gap-1 text-xs text-gray-900 mt-0.5">
             <Trophy className="w-3 h-3 text-brand-orange/60 flex-shrink-0" strokeWidth={1.5} />
             <span>We will beat any price you already have</span>
           </span>
