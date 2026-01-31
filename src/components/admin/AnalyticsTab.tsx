@@ -156,6 +156,12 @@ export const AnalyticsTab = () => {
     return dateRange;
   }, [selectedMonth, dateRange]);
 
+  // Helper function to check if customer is cancelled/refunded (excluded from revenue)
+  const isRevenueLost = (status: string): boolean => {
+    const lowerStatus = status?.toLowerCase() || '';
+    return lowerStatus === 'cancelled' || lowerStatus === 'refunded';
+  };
+
   // Filter customers based on date range and source
   const filteredCustomers = useMemo(() => {
     return customers.filter(customer => {
@@ -193,6 +199,11 @@ export const AnalyticsTab = () => {
     });
   }, [customers, effectiveDateRange, sourceFilter]);
 
+  // Active customers for revenue (excluding cancelled/refunded)
+  const activeRevenueCustomers = useMemo(() => {
+    return filteredCustomers.filter(c => !isRevenueLost(c.status));
+  }, [filteredCustomers]);
+
 
   // Helper function to categorize customer by source
   const getCustomerSource = (customer: Customer): 'website' | 'sales_team' | 'unknown' => {
@@ -203,11 +214,13 @@ export const AnalyticsTab = () => {
     return 'unknown';
   };
 
-  // Calculate metrics with safe defaults
+  // Calculate metrics with safe defaults - EXCLUDING cancelled/refunded from revenue
   const totalCustomers = filteredCustomers.length;
   const activeCustomers = filteredCustomers.filter(c => c.status === 'Active').length;
-  const totalRevenue = filteredCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
-  const paidOrders = filteredCustomers.filter(c => c.final_amount && Number(c.final_amount) > 0);
+  const cancelledRefundedCount = filteredCustomers.filter(c => isRevenueLost(c.status)).length;
+  // Revenue only counts non-cancelled/refunded customers
+  const totalRevenue = activeRevenueCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
+  const paidOrders = activeRevenueCustomers.filter(c => c.final_amount && Number(c.final_amount) > 0);
   const overallAOV = paidOrders.length > 0 ? Math.round(totalRevenue / paidOrders.length) : 0;
 
   // Calculate AOV by source (using effectiveDateRange for both chart clicks and date picker)
@@ -229,8 +242,19 @@ export const AnalyticsTab = () => {
       return true;
     });
 
-    const websiteCustomers = dateFilteredCustomers.filter(c => getCustomerSource(c) === 'website' && c.final_amount && Number(c.final_amount) > 0);
-    const salesTeamCustomers = dateFilteredCustomers.filter(c => getCustomerSource(c) === 'sales_team' && c.final_amount && Number(c.final_amount) > 0);
+    // Exclude cancelled/refunded from revenue calculations
+    const websiteCustomers = dateFilteredCustomers.filter(c => 
+      getCustomerSource(c) === 'website' && 
+      c.final_amount && 
+      Number(c.final_amount) > 0 &&
+      !isRevenueLost(c.status)
+    );
+    const salesTeamCustomers = dateFilteredCustomers.filter(c => 
+      getCustomerSource(c) === 'sales_team' && 
+      c.final_amount && 
+      Number(c.final_amount) > 0 &&
+      !isRevenueLost(c.status)
+    );
     
     const websiteRevenue = websiteCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
     const salesTeamRevenue = salesTeamCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
@@ -296,8 +320,11 @@ export const AnalyticsTab = () => {
       };
     }).reverse();
 
-    // Use all customers for chart display (not filtered customers)
+    // Use all customers for chart display (not filtered customers) - EXCLUDING cancelled/refunded
     customers.forEach(customer => {
+      // Skip cancelled/refunded orders from revenue chart
+      if (isRevenueLost(customer.status)) return;
+      
       if (customer.final_amount && customer.signup_date) {
         const signupDate = new Date(customer.signup_date);
         const monthKey = `${signupDate.getFullYear()}-${String(signupDate.getMonth() + 1).padStart(2, '0')}`;
