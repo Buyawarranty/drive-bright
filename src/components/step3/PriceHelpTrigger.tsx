@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronRight, HelpCircle } from 'lucide-react';
+import { ChevronRight, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PriceHelpTriggerProps {
@@ -12,26 +12,27 @@ const PriceHelpTrigger: React.FC<PriceHelpTriggerProps> = ({ onClick, className 
     <button
       onClick={onClick}
       className={cn(
-        "w-full group flex items-center justify-center gap-2 py-3 px-4",
-        "bg-gradient-to-r from-gray-50 to-white",
-        "border border-gray-200 rounded-xl",
-        "hover:border-brand-green/30 hover:shadow-sm",
-        "transition-all duration-200",
+        "w-full group flex items-center justify-center gap-2 py-3.5 px-4",
+        "bg-gradient-to-r from-gray-50 via-white to-gray-50",
+        "border border-gray-200/80 rounded-xl",
+        "hover:border-brand-green/40 hover:shadow-md hover:shadow-brand-green/5",
+        "transition-all duration-300",
         className
       )}
+      aria-label="Open pricing help panel to adjust your cover or request a callback"
     >
-      <HelpCircle className="w-4 h-4 text-gray-400 group-hover:text-brand-green transition-colors" />
-      <span className="text-sm text-gray-600 group-hover:text-gray-800 transition-colors">
+      <Sparkles className="w-4 h-4 text-brand-orange group-hover:text-brand-green transition-colors flex-shrink-0" />
+      <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors">
         Not the right price?{' '}
-        <span className="font-medium text-brand-green">
+        <span className="font-semibold text-brand-green">
           Adjust your cover
         </span>{' '}
         or{' '}
-        <span className="font-medium text-brand-green">
-          request a price match
+        <span className="font-semibold text-brand-green">
+          request a call back
         </span>
       </span>
-      <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-brand-green group-hover:translate-x-0.5 transition-all" />
+      <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-brand-green group-hover:translate-x-0.5 transition-all flex-shrink-0" />
     </button>
   );
 };
