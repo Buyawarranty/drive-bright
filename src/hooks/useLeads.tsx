@@ -60,6 +60,8 @@ export interface Lead {
     voluntary_excess?: number;
     labour_rate?: number;
     total_price?: number;
+    competitorPrice?: string | null;
+    quoteDetails?: string | null;
     protection_addons?: {
       breakdown?: boolean;
       rental?: boolean;

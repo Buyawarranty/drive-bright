@@ -299,7 +299,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                   setCompetitorPrice(value);
                 }}
                 placeholder="Enter the price you were quoted"
-                className="h-12 pl-8 rounded-lg border-gray-200 bg-gray-50 text-lg font-semibold focus:bg-white"
+                className="h-12 pl-8 rounded-lg border-gray-200 bg-gray-50 text-lg focus:bg-white"
                 disabled={isSubmitting}
               />
             </div>
@@ -308,7 +308,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
           {/* Details Field */}
           <div className="mb-5">
             <Label htmlFor="quote-details" className="text-sm font-semibold text-gray-800 mb-1.5 block">
-              More details about your quote <span className="text-gray-400 font-normal">(optional)</span>
+              More details about your quote <span className="text-gray-500 font-normal">(optional)</span>
             </Label>
             <Textarea
               id="quote-details"
@@ -324,7 +324,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
           {/* Info Card */}
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
             <p className="text-sm text-gray-700 leading-relaxed">
-              We cannot show a price instantly. Request a call back for your personalised quote.
+              ✨ We personalise every quote. Request a call back and we'll prepare the best price for you.
             </p>
           </div>
 
@@ -350,7 +350,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             {/* Email */}
             <div>
               <Label htmlFor="request-email" className="text-sm font-semibold text-gray-800 mb-1.5 block">
-                Email <span className="text-gray-400 font-normal">(optional)</span>
+                Email <span className="text-gray-500 font-normal">(optional)</span>
               </Label>
               <Input
                 id="request-email"
@@ -441,7 +441,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                   setCompetitorPrice(value);
                 }}
                 placeholder="Enter the price you were quoted"
-                className="h-11 pl-8 rounded-lg border-gray-200 bg-gray-50 text-base font-semibold focus:bg-white"
+                className="h-11 pl-8 rounded-lg border-gray-200 bg-gray-50 text-base focus:bg-white"
                 disabled={isSubmitting}
               />
             </div>
@@ -450,7 +450,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
           {/* Details Field */}
           <div className="mb-4">
             <Label htmlFor="mobile-quote-details" className="text-sm font-semibold text-gray-800 mb-1.5 block">
-              More details about your quote <span className="text-gray-400 font-normal">(optional)</span>
+              More details about your quote <span className="text-gray-500 font-normal">(optional)</span>
             </Label>
             <Textarea
               id="mobile-quote-details"
@@ -466,7 +466,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
           {/* Info Card */}
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-5">
             <p className="text-xs text-gray-700 leading-relaxed">
-              We cannot show a price instantly. Request a call back for your personalised quote.
+              ✨ We personalise every quote. Request a call back and we'll prepare the best price for you.
             </p>
           </div>
 
@@ -492,7 +492,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             {/* Email */}
             <div>
               <Label htmlFor="mobile-email" className="text-sm font-semibold text-gray-800 mb-1.5 block">
-                Email <span className="text-gray-400 font-normal">(optional)</span>
+                Email <span className="text-gray-500 font-normal">(optional)</span>
               </Label>
               <Input
                 id="mobile-email"
