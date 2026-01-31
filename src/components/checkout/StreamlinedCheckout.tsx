@@ -469,37 +469,74 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Auto-validate pre-filled fields from Step 2
   useEffect(() => {
     const autoValidatePrefilledFields = () => {
-      const fieldsToCheck = ['first_name', 'last_name', 'email', 'phone'];
-      const newValidatedFields: { [key: string]: boolean } = {};
-
-      fieldsToCheck.forEach(field => {
-        const value = customerData[field as keyof typeof customerData];
-        if (value && typeof value === 'string' && value.trim()) {
-          let isValid = false;
-          switch (field) {
-            case 'first_name':
-              isValid = value.trim().length >= 2;
-              break;
-            case 'last_name':
-              isValid = value.trim().length >= 2;
-              break;
-            case 'email':
-              isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-              break;
-            case 'phone':
-              const cleanedPhone = value.replace(/\s/g, '');
-              isValid = /^(?:(?:\+44)|(?:0))(?:\d{10}|\d{9})$/.test(cleanedPhone);
-              break;
-          }
-          if (isValid) {
-            newValidatedFields[field] = true;
-          }
+      // CRITICAL: Force reload from localStorage to ensure fields are populated
+      try {
+        const savedCustomerData = localStorage.getItem('buyawarranty_customerData');
+        if (savedCustomerData) {
+          const parsed = JSON.parse(savedCustomerData);
+          console.log('🔄 Step 4: Re-checking localStorage for pre-filled data:', parsed);
+          
+          // Only update if current fields are empty but localStorage has data
+          setCustomerData(prev => {
+            const updated = { ...prev };
+            if (!prev.first_name && parsed.first_name) {
+              updated.first_name = parsed.first_name;
+            }
+            if (!prev.email && parsed.email) {
+              updated.email = parsed.email;
+            }
+            if (!prev.phone && parsed.phone) {
+              updated.phone = parsed.phone;
+            }
+            return updated;
+          });
         }
-      });
-
-      if (Object.keys(newValidatedFields).length > 0) {
-        setValidatedFields(prev => ({ ...prev, ...newValidatedFields }));
+      } catch (error) {
+        console.error('Error re-loading customer data:', error);
       }
+      
+      // Short delay to allow state to update before validating
+      setTimeout(() => {
+        const fieldsToCheck = ['first_name', 'last_name', 'email', 'phone'];
+        const newValidatedFields: { [key: string]: boolean } = {};
+
+        fieldsToCheck.forEach(field => {
+          const value = customerData[field as keyof typeof customerData];
+          if (value && typeof value === 'string' && value.trim()) {
+            let isValid = false;
+            switch (field) {
+              case 'first_name':
+                isValid = value.trim().length >= 2;
+                break;
+              case 'last_name':
+                isValid = value.trim().length >= 2;
+                break;
+              case 'email':
+                isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+                break;
+              case 'phone':
+                const cleanedPhone = value.replace(/\s/g, '');
+                isValid = /^(?:(?:\+44)|(?:0))(?:\d{10}|\d{9})$/.test(cleanedPhone);
+                break;
+            }
+            if (isValid) {
+              newValidatedFields[field] = true;
+            }
+          }
+        });
+
+        if (Object.keys(newValidatedFields).length > 0) {
+          setValidatedFields(prev => ({ ...prev, ...newValidatedFields }));
+          // Clear any errors for pre-filled valid fields
+          setFieldErrors(prev => {
+            const updated = { ...prev };
+            Object.keys(newValidatedFields).forEach(field => {
+              delete updated[field];
+            });
+            return updated;
+          });
+        }
+      }, 100);
     };
 
     autoValidatePrefilledFields();
@@ -1424,6 +1461,20 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5" />
                       {fieldErrors.last_name}
+                    </p>
+                  )}
+                  {/* Postcode reminder when last name is completed but postcode is empty */}
+                  {validatedFields.last_name && customerData.last_name?.trim()?.length >= 2 && !addressData.postcode?.trim() && (
+                    <p className="text-sm mt-2 flex items-center gap-1.5 text-[#0BA360] bg-[#0BA360]/5 px-3 py-2 rounded-lg border border-[#0BA360]/20">
+                      <MapPin className="w-4 h-4 flex-shrink-0" />
+                      <span>Great! Now enter your <button 
+                        type="button" 
+                        onClick={() => {
+                          document.getElementById('postcode-lookup')?.focus();
+                          document.getElementById('postcode-lookup')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }}
+                        className="font-semibold underline hover:no-underline"
+                      >postcode</button> to continue</span>
                     </p>
                   )}
                 </div>
