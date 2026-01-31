@@ -742,7 +742,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         break;
       case 'last_name':
         if (!customerData.last_name?.trim()) {
-          error = 'Last name is required';
+          error = 'Please enter your last name.';
           isValid = false;
         } else if (customerData.last_name.trim().length < 2) {
           error = 'Last name must be at least 2 characters';
@@ -811,10 +811,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         break;
       case 'postcode':
         if (!addressData.postcode?.trim()) {
-          error = 'Enter a valid UK postcode.';
+          error = 'Please enter a valid UK postcode.';
           isValid = false;
         } else if (!ukPostcodeRegex.test(addressData.postcode.replace(/\s/g, ''))) {
-          error = 'Enter a valid UK postcode.';
+          error = 'Please enter a valid UK postcode.';
           isValid = false;
         }
         break;
