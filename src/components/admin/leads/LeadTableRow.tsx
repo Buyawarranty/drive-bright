@@ -1,5 +1,6 @@
 import React, { memo, useState, useCallback } from 'react';
 import { Lead, LeadStatus, LeadPriority, LeadTag, AdminUser } from '@/hooks/useLeads';
+import { SentQuote } from '@/hooks/useLeadQuotes';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RemindMePopover } from './RemindMePopover';
 import { CopyButton } from './CopyButton';
 import { CallCountCell } from './CallCountCell';
+import { QuoteSentCell } from './QuoteSentCell';
 import { 
   Phone, Mail, MessageSquare, Calendar as CalendarIcon, 
   Tag, AlertTriangle, FileText, StickyNote,
@@ -27,6 +29,7 @@ interface LeadTableRowProps {
   salesUsers: AdminUser[];
   isSelected: boolean;
   isExpanded: boolean;
+  sentQuotes?: SentQuote[];
   onSelect: () => void;
   onToggleExpand: () => void;
   onUpdateStatus: (status: LeadStatus) => void;
@@ -193,6 +196,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   salesUsers,
   isSelected,
   isExpanded,
+  sentQuotes,
   onSelect,
   onToggleExpand,
   onUpdateStatus,
@@ -442,6 +446,11 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
         ) : (
           <span className="text-muted-foreground text-xs">—</span>
         )}
+      </TableCell>
+
+      {/* Quote Sent */}
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        <QuoteSentCell quotes={sentQuotes || []} leadEmail={lead.email} />
       </TableCell>
 
       {/* Next Action */}
