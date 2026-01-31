@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Phone, Clock } from 'lucide-react';
+import { Phone, Clock, PhoneCall } from 'lucide-react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import MobileNavigation from '@/components/MobileNavigation';
+import RequestCallbackModal from './RequestCallbackModal';
+
 const StickyNavigation: React.FC = () => {
   const navigate = useNavigate();
+  const [isCallbackModalOpen, setIsCallbackModalOpen] = useState(false);
 
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -19,107 +22,127 @@ const StickyNavigation: React.FC = () => {
   };
 
   return (
-    <header className="bg-white shadow-sm py-1 sm:py-2 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center">
-            <a href="/" onClick={handleLogoClick} className="hover:opacity-80 transition-opacity cursor-pointer">
-              <OptimizedImage 
-                src={buyawarrantyLogo} 
-                alt="Buy a Warranty Logo - Affordable Car Warranty UK" 
-                className="h-6 sm:h-8 w-auto object-contain"
-                priority={true}
-                width={240}
-                height={40}
-              />
-            </a>
-          </div>
+    <>
+      <header className="bg-white shadow-sm py-1 sm:py-2 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center">
+              <a href="/" onClick={handleLogoClick} className="hover:opacity-80 transition-opacity cursor-pointer">
+                <OptimizedImage 
+                  src={buyawarrantyLogo} 
+                  alt="Buy a Warranty Logo - Affordable Car Warranty UK" 
+                  className="h-6 sm:h-8 w-auto object-contain"
+                  priority={true}
+                  width={240}
+                  height={40}
+                />
+              </a>
+            </div>
 
-          {/* Navigation - Hidden on mobile */}
-          <nav className="hidden lg:flex items-center space-x-4 xl:space-x-6">
-            <Link to="/what-is-covered/" className="relative text-gray-700 hover:text-gray-900 font-medium text-sm xl:text-base after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-orange-500 after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">What's Covered</Link>
-            <Link to="/make-a-claim/" className="relative text-gray-700 hover:text-gray-900 font-medium text-sm xl:text-base after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-orange-500 after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">Make a Claim</Link>
-            <Link to="/faq/" className="relative text-gray-700 hover:text-gray-900 font-medium text-sm xl:text-base after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-orange-500 after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">FAQs</Link>
-            <Link to="/contact-us/" className="relative text-gray-700 hover:text-gray-900 font-medium text-sm xl:text-base after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-orange-500 after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">Contact Us</Link>
-            <Link to="/customer-dashboard/" className="relative text-gray-700 hover:text-gray-900 font-medium text-sm xl:text-base after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-orange-500 after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">Login</Link>
-            
-            {/* Call Us Hover Card */}
-            <HoverCard openDelay={0} closeDelay={200}>
-              <HoverCardTrigger asChild>
-                <button className="text-orange-500 hover:text-orange-600 font-semibold text-sm xl:text-base p-2 h-auto flex items-center gap-1 bg-transparent border-none cursor-pointer">
-                  <Phone className="h-4 w-4 text-orange-500" />
-                  Call Us
-                </button>
-              </HoverCardTrigger>
-              <HoverCardContent align="end" className="w-72 p-4 bg-white border shadow-lg z-50">
-                <div className="space-y-3">
-                  <div className="text-left text-base font-medium text-gray-600 mb-4 flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-gray-600" />
-                    Mon-Fri 9am to 5:30pm
+            {/* Navigation - Hidden on mobile */}
+            <nav className="hidden lg:flex items-center space-x-4 xl:space-x-6">
+              <Link to="/what-is-covered/" className="relative text-gray-700 hover:text-gray-900 font-medium text-sm xl:text-base after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-orange-500 after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">What's Covered</Link>
+              <Link to="/make-a-claim/" className="relative text-gray-700 hover:text-gray-900 font-medium text-sm xl:text-base after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-orange-500 after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">Make a Claim</Link>
+              <Link to="/faq/" className="relative text-gray-700 hover:text-gray-900 font-medium text-sm xl:text-base after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-orange-500 after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">FAQs</Link>
+              <Link to="/contact-us/" className="relative text-gray-700 hover:text-gray-900 font-medium text-sm xl:text-base after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-orange-500 after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">Contact Us</Link>
+              <Link to="/customer-dashboard/" className="relative text-gray-700 hover:text-gray-900 font-medium text-sm xl:text-base after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-orange-500 after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">Login</Link>
+              
+              {/* Call Us Hover Card */}
+              <HoverCard openDelay={0} closeDelay={200}>
+                <HoverCardTrigger asChild>
+                  <button className="text-orange-500 hover:text-orange-600 font-semibold text-sm xl:text-base p-2 h-auto flex items-center gap-1 bg-transparent border-none cursor-pointer">
+                    <Phone className="h-4 w-4 text-orange-500" />
+                    Call Us
+                  </button>
+                </HoverCardTrigger>
+                <HoverCardContent align="end" className="w-72 p-4 bg-white border shadow-lg z-50">
+                  <div className="space-y-3">
+                    <div className="text-left text-base font-medium text-gray-600 mb-4 flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-gray-600" />
+                      Mon-Fri 9am to 5:30pm
+                    </div>
+                    <a href="tel:08004947477" className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+                      <Phone className="h-5 w-5 mr-3 text-orange-500" />
+                      <div>
+                        <div className="font-semibold text-base text-black">Get a Quote</div>
+                        <div className="text-orange-500 font-semibold text-base">0800 494 7477</div>
+                      </div>
+                    </a>
+                    <a href="tel:08004947980" className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+                      <Phone className="h-5 w-5 mr-3 text-orange-500" />
+                      <div>
+                        <div className="font-semibold text-base text-black">Make a Claim</div>
+                        <div className="text-orange-500 font-semibold text-base">0800 494 7980</div>
+                      </div>
+                    </a>
+                    
+                    {/* Request Call-Back Option */}
+                    <button 
+                      onClick={() => setIsCallbackModalOpen(true)}
+                      className="flex items-center w-full p-3 rounded-lg bg-brand-orange/10 hover:bg-brand-orange/20 transition-colors cursor-pointer"
+                    >
+                      <PhoneCall className="h-5 w-5 mr-3 text-brand-orange" />
+                      <div className="text-left">
+                        <div className="font-semibold text-base text-black">Request Call-Back</div>
+                        <div className="text-sm text-muted-foreground">We'll call you back</div>
+                      </div>
+                    </button>
                   </div>
-                  <a href="tel:08004947477" className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
-                    <Phone className="h-5 w-5 mr-3 text-orange-500" />
-                    <div>
-                      <div className="font-semibold text-base text-black">Get a Quote</div>
-                      <div className="text-orange-500 font-semibold text-base">0800 494 7477</div>
-                    </div>
-                  </a>
-                  <a href="tel:08004947980" className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
-                    <Phone className="h-5 w-5 mr-3 text-orange-500" />
-                    <div>
-                      <div className="font-semibold text-base text-black">Make a Claim</div>
-                      <div className="text-orange-500 font-semibold text-base">0800 494 7980</div>
-                    </div>
-                  </a>
-                </div>
-              </HoverCardContent>
-            </HoverCard>
+                </HoverCardContent>
+              </HoverCard>
 
-            {/* WhatsApp Us Button */}
-            <a 
-              href="https://wa.me/message/SPQPJ6O3UBF5B1" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center px-3 xl:px-4 py-2 bg-[#25D366] text-white text-sm xl:text-base font-semibold rounded-lg hover:bg-[#20BA5A] transition-colors whitespace-nowrap"
-            >
-              WhatsApp Us
-            </a>
+              {/* WhatsApp Us Button */}
+              <a 
+                href="https://wa.me/message/SPQPJ6O3UBF5B1" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-3 xl:px-4 py-2 bg-[#25D366] text-white text-sm xl:text-base font-semibold rounded-lg hover:bg-[#20BA5A] transition-colors whitespace-nowrap"
+              >
+                WhatsApp Us
+              </a>
 
-            {/* Get my quote Button */}
-            <Link 
-              to="/?step=1"
-              className="inline-flex items-center px-3 xl:px-4 py-2 bg-[#eb4b00] text-white text-sm xl:text-base font-semibold rounded-lg hover:bg-[#d63f00] transition-colors whitespace-nowrap"
-            >
-              Get my quote
-            </Link>
-          </nav>
+              {/* Get my quote Button */}
+              <Link 
+                to="/?step=1"
+                className="inline-flex items-center px-3 xl:px-4 py-2 bg-[#eb4b00] text-white text-sm xl:text-base font-semibold rounded-lg hover:bg-[#d63f00] transition-colors whitespace-nowrap"
+              >
+                Get my quote
+              </Link>
+            </nav>
 
-          {/* Mobile Menu Button */}
-          <div className="lg:hidden flex items-center gap-2">
-            {/* Mobile WhatsApp Button */}
-            <a 
-              href="https://wa.me/message/SPQPJ6O3UBF5B1" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center px-2 sm:px-3 py-1.5 sm:py-2 bg-[#25D366] text-white text-xs sm:text-sm font-semibold rounded-lg hover:bg-[#20BA5A] transition-colors whitespace-nowrap"
-            >
-              WhatsApp
-            </a>
-            
-            {/* Mobile Get Quote Button */}
-            <Link 
-              to="/?step=1"
-              className="inline-flex items-center px-2 sm:px-3 py-1.5 sm:py-2 bg-[#eb4b00] text-white text-xs sm:text-sm font-semibold rounded-lg hover:bg-[#d63f00] transition-colors whitespace-nowrap"
-            >
-              Get Quote
-            </Link>
+            {/* Mobile Menu Button */}
+            <div className="lg:hidden flex items-center gap-2">
+              {/* Mobile WhatsApp Button */}
+              <a 
+                href="https://wa.me/message/SPQPJ6O3UBF5B1" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-2 sm:px-3 py-1.5 sm:py-2 bg-[#25D366] text-white text-xs sm:text-sm font-semibold rounded-lg hover:bg-[#20BA5A] transition-colors whitespace-nowrap"
+              >
+                WhatsApp
+              </a>
+              
+              {/* Mobile Get Quote Button */}
+              <Link 
+                to="/?step=1"
+                className="inline-flex items-center px-2 sm:px-3 py-1.5 sm:py-2 bg-[#eb4b00] text-white text-xs sm:text-sm font-semibold rounded-lg hover:bg-[#d63f00] transition-colors whitespace-nowrap"
+              >
+                Get Quote
+              </Link>
 
-            <MobileNavigation />
+              <MobileNavigation />
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Request Callback Modal */}
+      <RequestCallbackModal 
+        isOpen={isCallbackModalOpen} 
+        onClose={() => setIsCallbackModalOpen(false)} 
+      />
+    </>
   );
 };
 
