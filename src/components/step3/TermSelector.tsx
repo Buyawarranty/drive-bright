@@ -140,13 +140,13 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                   {term.id === '24months' && (
                     <div className="flex items-center gap-1.5 mt-2">
                       <Check className="w-4 h-4 text-success flex-shrink-0" />
-                      <span className="text-sm font-medium text-foreground">Year 2 FREE cover</span>
+                      <span className="text-sm font-medium text-foreground">No payments in year 2</span>
                     </div>
                   )}
                   {term.id === '36months' && (
                     <div className="flex items-center gap-1.5 mt-2">
                       <Check className="w-4 h-4 text-success flex-shrink-0" />
-                      <span className="text-sm font-medium text-foreground">Years 2 & 3 FREE cover</span>
+                      <span className="text-sm font-medium text-foreground">No payments in years 2 & 3</span>
                     </div>
                   )}
                   
