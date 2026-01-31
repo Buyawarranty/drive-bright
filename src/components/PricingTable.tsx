@@ -1664,7 +1664,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <>
                         <div className="flex items-center gap-1.5 mt-2">
                           <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                          <span className="text-sm font-medium text-black">Year 2 FREE cover</span>
+                          <span className="text-sm font-medium text-black">No payments in year 2</span>
                         </div>
                         <div className="flex items-center gap-1.5 mt-1">
                           <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
@@ -1676,7 +1676,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       <>
                         <div className="flex items-center gap-1.5 mt-2">
                           <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                          <span className="text-sm font-medium text-black">Years 2 & 3 FREE cover</span>
+                          <span className="text-sm font-medium text-black">No payments in years 2 & 3</span>
                         </div>
                         <div className="flex items-center gap-1.5 mt-1">
                           <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
