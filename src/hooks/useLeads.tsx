@@ -808,6 +808,8 @@ export const useLeads = () => {
   // OPTIMISTIC UPDATE: Update notes instantly
   const updateLeadNotes = useCallback(async (leadId: string, notes: string) => {
     const now = new Date().toISOString();
+    const isAbandonedCart = leadId.startsWith('cart_');
+    const actualId = isAbandonedCart ? leadId.replace('cart_', '') : leadId;
     
     // Optimistic update
     setLeads(prev => prev.map(lead => 
@@ -815,12 +817,26 @@ export const useLeads = () => {
     ));
 
     try {
-      const { error } = await supabase
-        .from('sales_leads')
-        .update({ notes, updated_at: now })
-        .eq('id', leadId);
+      if (isAbandonedCart) {
+        // Update abandoned_carts table - use contact_notes field
+        const { error } = await supabase
+          .from('abandoned_carts')
+          .update({ 
+            contact_notes: notes, 
+            updated_at: now 
+          })
+          .eq('id', actualId);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        // Update sales_leads table
+        const { error } = await supabase
+          .from('sales_leads')
+          .update({ notes, updated_at: now })
+          .eq('id', leadId);
+
+        if (error) throw error;
+      }
       toast.success('Notes saved');
     } catch (error) {
       console.error('Error updating notes:', error);
