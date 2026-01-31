@@ -369,6 +369,17 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
       });
       return;
     }
+    
+    // CRITICAL: Sales agent is compulsory for commission tracking
+    if (!assigneeId) {
+      toast({
+        title: "Sales Agent Required",
+        description: "Please select a sales agent before confirming. This is required for commission tracking.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setExternalPaymentStep('preview');
   };
 
@@ -1075,6 +1086,32 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                       </PopoverContent>
                     </Popover>
                   </div>
+                </div>
+
+                {/* Sales Agent Assignment - COMPULSORY */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-1">
+                    <UserPlus className="w-4 h-4" />
+                    Assign to Sales Agent *
+                  </Label>
+                  <Select value={assigneeId} onValueChange={setAssigneeId}>
+                    <SelectTrigger className={!assigneeId ? 'border-destructive' : ''}>
+                      <SelectValue placeholder="Select sales agent (required)..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {adminUsers.map((admin) => (
+                        <SelectItem key={admin.id} value={admin.id}>
+                          {getAdminDisplayName(admin)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {!assigneeId && (
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      Sales agent is required for commission tracking
+                    </p>
+                  )}
                 </div>
               </div>
 
