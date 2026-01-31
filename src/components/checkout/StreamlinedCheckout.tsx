@@ -420,6 +420,27 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Track if component has been mounted (for bfcache handling)
   const hasMountedRef = React.useRef(false);
   const [isPageRestored, setIsPageRestored] = useState(false);
+  
+  // Desktop sticky bar visibility based on scroll position
+  const [showDesktopStickyBar, setShowDesktopStickyBar] = useState(false);
+  const aboutYouRef = React.useRef<HTMLElement>(null);
+  
+  // Track scroll to show/hide desktop sticky bar
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!aboutYouRef.current) return;
+      
+      const aboutYouRect = aboutYouRef.current.getBoundingClientRect();
+      // Show sticky bar when "About you" section top is above viewport (scrolled past it)
+      const shouldShow = aboutYouRect.top < 0;
+      setShowDesktopStickyBar(shouldShow);
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Check initial position
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Auto-collapse details section when BOTH personal details AND address are complete
   // CRITICAL: Do NOT close until address is fully completed - user must enter all required address fields
@@ -1293,7 +1314,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           </section>
 
           {/* ==================== SECTION 2: CUSTOMER DETAILS ==================== */}
-          <section id="customer-form" className="bg-white rounded-xl border border-border p-5 sm:p-6">
+          <section ref={aboutYouRef} id="customer-form" className="bg-white rounded-xl border border-border p-5 sm:p-6">
             
             {/* Section Header: About you */}
             <div className="mb-6">
@@ -1810,7 +1831,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         </div>
       </div>
 
-      {/* Desktop Sticky Bottom Bar */}
+      {/* Desktop Sticky Bottom Bar - shows after scrolling past "About you" */}
       <DesktopStickyBar
         selectedPayment={selectedPayment}
         monthlyPrice={discountedMonthlyPrice}
@@ -1821,6 +1842,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         paymentType={paymentType as '12months' | '24months' | '36months'}
         isLoading={isLoading}
         onPayClick={processPayment}
+        isVisible={showDesktopStickyBar}
       />
     </div>
   );
