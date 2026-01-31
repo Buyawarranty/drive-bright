@@ -52,7 +52,8 @@ const statusColors: Record<LeadStatus, string> = {
   negotiating: 'bg-orange-100 text-orange-800',
   converted: 'bg-green-100 text-green-800',
   lost: 'bg-gray-100 text-gray-800',
-  fake_lead: 'bg-red-100 text-red-800'
+  fake_lead: 'bg-red-100 text-red-800',
+  urgent_callback: 'bg-red-500 text-white'
 };
 
 const formatUKPhone = (phone: string): string => {
@@ -341,6 +342,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             <SelectItem value="contacted">Contacted</SelectItem>
             <SelectItem value="follow_up">Follow-up</SelectItem>
             <SelectItem value="quote_sent">Quote Sent</SelectItem>
+            <SelectItem value="urgent_callback">Urgent Call-back</SelectItem>
             <SelectItem value="negotiating">Negotiating</SelectItem>
             <SelectItem value="converted">Converted</SelectItem>
             <SelectItem value="lost">Lost</SelectItem>
