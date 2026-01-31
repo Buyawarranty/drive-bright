@@ -14,8 +14,8 @@ import { DateRange } from 'react-day-picker';
 export type AssignmentFilter = 'all' | 'total' | 'awaiting_contact' | 'assigned';
 
 interface LeadsFiltersProps {
-  filter: LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent';
-  onFilterChange: (filter: LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent') => void;
+  filter: LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback';
+  onFilterChange: (filter: LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback') => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
   onRefresh: () => void;
@@ -27,6 +27,7 @@ interface LeadsFiltersProps {
     contacted: number;
     follow_up: number;
     quote_sent: number;
+    urgent_callback: number;
     paid: number;
     lost: number;
     high_priority: number;
@@ -89,11 +90,17 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   return (
     <div className="space-y-4">
       {/* Tabs for status filter */}
-      <Tabs value={filter} onValueChange={(v) => onFilterChange(v as LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent')}>
-        <TabsList className="grid w-full grid-cols-9">
+      <Tabs value={filter} onValueChange={(v) => onFilterChange(v as LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback')}>
+        <TabsList className="grid w-full grid-cols-10">
           <TabsTrigger value="all" className="relative">
             All
             <Badge variant="secondary" className="ml-1 h-5 px-1.5">{leadCounts.all}</Badge>
+          </TabsTrigger>
+          <TabsTrigger value="urgent_callback" className="relative">
+            <span className="flex items-center gap-1">
+              🔔 Urgent
+            </span>
+            <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-red-500 text-white">{leadCounts.urgent_callback}</Badge>
           </TabsTrigger>
           <TabsTrigger value="new" className="relative">
             New

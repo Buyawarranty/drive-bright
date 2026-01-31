@@ -140,16 +140,16 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
       const quoteRef = localStorage.getItem('quoteReference') || `QR-${Date.now()}`;
       const requestedOptions = getRequestedOptionsString();
       
-      // Create the lead in abandoned_carts table (shows in New Leads)
+      // Create the lead in abandoned_carts table (shows in New Leads as "Urgent Call-back")
       const { error } = await supabase
         .from('abandoned_carts')
         .insert({
           email: requestEmail.trim() || `callback-${Date.now()}@price-match.temp`,
           phone: requestPhone.trim(),
           step_abandoned: 3,
-          contact_status: 'special_pricing_request',
-          contact_notes: `Price Match Request - ${requestedOptions}. ${competitorPrice ? `Customer wants us to beat £${competitorPrice}.` : ''} ${requestMessage ? `Quote details: ${requestMessage}` : ''} Source: Price Pop Up Callback Request. Priority: High. Note: Customer requested customised pricing. Guarantee to beat any like-for-like quote. Follow-up required.`,
-          full_name: 'Price Match Request',
+          contact_status: 'urgent_callback',
+          contact_notes: `URGENT CALLBACK - Price Match Request. ${competitorPrice ? `Customer wants us to beat £${competitorPrice}.` : ''} ${requestMessage ? `Quote details: ${requestMessage}` : ''} ${requestedOptions}. Source: Step 3 Price Help Popup. Priority: URGENT. Note: Customer requested customised pricing. Guarantee to beat any like-for-like quote. CALL BACK IMMEDIATELY.`,
+          full_name: 'Urgent Callback - Price Match',
           vehicle_reg: vehicleData?.registration || null,
           vehicle_make: vehicleData?.make || null,
           vehicle_model: vehicleData?.model || null,
@@ -163,9 +163,10 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             currentLabourRate,
             currentMonthlyPrice,
             quoteReference: quoteRef,
-            source: 'Price Pop Up Callback Request',
-            priority: 'High',
-            category: 'Special Pricing Request',
+            source: 'Step 3 Price Help Popup',
+            priority: 'URGENT',
+            category: 'Urgent Callback',
+            leadType: 'urgent_callback',
             timestamp: new Date().toISOString(),
           }
         });

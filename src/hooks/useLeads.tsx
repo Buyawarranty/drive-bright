@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-export type LeadStatus = 'new' | 'contacted' | 'follow_up' | 'quote_sent' | 'negotiating' | 'converted' | 'lost' | 'fake_lead';
+export type LeadStatus = 'new' | 'contacted' | 'follow_up' | 'quote_sent' | 'negotiating' | 'converted' | 'lost' | 'fake_lead' | 'urgent_callback';
 export type LeadPriority = 'low' | 'medium' | 'high' | 'urgent';
 export type LeadSource = 'website' | 'referral' | 'social_ad' | 'google_ad' | 'phone' | 'email' | 'partner' | 'other';
 
@@ -117,7 +117,7 @@ export const useLeads = () => {
   const [tags, setTags] = useState<LeadTag[]>([]);
   const [salesUsers, setSalesUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent'>('all');
+  const [filter, setFilter] = useState<LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback'>('all');
   
   // Cache sales users for optimistic updates
   const salesUsersRef = useRef<AdminUser[]>([]);
@@ -240,6 +240,8 @@ export const useLeads = () => {
           case 'converted': return 'converted';
           case 'lost': return 'lost';
           case 'fake_lead': return 'fake_lead';
+          case 'urgent_callback': return 'urgent_callback';
+          case 'special_pricing_request': return 'urgent_callback'; // Map legacy status
           default: return 'new';
         }
       };
