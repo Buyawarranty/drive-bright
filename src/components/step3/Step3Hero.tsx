@@ -44,19 +44,13 @@ const Step3Hero: React.FC<Step3HeroProps> = ({ vehicleData, onBack }) => {
           </Button>
         </div>
         
-        {/* Vehicle details - centered */}
-        <div className="flex flex-col items-center gap-1.5 text-center">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="font-mono bg-card px-2 py-0.5 rounded border border-border text-foreground font-semibold">
-              {vehicleData.regNumber}
-            </span>
-            <span>•</span>
-            <span>{vehicleData.fuelType}</span>
-            <span>•</span>
-            <span>
-              {parseInt(vehicleData.mileage || '0') >= 120000 ? 'Over 120,000 miles' : 'Under 120,000 miles'}
-            </span>
-          </div>
+        {/* Vehicle details - centered, compact for mobile */}
+        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <span className="font-mono bg-card px-2 py-0.5 rounded border border-border text-foreground font-semibold">
+            {vehicleData.regNumber}
+          </span>
+          <span>•</span>
+          <span>{vehicleData.fuelType}</span>
         </div>
       </div>
     </div>
