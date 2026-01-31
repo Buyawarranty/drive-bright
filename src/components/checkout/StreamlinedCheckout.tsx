@@ -773,7 +773,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       case 'mileage':
         const mileage = parseInt(customerData.mileage || '0');
         if (!customerData.mileage) {
-          error = 'Mileage is required';
+          error = 'Please enter your current mileage.';
           isValid = false;
         } else if (mileage < 1000) {
           error = 'Minimum 1,000 miles';
