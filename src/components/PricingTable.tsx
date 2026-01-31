@@ -1659,18 +1659,30 @@ const PricingTable: React.FC<PricingTableProps> = ({
                       </p>
                     )}
                     
-                    {/* Free year benefit line with tick */}
+                    {/* Free year benefit lines with ticks */}
                     {durationId === '24months' && (
-                      <div className="flex items-center gap-1.5 mt-2">
-                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                        <span className="text-sm font-medium text-black">Year 2 FREE cover</span>
-                      </div>
+                      <>
+                        <div className="flex items-center gap-1.5 mt-2">
+                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                          <span className="text-sm font-medium text-black">Year 2 FREE cover</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                          <span className="text-sm font-medium text-black">Includes extra benefits</span>
+                        </div>
+                      </>
                     )}
                     {durationId === '36months' && (
-                      <div className="flex items-center gap-1.5 mt-2">
-                        <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                        <span className="text-sm font-medium text-black">Years 2 & 3 FREE cover</span>
-                      </div>
+                      <>
+                        <div className="flex items-center gap-1.5 mt-2">
+                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                          <span className="text-sm font-medium text-black">Years 2 & 3 FREE cover</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                          <span className="text-sm font-medium text-black">Includes extra benefits</span>
+                        </div>
+                      </>
                     )}
                     
                     {/* Total price */}
@@ -1684,13 +1696,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                     <div className="flex items-center gap-1 mt-1">
                       <span className="text-sm font-bold text-green-600">You save £{Math.floor(displayedAnnualPrice * 0.10)} today</span>
                     </div>
-                    
-                    {/* Extra benefits for 2-year and 3-year */}
-                    {(durationId === '24months' || durationId === '36months') && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <span className="text-sm font-medium text-gray-700">🎁 Includes extra benefits</span>
-                      </div>
-                    )}
                   </div>
                   
                   {/* What's Included Collapsible */}
