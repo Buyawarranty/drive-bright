@@ -324,78 +324,22 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
 
         {/* Content */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 pb-8">
-          {/* Preference Chips Section */}
-          <div className="mb-6">
-            <p className="text-xs text-gray-500 mb-4 uppercase tracking-wide font-medium">Your preferences</p>
-            <div className="space-y-5">
-              {/* Voluntary Excess */}
-              <section>
-                <Label className="text-sm font-semibold text-gray-900 mb-2 block">Voluntary excess</Label>
-                <div className="flex flex-wrap gap-2">
-                  {EXCESS_OPTIONS.map((option) => (
-                    <PreferenceChip
-                      key={option.value}
-                      selected={selectedExcess === option.value}
-                      onClick={() => setSelectedExcess(selectedExcess === option.value ? null : option.value)}
-                      label={option.label}
-                    />
-                  ))}
-                </div>
-              </section>
-
-              {/* Claim Limit */}
-              <section>
-                <Label className="text-sm font-semibold text-gray-900 mb-2 block">Claim limit</Label>
-                <div className="flex flex-wrap gap-2">
-                  {CLAIM_LIMIT_OPTIONS.map((option) => (
-                    <PreferenceChip
-                      key={option.value}
-                      selected={selectedClaimLimit === option.value}
-                      onClick={() => setSelectedClaimLimit(selectedClaimLimit === option.value ? null : option.value)}
-                      label={option.label}
-                    />
-                  ))}
-                </div>
-              </section>
-
-              {/* Labour Rate */}
-              <section>
-                <Label className="text-sm font-semibold text-gray-900 mb-2 block">Labour rate</Label>
-                <div className="flex flex-wrap gap-2">
-                  {LABOUR_RATE_OPTIONS.map((option) => (
-                    <PreferenceChip
-                      key={option.value}
-                      selected={selectedLabourRate === option.value}
-                      onClick={() => setSelectedLabourRate(selectedLabourRate === option.value ? null : option.value)}
-                      label={option.label}
-                    />
-                  ))}
-                </div>
-              </section>
-            </div>
-          </div>
-
           {/* Competitor Quote Section */}
           <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
-            <p className="text-xs text-gray-500 mb-3 uppercase tracking-wide font-medium">Got a quote elsewhere?</p>
-            <div className="space-y-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="competitor-price" className="text-sm font-medium text-gray-700">
-                  Competitor's price <span className="text-gray-400 font-normal">(optional)</span>
-                </Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">£</span>
-                  <Input
-                    id="competitor-price"
-                    type="number"
-                    value={competitorPrice}
-                    onChange={(e) => setCompetitorPrice(e.target.value)}
-                    placeholder="Enter the price you have been quoted elsewhere"
-                    className="h-11 pl-7 rounded-lg border-gray-200"
-                    disabled={isSubmitting}
-                  />
-                </div>
-              </div>
+            <p className="text-sm font-semibold text-gray-900 mb-3">Got a quote elsewhere?</p>
+            <div className="space-y-1.5">
+              <Label htmlFor="quote-details" className="text-sm font-medium text-gray-700">
+                Details about your quote <span className="text-gray-400 font-normal">(optional)</span>
+              </Label>
+              <Textarea
+                id="quote-details"
+                value={requestMessage}
+                onChange={(e) => setRequestMessage(e.target.value)}
+                placeholder="Tell us what the quote includes, such as cover, parts, mileage, exclusions or anything else."
+                className="rounded-xl resize-none border-gray-200"
+                rows={4}
+                disabled={isSubmitting}
+              />
             </div>
           </div>
 
@@ -444,23 +388,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 autoComplete="email"
               />
             </div>
-
-            {/* Additional Info */}
-            <div className="space-y-1.5">
-              <Label htmlFor="request-message" className="text-sm font-semibold text-gray-800">
-                Additional notes <span className="text-gray-400 font-normal">(optional)</span>
-              </Label>
-              <Textarea
-                id="request-message"
-                value={requestMessage}
-                onChange={(e) => setRequestMessage(e.target.value)}
-                placeholder="Anything else you would like us to know"
-                className="rounded-xl resize-none border-gray-200"
-                rows={2}
-                disabled={isSubmitting}
-              />
-            </div>
-
           </div>
 
           {/* CTAs */}
@@ -527,76 +454,22 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
 
         {/* Content */}
         <form onSubmit={handleSubmit} className="overflow-y-auto p-5 max-h-[calc(92vh-100px)]">
-          {/* Preference Chips */}
-          <div className="mb-5">
-            <p className="text-xs text-gray-500 mb-3 uppercase tracking-wide font-medium">Your preferences</p>
-            <div className="space-y-4">
-              {/* Voluntary Excess */}
-              <section>
-                <Label className="text-sm font-semibold text-gray-900 mb-2 block">Voluntary excess</Label>
-                <div className="flex flex-wrap gap-2">
-                  {EXCESS_OPTIONS.map((option) => (
-                    <PreferenceChip
-                      key={option.value}
-                      selected={selectedExcess === option.value}
-                      onClick={() => setSelectedExcess(selectedExcess === option.value ? null : option.value)}
-                      label={option.label}
-                      compact
-                    />
-                  ))}
-                </div>
-              </section>
-
-              {/* Claim Limit */}
-              <section>
-                <Label className="text-sm font-semibold text-gray-900 mb-2 block">Claim limit</Label>
-                <div className="flex flex-wrap gap-2">
-                  {CLAIM_LIMIT_OPTIONS.map((option) => (
-                    <PreferenceChip
-                      key={option.value}
-                      selected={selectedClaimLimit === option.value}
-                      onClick={() => setSelectedClaimLimit(selectedClaimLimit === option.value ? null : option.value)}
-                      label={option.label}
-                      compact
-                    />
-                  ))}
-                </div>
-              </section>
-
-              {/* Labour Rate */}
-              <section>
-                <Label className="text-sm font-semibold text-gray-900 mb-2 block">Labour rate</Label>
-                <div className="flex flex-wrap gap-2">
-                  {LABOUR_RATE_OPTIONS.map((option) => (
-                    <PreferenceChip
-                      key={option.value}
-                      selected={selectedLabourRate === option.value}
-                      onClick={() => setSelectedLabourRate(selectedLabourRate === option.value ? null : option.value)}
-                      label={option.label}
-                      compact
-                    />
-                  ))}
-                </div>
-              </section>
-            </div>
-          </div>
-
           {/* Competitor Quote Section */}
           <div className="mb-5 p-3 bg-gray-50 rounded-xl border border-gray-100">
-            <p className="text-xs text-gray-500 mb-2 uppercase tracking-wide font-medium">Got a quote elsewhere?</p>
-            <div className="space-y-2">
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">£</span>
-                <Input
-                  id="mobile-competitor-price"
-                  type="number"
-                  value={competitorPrice}
-                  onChange={(e) => setCompetitorPrice(e.target.value)}
-                  placeholder="Competitor's price (optional)"
-                  className="h-10 pl-6 text-sm rounded-lg border-gray-200"
-                  disabled={isSubmitting}
-                />
-              </div>
+            <p className="text-sm font-semibold text-gray-900 mb-2">Got a quote elsewhere?</p>
+            <div className="space-y-1">
+              <Label htmlFor="mobile-quote-details" className="text-xs font-medium text-gray-700">
+                Details about your quote <span className="text-gray-400 font-normal">(optional)</span>
+              </Label>
+              <Textarea
+                id="mobile-quote-details"
+                value={requestMessage}
+                onChange={(e) => setRequestMessage(e.target.value)}
+                placeholder="Tell us what the quote includes, such as cover, parts, mileage, exclusions or anything else."
+                className="rounded-xl resize-none border-gray-200 text-sm"
+                rows={3}
+                disabled={isSubmitting}
+              />
             </div>
           </div>
 
@@ -645,23 +518,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 autoComplete="email"
               />
             </div>
-
-            {/* Additional Info */}
-            <div className="space-y-1">
-              <Label htmlFor="mobile-message" className="text-sm font-semibold text-gray-800">
-                Additional notes <span className="text-gray-400 font-normal">(optional)</span>
-              </Label>
-              <Textarea
-                id="mobile-message"
-                value={requestMessage}
-                onChange={(e) => setRequestMessage(e.target.value)}
-                placeholder="Anything else you would like us to know"
-                className="rounded-xl resize-none border-gray-200 text-sm"
-                rows={2}
-                disabled={isSubmitting}
-              />
-            </div>
-
           </div>
 
           {/* CTAs */}
