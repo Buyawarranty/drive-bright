@@ -40,9 +40,8 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requestSuccess, setRequestSuccess] = useState(false);
   
-  // Validation error states
+  // Validation error state (phone only)
   const [phoneError, setPhoneError] = useState('');
-  const [emailError, setEmailError] = useState('');
 
   // Reset state when panel opens
   useEffect(() => {
@@ -54,7 +53,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
       setRequestMessage('');
       setRequestSuccess(false);
       setPhoneError('');
-      setEmailError('');
       document.body.style.overflow = 'hidden';
       trackEvent('price_help_panel_opened');
     } else {
@@ -64,10 +62,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
       document.body.style.overflow = '';
     };
   }, [isOpen]);
-
-  const validateEmail = (email: string): boolean => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
 
   const validatePhone = (phone: string): boolean => {
     const cleaned = phone.replace(/[\s\-]/g, '');
@@ -92,8 +86,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
 
   const handleEmailChange = (value: string) => {
     setRequestEmail(value);
-    // Clear error when user starts typing
-    if (emailError) setEmailError('');
   };
 
   const handlePhoneBlur = () => {
@@ -104,41 +96,28 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
     }
   };
 
-  const handleEmailBlur = () => {
-    if (requestEmail.trim() && !validateEmail(requestEmail)) {
-      setEmailError('Please enter a valid email address');
-    } else {
-      setEmailError('');
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Reset errors
+    // Reset error
     setPhoneError('');
-    setEmailError('');
     
-    let hasError = false;
-    
+    // Only validate phone number
     if (!requestPhone.trim()) {
       setPhoneError('Phone number is required');
-      hasError = true;
-    } else if (!validatePhone(requestPhone)) {
-      setPhoneError('Please enter a valid UK phone number (e.g., 07123 456789)');
-      hasError = true;
-    }
-    
-    // Email is optional - only validate if provided
-    if (requestEmail.trim() && !validateEmail(requestEmail)) {
-      setEmailError('Please enter a valid email address');
-      hasError = true;
-    }
-    
-    if (hasError) {
       toast({
-        title: "Please check your details",
-        description: "Fix the highlighted errors to continue.",
+        title: "Please enter your phone number",
+        description: "We need your phone number to call you back.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!validatePhone(requestPhone)) {
+      setPhoneError('Please enter a valid UK phone number (e.g., 07123 456789)');
+      toast({
+        title: "Invalid phone number",
+        description: "Please enter a valid UK phone number.",
         variant: "destructive",
       });
       return;
@@ -151,22 +130,22 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
       const quoteRef = localStorage.getItem('quoteReference') || `QR-${Date.now()}`;
       const requestedOptions = getRequestedOptionsString();
       
-      // Create the lead in abandoned_carts table (shows in New Leads as "Urgent Call-back")
+      // Create the lead in abandoned_carts table (shows in New Leads)
+      // Phone is required, email is optional
       const { error } = await supabase
         .from('abandoned_carts')
         .insert({
           email: requestEmail.trim() || `callback-${Date.now()}@price-match.temp`,
           phone: requestPhone.trim(),
           step_abandoned: 3,
-          contact_status: 'urgent_callback',
-          contact_notes: `URGENT CALLBACK - Price Match Request. ${competitorPrice ? `Customer wants us to beat £${competitorPrice}.` : ''} ${requestMessage ? `Quote details: ${requestMessage}` : ''} ${requestedOptions}. Source: Step 3 Price Help Popup. Priority: URGENT. Note: Customer requested customised pricing. Guarantee to beat any like-for-like quote. CALL BACK IMMEDIATELY.`,
-          full_name: 'Urgent Callback - Price Match',
+          contact_status: 'new',
+          contact_notes: `PRICE MATCH REQUEST. ${competitorPrice ? `Price to beat: £${competitorPrice}.` : ''} ${requestMessage ? `Details: ${requestMessage}` : ''} Source: Step 3 Price Help Panel.`,
+          full_name: 'Price Match Request',
           vehicle_reg: vehicleData?.registration || null,
           vehicle_make: vehicleData?.make || null,
           vehicle_model: vehicleData?.model || null,
           vehicle_year: vehicleData?.year || null,
           cart_metadata: {
-            requestedOptions,
             competitorPrice: competitorPrice || null,
             quoteDetails: requestMessage || null,
             currentExcess,
@@ -174,10 +153,9 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             currentLabourRate,
             currentMonthlyPrice,
             quoteReference: quoteRef,
-            source: 'Step 3 Price Help Popup',
-            priority: 'URGENT',
-            category: 'Urgent Callback',
-            leadType: 'urgent_callback',
+            source: 'Step 3 Price Help Panel',
+            priority: 'high',
+            leadType: 'price_match',
             timestamp: new Date().toISOString(),
           }
         });
@@ -399,18 +377,11 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 type="email"
                 value={requestEmail}
                 onChange={(e) => handleEmailChange(e.target.value)}
-                onBlur={handleEmailBlur}
                 placeholder="your@email.com"
-                className={cn(
-                  "h-12 rounded-lg bg-gray-50 focus:bg-white",
-                  emailError ? "border-red-500 focus-visible:ring-red-500" : "border-gray-200"
-                )}
+                className="h-12 rounded-lg bg-gray-50 focus:bg-white border-gray-200"
                 disabled={isSubmitting}
                 autoComplete="email"
               />
-              {emailError && (
-                <p className="text-sm text-red-500 mt-1">{emailError}</p>
-              )}
             </div>
           </div>
 
@@ -555,18 +526,11 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 type="email"
                 value={requestEmail}
                 onChange={(e) => handleEmailChange(e.target.value)}
-                onBlur={handleEmailBlur}
                 placeholder="your@email.com"
-                className={cn(
-                  "h-11 rounded-lg bg-gray-50 focus:bg-white",
-                  emailError ? "border-red-500 focus-visible:ring-red-500" : "border-gray-200"
-                )}
+                className="h-11 rounded-lg bg-gray-50 focus:bg-white border-gray-200"
                 disabled={isSubmitting}
                 autoComplete="email"
               />
-              {emailError && (
-                <p className="text-xs text-red-500 mt-1">{emailError}</p>
-              )}
             </div>
           </div>
 
