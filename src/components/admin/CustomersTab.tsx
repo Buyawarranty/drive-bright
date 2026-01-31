@@ -15,7 +15,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, Copy, FileText, User, Sparkles, FileSpreadsheet, Star } from 'lucide-react';
+import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, Copy, FileText, User, Sparkles, FileSpreadsheet, Star, Ban, PoundSterling } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -41,6 +41,7 @@ import { InlineCustomerTags } from './InlineCustomerTags';
 import { BulkEmailDialog } from './BulkEmailDialog';
 import { BulkTagDialog } from './BulkTagDialog';
 import { CancelWarrantyDialog } from './CancelWarrantyDialog';
+import { ArchiveCustomerDialog } from './ArchiveCustomerDialog';
 import { InvoiceDialog } from './InvoiceDialog';
 import CoverageDetailsDisplay from '@/components/CoverageDetailsDisplay';
 import { CustomerClaimsSummary } from './claims/CustomerClaimsSummary';
@@ -347,6 +348,16 @@ export const CustomersTab = () => {
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const [upgradeCustomer, setUpgradeCustomer] = useState<Customer | null>(null);
   const [trustpilotReviewCustomer, setTrustpilotReviewCustomer] = useState<Customer | null>(null);
+  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
+  const [archiveCustomers, setArchiveCustomers] = useState<Array<{
+    id: string;
+    name: string;
+    email: string;
+    policy_id?: string;
+    policy_number?: string;
+    user_id?: string;
+    customer_id?: string;
+  }>>([]);
 
   // Pagination for customers table - only paginate filtered results
   const customersPagination = usePagination(filteredCustomers, { initialPageSize: 50 });
@@ -2409,20 +2420,78 @@ export const CustomersTab = () => {
                       onComplete={() => setSelectedCustomers(new Set())}
                     />
                     {canDeleteCustomers() && (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={bulkDeleteCustomers}
-                        disabled={bulkDeleteLoading}
-                        className="text-xs"
-                      >
-                        {bulkDeleteLoading ? (
-                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
-                        ) : (
-                          <Trash2 className="h-3 w-3 mr-1" />
-                        )}
-                        Delete Selected ({selectedCustomers.size})
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs border-orange-300 text-orange-700 hover:bg-orange-50"
+                          >
+                            <Archive className="h-3 w-3 mr-1" />
+                            Archive Selected ({selectedCustomers.size})
+                            <ChevronDown className="h-3 w-3 ml-1" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem 
+                            onClick={() => {
+                              const selected = filteredCustomers.filter(c => selectedCustomers.has(c.id));
+                              setArchiveCustomers(selected.map(c => ({
+                                id: c.id,
+                                name: c.name,
+                                email: c.email,
+                                policy_id: c.customer_policies?.[0]?.id,
+                                policy_number: c.customer_policies?.[0]?.policy_number,
+                                user_id: c.customer_policies?.[0]?.user_id,
+                                customer_id: c.id
+                              })));
+                              setArchiveDialogOpen(true);
+                            }}
+                            className="text-red-600"
+                          >
+                            <Ban className="h-4 w-4 mr-2" />
+                            Cancel Warranty
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => {
+                              const selected = filteredCustomers.filter(c => selectedCustomers.has(c.id));
+                              setArchiveCustomers(selected.map(c => ({
+                                id: c.id,
+                                name: c.name,
+                                email: c.email,
+                                policy_id: c.customer_policies?.[0]?.id,
+                                policy_number: c.customer_policies?.[0]?.policy_number,
+                                user_id: c.customer_policies?.[0]?.user_id,
+                                customer_id: c.id
+                              })));
+                              setArchiveDialogOpen(true);
+                            }}
+                            className="text-amber-600"
+                          >
+                            <PoundSterling className="h-4 w-4 mr-2" />
+                            Mark as Refunded
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => {
+                              const selected = filteredCustomers.filter(c => selectedCustomers.has(c.id));
+                              setArchiveCustomers(selected.map(c => ({
+                                id: c.id,
+                                name: c.name,
+                                email: c.email,
+                                policy_id: c.customer_policies?.[0]?.id,
+                                policy_number: c.customer_policies?.[0]?.policy_number,
+                                user_id: c.customer_policies?.[0]?.user_id,
+                                customer_id: c.id
+                              })));
+                              setArchiveDialogOpen(true);
+                            }}
+                            className="text-gray-600"
+                          >
+                            <Archive className="h-4 w-4 mr-2" />
+                            Archive (Hide)
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     )}
                   </>
                 )}
@@ -4081,15 +4150,74 @@ Please log in and change your password after first login.`;
 
 
                         {canDeleteCustomers() && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => deleteCustomer(customer.id, customer.name)}
-                            className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                            title="Delete Customer"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-orange-600 hover:text-orange-800 hover:bg-orange-50"
+                                title="Archive Customer"
+                              >
+                                <Archive className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  setArchiveCustomers([{
+                                    id: customer.id,
+                                    name: customer.name,
+                                    email: customer.email,
+                                    policy_id: customer.customer_policies?.[0]?.id,
+                                    policy_number: customer.customer_policies?.[0]?.policy_number,
+                                    user_id: customer.customer_policies?.[0]?.user_id,
+                                    customer_id: customer.id
+                                  }]);
+                                  setArchiveDialogOpen(true);
+                                }}
+                                className="text-red-600"
+                              >
+                                <Ban className="h-4 w-4 mr-2" />
+                                Cancel Warranty
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  setArchiveCustomers([{
+                                    id: customer.id,
+                                    name: customer.name,
+                                    email: customer.email,
+                                    policy_id: customer.customer_policies?.[0]?.id,
+                                    policy_number: customer.customer_policies?.[0]?.policy_number,
+                                    user_id: customer.customer_policies?.[0]?.user_id,
+                                    customer_id: customer.id
+                                  }]);
+                                  setArchiveDialogOpen(true);
+                                }}
+                                className="text-amber-600"
+                              >
+                                <PoundSterling className="h-4 w-4 mr-2" />
+                                Mark as Refunded
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  setArchiveCustomers([{
+                                    id: customer.id,
+                                    name: customer.name,
+                                    email: customer.email,
+                                    policy_id: customer.customer_policies?.[0]?.id,
+                                    policy_number: customer.customer_policies?.[0]?.policy_number,
+                                    user_id: customer.customer_policies?.[0]?.user_id,
+                                    customer_id: customer.id
+                                  }]);
+                                  setArchiveDialogOpen(true);
+                                }}
+                                className="text-gray-600"
+                              >
+                                <Archive className="h-4 w-4 mr-2" />
+                                Archive (Hide)
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         )}
                        
                        <Button
@@ -4264,6 +4392,21 @@ Please log in and change your password after first login.`;
         policy={cancelWarrantyDialog.policy || { id: '', email: '' }}
         customerName={cancelWarrantyDialog.customerName}
         onSuccess={fetchCustomers}
+      />
+
+      {/* Archive Customer Dialog */}
+      <ArchiveCustomerDialog
+        isOpen={archiveDialogOpen}
+        onClose={() => {
+          setArchiveDialogOpen(false);
+          setArchiveCustomers([]);
+        }}
+        customers={archiveCustomers}
+        onSuccess={() => {
+          fetchCustomers();
+          fetchDeletedCustomers();
+          setSelectedCustomers(new Set());
+        }}
       />
 
       {/* Manual Warranty Upgrade Dialog */}
