@@ -799,7 +799,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     switch (field) {
       case 'address_line_1':
         if (!addressData.address_line_1?.trim()) {
-          error = 'Enter your address.';
+          error = 'Please enter your address.';
           isValid = false;
         }
         break;
