@@ -85,15 +85,19 @@ const DesktopOrderSummary: React.FC<DesktopOrderSummaryProps> = ({
               </div>
             )}
             
-            {/* Trust Signals */}
+            {/* Cover Highlights */}
             <div className="space-y-2.5 mb-5">
               <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                 <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                <span>Instant cover</span>
+                <span>Complete mechanical & electrical cover</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                 <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                <span>14-day money-back guarantee</span>
+                <span>Easy claims, fast payout</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+                <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                <span>Use any VAT-registered garage</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                 <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
