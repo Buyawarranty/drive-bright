@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, Loader2, Phone } from 'lucide-react';
+import { X, Check, Loader2, Phone, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -68,7 +68,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
   const [competitorPrice, setCompetitorPrice] = useState('');
   const [competitorCoverLevel, setCompetitorCoverLevel] = useState('');
   const [requestMessage, setRequestMessage] = useState('');
-  const [requestConsent, setRequestConsent] = useState(false);
+  const [requestConsent, setRequestConsent] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requestSuccess, setRequestSuccess] = useState(false);
 
@@ -84,7 +84,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
       setCompetitorPrice('');
       setCompetitorCoverLevel('');
       setRequestMessage('');
-      setRequestConsent(false);
+      setRequestConsent(true);
       setRequestSuccess(false);
       document.body.style.overflow = 'hidden';
       trackEvent('price_help_panel_opened');
@@ -140,28 +140,11 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
       return;
     }
     
-    if (!requestEmail.trim()) {
-      toast({
-        title: "Email required",
-        description: "Please enter your email address.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!validateEmail(requestEmail)) {
+    // Email is optional - only validate if provided
+    if (requestEmail.trim() && !validateEmail(requestEmail)) {
       toast({
         title: "Invalid email",
         description: "Please enter a valid email address.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!requestConsent) {
-      toast({
-        title: "Consent required",
-        description: "Please confirm you agree to be contacted.",
         variant: "destructive",
       });
       return;
@@ -320,9 +303,12 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
         {/* Header */}
         <div className="px-6 py-5 border-b border-gray-100 flex-shrink-0">
           <div className="flex items-start justify-between mb-3">
-            <h2 className="text-xl font-bold text-gray-900 leading-tight pr-4">
-              Not the right price? We will beat any quote.
-            </h2>
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-brand-orange flex-shrink-0" />
+              <h2 className="text-xl font-bold text-gray-900 leading-tight">
+                Not the right price? We will beat any quote.
+              </h2>
+            </div>
             <button
               onClick={onClose}
               className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors flex-shrink-0"
@@ -410,36 +396,16 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                   />
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="competitor-cover" className="text-sm font-medium text-gray-700">
-                  Their cover level <span className="text-gray-400 font-normal">(optional)</span>
-                </Label>
-                <Select value={competitorCoverLevel} onValueChange={setCompetitorCoverLevel} disabled={isSubmitting}>
-                  <SelectTrigger className="h-11 rounded-lg border-gray-200">
-                    <SelectValue placeholder="Select cover level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COVER_LEVEL_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
           </div>
 
           {/* Quote Box */}
-          <div className="bg-brand-orange/5 border border-brand-orange/20 rounded-xl p-4 mb-6">
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6">
             <div className="flex items-start gap-3">
-              <Phone className="w-5 h-5 text-brand-orange flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-semibold text-gray-900 mb-1">Your customised quote</p>
-                <p className="text-xs text-gray-600 leading-relaxed">
-                  We cannot show a price instantly for your selected cover. Request a call back and we will give you a personalised quote that beats any price you already have.
-                </p>
-              </div>
+              <Phone className="w-5 h-5 text-gray-900 flex-shrink-0 mt-0.5" />
+              <p className="text-sm font-medium text-gray-900 leading-relaxed">
+                We can't show a price instantly. Request a call back for a personalised quote that beats any quote.
+              </p>
             </div>
           </div>
 
@@ -465,7 +431,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             {/* Email */}
             <div className="space-y-1.5">
               <Label htmlFor="request-email" className="text-sm font-semibold text-gray-800">
-                Email address <span className="text-red-500">*</span>
+                Email <span className="text-gray-400 font-normal">(optional)</span>
               </Label>
               <Input
                 id="request-email"
@@ -495,19 +461,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               />
             </div>
 
-            {/* Consent */}
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="request-consent"
-                checked={requestConsent}
-                onCheckedChange={(checked) => setRequestConsent(checked === true)}
-                disabled={isSubmitting}
-                className="mt-0.5"
-              />
-              <Label htmlFor="request-consent" className="text-sm text-gray-600 cursor-pointer leading-relaxed">
-                I agree to be contacted about my quote.
-              </Label>
-            </div>
           </div>
 
           {/* CTAs */}
@@ -515,7 +468,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-12 bg-brand-orange hover:bg-brand-orange/90 text-white font-semibold rounded-xl shadow-lg shadow-brand-orange/25 disabled:opacity-50"
+              className="w-full h-14 bg-brand-orange text-white font-bold text-lg rounded-full shadow-lg shadow-brand-orange/25 disabled:opacity-50 animate-breathing"
             >
               {isSubmitting ? (
                 <>
@@ -554,9 +507,12 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
         {/* Header */}
         <div className="px-5 py-3 border-b border-gray-100">
           <div className="flex items-start justify-between mb-2">
-            <h2 className="text-lg font-bold text-gray-900 pr-4 leading-tight">
-              Not the right price? We will beat any quote.
-            </h2>
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-brand-orange flex-shrink-0" />
+              <h2 className="text-lg font-bold text-gray-900 leading-tight">
+                Not the right price? We will beat any quote.
+              </h2>
+            </div>
             <button
               onClick={onClose}
               className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0"
@@ -641,27 +597,15 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                   disabled={isSubmitting}
                 />
               </div>
-              <Select value={competitorCoverLevel} onValueChange={setCompetitorCoverLevel} disabled={isSubmitting}>
-                <SelectTrigger className="h-10 text-sm rounded-lg border-gray-200">
-                  <SelectValue placeholder="Their cover level (optional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  {COVER_LEVEL_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </div>
 
           {/* Quote Box */}
-          <div className="bg-brand-orange/5 border border-brand-orange/20 rounded-xl p-3 mb-5">
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 mb-5">
             <div className="flex items-start gap-2">
-              <Phone className="w-4 h-4 text-brand-orange flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-gray-600 leading-relaxed">
-                We cannot show a price instantly. Request a call back and we will give you a personalised quote that beats any price you already have.
+              <Phone className="w-4 h-4 text-gray-900 flex-shrink-0 mt-0.5" />
+              <p className="text-xs font-medium text-gray-900 leading-relaxed">
+                We can't show a price instantly. Request a call back for a personalised quote that beats any quote.
               </p>
             </div>
           </div>
@@ -688,7 +632,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             {/* Email */}
             <div className="space-y-1">
               <Label htmlFor="mobile-email" className="text-sm font-semibold text-gray-800">
-                Email address <span className="text-red-500">*</span>
+                Email <span className="text-gray-400 font-normal">(optional)</span>
               </Label>
               <Input
                 id="mobile-email"
@@ -718,19 +662,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               />
             </div>
 
-            {/* Consent */}
-            <div className="flex items-start gap-3">
-              <Checkbox
-                id="mobile-consent"
-                checked={requestConsent}
-                onCheckedChange={(checked) => setRequestConsent(checked === true)}
-                disabled={isSubmitting}
-                className="mt-0.5"
-              />
-              <Label htmlFor="mobile-consent" className="text-sm text-gray-600 cursor-pointer leading-relaxed">
-                I agree to be contacted about my quote.
-              </Label>
-            </div>
           </div>
 
           {/* CTAs */}
@@ -738,7 +669,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-12 bg-brand-orange hover:bg-brand-orange/90 text-white font-semibold rounded-xl shadow-lg shadow-brand-orange/25 disabled:opacity-50"
+              className="w-full h-14 bg-brand-orange text-white font-bold text-lg rounded-full shadow-lg shadow-brand-orange/25 disabled:opacity-50 animate-breathing"
             >
               {isSubmitting ? (
                 <>
