@@ -30,24 +30,16 @@ const TermSelector: React.FC<TermSelectorProps> = ({
 }) => {
   const [showAllOptions, setShowAllOptions] = useState(false);
 
-  // Calculate savings for each term (promotional savings)
-  const getSavingsForTerm = (termId: string): number => {
-    if (termId === '24months') return 100;
-    if (termId === '36months') return 200;
-    return 0;
-  };
-
   // Pay in full price = monthly × 12 (what user actually pays)
   const getPayInFullPrice = (termId: string): number => {
     const monthly = getPriceForTerm(termId);
     return monthly * 12;
   };
 
-  // Calculate "was" price = pay in full + savings
-  const getWasPriceForTerm = (termId: string): number => {
+  // Calculate Stripe 10% discount savings
+  const getStripeSavings = (termId: string): number => {
     const payInFull = getPayInFullPrice(termId);
-    const savings = getSavingsForTerm(termId);
-    return payInFull + savings;
+    return Math.floor(payInFull * 0.10);
   };
 
   const allTerms: TermOption[] = [
@@ -98,9 +90,8 @@ const TermSelector: React.FC<TermSelectorProps> = ({
       <div className="space-y-3">
         {visibleTerms.map((term) => {
           const isSelected = selectedTerm === term.id;
-          const savings = getSavingsForTerm(term.id);
           const payInFullPrice = getPayInFullPrice(term.id);
-          const wasPrice = payInFullPrice + savings;
+          const stripeSavings = getStripeSavings(term.id);
           
           return (
             <button
@@ -159,20 +150,15 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                     </div>
                   )}
                   
-                  {/* Pay in full with was price */}
+                  {/* Pay in full */}
                   <div className="text-sm mt-2">
                     <span className="font-bold text-foreground">Pay in full £{payInFullPrice}</span>
-                    {savings > 0 && (
-                      <span className="text-destructive line-through ml-1">(Was £{payInFullPrice + savings})</span>
-                    )}
                   </div>
                   
-                  {/* Save today line */}
-                  {savings > 0 && (
-                    <div className="flex items-center gap-1 mt-1">
-                      <span className="text-sm font-bold text-success">Save £{savings} Today</span>
-                    </div>
-                  )}
+                  {/* 10% Stripe discount savings line */}
+                  <div className="flex items-center gap-1 mt-1">
+                    <span className="text-sm font-bold text-success">You save £{stripeSavings} today</span>
+                  </div>
                 </div>
                 
                 {/* Selection indicator */}
