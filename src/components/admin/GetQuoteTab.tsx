@@ -160,6 +160,17 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [editableRegNumber, setEditableRegNumber] = useState('');
   const [mileagePrefilledFromMot, setMileagePrefilledFromMot] = useState(false);
   
+  // Section expand/collapse state for external payment dialog
+  const [expandedSections, setExpandedSections] = useState({
+    customerVehicle: false,
+    address: false,
+    policyConfig: false,
+    payment: true, // Payment section expanded by default
+  });
+  
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
   // Completion status tracking
   const [completionStatus, setCompletionStatus] = useState<{
     policyCreated: boolean;
@@ -2955,213 +2966,294 @@ Questions? Call 0330 229 5040`;
               )}
 
               {externalPaymentStep === 'details' ? (
-                <div className="space-y-5">
-                  {/* Editable Customer & Vehicle Details */}
-                  <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm space-y-4">
-                    <h4 className="font-semibold text-gray-800 flex items-center gap-2 text-base">
-                      <UserCheck className="w-4 h-4 text-blue-600" />
-                      Customer & Vehicle Details
-                    </h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-gray-600">Customer Name *</Label>
-                        <Input
-                          value={editableCustomerName}
-                          onChange={(e) => setEditableCustomerName(e.target.value)}
-                          className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-gray-600">Email *</Label>
-                        <Input
-                          value={editableCustomerEmail}
-                          onChange={(e) => setEditableCustomerEmail(e.target.value)}
-                          className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-gray-600">Phone</Label>
-                        <Input
-                          value={editableCustomerPhone}
-                          onChange={(e) => setEditableCustomerPhone(e.target.value)}
-                          placeholder="07xxx xxxxxx"
-                          className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-gray-600">Registration *</Label>
-                        <Input
-                          value={editableRegNumber}
-                          onChange={(e) => setEditableRegNumber(e.target.value.toUpperCase())}
-                          className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors font-mono"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-gray-600">Vehicle</Label>
-                        <p className="text-sm text-gray-800 py-2 px-3 bg-gray-50 rounded-md border border-gray-200">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-gray-600 flex items-center gap-2">
-                          Mileage
-                          {motMileageLoading && (
-                            <span className="flex items-center gap-1 text-xs text-blue-600">
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                              Looking up MOT...
-                            </span>
-                          )}
-                        </Label>
-                        <div className="relative">
-                          <Input
-                            value={editableMileage}
-                            onChange={(e) => {
-                              setEditableMileage(e.target.value.replace(/\D/g, ''));
-                              setMileagePrefilledFromMot(false);
-                            }}
-                            placeholder="e.g. 45000"
-                            className={cn(
-                              "bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors",
-                              mileagePrefilledFromMot && "pr-8"
-                            )}
-                          />
-                          {mileagePrefilledFromMot && (
-                            <CheckCircle2 className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
+                <div className="space-y-3">
+                  {/* Customer & Vehicle Details - Collapsible */}
+                  <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => toggleSection('customerVehicle')}
+                      className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <UserCheck className="w-4 h-4 text-blue-600" />
+                        <div className="text-left">
+                          <h4 className="font-semibold text-gray-800 text-sm">Customer & Vehicle Details</h4>
+                          {!expandedSections.customerVehicle && (
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              {editableCustomerName || 'No name'} • {editableRegNumber || 'No reg'} • {vehicleData?.make} {vehicleData?.model}
+                            </p>
                           )}
                         </div>
-                        {mileagePrefilledFromMot && motDate && (
-                          <p className="text-xs text-green-600 flex items-center gap-1">
-                            <Car className="w-3 h-3" />
-                            Pre-filled from MOT ({format(new Date(motDate), 'MMM yyyy')})
-                          </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-blue-600 font-medium">
+                          {expandedSections.customerVehicle ? 'Close' : 'Edit'}
+                        </span>
+                        <ChevronDown className={cn(
+                          "w-4 h-4 text-gray-400 transition-transform",
+                          expandedSections.customerVehicle && "rotate-180"
+                        )} />
+                      </div>
+                    </button>
+                    
+                    {expandedSections.customerVehicle && (
+                      <div className="px-4 pb-4 pt-0 border-t border-gray-100">
+                        <div className="grid grid-cols-2 gap-4 pt-4">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-gray-600">Customer Name *</Label>
+                            <Input
+                              value={editableCustomerName}
+                              onChange={(e) => setEditableCustomerName(e.target.value)}
+                              className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-gray-600">Email *</Label>
+                            <Input
+                              value={editableCustomerEmail}
+                              onChange={(e) => setEditableCustomerEmail(e.target.value)}
+                              className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-gray-600">Phone</Label>
+                            <Input
+                              value={editableCustomerPhone}
+                              onChange={(e) => setEditableCustomerPhone(e.target.value)}
+                              placeholder="07xxx xxxxxx"
+                              className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-gray-600">Registration *</Label>
+                            <Input
+                              value={editableRegNumber}
+                              onChange={(e) => setEditableRegNumber(e.target.value.toUpperCase())}
+                              className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors font-mono"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-gray-600">Vehicle</Label>
+                            <p className="text-sm text-gray-800 py-2 px-3 bg-gray-50 rounded-md border border-gray-200">{vehicleData?.make} {vehicleData?.model} ({vehicleData?.year})</p>
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-gray-600 flex items-center gap-2">
+                              Mileage
+                              {motMileageLoading && (
+                                <span className="flex items-center gap-1 text-xs text-blue-600">
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                  Looking up MOT...
+                                </span>
+                              )}
+                            </Label>
+                            <div className="relative">
+                              <Input
+                                value={editableMileage}
+                                onChange={(e) => {
+                                  setEditableMileage(e.target.value.replace(/\D/g, ''));
+                                  setMileagePrefilledFromMot(false);
+                                }}
+                                placeholder="e.g. 45000"
+                                className={cn(
+                                  "bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors",
+                                  mileagePrefilledFromMot && "pr-8"
+                                )}
+                              />
+                              {mileagePrefilledFromMot && (
+                                <CheckCircle2 className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
+                              )}
+                            </div>
+                            {mileagePrefilledFromMot && motDate && (
+                              <p className="text-xs text-green-600 flex items-center gap-1">
+                                <Car className="w-3 h-3" />
+                                Pre-filled from MOT ({format(new Date(motDate), 'MMM yyyy')})
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Address Section - Collapsible */}
+                  <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => toggleSection('address')}
+                      className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg">📍</span>
+                        <div className="text-left">
+                          <h4 className="font-semibold text-gray-800 text-sm">Customer Address</h4>
+                          {!expandedSections.address && (
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              {skipAddressDetails ? 'Customer will complete in dashboard' : (customerPostcode ? `${customerBuildingNumber} ${customerStreet}, ${customerPostcode}` : 'Not entered')}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-blue-600 font-medium">
+                          {expandedSections.address ? 'Close' : 'Edit'}
+                        </span>
+                        <ChevronDown className={cn(
+                          "w-4 h-4 text-gray-400 transition-transform",
+                          expandedSections.address && "rotate-180"
+                        )} />
+                      </div>
+                    </button>
+                    
+                    {expandedSections.address && (
+                      <div className="px-4 pb-4 pt-0 border-t border-gray-100">
+                        <div className="flex items-center gap-2 pt-3 pb-2">
+                          <Checkbox
+                            id="skip-address"
+                            checked={skipAddressDetails}
+                            onCheckedChange={(checked) => setSkipAddressDetails(checked === true)}
+                          />
+                          <Label htmlFor="skip-address" className="text-xs text-gray-600 cursor-pointer">
+                            Customer will complete in dashboard
+                          </Label>
+                        </div>
+                        
+                        {!skipAddressDetails && (
+                          <div className="grid grid-cols-2 gap-4 pt-2">
+                            <div className="space-y-1.5">
+                              <Label className="text-xs font-medium text-gray-600">House/Building Number</Label>
+                              <Input
+                                value={customerBuildingNumber}
+                                onChange={(e) => setCustomerBuildingNumber(e.target.value)}
+                                placeholder="e.g. 42"
+                                className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs font-medium text-gray-600">Street</Label>
+                              <Input
+                                value={customerStreet}
+                                onChange={(e) => setCustomerStreet(e.target.value)}
+                                placeholder="e.g. High Street"
+                                className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs font-medium text-gray-600">Town/City</Label>
+                              <Input
+                                value={customerTown}
+                                onChange={(e) => setCustomerTown(e.target.value)}
+                                placeholder="e.g. Manchester"
+                                className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs font-medium text-gray-600">County</Label>
+                              <Input
+                                value={customerCounty}
+                                onChange={(e) => setCustomerCounty(e.target.value)}
+                                placeholder="e.g. Greater Manchester"
+                                className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs font-medium text-gray-600">Postcode *</Label>
+                              <Input
+                                value={customerPostcode}
+                                onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())}
+                                placeholder="e.g. M1 1AA"
+                                className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
+                              />
+                            </div>
+                          </div>
+                        )}
+                        
+                        {skipAddressDetails && (
+                          <Alert className="bg-gray-50 border-gray-200 mt-2">
+                            <Info className="h-4 w-4 text-gray-500" />
+                            <AlertDescription className="text-gray-600 text-sm">
+                              The customer will be prompted to complete their address when they log into their dashboard.
+                            </AlertDescription>
+                          </Alert>
                         )}
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Address Section */}
-                  <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-semibold text-gray-800 flex items-center gap-2 text-base">
-                        📍 Customer Address
-                      </h4>
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id="skip-address"
-                          checked={skipAddressDetails}
-                          onCheckedChange={(checked) => setSkipAddressDetails(checked === true)}
-                        />
-                        <Label htmlFor="skip-address" className="text-xs text-gray-600 cursor-pointer">
-                          Customer will complete in dashboard
-                        </Label>
-                      </div>
-                    </div>
-                    
-                    {!skipAddressDetails && (
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-medium text-gray-600">House/Building Number</Label>
-                          <Input
-                            value={customerBuildingNumber}
-                            onChange={(e) => setCustomerBuildingNumber(e.target.value)}
-                            placeholder="e.g. 42"
-                            className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-medium text-gray-600">Street</Label>
-                          <Input
-                            value={customerStreet}
-                            onChange={(e) => setCustomerStreet(e.target.value)}
-                            placeholder="e.g. High Street"
-                            className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-medium text-gray-600">Town/City</Label>
-                          <Input
-                            value={customerTown}
-                            onChange={(e) => setCustomerTown(e.target.value)}
-                            placeholder="e.g. Manchester"
-                            className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-medium text-gray-600">County</Label>
-                          <Input
-                            value={customerCounty}
-                            onChange={(e) => setCustomerCounty(e.target.value)}
-                            placeholder="e.g. Greater Manchester"
-                            className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-medium text-gray-600">Postcode *</Label>
-                          <Input
-                            value={customerPostcode}
-                            onChange={(e) => setCustomerPostcode(e.target.value.toUpperCase())}
-                            placeholder="e.g. M1 1AA"
-                            className="bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-400 transition-colors"
-                          />
-                        </div>
-                      </div>
-                    )}
-                    
-                    {skipAddressDetails && (
-                      <Alert className="bg-gray-50 border-gray-200">
-                        <Info className="h-4 w-4 text-gray-500" />
-                        <AlertDescription className="text-gray-600 text-sm">
-                          The customer will be prompted to complete their address when they log into their dashboard.
-                        </AlertDescription>
-                      </Alert>
                     )}
                   </div>
 
-                  {/* Pre-populated Policy Summary */}
-                  <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm space-y-4">
-                    <h4 className="font-semibold text-gray-800 flex items-center gap-2 text-base">
-                      <Zap className="w-4 h-4 text-purple-600" />
-                      Policy Configuration (from Step 1)
-                    </h4>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="space-y-0.5">
-                        <span className="text-xs font-medium text-gray-500">Plan</span>
-                        <p className="text-gray-800 font-medium">Platinum</p>
-                      </div>
-                      <div className="space-y-0.5">
-                        <span className="text-xs font-medium text-gray-500">Duration</span>
-                        <p className="text-gray-800 font-medium">
-                          {termOptions.find(t => t.id === paymentType)?.label}
-                          {freeExtendedCover !== 'none' && (
-                            <span className="ml-1 text-green-600">+ {freeExtendedCover === '3months' ? '3' : '6'} months FREE</span>
+                  {/* Policy Configuration - Collapsible */}
+                  <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => toggleSection('policyConfig')}
+                      className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Zap className="w-4 h-4 text-purple-600" />
+                        <div className="text-left">
+                          <h4 className="font-semibold text-gray-800 text-sm">Policy Configuration</h4>
+                          {!expandedSections.policyConfig && (
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              {termOptions.find(t => t.id === paymentType)?.label} • £{excessAmount} excess • £{currentPrice.totalPrice} total
+                            </p>
                           )}
-                        </p>
-                      </div>
-                      <div className="space-y-0.5">
-                        <span className="text-xs font-medium text-gray-500">Excess</span>
-                        <p className="text-gray-800 font-medium">£{excessAmount}</p>
-                      </div>
-                      <div className="space-y-0.5">
-                        <span className="text-xs font-medium text-gray-500">Claim Limit</span>
-                        <p className="text-gray-800 font-medium">£{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}{boostAddon ? ' (boost)' : ''}</p>
-                      </div>
-                      <div className="space-y-0.5">
-                        <span className="text-xs font-medium text-gray-500">Labour Rate</span>
-                        <p className="text-gray-800 font-medium">£{labourRate}/hr</p>
-                      </div>
-                      <div className="space-y-0.5">
-                        <span className="text-xs font-medium text-gray-500">Quoted Price</span>
-                        <p className="text-gray-800 font-semibold text-base">£{currentPrice.totalPrice}</p>
-                      </div>
-                      {getAutoIncludedAddOns(paymentType).length > 0 && (
-                        <div className="col-span-2 space-y-0.5">
-                          <span className="text-xs font-medium text-gray-500">Included Add-ons</span>
-                          <p className="text-gray-800 font-medium">
-                            {getAutoIncludedAddOns(paymentType).includes('breakdown') && 'Vehicle Recovery'}
-                            {getAutoIncludedAddOns(paymentType).includes('breakdown') && getAutoIncludedAddOns(paymentType).includes('rental') && ', '}
-                            {getAutoIncludedAddOns(paymentType).includes('rental') && 'Hire Car'}
-                          </p>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-blue-600 font-medium">
+                          {expandedSections.policyConfig ? 'Close' : 'View'}
+                        </span>
+                        <ChevronDown className={cn(
+                          "w-4 h-4 text-gray-400 transition-transform",
+                          expandedSections.policyConfig && "rotate-180"
+                        )} />
+                      </div>
+                    </button>
+                    
+                    {expandedSections.policyConfig && (
+                      <div className="px-4 pb-4 pt-0 border-t border-gray-100">
+                        <div className="grid grid-cols-2 gap-4 text-sm pt-4">
+                          <div className="space-y-0.5">
+                            <span className="text-xs font-medium text-gray-500">Plan</span>
+                            <p className="text-gray-800 font-medium">Platinum</p>
+                          </div>
+                          <div className="space-y-0.5">
+                            <span className="text-xs font-medium text-gray-500">Duration</span>
+                            <p className="text-gray-800 font-medium">
+                              {termOptions.find(t => t.id === paymentType)?.label}
+                              {freeExtendedCover !== 'none' && (
+                                <span className="ml-1 text-green-600">+ {freeExtendedCover === '3months' ? '3' : '6'} months FREE</span>
+                              )}
+                            </p>
+                          </div>
+                          <div className="space-y-0.5">
+                            <span className="text-xs font-medium text-gray-500">Excess</span>
+                            <p className="text-gray-800 font-medium">£{excessAmount}</p>
+                          </div>
+                          <div className="space-y-0.5">
+                            <span className="text-xs font-medium text-gray-500">Claim Limit</span>
+                            <p className="text-gray-800 font-medium">£{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}{boostAddon ? ' (boost)' : ''}</p>
+                          </div>
+                          <div className="space-y-0.5">
+                            <span className="text-xs font-medium text-gray-500">Labour Rate</span>
+                            <p className="text-gray-800 font-medium">£{labourRate}/hr</p>
+                          </div>
+                          <div className="space-y-0.5">
+                            <span className="text-xs font-medium text-gray-500">Quoted Price</span>
+                            <p className="text-gray-800 font-semibold text-base">£{currentPrice.totalPrice}</p>
+                          </div>
+                          {getAutoIncludedAddOns(paymentType).length > 0 && (
+                            <div className="col-span-2 space-y-0.5">
+                              <span className="text-xs font-medium text-gray-500">Included Add-ons</span>
+                              <p className="text-gray-800 font-medium">
+                                {getAutoIncludedAddOns(paymentType).includes('breakdown') && 'Vehicle Recovery'}
+                                {getAutoIncludedAddOns(paymentType).includes('breakdown') && getAutoIncludedAddOns(paymentType).includes('rental') && ', '}
+                                {getAutoIncludedAddOns(paymentType).includes('rental') && 'Hire Car'}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-3 italic">To change policy options, go back to Step 1.</p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Payment Details Section */}
