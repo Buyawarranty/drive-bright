@@ -1363,10 +1363,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
                 </span>
                 <span className="text-muted-foreground">·</span>
                 <span className="text-muted-foreground">{vehicleData?.fuelType}</span>
-                <span className="text-muted-foreground">·</span>
-                <span className="text-muted-foreground">
-                  {vehicleData?.mileage && parseInt(vehicleData.mileage) >= 120000 ? 'Over 120,000 miles' : 'Under 120,000 miles'}
-                </span>
               </div>
             </div>
             
