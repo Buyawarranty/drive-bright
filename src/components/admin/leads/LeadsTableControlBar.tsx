@@ -1,6 +1,17 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { UserPlus, ChevronDown, X, Zap } from 'lucide-react';
+import { AdminUser } from '@/hooks/useLeads';
 
 interface LeadsTableControlBarProps {
   totalItems: number;
@@ -11,6 +22,10 @@ interface LeadsTableControlBarProps {
   allSelected: boolean;
   onSelectAll: () => void;
   pageSizeOptions?: number[];
+  // Bulk assignment props
+  salesUsers?: AdminUser[];
+  onBulkAssign?: (userId: string | null) => void;
+  onBulkAutoAssign?: () => void;
 }
 
 export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
@@ -22,7 +37,24 @@ export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
   allSelected,
   onSelectAll,
   pageSizeOptions = [25, 50, 100, 200],
+  salesUsers = [],
+  onBulkAssign,
+  onBulkAutoAssign,
 }) => {
+  const getInitials = (user: AdminUser) => {
+    if (user.first_name || user.last_name) {
+      return `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase();
+    }
+    return user.email[0].toUpperCase();
+  };
+
+  const getDisplayName = (user: AdminUser) => {
+    if (user.first_name || user.last_name) {
+      return `${user.first_name || ''} ${user.last_name || ''}`.trim();
+    }
+    return user.email;
+  };
+
   return (
     <div className="sticky top-0 z-20 bg-background border-b px-4 py-3 flex items-center justify-between gap-4">
       {/* Left side - Results summary and bulk selection */}
@@ -46,6 +78,52 @@ export const LeadsTableControlBar: React.FC<LeadsTableControlBarProps> = ({
           <span className="font-semibold text-foreground">{totalItems.toLocaleString()}</span>
           {' '}leads found
         </div>
+
+        {/* Bulk Assign Dropdown - Only show when leads are selected */}
+        {selectedCount > 0 && onBulkAssign && salesUsers.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <UserPlus className="h-4 w-4" />
+                Assign to
+                <ChevronDown className="h-3 w-3 opacity-60" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56 max-h-80 overflow-y-auto">
+              {/* Remove assignment option */}
+              <DropdownMenuItem onClick={() => onBulkAssign(null)} className="gap-2">
+                <X className="h-4 w-4 text-muted-foreground" />
+                <span>Remove assignment</span>
+              </DropdownMenuItem>
+              
+              {/* Auto-assign option */}
+              {onBulkAutoAssign && (
+                <DropdownMenuItem onClick={onBulkAutoAssign} className="gap-2 text-green-600">
+                  <Zap className="h-4 w-4" />
+                  <span>Auto-assign (next available)</span>
+                </DropdownMenuItem>
+              )}
+              
+              <DropdownMenuSeparator />
+              
+              {/* Sales users list */}
+              {salesUsers.map((user) => (
+                <DropdownMenuItem
+                  key={user.id}
+                  onClick={() => onBulkAssign(user.id)}
+                  className="gap-2"
+                >
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                      {getInitials(user)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="truncate">{getDisplayName(user)}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       {/* Right side - Page size control */}

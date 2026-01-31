@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { toast } from 'sonner';
 // Tabs import removed - using custom button toggle
 import { Card, CardContent } from '@/components/ui/card';
 import { useLeads, Lead } from '@/hooks/useLeads';
@@ -304,6 +305,50 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     setSelectedLeads(new Set());
   }, [selectedLeads, updateLeadStatus]);
 
+  // Bulk assign selected leads to a user
+  const handleBulkAssign = useCallback(async (userId: string | null) => {
+    if (selectedLeads.size === 0) return;
+    
+    const leadIds = Array.from(selectedLeads);
+    let successCount = 0;
+    
+    for (const leadId of leadIds) {
+      try {
+        await assignLead(leadId, userId);
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to assign lead ${leadId}:`, error);
+      }
+    }
+    
+    if (successCount > 0) {
+      toast.success(`Assigned ${successCount} lead${successCount > 1 ? 's' : ''} successfully`);
+      setSelectedLeads(new Set());
+    }
+  }, [selectedLeads, assignLead]);
+
+  // Bulk auto-assign selected leads
+  const handleBulkAutoAssign = useCallback(async () => {
+    if (selectedLeads.size === 0) return;
+    
+    const leadIds = Array.from(selectedLeads);
+    let successCount = 0;
+    
+    for (const leadId of leadIds) {
+      try {
+        await autoAssignLead(leadId);
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to auto-assign lead ${leadId}:`, error);
+      }
+    }
+    
+    if (successCount > 0) {
+      toast.success(`Auto-assigned ${successCount} lead${successCount > 1 ? 's' : ''} successfully`);
+      setSelectedLeads(new Set());
+    }
+  }, [selectedLeads, autoAssignLead]);
+
   // Memoize quote navigation handler
   const handleSendQuote = useCallback((lead: Lead) => {
     if (onNavigateToTab) {
@@ -569,6 +614,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
                 totalVisible={pagination.paginatedData.length}
                 allSelected={selectedLeads.size === filteredLeads.length && filteredLeads.length > 0}
                 onSelectAll={handleSelectAll}
+                salesUsers={salesUsers}
+                onBulkAssign={handleBulkAssign}
+                onBulkAutoAssign={handleBulkAutoAssign}
               />
               
               <LeadsTable
