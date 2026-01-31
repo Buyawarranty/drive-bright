@@ -16,7 +16,8 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  const [touched, setTouched] = useState(false);
 
   const formatPhoneNumber = (value: string) => {
     // Remove all non-digits
@@ -37,16 +38,41 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
     return false;
   };
 
+  const handlePhoneBlur = () => {
+    setTouched(true);
+    if (phoneNumber.trim() && !validatePhone(phoneNumber)) {
+      setPhoneError('Please enter a valid UK phone number (e.g., 07123 456789)');
+    } else {
+      setPhoneError('');
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = formatPhoneNumber(e.target.value);
+    setPhoneNumber(value);
+    if (touched && phoneError) {
+      if (validatePhone(value)) {
+        setPhoneError('');
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setTouched(true);
+
+    if (!phoneNumber.trim()) {
+      setPhoneError('Please enter your phone number');
+      return;
+    }
 
     if (!validatePhone(phoneNumber)) {
-      setError('Please enter a valid UK phone number');
+      setPhoneError('Please enter a valid UK phone number (e.g., 07123 456789)');
       return;
     }
 
     setIsSubmitting(true);
+    setPhoneError('');
 
     try {
       // Create a lead in abandoned_carts as urgent callback
@@ -75,6 +101,7 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
       setTimeout(() => {
         setIsSuccess(false);
         setPhoneNumber('');
+        setTouched(false);
         onClose();
       }, 2000);
 
@@ -89,7 +116,8 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
   const handleClose = () => {
     if (!isSubmitting) {
       setPhoneNumber('');
-      setError('');
+      setPhoneError('');
+      setTouched(false);
       setIsSuccess(false);
       onClose();
     }
@@ -129,17 +157,15 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
                   type="tel"
                   placeholder="07123 456789"
                   value={phoneNumber}
-                  onChange={(e) => {
-                    setPhoneNumber(formatPhoneNumber(e.target.value));
-                    setError('');
-                  }}
-                  className={`pl-10 h-12 text-lg ${error ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+                  onChange={handlePhoneChange}
+                  onBlur={handlePhoneBlur}
+                  className={`pl-10 h-12 text-lg ${phoneError ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                   autoComplete="tel"
                   disabled={isSubmitting}
                 />
               </div>
-              {error && (
-                <p className="text-sm text-red-500">{error}</p>
+              {phoneError && (
+                <p className="text-sm text-red-500">{phoneError}</p>
               )}
             </div>
 
