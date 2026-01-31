@@ -1456,10 +1456,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
           )}
           <div className={`grid gap-6 mb-8 ${
             availableDurations.length === 1 
-              ? 'grid-cols-1 md:max-w-md md:mx-auto' 
+              ? 'grid-cols-1 max-w-md mx-auto' 
               : availableDurations.length === 2 
-                ? 'grid-cols-1 md:grid-cols-2 md:max-w-3xl md:mx-auto' 
-                : 'grid-cols-1 md:grid-cols-3'
+                ? 'grid-cols-1 lg:grid-cols-2 lg:max-w-3xl lg:mx-auto' 
+                : 'grid-cols-1 lg:grid-cols-3'
           }`}>
             {[
               { 
