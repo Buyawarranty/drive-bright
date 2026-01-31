@@ -1298,12 +1298,6 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <div className="hidden sm:block w-20"></div>
           </div>
 
-          {/* Subtitle only - Trustpilot removed (shown in sticky bar) */}
-          <div className="text-center">
-            <p className="text-muted-foreground text-sm">
-              Choose your plan, customise options, and pay in 12 easy instalments.
-            </p>
-          </div>
         </div>
       </div>
 
