@@ -25,21 +25,22 @@ const PriceHelpTrigger: React.FC<PriceHelpTriggerProps> = ({ onClick, className 
         "cursor-pointer",
         className
       )}
-      aria-label="Not the right price? Call us or request a callback"
+      aria-label="Looking for a better price? Call us or request a callback"
     >
       {/* Left side - Smaller phone icon + Message */}
-      <div className="flex items-center gap-2.5 min-w-0">
+      <div className="flex items-center gap-2.5 min-w-0 flex-1">
         {/* Smaller, subtle phone icon */}
         <div className="flex-shrink-0 w-7 h-7 rounded-full bg-brand-green/5 flex items-center justify-center">
           <Phone className="w-4 h-4 text-brand-green/70" strokeWidth={1.5} />
         </div>
         
-        {/* Two-line message with lighter subline */}
-        <div className="text-left leading-tight">
+        {/* Desktop: Single line with price beat message on right */}
+        {/* Mobile: Two-line layout */}
+        <div className="text-left leading-tight flex-1">
           {/* Main line */}
           <span className="block text-sm">
             <span className="font-semibold text-gray-800">
-              Not the right price?
+              Looking for a better price?
             </span>
             <span className="text-gray-600">
               {' '}Call{' '}
@@ -58,12 +59,20 @@ const PriceHelpTrigger: React.FC<PriceHelpTriggerProps> = ({ onClick, className 
             </span>
           </span>
           
-          {/* Secondary line - smaller but readable */}
-          <span className="flex items-center gap-1 text-xs text-gray-900 mt-0.5">
-            <Trophy className="w-3 h-3 text-brand-orange/60 flex-shrink-0" strokeWidth={1.5} />
+          {/* Mobile only: Secondary line below */}
+          <span className="flex md:hidden items-center gap-1 text-xs text-gray-900 mt-1">
+            <Trophy className="w-3 h-3 text-brand-orange flex-shrink-0" strokeWidth={1.5} />
             <span>We will beat any price you already have</span>
           </span>
         </div>
+      </div>
+      
+      {/* Desktop: Price beat message on right side */}
+      <div className="hidden md:flex items-center gap-2 flex-shrink-0 mr-2">
+        <Trophy className="w-4 h-4 text-brand-orange flex-shrink-0" strokeWidth={2} />
+        <span className="text-sm font-medium text-gray-800">
+          We will beat any price you already have 🏆
+        </span>
       </div>
       
       {/* Right side - Subtle arrow, highlights on hover */}
