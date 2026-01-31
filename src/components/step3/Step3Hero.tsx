@@ -19,12 +19,9 @@ const Step3Hero: React.FC<Step3HeroProps> = ({ vehicleData, onBack }) => {
     <div className="px-4 py-6">
       {/* Hero Text */}
       <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-foreground mb-2">
+        <h1 className="text-2xl font-bold text-foreground">
           Get Covered in 60 Seconds
         </h1>
-        <p className="text-muted-foreground text-sm">
-          Choose your plan, customise options, and pay in 12 easy instalments.
-        </p>
       </div>
       
       {/* Vehicle Information Card - Centered on mobile */}
