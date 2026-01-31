@@ -1,11 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import { ChevronDown, Check, Info, ArrowRight, Plus, Gift } from 'lucide-react';
+import { ChevronDown, Check, Plus, Gift } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import confetti from 'canvas-confetti';
+import ClaimLimitDetails from './ClaimLimitDetails';
 
 interface ClaimLimitSelectorProps {
   selectedClaimLimit: number | null;
@@ -19,13 +17,6 @@ interface ClaimLimitSelectorProps {
 
 // Claim limit options including £3000 (which uses £2000 base + boost logic)
 const claimLimitOptions = [750, 1250, 2000, 3000];
-
-const claimLimitDetails: Record<number, string> = {
-  750: "Ideal for minor repairs and maintenance issues. Covers most common mechanical faults.",
-  1250: "Our most popular option. Covers major component failures including engine and gearbox.",
-  2000: "Comprehensive cover for expensive repairs. Recommended for premium vehicles.",
-  3000: "Maximum protection for high-value repairs. Best for luxury and performance vehicles."
-};
 
 const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
   selectedClaimLimit,
@@ -168,10 +159,8 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
                   
                   {/* Collapsible Content */}
                   <CollapsibleContent>
-                    <div className="px-3 pb-3 pt-2 bg-gray-50 border-t border-border">
-                      <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">
-                        {claimLimitDetails[limit]}
-                      </p>
+                    <div className="px-4 pb-4 pt-3 bg-white border-t border-border">
+                      <ClaimLimitDetails />
                     </div>
                   </CollapsibleContent>
                 </div>
