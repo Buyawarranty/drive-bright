@@ -90,7 +90,7 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<PaidOrder | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [allAdminUsers, setAllAdminUsers] = useState<Array<{ user_id: string; name: string }>>([]);
+  const [allAdminUsers, setAllAdminUsers] = useState<Array<{ id: string; user_id: string; name: string }>>([]);
 
   const fetchPaidOrders = async () => {
     setIsLoading(true);
@@ -98,14 +98,15 @@ export const PaidOrdersTab: React.FC<PaidOrdersTabProps> = ({ onRefresh }) => {
       // Fetch all sales agents/admin users for the dropdown
       const { data: allAdmins } = await supabase
         .from('admin_users')
-        .select('user_id, first_name, last_name, email, role')
+        .select('id, user_id, first_name, last_name, email, role')
         .eq('is_active', true);
       
       if (allAdmins) {
         setAllAdminUsers(allAdmins.map(admin => ({
-          user_id: admin.user_id || '',
+          id: admin.id,           // admin_users.id - for FK references
+          user_id: admin.user_id || '',  // auth.users.id
           name: [admin.first_name, admin.last_name].filter(Boolean).join(' ') || admin.email?.split('@')[0] || 'Unknown'
-        })).filter(a => a.user_id));
+        })).filter(a => a.id));
       }
 
       // Fetch paid quotes from live_quotes
