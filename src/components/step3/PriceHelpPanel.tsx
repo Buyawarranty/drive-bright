@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Check, Loader2, Phone, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { trackEvent } from '@/utils/analytics';
+import savingsPanda from '@/assets/savings-panda.webp';
 
 interface PriceHelpPanelProps {
   isOpen: boolean;
@@ -23,29 +22,6 @@ interface PriceHelpPanelProps {
   currentMonthlyPrice: number;
 }
 
-// Preference chips - NOT live pricing, just user preference capture
-const EXCESS_OPTIONS = [
-  { value: 200, label: '£200' },
-  { value: 350, label: '£350' },
-  { value: 500, label: '£500' },
-];
-
-const CLAIM_LIMIT_OPTIONS = [
-  { value: 7000, label: '£7,000' },
-  { value: 10000, label: '£10,000' },
-];
-
-const LABOUR_RATE_OPTIONS = [
-  { value: 250, label: '£250/hr' },
-];
-
-const COVER_LEVEL_OPTIONS = [
-  { value: 'basic', label: 'Basic' },
-  { value: 'standard', label: 'Standard' },
-  { value: 'comprehensive', label: 'Comprehensive' },
-  { value: 'not_sure', label: 'Not sure' },
-];
-
 const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
   isOpen,
   onClose,
@@ -57,42 +33,53 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
   const { toast } = useToast();
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // Selected preferences state
-  const [selectedExcess, setSelectedExcess] = useState<number | null>(null);
-  const [selectedClaimLimit, setSelectedClaimLimit] = useState<number | null>(null);
-  const [selectedLabourRate, setSelectedLabourRate] = useState<number | null>(null);
-
   // Request form state
   const [requestPhone, setRequestPhone] = useState('');
   const [requestEmail, setRequestEmail] = useState('');
   const [competitorPrice, setCompetitorPrice] = useState('');
-  const [competitorCoverLevel, setCompetitorCoverLevel] = useState('');
   const [requestMessage, setRequestMessage] = useState('');
-  const [requestConsent, setRequestConsent] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requestSuccess, setRequestSuccess] = useState(false);
+
+  // Sparkle animation state
+  const [showSparkle, setShowSparkle] = useState(false);
+  const sparkleIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Reset state when panel opens
   useEffect(() => {
     if (isOpen) {
       setIsAnimating(true);
-      setSelectedExcess(null);
-      setSelectedClaimLimit(null);
-      setSelectedLabourRate(null);
       setRequestPhone('');
       setRequestEmail('');
       setCompetitorPrice('');
-      setCompetitorCoverLevel('');
       setRequestMessage('');
-      setRequestConsent(true);
       setRequestSuccess(false);
       document.body.style.overflow = 'hidden';
       trackEvent('price_help_panel_opened');
+
+      // Start sparkle animation interval (every 3.5 seconds)
+      sparkleIntervalRef.current = setInterval(() => {
+        setShowSparkle(true);
+        setTimeout(() => setShowSparkle(false), 900);
+      }, 3500);
+      // Initial sparkle
+      setTimeout(() => {
+        setShowSparkle(true);
+        setTimeout(() => setShowSparkle(false), 900);
+      }, 500);
     } else {
       document.body.style.overflow = '';
+      if (sparkleIntervalRef.current) {
+        clearInterval(sparkleIntervalRef.current);
+        sparkleIntervalRef.current = null;
+      }
     }
     return () => {
       document.body.style.overflow = '';
+      if (sparkleIntervalRef.current) {
+        clearInterval(sparkleIntervalRef.current);
+        sparkleIntervalRef.current = null;
+      }
     };
   }, [isOpen]);
 
@@ -108,14 +95,10 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
   // Build requested options string
   const getRequestedOptionsString = () => {
     const parts: string[] = [];
-    if (selectedExcess) parts.push(`Excess: £${selectedExcess}`);
-    if (selectedClaimLimit) parts.push(`Claim Limit: £${selectedClaimLimit.toLocaleString()}`);
-    if (selectedLabourRate) parts.push(`Labour Rate: £${selectedLabourRate}/hr`);
-    if (competitorPrice) parts.push(`Competitor Price: £${competitorPrice}`);
-    if (competitorCoverLevel) {
-      const levelLabel = COVER_LEVEL_OPTIONS.find(o => o.value === competitorCoverLevel)?.label || competitorCoverLevel;
-      parts.push(`Competitor Cover: ${levelLabel}`);
-    }
+    if (competitorPrice) parts.push(`Price to Beat: £${competitorPrice}`);
+    if (currentExcess) parts.push(`Current Excess: £${currentExcess}`);
+    if (currentClaimLimit) parts.push(`Current Claim Limit: £${currentClaimLimit.toLocaleString()}`);
+    if (currentLabourRate) parts.push(`Current Labour Rate: £${currentLabourRate}/hr`);
     return parts.length > 0 ? parts.join(', ') : 'Custom quote request';
   };
 
@@ -157,14 +140,15 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
       const quoteRef = localStorage.getItem('quoteReference') || `QR-${Date.now()}`;
       const requestedOptions = getRequestedOptionsString();
       
+      // Create the lead in abandoned_carts table (shows in New Leads)
       const { error } = await supabase
         .from('abandoned_carts')
         .insert({
-          email: requestEmail.trim(),
+          email: requestEmail.trim() || `callback-${Date.now()}@price-match.temp`,
           phone: requestPhone.trim(),
           step_abandoned: 3,
           contact_status: 'special_pricing_request',
-          contact_notes: `Price Match Request - ${requestedOptions}. ${competitorPrice ? `Competitor quoted £${competitorPrice}.` : ''} ${requestMessage ? `Additional info: ${requestMessage}` : ''} Source: Price Pop Up Callback Request. Priority: High. Note: Customer requested customised pricing. Guarantee to beat any like-for-like quote. Follow-up required.`,
+          contact_notes: `Price Match Request - ${requestedOptions}. ${competitorPrice ? `Customer wants us to beat £${competitorPrice}.` : ''} ${requestMessage ? `Quote details: ${requestMessage}` : ''} Source: Price Pop Up Callback Request. Priority: High. Note: Customer requested customised pricing. Guarantee to beat any like-for-like quote. Follow-up required.`,
           full_name: 'Price Match Request',
           vehicle_reg: vehicleData?.registration || null,
           vehicle_make: vehicleData?.make || null,
@@ -172,11 +156,8 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
           vehicle_year: vehicleData?.year || null,
           cart_metadata: {
             requestedOptions,
-            selectedExcess,
-            selectedClaimLimit,
-            selectedLabourRate,
             competitorPrice: competitorPrice || null,
-            competitorCoverLevel: competitorCoverLevel || null,
+            quoteDetails: requestMessage || null,
             currentExcess,
             currentClaimLimit,
             currentLabourRate,
@@ -191,7 +172,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
 
       if (error) throw error;
 
-      trackEvent('price_help_callback_submitted', { requestedOptions });
+      trackEvent('price_help_callback_submitted', { requestedOptions, competitorPrice });
       setRequestSuccess(true);
       
     } catch (err) {
@@ -279,6 +260,18 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
     );
   }
 
+  // Sparkle component with animation
+  const AnimatedSparkle = ({ className }: { className?: string }) => (
+    <span className={cn("inline-flex items-center", className)}>
+      <Sparkles 
+        className={cn(
+          "w-5 h-5 text-brand-orange transition-all duration-300",
+          showSparkle && "animate-sparkle-pulse"
+        )} 
+      />
+    </span>
+  );
+
   // Main Panel View
   return (
     <>
@@ -317,16 +310,45 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               <X className="w-5 h-5 text-gray-600" />
             </button>
           </div>
-          <p className="text-sm text-gray-600 leading-relaxed">
-            Tell us what you have been quoted or what cover you want. We will call you back with a personalised price and beat any like-for-like quote.
+          {/* Animated tagline */}
+          <p className="text-sm text-gray-700 leading-relaxed flex items-start gap-1.5">
+            <AnimatedSparkle className="flex-shrink-0 mt-0.5" />
+            <span>
+              Tell us the price you were quoted or the cover you want. We'll beat any like‑for‑like quote.
+            </span>
           </p>
         </div>
 
         {/* Content */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 pb-8">
-          {/* Competitor Quote Section */}
+          {/* Competitor Price Field - Prominent */}
+          <div className="mb-6 p-4 bg-gradient-to-br from-brand-orange/5 to-brand-orange/10 rounded-xl border-2 border-brand-orange/20">
+            <p className="text-base font-bold text-gray-900 mb-3">Got a quote elsewhere?</p>
+            <div className="space-y-2">
+              <Label htmlFor="competitor-price" className="text-sm font-bold text-gray-800">
+                What price would you like us to beat?
+              </Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">£</span>
+                <Input
+                  id="competitor-price"
+                  type="text"
+                  inputMode="numeric"
+                  value={competitorPrice}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9.]/g, '');
+                    setCompetitorPrice(value);
+                  }}
+                  placeholder="Enter the price you were quoted"
+                  className="h-12 pl-8 rounded-xl border-gray-200 text-lg font-semibold"
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Quote Details Section */}
           <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
-            <p className="text-sm font-semibold text-gray-900 mb-3">Got a quote elsewhere?</p>
             <div className="space-y-1.5">
               <Label htmlFor="quote-details" className="text-sm font-medium text-gray-700">
                 Details about your quote <span className="text-gray-400 font-normal">(optional)</span>
@@ -337,7 +359,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 onChange={(e) => setRequestMessage(e.target.value)}
                 placeholder="Tell us what the quote includes, such as cover, parts, mileage, exclusions or anything else."
                 className="rounded-xl resize-none border-gray-200"
-                rows={4}
+                rows={3}
                 disabled={isSubmitting}
               />
             </div>
@@ -415,6 +437,18 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               Cancel
             </Button>
           </div>
+
+          {/* Panda Image - Desktop only */}
+          <div className="mt-6 flex justify-center">
+            <img 
+              src={savingsPanda} 
+              alt="Friendly panda mascot helping you save money on your car warranty" 
+              className="w-40 h-auto object-contain"
+              loading="lazy"
+              width={160}
+              height={160}
+            />
+          </div>
         </form>
       </div>
 
@@ -447,16 +481,45 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               <X className="w-4 h-4 text-gray-600" />
             </button>
           </div>
-          <p className="text-xs text-gray-600 leading-relaxed">
-            Tell us what you have been quoted or what cover you want. We will call you back with a personalised price.
+          {/* Animated tagline */}
+          <p className="text-xs text-gray-700 leading-relaxed flex items-start gap-1">
+            <AnimatedSparkle className="flex-shrink-0 mt-0.5" />
+            <span>
+              Tell us the price you were quoted or the cover you want. We'll beat any like‑for‑like quote.
+            </span>
           </p>
         </div>
 
         {/* Content */}
         <form onSubmit={handleSubmit} className="overflow-y-auto p-5 max-h-[calc(92vh-100px)]">
-          {/* Competitor Quote Section */}
+          {/* Competitor Price Field - Prominent */}
+          <div className="mb-5 p-3 bg-gradient-to-br from-brand-orange/5 to-brand-orange/10 rounded-xl border-2 border-brand-orange/20">
+            <p className="text-sm font-bold text-gray-900 mb-2">Got a quote elsewhere?</p>
+            <div className="space-y-1.5">
+              <Label htmlFor="mobile-competitor-price" className="text-sm font-bold text-gray-800">
+                What price would you like us to beat?
+              </Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">£</span>
+                <Input
+                  id="mobile-competitor-price"
+                  type="text"
+                  inputMode="numeric"
+                  value={competitorPrice}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9.]/g, '');
+                    setCompetitorPrice(value);
+                  }}
+                  placeholder="Enter the price you were quoted"
+                  className="h-11 pl-8 rounded-xl border-gray-200 text-base font-semibold"
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Quote Details Section */}
           <div className="mb-5 p-3 bg-gray-50 rounded-xl border border-gray-100">
-            <p className="text-sm font-semibold text-gray-900 mb-2">Got a quote elsewhere?</p>
             <div className="space-y-1">
               <Label htmlFor="mobile-quote-details" className="text-xs font-medium text-gray-700">
                 Details about your quote <span className="text-gray-400 font-normal">(optional)</span>
@@ -467,7 +530,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 onChange={(e) => setRequestMessage(e.target.value)}
                 placeholder="Tell us what the quote includes, such as cover, parts, mileage, exclusions or anything else."
                 className="rounded-xl resize-none border-gray-200 text-sm"
-                rows={3}
+                rows={2}
                 disabled={isSubmitting}
               />
             </div>
@@ -548,32 +611,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
         </form>
       </div>
     </>
-  );
-};
-
-// Preference Chip Component
-interface PreferenceChipProps {
-  selected: boolean;
-  onClick: () => void;
-  label: string;
-  compact?: boolean;
-}
-
-const PreferenceChip: React.FC<PreferenceChipProps> = ({ selected, onClick, label, compact = false }) => {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "rounded-xl text-sm font-semibold transition-all border-2",
-        compact ? "px-3 py-2 min-h-[40px] min-w-[70px]" : "px-4 py-3 min-h-[48px] min-w-[80px]",
-        selected
-          ? "bg-brand-orange text-white border-brand-orange shadow-md shadow-brand-orange/25"
-          : "bg-white text-gray-700 border-gray-200 hover:border-brand-orange/50 hover:bg-brand-orange/5"
-      )}
-    >
-      {label}
-    </button>
   );
 };
 

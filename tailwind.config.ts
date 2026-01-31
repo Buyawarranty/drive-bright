@@ -298,7 +298,7 @@ export default {
 						opacity: '0'
 					}
 				},
-				'exhaust': {
+			'exhaust': {
 					'0%': {
 						transform: 'translateX(0) scale(1)',
 						opacity: '0.4'
@@ -306,6 +306,16 @@ export default {
 					'100%': {
 						transform: 'translateX(-20px) scale(1.5)',
 						opacity: '0'
+					}
+				},
+				'sparkle-pulse': {
+					'0%, 100%': {
+						opacity: '1',
+						transform: 'scale(1)'
+					},
+					'50%': {
+						opacity: '0.6',
+						transform: 'scale(1.15)'
 					}
 				}
 			},
@@ -333,7 +343,8 @@ export default {
 				'car-bounce': 'car-bounce 0.3s ease-in-out infinite',
 				'wheel-spin': 'wheel-spin 0.3s linear infinite',
 				'speed-line': 'speed-line 0.4s linear infinite',
-				'exhaust': 'exhaust 0.8s ease-out infinite'
+				'exhaust': 'exhaust 0.8s ease-out infinite',
+				'sparkle-pulse': 'sparkle-pulse 0.9s ease-in-out'
 			}
 		}
 	},
