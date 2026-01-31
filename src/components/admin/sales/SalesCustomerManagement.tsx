@@ -125,35 +125,40 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
     const fetchCurrentUserId = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        console.log('[SalesCustomerManagement] Auth user:', user.id, user.email);
         setCurrentAuthUserId(user.id);
         
         if (propUserId) {
+          console.log('[SalesCustomerManagement] Using prop userId:', propUserId);
           setCurrentUserId(propUserId);
           return;
         }
         
-        const { data: adminUser } = await supabase
+        const { data: adminUser, error: adminError } = await supabase
           .from('admin_users')
-          .select('id')
+          .select('id, role')
           .eq('user_id', user.id)
           .single();
         
-        if (adminUser) {
-          setCurrentUserId(adminUser.id);
+        if (adminError) {
+          console.error('[SalesCustomerManagement] Error fetching admin user:', adminError);
         }
+        
+        if (adminUser) {
+          console.log('[SalesCustomerManagement] Admin user found:', adminUser.id, 'role:', adminUser.role);
+          setCurrentUserId(adminUser.id);
+        } else {
+          console.warn('[SalesCustomerManagement] No admin user found for auth user:', user.id);
+          setLoading(false);
+        }
+      } else {
+        console.warn('[SalesCustomerManagement] No authenticated user');
+        setLoading(false);
       }
     };
     
     fetchCurrentUserId();
   }, [propUserId]);
-
-  useEffect(() => {
-    if (currentUserId && currentAuthUserId) {
-      fetchCustomers();
-      fetchTags();
-    }
-  }, [currentUserId, currentAuthUserId]);
-
 
   const fetchTags = async () => {
     try {
@@ -170,9 +175,20 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
     }
   };
 
-  const fetchCustomers = async () => {
+  const fetchCustomers = async (adminUserId?: string, authUserId?: string) => {
+    // Use passed parameters or fall back to state
+    const userIdToUse = adminUserId || currentUserId;
+    const authUserIdToUse = authUserId || currentAuthUserId;
+    
+    if (!userIdToUse || !authUserIdToUse) {
+      console.warn('[SalesCustomerManagement] fetchCustomers called without valid IDs:', { userIdToUse, authUserIdToUse });
+      setLoading(false);
+      return;
+    }
+    
     try {
       setLoading(true);
+      console.log('[SalesCustomerManagement] fetchCustomers called with adminUserId:', userIdToUse, 'authUserId:', authUserIdToUse);
       
       // Fetch in parallel: customers assigned to this user AND assigned leads
       const [customersResult, leadsResult] = await Promise.all([
@@ -186,7 +202,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
               customer_tags (id, name, color, category)
             )
           `)
-          .eq('assigned_to', currentUserId)
+          .eq('assigned_to', userIdToUse)
           .eq('is_deleted', false)
           .order('created_at', { ascending: false }),
         
@@ -194,10 +210,13 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
         supabase
           .from('abandoned_carts')
           .select('*')
-          .eq('contacted_by', currentAuthUserId)
+          .eq('contacted_by', authUserIdToUse)
           .eq('is_converted', false)
           .order('created_at', { ascending: false })
       ]);
+
+      console.log('[SalesCustomerManagement] Customers result:', customersResult.data?.length || 0, 'rows, error:', customersResult.error);
+      console.log('[SalesCustomerManagement] Leads result:', leadsResult.data?.length || 0, 'rows, error:', leadsResult.error);
 
       if (customersResult.error) throw customersResult.error;
       if (leadsResult.error) throw leadsResult.error;
@@ -290,6 +309,15 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
       setLoading(false);
     }
   };
+
+  // Effect to fetch data when user IDs are available
+  useEffect(() => {
+    if (currentUserId && currentAuthUserId) {
+      console.log('[SalesCustomerManagement] Fetching data for userId:', currentUserId, 'authUserId:', currentAuthUserId);
+      fetchCustomers(currentUserId, currentAuthUserId);
+      fetchTags();
+    }
+  }, [currentUserId, currentAuthUserId]);
 
   const filteredCustomers = useMemo(() => {
     let filtered = customers;
@@ -449,7 +477,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Customer Management</h2>
-        <Button variant="outline" onClick={fetchCustomers} className="gap-2">
+        <Button variant="outline" onClick={() => fetchCustomers()} className="gap-2">
           <RefreshCw className="h-4 w-4" />
           Refresh
         </Button>
@@ -652,7 +680,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                           Your assigned customers will appear here
                         </p>
                       </div>
-                      <Button onClick={fetchCustomers} variant="outline" size="sm">
+                      <Button onClick={() => fetchCustomers()} variant="outline" size="sm">
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Refresh
                       </Button>
@@ -672,7 +700,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                         currentClaimLimit={customer.policy?.claim_limit || customer.claim_limit || 1250}
                         currentLabourRate={customer.labour_rate || 70}
                         currentExcess={customer.voluntary_excess || 100}
-                        onUpdate={fetchCustomers}
+                        onUpdate={() => fetchCustomers()}
                         tyreCover={customer.tyre_cover || false}
                         wearTear={customer.wear_tear || false}
                         europeCover={customer.europe_cover || false}
@@ -792,7 +820,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                         registrationPlate={customer.registration_plate || ''}
                         field="excess"
                         currentValue={customer.voluntary_excess || 100}
-                        onUpdate={fetchCustomers}
+                        onUpdate={() => fetchCustomers()}
                       />
                     </TableCell>
                     
@@ -805,7 +833,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                         registrationPlate={customer.registration_plate || ''}
                         field="claim_limit"
                         currentValue={customer.policy?.claim_limit || customer.claim_limit || 1250}
-                        onUpdate={fetchCustomers}
+                        onUpdate={() => fetchCustomers()}
                       />
                     </TableCell>
                     
@@ -818,7 +846,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                         registrationPlate={customer.registration_plate || ''}
                         field="labour_rate"
                         currentValue={customer.labour_rate || 70}
-                        onUpdate={fetchCustomers}
+                        onUpdate={() => fetchCustomers()}
                       />
                     </TableCell>
                     
@@ -888,7 +916,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
           currentFirstName={editDetailsDialog.customer.first_name}
           currentLastName={editDetailsDialog.customer.last_name}
           currentName={editDetailsDialog.customer.name}
-          onSaved={fetchCustomers}
+          onSaved={() => fetchCustomers()}
         />
       )}
     </div>
