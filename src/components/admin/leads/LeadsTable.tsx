@@ -1,5 +1,6 @@
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, memo, useMemo } from 'react';
 import { Lead, LeadStatus, LeadPriority, LeadTag, AdminUser } from '@/hooks/useLeads';
+import { useLeadQuotes } from '@/hooks/useLeadQuotes';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -52,6 +53,10 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
+  // Extract emails from leads for quote lookup
+  const leadEmails = useMemo(() => leads.map(l => l.email), [leads]);
+  const { quotesByEmail } = useLeadQuotes(leadEmails);
+
   // Memoized callbacks for row actions
   const handleToggleExpand = useCallback((leadId: string) => {
     setExpandedLead(prev => prev === leadId ? null : leadId);
@@ -71,6 +76,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
               <TableHead className="w-[70px] text-center">Calls</TableHead>
               <TableHead className="w-[120px]">Actions</TableHead>
               <TableHead className="w-[90px]">Payment</TableHead>
+              <TableHead className="w-[90px]">Quote Sent</TableHead>
               <TableHead className="w-[100px]">Next Action</TableHead>
               <TableHead className="w-[90px]">Urgency</TableHead>
               <TableHead className="w-[120px]">Name</TableHead>
@@ -94,6 +100,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   salesUsers={salesUsers}
                   isSelected={selectedLeads.has(lead.id)}
                   isExpanded={expandedLead === lead.id}
+                  sentQuotes={quotesByEmail[lead.email?.toLowerCase()] || []}
                   onSelect={() => onSelectLead(lead.id)}
                   onToggleExpand={() => handleToggleExpand(lead.id)}
                   onUpdateStatus={(status) => onUpdateStatus(lead.id, status)}
@@ -111,7 +118,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                 {/* Expanded row with LeadDetailsPanel */}
                 {expandedLead === lead.id && (
                   <TableRow>
-                    <TableCell colSpan={17} className="p-0 bg-muted/20">
+                    <TableCell colSpan={19} className="p-0 bg-muted/20">
                       <LeadDetailsPanel
                         lead={lead}
                         onUpdateNotes={onUpdateNotes}
@@ -127,7 +134,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
             
             {leads.length === 0 && (
               <TableRow>
-                <TableCell colSpan={17} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={19} className="text-center py-8 text-muted-foreground">
                   No leads found
                 </TableCell>
               </TableRow>
