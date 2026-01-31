@@ -295,13 +295,13 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
 
         {/* Content */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 pb-8">
-          {/* Price Field */}
-          <div className="mb-5">
+          {/* Price Field - Highlighted to encourage filling */}
+          <div className="mb-5 p-4 bg-gradient-to-r from-brand-orange/5 to-amber-50/50 rounded-xl border border-brand-orange/20">
             <Label htmlFor="competitor-price" className="text-sm font-semibold text-gray-800 mb-1.5 block">
               What price were you quoted?
             </Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">£</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 font-semibold">£</span>
               <Input
                 id="competitor-price"
                 type="text"
@@ -312,10 +312,11 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                   setCompetitorPrice(value);
                 }}
                 placeholder="Enter the price you were quoted"
-                className="h-12 pl-8 rounded-lg border-gray-200 bg-gray-50 text-lg focus:bg-white"
+                className="h-12 pl-8 rounded-lg border-gray-300 bg-white text-lg focus:border-brand-orange focus:ring-brand-orange"
                 disabled={isSubmitting}
               />
             </div>
+            <p className="text-xs text-gray-500 mt-1.5">We'll beat any like-for-like quote</p>
           </div>
 
           {/* Details Field */}
@@ -328,14 +329,14 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               value={requestMessage}
               onChange={(e) => setRequestMessage(e.target.value)}
               placeholder="Tell us what the quote includes"
-              className="rounded-lg resize-none border-gray-200 bg-gray-50 focus:bg-white"
+              className="rounded-lg resize-none border-gray-300 bg-gray-50 focus:bg-white focus:border-gray-400"
               rows={3}
               disabled={isSubmitting}
             />
           </div>
 
-          {/* Info Card */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+          {/* Info Card - White background */}
+          <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6 shadow-sm">
             <p className="text-sm text-gray-700 leading-relaxed">
               ✨ We personalise every quote. Request a call back and we'll prepare the best price for you.
             </p>
@@ -343,10 +344,11 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
 
           {/* Contact Form */}
           <div className="space-y-4">
-            {/* Phone */}
-            <div>
-              <Label htmlFor="request-phone" className="text-sm font-semibold text-gray-800 mb-1.5 block">
-                Phone number <span className="text-red-500">*</span>
+            {/* Phone - Essential field with prominent styling */}
+            <div className="p-4 bg-brand-green/5 rounded-xl border-2 border-brand-green/30">
+              <Label htmlFor="request-phone" className="text-sm font-semibold text-gray-800 mb-1.5 flex items-center gap-1.5">
+                📞 Phone number <span className="text-red-500">*</span>
+                <span className="text-xs font-normal text-brand-green ml-auto">Required for callback</span>
               </Label>
               <Input
                 id="request-phone"
@@ -356,8 +358,8 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 onBlur={handlePhoneBlur}
                 placeholder="07123 456789"
                 className={cn(
-                  "h-12 rounded-lg bg-gray-50 focus:bg-white",
-                  phoneError ? "border-red-500 focus-visible:ring-red-500" : "border-gray-200"
+                  "h-12 rounded-lg bg-white text-lg font-medium",
+                  phoneError ? "border-red-500 focus-visible:ring-red-500" : "border-gray-300 focus:border-brand-green focus:ring-brand-green"
                 )}
                 disabled={isSubmitting}
                 autoComplete="tel"
@@ -378,7 +380,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 value={requestEmail}
                 onChange={(e) => handleEmailChange(e.target.value)}
                 placeholder="your@email.com"
-                className="h-12 rounded-lg bg-gray-50 focus:bg-white border-gray-200"
+                className="h-12 rounded-lg bg-gray-50 focus:bg-white border-gray-300"
                 disabled={isSubmitting}
                 autoComplete="email"
               />
@@ -444,13 +446,13 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
 
         {/* Content */}
         <form onSubmit={handleSubmit} className="overflow-y-auto p-5 max-h-[calc(92vh-100px)]">
-          {/* Price Field */}
-          <div className="mb-4">
+          {/* Price Field - Highlighted to encourage filling */}
+          <div className="mb-4 p-3 bg-gradient-to-r from-brand-orange/5 to-amber-50/50 rounded-xl border border-brand-orange/20">
             <Label htmlFor="mobile-competitor-price" className="text-sm font-semibold text-gray-800 mb-1.5 block">
               What price were you quoted?
             </Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">£</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 font-semibold">£</span>
               <Input
                 id="mobile-competitor-price"
                 type="text"
@@ -461,10 +463,11 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                   setCompetitorPrice(value);
                 }}
                 placeholder="Enter the price you were quoted"
-                className="h-11 pl-8 rounded-lg border-gray-200 bg-gray-50 text-base focus:bg-white"
+                className="h-11 pl-8 rounded-lg border-gray-300 bg-white text-base focus:border-brand-orange"
                 disabled={isSubmitting}
               />
             </div>
+            <p className="text-xs text-gray-500 mt-1">We'll beat any like-for-like quote</p>
           </div>
 
           {/* Details Field */}
@@ -477,14 +480,14 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               value={requestMessage}
               onChange={(e) => setRequestMessage(e.target.value)}
               placeholder="Tell us what the quote includes"
-              className="rounded-lg resize-none border-gray-200 bg-gray-50 text-sm focus:bg-white"
+              className="rounded-lg resize-none border-gray-300 bg-gray-50 text-sm focus:bg-white focus:border-gray-400"
               rows={2}
               disabled={isSubmitting}
             />
           </div>
 
-          {/* Info Card */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-5">
+          {/* Info Card - White background */}
+          <div className="bg-white border border-gray-200 rounded-lg p-3 mb-5 shadow-sm">
             <p className="text-xs text-gray-700 leading-relaxed">
               ✨ We personalise every quote. Request a call back and we'll prepare the best price for you.
             </p>
@@ -492,10 +495,11 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
 
           {/* Contact Form */}
           <div className="space-y-3">
-            {/* Phone */}
-            <div>
-              <Label htmlFor="mobile-phone" className="text-sm font-semibold text-gray-800 mb-1.5 block">
-                Phone number <span className="text-red-500">*</span>
+            {/* Phone - Essential field with prominent styling */}
+            <div className="p-3 bg-brand-green/5 rounded-xl border-2 border-brand-green/30">
+              <Label htmlFor="mobile-phone" className="text-sm font-semibold text-gray-800 mb-1.5 flex items-center gap-1.5">
+                📞 Phone number <span className="text-red-500">*</span>
+                <span className="text-xs font-normal text-brand-green ml-auto">Required</span>
               </Label>
               <Input
                 id="mobile-phone"
@@ -505,8 +509,8 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 onBlur={handlePhoneBlur}
                 placeholder="07123 456789"
                 className={cn(
-                  "h-11 rounded-lg bg-gray-50 focus:bg-white",
-                  phoneError ? "border-red-500 focus-visible:ring-red-500" : "border-gray-200"
+                  "h-11 rounded-lg bg-white text-base font-medium",
+                  phoneError ? "border-red-500 focus-visible:ring-red-500" : "border-gray-300 focus:border-brand-green"
                 )}
                 disabled={isSubmitting}
                 autoComplete="tel"
@@ -527,7 +531,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 value={requestEmail}
                 onChange={(e) => handleEmailChange(e.target.value)}
                 placeholder="your@email.com"
-                className="h-11 rounded-lg bg-gray-50 focus:bg-white border-gray-200"
+                className="h-11 rounded-lg bg-gray-50 focus:bg-white border-gray-300"
                 disabled={isSubmitting}
                 autoComplete="email"
               />
