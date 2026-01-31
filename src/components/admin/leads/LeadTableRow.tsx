@@ -270,17 +270,22 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               <div className="flex items-center gap-1.5 w-full">
                 {lead.assigned_to ? (
                   // Assigned state - show initials avatar
-                  <>
-                    <div className="h-5 w-5 rounded-full bg-green-600 text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
-                      {lead.assigned_user?.first_name?.[0]?.toUpperCase() || lead.assigned_user?.email?.[0]?.toUpperCase() || '?'}
-                    </div>
-                    <span className="truncate">
-                      {lead.assigned_user 
-                        ? `${lead.assigned_user.first_name || ''}`.trim() || lead.assigned_user.email.split('@')[0]
-                        : 'Assigned'
-                      }
-                    </span>
-                  </>
+                  // Fall back to salesUsers lookup if assigned_user is not populated
+                  (() => {
+                    const assignedUser = lead.assigned_user || salesUsers.find(u => u.id === lead.assigned_to);
+                    const initial = assignedUser?.first_name?.[0]?.toUpperCase() || assignedUser?.email?.[0]?.toUpperCase() || 'A';
+                    const displayName = assignedUser 
+                      ? `${assignedUser.first_name || ''}`.trim() || assignedUser.email?.split('@')[0] || 'Assigned'
+                      : 'Assigned';
+                    return (
+                      <>
+                        <div className="h-5 w-5 rounded-full bg-green-600 text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                          {initial}
+                        </div>
+                        <span className="truncate">{displayName}</span>
+                      </>
+                    );
+                  })()
                 ) : (
                   // Awaiting Contact state - clear call to action
                   <>
