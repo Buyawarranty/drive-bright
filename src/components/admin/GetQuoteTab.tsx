@@ -160,12 +160,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [editableRegNumber, setEditableRegNumber] = useState('');
   const [mileagePrefilledFromMot, setMileagePrefilledFromMot] = useState(false);
   
-  // Section expand/collapse state for external payment dialog
+  // Section expand/collapse state for external payment dialog - all open by default
   const [expandedSections, setExpandedSections] = useState({
-    customerVehicle: false,
-    address: false,
-    policyConfig: false,
-    payment: true, // Payment section expanded by default
+    customerVehicle: true,
+    address: true,
+    policyConfig: true,
+    payment: true,
   });
   
   const toggleSection = (section: keyof typeof expandedSections) => {
@@ -3228,7 +3228,7 @@ Questions? Call 0330 229 5040`;
                     )}
                   </div>
 
-                  {/* Policy Configuration - Collapsible */}
+                  {/* Policy Configuration - Collapsible & Editable */}
                   <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                     <button
                       type="button"
@@ -3248,7 +3248,7 @@ Questions? Call 0330 229 5040`;
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-blue-600 font-medium">
-                          {expandedSections.policyConfig ? 'Close' : 'View'}
+                          {expandedSections.policyConfig ? 'Close' : 'Edit'}
                         </span>
                         <ChevronDown className={cn(
                           "w-4 h-4 text-gray-400 transition-transform",
@@ -3260,47 +3260,110 @@ Questions? Call 0330 229 5040`;
                     {expandedSections.policyConfig && (
                       <div className="px-4 pb-4 pt-0 border-t border-gray-100">
                         <div className="grid grid-cols-2 gap-4 text-sm pt-4">
-                          <div className="space-y-0.5">
-                            <span className="text-xs font-medium text-gray-500">Plan</span>
-                            <p className="text-gray-800 font-medium">Platinum</p>
+                          {/* Plan - Read only */}
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-gray-500">Plan</Label>
+                            <div className="px-3 py-2 bg-gray-100 rounded-md text-gray-800 font-medium text-sm">Platinum</div>
                           </div>
-                          <div className="space-y-0.5">
-                            <span className="text-xs font-medium text-gray-500">Duration</span>
-                            <p className="text-gray-800 font-medium">
-                              {termOptions.find(t => t.id === paymentType)?.label}
-                              {freeExtendedCover !== 'none' && (
-                                <span className="ml-1 text-green-600">+ {freeExtendedCover === '3months' ? '3' : '6'} months FREE</span>
-                              )}
-                            </p>
+                          
+                          {/* Duration - Editable */}
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-gray-500">Duration</Label>
+                            <select
+                              value={paymentType}
+                              onChange={(e) => setPaymentType(e.target.value as '12months' | '24months' | '36months')}
+                              className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors text-sm"
+                            >
+                              {termOptions.map(term => (
+                                <option key={term.id} value={term.id}>{term.label}</option>
+                              ))}
+                            </select>
                           </div>
-                          <div className="space-y-0.5">
-                            <span className="text-xs font-medium text-gray-500">Excess</span>
-                            <p className="text-gray-800 font-medium">£{excessAmount}</p>
+                          
+                          {/* Excess - Editable */}
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-gray-500">Excess</Label>
+                            <select
+                              value={excessAmount}
+                              onChange={(e) => setExcessAmount(parseInt(e.target.value))}
+                              className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors text-sm"
+                            >
+                              {[0, 50, 100, 150, 200, 250, 300].map(val => (
+                                <option key={val} value={val}>£{val}</option>
+                              ))}
+                            </select>
                           </div>
-                          <div className="space-y-0.5">
-                            <span className="text-xs font-medium text-gray-500">Claim Limit</span>
-                            <p className="text-gray-800 font-medium">£{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}{boostAddon ? ' (boost)' : ''}</p>
+                          
+                          {/* Claim Limit - Editable */}
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-gray-500">Claim Limit</Label>
+                            <select
+                              value={claimLimit}
+                              onChange={(e) => setClaimLimit(parseInt(e.target.value))}
+                              className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors text-sm"
+                            >
+                              {getVisibleClaimLimits(paymentType).map(opt => (
+                                <option key={opt.value} value={opt.value}>£{opt.value.toLocaleString()}</option>
+                              ))}
+                            </select>
                           </div>
-                          <div className="space-y-0.5">
-                            <span className="text-xs font-medium text-gray-500">Labour Rate</span>
-                            <p className="text-gray-800 font-medium">£{labourRate}/hr</p>
+                          
+                          {/* Labour Rate - Editable */}
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-gray-500">Labour Rate</Label>
+                            <select
+                              value={labourRate}
+                              onChange={(e) => setLabourRate(parseInt(e.target.value))}
+                              className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors text-sm"
+                            >
+                              {labourRateOptions.map(opt => (
+                                <option key={opt.rate} value={opt.rate}>£{opt.rate}/hr</option>
+                              ))}
+                            </select>
                           </div>
-                          <div className="space-y-0.5">
-                            <span className="text-xs font-medium text-gray-500">Quoted Price</span>
-                            <p className="text-gray-800 font-semibold text-base">£{currentPrice.totalPrice}</p>
+                          
+                          {/* Quoted Price - Display only, auto-updates */}
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-gray-500">Quoted Price</Label>
+                            <div className="px-3 py-2 bg-green-50 border border-green-200 rounded-md text-green-800 font-semibold text-base">
+                              £{currentPrice.totalPrice}
+                            </div>
                           </div>
+                          
+                          {/* Boost Add-on Toggle */}
+                          <div className="col-span-2 flex items-center gap-3 pt-2">
+                            <Checkbox
+                              id="boost-addon-confirm"
+                              checked={boostAddon}
+                              onCheckedChange={(checked) => setBoostAddon(checked === true)}
+                            />
+                            <Label htmlFor="boost-addon-confirm" className="text-sm cursor-pointer">
+                              Boost Add-on (+£1,000 claim limit)
+                            </Label>
+                          </div>
+                          
+                          {/* Included Add-ons Info */}
                           {getAutoIncludedAddOns(paymentType).length > 0 && (
-                            <div className="col-span-2 space-y-0.5">
-                              <span className="text-xs font-medium text-gray-500">Included Add-ons</span>
-                              <p className="text-gray-800 font-medium">
+                            <div className="col-span-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                              <span className="text-xs font-medium text-blue-700">Included Add-ons: </span>
+                              <span className="text-xs text-blue-800">
                                 {getAutoIncludedAddOns(paymentType).includes('breakdown') && 'Vehicle Recovery'}
                                 {getAutoIncludedAddOns(paymentType).includes('breakdown') && getAutoIncludedAddOns(paymentType).includes('rental') && ', '}
                                 {getAutoIncludedAddOns(paymentType).includes('rental') && 'Hire Car'}
-                              </p>
+                              </span>
+                            </div>
+                          )}
+                          
+                          {/* Free Extended Cover */}
+                          {freeExtendedCover !== 'none' && (
+                            <div className="col-span-2 p-2 bg-green-50 border border-green-200 rounded-md">
+                              <span className="text-xs font-medium text-green-700">🎁 FREE Extended Cover: </span>
+                              <span className="text-xs text-green-800">
+                                {freeExtendedCover === '3months' ? '3' : '6'} bonus months
+                              </span>
                             </div>
                           )}
                         </div>
-                        <p className="text-xs text-gray-500 mt-3 italic">To change policy options, go back to Step 1.</p>
                       </div>
                     )}
                   </div>
