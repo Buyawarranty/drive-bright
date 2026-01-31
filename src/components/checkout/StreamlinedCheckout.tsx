@@ -1235,9 +1235,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           <MobileNavigation />
         </div>
 
-        <div className="flex gap-8">
+        <div className="flex gap-8 items-start">
           {/* Main Content Column */}
-          <div className="flex-1 max-w-2xl space-y-6 sm:space-y-8 pb-32 lg:pb-32">
+          <div className="flex-1 max-w-2xl space-y-6 sm:space-y-8 pb-32 lg:pb-32 lg:space-y-0">
           {/* ==================== MOBILE: PLAN SUMMARY ACCORDION ==================== */}
           <section className="lg:hidden">
             <PlanSummaryCard
@@ -1277,7 +1277,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           </section>
 
           {/* ==================== SECTION 1: PAYMENT METHOD SELECTOR ==================== */}
-          <section>
+          <section className="mt-6 sm:mt-8 lg:mt-8">
             <PaymentMethodSelector
               selectedPayment={selectedPayment}
               onPaymentChange={setSelectedPayment}
@@ -1287,12 +1287,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           </section>
 
           {/* Key Cover Highlights - Mobile Only */}
-          <section className="lg:hidden">
+          <section className="mt-6 sm:mt-8 lg:hidden">
             <CoverHighlights planName={formatPlanName()} />
           </section>
 
           {/* Cover Start Date - Mobile Only (Desktop has it integrated in header) */}
-          <section id="start-date-section" className="lg:hidden">
+          <section id="start-date-section" className="mt-6 sm:mt-8 lg:hidden">
             <Card className="border border-[#E5E5E5] bg-white rounded-xl">
               <CardContent className="p-4 sm:p-5">
                 <StartDatePicker
@@ -1314,7 +1314,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           </section>
 
           {/* ==================== SECTION 2: CUSTOMER DETAILS ==================== */}
-          <section ref={aboutYouRef} id="customer-form" className="bg-white rounded-xl border border-border p-5 sm:p-6">
+          <section ref={aboutYouRef} id="customer-form" className="mt-6 sm:mt-8 lg:mt-8 bg-white rounded-xl border border-border p-5 sm:p-6">
             
             {/* Section Header: About you */}
             <div className="mb-6">
@@ -1768,7 +1768,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           })()}
           
           {showEmbeddedCheckout && stripeClientSecret && selectedPayment === 'full' && (
-            <section id="inline-stripe-payment" className="bg-white rounded-xl border border-[#E5E5E5] p-5 sm:p-6">
+            <section id="inline-stripe-payment" className="mt-6 sm:mt-8 lg:mt-8 bg-white rounded-xl border border-[#E5E5E5] p-5 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <Lock className="w-6 h-6" style={{ color: '#0BA360' }} />
