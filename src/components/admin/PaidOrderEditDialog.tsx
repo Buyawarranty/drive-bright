@@ -65,7 +65,8 @@ interface PaidOrder {
 }
 
 interface AdminUser {
-  user_id: string;
+  id: string;       // admin_users.id - for assigned_to FK
+  user_id: string;  // auth.users.id - for payment_confirmed_by
   name: string;
 }
 
@@ -116,7 +117,8 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
   const [notes, setNotes] = useState('');
   
   // Agent attribution - who closed the deal
-  const [confirmedByAgent, setConfirmedByAgent] = useState('');
+  // Store the admin_users.id - we'll look up the user_id when saving
+  const [selectedAgentId, setSelectedAgentId] = useState(''); // admin_users.id
 
   // Reset form when order changes
   useEffect(() => {
@@ -142,9 +144,11 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
       setRentalIncluded(order.rental_included || false);
       setNotes(order.additional_notes || '');
       setAccessibilityNotes('');
-      setConfirmedByAgent(order.payment_confirmed_by || '');
+      // Find the admin_users.id that matches payment_confirmed_by (which stores user_id)
+      const matchingAgent = adminUsers.find(a => a.user_id === order.payment_confirmed_by);
+      setSelectedAgentId(matchingAgent?.id || '');
     }
-  }, [order]);
+  }, [order, adminUsers]);
 
   const handleSaveChanges = async (updateDashboard: boolean) => {
     if (!order) return;
@@ -170,7 +174,10 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
           breakdown_included: breakdownIncluded,
           rental_included: rentalIncluded,
           additional_notes: notes,
-          payment_confirmed_by: confirmedByAgent || null,
+          // Look up the user_id for the selected agent (payment_confirmed_by uses user_id)
+          payment_confirmed_by: selectedAgentId 
+            ? adminUsers.find(a => a.id === selectedAgentId)?.user_id || null 
+            : null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', order.id);
@@ -207,6 +214,8 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
             county: county,
             postcode: postcode,
             building_number: buildingNumber,
+            // Update sales agent assignment (uses admin_users.id)
+            assigned_to: selectedAgentId || null,
             updated_at: new Date().toISOString(),
           })
           .eq('id', order.customer_id);
@@ -243,8 +252,11 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
             final_amount: order.upfront_price || (order.monthly_price * 12),
             signup_date: order.paid_at || new Date().toISOString(),
             payment_verified: true,
-            payment_confirmed_by: confirmedByAgent || null,
-            assigned_to: confirmedByAgent || null,
+            // payment_confirmed_by uses user_id, assigned_to uses admin_users.id
+            payment_confirmed_by: selectedAgentId 
+              ? adminUsers.find(a => a.id === selectedAgentId)?.user_id || null 
+              : null,
+            assigned_to: selectedAgentId || null, // admin_users.id for FK relationship
           })
           .select('id')
           .single();
@@ -612,14 +624,14 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
               {/* Agent Attribution */}
               <div className="space-y-2">
                 <Label>Sales Agent Who Closed This Deal</Label>
-                <Select value={confirmedByAgent} onValueChange={setConfirmedByAgent}>
+                <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select sales agent..." />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">Not assigned</SelectItem>
                     {adminUsers.map((user) => (
-                      <SelectItem key={user.user_id} value={user.user_id}>
+                      <SelectItem key={user.id} value={user.id}>
                         {user.name}
                       </SelectItem>
                     ))}
