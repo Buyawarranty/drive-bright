@@ -39,6 +39,10 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
   const [requestMessage, setRequestMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requestSuccess, setRequestSuccess] = useState(false);
+  
+  // Validation error states
+  const [phoneError, setPhoneError] = useState('');
+  const [emailError, setEmailError] = useState('');
 
   // Reset state when panel opens
   useEffect(() => {
@@ -49,6 +53,8 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
       setCompetitorPrice('');
       setRequestMessage('');
       setRequestSuccess(false);
+      setPhoneError('');
+      setEmailError('');
       document.body.style.overflow = 'hidden';
       trackEvent('price_help_panel_opened');
     } else {
@@ -78,32 +84,61 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
     return parts.length > 0 ? parts.join(', ') : 'Custom quote request';
   };
 
+  const handlePhoneChange = (value: string) => {
+    setRequestPhone(value);
+    // Clear error when user starts typing
+    if (phoneError) setPhoneError('');
+  };
+
+  const handleEmailChange = (value: string) => {
+    setRequestEmail(value);
+    // Clear error when user starts typing
+    if (emailError) setEmailError('');
+  };
+
+  const handlePhoneBlur = () => {
+    if (requestPhone.trim() && !validatePhone(requestPhone)) {
+      setPhoneError('Please enter a valid UK phone number (e.g., 07123 456789)');
+    } else {
+      setPhoneError('');
+    }
+  };
+
+  const handleEmailBlur = () => {
+    if (requestEmail.trim() && !validateEmail(requestEmail)) {
+      setEmailError('Please enter a valid email address');
+    } else {
+      setEmailError('');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!requestPhone.trim()) {
-      toast({
-        title: "Phone number required",
-        description: "Please enter your mobile number.",
-        variant: "destructive",
-      });
-      return;
-    }
+    // Reset errors
+    setPhoneError('');
+    setEmailError('');
     
-    if (!validatePhone(requestPhone)) {
-      toast({
-        title: "Invalid phone number",
-        description: "Please enter a valid UK phone number.",
-        variant: "destructive",
-      });
-      return;
+    let hasError = false;
+    
+    if (!requestPhone.trim()) {
+      setPhoneError('Phone number is required');
+      hasError = true;
+    } else if (!validatePhone(requestPhone)) {
+      setPhoneError('Please enter a valid UK phone number (e.g., 07123 456789)');
+      hasError = true;
     }
     
     // Email is optional - only validate if provided
     if (requestEmail.trim() && !validateEmail(requestEmail)) {
+      setEmailError('Please enter a valid email address');
+      hasError = true;
+    }
+    
+    if (hasError) {
       toast({
-        title: "Invalid email",
-        description: "Please enter a valid email address.",
+        title: "Please check your details",
+        description: "Fix the highlighted errors to continue.",
         variant: "destructive",
       });
       return;
@@ -339,12 +374,19 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 id="request-phone"
                 type="tel"
                 value={requestPhone}
-                onChange={(e) => setRequestPhone(e.target.value)}
-                placeholder="Enter your mobile number"
-                className="h-12 rounded-lg border-gray-200 bg-gray-50 focus:bg-white"
+                onChange={(e) => handlePhoneChange(e.target.value)}
+                onBlur={handlePhoneBlur}
+                placeholder="07123 456789"
+                className={cn(
+                  "h-12 rounded-lg bg-gray-50 focus:bg-white",
+                  phoneError ? "border-red-500 focus-visible:ring-red-500" : "border-gray-200"
+                )}
                 disabled={isSubmitting}
                 autoComplete="tel"
               />
+              {phoneError && (
+                <p className="text-sm text-red-500 mt-1">{phoneError}</p>
+              )}
             </div>
 
             {/* Email */}
@@ -356,12 +398,19 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 id="request-email"
                 type="email"
                 value={requestEmail}
-                onChange={(e) => setRequestEmail(e.target.value)}
-                placeholder="Enter your email address"
-                className="h-12 rounded-lg border-gray-200 bg-gray-50 focus:bg-white"
+                onChange={(e) => handleEmailChange(e.target.value)}
+                onBlur={handleEmailBlur}
+                placeholder="your@email.com"
+                className={cn(
+                  "h-12 rounded-lg bg-gray-50 focus:bg-white",
+                  emailError ? "border-red-500 focus-visible:ring-red-500" : "border-gray-200"
+                )}
                 disabled={isSubmitting}
                 autoComplete="email"
               />
+              {emailError && (
+                <p className="text-sm text-red-500 mt-1">{emailError}</p>
+              )}
             </div>
           </div>
 
@@ -481,12 +530,19 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 id="mobile-phone"
                 type="tel"
                 value={requestPhone}
-                onChange={(e) => setRequestPhone(e.target.value)}
-                placeholder="Enter your mobile number"
-                className="h-11 rounded-lg border-gray-200 bg-gray-50 focus:bg-white"
+                onChange={(e) => handlePhoneChange(e.target.value)}
+                onBlur={handlePhoneBlur}
+                placeholder="07123 456789"
+                className={cn(
+                  "h-11 rounded-lg bg-gray-50 focus:bg-white",
+                  phoneError ? "border-red-500 focus-visible:ring-red-500" : "border-gray-200"
+                )}
                 disabled={isSubmitting}
                 autoComplete="tel"
               />
+              {phoneError && (
+                <p className="text-xs text-red-500 mt-1">{phoneError}</p>
+              )}
             </div>
 
             {/* Email */}
@@ -498,12 +554,19 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 id="mobile-email"
                 type="email"
                 value={requestEmail}
-                onChange={(e) => setRequestEmail(e.target.value)}
-                placeholder="Enter your email address"
-                className="h-11 rounded-lg border-gray-200 bg-gray-50 focus:bg-white"
+                onChange={(e) => handleEmailChange(e.target.value)}
+                onBlur={handleEmailBlur}
+                placeholder="your@email.com"
+                className={cn(
+                  "h-11 rounded-lg bg-gray-50 focus:bg-white",
+                  emailError ? "border-red-500 focus-visible:ring-red-500" : "border-gray-200"
+                )}
                 disabled={isSubmitting}
                 autoComplete="email"
               />
+              {emailError && (
+                <p className="text-xs text-red-500 mt-1">{emailError}</p>
+              )}
             </div>
           </div>
 
