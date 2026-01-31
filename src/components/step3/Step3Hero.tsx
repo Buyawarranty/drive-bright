@@ -27,36 +27,34 @@ const Step3Hero: React.FC<Step3HeroProps> = ({ vehicleData, onBack }) => {
         </p>
       </div>
       
-      {/* Vehicle Information Card */}
+      {/* Vehicle Information Card - Centered on mobile */}
       <div className="bg-secondary rounded-xl p-4 border border-border">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-semibold text-foreground">Vehicle Information</h2>
+        {/* Header with title and change button */}
+        <div className="flex items-center justify-center gap-2 mb-3">
+          <h2 className="font-semibold text-foreground text-center">
+            {vehicleData.year} {vehicleData.make} {vehicleData.model}
+          </h2>
           <Button
             onClick={onBack}
             variant="ghost"
             size="sm"
             className="text-primary hover:text-primary/80 text-sm font-medium p-0 h-auto"
           >
-            Edit
+            Change
           </Button>
         </div>
         
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Car className="w-4 h-4 text-primary" />
-            <span className="font-semibold text-foreground">
-              {vehicleData.year} {vehicleData.make} {vehicleData.model}
-            </span>
-            <span className="text-muted-foreground">•</span>
-            <span className="text-muted-foreground text-sm">
-              {parseInt(vehicleData.mileage || '0') >= 120000 ? 'Over 120,000 miles' : 'Under 120,000 miles'}
-            </span>
-          </div>
+        {/* Vehicle details - centered */}
+        <div className="flex flex-col items-center gap-1.5 text-center">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>{vehicleData.fuelType}</span>
-            <span>•</span>
             <span className="font-mono bg-card px-2 py-0.5 rounded border border-border text-foreground font-semibold">
               {vehicleData.regNumber}
+            </span>
+            <span>•</span>
+            <span>{vehicleData.fuelType}</span>
+            <span>•</span>
+            <span>
+              {parseInt(vehicleData.mileage || '0') >= 120000 ? 'Over 120,000 miles' : 'Under 120,000 miles'}
             </span>
           </div>
         </div>
