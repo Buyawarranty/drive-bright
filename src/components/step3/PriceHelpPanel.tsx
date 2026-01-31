@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { X, Check, Loader2, Phone, Sparkles } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Check, Loader2, Phone, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,7 +8,6 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { trackEvent } from '@/utils/analytics';
-import savingsPanda from '@/assets/savings-panda.webp';
 
 interface PriceHelpPanelProps {
   isOpen: boolean;
@@ -41,10 +40,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requestSuccess, setRequestSuccess] = useState(false);
 
-  // Sparkle animation state
-  const [showSparkle, setShowSparkle] = useState(false);
-  const sparkleIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
   // Reset state when panel opens
   useEffect(() => {
     if (isOpen) {
@@ -56,30 +51,11 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
       setRequestSuccess(false);
       document.body.style.overflow = 'hidden';
       trackEvent('price_help_panel_opened');
-
-      // Start sparkle animation interval (every 3.5 seconds)
-      sparkleIntervalRef.current = setInterval(() => {
-        setShowSparkle(true);
-        setTimeout(() => setShowSparkle(false), 900);
-      }, 3500);
-      // Initial sparkle
-      setTimeout(() => {
-        setShowSparkle(true);
-        setTimeout(() => setShowSparkle(false), 900);
-      }, 500);
     } else {
       document.body.style.overflow = '';
-      if (sparkleIntervalRef.current) {
-        clearInterval(sparkleIntervalRef.current);
-        sparkleIntervalRef.current = null;
-      }
     }
     return () => {
       document.body.style.overflow = '';
-      if (sparkleIntervalRef.current) {
-        clearInterval(sparkleIntervalRef.current);
-        sparkleIntervalRef.current = null;
-      }
     };
   }, [isOpen]);
 
@@ -216,7 +192,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               </div>
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-3">
-              Thank you. We are preparing your quote. ⭐
+              Thank you. We are preparing your quote.
             </h3>
             <p className="text-gray-600 mb-8 leading-relaxed">
               We will call you within one working day. If you already have a quote from another provider, have it ready and we will beat it.
@@ -244,7 +220,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               </div>
             </div>
             <h3 className="text-lg font-bold text-gray-900 mb-2">
-              Thank you. We are preparing your quote. ⭐
+              Thank you. We are preparing your quote.
             </h3>
             <p className="text-sm text-gray-600 mb-6 leading-relaxed">
               We will call you within one working day. Have any competitor quotes ready and we will beat them.
@@ -260,18 +236,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
       </>
     );
   }
-
-  // Sparkle component with animation
-  const AnimatedSparkle = ({ className }: { className?: string }) => (
-    <span className={cn("inline-flex items-center", className)}>
-      <Sparkles 
-        className={cn(
-          "w-5 h-5 text-brand-orange transition-all duration-300",
-          showSparkle && "animate-sparkle-pulse"
-        )} 
-      />
-    </span>
-  );
 
   // Main Panel View
   return (
@@ -296,9 +260,9 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
       >
         {/* Header */}
         <div className="px-6 py-5 border-b border-gray-100 flex-shrink-0">
-          <div className="flex items-start justify-between mb-3">
+          <div className="flex items-start justify-between mb-2">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-brand-orange flex-shrink-0" />
+              <Trophy className="w-5 h-5 text-brand-orange flex-shrink-0" />
               <h2 className="text-xl font-bold text-gray-900 leading-tight">
                 Not the right price? We will beat any quote.
               </h2>
@@ -311,76 +275,64 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               <X className="w-5 h-5 text-gray-600" />
             </button>
           </div>
-          {/* Animated tagline */}
-          <p className="text-sm text-gray-700 leading-relaxed flex items-start gap-1.5">
-            <AnimatedSparkle className="flex-shrink-0 mt-0.5" />
-            <span>
-              Tell us the price you were quoted or the cover you want. We'll beat any like‑for‑like quote.
-            </span>
+          <p className="text-sm text-gray-600 leading-relaxed">
+            Share the price you were given and we will beat any like-for-like offer.
           </p>
         </div>
 
         {/* Content */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 pb-8">
-          {/* Competitor Price Field - Prominent */}
-          <div className="mb-6 p-4 bg-gradient-to-br from-brand-orange/5 to-brand-orange/10 rounded-xl border-2 border-brand-orange/20">
-            <p className="text-base font-bold text-gray-900 mb-3">Got a quote elsewhere?</p>
-            <div className="space-y-2">
-              <Label htmlFor="competitor-price" className="text-sm font-bold text-gray-800">
-                What price would you like us to beat?
-              </Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">£</span>
-                <Input
-                  id="competitor-price"
-                  type="text"
-                  inputMode="numeric"
-                  value={competitorPrice}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9.]/g, '');
-                    setCompetitorPrice(value);
-                  }}
-                  placeholder="Enter the price you were quoted"
-                  className="h-12 pl-8 rounded-xl border-gray-200 text-lg font-semibold"
-                  disabled={isSubmitting}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Quote Details Section */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
-            <div className="space-y-1.5">
-              <Label htmlFor="quote-details" className="text-sm font-medium text-gray-700">
-                Details about your quote <span className="text-gray-400 font-normal">(optional)</span>
-              </Label>
-              <Textarea
-                id="quote-details"
-                value={requestMessage}
-                onChange={(e) => setRequestMessage(e.target.value)}
-                placeholder="Tell us what the quote includes, such as cover, parts, mileage, exclusions or anything else."
-                className="rounded-xl resize-none border-gray-200"
-                rows={3}
+          {/* Price Field */}
+          <div className="mb-5">
+            <Label htmlFor="competitor-price" className="text-sm font-semibold text-gray-800 mb-1.5 block">
+              What price were you quoted?
+            </Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">£</span>
+              <Input
+                id="competitor-price"
+                type="text"
+                inputMode="numeric"
+                value={competitorPrice}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  setCompetitorPrice(value);
+                }}
+                placeholder="Enter the price you were quoted"
+                className="h-12 pl-8 rounded-lg border-gray-200 bg-gray-50 text-lg font-semibold focus:bg-white"
                 disabled={isSubmitting}
               />
             </div>
           </div>
 
-          {/* Quote Box */}
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6">
-            <div className="flex items-start gap-3">
-              <Phone className="w-5 h-5 text-gray-900 flex-shrink-0 mt-0.5" />
-              <p className="text-sm font-medium text-gray-900 leading-relaxed">
-                We can't show a price instantly. Request a call back for a personalised quote that beats any quote.
-              </p>
-            </div>
+          {/* Details Field */}
+          <div className="mb-5">
+            <Label htmlFor="quote-details" className="text-sm font-semibold text-gray-800 mb-1.5 block">
+              More details about your quote <span className="text-gray-400 font-normal">(optional)</span>
+            </Label>
+            <Textarea
+              id="quote-details"
+              value={requestMessage}
+              onChange={(e) => setRequestMessage(e.target.value)}
+              placeholder="Tell us what the quote includes"
+              className="rounded-lg resize-none border-gray-200 bg-gray-50 focus:bg-white"
+              rows={3}
+              disabled={isSubmitting}
+            />
+          </div>
+
+          {/* Info Card */}
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+            <p className="text-sm text-gray-700 leading-relaxed">
+              We cannot show a price instantly. Request a call back for your personalised quote.
+            </p>
           </div>
 
           {/* Contact Form */}
           <div className="space-y-4">
             {/* Phone */}
-            <div className="space-y-1.5">
-              <Label htmlFor="request-phone" className="text-sm font-semibold text-gray-800">
+            <div>
+              <Label htmlFor="request-phone" className="text-sm font-semibold text-gray-800 mb-1.5 block">
                 Phone number <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -389,15 +341,15 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 value={requestPhone}
                 onChange={(e) => setRequestPhone(e.target.value)}
                 placeholder="Enter your mobile number"
-                className="h-12 rounded-xl border-gray-200"
+                className="h-12 rounded-lg border-gray-200 bg-gray-50 focus:bg-white"
                 disabled={isSubmitting}
                 autoComplete="tel"
               />
             </div>
 
             {/* Email */}
-            <div className="space-y-1.5">
-              <Label htmlFor="request-email" className="text-sm font-semibold text-gray-800">
+            <div>
+              <Label htmlFor="request-email" className="text-sm font-semibold text-gray-800 mb-1.5 block">
                 Email <span className="text-gray-400 font-normal">(optional)</span>
               </Label>
               <Input
@@ -406,19 +358,19 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 value={requestEmail}
                 onChange={(e) => setRequestEmail(e.target.value)}
                 placeholder="Enter your email address"
-                className="h-12 rounded-xl border-gray-200"
+                className="h-12 rounded-lg border-gray-200 bg-gray-50 focus:bg-white"
                 disabled={isSubmitting}
                 autoComplete="email"
               />
             </div>
           </div>
 
-          {/* CTAs */}
-          <div className="mt-6 space-y-3">
+          {/* CTA */}
+          <div className="mt-6">
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-14 bg-brand-orange text-white font-bold text-lg rounded-full shadow-lg shadow-brand-orange/25 disabled:opacity-50 animate-breathing"
+              className="w-full h-14 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-lg rounded-lg shadow-md disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>
@@ -429,26 +381,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 'Request a call back'
               )}
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={onClose}
-              className="w-full h-11 text-gray-500 hover:text-gray-700"
-            >
-              Cancel
-            </Button>
-          </div>
-
-          {/* Panda Image - Desktop only */}
-          <div className="mt-6 flex justify-center">
-            <img 
-              src={savingsPanda} 
-              alt="Friendly panda mascot helping you save money on your car warranty" 
-              className="w-40 h-auto object-contain"
-              loading="lazy"
-              width={160}
-              height={160}
-            />
           </div>
         </form>
       </div>
@@ -468,9 +400,9 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
 
         {/* Header */}
         <div className="px-5 py-3 border-b border-gray-100">
-          <div className="flex items-start justify-between mb-2">
+          <div className="flex items-start justify-between mb-1">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-brand-orange flex-shrink-0" />
+              <Trophy className="w-4 h-4 text-brand-orange flex-shrink-0" />
               <h2 className="text-lg font-bold text-gray-900 leading-tight">
                 Not the right price? We will beat any quote.
               </h2>
@@ -482,76 +414,64 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               <X className="w-4 h-4 text-gray-600" />
             </button>
           </div>
-          {/* Animated tagline */}
-          <p className="text-xs text-gray-700 leading-relaxed flex items-start gap-1">
-            <AnimatedSparkle className="flex-shrink-0 mt-0.5" />
-            <span>
-              Tell us the price you were quoted or the cover you want. We'll beat any like‑for‑like quote.
-            </span>
+          <p className="text-xs text-gray-600 leading-relaxed">
+            Share the price you were given and we will beat any like-for-like offer.
           </p>
         </div>
 
         {/* Content */}
         <form onSubmit={handleSubmit} className="overflow-y-auto p-5 max-h-[calc(92vh-100px)]">
-          {/* Competitor Price Field - Prominent */}
-          <div className="mb-5 p-3 bg-gradient-to-br from-brand-orange/5 to-brand-orange/10 rounded-xl border-2 border-brand-orange/20">
-            <p className="text-sm font-bold text-gray-900 mb-2">Got a quote elsewhere?</p>
-            <div className="space-y-1.5">
-              <Label htmlFor="mobile-competitor-price" className="text-sm font-bold text-gray-800">
-                What price would you like us to beat?
-              </Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">£</span>
-                <Input
-                  id="mobile-competitor-price"
-                  type="text"
-                  inputMode="numeric"
-                  value={competitorPrice}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9.]/g, '');
-                    setCompetitorPrice(value);
-                  }}
-                  placeholder="Enter the price you were quoted"
-                  className="h-11 pl-8 rounded-xl border-gray-200 text-base font-semibold"
-                  disabled={isSubmitting}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Quote Details Section */}
-          <div className="mb-5 p-3 bg-gray-50 rounded-xl border border-gray-100">
-            <div className="space-y-1">
-              <Label htmlFor="mobile-quote-details" className="text-xs font-medium text-gray-700">
-                Details about your quote <span className="text-gray-400 font-normal">(optional)</span>
-              </Label>
-              <Textarea
-                id="mobile-quote-details"
-                value={requestMessage}
-                onChange={(e) => setRequestMessage(e.target.value)}
-                placeholder="Tell us what the quote includes, such as cover, parts, mileage, exclusions or anything else."
-                className="rounded-xl resize-none border-gray-200 text-sm"
-                rows={2}
+          {/* Price Field */}
+          <div className="mb-4">
+            <Label htmlFor="mobile-competitor-price" className="text-sm font-semibold text-gray-800 mb-1.5 block">
+              What price were you quoted?
+            </Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">£</span>
+              <Input
+                id="mobile-competitor-price"
+                type="text"
+                inputMode="numeric"
+                value={competitorPrice}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  setCompetitorPrice(value);
+                }}
+                placeholder="Enter the price you were quoted"
+                className="h-11 pl-8 rounded-lg border-gray-200 bg-gray-50 text-base font-semibold focus:bg-white"
                 disabled={isSubmitting}
               />
             </div>
           </div>
 
-          {/* Quote Box */}
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 mb-5">
-            <div className="flex items-start gap-2">
-              <Phone className="w-4 h-4 text-gray-900 flex-shrink-0 mt-0.5" />
-              <p className="text-xs font-medium text-gray-900 leading-relaxed">
-                We can't show a price instantly. Request a call back for a personalised quote that beats any quote.
-              </p>
-            </div>
+          {/* Details Field */}
+          <div className="mb-4">
+            <Label htmlFor="mobile-quote-details" className="text-sm font-semibold text-gray-800 mb-1.5 block">
+              More details about your quote <span className="text-gray-400 font-normal">(optional)</span>
+            </Label>
+            <Textarea
+              id="mobile-quote-details"
+              value={requestMessage}
+              onChange={(e) => setRequestMessage(e.target.value)}
+              placeholder="Tell us what the quote includes"
+              className="rounded-lg resize-none border-gray-200 bg-gray-50 text-sm focus:bg-white"
+              rows={2}
+              disabled={isSubmitting}
+            />
+          </div>
+
+          {/* Info Card */}
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-5">
+            <p className="text-xs text-gray-700 leading-relaxed">
+              We cannot show a price instantly. Request a call back for your personalised quote.
+            </p>
           </div>
 
           {/* Contact Form */}
           <div className="space-y-3">
             {/* Phone */}
-            <div className="space-y-1">
-              <Label htmlFor="mobile-phone" className="text-sm font-semibold text-gray-800">
+            <div>
+              <Label htmlFor="mobile-phone" className="text-sm font-semibold text-gray-800 mb-1.5 block">
                 Phone number <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -560,15 +480,15 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 value={requestPhone}
                 onChange={(e) => setRequestPhone(e.target.value)}
                 placeholder="Enter your mobile number"
-                className="h-11 rounded-xl border-gray-200"
+                className="h-11 rounded-lg border-gray-200 bg-gray-50 focus:bg-white"
                 disabled={isSubmitting}
                 autoComplete="tel"
               />
             </div>
 
             {/* Email */}
-            <div className="space-y-1">
-              <Label htmlFor="mobile-email" className="text-sm font-semibold text-gray-800">
+            <div>
+              <Label htmlFor="mobile-email" className="text-sm font-semibold text-gray-800 mb-1.5 block">
                 Email <span className="text-gray-400 font-normal">(optional)</span>
               </Label>
               <Input
@@ -577,19 +497,19 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 value={requestEmail}
                 onChange={(e) => setRequestEmail(e.target.value)}
                 placeholder="Enter your email address"
-                className="h-11 rounded-xl border-gray-200"
+                className="h-11 rounded-lg border-gray-200 bg-gray-50 focus:bg-white"
                 disabled={isSubmitting}
                 autoComplete="email"
               />
             </div>
           </div>
 
-          {/* CTAs */}
-          <div className="mt-5 space-y-2 pb-4">
+          {/* CTA */}
+          <div className="mt-5 pb-4">
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-14 bg-brand-orange text-white font-bold text-lg rounded-full shadow-lg shadow-brand-orange/25 disabled:opacity-50 animate-breathing"
+              className="w-full h-14 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-lg rounded-lg shadow-md disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>
@@ -599,14 +519,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               ) : (
                 'Request a call back'
               )}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={onClose}
-              className="w-full h-10 text-gray-500 hover:text-gray-700 text-sm"
-            >
-              Cancel
             </Button>
           </div>
         </form>
