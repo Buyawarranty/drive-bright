@@ -76,6 +76,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
               <TableHead className="w-[70px] text-center">Calls</TableHead>
               <TableHead className="w-[120px]">Actions</TableHead>
               <TableHead className="w-[90px]">Payment</TableHead>
+              <TableHead className="w-[100px]">Price</TableHead>
               <TableHead className="w-[90px]">Quote Sent</TableHead>
               <TableHead className="w-[100px]">Next Action</TableHead>
               <TableHead className="w-[90px]">Urgency</TableHead>
@@ -118,7 +119,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                 {/* Expanded row with LeadDetailsPanel */}
                 {expandedLead === lead.id && (
                   <TableRow>
-                    <TableCell colSpan={19} className="p-0 bg-muted/20">
+                    <TableCell colSpan={20} className="p-0 bg-muted/20">
                       <LeadDetailsPanel
                         lead={lead}
                         onUpdateNotes={onUpdateNotes}
@@ -134,7 +135,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
             
             {leads.length === 0 && (
               <TableRow>
-                <TableCell colSpan={19} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={20} className="text-center py-8 text-muted-foreground">
                   No leads found
                 </TableCell>
               </TableRow>
