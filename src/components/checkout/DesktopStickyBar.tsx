@@ -13,6 +13,7 @@ interface DesktopStickyBarProps {
   paymentType: '12months' | '24months' | '36months';
   isLoading: boolean;
   onPayClick: () => void;
+  isVisible?: boolean;
 }
 
 const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
@@ -25,9 +26,13 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
   paymentType,
   isLoading,
   onPayClick,
+  isVisible = true,
 }) => {
+  // Don't render if not visible
+  if (!isVisible) return null;
+
   return (
-    <div className="hidden lg:block fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+    <div className="hidden lg:block fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 animate-in slide-in-from-bottom-4 duration-300">
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-stretch justify-between bg-white rounded-xl overflow-hidden">
           
