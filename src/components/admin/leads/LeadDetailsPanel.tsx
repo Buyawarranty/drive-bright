@@ -34,7 +34,7 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   onRefresh,
   onNavigateToQuote
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(true); // Always start in edit mode for immediate typing
   const [notesValue, setNotesValue] = useState(lead.notes || '');
   const [contactOpen, setContactOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(true);
