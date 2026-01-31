@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { ArrowRight, Star, Lock, ChevronUp, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getMarketingSavings, PaymentPeriod } from '@/lib/pricingMatrix';
+import { PaymentPeriod } from '@/lib/pricingMatrix';
 import { cn } from '@/lib/utils';
 
 interface StickyFooterProps {
@@ -61,9 +61,8 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
   const coverMonths = paymentPeriod === '12months' ? 12 : paymentPeriod === '24months' ? 24 : 36;
   const averageCostPerMonth = Math.floor(payInFull / coverMonths);
   
-  // Get marketing savings from centralized pricing matrix
-  const savings = getMarketingSavings(paymentPeriod as PaymentPeriod);
-  const wasPrice = payInFull + savings;
+  // Calculate Stripe 10% discount savings
+  const stripeSavings = Math.floor(payInFull * 0.10);
 
   const toggleMobileExpand = useCallback(() => {
     setIsMobileExpanded(prev => !prev);
@@ -121,14 +120,12 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
               <span className="text-sm text-gray-600">Approx. £{Math.floor(monthlyPrice / 3)}/month over 3 years</span>
             )}
             
-            {/* Pay in full with savings */}
+            {/* Pay in full with 10% discount savings */}
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-sm text-gray-400 line-through">£{wasPrice}</span>
-              <span className="text-sm font-semibold text-gray-800">£{payInFull}</span>
-              {savings > 0 && (
-                <span className="text-sm font-medium text-green-600">(Save £{savings})</span>
-              )}
-              <span className="text-sm text-gray-600">– {coverText}</span>
+              <span className="text-sm font-semibold text-gray-800">Pay in full £{payInFull}</span>
+              <span className="text-sm text-gray-600">–</span>
+              <span className="text-sm font-medium text-green-600">You save £{stripeSavings} today</span>
+              <span className="text-sm text-gray-600">– One-time payment</span>
             </div>
           </div>
 
@@ -206,16 +203,12 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
               )}
             </div>
 
-            {/* Pay in full with savings */}
+            {/* Pay in full with 10% discount savings */}
             <div className="text-center">
               <div className="flex items-center justify-center gap-2">
-                <span className="text-sm text-gray-400 line-through">£{wasPrice}</span>
-                <span className="text-sm font-semibold text-gray-800">£{payInFull}</span>
-                {savings > 0 && (
-                  <span className="text-sm font-medium text-green-600">(Save £{savings})</span>
-                )}
+                <span className="text-sm font-semibold text-gray-800">Pay in full £{payInFull}</span>
               </div>
-              <p className="text-sm text-gray-600 mt-0.5">{coverText}</p>
+              <p className="text-sm font-medium text-green-600 mt-0.5">You save £{stripeSavings} today - One-time payment</p>
             </div>
 
             {/* Year 2 FREE Badge */}
