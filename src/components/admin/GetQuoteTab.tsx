@@ -861,11 +861,48 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       
       console.log('✅ Quote saved to admin_sent_quotes');
 
-      // Add to abandoned_carts
-      console.log('📋 Adding to abandoned_carts...');
+      // Update existing leads to "quote_sent" status
+      // First, update sales_leads by email or vehicle_reg
+      console.log('📋 Updating existing leads to quote_sent status...');
+      const emailLower = customerEmail.toLowerCase();
+      const vehicleRegClean = vehicleData?.regNumber?.replace(/\s/g, '').toUpperCase();
+      
+      // Update sales_leads matching this email
+      const { error: salesLeadError } = await supabase
+        .from('sales_leads')
+        .update({ 
+          status: 'quote_sent', 
+          updated_at: new Date().toISOString(),
+          last_activity_date: new Date().toISOString()
+        })
+        .or(`email.ilike.${emailLower}${vehicleRegClean ? `,vehicle_reg.ilike.${vehicleRegClean}` : ''}`);
+      
+      if (salesLeadError) {
+        console.error('Failed to update sales_leads status:', salesLeadError);
+      } else {
+        console.log('✅ Updated sales_leads to quote_sent');
+      }
+
+      // Update abandoned_carts matching this email or reg to quote_sent
+      const { error: cartUpdateError } = await supabase
+        .from('abandoned_carts')
+        .update({ 
+          contact_status: 'quote_sent', 
+          updated_at: new Date().toISOString() 
+        })
+        .or(`email.ilike.${emailLower}${vehicleRegClean ? `,vehicle_reg.ilike.${vehicleRegClean}` : ''}`);
+      
+      if (cartUpdateError) {
+        console.error('Failed to update abandoned_carts status:', cartUpdateError);
+      } else {
+        console.log('✅ Updated abandoned_carts to quote_sent');
+      }
+
+      // Add to abandoned_carts if no existing cart (for tracking purposes)
+      console.log('📋 Adding to abandoned_carts with quote_sent status...');
       await supabase
         .from('abandoned_carts')
-        .insert({
+        .upsert({
           email: customerEmail,
           full_name: customerName,
           phone: '',
@@ -878,7 +915,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
           plan_name: 'Platinum',
           payment_type: paymentType,
           step_abandoned: 3,
-          contact_status: 'contacted',
+          contact_status: 'quote_sent',
           cart_metadata: {
             excess: excessAmount,
             claimLimit: displayClaimLimit,
@@ -889,7 +926,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
             quoteId,
             additionalNotes
           }
-        });
+        }, { onConflict: 'email', ignoreDuplicates: true });
 
       const copyMessage = adminEmail ? ` A copy was also sent to ${adminEmail}.` : '';
       toast({

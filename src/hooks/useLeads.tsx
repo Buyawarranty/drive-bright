@@ -117,7 +117,7 @@ export const useLeads = () => {
   const [tags, setTags] = useState<LeadTag[]>([]);
   const [salesUsers, setSalesUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<LeadStatus | 'all' | 'high_priority' | 'fake'>('all');
+  const [filter, setFilter] = useState<LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent'>('all');
   
   // Cache sales users for optimistic updates
   const salesUsersRef = useRef<AdminUser[]>([]);
@@ -229,6 +229,21 @@ export const useLeads = () => {
         (salesLeadsData || []).map((lead: any) => lead.email?.toLowerCase())
       );
 
+      // Helper function to map contact_status to LeadStatus
+      const mapContactStatusToLeadStatus = (contactStatus: string | null, isFakeLead: boolean): LeadStatus => {
+        if (isFakeLead) return 'fake_lead';
+        switch (contactStatus) {
+          case 'contacted': return 'contacted';
+          case 'follow_up': return 'follow_up';
+          case 'quote_sent': return 'quote_sent';
+          case 'negotiating': return 'negotiating';
+          case 'converted': return 'converted';
+          case 'lost': return 'lost';
+          case 'fake_lead': return 'fake_lead';
+          default: return 'new';
+        }
+      };
+
       // Convert abandoned carts to lead format (only those not already linked)
       const cartsAsLeads = (abandonedCartsData || [])
         .filter((cart: any) => 
@@ -242,6 +257,9 @@ export const useLeads = () => {
           // Get the admin user from the contacted_by auth.user_id
           const assignedAdminUser = cart.contacted_by ? adminUsersByAuthId[cart.contacted_by] : null;
           
+          // Map contact_status to proper LeadStatus
+          const derivedStatus = mapContactStatusToLeadStatus(cart.contact_status, isFakeLead);
+          
           return {
             id: `cart_${cart.id}`,
             first_name: fullName.split(' ')[0] || null,
@@ -250,8 +268,7 @@ export const useLeads = () => {
             email: cart.email,
             phone: cart.phone,
             lead_source: 'website' as LeadSource,
-            status: isFakeLead ? 'fake_lead' as LeadStatus : 
-                    cart.contact_status === 'contacted' ? 'contacted' as LeadStatus : 'new' as LeadStatus,
+            status: derivedStatus,
             priority: 'medium' as LeadPriority,
             priority_score: 0,
             plan_interest: cart.plan_name,
@@ -323,8 +340,20 @@ export const useLeads = () => {
         };
       });
 
+      // Filter cartsAsLeads based on the selected filter
+      // The sales_leads query already filters, but cartsAsLeads needs the same filtering
+      let filteredCartsAsLeads = cartsAsLeads;
+      if (filter !== 'all' && filter !== 'high_priority') {
+        if (filter === 'fake') {
+          filteredCartsAsLeads = cartsAsLeads.filter((lead: any) => lead.status === 'fake_lead');
+        } else {
+          // For specific status filters, only include carts matching that status
+          filteredCartsAsLeads = cartsAsLeads.filter((lead: any) => lead.status === filter);
+        }
+      }
+
       // Combine and sort by created_at (newest first)
-      let allLeads = [...salesLeadsWithFlags, ...cartsAsLeads]
+      let allLeads = [...salesLeadsWithFlags, ...filteredCartsAsLeads]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       
       // For "all" filter, exclude lost and fake leads (they have their own tabs)

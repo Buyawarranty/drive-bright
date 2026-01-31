@@ -14,8 +14,8 @@ import { DateRange } from 'react-day-picker';
 export type AssignmentFilter = 'all' | 'total' | 'awaiting_contact' | 'assigned';
 
 interface LeadsFiltersProps {
-  filter: LeadStatus | 'all' | 'high_priority' | 'fake';
-  onFilterChange: (filter: LeadStatus | 'all' | 'high_priority' | 'fake') => void;
+  filter: LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent';
+  onFilterChange: (filter: LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent') => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
   onRefresh: () => void;
@@ -26,6 +26,7 @@ interface LeadsFiltersProps {
     new: number;
     contacted: number;
     follow_up: number;
+    quote_sent: number;
     paid: number;
     lost: number;
     high_priority: number;
@@ -88,8 +89,8 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   return (
     <div className="space-y-4">
       {/* Tabs for status filter */}
-      <Tabs value={filter} onValueChange={(v) => onFilterChange(v as LeadStatus | 'all' | 'high_priority' | 'fake')}>
-        <TabsList className="grid w-full grid-cols-8">
+      <Tabs value={filter} onValueChange={(v) => onFilterChange(v as LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent')}>
+        <TabsList className="grid w-full grid-cols-9">
           <TabsTrigger value="all" className="relative">
             All
             <Badge variant="secondary" className="ml-1 h-5 px-1.5">{leadCounts.all}</Badge>
@@ -105,6 +106,10 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
           <TabsTrigger value="follow_up">
             Follow-up
             <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-purple-100">{leadCounts.follow_up}</Badge>
+          </TabsTrigger>
+          <TabsTrigger value="quote_sent">
+            Quote Sent
+            <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-indigo-100">{leadCounts.quote_sent}</Badge>
           </TabsTrigger>
           <TabsTrigger value="paid">
             Paid
