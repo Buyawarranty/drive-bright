@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Lead } from '@/hooks/useLeads';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -39,6 +39,11 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   const [notesOpen, setNotesOpen] = useState(true);
   const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
   const [isMarkPaidDialogOpen, setIsMarkPaidDialogOpen] = useState(false);
+
+  // Sync notesValue when lead.notes changes (e.g., after refresh or selecting different lead)
+  useEffect(() => {
+    setNotesValue(lead.notes || '');
+  }, [lead.id, lead.notes]);
 
   // Prepare customer data for ManualOrderEntry pre-fill
   const customerDataForOrder = {
