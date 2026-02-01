@@ -319,9 +319,9 @@ function getVehicleCategory(vehicleData: VehicleData): string {
     return 'motorbike';
   }
   
-  // Check for Land Rover, Jaguar, and Porsche (highest price adjustment)
-  if (make === 'land rover' || make.startsWith('jaguar') || make === 'porsche') {
-    console.log('🚗 Detected: Land Rover / Jaguar / Porsche');
+  // Check for Land Rover, Jaguar, Tesla, and Porsche (highest price adjustment)
+  if (make === 'land rover' || make.startsWith('jaguar') || make === 'porsche' || make === 'tesla') {
+    console.log('🚗 Detected: Land Rover / Jaguar / Porsche / Tesla');
     return 'range_rover';
   }
   
