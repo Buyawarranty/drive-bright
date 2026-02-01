@@ -653,17 +653,17 @@ const BMWWarrantyLanding: React.FC = () => {
 
       <main className="min-h-screen bg-white" role="main" itemScope itemType="https://schema.org/WebPage">
         {/* Hero Section */}
-        <section id="hero-section" className="bg-gradient-to-br from-gray-50 via-white to-orange-50/30 pt-8 pb-16 md:pt-12 md:pb-24">
+        <section id="hero-section" className="bg-gradient-to-br from-gray-50 via-white to-orange-50/30 pt-6 pb-12 md:pt-12 md:pb-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center">
               {/* Left Column - Content */}
               <div className="text-center lg:text-left">
                 {/* Brand Logo */}
-                <div className="flex items-center justify-center lg:justify-start gap-4 mb-6">
+                <div className="flex items-center justify-center lg:justify-start gap-4 mb-4 md:mb-6">
                   <OptimizedImage 
                     src={bmwLogo} 
                     alt="BMW Logo" 
-                    className="h-16 w-auto object-contain"
+                    className="h-12 md:h-16 w-auto object-contain"
                     priority={true}
                     width={64}
                     height={64}
@@ -671,24 +671,24 @@ const BMWWarrantyLanding: React.FC = () => {
                 </div>
 
                 {/* H1 Headline */}
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight mb-4">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4">
                   <span className="text-gray-900">BMW Extended Warranty </span>
                   <span className="text-brand-orange">in 60 Seconds!</span>
                 </h1>
 
                 {/* Subheadline */}
-                <p className="text-lg sm:text-xl text-gray-700 mb-6">
+                <p className="text-base sm:text-lg md:text-xl text-gray-700 mb-4 md:mb-6">
                   Get instant quotes for comprehensive cover. Nationwide UK coverage with approved garages.
                 </p>
 
                 {/* Benefits */}
-                <div className="mb-6 text-gray-700 text-sm sm:text-base space-y-2">
+                <div className="mb-4 md:mb-6 text-gray-700 text-xs sm:text-sm md:text-base space-y-1.5 md:space-y-2">
                   <div className="flex items-center justify-center lg:justify-start">
-                    <Check className="w-5 h-5 text-green-500 mr-2 flex-shrink-0" />
+                    <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
                     <span className="font-medium">From just 80p a day • Easy claims • Fast payouts</span>
                   </div>
                   <div className="flex items-center justify-center lg:justify-start">
-                    <Check className="w-5 h-5 text-green-500 mr-2 flex-shrink-0" />
+                    <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
                     <span className="font-medium">Unlimited claims • Parts and Labour • No excess</span>
                   </div>
                 </div>
@@ -822,22 +822,22 @@ const BMWWarrantyLanding: React.FC = () => {
         </Suspense>
 
         {/* BMW Models Section */}
-        <section className="py-16 bg-white">
+        <section className="py-10 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            <div className="text-center mb-6 md:mb-8">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
                 All BMW Models Covered
               </h2>
-              <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              <p className="text-base md:text-lg text-gray-600 max-w-3xl mx-auto px-2">
                 Select your BMW model below to get an instant warranty quote.
               </p>
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex flex-wrap justify-center gap-2 mb-8 sticky top-0 bg-white py-4 z-10">
+            <div className="flex flex-wrap justify-center gap-1.5 md:gap-2 mb-6 md:mb-8 sticky top-0 bg-white py-3 md:py-4 z-10">
               <button
                 onClick={() => setActiveModelFilter('All')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                className={`px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium transition-all ${
                   activeModelFilter === 'All'
                     ? 'bg-brand-orange text-white shadow-md'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -849,7 +849,7 @@ const BMWWarrantyLanding: React.FC = () => {
                 <button
                   key={category}
                   onClick={() => setActiveModelFilter(category)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  className={`px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium transition-all ${
                     activeModelFilter === category
                       ? 'bg-brand-orange text-white shadow-md'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -861,7 +861,7 @@ const BMWWarrantyLanding: React.FC = () => {
             </div>
 
             {/* Models Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4">
               {(activeModelFilter === 'All'
                 ? Object.entries(bmwModelCategories).flatMap(([, models]) => Object.entries(models))
                 : Object.entries(bmwModelCategories[activeModelFilter])
@@ -872,7 +872,7 @@ const BMWWarrantyLanding: React.FC = () => {
                     setSelectedModel(model);
                     scrollToQuoteForm();
                   }}
-                  className={`group bg-brand-orange rounded-xl p-5 text-center border-2 border-brand-orange transition-all duration-200 hover:scale-[1.02] hover:shadow-lg ${
+                  className={`group bg-brand-orange rounded-lg md:rounded-xl p-3 md:p-5 text-center border-2 border-brand-orange transition-all duration-200 hover:scale-[1.02] hover:shadow-lg ${
                     selectedModel === model
                       ? 'ring-2 ring-offset-2 ring-brand-orange shadow-md'
                       : 'hover:bg-orange-600'
@@ -880,13 +880,13 @@ const BMWWarrantyLanding: React.FC = () => {
                   aria-label={`BMW ${model}, chassis codes ${generations.join(', ')}`}
                 >
                   {/* Model Icon */}
-                  <div className="w-12 h-12 mx-auto mb-3 bg-white/20 rounded-full flex items-center justify-center">
-                    <Car className="w-6 h-6 text-white" />
+                  <div className="w-8 h-8 md:w-12 md:h-12 mx-auto mb-2 md:mb-3 bg-white/20 rounded-full flex items-center justify-center">
+                    <Car className="w-4 h-4 md:w-6 md:h-6 text-white" />
                   </div>
-                  <h3 className="text-lg font-bold text-white mb-1">
+                  <h3 className="text-sm md:text-lg font-bold text-white mb-0.5 md:mb-1">
                     BMW {model}
                   </h3>
-                  <p className="text-xs text-white/80 font-mono">
+                  <p className="text-[10px] md:text-xs text-white/80 font-mono">
                     {generations.join(' • ')}
                   </p>
                 </button>
@@ -895,44 +895,44 @@ const BMWWarrantyLanding: React.FC = () => {
 
             {/* Selected Model CTA */}
             {selectedModel && (
-              <div className="mt-8 text-center animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <div className="mt-6 md:mt-8 text-center animate-in fade-in slide-in-from-bottom-4 duration-300">
                 <Button
                   size="lg"
                   onClick={scrollToQuoteForm}
-                  className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-8"
+                  className="bg-brand-orange text-white font-bold px-6 md:px-10 py-4 md:py-5 text-sm md:text-base rounded-xl animate-breathing"
                 >
-                  Get Warranty Quote for BMW {selectedModel} <ArrowRight className="ml-2 w-5 h-5" />
+                  Get Warranty Quote for BMW {selectedModel} <ArrowRight className="ml-2 w-4 h-4 md:w-5 md:h-5" />
                 </Button>
               </div>
             )}
 
-            <p className="text-center text-gray-500 mt-8 text-sm">
+            <p className="text-center text-gray-500 mt-6 md:mt-8 text-xs md:text-sm px-2">
               <strong>Also covered:</strong> M-Sport variants, xDrive models, and plug-in hybrids
             </p>
           </div>
         </section>
 
         {/* Why Choose Us Section */}
-        <section className="py-16 bg-white">
+        <section className="py-10 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            <div className="text-center mb-8 md:mb-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
                 Why BMW Owners Choose Us
               </h2>
-              <p className="text-lg text-gray-600 mb-6">
+              <p className="text-base md:text-lg text-gray-600 mb-4 md:mb-6">
                 Trusted by thousands of BMW drivers across the UK
               </p>
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="inline-flex items-center gap-2 bg-brand-orange text-white font-semibold px-8 py-4 rounded-xl text-lg animate-breathing"
+                className="inline-flex items-center gap-2 bg-brand-orange text-white font-bold px-6 md:px-10 py-4 md:py-5 rounded-xl text-base md:text-lg animate-breathing"
               >
                 Get BMW Warranty
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-5 h-5 md:w-6 md:h-6" />
               </button>
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-8 items-start">
-              <div className="lg:col-span-2 grid md:grid-cols-2 gap-6">
+            <div className="grid lg:grid-cols-3 gap-6 md:gap-8 items-start">
+              <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-6">
                 {[
                   { icon: ThumbsUp, title: 'Transparent Pricing', desc: 'No hidden fees or surprise charges. The price you see is the price you pay.' },
                   { icon: Users, title: 'UK Claims Team', desc: 'Our friendly UK-based team handles claims quickly and fairly.' },
@@ -941,13 +941,13 @@ const BMWWarrantyLanding: React.FC = () => {
                   { icon: Shield, title: 'Cancel Anytime', desc: 'No lock-in contracts. Cancel anytime and get a pro-rata refund.' },
                   { icon: Clock, title: 'Instant Cover', desc: 'Get covered immediately after purchase. No waiting periods for breakdown cover.' },
                 ].map((benefit, index) => (
-                  <div key={index} className="flex gap-4 bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                    <div className="w-12 h-12 bg-brand-orange/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <benefit.icon className="w-6 h-6 text-brand-orange" />
+                  <div key={index} className="flex gap-3 md:gap-4 bg-white p-3 md:p-5 rounded-xl shadow-sm border border-gray-100">
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-brand-orange/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <benefit.icon className="w-5 h-5 md:w-6 md:h-6 text-brand-orange" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-1">{benefit.title}</h3>
-                      <p className="text-gray-600 text-sm">{benefit.desc}</p>
+                      <h3 className="text-base md:text-lg font-bold text-gray-900 mb-0.5 md:mb-1">{benefit.title}</h3>
+                      <p className="text-gray-600 text-xs md:text-sm">{benefit.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -968,18 +968,18 @@ const BMWWarrantyLanding: React.FC = () => {
         </section>
 
         {/* How It Works Section */}
-        <section className="py-16 bg-gray-50">
+        <section className="py-10 md:py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            <div className="text-center mb-8 md:mb-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
                 How It Works
               </h2>
-              <p className="text-lg text-gray-600">
+              <p className="text-base md:text-lg text-gray-600">
                 Get covered in 4 simple steps
               </p>
             </div>
 
-            <div className="grid md:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
               {[
                 { step: 1, title: 'Enter Your Reg', desc: 'Pop your registration in and we\'ll look up your BMW details' },
                 { step: 2, title: 'Get Instant Quote', desc: 'See your personalised price in seconds - no obligation' },
@@ -987,11 +987,11 @@ const BMWWarrantyLanding: React.FC = () => {
                 { step: 4, title: 'You\'re Covered!', desc: 'Your warranty is active immediately. Drive with peace of mind' },
               ].map((item, index) => (
                 <div key={index} className="text-center">
-                  <div className="w-16 h-16 bg-brand-orange text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                  <div className="w-12 h-12 md:w-16 md:h-16 bg-brand-orange text-white rounded-full flex items-center justify-center text-xl md:text-2xl font-bold mx-auto mb-3 md:mb-4">
                     {item.step}
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
-                  <p className="text-gray-600">{item.desc}</p>
+                  <h3 className="text-sm md:text-lg font-bold text-gray-900 mb-1 md:mb-2">{item.title}</h3>
+                  <p className="text-xs md:text-base text-gray-600">{item.desc}</p>
                 </div>
               ))}
             </div>
@@ -999,147 +999,147 @@ const BMWWarrantyLanding: React.FC = () => {
         </section>
 
         {/* Your BMW Cover Made Crystal Clear Section */}
-        <section className="py-16 bg-white">
+        <section className="py-10 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 bg-green-50 px-4 py-2 rounded-full mb-4">
-                <Shield className="w-5 h-5 text-green-600" />
-                <span className="text-sm font-semibold text-green-700">Transparent Coverage</span>
+            <div className="text-center mb-8 md:mb-12">
+              <div className="inline-flex items-center gap-2 bg-green-50 px-3 md:px-4 py-1.5 md:py-2 rounded-full mb-3 md:mb-4">
+                <Shield className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
+                <span className="text-xs md:text-sm font-semibold text-green-700">Transparent Coverage</span>
               </div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
                 Your BMW cover, made <span className="text-brand-orange">crystal clear</span>
               </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-2">
                 See what's included - clear terms, no jargon, no surprises.
               </p>
             </div>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 text-center">
-                <div className="text-4xl mb-4">✅</div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">No hidden catches</h3>
-                <p className="text-gray-600 text-sm">What you see is what you get</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
+                <div className="text-3xl md:text-4xl mb-3 md:mb-4">✅</div>
+                <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">No hidden catches</h3>
+                <p className="text-gray-600 text-xs md:text-sm">What you see is what you get</p>
               </div>
-              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 text-center">
-                <div className="text-4xl mb-4">💰</div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">14-day money-back guarantee</h3>
-                <p className="text-gray-600 text-sm">Try risk-free</p>
+              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
+                <div className="text-3xl md:text-4xl mb-3 md:mb-4">💰</div>
+                <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">14-day money-back guarantee</h3>
+                <p className="text-gray-600 text-xs md:text-sm">Try risk-free</p>
               </div>
-              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100 text-center">
-                <div className="text-4xl mb-4">⭐</div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">94% of claims approved fast</h3>
-                <p className="text-gray-600 text-sm">We pay when you need us</p>
+              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100 text-center">
+                <div className="text-3xl md:text-4xl mb-3 md:mb-4">⭐</div>
+                <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1 md:mb-2">94% of claims approved fast</h3>
+                <p className="text-gray-600 text-xs md:text-sm">We pay when you need us</p>
               </div>
             </div>
           </div>
         </section>
 
         {/* High Mileage BMW Section */}
-        <section className="py-16 bg-gray-50">
+        <section className="py-10 md:py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-10 items-center">
-              <div>
-                <div className="text-green-600 text-sm font-semibold uppercase tracking-wide mb-4">
+            <div className="grid lg:grid-cols-2 gap-6 md:gap-10 items-center">
+              <div className="text-center lg:text-left">
+                <div className="text-green-600 text-xs md:text-sm font-semibold uppercase tracking-wide mb-3 md:mb-4">
                   High Mileage BMW, No Problem!
                 </div>
-                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 md:mb-6">
                   Drive Your BMW With Confidence<br />
                   <span className="text-brand-orange">You're Covered</span>
                 </h2>
-                <p className="text-lg text-gray-600 mb-6">
+                <p className="text-base md:text-lg text-gray-600 mb-4 md:mb-6">
                   Once you have your BMW warranty, drive with complete peace of mind. If something 
                   goes wrong, simply call our claims team and we'll take care of everything.
                   We want to get you back on the road as soon as possible.
                 </p>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-green-500" />
-                    <span className="text-gray-700">Cover vehicles up to 150,000 miles</span>
+                <div className="space-y-2 md:space-y-3 text-left max-w-md mx-auto lg:mx-0">
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 flex-shrink-0" />
+                    <span className="text-sm md:text-base text-gray-700">Cover vehicles up to 150,000 miles</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-green-500" />
-                    <span className="text-gray-700">No mileage restrictions during cover</span>
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 flex-shrink-0" />
+                    <span className="text-sm md:text-base text-gray-700">No mileage restrictions during cover</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-green-500" />
-                    <span className="text-gray-700">Unlimited claims value</span>
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 flex-shrink-0" />
+                    <span className="text-sm md:text-base text-gray-700">Unlimited claims value</span>
                   </div>
                 </div>
               </div>
-              <div className="flex justify-center">
+              <div className="flex justify-center order-first lg:order-last">
                 <OptimizedImage 
                   src={bmwHighMileage}
                   alt="Miles the Panda with phone showing BuyAWarranty - High mileage BMW warranty coverage"
-                  className="w-72 md:w-96 h-auto object-contain"
+                  className="w-48 sm:w-64 md:w-80 lg:w-96 h-auto object-contain"
                   width={384}
                   height={384}
                 />
               </div>
-              
-              {/* CTA Button - Same styling as Homepage */}
-              <div className="mt-8">
-                <Button
-                  onClick={scrollToQuoteForm}
-                  className="w-full bg-brand-orange hover:bg-orange-700 text-white font-bold py-6 sm:py-8 text-lg sm:text-xl rounded-xl shadow-lg animate-breathing"
-                >
-                  <span className="flex items-center justify-center gap-3">
-                    Get my instant quote
-                    <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={3} />
-                  </span>
-                </Button>
-              </div>
+            </div>
+            
+            {/* CTA Button - Same styling as Homepage */}
+            <div className="mt-6 md:mt-10 max-w-xl mx-auto">
+              <Button
+                onClick={scrollToQuoteForm}
+                className="w-full bg-brand-orange text-white font-bold py-5 md:py-6 text-base md:text-xl rounded-xl shadow-lg animate-breathing"
+              >
+                <span className="flex items-center justify-center gap-2 md:gap-3">
+                  Get my instant quote
+                  <ArrowRight className="w-5 h-5 md:w-6 md:h-6" strokeWidth={3} />
+                </span>
+              </Button>
             </div>
           </div>
         </section>
 
         {/* Additional BMW Cover Options Section */}
-        <section className="py-16 bg-white">
+        <section className="py-10 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            <div className="text-center mb-8 md:mb-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
                 Additional BMW Cover Options
               </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-2">
                 Enhance your BMW warranty with these optional extras
               </p>
             </div>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
-                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
-                  <Car className="w-6 h-6 text-blue-600" />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-3 md:mb-4">
+                  <Car className="w-5 h-5 md:w-6 md:h-6 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Courtesy Car</h3>
-                <p className="text-gray-600">Keep moving while your BMW is being repaired</p>
+                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Courtesy Car</h3>
+                <p className="text-sm md:text-base text-gray-600">Keep moving while your BMW is being repaired</p>
               </div>
-              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
-                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4">
-                  <MapPin className="w-6 h-6 text-green-600" />
+              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-xl flex items-center justify-center mb-3 md:mb-4">
+                  <MapPin className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">European Cover</h3>
-                <p className="text-gray-600">Extended protection when driving abroad</p>
+                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">European Cover</h3>
+                <p className="text-sm md:text-base text-gray-600">Extended protection when driving abroad</p>
               </div>
-              <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
-                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
-                  <Shield className="w-6 h-6 text-purple-600" />
+              <div className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-3 md:mb-4">
+                  <Shield className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Wear & Tear</h3>
-                <p className="text-gray-600">Cover for gradual component deterioration</p>
+                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Wear & Tear</h3>
+                <p className="text-sm md:text-base text-gray-600">Cover for gradual component deterioration</p>
               </div>
             </div>
           </div>
         </section>
 
         {/* UK Coverage Section */}
-        <section className="py-16 bg-gradient-to-br from-blue-900 to-gray-900 text-white">
+        <section className="py-10 md:py-16 bg-gradient-to-br from-blue-900 to-gray-900 text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-white">
+            <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+              <div className="text-center md:text-left">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 md:mb-6 text-white">
                   Nationwide UK Coverage
                 </h2>
-                <p className="text-lg text-white mb-6">
+                <p className="text-base md:text-lg text-white mb-4 md:mb-6">
                   Your BMW is covered wherever you drive in the United Kingdom. Our network of approved garages spans England, Scotland, Wales, and Northern Ireland.
                 </p>
-                <ul className="space-y-3">
+                <ul className="space-y-2 md:space-y-3 text-left max-w-md mx-auto md:mx-0">
                   {[
                     'Use any VAT-registered garage',
                     'No BMW dealer restrictions',
@@ -1147,23 +1147,23 @@ const BMWWarrantyLanding: React.FC = () => {
                     'Recovery to nearest approved garage',
                     'Claims handled by our UK team',
                   ].map((item, index) => (
-                    <li key={index} className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-green-400 flex-shrink-0" />
-                      <span>{item}</span>
+                    <li key={index} className="flex items-center gap-2 md:gap-3">
+                      <Check className="w-4 h-4 md:w-5 md:h-5 text-green-400 flex-shrink-0" />
+                      <span className="text-sm md:text-base">{item}</span>
                     </li>
                   ))}
                 </ul>
               </div>
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center order-first md:order-last">
                 <OptimizedImage 
                   src={pandaThumbsUp}
                   alt="Miles the Panda giving thumbs up for UK-wide coverage"
-                  className="w-48 md:w-64 h-auto object-contain mb-4"
+                  className="w-36 sm:w-48 md:w-64 h-auto object-contain mb-3 md:mb-4"
                   width={256}
                   height={256}
                 />
-                <div className="inline-block bg-white/10 rounded-2xl px-8 py-4 backdrop-blur-sm">
-                  <p className="text-xl font-bold text-white">England • Scotland • Wales • N. Ireland</p>
+                <div className="inline-block bg-white/10 rounded-xl md:rounded-2xl px-4 md:px-8 py-2 md:py-4 backdrop-blur-sm">
+                  <p className="text-sm md:text-xl font-bold text-white">England • Scotland • Wales • N. Ireland</p>
                 </div>
               </div>
             </div>
@@ -1171,29 +1171,29 @@ const BMWWarrantyLanding: React.FC = () => {
         </section>
 
         {/* Testimonials Section */}
-        <section className="py-16 bg-white">
+        <section className="py-10 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            <div className="text-center mb-8 md:mb-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
                 What BMW Owners Say
               </h2>
-              <p className="text-lg text-gray-600">
+              <p className="text-base md:text-lg text-gray-600">
                 Real reviews from real BMW drivers
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               {testimonials.map((testimonial, index) => (
-                <div key={index} className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
-                  <div className="flex gap-1 mb-3">
+                <div key={index} className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
+                  <div className="flex gap-0.5 md:gap-1 mb-2 md:mb-3">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                      <Star key={i} className="w-4 h-4 md:w-5 md:h-5 text-yellow-400 fill-yellow-400" />
                     ))}
                   </div>
-                  <p className="text-gray-700 mb-4">"{testimonial.text}"</p>
-                  <div className="border-t pt-4">
-                    <p className="font-bold text-gray-900">{testimonial.name}</p>
-                    <p className="text-sm text-gray-500">{testimonial.model} • {testimonial.location}</p>
+                  <p className="text-sm md:text-base text-gray-700 mb-3 md:mb-4">"{testimonial.text}"</p>
+                  <div className="border-t pt-3 md:pt-4">
+                    <p className="font-bold text-gray-900 text-sm md:text-base">{testimonial.name}</p>
+                    <p className="text-xs md:text-sm text-gray-500">{testimonial.model} • {testimonial.location}</p>
                   </div>
                 </div>
               ))}
@@ -1202,34 +1202,34 @@ const BMWWarrantyLanding: React.FC = () => {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-16 bg-gray-50">
+        <section className="py-10 md:py-16 bg-gray-50">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            <div className="text-center mb-8 md:mb-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
                 BMW Warranty FAQs
               </h2>
-              <p className="text-lg text-gray-600">
+              <p className="text-base md:text-lg text-gray-600">
                 Everything you need to know about BMW extended warranty
               </p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {bmwFAQs.map((faq, index) => (
                 <div key={index} className="rounded-xl overflow-hidden shadow-sm">
                   <button
-                    className="w-full flex items-center justify-between p-6 text-left bg-brand-orange hover:bg-brand-orange/90 transition-colors"
+                    className="w-full flex items-center justify-between p-4 md:p-6 text-left bg-brand-orange hover:bg-brand-orange/90 transition-colors"
                     onClick={() => setOpenFaqId(openFaqId === index ? null : index)}
                   >
-                    <h3 className="text-lg font-semibold text-white pr-4">{faq.question}</h3>
+                    <h3 className="text-sm md:text-lg font-semibold text-white pr-3 md:pr-4">{faq.question}</h3>
                     {openFaqId === index ? (
-                      <ChevronUp className="w-5 h-5 text-white flex-shrink-0" />
+                      <ChevronUp className="w-4 h-4 md:w-5 md:h-5 text-white flex-shrink-0" />
                     ) : (
-                      <ChevronDown className="w-5 h-5 text-white/80 flex-shrink-0" />
+                      <ChevronDown className="w-4 h-4 md:w-5 md:h-5 text-white/80 flex-shrink-0" />
                     )}
                   </button>
                   {openFaqId === index && (
-                    <div className="px-6 py-5 bg-white text-gray-700">
-                      <p>{faq.answer}</p>
+                    <div className="px-4 md:px-6 py-4 md:py-5 bg-white text-gray-700">
+                      <p className="text-sm md:text-base">{faq.answer}</p>
                     </div>
                   )}
                 </div>
