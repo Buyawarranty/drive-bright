@@ -33,17 +33,16 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   onRefresh,
   onNavigateToQuote
 }) => {
-  const [isEditing, setIsEditing] = useState(true); // Always start in edit mode for immediate typing
-  const [notesValue, setNotesValue] = useState(lead.notes || '');
+  const [newNoteValue, setNewNoteValue] = useState(''); // Only for NEW note input
   const [contactOpen, setContactOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(true);
   const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
   const [isMarkPaidDialogOpen, setIsMarkPaidDialogOpen] = useState(false);
 
-  // Sync notesValue when lead.notes changes (e.g., after refresh or selecting different lead)
+  // Reset new note input when switching leads
   useEffect(() => {
-    setNotesValue(lead.notes || '');
-  }, [lead.id, lead.notes]);
+    setNewNoteValue('');
+  }, [lead.id]);
 
   // Prepare customer data for ManualOrderEntry pre-fill
   const customerDataForOrder = {
@@ -61,9 +60,14 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   };
 
   const handleSaveNotes = () => {
-    // Pass replaceAll=true since this is the full notes editor
-    onUpdateNotes(lead.id, notesValue, true);
-    setIsEditing(false);
+    if (!newNoteValue.trim()) {
+      toast.error('Please enter a note before saving');
+      return;
+    }
+    // Pass replaceAll=false to APPEND the new note to existing history
+    onUpdateNotes(lead.id, newNoteValue.trim(), false);
+    setNewNoteValue(''); // Clear input after save
+    toast.success('Note added ✓');
   };
 
   const handleCall = () => {
@@ -103,7 +107,7 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
     
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    const selectedText = notesValue.substring(start, end);
+    const selectedText = newNoteValue.substring(start, end);
     
     let newText = '';
     switch (format) {
@@ -118,8 +122,8 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
         break;
     }
     
-    const updatedNotes = notesValue.substring(0, start) + newText + notesValue.substring(end);
-    setNotesValue(updatedNotes);
+    const updatedNotes = newNoteValue.substring(0, start) + newText + newNoteValue.substring(end);
+    setNewNoteValue(updatedNotes);
   };
 
   const displayName = lead.first_name || lead.last_name 
@@ -358,121 +362,86 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
           {/* Notes Content - Collapsible */}
           {notesOpen && (
             <>
-              {/* Formatting Toolbar - Only shown when editing */}
-              {isEditing && (
-                <div className="flex items-center gap-1 px-4 py-2 border-b bg-muted/20">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0"
-                    onClick={() => insertFormatting('bold')}
-                    title="Bold"
-                  >
-                    <Bold className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0"
-                    onClick={() => insertFormatting('italic')}
-                    title="Italic"
-                  >
-                    <Italic className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0"
-                    onClick={() => insertFormatting('list')}
-                    title="Bullet List"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                  <div className="flex-1" />
-                  <span className="text-xs text-muted-foreground">
-                    {notesValue.length} characters
-                  </span>
-                </div>
-              )}
-
-              {/* Notes Content Area */}
-              <div className="p-4">
-                {isEditing ? (
-                  <div className="space-y-3">
-                    <Textarea
-                      id="lead-notes-textarea"
-                      value={notesValue}
-                      onChange={(e) => setNotesValue(e.target.value)}
-                      placeholder="Add your notes here...&#10;&#10;• What was discussed?&#10;• Customer concerns or objections&#10;• Next steps agreed&#10;• Important details to remember"
-                      className="min-h-[200px] text-sm leading-relaxed resize-none focus:ring-2 focus:ring-primary/20"
-                      autoFocus
-                    />
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" onClick={handleSaveNotes}>
-                        <Save className="h-4 w-4 mr-1" />
-                        Save Notes
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setNotesValue(lead.notes || '');
-                          setIsEditing(false);
-                        }}
-                      >
-                        <X className="h-4 w-4 mr-1" />
-                        Cancel
-                      </Button>
-                      <span className="text-xs text-muted-foreground ml-auto">
-                        Use **bold** and _italic_ for formatting
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div
-                    className={cn(
-                      "min-h-[120px] p-4 rounded-lg border-2 border-dashed cursor-pointer transition-all text-left",
-                      lead.notes 
-                        ? "border-muted bg-muted/20 hover:border-primary/30 hover:bg-muted/30"
-                        : "border-primary/30 bg-primary/5 hover:border-primary/50 hover:bg-primary/10"
-                    )}
-                    onClick={() => {
-                      setNotesValue(lead.notes || '');
-                      setIsEditing(true);
-                    }}
-                  >
-                    {lead.notes ? (
-                      <div className="space-y-2">
-                        <pre className="text-sm whitespace-pre-wrap font-sans leading-relaxed text-foreground text-left">
-                          {lead.notes}
-                        </pre>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-start justify-center h-full py-4">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                          <MessageSquare className="h-5 w-5 text-primary" />
-                        </div>
-                        <p className="text-sm font-medium text-foreground mb-1">Add Notes</p>
-                        <p className="text-xs text-muted-foreground max-w-xs">
-                          Click to add notes about this lead
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
+              {/* Formatting Toolbar */}
+              <div className="flex items-center gap-1 px-4 py-2 border-b bg-muted/20">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={() => insertFormatting('bold')}
+                  title="Bold"
+                >
+                  <Bold className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={() => insertFormatting('italic')}
+                  title="Italic"
+                >
+                  <Italic className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={() => insertFormatting('list')}
+                  title="Bullet List"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <div className="flex-1" />
+                <span className="text-xs text-muted-foreground">
+                  {newNoteValue.length} characters
+                </span>
               </div>
 
-              {/* Timestamp Footer - Bold, left-aligned */}
-              {lead.notes && !isEditing && (
-                <div className="pt-4">
-                  <div className="flex items-center gap-2 text-xs text-left">
-                    <Clock className="h-3 w-3 text-muted-foreground" />
-                    <span className="font-bold text-foreground">
-                      Last updated {format(new Date(), 'dd MMM yyyy, HH:mm')}
+              {/* Notes Content Area */}
+              <div className="p-4 space-y-4">
+                {/* NEW Note Input */}
+                <div className="space-y-3">
+                  <Textarea
+                    id="lead-notes-textarea"
+                    value={newNoteValue}
+                    onChange={(e) => setNewNoteValue(e.target.value)}
+                    placeholder="Add a new note... (will be appended to history)"
+                    className="min-h-[100px] text-sm leading-relaxed resize-none focus:ring-2 focus:ring-primary/20"
+                    autoFocus
+                  />
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" onClick={handleSaveNotes} disabled={!newNoteValue.trim()}>
+                      <Save className="h-4 w-4 mr-1" />
+                      Save Notes
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setNewNoteValue('')}
+                      disabled={!newNoteValue}
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Clear
+                    </Button>
+                    <span className="text-xs text-muted-foreground ml-auto">
+                      Use **bold** and _italic_ for formatting
                     </span>
                   </div>
                 </div>
-              )}
+
+                {/* Notes History (read-only) */}
+                {lead.notes && (
+                  <div className="border-t pt-4">
+                    <h4 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      Notes History
+                    </h4>
+                    <div className="text-sm leading-relaxed whitespace-pre-wrap bg-muted/30 p-3 rounded-lg max-h-[300px] overflow-y-auto">
+                      {lead.notes}
+                    </div>
+                  </div>
+                )}
+              </div>
             </>
           )}
         </CardContent>
