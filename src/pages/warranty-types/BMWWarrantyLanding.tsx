@@ -1244,9 +1244,9 @@ const BMWWarrantyLanding: React.FC = () => {
                 className="border-2 border-gray-900 text-gray-900 hover:bg-gray-200 font-bold text-lg px-8"
                 asChild
               >
-                <a href="tel:08009179270">
+                <a href="tel:08004947477">
                   <Phone className="mr-2 w-5 h-5" />
-                  Call 0800 917 9270
+                  Call 0800 494 7477
                 </a>
               </Button>
             </div>
