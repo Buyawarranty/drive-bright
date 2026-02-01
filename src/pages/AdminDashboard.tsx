@@ -55,25 +55,24 @@ interface LeadForQuote {
 
 const AdminDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  // Initialize with URL tab param if present, otherwise null
+  // Initialize with URL tab param if present, otherwise default to 'customers'
   const urlTab = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState<string | null>(urlTab);
+  const [activeTab, setActiveTab] = useState<string>(urlTab || 'customers');
   const [isCheckingRole, setIsCheckingRole] = useState(true);
   const [hasAdminAccess, setHasAdminAccess] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userPermissions, setUserPermissions] = useState<Record<string, boolean> | null>(null);
-  // If URL has tab param, consider initial tab already set
   const [hasSetInitialTab, setHasSetInitialTab] = useState(!!urlTab);
   const [selectedLeadForQuote, setSelectedLeadForQuote] = useState<LeadForQuote | null>(null);
   const navigate = useNavigate();
   const { session, loading: authLoading } = useAuth();
   
-  // Admin notifications
+  // Admin notifications - only fetch after access is confirmed
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useAdminNotifications();
   
-  // Track user presence with current tab
-  useUserPresence({ currentTab: activeTab || 'customers' });
+  // Track user presence with current tab - only after access confirmed
+  useUserPresence({ currentTab: activeTab });
 
   // Track tab history for back navigation
   const [tabHistory, setTabHistory] = useState<string[]>([]);
@@ -133,26 +132,22 @@ const AdminDashboard = () => {
   }, [session, authLoading]);
 
   const checkAdminAccess = async () => {
-    console.log('🔍 checkAdminAccess called - authLoading:', authLoading, 'session:', !!session);
-    
     // If no session after auth loading is complete, redirect to auth
     if (!session?.user) {
-      console.log('❌ No session found, redirecting to auth');
       setIsCheckingRole(false);
       navigate('/auth', { replace: true });
       return;
     }
 
     try {
-      console.log('✅ Session found for user:', session.user.email, 'ID:', session.user.id);
-      console.log('🔍 Checking user role for:', session.user.id);
-      
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', session.user.id);
+      // Parallel fetch: roles and permissions at the same time for speed
+      const [rolesResult, permissionsResult] = await Promise.all([
+        supabase.from('user_roles').select('role').eq('user_id', session.user.id),
+        supabase.from('admin_users').select('permissions').eq('user_id', session.user.id).maybeSingle()
+      ]);
 
-      console.log('📊 Role query result:', { data, error });
+      const { data, error } = rolesResult;
+      const adminUserData = permissionsResult.data;
 
       // Define admin roles
       const adminRoles = ['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales'];
@@ -161,48 +156,32 @@ const AdminDashboard = () => {
       const userAdminRoles = data?.filter(r => adminRoles.includes(r.role)) || [];
       
       if (error || userAdminRoles.length === 0) {
-        console.error('❌ Access denied - not an admin user', error, data);
-        console.log('🏠 User has no admin role, redirecting to homepage');
         setIsCheckingRole(false);
         navigate('/', { replace: true });
         return;
       }
 
-      // Use the highest priority role (admin > member > viewer > guest > sales > blog_writer)
+      // Use the highest priority role
       const rolePriority = ['admin', 'member', 'viewer', 'guest', 'sales', 'blog_writer'];
       const primaryRole = rolePriority.find(role => userAdminRoles.some(r => r.role === role)) || userAdminRoles[0].role;
       
-      console.log('✅ Access granted for roles:', userAdminRoles.map(r => r.role), 'Primary:', primaryRole);
       setUserRole(primaryRole);
       setHasAdminAccess(true);
       
-      // Fetch user permissions from admin_users table
-      const { data: adminUserData, error: adminUserError } = await supabase
-        .from('admin_users')
-        .select('permissions')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-      
       if (adminUserData?.permissions) {
-        console.log('📋 User permissions loaded:', adminUserData.permissions);
         setUserPermissions(adminUserData.permissions as Record<string, boolean>);
       }
       
-      setIsCheckingRole(false);
-      
-      // Only set default tab on initial load, not on subsequent re-checks
+      // Set default tab based on role (only if not already set via URL)
       if (!hasSetInitialTab) {
         setHasSetInitialTab(true);
         
-        let defaultTab = 'customers'; // Default for admins
-        
-        // Set default tab for blog writers
+        let defaultTab = 'customers';
         if (primaryRole === 'blog_writer') {
           defaultTab = 'blog-writing';
         } else if (primaryRole === 'sales') {
           defaultTab = 'new-leads';
         } else if (!['admin'].includes(primaryRole) && adminUserData?.permissions) {
-          // For users with custom permissions, set first allowed tab
           const perms = adminUserData.permissions as Record<string, boolean>;
           const firstAllowedTab = Object.keys(perms).find(key => key.startsWith('tab_') && perms[key]);
           if (firstAllowedTab) {
@@ -210,28 +189,26 @@ const AdminDashboard = () => {
           }
         }
         
-        console.log('🎯 Setting default tab for role', primaryRole, ':', defaultTab);
         setActiveTab(defaultTab);
         setTabHistory([defaultTab]);
-        // Also update URL with the default tab
         setSearchParams({ tab: defaultTab }, { replace: true });
       }
+      
+      setIsCheckingRole(false);
     } catch (error) {
-      console.error('💥 Error checking admin access:', error);
+      console.error('Error checking admin access:', error);
       setIsCheckingRole(false);
       navigate('/', { replace: true });
     }
   };
 
-  // Show loading while checking auth or role or tab not yet set
-  if (authLoading || isCheckingRole || !hasAdminAccess || !activeTab) {
+  // Show loading only during essential checks - removed activeTab check since we now have default
+  if (authLoading || isCheckingRole || !hasAdminAccess) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">
-            {authLoading ? 'Authenticating...' : isCheckingRole ? 'Checking permissions...' : 'Loading dashboard...'}
-          </p>
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     );
