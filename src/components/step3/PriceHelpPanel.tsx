@@ -40,8 +40,10 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requestSuccess, setRequestSuccess] = useState(false);
   
-  // Validation error state (phone only)
+  // Validation state
   const [phoneError, setPhoneError] = useState('');
+  const [isPhoneValid, setIsPhoneValid] = useState(false);
+  const [isEmailValid, setIsEmailValid] = useState(false);
 
   // Reset state when panel opens
   useEffect(() => {
@@ -68,6 +70,11 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
     return /^(07\d{9}|(\+44|0044)7\d{9}|0[1-9]\d{8,9})$/.test(cleaned);
   };
 
+  const validateEmail = (email: string): boolean => {
+    if (!email.trim()) return false;
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  };
+
   // Build requested options string
   const getRequestedOptionsString = () => {
     const parts: string[] = [];
@@ -82,10 +89,14 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
     setRequestPhone(value);
     // Clear error when user starts typing
     if (phoneError) setPhoneError('');
+    // Check if phone is valid for green tick
+    setIsPhoneValid(validatePhone(value));
   };
 
   const handleEmailChange = (value: string) => {
     setRequestEmail(value);
+    // Check if email is valid for green tick
+    setIsEmailValid(validateEmail(value));
   };
 
   const handlePhoneBlur = () => {
@@ -350,20 +361,27 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 📞 Phone number <span className="text-red-500">*</span>
                 <span className="text-xs font-normal text-brand-green ml-auto">Required for callback</span>
               </Label>
-              <Input
-                id="request-phone"
-                type="tel"
-                value={requestPhone}
-                onChange={(e) => handlePhoneChange(e.target.value)}
-                onBlur={handlePhoneBlur}
-                placeholder="07123 456789"
-                className={cn(
-                  "h-12 rounded-lg bg-white text-lg font-medium",
-                  phoneError ? "border-red-500 focus-visible:ring-red-500" : "border-gray-300 focus:border-brand-green focus:ring-brand-green"
+              <div className="relative">
+                <Input
+                  id="request-phone"
+                  type="tel"
+                  value={requestPhone}
+                  onChange={(e) => handlePhoneChange(e.target.value)}
+                  onBlur={handlePhoneBlur}
+                  placeholder="07123 456789"
+                  className={cn(
+                    "h-12 rounded-lg bg-white text-lg font-medium pr-10",
+                    phoneError ? "border-red-500 focus-visible:ring-red-500" : isPhoneValid ? "border-brand-green focus:border-brand-green focus:ring-brand-green" : "border-gray-300 focus:border-brand-green focus:ring-brand-green"
+                  )}
+                  disabled={isSubmitting}
+                  autoComplete="tel"
+                />
+                {isPhoneValid && !phoneError && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Check className="w-5 h-5 text-brand-green" />
+                  </div>
                 )}
-                disabled={isSubmitting}
-                autoComplete="tel"
-              />
+              </div>
               {phoneError && (
                 <p className="text-sm text-red-500 mt-1">{phoneError}</p>
               )}
@@ -374,16 +392,26 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               <Label htmlFor="request-email" className="text-sm font-semibold text-gray-800 mb-1.5 block">
                 Email <span className="text-gray-500 font-normal">(optional)</span>
               </Label>
-              <Input
-                id="request-email"
-                type="email"
-                value={requestEmail}
-                onChange={(e) => handleEmailChange(e.target.value)}
-                placeholder="your@email.com"
-                className="h-12 rounded-lg bg-gray-50 focus:bg-white border-gray-300"
-                disabled={isSubmitting}
-                autoComplete="email"
-              />
+              <div className="relative">
+                <Input
+                  id="request-email"
+                  type="email"
+                  value={requestEmail}
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  placeholder="your@email.com"
+                  className={cn(
+                    "h-12 rounded-lg bg-gray-50 focus:bg-white pr-10",
+                    isEmailValid ? "border-brand-green focus:border-brand-green" : "border-gray-300"
+                  )}
+                  disabled={isSubmitting}
+                  autoComplete="email"
+                />
+                {isEmailValid && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Check className="w-5 h-5 text-brand-green" />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -501,20 +529,27 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 📞 Phone number <span className="text-red-500">*</span>
                 <span className="text-xs font-normal text-brand-green ml-auto">Required</span>
               </Label>
-              <Input
-                id="mobile-phone"
-                type="tel"
-                value={requestPhone}
-                onChange={(e) => handlePhoneChange(e.target.value)}
-                onBlur={handlePhoneBlur}
-                placeholder="07123 456789"
-                className={cn(
-                  "h-11 rounded-lg bg-white text-base font-medium",
-                  phoneError ? "border-red-500 focus-visible:ring-red-500" : "border-gray-300 focus:border-brand-green"
+              <div className="relative">
+                <Input
+                  id="mobile-phone"
+                  type="tel"
+                  value={requestPhone}
+                  onChange={(e) => handlePhoneChange(e.target.value)}
+                  onBlur={handlePhoneBlur}
+                  placeholder="07123 456789"
+                  className={cn(
+                    "h-11 rounded-lg bg-white text-base font-medium pr-10",
+                    phoneError ? "border-red-500 focus-visible:ring-red-500" : isPhoneValid ? "border-brand-green focus:border-brand-green" : "border-gray-300 focus:border-brand-green"
+                  )}
+                  disabled={isSubmitting}
+                  autoComplete="tel"
+                />
+                {isPhoneValid && !phoneError && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Check className="w-5 h-5 text-brand-green" />
+                  </div>
                 )}
-                disabled={isSubmitting}
-                autoComplete="tel"
-              />
+              </div>
               {phoneError && (
                 <p className="text-xs text-red-500 mt-1">{phoneError}</p>
               )}
@@ -525,16 +560,26 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               <Label htmlFor="mobile-email" className="text-sm font-semibold text-gray-800 mb-1.5 block">
                 Email <span className="text-gray-500 font-normal">(optional)</span>
               </Label>
-              <Input
-                id="mobile-email"
-                type="email"
-                value={requestEmail}
-                onChange={(e) => handleEmailChange(e.target.value)}
-                placeholder="your@email.com"
-                className="h-11 rounded-lg bg-gray-50 focus:bg-white border-gray-300"
-                disabled={isSubmitting}
-                autoComplete="email"
-              />
+              <div className="relative">
+                <Input
+                  id="mobile-email"
+                  type="email"
+                  value={requestEmail}
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  placeholder="your@email.com"
+                  className={cn(
+                    "h-11 rounded-lg bg-gray-50 focus:bg-white pr-10",
+                    isEmailValid ? "border-brand-green focus:border-brand-green" : "border-gray-300"
+                  )}
+                  disabled={isSubmitting}
+                  autoComplete="email"
+                />
+                {isEmailValid && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Check className="w-5 h-5 text-brand-green" />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
