@@ -14,8 +14,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import AdminLoginDebug from '@/components/admin/AdminLoginDebug';
 import CustomerLoginDebugTool from '@/components/admin/CustomerLoginDebugTool';
+import { AuthPasswordGate } from '@/components/auth/AuthPasswordGate';
 
 const Auth = () => {
+  // Password gate state - check session storage on mount
+  const [isUnlocked, setIsUnlocked] = useState(() => {
+    return sessionStorage.getItem('authPageUnlocked') === 'true';
+  });
+
+  // Show password gate if not unlocked
+  if (!isUnlocked) {
+    return <AuthPasswordGate onUnlock={() => setIsUnlocked(true)} />;
+  }
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
