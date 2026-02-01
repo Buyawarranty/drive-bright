@@ -206,6 +206,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             postcode: true,
             town: !!town
           }));
+          // CRITICAL: Clear postcode error when API validates successfully
+          setAddressErrors(prev => ({ ...prev, postcode: '' }));
           if (town) {
             setAddressErrors(prev => ({ ...prev, town: '' }));
           }
@@ -810,7 +812,11 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         }
         break;
       case 'postcode':
-        if (!addressData.postcode?.trim()) {
+        // If postcode was already validated by API, skip re-validation
+        if (addressValidated.postcode) {
+          isValid = true;
+          error = '';
+        } else if (!addressData.postcode?.trim()) {
           error = 'Please enter a valid UK postcode.';
           isValid = false;
         } else if (!ukPostcodeRegex.test(addressData.postcode.replace(/\s/g, ''))) {
