@@ -1221,52 +1221,7 @@ const BMWWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* Final CTA Section */}
-        <section className="py-16 bg-gray-100 relative overflow-hidden">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-gray-900">
-              Ready to Protect Your BMW?
-            </h2>
-            <p className="text-xl mb-8 text-gray-700">
-              Get an instant quote and find the perfect warranty for your BMW today.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                size="lg"
-                onClick={scrollToQuoteForm}
-                className="bg-brand-orange text-white hover:bg-brand-orange/90 font-bold text-lg px-8"
-              >
-                Get My Instant Quote <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-2 border-gray-900 text-gray-900 hover:bg-gray-200 font-bold text-lg px-8"
-                asChild
-              >
-                <a href="tel:08004947477">
-                  <Phone className="mr-2 w-5 h-5" />
-                  Call 0800 494 7477
-                </a>
-              </Button>
-            </div>
-            <p className="text-sm mt-8 text-gray-500">
-              Buy A Warranty arranges and administers warranty plans from trusted providers.<br />
-              Not affiliated with BMW AG or BMW UK. Terms apply.
-            </p>
-          </div>
-          
-          {/* Mascot decoration - hidden on mobile */}
-          <div className="hidden lg:block absolute bottom-0 right-8 z-0">
-            <OptimizedImage 
-              src={pandaMascot}
-              alt="Miles the Panda mascot"
-              className="w-48 h-auto object-contain opacity-90"
-              width={192}
-              height={200}
-            />
-          </div>
-        </section>
+        {/* Footer CTA is handled by WebsiteFooter component */}
 
         {/* Mobile Floating Actions */}
         {isMobile && (
