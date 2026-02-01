@@ -31,6 +31,8 @@ import pandaMascot from '@/assets/warranty-panda-mascot.png';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import pandaMechanic from '@/assets/panda-mechanic.png';
 import pandaGarage from '@/assets/panda-garage-service.png';
+import bmwWhyChooseUs from '@/assets/bmw-extended-used-car-warranty.webp';
+import bmwHighMileage from '@/assets/bmw-used-car-extended-warrantya.webp';
 
 // BMW Models covered (grouped by category)
 const bmwModelCategories = {
@@ -947,13 +949,13 @@ const BMWWarrantyLanding: React.FC = () => {
                 ))}
               </div>
               
-              {/* Mascot - Miles the Panda */}
+              {/* Mascot - Miles the Panda with BMW */}
               <div className="hidden lg:flex justify-center items-end">
                 <OptimizedImage 
-                  src={pandaGarage}
-                  alt="Miles the Panda - Your friendly BMW warranty guide"
-                  className="w-72 h-auto object-contain drop-shadow-lg"
-                  width={288}
+                  src={bmwWhyChooseUs}
+                  alt="Miles the Panda mechanic with BMW - Why BMW owners choose us for extended warranty"
+                  className="w-80 h-auto object-contain drop-shadow-lg"
+                  width={320}
                   height={300}
                 />
               </div>
@@ -1061,11 +1063,11 @@ const BMWWarrantyLanding: React.FC = () => {
               </div>
               <div className="flex justify-center">
                 <OptimizedImage 
-                  src={pandaMechanic}
-                  alt="Miles the Panda mechanic - High mileage BMW warranty"
-                  className="w-64 md:w-80 h-auto object-contain"
-                  width={320}
-                  height={320}
+                  src={bmwHighMileage}
+                  alt="Miles the Panda with phone showing BuyAWarranty - High mileage BMW warranty coverage"
+                  className="w-72 md:w-96 h-auto object-contain"
+                  width={384}
+                  height={384}
                 />
               </div>
             </div>
