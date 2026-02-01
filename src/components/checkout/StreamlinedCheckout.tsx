@@ -309,30 +309,37 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   };
 
   // Effect to handle mileage change and recalculate pricing
+  // CRITICAL: Step 3's monthlyPrice is the source of truth - preserve it when adding surcharges
   useEffect(() => {
     const enteredMileage = parseInt(customerData.mileage?.replace(/[^0-9]/g, '') || '0');
+    // Get Step 3's monthlyPrice as the base (source of truth)
+    const step3MonthlyPrice = pricingData.monthlyPrice ?? Math.floor(pricingData.totalPrice / 12);
     
     if (originalMileageWasUnder120k && enteredMileage > 120000 && enteredMileage <= 150000) {
       const surcharge = getHighMileageSurcharge(enteredMileage);
+      // Calculate monthly surcharge equivalent (surcharge is total, divide by 12 for monthly)
+      const monthlySurcharge = Math.floor(surcharge / 12);
       
       if (!highMileageSurchargeApplied || highMileageSurchargeAmount !== surcharge) {
-        console.log('📊 High mileage surcharge applied:', { enteredMileage, surcharge, paymentType });
+        console.log('📊 High mileage surcharge applied:', { enteredMileage, surcharge, monthlySurcharge, paymentType });
         setHighMileageSurchargeApplied(true);
         setHighMileageSurchargeAmount(surcharge);
         
         setUpdatedPricingData(prev => ({
           ...prev,
           totalPrice: pricingData.totalPrice + surcharge,
-          monthlyPrice: Math.floor((pricingData.totalPrice + surcharge) / 12)
+          // Add monthly surcharge to Step 3's monthly price (preserves Step 3's rounding)
+          monthlyPrice: step3MonthlyPrice + monthlySurcharge
         }));
       }
     } else if (highMileageSurchargeApplied && (enteredMileage <= 120000 || enteredMileage > 150000)) {
       console.log('📊 High mileage surcharge removed:', { enteredMileage });
       setHighMileageSurchargeApplied(false);
       setHighMileageSurchargeAmount(0);
+      // Restore exact Step 3 pricing (source of truth)
       setUpdatedPricingData(pricingData);
     }
-  }, [customerData.mileage, originalMileageWasUnder120k, paymentType, pricingData.totalPrice]);
+  }, [customerData.mileage, originalMileageWasUnder120k, paymentType, pricingData.totalPrice, pricingData.monthlyPrice]);
 
   const [startDate, setStartDate] = useState<Date | undefined>(() => {
     try {
