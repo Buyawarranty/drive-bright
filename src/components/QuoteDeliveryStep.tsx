@@ -172,9 +172,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
         console.error('Error saving customer data to localStorage:', error);
       }
 
-      // Create lead in sales_leads table
-      const { data: nextUserId } = await supabase.rpc('get_next_sales_user');
-      
+      // Create lead in sales_leads table - DO NOT auto-assign, leave for manual assignment
       const { data: existingLead } = await supabase
         .from('sales_leads')
         .select('id, first_name, phone')
@@ -198,8 +196,8 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             vehicle_year: vehicleData?.year || null,
             vehicle_type: vehicleData?.vehicleType || 'car',
             mileage: vehicleData?.mileage || null,
-            assigned_to: nextUserId || null,
-            assigned_at: nextUserId ? new Date().toISOString() : null,
+            assigned_to: null,
+            assigned_at: null,
             next_action_type: 'call',
             next_action_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
             notes: null,
