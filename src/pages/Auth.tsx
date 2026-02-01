@@ -17,18 +17,23 @@ import CustomerLoginDebugTool from '@/components/admin/CustomerLoginDebugTool';
 import { AuthPasswordGate } from '@/components/auth/AuthPasswordGate';
 
 const Auth = () => {
+  // ALL HOOKS MUST BE CALLED UNCONDITIONALLY AT THE TOP
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
   // Password gate state - check session storage on mount
   const [isUnlocked, setIsUnlocked] = useState(() => {
     return sessionStorage.getItem('authPageUnlocked') === 'true';
   });
-
-  // Show password gate if not unlocked
-  if (!isUnlocked) {
-    return <AuthPasswordGate onUnlock={() => setIsUnlocked(true)} />;
-  }
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  
+  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [isInviteFlow, setIsInviteFlow] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   const navigateToQuoteForm = () => {
     navigate('/');
@@ -39,14 +44,6 @@ const Auth = () => {
       }
     }, 100);
   };
-  
-  const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [isInviteFlow, setIsInviteFlow] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   // Handle invitation flow
   const handleInvitation = async (token: string) => {
@@ -154,6 +151,11 @@ const Auth = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate, toast]);
+
+  // Show password gate if not unlocked (AFTER all hooks)
+  if (!isUnlocked) {
+    return <AuthPasswordGate onUnlock={() => setIsUnlocked(true)} />;
+  }
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
