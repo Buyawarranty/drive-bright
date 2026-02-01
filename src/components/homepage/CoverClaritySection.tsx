@@ -148,10 +148,10 @@ const CoverClaritySection = () => {
         <div className="flex justify-center mt-8">
           <Button 
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="bg-brand-orange hover:bg-orange-600 text-white font-semibold px-10 py-4 rounded-lg text-lg flex items-center gap-3 group animate-breathe shadow-lg hover:shadow-xl transition-shadow"
+            className="bg-brand-orange text-white font-bold px-6 md:px-10 py-4 md:py-6 rounded-lg text-lg md:text-xl flex items-center gap-3 shadow-lg animate-breathing"
           >
             Get my quote
-            <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+            <ArrowRight className="w-5 h-5 md:w-6 md:h-6" />
           </Button>
         </div>
       </div>
