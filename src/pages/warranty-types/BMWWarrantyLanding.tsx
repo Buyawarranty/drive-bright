@@ -161,7 +161,7 @@ const bmwFAQs = [
   },
   {
     question: "What BMW models do you cover?",
-    answer: "We cover all BMW models from 2011-2025 including 1 Series, 2 Series, 3 Series, 4 Series, 5 Series, 6 Series, 7 Series, 8 Series, all X Series (X1-X7), Z4, i Series (i3, i4, iX, iX3), and M models (M2, M3, M4, M5, M8). Both petrol, diesel, hybrid, and electric variants are covered."
+    answer: "We cover all BMW models from 2011-2025 including 1 Series, 2 Series, 3 Series, 4 Series, 5 Series, 6 Series, 7 Series, 8 Series, all X Series (X1-X7), i Series (i3, i4, iX, iX3), and M models (M2, M3, M4, M5, M8). Both petrol, diesel, hybrid, and electric variants are covered."
   },
   {
     question: "Can I buy a BMW extended warranty after my original warranty has expired?",
@@ -360,7 +360,7 @@ const BMWWarrantyLanding: React.FC = () => {
     "@context": "https://schema.org",
     "@type": "Product",
     "name": "BMW Extended Warranty UK",
-    "description": "Comprehensive extended warranty coverage for all BMW models including 1 Series, 2 Series, 3 Series, 4 Series, 5 Series, 6 Series, 7 Series, 8 Series, X1, X2, X3, X4, X5, X6, X7, Z4, i3, i4, i7, i8, iX, and iX3. Covers engine, gearbox, transmission, electrical systems, and more. Nationwide UK coverage with any VAT-registered garage.",
+    "description": "Comprehensive extended warranty coverage for all BMW models including 1 Series, 2 Series, 3 Series, 4 Series, 5 Series, 6 Series, 7 Series, 8 Series, X1, X2, X3, X4, X5, X6, X7, i3, i4, i7, i8, iX, and iX3. Covers engine, gearbox, transmission, electrical systems, and more. Nationwide UK coverage with any VAT-registered garage.",
     "brand": {
       "@type": "Brand",
       "name": "Buy A Warranty"
