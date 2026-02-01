@@ -22,7 +22,7 @@ const WarrantyBenefitsSection = lazy(() => import('@/components/homepage/Warrant
 
 // Assets
 import bmwLogo from '@/assets/logos/bmw.webp';
-import bmwHeroImage from '@/assets/Bmw-extended-used-car-warranty.png';
+import bmwHeroImage from '@/assets/bmw-used-car-extended-warranty-uk.webp';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
