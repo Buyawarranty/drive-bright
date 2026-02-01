@@ -234,11 +234,18 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
               business: { name: 'BuyAWarranty' },
               // Primary payment methods only: Card and PayPal
               // Apple/Google Pay handled by ExpressCheckoutElement above
-              // Revolut hidden for cleaner mobile UX
+              // Revolut hidden for cleaner desktop/mobile UX
               paymentMethodOrder: ['card', 'paypal'],
               wallets: {
                 applePay: 'never',
                 googlePay: 'never',
+              },
+              fields: {
+                billingDetails: 'auto',
+              },
+              // Hide Revolut Pay completely - not needed
+              defaultValues: {
+                billingDetails: {},
               },
             }}
           />

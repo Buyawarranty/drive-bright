@@ -949,29 +949,32 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       // Use requestAnimationFrame for smoother scroll after DOM updates
       requestAnimationFrame(() => {
         if (!personalDetailsComplete) {
-          // Find first invalid personal field
+          // Find first invalid personal field and scroll to it prominently
           const personalFields = ['first_name', 'last_name', 'email', 'phone', 'mileage'];
           for (const field of personalFields) {
             if (fieldErrors[field] || !customerData[field as keyof typeof customerData]) {
               const element = document.getElementById(field);
               if (element) {
-                // Use 'nearest' to avoid unnecessary scrolling - only scroll if element is out of view
-                element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                // Use 'center' to ensure error is prominently visible - better UX
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 element.focus();
                 break;
               }
             }
           }
         } else if (!addressComplete) {
-          // Scroll to address section - prioritize postcode input first
-          const postcodeInputEl = document.getElementById('postcode-lookup');
-          const addressSection = document.getElementById('address-fields');
-          if (postcodeInputEl) {
-            // Use 'nearest' to keep page position stable
-            postcodeInputEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            postcodeInputEl.focus();
-          } else if (addressSection) {
-            addressSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          // Find first invalid address field and scroll to it prominently
+          const addressFields = ['postcode', 'address_line_1', 'town'];
+          for (const field of addressFields) {
+            if (addressErrors[field] || !addressData[field as keyof typeof addressData]) {
+              const element = document.getElementById(field === 'postcode' ? 'postcode-lookup' : field);
+              if (element) {
+                // Use 'center' to ensure error is prominently visible
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.focus();
+                break;
+              }
+            }
           }
         }
       });
