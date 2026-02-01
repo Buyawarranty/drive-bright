@@ -59,11 +59,16 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
         .from('abandoned_carts')
         .insert({
           phone: phone.trim(),
-          email: '',
+          email: `callback_${Date.now()}@callback.temp`,
           step_abandoned: 0,
-          contact_status: 'urgent_callback',
-          contact_notes: 'Urgent Callback - Requested from homepage',
+          contact_status: 'new',
+          contact_notes: `[${new Date().toLocaleDateString('en-GB')} - System] Urgent callback requested from homepage`,
           full_name: 'Callback Request',
+          cart_metadata: {
+            source: 'homepage_callback',
+            priority: 'urgent',
+            request_type: 'urgent_callback'
+          }
         });
       
       if (insertError) {
