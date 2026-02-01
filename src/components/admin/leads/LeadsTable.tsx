@@ -22,7 +22,7 @@ interface LeadsTableProps {
   onScheduleFollowUp: (leadId: string, actionType: string, actionDate: string) => void;
   onAddTag: (leadId: string, tagId: string) => void;
   onRemoveTag: (leadId: string, tagId: string) => void;
-  onUpdateNotes: (leadId: string, notes: string) => void;
+  onUpdateNotes: (leadId: string, notes: string, replaceAll?: boolean) => void;
   onMarkContacted: (leadId: string) => void;
   onLogActivity: (leadId: string, type: string, description: string) => void;
   onUpdateCallCount: (leadId: string, increment: number) => void;

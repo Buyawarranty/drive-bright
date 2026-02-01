@@ -20,7 +20,7 @@ import { MarkAsPaidDialog } from './MarkAsPaidDialog';
 
 interface LeadDetailsPanelProps {
   lead: Lead;
-  onUpdateNotes: (leadId: string, notes: string) => void;
+  onUpdateNotes: (leadId: string, notes: string, replaceAll?: boolean) => void;
   onLogActivity: (leadId: string, type: string, description: string) => void;
   onRefresh?: () => void;
   onNavigateToQuote?: (lead: Lead) => void;
@@ -56,7 +56,8 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   };
 
   const handleSaveNotes = () => {
-    onUpdateNotes(lead.id, notesValue);
+    // Pass replaceAll=true since this is the full notes editor
+    onUpdateNotes(lead.id, notesValue, true);
     setIsEditing(false);
   };
 
