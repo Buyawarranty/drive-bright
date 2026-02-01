@@ -102,6 +102,7 @@ const StepTest = lazy(() => import("./pages/StepTest"));
 const SetupAdmin = lazy(() => import("./pages/SetupAdmin"));
 const UpdateAdminCredentials = lazy(() => import("./pages/UpdateAdminCredentials"));
 const RequestAccess = lazy(() => import("./pages/RequestAccess"));
+const SalesLogin = lazy(() => import("./pages/SalesLogin"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -158,6 +159,7 @@ const App = () => {
                     <Route path="/widget/" element={<Widget />} />
                     
                     <Route path="/auth/" element={<Auth />} />
+                    <Route path="/sales-login/" element={<SalesLogin />} />
                     <Route path="/admin/" element={<AdminDashboard />} />
                     <Route path="/admin-dashboard/" element={<AdminDashboard />} />
                     <Route path="/customer-dashboard/" element={<CustomerDashboard />} />
