@@ -39,12 +39,18 @@ export const InlineQuickNote: React.FC<InlineQuickNoteProps> = ({ leadId }) => {
     // Autosave after 700ms of no typing (only if there's content)
     if (value.trim()) {
       saveTimeoutRef.current = setTimeout(async () => {
+        // Save scroll position to prevent jump to top
+        const scrollY = window.scrollY;
         setSaveState('saving');
         try {
           await addNote(value);
           setSaveState('saved');
           setInputValue('');
           toast.success('Note saved ✓', { duration: 1500 });
+          // Restore scroll position after state updates
+          requestAnimationFrame(() => {
+            window.scrollTo({ top: scrollY, behavior: 'instant' });
+          });
           // Reset state after showing success
           resetStateTimeoutRef.current = setTimeout(() => {
             setSaveState('idle');
@@ -68,12 +74,18 @@ export const InlineQuickNote: React.FC<InlineQuickNoteProps> = ({ leadId }) => {
         clearTimeout(saveTimeoutRef.current);
       }
       
+      // Save scroll position to prevent jump to top
+      const scrollY = window.scrollY;
       setSaveState('saving');
       try {
         await addNote(inputValue);
         setSaveState('saved');
         setInputValue('');
         toast.success('Note saved ✓', { duration: 1500 });
+        // Restore scroll position after state updates
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: scrollY, behavior: 'instant' });
+        });
         resetStateTimeoutRef.current = setTimeout(() => {
           setSaveState('idle');
         }, 2000);
