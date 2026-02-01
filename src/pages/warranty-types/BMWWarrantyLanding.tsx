@@ -731,7 +731,7 @@ const BMWWarrantyLanding: React.FC = () => {
               {/* Right Column - Hero Image with Mascot */}
               <div className="relative">
                 {/* Hero Image */}
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <div className="relative">
                   <OptimizedImage
                     src={bmwHeroImage}
                     alt="BMW extended warranty UK - Professional BMW warranty coverage with Miles the Panda"
@@ -954,8 +954,8 @@ const BMWWarrantyLanding: React.FC = () => {
                 <OptimizedImage 
                   src={bmwWhyChooseUs}
                   alt="Miles the Panda mechanic with BMW - Why BMW owners choose us for extended warranty"
-                  className="w-80 h-auto object-contain drop-shadow-lg"
-                  width={320}
+                  className="w-[400px] h-auto object-contain"
+                  width={400}
                   height={300}
                 />
               </div>
@@ -1038,7 +1038,7 @@ const BMWWarrantyLanding: React.FC = () => {
                   High Mileage BMW, No Problem!
                 </div>
                 <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-                  Drive Your BMW With Confidence –<br />
+                  Drive Your BMW With Confidence<br />
                   <span className="text-brand-orange">You're Covered</span>
                 </h2>
                 <p className="text-lg text-gray-600 mb-6">
@@ -1069,6 +1069,19 @@ const BMWWarrantyLanding: React.FC = () => {
                   width={384}
                   height={384}
                 />
+              </div>
+              
+              {/* CTA Button - Same styling as Homepage */}
+              <div className="mt-8">
+                <Button
+                  onClick={scrollToQuoteForm}
+                  className="w-full bg-brand-orange hover:bg-orange-700 text-white font-bold py-6 sm:py-8 text-lg sm:text-xl rounded-xl shadow-lg animate-breathing"
+                >
+                  <span className="flex items-center justify-center gap-3">
+                    Get my instant quote
+                    <ArrowRight className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={3} />
+                  </span>
+                </Button>
               </div>
             </div>
           </div>
