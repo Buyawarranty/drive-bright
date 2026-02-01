@@ -1116,7 +1116,7 @@ const BMWWarrantyLanding: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+                <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-white">
                   Nationwide UK Coverage
                 </h2>
                 <p className="text-lg text-white mb-6">
@@ -1146,7 +1146,7 @@ const BMWWarrantyLanding: React.FC = () => {
                   height={256}
                 />
                 <div className="inline-block bg-white/10 rounded-2xl px-8 py-4 backdrop-blur-sm">
-                  <p className="text-xl font-bold">England • Scotland • Wales • N. Ireland</p>
+                  <p className="text-xl font-bold text-white">England • Scotland • Wales • N. Ireland</p>
                 </div>
               </div>
             </div>
@@ -1198,20 +1198,20 @@ const BMWWarrantyLanding: React.FC = () => {
 
             <div className="space-y-4">
               {bmwFAQs.map((faq, index) => (
-                <div key={index} className="border border-gray-200 rounded-xl overflow-hidden">
+                <div key={index} className="rounded-xl overflow-hidden shadow-sm">
                   <button
-                    className="w-full flex items-center justify-between p-6 text-left bg-white hover:bg-gray-50 transition-colors"
+                    className="w-full flex items-center justify-between p-6 text-left bg-brand-orange hover:bg-brand-orange/90 transition-colors"
                     onClick={() => setOpenFaqId(openFaqId === index ? null : index)}
                   >
-                    <h3 className="text-lg font-semibold text-gray-900 pr-4">{faq.question}</h3>
+                    <h3 className="text-lg font-semibold text-white pr-4">{faq.question}</h3>
                     {openFaqId === index ? (
-                      <ChevronUp className="w-5 h-5 text-brand-orange flex-shrink-0" />
+                      <ChevronUp className="w-5 h-5 text-white flex-shrink-0" />
                     ) : (
-                      <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                      <ChevronDown className="w-5 h-5 text-white/80 flex-shrink-0" />
                     )}
                   </button>
                   {openFaqId === index && (
-                    <div className="px-6 pb-6 text-gray-600">
+                    <div className="px-6 py-5 bg-white text-gray-700">
                       <p>{faq.answer}</p>
                     </div>
                   )}
