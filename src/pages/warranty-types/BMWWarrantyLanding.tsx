@@ -32,7 +32,7 @@ import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import pandaMechanic from '@/assets/panda-mechanic.png';
 import pandaGarage from '@/assets/panda-garage-service.png';
 import bmwWhyChooseUs from '@/assets/bmw-extended-used-car-warranty.webp';
-import bmwHighMileage from '@/assets/bmw-used-car-extended-warrantya.webp';
+import bmwHighMileage from '@/assets/bmw-high-mileage-transparent.png';
 
 // BMW Models covered (grouped by category)
 const bmwModelCategories = {
@@ -62,9 +62,6 @@ const bmwModelCategories = {
     'i8': ['I12', 'I15'],
     'iX': ['I20'],
     'iX3': ['G08'],
-  },
-  'Sports & Roadster': {
-    'Z4': ['E89', 'G29'],
   },
 };
 
