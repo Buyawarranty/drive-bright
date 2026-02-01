@@ -3065,19 +3065,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
             
           </div>
 
-          {/* Desktop Panda Savings Mascot - SEO Optimized */}
-          <div className="hidden md:flex justify-center items-center py-8">
-            <img
-              src={pandaSavingsMascot}
-              alt="Panda mascot putting savings into a jar - UK car warranty with affordable monthly payments and great value cover"
-              title="Save money on your car warranty with Drive Bright"
-              width={280}
-              height={280}
-              loading="lazy"
-              className="object-contain"
-              itemProp="image"
-            />
-          </div>
+          {/* Panda mascot moved to PriceHelpPanel callback section */}
         </div>
       )}
 

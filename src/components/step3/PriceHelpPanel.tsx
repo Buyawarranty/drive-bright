@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { trackEvent } from '@/utils/analytics';
+import pandaSavingsMascot from "@/assets/panda-savings-mascot.webp";
 
 interface PriceHelpPanelProps {
   isOpen: boolean;
@@ -436,6 +437,19 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               )}
             </Button>
           </div>
+
+          {/* Panda Savings Mascot */}
+          <div className="flex justify-center items-center pt-6 pb-2">
+            <img
+              src={pandaSavingsMascot}
+              alt="Panda mascot putting savings into a jar - UK car warranty with affordable monthly payments"
+              title="Save money on your car warranty"
+              width={180}
+              height={180}
+              loading="lazy"
+              className="object-contain"
+            />
+          </div>
         </form>
       </div>
 
@@ -585,7 +599,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
           </div>
 
           {/* CTA */}
-          <div className="mt-5 pb-4">
+          <div className="mt-5 pb-2">
             <Button
               type="submit"
               disabled={isSubmitting}
@@ -603,6 +617,19 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 </>
               )}
             </Button>
+          </div>
+
+          {/* Panda Savings Mascot */}
+          <div className="flex justify-center items-center pt-4 pb-6">
+            <img
+              src={pandaSavingsMascot}
+              alt="Panda mascot putting savings into a jar - UK car warranty with affordable monthly payments"
+              title="Save money on your car warranty"
+              width={160}
+              height={160}
+              loading="lazy"
+              className="object-contain"
+            />
           </div>
         </form>
       </div>
