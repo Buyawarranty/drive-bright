@@ -919,9 +919,16 @@ const BMWWarrantyLanding: React.FC = () => {
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
                 Why BMW Owners Choose Us
               </h2>
-              <p className="text-lg text-gray-600">
+              <p className="text-lg text-gray-600 mb-6">
                 Trusted by thousands of BMW drivers across the UK
               </p>
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="inline-flex items-center gap-2 bg-brand-orange text-white font-semibold px-8 py-4 rounded-xl text-lg animate-breathing"
+              >
+                Get BMW Warranty
+                <ArrowRight className="w-5 h-5" />
+              </button>
             </div>
 
             <div className="grid lg:grid-cols-3 gap-8 items-start">
