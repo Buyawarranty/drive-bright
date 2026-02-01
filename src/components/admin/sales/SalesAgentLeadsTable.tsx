@@ -25,7 +25,7 @@ import { LeadDetailsPanel } from '../leads/LeadDetailsPanel';
 interface LeadHandlers {
   updateLeadStatus: (leadId: string, status: LeadStatus) => Promise<void>;
   scheduleFollowUp: (leadId: string, date: string, actionType: string) => Promise<void>;
-  updateLeadNotes: (leadId: string, notes: string) => Promise<void>;
+  updateLeadNotes: (leadId: string, notes: string, replaceAll?: boolean) => Promise<void>;
   markContactedAt: (leadId: string) => Promise<void>;
   logActivity: (leadId: string, activityType: string, description: string) => Promise<void>;
   updateCallCount?: (leadId: string, increment: number) => Promise<void>;

@@ -25,7 +25,7 @@ interface LeadHandlers {
   scheduleFollowUp: (leadId: string, date: string, actionType: string) => Promise<void>;
   addTagToLead: (leadId: string, tagId: string) => Promise<void>;
   removeTagFromLead: (leadId: string, tagId: string) => Promise<void>;
-  updateLeadNotes: (leadId: string, notes: string) => Promise<void>;
+  updateLeadNotes: (leadId: string, notes: string, replaceAll?: boolean) => Promise<void>;
   markContactedAt: (leadId: string) => Promise<void>;
   logActivity: (leadId: string, activityType: string, description: string) => Promise<void>;
   deleteLeads: (leadIds: string[]) => Promise<void>;

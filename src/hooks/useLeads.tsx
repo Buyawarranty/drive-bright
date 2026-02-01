@@ -838,15 +838,54 @@ export const useLeads = () => {
     }
   }, []);
 
-  // OPTIMISTIC UPDATE: Update notes instantly
-  const updateLeadNotes = useCallback(async (leadId: string, notes: string) => {
+  // OPTIMISTIC UPDATE: Update notes - APPENDS new notes to history, does not replace
+  const updateLeadNotes = useCallback(async (leadId: string, newNoteText: string, replaceAll: boolean = false) => {
     const now = new Date().toISOString();
     const isAbandonedCart = leadId.startsWith('cart_');
     const actualId = isAbandonedCart ? leadId.replace('cart_', '') : leadId;
     
+    // Get current admin user info for attribution
+    const { data: userData } = await supabase.auth.getUser();
+    let authorName = 'Admin';
+    if (userData?.user) {
+      const { data: adminUser } = await supabase
+        .from('admin_users')
+        .select('first_name, last_name, email')
+        .eq('user_id', userData.user.id)
+        .maybeSingle();
+      if (adminUser) {
+        authorName = adminUser.first_name || adminUser.email?.split('@')[0] || 'Admin';
+      }
+    }
+
+    // Format timestamp for the note entry
+    const timestamp = new Date().toLocaleString('en-GB', { 
+      day: '2-digit', 
+      month: 'short', 
+      year: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+
+    // Find current lead to get existing notes
+    const currentLead = leads.find(l => l.id === leadId);
+    const existingNotes = currentLead?.notes || '';
+    
+    // If replaceAll is true, just use newNoteText as-is (for full editor saves)
+    // Otherwise, append the new note with timestamp to existing history
+    let finalNotes: string;
+    if (replaceAll) {
+      finalNotes = newNoteText;
+    } else {
+      const formattedNewNote = `[${timestamp} - ${authorName}] ${newNoteText.trim()}`;
+      finalNotes = existingNotes 
+        ? `${existingNotes}\n\n${formattedNewNote}` 
+        : formattedNewNote;
+    }
+    
     // Optimistic update
     setLeads(prev => prev.map(lead => 
-      lead.id === leadId ? { ...lead, notes, updated_at: now } : lead
+      lead.id === leadId ? { ...lead, notes: finalNotes, updated_at: now } : lead
     ));
 
     try {
@@ -855,7 +894,7 @@ export const useLeads = () => {
         const { error } = await supabase
           .from('abandoned_carts')
           .update({ 
-            contact_notes: notes, 
+            contact_notes: finalNotes, 
             updated_at: now 
           })
           .eq('id', actualId);
@@ -865,7 +904,7 @@ export const useLeads = () => {
         // Update sales_leads table
         const { error } = await supabase
           .from('sales_leads')
-          .update({ notes, updated_at: now })
+          .update({ notes: finalNotes, updated_at: now })
           .eq('id', leadId);
 
         if (error) throw error;
@@ -876,7 +915,7 @@ export const useLeads = () => {
       toast.error('Failed to save notes');
       fetchLeads();
     }
-  }, []);
+  }, [leads]);
 
   // OPTIMISTIC UPDATE: Mark contacted instantly
   const markContactedAt = useCallback(async (leadId: string) => {
