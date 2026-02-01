@@ -164,8 +164,9 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             currentLabourRate,
             currentMonthlyPrice,
             quoteReference: quoteRef,
-            source: 'Step 3 Price Help Panel',
+            source: 'step3_price_help',
             priority: 'high',
+            request_type: 'urgent_callback',
             leadType: 'price_match',
             timestamp: new Date().toISOString(),
           }
