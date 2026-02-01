@@ -168,6 +168,7 @@ export const InlineQuickNote: React.FC<InlineQuickNoteProps> = ({ leadId }) => {
         <textarea
           ref={inputRef}
           value={inputValue}
+          autoFocus
           onChange={(e) => {
             handleInputChange(e.target.value);
             autoResize(e.target);
