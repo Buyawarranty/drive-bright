@@ -292,10 +292,10 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                     );
                   })()
                 ) : (
-                  // Unassigned state - "Assign now" call to action
+                  // Unassigned state - "Call back" call to action
                   <>
                     <User className="h-3.5 w-3.5 flex-shrink-0" />
-                    <span className="font-semibold">Assign now</span>
+                    <span className="font-semibold">Call back</span>
                   </>
                 )}
               </div>
