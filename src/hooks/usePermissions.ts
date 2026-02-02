@@ -49,14 +49,22 @@ export function usePermissions(): UsePermissionsReturn {
       setError(null);
 
       // First try to get policy from the new system
+      // Use maybeSingle() instead of single() to handle cases where user has no admin_users record
       const { data: adminUser, error: adminError } = await supabase
         .from('admin_users')
         .select('*, permission_policies(*)')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (adminError) {
-        // User might not be an admin
+        console.error('Error fetching admin user permissions:', adminError);
+        setPolicy(null);
+        setLoading(false);
+        return;
+      }
+      
+      // If no admin user record found, return early
+      if (!adminUser) {
         setPolicy(null);
         setLoading(false);
         return;
