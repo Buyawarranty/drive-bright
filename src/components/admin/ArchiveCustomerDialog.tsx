@@ -8,9 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Archive, Ban, PoundSterling, RotateCcw, UserX, AlertTriangle } from 'lucide-react';
+import { Archive, Ban, PoundSterling, RotateCcw, UserX, AlertTriangle, FlaskConical } from 'lucide-react';
 
-export type ArchiveAction = 'cancel' | 'refund' | 'archive';
+export type ArchiveAction = 'cancel' | 'refund' | 'archive' | 'test';
 
 interface ArchiveCustomerDialogProps {
   isOpen: boolean;
@@ -55,11 +55,13 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
 
   const isBulk = customers.length > 1;
 
-  // Auto-select reason when refund is chosen
+  // Auto-select reason when refund or test is chosen
   const handleActionChange = (newAction: ArchiveAction) => {
     setAction(newAction);
     if (newAction === 'refund' && !reason) {
       setReason('Customer refund processed');
+    } else if (newAction === 'test' && !reason) {
+      setReason('Test record cleanup');
     }
   };
 
@@ -85,8 +87,9 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
 
       for (const customer of customers) {
         try {
-          if (action === 'archive') {
+          if (action === 'archive' || action === 'test') {
             // Soft delete - hide from view but keep in database
+            // For test purchases, also mark the status
             const { error } = await supabase.rpc('soft_delete_customer', {
               customer_uuid: customer.id,
               admin_uuid: adminId
@@ -99,11 +102,31 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
                 .update({
                   is_deleted: true,
                   deleted_at: new Date().toISOString(),
-                  deleted_by: adminId
+                  deleted_by: adminId,
+                  ...(action === 'test' ? { status: 'Test Purchase' } : {})
                 })
                 .eq('id', customer.id);
               
               if (directError) throw directError;
+            } else if (action === 'test') {
+              // Update status to Test Purchase
+              await supabase
+                .from('customers')
+                .update({ status: 'Test Purchase' })
+                .eq('id', customer.id);
+            }
+            
+            // Also archive related policies
+            if (customer.policy_id) {
+              await supabase
+                .from('customer_policies')
+                .update({
+                  is_deleted: true,
+                  deleted_at: new Date().toISOString(),
+                  deleted_by: adminId,
+                  ...(action === 'test' ? { status: 'test' } : {})
+                })
+                .eq('id', customer.policy_id);
             }
           } else {
             // Cancel or Refund - update status but keep visible
@@ -141,7 +164,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
           }
 
           // Log the action as a note
-          const actionLabel = action === 'archive' ? 'ARCHIVED' : action === 'refund' ? 'REFUNDED' : 'CANCELLED';
+          const actionLabel = action === 'archive' ? 'ARCHIVED' : action === 'test' ? 'TEST PURCHASE ARCHIVED' : action === 'refund' ? 'REFUNDED' : 'CANCELLED';
           const noteText = `WARRANTY ${actionLabel}\n` +
             `Reason: ${reason}\n` +
             `${action === 'refund' && refundAmount ? `Refund Amount: £${refundAmount}\n` : ''}` +
@@ -163,7 +186,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
       }
 
       if (successCount > 0) {
-        const actionText = action === 'archive' ? 'archived' : action === 'refund' ? 'marked as refunded' : 'cancelled';
+        const actionText = action === 'archive' ? 'archived' : action === 'test' ? 'marked as test and archived' : action === 'refund' ? 'marked as refunded' : 'cancelled';
         toast.success(
           isBulk 
             ? `${successCount} customer(s) ${actionText} successfully`
@@ -197,6 +220,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
     switch (action) {
       case 'refund': return <PoundSterling className="h-5 w-5" />;
       case 'archive': return <Archive className="h-5 w-5" />;
+      case 'test': return <FlaskConical className="h-5 w-5" />;
       default: return <Ban className="h-5 w-5" />;
     }
   };
@@ -205,6 +229,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
     switch (action) {
       case 'refund': return 'text-amber-600';
       case 'archive': return 'text-gray-600';
+      case 'test': return 'text-purple-600';
       default: return 'text-red-600';
     }
   };
@@ -213,6 +238,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
     switch (action) {
       case 'refund': return 'default';
       case 'archive': return 'secondary';
+      case 'test': return 'default';
       default: return 'destructive';
     }
   };
@@ -223,6 +249,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
     switch (action) {
       case 'refund': return `Mark as Refunded${count}`;
       case 'archive': return `Archive${count}`;
+      case 'test': return `Mark as Test${count}`;
       default: return `Cancel Warranty${count}`;
     }
   };
@@ -273,6 +300,12 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
                     <span>Archive (Hide from view)</span>
                   </div>
                 </SelectItem>
+                <SelectItem value="test">
+                  <div className="flex items-center gap-2">
+                    <FlaskConical className="h-4 w-4 text-purple-500" />
+                    <span>Mark as Test Purchase</span>
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -318,6 +351,16 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
               <div className="text-sm text-gray-800">
                 <p className="font-medium">Hidden from active view</p>
                 <p className="text-xs mt-1">Customer will be moved to Order Archive. You can restore them anytime.</p>
+              </div>
+            </div>
+          )}
+
+          {action === 'test' && (
+            <div className="flex items-start gap-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+              <FlaskConical className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-purple-800">
+                <p className="font-medium">Test purchase - Hidden from active view</p>
+                <p className="text-xs mt-1">Record will be marked as "Test Purchase" and moved to archive. Ideal for test transactions.</p>
               </div>
             </div>
           )}
@@ -382,7 +425,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
             variant={getButtonVariant() as any}
             onClick={handleSubmit}
             disabled={isProcessing || !reason}
-            className={action === 'refund' ? 'bg-amber-600 hover:bg-amber-700' : ''}
+            className={action === 'refund' ? 'bg-amber-600 hover:bg-amber-700' : action === 'test' ? 'bg-purple-600 hover:bg-purple-700' : ''}
           >
             {getButtonText()}
           </Button>

@@ -15,7 +15,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, Copy, FileText, User, Sparkles, FileSpreadsheet, Star, Ban, PoundSterling } from 'lucide-react';
+import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, Copy, FileText, User, Sparkles, FileSpreadsheet, Star, Ban, PoundSterling, FlaskConical } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -2494,6 +2494,25 @@ export const CustomersTab = () => {
                             <Archive className="h-4 w-4 mr-2" />
                             Archive (Hide)
                           </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => {
+                              const selected = filteredCustomers.filter(c => selectedCustomers.has(c.id));
+                              setArchiveCustomers(selected.map(c => ({
+                                id: c.id,
+                                name: c.name,
+                                email: c.email,
+                                policy_id: c.customer_policies?.[0]?.id,
+                                policy_number: c.customer_policies?.[0]?.policy_number,
+                                user_id: c.customer_policies?.[0]?.user_id,
+                                customer_id: c.id
+                              })));
+                              setArchiveDialogOpen(true);
+                            }}
+                            className="text-purple-600"
+                          >
+                            <FlaskConical className="h-4 w-4 mr-2" />
+                            Mark as Test
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}
@@ -4219,6 +4238,24 @@ Please log in and change your password after first login.`;
                               >
                                 <Archive className="h-4 w-4 mr-2" />
                                 Archive (Hide)
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  setArchiveCustomers([{
+                                    id: customer.id,
+                                    name: customer.name,
+                                    email: customer.email,
+                                    policy_id: customer.customer_policies?.[0]?.id,
+                                    policy_number: customer.customer_policies?.[0]?.policy_number,
+                                    user_id: customer.customer_policies?.[0]?.user_id,
+                                    customer_id: customer.id
+                                  }]);
+                                  setArchiveDialogOpen(true);
+                                }}
+                                className="text-purple-600"
+                              >
+                                <FlaskConical className="h-4 w-4 mr-2" />
+                                Mark as Test
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
