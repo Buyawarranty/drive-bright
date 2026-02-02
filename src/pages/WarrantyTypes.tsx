@@ -137,7 +137,7 @@ const WarrantyTypes: React.FC = () => {
         <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex justify-between items-center">
-              <Link to="/" className="flex items-center gap-3">
+              <Link to="/" className="flex items-center">
                 <img 
                   src="/lovable-uploads/4a0ed2f0-8030-4be3-9a3e-126452284495.png" 
                   alt="Buy A Warranty Logo" 
@@ -159,9 +159,9 @@ const WarrantyTypes: React.FC = () => {
                 <Link to="/claims" className="text-gray-700 hover:text-orange-500 transition-colors font-medium">
                   Claims
                 </Link>
-                <a href="tel:03302295040" className="flex items-center gap-2 text-orange-500 font-semibold">
+                <a href="tel:08004947477" className="flex items-center gap-2 text-orange-500 font-semibold">
                   <Phone className="h-4 w-4" />
-                  0330 229 5040
+                  0800 494 7477
                 </a>
               </nav>
               
@@ -186,9 +186,9 @@ const WarrantyTypes: React.FC = () => {
                     <Link to="/claims" className="text-lg font-medium text-gray-700 hover:text-orange-500 py-2">
                       Claims
                     </Link>
-                    <a href="tel:03302295040" className="flex items-center gap-2 text-lg font-medium text-orange-500 py-2">
+                    <a href="tel:08004947477" className="flex items-center gap-2 text-lg font-medium text-orange-500 py-2">
                       <Phone className="h-5 w-5" />
-                      0330 229 5040
+                      0800 494 7477
                     </a>
                   </nav>
                 </SheetContent>
@@ -197,12 +197,6 @@ const WarrantyTypes: React.FC = () => {
           </div>
         </header>
 
-        {/* Trustpilot Header */}
-        <div className="bg-gradient-to-r from-blue-50 via-white to-orange-50 py-2">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <TrustpilotHeader />
-          </div>
-        </div>
 
         {/* Hero Section - Matching CarExtendedWarranty style */}
         <section className="bg-gradient-to-br from-blue-50 via-white to-orange-50 py-12 md:py-20">
@@ -249,10 +243,10 @@ const WarrantyTypes: React.FC = () => {
                   <Button 
                     size="lg"
                     variant="outline"
-                    onClick={() => window.location.href = 'tel:03302295040'}
+                    onClick={() => window.location.href = 'tel:08004947477'}
                     className="border-primary text-primary hover:bg-primary hover:text-white font-semibold px-8 py-6 text-lg"
                   >
-                    <Phone className="mr-2 h-5 w-5" /> Call 0330 229 5040
+                    <Phone className="mr-2 h-5 w-5" /> Call 0800 494 7477
                   </Button>
                 </div>
               </div>
@@ -286,6 +280,10 @@ const WarrantyTypes: React.FC = () => {
                     <Bike className="w-5 h-5 text-green-500 flex-shrink-0" />
                     <span className="font-medium text-gray-700 text-base">Motorcycles</span>
                   </div>
+                </div>
+                {/* Trustpilot below vehicle types */}
+                <div className="mt-4 flex justify-center">
+                  <TrustpilotHeader />
                 </div>
               </div>
             </div>
@@ -461,9 +459,9 @@ const WarrantyTypes: React.FC = () => {
                 </span>
               </Link>
 
-              {/* Dynamic Pages from Database - exclude BMW since it's hardcoded above */}
+              {/* Dynamic Pages from Database - exclude BMW and Mercedes since they're hardcoded above */}
               {dynamicPages
-                .filter((page) => page.brand_name.toLowerCase() !== 'bmw')
+                .filter((page) => page.brand_name.toLowerCase() !== 'bmw' && page.brand_name.toLowerCase() !== 'mercedes-benz' && page.brand_name.toLowerCase() !== 'mercedes')
                 .map((page) => {
                 const IconComponent = getIconForPageType(page.page_type, page.brand_name);
                 return (
