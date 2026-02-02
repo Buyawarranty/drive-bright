@@ -232,9 +232,9 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
             options={{
               layout: 'tabs',
               business: { name: 'BuyAWarranty' },
-              // Primary payment methods only: Card and PayPal
+              // Primary payment methods: Card first, then PayPal
               // Apple/Google Pay handled by ExpressCheckoutElement above
-              // Revolut hidden for cleaner desktop/mobile UX
+              // Revolut Pay explicitly hidden via CSS for cleaner UX
               paymentMethodOrder: ['card', 'paypal'],
               wallets: {
                 applePay: 'never',
@@ -243,13 +243,24 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
               fields: {
                 billingDetails: 'auto',
               },
-              // Hide Revolut Pay completely - not needed
               defaultValues: {
                 billingDetails: {},
               },
             }}
           />
         </div>
+        {/* CSS to hide Revolut Pay from payment tabs */}
+        <style>{`
+          /* Hide Revolut Pay tab in PaymentElement */
+          [data-testid="revolut_pay-tab"],
+          button[aria-label*="Revolut"],
+          .p-TabButton:has(img[alt*="Revolut"]),
+          .p-Tab:has([alt*="Revolut"]),
+          [class*="revolut"],
+          .TabButton:has([alt*="revolut" i]) {
+            display: none !important;
+          }
+        `}</style>
 
         {/* Processing indicator for redirect-based methods */}
         {isProcessing && selectedPaymentMethod === 'paypal' && (
