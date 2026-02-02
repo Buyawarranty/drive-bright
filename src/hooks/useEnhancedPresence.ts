@@ -35,13 +35,15 @@ export const useEnhancedPresence = (options: UseEnhancedPresenceOptions = {}) =>
   const lastInteractionRef = useRef<Date>(new Date());
   const interactionCountRef = useRef<number>(0);
 
-  // Log interaction to database
-  const logInteraction = useCallback(async () => {
-    try {
-      await supabase.rpc('log_agent_interaction', { p_event_type: 'activity' });
-    } catch (error) {
-      console.error('Error logging interaction:', error);
-    }
+  // Log interaction to database (fire-and-forget, non-blocking)
+  const logInteraction = useCallback(() => {
+    (async () => {
+      try {
+        await supabase.rpc('log_agent_interaction', { p_event_type: 'activity' });
+      } catch (e) {
+        // Silent fail - non-critical
+      }
+    })();
   }, []);
 
   // Update presence status based on thresholds
@@ -134,8 +136,8 @@ export const useEnhancedPresence = (options: UseEnhancedPresenceOptions = {}) =>
 
   // Set up event listeners
   useEffect(() => {
-    // Initial presence update
-    handleInteraction();
+    // Initial presence update (non-blocking, don't wait for RPC)
+    setTimeout(() => handleInteraction(), 100);
 
     // Events that count as real interactions
     const interactionEvents = [

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 // Tabs import removed - using custom button toggle
 import { Card, CardContent } from '@/components/ui/card';
@@ -98,8 +98,22 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Debounce search term - called unconditionally
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   
-  // Enhanced presence hook - called unconditionally
+  // Enhanced presence hook - called unconditionally (non-blocking)
   useEnhancedPresence();
+  
+  // Safety timeout to prevent infinite loading - if loading takes > 20s, force show empty state
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => {
+        setLoadingTimeout(true);
+        console.warn('New Leads tab: Loading timeout triggered');
+      }, 20000);
+      return () => clearTimeout(timer);
+    } else {
+      setLoadingTimeout(false);
+    }
+  }, [loading]);
   
   // NOTE: All role/permission checks and conditional returns are AFTER all hooks
 
@@ -385,11 +399,24 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const canSeeMyDashboard = true;
   const canSeeTeamView = hasTeamViewPerm === true;
 
-  // Loading state - AFTER all hooks
-  if (loading) {
+  // Loading state - AFTER all hooks (with timeout fallback)
+  if (loading && !loadingTimeout) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+        <p className="text-sm text-muted-foreground">Loading leads...</p>
+      </div>
+    );
+  }
+  
+  // If loading timed out, show a helpful message with retry option
+  if (loadingTimeout && loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <p className="text-sm text-muted-foreground">Loading is taking longer than expected.</p>
+        <Button variant="outline" onClick={() => fetchLeads()}>
+          Retry Loading
+        </Button>
       </div>
     );
   }
