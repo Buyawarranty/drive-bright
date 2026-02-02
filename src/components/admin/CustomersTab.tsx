@@ -2606,13 +2606,7 @@ export const CustomersTab = () => {
               </TableRow>
             ) : (
               filteredCustomers.map((customer) => (
-                <TableRow 
-                  key={customer.id}
-                  className={cn(
-                    customer.status?.toLowerCase() === 'cancelled' && 'bg-red-50/50 border-l-4 border-l-red-400',
-                    customer.status?.toLowerCase() === 'refunded' && 'bg-amber-50/50 border-l-4 border-l-amber-400'
-                  )}
-                >
+                <TableRow key={customer.id}>
                   <TableCell>
                     <Checkbox
                       checked={selectedCustomers.has(customer.id)}
