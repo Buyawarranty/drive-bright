@@ -143,6 +143,12 @@ export const useLeads = () => {
   };
 
   const fetchLeads = useCallback(async () => {
+    // Timeout protection - force loading to complete after 15 seconds
+    const timeoutId = setTimeout(() => {
+      console.warn('useLeads: Query timeout - forcing loading to complete');
+      setLoading(false);
+    }, 15000);
+    
     try {
       setLoading(true);
       
@@ -421,8 +427,17 @@ export const useLeads = () => {
       setLeads(leadsWithTags as Lead[]);
     } catch (error) {
       console.error('Error fetching leads:', error);
-      toast.error('Failed to load leads');
+      // Don't show toast for permission errors - silently fail and show empty state
+      if (error && typeof error === 'object' && 'code' in error) {
+        const errCode = (error as any).code;
+        if (errCode !== 'PGRST116' && errCode !== '42501') {
+          toast.error('Failed to load leads');
+        }
+      }
+      // Still set empty leads so the UI can render
+      setLeads([]);
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   }, [filter]);
