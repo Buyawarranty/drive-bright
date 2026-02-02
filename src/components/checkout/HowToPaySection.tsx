@@ -249,14 +249,14 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
       {appliedDiscountCodes.length > 0 && (
         <div className="mt-4 border border-[#0BA360] bg-green-50 rounded-lg px-4 py-3">
           {appliedDiscountCodes.map((discount) => (
-            <div key={discount.code} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Tag className="w-4 h-4 text-[#0BA360]" />
-                <span className="font-semibold text-[#1a1a1a]">{discount.code}</span>
-                <span className="text-sm text-gray-600">applied</span>
+            <div key={discount.code} className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <Tag className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                <span className="font-semibold text-[#1a1a1a] truncate">{discount.code}</span>
+                <span className="text-sm text-gray-600 flex-shrink-0">applied</span>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-[#0BA360] font-bold text-lg">-£{discount.discountAmount.toFixed(2)}</span>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className="text-[#0BA360] font-bold text-base whitespace-nowrap">-£{discount.discountAmount.toFixed(2)}</span>
                 <button
                   type="button"
                   onClick={() => onRemoveDiscountCode(discount.code)}
