@@ -121,6 +121,9 @@ export const useLeads = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback'>('all');
   
+  // Track if initial fetch completed - prevents loading spinner on refetches
+  const hasFetchedRef = useRef(false);
+  
   // Cache sales users for optimistic updates
   const salesUsersRef = useRef<AdminUser[]>([]);
   salesUsersRef.current = salesUsers;
@@ -143,10 +146,9 @@ export const useLeads = () => {
   };
 
   const fetchLeads = useCallback(async () => {
-    try {
+    // Only show loading spinner on initial load, not on refetches
+    if (!hasFetchedRef.current) {
       setLoading(true);
-    } catch (e) {
-      // Defensive - should never happen but prevent any crash
     }
     
     try {
@@ -462,6 +464,7 @@ export const useLeads = () => {
       setLeads([]);
     } finally {
       setLoading(false);
+      hasFetchedRef.current = true;
     }
   }, [filter]);
 
