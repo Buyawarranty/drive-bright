@@ -64,18 +64,6 @@ export const useMobileBackNavigation = ({
     console.log('📱 Initialized history stack:', historyStackRef.current);
   }, []);
 
-  // Push a guard entry to prevent leaving the site
-  const pushGuardEntry = useCallback(() => {
-    if (guardEntriesCountRef.current >= MAX_GUARD_ENTRIES) {
-      console.log('📱 Max guard entries reached, using replaceState');
-      window.history.replaceState({ step: currentStep, guard: true }, '', window.location.href);
-      return;
-    }
-    
-    window.history.pushState({ step: currentStep, guard: true }, '', window.location.href);
-    guardEntriesCountRef.current++;
-    console.log('📱 Pushed guard entry, count:', guardEntriesCountRef.current);
-  }, [currentStep]);
 
   const handleBackNavigation = useCallback((event: PopStateEvent) => {
     // Prevent re-entrancy
@@ -94,6 +82,10 @@ export const useMobileBackNavigation = ({
       historyStack: historyStackRef.current,
       historyState: event.state
     });
+    
+    // CRITICAL FIX: Immediately push a guard entry to prevent browser from exiting
+    // This creates a buffer before we process the navigation
+    window.history.pushState({ step: currentStep, guard: true, immediate: true }, '', window.location.href);
     
     // If we're in the process of leaving (user confirmed), go to step 1
     if (isLeavingRef.current) {
@@ -114,9 +106,11 @@ export const useMobileBackNavigation = ({
         step_name: `step_${currentStep}`
       });
       
-      // Push a new guard entry for step 1
+      // Push multiple guard entries for step 1
       setTimeout(() => {
-        pushGuardEntry();
+        window.history.pushState({ step: 1, guard: true }, '', window.location.href);
+        window.history.pushState({ step: 1, guard: true }, '', window.location.href);
+        guardEntriesCountRef.current = 2;
       }, 50);
       return;
     }
@@ -126,7 +120,7 @@ export const useMobileBackNavigation = ({
     
     console.log('📱 Current step:', currentStep, 'Previous step would be:', previousStep);
     
-    // CRITICAL: If we're on step 1, ALWAYS push a guard entry to prevent leaving
+    // CRITICAL: If we're on step 1, ALWAYS push guard entries to prevent leaving
     if (currentStep <= 1) {
       console.log('📱 On step 1, preventing site exit');
       
@@ -134,9 +128,11 @@ export const useMobileBackNavigation = ({
       const step1Url = `${window.location.pathname}?step=1`;
       window.history.replaceState({ step: 1 }, '', step1Url);
       
-      // Push guard entry to maintain history buffer
+      // Push multiple guard entries to maintain buffer
       setTimeout(() => {
-        pushGuardEntry();
+        window.history.pushState({ step: 1, guard: true }, '', window.location.href);
+        window.history.pushState({ step: 1, guard: true }, '', window.location.href);
+        guardEntriesCountRef.current = 2;
       }, 50);
       
       isHandlingBackRef.current = false;
@@ -171,10 +167,13 @@ export const useMobileBackNavigation = ({
       // Update our history stack
       historyStackRef.current = historyStackRef.current.filter(s => s <= previousStep);
       
-      // Reset guard count and push new guard entry
+      // Reset guard count and push multiple guard entries
       guardEntriesCountRef.current = 0;
       setTimeout(() => {
-        pushGuardEntry();
+        window.history.pushState({ step: previousStep, guard: true }, '', window.location.href);
+        window.history.pushState({ step: previousStep, guard: true }, '', window.location.href);
+        guardEntriesCountRef.current = 2;
+        lastPushedStepRef.current = previousStep;
       }, 50);
       
       // Scroll to top like internal back button
@@ -190,12 +189,14 @@ export const useMobileBackNavigation = ({
     window.history.replaceState({ step: currentStep }, '', currentUrl);
     
     setTimeout(() => {
-      pushGuardEntry();
+      window.history.pushState({ step: currentStep, guard: true }, '', window.location.href);
+      window.history.pushState({ step: currentStep, guard: true }, '', window.location.href);
+      guardEntriesCountRef.current = 2;
     }, 50);
     
     isHandlingBackRef.current = false;
     
-  }, [currentStep, onStepChange, restoreStateFromStep, totalSteps, isGuarded, onShowConfirmDialog, hasShownConfirmOnThisStep, journeyId, pushGuardEntry]);
+  }, [currentStep, onStepChange, restoreStateFromStep, totalSteps, isGuarded, onShowConfirmDialog, hasShownConfirmOnThisStep, journeyId]);
 
   // Method to allow leaving (called when user confirms from dialog)
   const allowLeave = useCallback(() => {
@@ -217,14 +218,16 @@ export const useMobileBackNavigation = ({
     historyStackRef.current = [1];
     guardEntriesCountRef.current = 0;
     
-    // Push guard entry for step 1
+    // Push multiple guard entries for step 1
     setTimeout(() => {
-      pushGuardEntry();
+      window.history.pushState({ step: 1, guard: true }, '', window.location.href);
+      window.history.pushState({ step: 1, guard: true }, '', window.location.href);
+      guardEntriesCountRef.current = 2;
     }, 50);
     
     // Reset the leaving flag
     isLeavingRef.current = false;
-  }, [currentStep, journeyId, onStepChange, pushGuardEntry]);
+  }, [currentStep, journeyId, onStepChange]);
 
   // Method to stay (called when user cancels)
   const stay = useCallback(() => {
@@ -238,14 +241,16 @@ export const useMobileBackNavigation = ({
       step_name: `step_${currentStep}`
     });
     
-    // Re-establish current state and push guard entry
+    // Re-establish current state and push multiple guard entries
     const currentUrl = `${window.location.pathname}?step=${currentStep}`;
     window.history.replaceState({ step: currentStep }, '', currentUrl);
     
     setTimeout(() => {
-      pushGuardEntry();
+      window.history.pushState({ step: currentStep, guard: true }, '', window.location.href);
+      window.history.pushState({ step: currentStep, guard: true }, '', window.location.href);
+      guardEntriesCountRef.current = 2;
     }, 50);
-  }, [currentStep, journeyId, pushGuardEntry]);
+  }, [currentStep, journeyId]);
 
   useEffect(() => {
     console.log('📱 Setting up mobile navigation listeners for step', currentStep);
@@ -332,7 +337,7 @@ export const useMobileBackNavigation = ({
       window.removeEventListener('pagehide', handlePageHide);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [handleBackNavigation, currentStep, isGuarded, pushGuardEntry]);
+  }, [handleBackNavigation, currentStep, isGuarded]);
 
   return {
     allowLeave,
