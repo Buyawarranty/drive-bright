@@ -170,17 +170,18 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   const agentSimData = useMemo(() => {
     return agentCaps.map(cap => {
       const agent = salesUsers.find(u => u.id === cap.admin_user_id);
+      const editedPct = editedPercentages[cap.admin_user_id];
       return {
         id: cap.admin_user_id,
         name: getAgentName(agent),
         dailyCap: cap.daily_cap,
         assignedToday: cap.assigned_today,
-        percentage: 0, // TODO: Add percentage field
+        percentage: editedPct ?? cap.percentage ?? 0,
         isOnline: getAgentPresenceStatus(cap.admin_user_id) === 'active',
         isPaused: cap.paused,
       };
     });
-  }, [agentCaps, salesUsers, getAgentPresenceStatus]);
+  }, [agentCaps, salesUsers, getAgentPresenceStatus, editedPercentages]);
 
   // Get presence for agent
   const getPresence = (adminUserId: string) => {
@@ -223,17 +224,69 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
     }
   };
 
-  // Handle save cap
+  // Handle save cap (or percentage)
   const handleSaveCap = async (adminUserId: string) => {
     const newCap = editedCaps[adminUserId];
-    if (newCap === undefined) return;
+    const newPercentage = editedPercentages[adminUserId];
+    
+    if (newCap === undefined && newPercentage === undefined) return;
 
     setSaving(adminUserId);
-    const success = await updateAgentCap(adminUserId, { daily_cap: newCap });
+    
+    const updates: Record<string, number> = {};
+    if (newCap !== undefined) updates.daily_cap = newCap;
+    if (newPercentage !== undefined) updates.percentage = newPercentage;
+    
+    const success = await updateAgentCap(adminUserId, updates);
     if (success) {
-      setEditedCaps(prev => {
-        const { [adminUserId]: _, ...rest } = prev;
-        return rest;
+      if (newCap !== undefined) {
+        setEditedCaps(prev => {
+          const { [adminUserId]: _, ...rest } = prev;
+          return rest;
+        });
+      }
+      if (newPercentage !== undefined) {
+        setEditedPercentages(prev => {
+          const { [adminUserId]: _, ...rest } = prev;
+          return rest;
+        });
+      }
+    }
+    setSaving(null);
+  };
+
+  // Handle bulk save all percentages
+  const handleSaveAllPercentages = async () => {
+    if (Object.keys(editedPercentages).length === 0) return;
+    
+    // Validate total equals 100
+    const totalPercentage = agentCaps.reduce((sum, cap) => {
+      const editedPct = editedPercentages[cap.admin_user_id];
+      return sum + (editedPct ?? cap.percentage ?? 0);
+    }, 0);
+    
+    if (totalPercentage !== 100) {
+      toast({
+        title: 'Invalid Percentages',
+        description: `Percentages must total 100% (currently ${totalPercentage}%)`,
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    setSaving('bulk');
+    let allSuccess = true;
+    
+    for (const [adminUserId, percentage] of Object.entries(editedPercentages)) {
+      const success = await updateAgentCap(adminUserId, { percentage });
+      if (!success) allSuccess = false;
+    }
+    
+    if (allSuccess) {
+      setEditedPercentages({});
+      toast({
+        title: 'Saved',
+        description: 'All percentage allocations saved successfully.'
       });
     }
     setSaving(null);
@@ -614,6 +667,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
             onCapChange={handleCapChange}
             onPercentageChange={handlePercentageChange}
             onSaveCap={handleSaveCap}
+            onSaveAllPercentages={handleSaveAllPercentages}
             onTogglePause={handleTogglePause}
             onDelete={openReassignDialog}
             saving={saving}

@@ -43,6 +43,7 @@ interface AgentStatusTableProps {
   onCapChange: (adminUserId: string, value: string) => void;
   onPercentageChange: (adminUserId: string, value: string) => void;
   onSaveCap: (adminUserId: string) => void;
+  onSaveAllPercentages: () => void;
   onTogglePause: (adminUserId: string) => void;
   onDelete: (adminUserId: string) => void;
   saving: string | null;
@@ -126,6 +127,7 @@ export const AgentStatusTable: React.FC<AgentStatusTableProps> = ({
   onCapChange,
   onPercentageChange,
   onSaveCap,
+  onSaveAllPercentages,
   onTogglePause,
   onDelete,
   saving,
@@ -139,16 +141,49 @@ export const AgentStatusTable: React.FC<AgentStatusTableProps> = ({
   }, 0);
 
   const percentageWarning = mode === 'percentage' && totalPercentage !== 100;
+  
+  // Check if there are unsaved percentage changes
+  const hasUnsavedPercentages = mode === 'percentage' && Object.keys(editedPercentages).length > 0;
 
   return (
     <div className="space-y-3">
       {/* Percentage warning */}
       {percentageWarning && (
-        <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
-          <AlertCircle className="h-5 w-5" />
-          <span>
-            <strong>Warning:</strong> Percentages total {totalPercentage}% — should equal 100%.
-          </span>
+        <div className="flex items-center justify-between gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5" />
+            <span>
+              <strong>Warning:</strong> Percentages total {totalPercentage}% — should equal 100%.
+            </span>
+          </div>
+          {hasUnsavedPercentages && totalPercentage === 100 && (
+            <Button 
+              size="sm" 
+              onClick={onSaveAllPercentages}
+              disabled={saving === 'bulk'}
+            >
+              <Save className="h-4 w-4 mr-1" />
+              {saving === 'bulk' ? 'Saving...' : 'Save All'}
+            </Button>
+          )}
+        </div>
+      )}
+      
+      {/* Save all button when percentages are valid and have changes */}
+      {mode === 'percentage' && hasUnsavedPercentages && !percentageWarning && (
+        <div className="flex items-center justify-between gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
+          <div className="flex items-center gap-2">
+            <Save className="h-5 w-5" />
+            <span>You have unsaved percentage changes (total: {totalPercentage}%)</span>
+          </div>
+          <Button 
+            size="sm" 
+            onClick={onSaveAllPercentages}
+            disabled={saving === 'bulk'}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            {saving === 'bulk' ? 'Saving...' : 'Save All Percentages'}
+          </Button>
         </div>
       )}
 
@@ -261,6 +296,16 @@ export const AgentStatusTable: React.FC<AgentStatusTableProps> = ({
                             className="w-16 h-8 text-sm"
                           />
                           <span className="text-muted-foreground">%</span>
+                          {(editedPct !== undefined && editedPct !== (cap.percentage ?? 0)) && (
+                            <Button
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={() => onSaveCap(cap.admin_user_id)}
+                              disabled={saving === cap.admin_user_id}
+                            >
+                              <Save className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     ) : mode !== 'solo' ? (
