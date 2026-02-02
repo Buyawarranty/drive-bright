@@ -121,10 +121,6 @@ export const useLeads = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback'>('all');
   
-  // Track if initial fetch completed - prevents loading spinner on refetches
-  const hasFetchedRef = useRef(false);
-  const isFetchingRef = useRef(false); // Prevent concurrent fetches
-  
   // Cache sales users for optimistic updates
   const salesUsersRef = useRef<AdminUser[]>([]);
   salesUsersRef.current = salesUsers;
@@ -147,102 +143,60 @@ export const useLeads = () => {
   };
 
   const fetchLeads = useCallback(async () => {
-    // Prevent concurrent fetches that cause re-render loops
-    if (isFetchingRef.current) {
-      return;
-    }
-    isFetchingRef.current = true;
-    
-    // Only show loading spinner on initial load, not on refetches
-    if (!hasFetchedRef.current) {
-      setLoading(true);
-    }
-    
     try {
-      // Fetch sales_leads with AbortController for timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+      setLoading(true);
       
-      let salesQuery = supabase
-        .from('sales_leads')
-        .select(`
-          id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
-          plan_interest, cart_value, quote_amount, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
-          vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status,
-          last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
-          created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
-          call_count,
-          assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(200)
-        .abortSignal(controller.signal);
+      // Use Promise.all to fetch all data sources in parallel for better performance
+      const [salesLeadsResult, abandonedCartsResult] = await Promise.all([
+        // Fetch sales_leads with optimized column selection
+        (async () => {
+          let query = supabase
+            .from('sales_leads')
+            .select(`
+              id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
+              plan_interest, cart_value, quote_amount, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
+              vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status,
+              last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
+              created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
+              call_count,
+              assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email)
+            `)
+            .order('created_at', { ascending: false })
+            .limit(500); // Limit initial fetch for performance
 
-      if (filter === 'all') {
-        salesQuery = salesQuery.not('status', 'in', '("lost","fake_lead")');
-      } else if (filter === 'high_priority') {
-        salesQuery = salesQuery.in('priority', ['high', 'urgent']);
-      } else if (filter === 'fake') {
-        salesQuery = salesQuery.eq('status', 'fake_lead' as any);
-      } else {
-        salesQuery = salesQuery.eq('status', filter as any);
-      }
+          if (filter === 'all') {
+            // Exclude lost and fake leads from the main "All" view
+            query = query.not('status', 'in', '("lost","fake_lead")');
+          } else if (filter === 'high_priority') {
+            query = query.in('priority', ['high', 'urgent']);
+          } else if (filter === 'fake') {
+            query = query.eq('status', 'fake_lead' as any);
+          } else {
+            // Cast to any to allow custom status values not yet in database types
+            query = query.eq('status', filter as any);
+          }
 
-      // Fetch abandoned carts
-      const cartsQuery = supabase
-        .from('abandoned_carts')
-        .select(`
-          id, full_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
-          vehicle_type, mileage, plan_name, payment_type, step_abandoned, contact_status,
-          contacted_by, last_contacted_at, contact_notes, cart_metadata, is_converted,
-          call_count, created_at, updated_at
-        `)
-        .eq('is_converted', false)
-        .order('created_at', { ascending: false })
-        .limit(200)
-        .abortSignal(controller.signal);
+          return query;
+        })(),
+        // Fetch abandoned carts with optimized column selection and limit
+        supabase
+          .from('abandoned_carts')
+          .select(`
+            id, full_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
+            vehicle_type, mileage, plan_name, payment_type, step_abandoned, contact_status,
+            contacted_by, last_contacted_at, contact_notes, cart_metadata, is_converted,
+            call_count, created_at, updated_at
+          `)
+          .eq('is_converted', false)
+          .order('created_at', { ascending: false })
+          .limit(500) // Limit for performance
+      ]);
 
-      // Execute queries in parallel
-      let salesLeadsResult, abandonedCartsResult;
-      try {
-        [salesLeadsResult, abandonedCartsResult] = await Promise.all([
-          salesQuery,
-          cartsQuery
-        ]);
-      } catch (queryError: any) {
-        clearTimeout(timeoutId);
-        console.error('Query error:', queryError);
-        // If aborted due to timeout, show friendly message
-        if (queryError?.name === 'AbortError' || queryError?.message?.includes('abort')) {
-          console.warn('Query timed out after 10 seconds');
-        }
-        setLeads([]);
-        setLoading(false);
-        hasFetchedRef.current = true;
-        isFetchingRef.current = false;
-        return;
-      }
-      
-      clearTimeout(timeoutId);
+      const { data: salesLeadsData, error: salesError } = salesLeadsResult;
+      if (salesError) throw salesError;
 
-      const { data: salesLeadsData, error: salesError } = salesLeadsResult || { data: [], error: null };
-      const { data: abandonedCartsData, error: cartsError } = abandonedCartsResult || { data: [], error: null };
-
-      // Handle errors gracefully without throwing
-      if (salesError) {
-        console.error('Error fetching sales leads:', salesError);
-        toast.error('Failed to load sales leads');
-        setLeads([]);
-        setLoading(false);
-        hasFetchedRef.current = true;
-        isFetchingRef.current = false;
-        return;
-      }
-
-      if (cartsError) {
-        console.error('Error fetching abandoned carts:', cartsError);
-        // Continue with just sales leads if carts fail
-      }
+      const { data: abandonedCartsData, error: cartsError } = abandonedCartsResult;
+      if (cartsError) throw cartsError;
 
       // Build a map of auth.user_id -> admin_user for abandoned cart assignments
       // contacted_by stores auth.users.id, we need to map to admin_users
@@ -465,18 +419,11 @@ export const useLeads = () => {
       }));
 
       setLeads(leadsWithTags as Lead[]);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error fetching leads:', error);
-      const errorMessage = error?.message === 'Query timeout' 
-        ? 'Loading leads took too long. Please try again.'
-        : 'Failed to load leads';
-      toast.error(errorMessage);
-      // Set empty leads to show "No leads found" state instead of infinite loading
-      setLeads([]);
+      toast.error('Failed to load leads');
     } finally {
       setLoading(false);
-      hasFetchedRef.current = true;
-      isFetchingRef.current = false;
     }
   }, [filter]);
 
@@ -510,26 +457,11 @@ export const useLeads = () => {
     setSalesUsers(data || []);
   }, []);
 
-  // Initial fetch on mount ONLY - do NOT include fetchLeads in deps
-  // as it changes when filter changes and causes infinite loop
   useEffect(() => {
     fetchLeads();
     fetchTags();
     fetchSalesUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  
-  // Separate effect for filter changes - refetch silently
-  const filterRef = useRef(filter);
-  useEffect(() => {
-    // Skip initial render (handled by mount effect above)
-    if (filterRef.current === filter) return;
-    filterRef.current = filter;
-    
-    // Refetch when filter changes (hasFetchedRef ensures no loading spinner)
-    fetchLeads();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter]);
+  }, [fetchLeads, fetchTags, fetchSalesUsers]);
 
   // OPTIMISTIC UPDATE: Update status instantly, then sync to DB
   const updateLeadStatus = useCallback(async (leadId: string, status: LeadStatus) => {

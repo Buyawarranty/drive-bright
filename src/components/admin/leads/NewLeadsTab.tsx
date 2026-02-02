@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
 // Tabs import removed - using custom button toggle
 import { Card, CardContent } from '@/components/ui/card';
@@ -55,81 +55,100 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   onNavigateToTab,
   userRole,
 }) => {
-  // ============================================================
-  // ALL HOOKS MUST BE CALLED UNCONDITIONALLY - NO TRY/CATCH
-  // ============================================================
-  
-  // Permission hooks - called unconditionally
   const { canExportTab, hasGranularPermission } = usePermissions();
   const { exportToCSV, exportToExcel } = useDataExport();
   
-  // State hooks - called unconditionally
-  const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view'>('leads');
+  // Role-based restrictions
+  const isAdmin = userRole === 'admin';
+  const isSalesAgent = userRole === 'sales';
+  
+  // Sales agents get a completely restricted view - use SalesAgentDashboard
+  // They cannot see All Leads, Export, See Agents, or any other admin features
+  if (isSalesAgent) {
+    return (
+      <SalesAgentDashboard
+        leads={[]} // Will be filtered internally
+        tags={[]}
+        salesUsers={[]}
+        handlers={{
+          updateLeadStatus: async () => {},
+          assignLead: async () => {},
+          autoAssignLead: async () => {},
+          updateLeadPriority: async () => {},
+          scheduleFollowUp: async () => {},
+          addTagToLead: async () => {},
+          removeTagFromLead: async () => {},
+          updateLeadNotes: async () => {},
+          markContactedAt: async () => {},
+          logActivity: async () => {},
+          deleteLeads: async () => {},
+        }}
+        onNavigateToTab={onNavigateToTab}
+      />
+    );
+  }
+  
+  // Delete permission - admin role OR explicit delete permission
+  const canDelete = isAdmin || hasGranularPermission('new-leads', 'delete');
+  
+  // Export permission - admins always can, others need explicit permission
+  const canExport = isAdmin || canExportTab('new-leads') || hasGranularPermission('new-leads', 'export');
+  
+  // Granular permissions for sub-views
+  // hasGranularPermission returns: true (granted), false (denied), undefined (not set)
+  const hasAllLeadsPerm = hasGranularPermission('new-leads', 'all-leads');
+  const hasTeamViewPerm = hasGranularPermission('new-leads', 'team-view');
+  
+  // Default behavior:
+  // - all-leads: defaults to TRUE unless explicitly denied (false)
+  // - my-dashboard: ALWAYS allowed (shows only user's own leads)
+  // - team-view: must be explicitly granted (true)
+  const canSeeAllLeads = hasAllLeadsPerm !== false; // true if undefined or true
+  const canSeeMyDashboard = true; // Always allow - shows only user's own leads
+  const canSeeTeamView = hasTeamViewPerm === true; // Must be explicitly granted
+  
+  // Determine default view based on permissions
+  const getDefaultView = () => {
+    if (canSeeAllLeads) return 'leads';
+    if (canSeeMyDashboard) return 'my-dashboard';
+    if (canSeeTeamView) return 'team-dashboard';
+    return 'leads';
+  };
+  
+  const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view'>(getDefaultView());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({ from: undefined, to: undefined });
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [sortOption, setSortOption] = useState<SortOption>('newest');
-  const [hasError, setHasError] = useState(false);
-  const [forceLoaded, setForceLoaded] = useState(false);
 
-  // useLeads hook - called unconditionally
-  const leadsData = useLeads();
-  
-  // Safely destructure with fallbacks (leadsData could be partially undefined)
-  const leads = leadsData?.leads ?? [];
-  const tags = leadsData?.tags ?? [];
-  const salesUsers = leadsData?.salesUsers ?? [];
-  const loading = leadsData?.loading ?? true;
-  const filter = leadsData?.filter ?? 'all';
-  const setFilter = leadsData?.setFilter;
-  const fetchLeads = leadsData?.fetchLeads;
-  const updateLeadStatus = leadsData?.updateLeadStatus;
-  const assignLead = leadsData?.assignLead;
-  const autoAssignLead = leadsData?.autoAssignLead;
-  const updateLeadPriority = leadsData?.updateLeadPriority;
-  const scheduleFollowUp = leadsData?.scheduleFollowUp;
-  const addTagToLead = leadsData?.addTagToLead;
-  const removeTagFromLead = leadsData?.removeTagFromLead;
-  const updateLeadNotes = leadsData?.updateLeadNotes;
-  const markContactedAt = leadsData?.markContactedAt;
-  const logActivity = leadsData?.logActivity;
-  const migrateFromAbandonedCarts = leadsData?.migrateFromAbandonedCarts;
-  const deleteLeads = leadsData?.deleteLeads;
-  const updateCallCount = leadsData?.updateCallCount;
+  // Lead distribution hook no longer needed here - AgentsLeadsView has its own instance
 
-  // Debounce search term - called unconditionally
+  const {
+    leads,
+    tags,
+    salesUsers,
+    loading,
+    filter,
+    setFilter,
+    fetchLeads,
+    updateLeadStatus,
+    assignLead,
+    autoAssignLead,
+    updateLeadPriority,
+    scheduleFollowUp,
+    addTagToLead,
+    removeTagFromLead,
+    updateLeadNotes,
+    markContactedAt,
+    logActivity,
+    migrateFromAbandonedCarts,
+    deleteLeads,
+    updateCallCount
+  } = useLeads();
+
+  // Debounce search term to avoid filtering on every keystroke
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  
-  // Enhanced presence hook - called unconditionally
-  useEnhancedPresence();
-  
-  // Force load after 5 seconds no matter what (safety net)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (loading) {
-        console.warn('NewLeadsTab: Force loading after 5s timeout');
-        setForceLoaded(true);
-      }
-    }, 5000);
-    return () => clearTimeout(timer);
-  }, [loading]);
-
-  // Global error handler for unhandled promise rejections
-  useEffect(() => {
-    const handleRejection = (event: PromiseRejectionEvent) => {
-      console.error('Unhandled rejection in NewLeadsTab:', event.reason);
-      setHasError(true);
-      event.preventDefault(); // Prevent crash
-    };
-    window.addEventListener('unhandledrejection', handleRejection);
-    return () => window.removeEventListener('unhandledrejection', handleRejection);
-  }, []);
-  
-  // Determine actual loading state (but force show content after timeout)
-  const isActuallyLoading = loading && !forceLoaded;
-  
-  // NOTE: All role/permission checks and conditional returns are AFTER all hooks
 
   const filteredLeads = useMemo(() => {
     let result = leads;
@@ -393,58 +412,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     updateCallCount,
   ]);
 
-  // ============================================================
-  // NOW WE CAN DO CONDITIONAL LOGIC (after all hooks are called)
-  // ============================================================
-  
-  // Role-based restrictions
-  const isAdmin = userRole === 'admin';
-  const isSalesAgent = userRole === 'sales';
-  
-  // Permission checks
-  const canDelete = isAdmin || hasGranularPermission('new-leads', 'delete');
-  const canExport = isAdmin || canExportTab('new-leads') || hasGranularPermission('new-leads', 'export');
-  
-  // Granular permissions for sub-views
-  const hasAllLeadsPerm = hasGranularPermission('new-leads', 'all-leads');
-  const hasTeamViewPerm = hasGranularPermission('new-leads', 'team-view');
-  
-  const canSeeAllLeads = hasAllLeadsPerm !== false;
-  const canSeeMyDashboard = true;
-  const canSeeTeamView = hasTeamViewPerm === true;
-
-  // Error state - show recovery UI
-  if (hasError) {
+  if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <p className="text-sm text-destructive">Something went wrong loading leads.</p>
-        <Button variant="outline" onClick={() => { setHasError(false); fetchLeads?.(); }}>
-          Retry
-        </Button>
-      </div>
-    );
-  }
-
-  // Loading state - AFTER all hooks (with force timeout fallback)
-  if (isActuallyLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4">
+      <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-        <p className="text-sm text-muted-foreground">Loading leads...</p>
       </div>
-    );
-  }
-  
-  // Sales agents get a completely restricted view
-  if (isSalesAgent) {
-    return (
-      <SalesAgentDashboard
-        leads={leads}
-        tags={tags}
-        salesUsers={salesUsers}
-        handlers={leadHandlers}
-        onNavigateToTab={onNavigateToTab}
-      />
     );
   }
 
