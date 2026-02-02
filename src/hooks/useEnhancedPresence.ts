@@ -4,9 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 export type PresenceStatus = 'active' | 'idle' | 'offline';
 
 interface UseEnhancedPresenceOptions {
-  activeThresholdMs?: number;  // Time without interaction before going idle (90s default)
-  idleThresholdMs?: number;    // Time without interaction before going offline (300s default)
-  heartbeatIntervalMs?: number; // Heartbeat interval (15s default)
+  activeThresholdMs?: number;
+  idleThresholdMs?: number;
+  heartbeatIntervalMs?: number;
 }
 
 interface PresenceState {
@@ -16,11 +16,23 @@ interface PresenceState {
   interactionCount: number;
 }
 
+// Non-blocking RPC helper - never throws, never blocks
+const safeRpc = (name: 'log_agent_interaction' | 'update_user_presence' | 'set_user_offline', params?: Record<string, unknown>) => {
+  // Fire and forget - do NOT await or block
+  (async () => {
+    try {
+      await (supabase.rpc as any)(name, params);
+    } catch (e) {
+      // Silent fail - non-critical
+    }
+  })();
+};
+
 export const useEnhancedPresence = (options: UseEnhancedPresenceOptions = {}) => {
   const {
-    activeThresholdMs = 90000,   // 90 seconds
-    idleThresholdMs = 300000,    // 300 seconds (5 minutes)
-    heartbeatIntervalMs = 15000  // 15 seconds
+    activeThresholdMs = 90000,
+    idleThresholdMs = 300000,
+    heartbeatIntervalMs = 15000
   } = options;
 
   const [presenceState, setPresenceState] = useState<PresenceState>({
@@ -35,22 +47,14 @@ export const useEnhancedPresence = (options: UseEnhancedPresenceOptions = {}) =>
   const lastInteractionRef = useRef<Date>(new Date());
   const interactionCountRef = useRef<number>(0);
 
-  // Log interaction to database (fire-and-forget, non-blocking)
   const logInteraction = useCallback(() => {
-    (async () => {
-      try {
-        await supabase.rpc('log_agent_interaction', { p_event_type: 'activity' });
-      } catch (e) {
-        // Silent fail - non-critical
-      }
-    })();
+    safeRpc('log_agent_interaction', { p_event_type: 'activity' });
   }, []);
 
-  // Update presence status based on thresholds
   const updatePresenceStatus = useCallback(() => {
     const now = new Date();
     const timeSinceLastInteraction = now.getTime() - lastInteractionRef.current.getTime();
-    const isVisible = document.visibilityState === 'visible';
+    const isVisible = typeof document !== 'undefined' ? document.visibilityState === 'visible' : true;
 
     let newStatus: PresenceStatus;
 
@@ -69,27 +73,15 @@ export const useEnhancedPresence = (options: UseEnhancedPresenceOptions = {}) =>
       lastInteractionAt: lastInteractionRef.current
     }));
 
-    // Update database presence
     const statusMap: Record<PresenceStatus, string> = {
       active: 'online',
       idle: 'away',
       offline: 'offline'
     };
 
-    (async () => {
-      try {
-        await supabase.rpc('update_user_presence', {
-          p_status: statusMap[newStatus],
-          p_current_tab: 'leads'
-        });
-      } catch (e) {
-        console.error(e);
-      }
-    })();
-
+    safeRpc('update_user_presence', { p_status: statusMap[newStatus], p_current_tab: 'leads' });
   }, [activeThresholdMs, idleThresholdMs]);
 
-  // Handle real user interaction
   const handleInteraction = useCallback(() => {
     lastInteractionRef.current = new Date();
     interactionCountRef.current += 1;
@@ -102,94 +94,55 @@ export const useEnhancedPresence = (options: UseEnhancedPresenceOptions = {}) =>
       isVisible: true
     }));
 
-    // Debounce database logging (only log every 10 seconds)
-    const shouldLog = interactionCountRef.current % 10 === 0;
-    if (shouldLog) {
+    if (interactionCountRef.current % 10 === 0) {
       logInteraction();
     }
   }, [logInteraction]);
 
-  // Handle visibility change
   const handleVisibilityChange = useCallback(() => {
+    if (typeof document === 'undefined') return;
+    
     if (document.visibilityState === 'visible') {
-      // User came back to tab
       handleInteraction();
     } else {
-      // Tab hidden - mark as offline
       setPresenceState(prev => ({
         ...prev,
         status: 'offline',
         isVisible: false
       }));
-      (async () => {
-        try {
-          await supabase.rpc('update_user_presence', {
-            p_status: 'offline',
-            p_current_tab: 'leads'
-          });
-        } catch (e) {
-          console.error(e);
-        }
-      })();
+      safeRpc('update_user_presence', { p_status: 'offline', p_current_tab: 'leads' });
     }
   }, [handleInteraction]);
 
-  // Set up event listeners
   useEffect(() => {
-    // Initial presence update (non-blocking, don't wait for RPC)
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
     setTimeout(() => handleInteraction(), 100);
 
-    // Events that count as real interactions
-    const interactionEvents = [
-      'click',
-      'keydown',
-      'mousemove',
-      'scroll',
-      'touchstart',
-      'touchmove',
-      'paste',
-      'focus'
-    ];
+    const interactionEvents = ['click', 'keydown', 'mousemove', 'scroll', 'touchstart', 'touchmove', 'paste', 'focus'];
 
-    // Throttled handler
     let throttleTimer: NodeJS.Timeout | null = null;
     const throttledHandler = () => {
       if (!throttleTimer) {
         handleInteraction();
-        throttleTimer = setTimeout(() => {
-          throttleTimer = null;
-        }, 1000); // Throttle to 1 interaction per second
+        throttleTimer = setTimeout(() => { throttleTimer = null; }, 1000);
       }
     };
 
-    // Add interaction listeners
     interactionEvents.forEach(event => {
       window.addEventListener(event, throttledHandler, { passive: true });
     });
 
-    // Visibility change
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // Heartbeat for connection health
     heartbeatRef.current = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        (async () => {
-          try {
-            await supabase.rpc('update_user_presence', {
-              p_status: presenceState.status === 'active' ? 'online' : 'away',
-              p_current_tab: 'leads'
-            });
-          } catch (e) {
-            console.error(e);
-          }
-        })();
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        safeRpc('update_user_presence', { p_status: presenceState.status === 'active' ? 'online' : 'away', p_current_tab: 'leads' });
       }
     }, heartbeatIntervalMs);
 
-    // Status check interval
     statusCheckRef.current = setInterval(updatePresenceStatus, 5000);
 
-    // Cleanup
     return () => {
       interactionEvents.forEach(event => {
         window.removeEventListener(event, throttledHandler);
@@ -200,14 +153,7 @@ export const useEnhancedPresence = (options: UseEnhancedPresenceOptions = {}) =>
       if (statusCheckRef.current) clearInterval(statusCheckRef.current);
       if (throttleTimer) clearTimeout(throttleTimer);
 
-      // Set offline on unmount
-      (async () => {
-        try {
-          await supabase.rpc('set_user_offline');
-        } catch (e) {
-          console.error(e);
-        }
-      })();
+      safeRpc('set_user_offline');
     };
   }, [handleInteraction, handleVisibilityChange, updatePresenceStatus, heartbeatIntervalMs, presenceState.status]);
 

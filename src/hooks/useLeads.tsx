@@ -143,10 +143,17 @@ export const useLeads = () => {
   };
 
   const fetchLeads = useCallback(async () => {
-    setLoading(true);
+    try {
+      setLoading(true);
+    } catch (e) {
+      // Defensive - should never happen but prevent any crash
+    }
     
     try {
-      // Fetch sales_leads
+      // Fetch sales_leads with AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+      
       let salesQuery = supabase
         .from('sales_leads')
         .select(`
@@ -159,7 +166,8 @@ export const useLeads = () => {
           assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email)
         `)
         .order('created_at', { ascending: false })
-        .limit(500);
+        .limit(200)
+        .abortSignal(controller.signal);
 
       if (filter === 'all') {
         salesQuery = salesQuery.not('status', 'in', '("lost","fake_lead")');
@@ -182,16 +190,32 @@ export const useLeads = () => {
         `)
         .eq('is_converted', false)
         .order('created_at', { ascending: false })
-        .limit(500);
+        .limit(200)
+        .abortSignal(controller.signal);
 
       // Execute queries in parallel
-      const [salesLeadsResult, abandonedCartsResult] = await Promise.all([
-        salesQuery,
-        cartsQuery
-      ]);
+      let salesLeadsResult, abandonedCartsResult;
+      try {
+        [salesLeadsResult, abandonedCartsResult] = await Promise.all([
+          salesQuery,
+          cartsQuery
+        ]);
+      } catch (queryError: any) {
+        clearTimeout(timeoutId);
+        console.error('Query error:', queryError);
+        // If aborted due to timeout, show friendly message
+        if (queryError?.name === 'AbortError' || queryError?.message?.includes('abort')) {
+          console.warn('Query timed out after 10 seconds');
+        }
+        setLeads([]);
+        setLoading(false);
+        return;
+      }
+      
+      clearTimeout(timeoutId);
 
-      const { data: salesLeadsData, error: salesError } = salesLeadsResult;
-      const { data: abandonedCartsData, error: cartsError } = abandonedCartsResult;
+      const { data: salesLeadsData, error: salesError } = salesLeadsResult || { data: [], error: null };
+      const { data: abandonedCartsData, error: cartsError } = abandonedCartsResult || { data: [], error: null };
 
       // Handle errors gracefully without throwing
       if (salesError) {
