@@ -1273,9 +1273,8 @@ const BMWWarrantyLanding: React.FC = () => {
                 <ul className="space-y-2 md:space-y-3 text-left max-w-md mx-auto md:mx-0">
                   {[
                     'Use any VAT-registered garage',
-                    'No BMW dealer restrictions',
-                    '24/7 roadside assistance UK-wide',
-                    'Recovery to nearest approved garage',
+                    'BMW dealer or Specialist garage',
+                    'Recovery to nearest garage',
                     'Claims handled by our UK team',
                   ].map((item, index) => (
                     <li key={index} className="flex items-center gap-2 md:gap-3">
