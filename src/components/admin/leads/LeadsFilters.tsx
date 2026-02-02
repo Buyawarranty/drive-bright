@@ -222,10 +222,12 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
               <div className="p-3 border-b space-y-2">
                 <div className="text-sm font-medium">Quick filters</div>
                 <div className="flex flex-wrap gap-1">
+                  <Button variant="outline" size="sm" onClick={() => { clearDateRange(); setIsCalendarOpen(false); }}>All Time</Button>
                   <Button variant="outline" size="sm" onClick={() => handleQuickFilter(7)}>Last 7 days</Button>
                   <Button variant="outline" size="sm" onClick={() => handleQuickFilter(14)}>Last 14 days</Button>
                   <Button variant="outline" size="sm" onClick={() => handleQuickFilter(30)}>Last 30 days</Button>
                   <Button variant="outline" size="sm" onClick={() => handleQuickFilter(90)}>Last 90 days</Button>
+                  <Button variant="outline" size="sm" onClick={() => handleQuickFilter(365)}>Year</Button>
                 </div>
               </div>
               <Calendar
