@@ -12,13 +12,16 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Lead, AdminUser } from '@/hooks/useLeads';
-import { useLeadDistribution } from '@/hooks/useLeadDistribution';
+import { useLeadDistribution, DistributionMode } from '@/hooks/useLeadDistribution';
+import { DistributionModeSelector } from './distribution/DistributionModeSelector';
+import { AgentStatusTable } from './distribution/AgentStatusTable';
+import { DistributionSimulator } from './distribution/DistributionSimulator';
 import { PresenceBadge } from './distribution/PresenceBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Users, ChevronDown, ChevronRight, Phone, Mail, Car, 
   Calendar, UserCircle, Hourglass, Info, Trash2, Save, Zap, UserPlus,
-  RotateCcw, Percent, ArrowRight, AlertCircle
+  RotateCcw, Percent, ArrowRight, AlertCircle, Settings
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
@@ -53,8 +56,6 @@ const getStatusBadgeVariant = (status: string) => {
   }
 };
 
-type DistributionMode = 'round_robin' | 'percentage';
-
 export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   leads,
   salesUsers,
@@ -87,12 +88,21 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   } = useLeadDistribution();
 
   // Get distribution mode from settings (persisted in DB)
-  const distributionMode = (settings?.distribution_mode as DistributionMode) || 'round_robin';
+  const distributionMode = settings?.distribution_mode || 'round_robin';
   
   // Track local mode changes before save
   const [pendingMode, setPendingMode] = useState<DistributionMode | null>(null);
+  const [pendingSoloAgentId, setPendingSoloAgentId] = useState<string | null>(null);
+  const [pendingOverflowAgentId, setPendingOverflowAgentId] = useState<string | null>(null);
+  
   const displayMode = pendingMode ?? distributionMode;
-  const hasPendingModeChange = pendingMode !== null && pendingMode !== distributionMode;
+  const displaySoloAgentId = pendingSoloAgentId ?? settings?.solo_agent_id ?? null;
+  const displayOverflowAgentId = pendingOverflowAgentId ?? settings?.overflow_recipient_id ?? null;
+  
+  const hasPendingChanges = 
+    (pendingMode !== null && pendingMode !== distributionMode) ||
+    (pendingSoloAgentId !== null && pendingSoloAgentId !== settings?.solo_agent_id) ||
+    (pendingOverflowAgentId !== null && pendingOverflowAgentId !== settings?.overflow_recipient_id);
 
   // Handle distribution mode change
   const handleModeChange = (mode: DistributionMode) => {
@@ -103,17 +113,74 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
     }
   };
 
-  // Save distribution mode to database
-  const handleSaveMode = async () => {
-    if (!pendingMode || pendingMode === distributionMode) return;
-    
+  // Handle solo agent change
+  const handleSoloAgentChange = (agentId: string) => {
+    setPendingSoloAgentId(agentId);
+    // Also enable solo mode when selecting an agent
+    if (displayMode !== 'solo') {
+      setPendingMode('solo');
+    }
+  };
+
+  // Handle overflow agent change
+  const handleOverflowAgentChange = (agentId: string) => {
+    setPendingOverflowAgentId(agentId || null);
+  };
+
+  // Save all distribution settings to database
+  const handleSaveDistributionSettings = async () => {
     setSavingMode(true);
-    const success = await updateSettings({ distribution_mode: pendingMode });
+    
+    const updates: Record<string, unknown> = {};
+    
+    if (pendingMode !== null) {
+      updates.distribution_mode = pendingMode;
+      // Solo mode enabled is derived from mode
+      updates.solo_mode_enabled = pendingMode === 'solo';
+    }
+    
+    if (pendingSoloAgentId !== null) {
+      updates.solo_agent_id = pendingSoloAgentId || null;
+    }
+    
+    if (pendingOverflowAgentId !== null) {
+      updates.overflow_recipient_id = pendingOverflowAgentId || null;
+    }
+    
+    const success = await updateSettings(updates);
     if (success) {
       setPendingMode(null);
+      setPendingSoloAgentId(null);
+      setPendingOverflowAgentId(null);
     }
     setSavingMode(false);
   };
+
+  // Build agent options for mode selector
+  const agentOptions = useMemo(() => {
+    return salesUsers.map(user => ({
+      id: user.id,
+      name: getAgentName(user),
+      email: user.email,
+      isOnline: getAgentPresenceStatus(user.id) === 'active',
+    }));
+  }, [salesUsers, getAgentPresenceStatus]);
+
+  // Build agent simulation data
+  const agentSimData = useMemo(() => {
+    return agentCaps.map(cap => {
+      const agent = salesUsers.find(u => u.id === cap.admin_user_id);
+      return {
+        id: cap.admin_user_id,
+        name: getAgentName(agent),
+        dailyCap: cap.daily_cap,
+        assignedToday: cap.assigned_today,
+        percentage: 0, // TODO: Add percentage field
+        isOnline: getAgentPresenceStatus(cap.admin_user_id) === 'active',
+        isPaused: cap.paused,
+      };
+    });
+  }, [agentCaps, salesUsers, getAgentPresenceStatus]);
 
   // Get presence for agent
   const getPresence = (adminUserId: string) => {
@@ -479,263 +546,89 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Distribution Mode Selector */}
+          <DistributionModeSelector
+            selectedMode={displayMode}
+            onModeChange={handleModeChange}
+            soloAgentId={displaySoloAgentId}
+            onSoloAgentChange={handleSoloAgentChange}
+            agents={agentOptions}
+            overflowAgentId={displayOverflowAgentId}
+            onOverflowAgentChange={handleOverflowAgentChange}
+            hasUnsavedChanges={hasPendingChanges}
+            onSave={handleSaveDistributionSettings}
+            saving={savingMode}
+          />
+
           {/* Active Status Info Box */}
-          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <Info className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
-              <div className="text-sm text-blue-800 dark:text-blue-200 space-y-2">
-                <p className="font-semibold">Active Status Explained</p>
-                <div className="grid gap-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-2.5 w-2.5 rounded-full bg-green-500"></span>
-                      <Badge variant="outline" className="bg-green-600 text-white border-green-600 text-[10px] px-1.5 py-0">
-                        <Zap className="h-2.5 w-2.5 mr-0.5" />LIVE
-                      </Badge>
-                    </span>
-                    <span className="text-blue-700 dark:text-blue-300">
-                      <strong>Active (green)</strong>: Agent clicked/scrolled/typed within 90 seconds — actively working leads
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-amber-500"></span>
-                    <span className="text-blue-700 dark:text-blue-300">
-                      <strong>Idle (yellow)</strong>: No interaction for 90s-5min — browser open but not working
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-gray-400"></span>
-                    <span className="text-blue-700 dark:text-blue-300">
-                      <strong>Offline (gray)</strong>: No interaction for 5+ minutes or tab closed
-                    </span>
+          <Collapsible>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground">
+                <Info className="h-4 w-4" />
+                Status Legend
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-2">
+                <div className="text-sm text-blue-800 dark:text-blue-200 space-y-2">
+                  <div className="grid gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2.5 w-2.5 rounded-full bg-green-500"></span>
+                        <Badge variant="outline" className="bg-green-600 text-white border-green-600 text-[10px] px-1.5 py-0">
+                          <Zap className="h-2.5 w-2.5 mr-0.5" />LIVE
+                        </Badge>
+                      </span>
+                      <span className="text-blue-700 dark:text-blue-300">
+                        <strong>Active</strong>: Agent clicked/scrolled/typed within 90 seconds
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full bg-amber-500"></span>
+                      <span className="text-blue-700 dark:text-blue-300">
+                        <strong>Idle</strong>: No interaction for 90s-5min
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full bg-gray-400"></span>
+                      <span className="text-blue-700 dark:text-blue-300">
+                        <strong>Offline</strong>: No interaction for 5+ minutes
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </CollapsibleContent>
+          </Collapsible>
 
-          {/* Distribution Mode Toggle */}
-          <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
-            <span className="text-sm font-medium">Distribution Mode:</span>
-            <div className="flex gap-2">
-              <Button
-                variant={displayMode === 'round_robin' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleModeChange('round_robin')}
-                className="gap-2"
-              >
-                <RotateCcw className="h-4 w-4" />
-                Round Robin
-              </Button>
-              <Button
-                variant={displayMode === 'percentage' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleModeChange('percentage')}
-                className="gap-2"
-              >
-                <Percent className="h-4 w-4" />
-                Percentage Split
-              </Button>
-            </div>
-            {hasPendingModeChange && (
-              <Button 
-                size="sm" 
-                onClick={handleSaveMode}
-                disabled={savingMode}
-                className="gap-2 bg-green-600 hover:bg-green-700"
-              >
-                <Save className="h-4 w-4" />
-                {savingMode ? 'Saving...' : 'Save Mode'}
-              </Button>
-            )}
-            {loading && (
-              <span className="text-sm text-muted-foreground">Loading...</span>
-            )}
-          </div>
+          {/* Agent Status Table */}
+          <AgentStatusTable
+            mode={displayMode}
+            agentCaps={agentCaps}
+            agents={salesUsers}
+            presences={agentPresences}
+            getPresenceStatus={getAgentPresenceStatus}
+            editedCaps={editedCaps}
+            editedPercentages={editedPercentages}
+            onCapChange={handleCapChange}
+            onPercentageChange={handlePercentageChange}
+            onSaveCap={handleSaveCap}
+            onTogglePause={handleTogglePause}
+            onDelete={openReassignDialog}
+            saving={saving}
+            deleting={deleting}
+            soloAgentId={displaySoloAgentId}
+          />
 
-          {/* Agent Controls Table */}
-          <div className="border rounded-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="w-[250px]">Agent</TableHead>
-                  <TableHead className="w-[100px]">Status</TableHead>
-                  <TableHead className="w-[140px]">
-                    {displayMode === 'round_robin' ? 'Leads per day' : 'Percentage (%)'}
-                  </TableHead>
-                  <TableHead className="w-[100px]">Today</TableHead>
-                  <TableHead className="w-[120px]">ON/OFF</TableHead>
-                  <TableHead className="w-[80px] text-center">Delete</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                      <p>Loading agent distribution settings...</p>
-                    </TableCell>
-                  </TableRow>
-                ) : agentCaps.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                      <p className="mb-2">No agents configured for lead distribution.</p>
-                      {salesUsers.length > 0 ? (
-                        <Button variant="outline" size="sm" onClick={initializeAgentCaps}>
-                          Add {salesUsers.length} Agent(s) to Distribution
-                        </Button>
-                      ) : (
-                        <p className="text-sm">No sales agents available.</p>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  agentCaps.map(cap => {
-                    const agent = salesUsers.find(u => u.id === cap.admin_user_id);
-                    const status = getAgentPresenceStatus(cap.admin_user_id);
-                    const presence = getPresence(cap.admin_user_id);
-                    const editedCap = editedCaps[cap.admin_user_id];
-                    const hasCapChanges = editedCap !== undefined && editedCap !== cap.daily_cap;
-                    const editedPercent = editedPercentages[cap.admin_user_id];
-
-                    return (
-                      <TableRow 
-                        key={cap.id}
-                        className={cap.paused ? 'opacity-60 bg-muted/30' : status === 'active' ? 'bg-green-50/50 dark:bg-green-950/20' : ''}
-                      >
-                        {/* Agent Name */}
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
-                              {agent?.first_name?.[0]?.toUpperCase() || agent?.email[0].toUpperCase() || '?'}
-                            </div>
-                            <div>
-                              <div className="font-medium text-sm flex items-center gap-2">
-                                {getAgentName(agent)}
-                                {status === 'active' && !cap.paused && (
-                                  <Badge variant="default" className="text-[10px] px-1.5 py-0 bg-green-600 hover:bg-green-600">
-                                    <Zap className="h-2.5 w-2.5 mr-0.5" />
-                                    LIVE
-                                  </Badge>
-                                )}
-                              </div>
-                              <div className="text-xs text-muted-foreground">{agent?.email}</div>
-                            </div>
-                          </div>
-                        </TableCell>
-
-                        {/* Status */}
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <PresenceBadge
-                              status={status}
-                              size="md"
-                              showLabel
-                              lastInteractionAt={presence?.last_interaction_at}
-                            />
-                          </div>
-                        </TableCell>
-
-                        {/* Leads per day / Percentage */}
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {displayMode === 'round_robin' ? (
-                              <>
-                                <Input
-                                  type="number"
-                                  min={0}
-                                  value={editedCap ?? cap.daily_cap}
-                                  onChange={(e) => handleCapChange(cap.admin_user_id, e.target.value)}
-                                  className="w-20 h-8 text-sm"
-                                />
-                                {hasCapChanges && (
-                                  <Button
-                                    size="sm"
-                                    variant="default"
-                                    className="h-8 w-8 p-0"
-                                    onClick={() => handleSaveCap(cap.admin_user_id)}
-                                    disabled={saving === cap.admin_user_id}
-                                  >
-                                    <Save className="h-3.5 w-3.5" />
-                                  </Button>
-                                )}
-                              </>
-                            ) : (
-                              <div className="flex items-center gap-1">
-                                <Input
-                                  type="number"
-                                  min={0}
-                                  max={100}
-                                  value={editedPercent ?? 0}
-                                  onChange={(e) => handlePercentageChange(cap.admin_user_id, e.target.value)}
-                                  className="w-16 h-8 text-sm"
-                                />
-                                <span className="text-muted-foreground">%</span>
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-
-                        {/* Today's Count */}
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{cap.assigned_today}</span>
-                            <span className="text-muted-foreground text-xs">/ {cap.daily_cap}</span>
-                          </div>
-                        </TableCell>
-
-                        {/* ON/OFF Toggle */}
-                        <TableCell>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className="flex items-center gap-2">
-                                <Switch
-                                  checked={!cap.paused}
-                                  onCheckedChange={() => handleTogglePause(cap.admin_user_id)}
-                                  disabled={saving === cap.admin_user_id}
-                                  className="data-[state=checked]:bg-green-600"
-                                />
-                                <span className={`text-xs font-semibold ${cap.paused ? 'text-red-600' : 'text-green-600'}`}>
-                                  {cap.paused ? 'OFF' : 'ON'}
-                                </span>
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="text-xs">
-                              {cap.paused 
-                                ? 'Agent is switched OFF - will not receive leads' 
-                                : 'Agent is switched ON - receiving leads'}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TableCell>
-
-                        {/* Delete - Opens reassignment dialog */}
-                        <TableCell className="text-center">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-8 p-0 text-muted-foreground hover:text-red-600 hover:bg-red-50"
-                            disabled={deleting === cap.admin_user_id}
-                            onClick={() => openReassignDialog(cap.admin_user_id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Summary Info */}
-          <div className="text-xs text-muted-foreground space-y-1.5 bg-muted/30 p-3 rounded-lg">
-            <p><strong>How it works:</strong></p>
-            <p>• Agents switched <strong>OFF</strong> will not receive any auto-assigned leads.</p>
-            <p>• <strong>Leads per day</strong> sets the maximum leads an agent can receive daily.</p>
-            <p>• <strong>Round Robin</strong>: Leads are distributed evenly in rotation.</p>
-            <p>• <strong>Percentage Split</strong>: Leads are distributed based on assigned percentages.</p>
-            <p>• Caps reset automatically at midnight (server time).</p>
-          </div>
+          {/* Distribution Simulator */}
+          <DistributionSimulator
+            mode={displayMode}
+            agents={agentSimData}
+            soloAgentId={displaySoloAgentId}
+            overflowAgentId={displayOverflowAgentId}
+            leadsToSimulate={10}
+          />
         </CardContent>
       </Card>
 

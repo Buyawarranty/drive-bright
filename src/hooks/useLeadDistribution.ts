@@ -2,13 +2,16 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
+
+export type DistributionMode = 'solo' | 'round_robin' | 'fixed_caps' | 'percentage';
+
 interface DistributionSettings {
   id: string;
   active_only_distribution: boolean;
   overflow_recipient_id: string | null;
   solo_agent_id: string | null;
   solo_mode_enabled: boolean;
-  distribution_mode: 'round_robin' | 'percentage';
+  distribution_mode: DistributionMode;
 }
 
 interface AgentCap {
@@ -52,9 +55,17 @@ export const useLeadDistribution = () => {
 
       if (error) throw error;
       if (data) {
+        // Map legacy modes to new modes
+        let mode: DistributionMode = (data.distribution_mode as DistributionMode) || 'round_robin';
+        
+        // If solo_mode_enabled is true, use 'solo' mode regardless of distribution_mode
+        if (data.solo_mode_enabled && data.solo_agent_id) {
+          mode = 'solo';
+        }
+        
         setSettings({
           ...data,
-          distribution_mode: (data.distribution_mode as 'round_robin' | 'percentage') || 'round_robin'
+          distribution_mode: mode
         });
       }
     } catch (error) {
