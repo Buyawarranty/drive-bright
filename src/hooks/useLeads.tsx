@@ -510,11 +510,26 @@ export const useLeads = () => {
     setSalesUsers(data || []);
   }, []);
 
+  // Initial fetch on mount ONLY - do NOT include fetchLeads in deps
+  // as it changes when filter changes and causes infinite loop
   useEffect(() => {
     fetchLeads();
     fetchTags();
     fetchSalesUsers();
-  }, [fetchLeads, fetchTags, fetchSalesUsers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  
+  // Separate effect for filter changes - refetch silently
+  const filterRef = useRef(filter);
+  useEffect(() => {
+    // Skip initial render (handled by mount effect above)
+    if (filterRef.current === filter) return;
+    filterRef.current = filter;
+    
+    // Refetch when filter changes (hasFetchedRef ensures no loading spinner)
+    fetchLeads();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
 
   // OPTIMISTIC UPDATE: Update status instantly, then sync to DB
   const updateLeadStatus = useCallback(async (leadId: string, status: LeadStatus) => {
