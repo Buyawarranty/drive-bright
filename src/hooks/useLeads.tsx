@@ -123,6 +123,7 @@ export const useLeads = () => {
   
   // Track if initial fetch completed - prevents loading spinner on refetches
   const hasFetchedRef = useRef(false);
+  const isFetchingRef = useRef(false); // Prevent concurrent fetches
   
   // Cache sales users for optimistic updates
   const salesUsersRef = useRef<AdminUser[]>([]);
@@ -146,6 +147,12 @@ export const useLeads = () => {
   };
 
   const fetchLeads = useCallback(async () => {
+    // Prevent concurrent fetches that cause re-render loops
+    if (isFetchingRef.current) {
+      return;
+    }
+    isFetchingRef.current = true;
+    
     // Only show loading spinner on initial load, not on refetches
     if (!hasFetchedRef.current) {
       setLoading(true);
@@ -211,6 +218,8 @@ export const useLeads = () => {
         }
         setLeads([]);
         setLoading(false);
+        hasFetchedRef.current = true;
+        isFetchingRef.current = false;
         return;
       }
       
@@ -225,6 +234,8 @@ export const useLeads = () => {
         toast.error('Failed to load sales leads');
         setLeads([]);
         setLoading(false);
+        hasFetchedRef.current = true;
+        isFetchingRef.current = false;
         return;
       }
 
@@ -465,6 +476,7 @@ export const useLeads = () => {
     } finally {
       setLoading(false);
       hasFetchedRef.current = true;
+      isFetchingRef.current = false;
     }
   }, [filter]);
 
