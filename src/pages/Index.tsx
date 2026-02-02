@@ -790,22 +790,31 @@ const Index = () => {
     }
   }, []);
   
+  // Track whether we're updating URL from internal navigation vs back button
+  const isInternalNavRef = useRef(false);
+  
   // Update URL when step changes
-  const updateStepInUrl = (step: number) => {
-    console.log('🔗 updateStepInUrl called:', { step, currentUrl: window.location.href });
+  const updateStepInUrl = useCallback((step: number, fromBackButton: boolean = false) => {
+    console.log('🔗 updateStepInUrl called:', { step, fromBackButton, currentUrl: window.location.href });
     const newSearchParams = new URLSearchParams(searchParams);
     newSearchParams.set('step', step.toString());
     
-    // Push state to history (not replace) so each step creates a history entry
-    // This allows proper back button navigation
     const newUrl = `${window.location.pathname}?${newSearchParams.toString()}`;
-    window.history.pushState({ step }, '', newUrl);
-    console.log('🔗 History pushed, new URL:', newUrl);
     
-    // Also update React Router's search params without adding another history entry
+    // Only push new history entry for forward navigation (not from back button)
+    if (!fromBackButton) {
+      window.history.pushState({ step }, '', newUrl);
+      console.log('🔗 History pushed, new URL:', newUrl);
+    } else {
+      // Back button navigation - URL already updated by popstate, just sync React Router
+      window.history.replaceState({ step }, '', newUrl);
+      console.log('🔗 History replaced (back button), URL:', newUrl);
+    }
+    
+    // Update React Router's search params without adding another history entry
     setSearchParams(newSearchParams, { replace: true });
     console.log('✅ updateStepInUrl completed');
-  };
+  }, [searchParams, setSearchParams]);
   
   // Restore state from localStorage for a specific step
   const restoreStateFromStep = useCallback((step: number) => {
@@ -850,14 +859,17 @@ const Index = () => {
     }
   }, [loadStateFromLocalStorage]);
   
-  const handleStepChange = (step: number) => {
-    console.log('📍 Step change:', currentStep, '->', step);
+  // Handle step changes - fromBackButton indicates if change originated from browser back button
+  const handleStepChange = useCallback((step: number, fromBackButton: boolean = false) => {
+    console.log('📍 Step change:', currentStep, '->', step, fromBackButton ? '(from back button)' : '');
     setCurrentStep(step);
-    updateStepInUrl(step);
+    updateStepInUrl(step, fromBackButton);
     // Store current state in localStorage for persistence
     saveStateToLocalStorage(step);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+    if (!fromBackButton) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentStep, updateStepInUrl, saveStateToLocalStorage]);
 
   // Removed backup restoration - navigation should preserve state without restoration logic
   

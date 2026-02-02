@@ -40,7 +40,7 @@ Custom React hook that manages back button behavior using the History API.
 ```typescript
 {
   currentStep: number;           // Current step in the journey
-  onStepChange: (step: number) => void;  // Callback when step changes
+  onStepChange: (step: number, fromBackButton?: boolean) => void;  // Callback when step changes
   totalSteps: number;            // Total number of steps
   restoreStateFromStep?: (step: number) => void;  // Optional state restoration
   journeyId?: string;            // Identifier for analytics (default: 'warranty-journey')
@@ -56,6 +56,12 @@ Custom React hook that manages back button behavior using the History API.
   stay: () => void;        // Call this to keep user in journey
 }
 ```
+
+**Key Behavior**:
+- **Step 1**: Back navigation goes to homepage (no trap)
+- **Steps 2+**: Back navigation goes to previous step
+- **Guarded mode**: Shows confirmation dialog before exiting journey
+- **No history bloat**: Uses replaceState for back navigation, pushState only for forward
 
 ## Implementation
 
