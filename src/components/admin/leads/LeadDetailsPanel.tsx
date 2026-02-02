@@ -361,83 +361,88 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
 
           {/* Notes Content - Collapsible */}
           {notesOpen && (
-            <div className="p-4 space-y-4">
-              {/* Add Notes - Orange clickable box */}
-              <div
-                onClick={() => {
-                  const textarea = document.getElementById('lead-notes-input') as HTMLTextAreaElement;
-                  textarea?.focus();
-                }}
-                className={cn(
-                  "p-4 rounded-lg border-2 border-dashed cursor-pointer transition-all",
-                  "bg-amber-50 border-amber-300 dark:bg-amber-950/30 dark:border-amber-700",
-                  "hover:border-amber-400 hover:bg-amber-100/50 dark:hover:bg-amber-900/30"
-                )}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-amber-100 rounded-lg dark:bg-amber-900/50">
-                    <MessageSquare className="h-5 w-5 text-amber-600" />
+            <>
+              {/* Formatting Toolbar */}
+              <div className="flex items-center gap-1 px-4 py-2 border-b bg-muted/20">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={() => insertFormatting('bold')}
+                  title="Bold"
+                >
+                  <Bold className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={() => insertFormatting('italic')}
+                  title="Italic"
+                >
+                  <Italic className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={() => insertFormatting('list')}
+                  title="Bullet List"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <div className="flex-1" />
+                <span className="text-xs text-muted-foreground">
+                  {newNoteValue.length} characters
+                </span>
+              </div>
+
+              {/* Notes Content Area */}
+              <div className="p-4 space-y-4">
+                {/* NEW Note Input */}
+                <div className="space-y-3">
+                  <Textarea
+                    id="lead-notes-textarea"
+                    value={newNoteValue}
+                    onChange={(e) => setNewNoteValue(e.target.value)}
+                    placeholder="Add a new note... (will be appended to history)"
+                    className="min-h-[100px] text-sm leading-relaxed resize-none focus:ring-2 focus:ring-primary/20"
+                    autoFocus
+                  />
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" onClick={handleSaveNotes} disabled={!newNoteValue.trim()}>
+                      <Save className="h-4 w-4 mr-1" />
+                      Save Notes
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setNewNoteValue('')}
+                      disabled={!newNoteValue}
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Clear
+                    </Button>
+                    <span className="text-xs text-muted-foreground ml-auto">
+                      Use **bold** and _italic_ for formatting
+                    </span>
                   </div>
-                  <div className="flex-1 space-y-2">
-                    <h4 className="font-medium text-foreground">Add Notes</h4>
-                    <p className="text-sm text-muted-foreground">Click to add notes about this lead</p>
-                    
-                    {/* Note Input */}
-                    <div className="pt-2 space-y-2">
-                      <Textarea
-                        id="lead-notes-input"
-                        value={newNoteValue}
-                        onChange={(e) => setNewNoteValue(e.target.value)}
-                        placeholder="Type your note here..."
-                        className="min-h-[80px] text-sm bg-white dark:bg-background border-amber-200 focus:border-amber-400 focus:ring-amber-400/20"
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                      {newNoteValue.trim() && (
-                        <div className="flex items-center gap-2">
-                          <Button 
-                            size="sm" 
-                            onClick={(e) => { e.stopPropagation(); handleSaveNotes(); }}
-                          >
-                            <Save className="h-4 w-4 mr-1" />
-                            Save Note
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => { e.stopPropagation(); setNewNoteValue(''); }}
-                          >
-                            <X className="h-4 w-4 mr-1" />
-                            Clear
-                          </Button>
-                        </div>
-                      )}
+                </div>
+
+                {/* Notes History (read-only) */}
+                {lead.notes && (
+                  <div className="border-t pt-4">
+                    <h4 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      Notes History
+                    </h4>
+                    <div className="text-sm leading-relaxed whitespace-pre-wrap bg-muted/30 p-3 rounded-lg max-h-[300px] overflow-y-auto">
+                      {lead.notes}
                     </div>
                   </div>
-                </div>
+                )}
               </div>
-
-              {/* Quick Notes - autosave section */}
-              <div className="p-4 rounded-lg border-2 border-dashed border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800">
-                <div className="flex items-center gap-2 mb-2">
-                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Quick Notes</span>
-                </div>
-                <p className="text-sm text-muted-foreground">Add a quick note... (autosaves)</p>
-              </div>
-
-              {/* Notes History (read-only) */}
-              {lead.notes && (
-                <div className="border-t pt-4">
-                  <h4 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    Notes History
-                  </h4>
-                  <div className="text-sm leading-relaxed whitespace-pre-wrap bg-muted/30 p-3 rounded-lg max-h-[300px] overflow-y-auto">
-                    {lead.notes}
-                  </div>
-                </div>
-              )}
-            </div>
+            </>
           )}
         </CardContent>
       </Card>

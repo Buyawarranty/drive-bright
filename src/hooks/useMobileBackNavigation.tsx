@@ -4,7 +4,7 @@ import { trackEvent } from '@/utils/analytics';
 
 interface UseMobileBackNavigationProps {
   currentStep: number;
-  onStepChange: (step: number, fromBackButton?: boolean) => void;
+  onStepChange: (step: number) => void;
   totalSteps: number;
   restoreStateFromStep?: (step: number) => void;
   journeyId?: string;
@@ -26,16 +26,55 @@ export const useMobileBackNavigation = ({
   const [hasShownConfirmOnThisStep, setHasShownConfirmOnThisStep] = useState(false);
   const isLeavingRef = useRef(false);
   const lastStepRef = useRef(currentStep);
+  const historyStackRef = useRef<number[]>([]);
   const isHandlingBackRef = useRef(false);
-  const hasInitializedRef = useRef(false);
+  const hasInitializedHistoryRef = useRef(false);
   const lastPushedStepRef = useRef<number | null>(null);
+  // Track how many guard entries we've pushed to prevent infinite history growth
+  const guardEntriesCountRef = useRef(0);
+  const MAX_GUARD_ENTRIES = 3;
 
   // Reset confirmation flag when step changes
   useEffect(() => {
     if (currentStep !== lastStepRef.current) {
       setHasShownConfirmOnThisStep(false);
+      
+      // Track step in our own history stack
+      if (!historyStackRef.current.includes(currentStep)) {
+        historyStackRef.current.push(currentStep);
+      }
+      
       lastStepRef.current = currentStep;
+      // Reset guard entries count on step change
+      guardEntriesCountRef.current = 0;
     }
+  }, [currentStep]);
+
+  // Initialize our history stack on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlStep = parseInt(urlParams.get('step') || '1');
+    
+    // Build initial history stack from step 1 to current step
+    historyStackRef.current = [];
+    for (let i = 1; i <= urlStep; i++) {
+      historyStackRef.current.push(i);
+    }
+    
+    console.log('📱 Initialized history stack:', historyStackRef.current);
+  }, []);
+
+  // Push a guard entry to prevent leaving the site
+  const pushGuardEntry = useCallback(() => {
+    if (guardEntriesCountRef.current >= MAX_GUARD_ENTRIES) {
+      console.log('📱 Max guard entries reached, using replaceState');
+      window.history.replaceState({ step: currentStep, guard: true }, '', window.location.href);
+      return;
+    }
+    
+    window.history.pushState({ step: currentStep, guard: true }, '', window.location.href);
+    guardEntriesCountRef.current++;
+    console.log('📱 Pushed guard entry, count:', guardEntriesCountRef.current);
   }, [currentStep]);
 
   const handleBackNavigation = useCallback((event: PopStateEvent) => {
@@ -47,111 +86,145 @@ export const useMobileBackNavigation = ({
     
     isHandlingBackRef.current = true;
     
-    console.log('📱 Back navigation triggered', { 
+    console.log('📱 Mobile back navigation triggered', { 
       currentStep, 
       isGuarded, 
-      state: event.state
+      hasShownConfirmOnThisStep,
+      isLeaving: isLeavingRef.current,
+      historyStack: historyStackRef.current,
+      historyState: event.state
     });
-
-    // Get the step from popstate event or URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlStep = parseInt(urlParams.get('step') || '0');
     
-    // If URL has no step param (navigated to homepage), allow it
-    if (!urlParams.has('step') || urlStep === 0) {
-      console.log('📱 Navigating to homepage - allowing');
+    // If we're in the process of leaving (user confirmed), go to step 1
+    if (isLeavingRef.current) {
+      console.log('📱 User confirmed leave, going to step 1');
+      isLeavingRef.current = false;
       isHandlingBackRef.current = false;
       
-      // If user chose to leave, just let it happen
-      if (isLeavingRef.current) {
-        isLeavingRef.current = false;
-        return;
-      }
+      // Go to step 1 instead of leaving
+      const step1Url = `${window.location.pathname}?step=1`;
+      window.history.replaceState({ step: 1 }, '', step1Url);
+      onStepChange(1);
+      historyStackRef.current = [1];
+      guardEntriesCountRef.current = 0;
       
-      // For step 1, just go to homepage without confirmation
-      if (currentStep <= 1) {
-        // Navigate to clean homepage
-        navigate('/', { replace: true });
-        onStepChange(1, true);
-        return;
-      }
+      trackEvent('back_intercept_leave', {
+        journey_id: journeyId,
+        step: currentStep,
+        step_name: `step_${currentStep}`
+      });
       
-      // For steps 2+, if guarded and haven't shown dialog, show it
-      if (isGuarded && !hasShownConfirmOnThisStep && onShowConfirmDialog) {
-        // Push state back to prevent leaving
-        const currentUrl = `${window.location.pathname}?step=${currentStep}`;
-        window.history.pushState({ step: currentStep }, '', currentUrl);
-        
-        setHasShownConfirmOnThisStep(true);
-        onShowConfirmDialog();
-        
-        trackEvent('back_intercept_shown', {
-          journey_id: journeyId,
-          step: currentStep
-        });
-        return;
-      }
-      
-      // Not guarded or already shown dialog - go to homepage
-      navigate('/', { replace: true });
-      onStepChange(1, true);
+      // Push a new guard entry for step 1
+      setTimeout(() => {
+        pushGuardEntry();
+      }, 50);
       return;
     }
     
-    // If navigating between steps (urlStep is a valid step)
-    if (urlStep >= 1 && urlStep < currentStep) {
-      console.log('📱 Navigating to previous step:', urlStep);
+    // Calculate the previous step
+    const previousStep = currentStep - 1;
+    
+    console.log('📱 Current step:', currentStep, 'Previous step would be:', previousStep);
+    
+    // CRITICAL: If we're on step 1, ALWAYS push a guard entry to prevent leaving
+    if (currentStep <= 1) {
+      console.log('📱 On step 1, preventing site exit');
+      
+      // Re-establish current state
+      const step1Url = `${window.location.pathname}?step=1`;
+      window.history.replaceState({ step: 1 }, '', step1Url);
+      
+      // Push guard entry to maintain history buffer
+      setTimeout(() => {
+        pushGuardEntry();
+      }, 50);
+      
+      isHandlingBackRef.current = false;
+      return;
+    }
+    
+    // If trying to go back from step 2+ to previous step
+    if (previousStep >= 1) {
+      console.log('📱 Navigating to previous step:', previousStep);
       
       // Track step change
       trackEvent('journey_step_changed', {
         journey_id: journeyId,
         from_step: currentStep,
-        to_step: urlStep,
+        to_step: previousStep,
         direction: 'back',
-        trigger: 'browser_back_button'
+        trigger: 'mobile_back_button'
       });
       
-      // Restore state for the step
+      // Restore state for previous step if handler provided
       if (restoreStateFromStep) {
-        restoreStateFromStep(urlStep);
+        restoreStateFromStep(previousStep);
       }
       
-      // Update step with fromBackButton flag (don't push new history)
-      onStepChange(urlStep, true);
+      // Update URL and state
+      const stepUrl = `${window.location.pathname}?step=${previousStep}`;
+      window.history.replaceState({ step: previousStep }, '', stepUrl);
       
-      // Scroll to top
+      // Update current step
+      onStepChange(previousStep);
+      
+      // Update our history stack
+      historyStackRef.current = historyStackRef.current.filter(s => s <= previousStep);
+      
+      // Reset guard count and push new guard entry
+      guardEntriesCountRef.current = 0;
+      setTimeout(() => {
+        pushGuardEntry();
+      }, 50);
+      
+      // Scroll to top like internal back button
       window.scrollTo({ top: 0, behavior: 'smooth' });
       
       isHandlingBackRef.current = false;
       return;
     }
     
-    // Forward navigation or same step - just update state
-    if (urlStep >= 1) {
-      onStepChange(urlStep, true);
-    }
+    // Fallback: stay on current step and ensure we have guard entries
+    console.log('📱 Fallback: staying on current step');
+    const currentUrl = `${window.location.pathname}?step=${currentStep}`;
+    window.history.replaceState({ step: currentStep }, '', currentUrl);
+    
+    setTimeout(() => {
+      pushGuardEntry();
+    }, 50);
     
     isHandlingBackRef.current = false;
     
-  }, [currentStep, onStepChange, restoreStateFromStep, isGuarded, onShowConfirmDialog, hasShownConfirmOnThisStep, journeyId, navigate]);
+  }, [currentStep, onStepChange, restoreStateFromStep, totalSteps, isGuarded, onShowConfirmDialog, hasShownConfirmOnThisStep, journeyId, pushGuardEntry]);
 
   // Method to allow leaving (called when user confirms from dialog)
   const allowLeave = useCallback(() => {
-    console.log('📱 User confirmed leave');
+    console.log('📱 Setting allow leave flag');
     isLeavingRef.current = true;
     setHasShownConfirmOnThisStep(false);
     
     // Track user decision to leave
     trackEvent('back_intercept_leave', {
       journey_id: journeyId,
-      step: currentStep
+      step: currentStep,
+      step_name: `step_${currentStep}`
     });
     
-    // Navigate to homepage
-    navigate('/', { replace: true });
-    onStepChange(1, true);
+    // Navigate to step 1 instead of leaving the site entirely
+    const step1Url = `${window.location.pathname}?step=1`;
+    window.history.replaceState({ step: 1 }, '', step1Url);
+    onStepChange(1);
+    historyStackRef.current = [1];
+    guardEntriesCountRef.current = 0;
+    
+    // Push guard entry for step 1
+    setTimeout(() => {
+      pushGuardEntry();
+    }, 50);
+    
+    // Reset the leaving flag
     isLeavingRef.current = false;
-  }, [currentStep, journeyId, onStepChange, navigate]);
+  }, [currentStep, journeyId, onStepChange, pushGuardEntry]);
 
   // Method to stay (called when user cancels)
   const stay = useCallback(() => {
@@ -161,16 +234,21 @@ export const useMobileBackNavigation = ({
     // Track user decision to stay
     trackEvent('back_intercept_stay', {
       journey_id: journeyId,
-      step: currentStep
+      step: currentStep,
+      step_name: `step_${currentStep}`
     });
     
-    // Ensure URL is correct
+    // Re-establish current state and push guard entry
     const currentUrl = `${window.location.pathname}?step=${currentStep}`;
     window.history.replaceState({ step: currentStep }, '', currentUrl);
-  }, [currentStep, journeyId]);
+    
+    setTimeout(() => {
+      pushGuardEntry();
+    }, 50);
+  }, [currentStep, journeyId, pushGuardEntry]);
 
   useEffect(() => {
-    console.log('📱 Setting up navigation listeners for step', currentStep);
+    console.log('📱 Setting up mobile navigation listeners for step', currentStep);
     
     // Set scroll restoration to manual for better control
     if ('scrollRestoration' in window.history) {
@@ -181,42 +259,80 @@ export const useMobileBackNavigation = ({
     const urlParams = new URLSearchParams(window.location.search);
     const urlStep = parseInt(urlParams.get('step') || '1');
     
-    // Initialize history state once per step
-    if (!hasInitializedRef.current || lastPushedStepRef.current !== urlStep) {
-      // Set proper state for current URL
-      if (!window.history.state || window.history.state.step !== urlStep) {
-        window.history.replaceState({ step: urlStep }, '', window.location.href);
-      }
-      hasInitializedRef.current = true;
+    // Always ensure history state matches current step
+    if (!window.history.state || window.history.state.step !== urlStep) {
+      window.history.replaceState({ step: urlStep }, '', window.location.href);
+      console.log('📱 Set history state for step', urlStep);
+    }
+    
+    // Push initial guard entries to create a buffer that prevents leaving the site
+    // Only do this once per step to prevent history pollution
+    if (!hasInitializedHistoryRef.current || lastPushedStepRef.current !== urlStep) {
+      // Push multiple guard entries to create a buffer
+      window.history.pushState({ step: urlStep, guard: true }, '', window.location.href);
+      window.history.pushState({ step: urlStep, guard: true }, '', window.location.href);
+      guardEntriesCountRef.current = 2;
+      console.log('📱 Pushed initial guard entries for step', urlStep);
+      hasInitializedHistoryRef.current = true;
       lastPushedStepRef.current = urlStep;
     }
     
     // Listen for popstate events (back/forward button presses)
     window.addEventListener('popstate', handleBackNavigation);
     
-    // iOS Safari bfcache handling
+    // iOS Safari specific: handle bfcache - CRITICAL for Stripe back-navigation
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
-        console.log('📱 Page restored from bfcache');
-        // Reset flags when page comes back from bfcache
+        console.log('📱 Page restored from bfcache - fast path');
+        // Reset ALL state flags when page comes back from bfcache
         isLeavingRef.current = false;
         isHandlingBackRef.current = false;
         setHasShownConfirmOnThisStep(false);
+        guardEntriesCountRef.current = 0;
         
-        // Ensure history state is correct
+        // Re-establish proper history state
         const urlParams = new URLSearchParams(window.location.search);
         const urlStep = parseInt(urlParams.get('step') || '1');
+        
+        // Ensure history state is correct
         window.history.replaceState({ step: urlStep }, '', window.location.href);
+        
+        // Push fresh guard entries after a small delay to let page fully restore
+        setTimeout(() => {
+          if (lastPushedStepRef.current !== urlStep || guardEntriesCountRef.current < 2) {
+            window.history.pushState({ step: urlStep, guard: true }, '', window.location.href);
+            window.history.pushState({ step: urlStep, guard: true }, '', window.location.href);
+            guardEntriesCountRef.current = 2;
+            lastPushedStepRef.current = urlStep;
+          }
+        }, 100);
       }
     };
     
+    const handlePageHide = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        console.log('📱 Page going into bfcache');
+      }
+    };
+    
+    // Handle beforeunload - this is a last resort to catch navigation
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      // Note: Modern browsers don't show custom messages, but this can still help
+      console.log('📱 beforeunload triggered on step', currentStep);
+    };
+    
     window.addEventListener('pageshow', handlePageShow);
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('beforeunload', handleBeforeUnload);
     
     return () => {
+      console.log('📱 Cleaning up mobile navigation listeners');
       window.removeEventListener('popstate', handleBackNavigation);
       window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [handleBackNavigation, currentStep]);
+  }, [handleBackNavigation, currentStep, isGuarded, pushGuardEntry]);
 
   return {
     allowLeave,

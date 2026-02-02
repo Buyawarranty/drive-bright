@@ -55,23 +55,75 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   onNavigateToTab,
   userRole,
 }) => {
-  // ============================================================
-  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
-  // This ensures consistent hook order across all renders
-  // ============================================================
-  
   const { canExportTab, hasGranularPermission } = usePermissions();
   const { exportToCSV, exportToExcel } = useDataExport();
   
-  // State hooks - called unconditionally
-  const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view'>('leads');
+  // Role-based restrictions
+  const isAdmin = userRole === 'admin';
+  const isSalesAgent = userRole === 'sales';
+  
+  // Sales agents get a completely restricted view - use SalesAgentDashboard
+  // They cannot see All Leads, Export, See Agents, or any other admin features
+  if (isSalesAgent) {
+    return (
+      <SalesAgentDashboard
+        leads={[]} // Will be filtered internally
+        tags={[]}
+        salesUsers={[]}
+        handlers={{
+          updateLeadStatus: async () => {},
+          assignLead: async () => {},
+          autoAssignLead: async () => {},
+          updateLeadPriority: async () => {},
+          scheduleFollowUp: async () => {},
+          addTagToLead: async () => {},
+          removeTagFromLead: async () => {},
+          updateLeadNotes: async () => {},
+          markContactedAt: async () => {},
+          logActivity: async () => {},
+          deleteLeads: async () => {},
+        }}
+        onNavigateToTab={onNavigateToTab}
+      />
+    );
+  }
+  
+  // Delete permission - admin role OR explicit delete permission
+  const canDelete = isAdmin || hasGranularPermission('new-leads', 'delete');
+  
+  // Export permission - admins always can, others need explicit permission
+  const canExport = isAdmin || canExportTab('new-leads') || hasGranularPermission('new-leads', 'export');
+  
+  // Granular permissions for sub-views
+  // hasGranularPermission returns: true (granted), false (denied), undefined (not set)
+  const hasAllLeadsPerm = hasGranularPermission('new-leads', 'all-leads');
+  const hasTeamViewPerm = hasGranularPermission('new-leads', 'team-view');
+  
+  // Default behavior:
+  // - all-leads: defaults to TRUE unless explicitly denied (false)
+  // - my-dashboard: ALWAYS allowed (shows only user's own leads)
+  // - team-view: must be explicitly granted (true)
+  const canSeeAllLeads = hasAllLeadsPerm !== false; // true if undefined or true
+  const canSeeMyDashboard = true; // Always allow - shows only user's own leads
+  const canSeeTeamView = hasTeamViewPerm === true; // Must be explicitly granted
+  
+  // Determine default view based on permissions
+  const getDefaultView = () => {
+    if (canSeeAllLeads) return 'leads';
+    if (canSeeMyDashboard) return 'my-dashboard';
+    if (canSeeTeamView) return 'team-dashboard';
+    return 'leads';
+  };
+  
+  const [activeView, setActiveView] = useState<'leads' | 'my-dashboard' | 'team-dashboard' | 'agents-view'>(getDefaultView());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({ from: undefined, to: undefined });
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [sortOption, setSortOption] = useState<SortOption>('newest');
 
-  // useLeads hook - called unconditionally
+  // Lead distribution hook no longer needed here - AgentsLeadsView has its own instance
+
   const {
     leads,
     tags,
@@ -95,13 +147,8 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     updateCallCount
   } = useLeads();
 
-  // Debounce search term - called unconditionally
+  // Debounce search term to avoid filtering on every keystroke
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  
-  // Enhanced presence hook - called unconditionally
-  useEnhancedPresence();
-  
-  // NOTE: All role/permission checks and conditional returns are AFTER all hooks
 
   const filteredLeads = useMemo(() => {
     let result = leads;
@@ -365,45 +412,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     updateCallCount,
   ]);
 
-  // ============================================================
-  // NOW WE CAN DO CONDITIONAL LOGIC (after all hooks are called)
-  // ============================================================
-  
-  // Role-based restrictions
-  const isAdmin = userRole === 'admin';
-  const isSalesAgent = userRole === 'sales';
-  
-  // Permission checks
-  const canDelete = isAdmin || hasGranularPermission('new-leads', 'delete');
-  const canExport = isAdmin || canExportTab('new-leads') || hasGranularPermission('new-leads', 'export');
-  
-  // Granular permissions for sub-views
-  const hasAllLeadsPerm = hasGranularPermission('new-leads', 'all-leads');
-  const hasTeamViewPerm = hasGranularPermission('new-leads', 'team-view');
-  
-  const canSeeAllLeads = hasAllLeadsPerm !== false;
-  const canSeeMyDashboard = true;
-  const canSeeTeamView = hasTeamViewPerm === true;
-
-  // Loading state - AFTER all hooks
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
       </div>
-    );
-  }
-  
-  // Sales agents get a completely restricted view
-  if (isSalesAgent) {
-    return (
-      <SalesAgentDashboard
-        leads={leads}
-        tags={tags}
-        salesUsers={salesUsers}
-        handlers={leadHandlers}
-        onNavigateToTab={onNavigateToTab}
-      />
     );
   }
 

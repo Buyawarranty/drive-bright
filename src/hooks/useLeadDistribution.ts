@@ -2,16 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
-
-export type DistributionMode = 'solo' | 'round_robin' | 'fixed_caps' | 'percentage';
-
 interface DistributionSettings {
   id: string;
   active_only_distribution: boolean;
   overflow_recipient_id: string | null;
   solo_agent_id: string | null;
   solo_mode_enabled: boolean;
-  distribution_mode: DistributionMode;
+  distribution_mode: 'round_robin' | 'percentage';
 }
 
 interface AgentCap {
@@ -21,7 +18,6 @@ interface AgentCap {
   assigned_today: number;
   last_assigned_at: string | null;
   paused: boolean;
-  percentage: number;
   admin_user?: {
     id: string;
     email: string;
@@ -56,17 +52,9 @@ export const useLeadDistribution = () => {
 
       if (error) throw error;
       if (data) {
-        // Map legacy modes to new modes
-        let mode: DistributionMode = (data.distribution_mode as DistributionMode) || 'round_robin';
-        
-        // If solo_mode_enabled is true, use 'solo' mode regardless of distribution_mode
-        if (data.solo_mode_enabled && data.solo_agent_id) {
-          mode = 'solo';
-        }
-        
         setSettings({
           ...data,
-          distribution_mode: mode
+          distribution_mode: (data.distribution_mode as 'round_robin' | 'percentage') || 'round_robin'
         });
       }
     } catch (error) {
@@ -146,29 +134,25 @@ export const useLeadDistribution = () => {
   // Update agent cap
   const updateAgentCap = useCallback(async (adminUserId: string, updates: Partial<AgentCap>) => {
     try {
-      // Remove readonly fields from updates
-      const { id, admin_user_id, admin_user, ...safeUpdates } = updates as any;
-      
       // Check if cap record exists
       const existing = agentCaps.find(cap => cap.admin_user_id === adminUserId);
 
       if (existing) {
         const { error } = await supabase
           .from('agent_distribution_caps')
-          .update(safeUpdates)
+          .update(updates)
           .eq('admin_user_id', adminUserId);
 
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('agent_distribution_caps')
-          .insert({ admin_user_id: adminUserId, ...safeUpdates });
+          .insert({ admin_user_id: adminUserId, ...updates });
 
         if (error) throw error;
       }
 
       await fetchAgentCaps();
-      toast({ title: 'Saved', description: 'Agent settings updated.' });
       return true;
     } catch (error) {
       console.error('Error updating agent cap:', error);
@@ -336,14 +320,6 @@ export const useLeadDistribution = () => {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      
-      // First trigger cap reset to ensure daily counts are fresh
-      try {
-        await supabase.rpc('reset_daily_caps');
-      } catch (e) {
-        console.warn('Could not reset daily caps:', e);
-      }
-      
       await Promise.all([fetchSettings(), fetchAgentCaps(), fetchAgentPresences()]);
       setLoading(false);
     };
