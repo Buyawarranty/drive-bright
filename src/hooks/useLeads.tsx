@@ -146,67 +146,66 @@ export const useLeads = () => {
     setLoading(true);
     
     try {
-      // Create timeout wrapper to prevent hanging queries
-      const timeoutPromise = (promise: Promise<any>, ms: number) => {
-        return Promise.race([
-          promise,
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Query timeout')), ms)
-          )
-        ]);
-      };
+      // Fetch sales_leads
+      let salesQuery = supabase
+        .from('sales_leads')
+        .select(`
+          id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
+          plan_interest, cart_value, quote_amount, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
+          vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status,
+          last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
+          created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
+          call_count,
+          assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(500);
 
-      // Use Promise.all to fetch all data sources in parallel for better performance
+      if (filter === 'all') {
+        salesQuery = salesQuery.not('status', 'in', '("lost","fake_lead")');
+      } else if (filter === 'high_priority') {
+        salesQuery = salesQuery.in('priority', ['high', 'urgent']);
+      } else if (filter === 'fake') {
+        salesQuery = salesQuery.eq('status', 'fake_lead' as any);
+      } else {
+        salesQuery = salesQuery.eq('status', filter as any);
+      }
+
+      // Fetch abandoned carts
+      const cartsQuery = supabase
+        .from('abandoned_carts')
+        .select(`
+          id, full_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
+          vehicle_type, mileage, plan_name, payment_type, step_abandoned, contact_status,
+          contacted_by, last_contacted_at, contact_notes, cart_metadata, is_converted,
+          call_count, created_at, updated_at
+        `)
+        .eq('is_converted', false)
+        .order('created_at', { ascending: false })
+        .limit(500);
+
+      // Execute queries in parallel
       const [salesLeadsResult, abandonedCartsResult] = await Promise.all([
-        // Fetch sales_leads with optimized column selection (with 15s timeout)
-        timeoutPromise((async () => {
-          let query = supabase
-            .from('sales_leads')
-            .select(`
-              id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
-              plan_interest, cart_value, quote_amount, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
-              vehicle_type, mileage, assigned_to, assigned_at, next_action_type, next_action_date, follow_up_status,
-              last_activity_date, last_contacted_at, notes, converted_at, lost_at, lost_reason, abandoned_cart_id,
-              created_at, updated_at, is_paid, payment_amount, payment_method, payment_date, step_two_completed_at,
-              call_count,
-              assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email)
-            `)
-            .order('created_at', { ascending: false })
-            .limit(500);
-
-          if (filter === 'all') {
-            query = query.not('status', 'in', '("lost","fake_lead")');
-          } else if (filter === 'high_priority') {
-            query = query.in('priority', ['high', 'urgent']);
-          } else if (filter === 'fake') {
-            query = query.eq('status', 'fake_lead' as any);
-          } else {
-            query = query.eq('status', filter as any);
-          }
-
-          return query;
-        })(), 15000),
-        // Fetch abandoned carts with timeout
-        timeoutPromise((async () => {
-          return supabase
-            .from('abandoned_carts')
-            .select(`
-              id, full_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
-              vehicle_type, mileage, plan_name, payment_type, step_abandoned, contact_status,
-              contacted_by, last_contacted_at, contact_notes, cart_metadata, is_converted,
-              call_count, created_at, updated_at
-            `)
-            .eq('is_converted', false)
-            .order('created_at', { ascending: false })
-            .limit(500);
-        })(), 15000)
+        salesQuery,
+        cartsQuery
       ]);
 
       const { data: salesLeadsData, error: salesError } = salesLeadsResult;
-      if (salesError) throw salesError;
-
       const { data: abandonedCartsData, error: cartsError } = abandonedCartsResult;
-      if (cartsError) throw cartsError;
+
+      // Handle errors gracefully without throwing
+      if (salesError) {
+        console.error('Error fetching sales leads:', salesError);
+        toast.error('Failed to load sales leads');
+        setLeads([]);
+        setLoading(false);
+        return;
+      }
+
+      if (cartsError) {
+        console.error('Error fetching abandoned carts:', cartsError);
+        // Continue with just sales leads if carts fail
+      }
 
       // Build a map of auth.user_id -> admin_user for abandoned cart assignments
       // contacted_by stores auth.users.id, we need to map to admin_users

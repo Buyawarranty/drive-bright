@@ -60,7 +60,17 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // This ensures consistent hook order across all renders
   // ============================================================
   
-  const { canExportTab, hasGranularPermission } = usePermissions();
+  // Permission hooks - with proper typing for fallback
+  let canExportTabFn: (tabKey: string) => boolean = () => false;
+  let hasGranularPermissionFn: (tabKey: string, permissionKey: string) => boolean = () => false;
+  try {
+    const permissions = usePermissions();
+    canExportTabFn = permissions.canExportTab;
+    hasGranularPermissionFn = permissions.hasGranularPermission;
+  } catch (e) {
+    console.error('Permissions hook error:', e);
+  }
+  
   const { exportToCSV, exportToExcel } = useDataExport();
   
   // State hooks - called unconditionally
@@ -70,14 +80,15 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({ from: undefined, to: undefined });
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [sortOption, setSortOption] = useState<SortOption>('newest');
+  const [hasError, setHasError] = useState(false);
 
   // useLeads hook - called unconditionally
   const {
-    leads,
-    tags,
-    salesUsers,
-    loading,
-    filter,
+    leads = [],
+    tags = [],
+    salesUsers = [],
+    loading = false,
+    filter = 'all',
     setFilter,
     fetchLeads,
     updateLeadStatus,
@@ -99,21 +110,36 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   
   // Enhanced presence hook - called unconditionally (non-blocking)
-  useEnhancedPresence();
+  try {
+    useEnhancedPresence();
+  } catch (e) {
+    console.error('Presence hook error:', e);
+  }
   
-  // Safety timeout to prevent infinite loading - if loading takes > 20s, force show empty state
+  // Safety timeout to prevent infinite loading - if loading takes > 10s, force show empty state
   const [loadingTimeout, setLoadingTimeout] = useState(false);
   useEffect(() => {
     if (loading) {
       const timer = setTimeout(() => {
         setLoadingTimeout(true);
         console.warn('New Leads tab: Loading timeout triggered');
-      }, 20000);
+      }, 10000);
       return () => clearTimeout(timer);
     } else {
       setLoadingTimeout(false);
     }
   }, [loading]);
+
+  // Global error handler for unhandled promise rejections
+  useEffect(() => {
+    const handleRejection = (event: PromiseRejectionEvent) => {
+      console.error('Unhandled rejection in NewLeadsTab:', event.reason);
+      setHasError(true);
+      event.preventDefault(); // Prevent crash
+    };
+    window.addEventListener('unhandledrejection', handleRejection);
+    return () => window.removeEventListener('unhandledrejection', handleRejection);
+  }, []);
   
   // NOTE: All role/permission checks and conditional returns are AFTER all hooks
 
@@ -388,16 +414,28 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const isSalesAgent = userRole === 'sales';
   
   // Permission checks
-  const canDelete = isAdmin || hasGranularPermission('new-leads', 'delete');
-  const canExport = isAdmin || canExportTab('new-leads') || hasGranularPermission('new-leads', 'export');
+  const canDelete = isAdmin || hasGranularPermissionFn('new-leads', 'delete');
+  const canExport = isAdmin || canExportTabFn('new-leads') || hasGranularPermissionFn('new-leads', 'export');
   
   // Granular permissions for sub-views
-  const hasAllLeadsPerm = hasGranularPermission('new-leads', 'all-leads');
-  const hasTeamViewPerm = hasGranularPermission('new-leads', 'team-view');
+  const hasAllLeadsPerm = hasGranularPermissionFn('new-leads', 'all-leads');
+  const hasTeamViewPerm = hasGranularPermissionFn('new-leads', 'team-view');
   
   const canSeeAllLeads = hasAllLeadsPerm !== false;
   const canSeeMyDashboard = true;
   const canSeeTeamView = hasTeamViewPerm === true;
+
+  // Error state - show recovery UI
+  if (hasError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <p className="text-sm text-destructive">Something went wrong loading leads.</p>
+        <Button variant="outline" onClick={() => { setHasError(false); fetchLeads(); }}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
 
   // Loading state - AFTER all hooks (with timeout fallback)
   if (loading && !loadingTimeout) {
@@ -410,11 +448,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   }
   
   // If loading timed out, show a helpful message with retry option
-  if (loadingTimeout && loading) {
+  if (loadingTimeout) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <p className="text-sm text-muted-foreground">Loading is taking longer than expected.</p>
-        <Button variant="outline" onClick={() => fetchLeads()}>
+        <Button variant="outline" onClick={() => { setLoadingTimeout(false); fetchLeads(); }}>
           Retry Loading
         </Button>
       </div>
