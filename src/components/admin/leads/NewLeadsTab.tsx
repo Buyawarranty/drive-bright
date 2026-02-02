@@ -56,21 +56,11 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   userRole,
 }) => {
   // ============================================================
-  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
-  // This ensures consistent hook order across all renders
+  // ALL HOOKS MUST BE CALLED UNCONDITIONALLY - NO TRY/CATCH
   // ============================================================
   
-  // Permission hooks - with proper typing for fallback
-  let canExportTabFn: (tabKey: string) => boolean = () => false;
-  let hasGranularPermissionFn: (tabKey: string, permissionKey: string) => boolean = () => false;
-  try {
-    const permissions = usePermissions();
-    canExportTabFn = permissions.canExportTab;
-    hasGranularPermissionFn = permissions.hasGranularPermission;
-  } catch (e) {
-    console.error('Permissions hook error:', e);
-  }
-  
+  // Permission hooks - called unconditionally
+  const { canExportTab, hasGranularPermission } = usePermissions();
   const { exportToCSV, exportToExcel } = useDataExport();
   
   // State hooks - called unconditionally
@@ -81,53 +71,48 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const [assignmentFilter, setAssignmentFilter] = useState<AssignmentFilter>('all');
   const [sortOption, setSortOption] = useState<SortOption>('newest');
   const [hasError, setHasError] = useState(false);
+  const [forceLoaded, setForceLoaded] = useState(false);
 
   // useLeads hook - called unconditionally
-  const {
-    leads = [],
-    tags = [],
-    salesUsers = [],
-    loading = false,
-    filter = 'all',
-    setFilter,
-    fetchLeads,
-    updateLeadStatus,
-    assignLead,
-    autoAssignLead,
-    updateLeadPriority,
-    scheduleFollowUp,
-    addTagToLead,
-    removeTagFromLead,
-    updateLeadNotes,
-    markContactedAt,
-    logActivity,
-    migrateFromAbandonedCarts,
-    deleteLeads,
-    updateCallCount
-  } = useLeads();
+  const leadsData = useLeads();
+  
+  // Safely destructure with fallbacks (leadsData could be partially undefined)
+  const leads = leadsData?.leads ?? [];
+  const tags = leadsData?.tags ?? [];
+  const salesUsers = leadsData?.salesUsers ?? [];
+  const loading = leadsData?.loading ?? true;
+  const filter = leadsData?.filter ?? 'all';
+  const setFilter = leadsData?.setFilter;
+  const fetchLeads = leadsData?.fetchLeads;
+  const updateLeadStatus = leadsData?.updateLeadStatus;
+  const assignLead = leadsData?.assignLead;
+  const autoAssignLead = leadsData?.autoAssignLead;
+  const updateLeadPriority = leadsData?.updateLeadPriority;
+  const scheduleFollowUp = leadsData?.scheduleFollowUp;
+  const addTagToLead = leadsData?.addTagToLead;
+  const removeTagFromLead = leadsData?.removeTagFromLead;
+  const updateLeadNotes = leadsData?.updateLeadNotes;
+  const markContactedAt = leadsData?.markContactedAt;
+  const logActivity = leadsData?.logActivity;
+  const migrateFromAbandonedCarts = leadsData?.migrateFromAbandonedCarts;
+  const deleteLeads = leadsData?.deleteLeads;
+  const updateCallCount = leadsData?.updateCallCount;
 
   // Debounce search term - called unconditionally
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   
-  // Enhanced presence hook - called unconditionally (non-blocking)
-  try {
-    useEnhancedPresence();
-  } catch (e) {
-    console.error('Presence hook error:', e);
-  }
+  // Enhanced presence hook - called unconditionally
+  useEnhancedPresence();
   
-  // Safety timeout to prevent infinite loading - if loading takes > 10s, force show empty state
-  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  // Force load after 5 seconds no matter what (safety net)
   useEffect(() => {
-    if (loading) {
-      const timer = setTimeout(() => {
-        setLoadingTimeout(true);
-        console.warn('New Leads tab: Loading timeout triggered');
-      }, 10000);
-      return () => clearTimeout(timer);
-    } else {
-      setLoadingTimeout(false);
-    }
+    const timer = setTimeout(() => {
+      if (loading) {
+        console.warn('NewLeadsTab: Force loading after 5s timeout');
+        setForceLoaded(true);
+      }
+    }, 5000);
+    return () => clearTimeout(timer);
   }, [loading]);
 
   // Global error handler for unhandled promise rejections
@@ -140,6 +125,9 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     window.addEventListener('unhandledrejection', handleRejection);
     return () => window.removeEventListener('unhandledrejection', handleRejection);
   }, []);
+  
+  // Determine actual loading state (but force show content after timeout)
+  const isActuallyLoading = loading && !forceLoaded;
   
   // NOTE: All role/permission checks and conditional returns are AFTER all hooks
 
@@ -414,12 +402,12 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const isSalesAgent = userRole === 'sales';
   
   // Permission checks
-  const canDelete = isAdmin || hasGranularPermissionFn('new-leads', 'delete');
-  const canExport = isAdmin || canExportTabFn('new-leads') || hasGranularPermissionFn('new-leads', 'export');
+  const canDelete = isAdmin || hasGranularPermission('new-leads', 'delete');
+  const canExport = isAdmin || canExportTab('new-leads') || hasGranularPermission('new-leads', 'export');
   
   // Granular permissions for sub-views
-  const hasAllLeadsPerm = hasGranularPermissionFn('new-leads', 'all-leads');
-  const hasTeamViewPerm = hasGranularPermissionFn('new-leads', 'team-view');
+  const hasAllLeadsPerm = hasGranularPermission('new-leads', 'all-leads');
+  const hasTeamViewPerm = hasGranularPermission('new-leads', 'team-view');
   
   const canSeeAllLeads = hasAllLeadsPerm !== false;
   const canSeeMyDashboard = true;
@@ -430,31 +418,19 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <p className="text-sm text-destructive">Something went wrong loading leads.</p>
-        <Button variant="outline" onClick={() => { setHasError(false); fetchLeads(); }}>
+        <Button variant="outline" onClick={() => { setHasError(false); fetchLeads?.(); }}>
           Retry
         </Button>
       </div>
     );
   }
 
-  // Loading state - AFTER all hooks (with timeout fallback)
-  if (loading && !loadingTimeout) {
+  // Loading state - AFTER all hooks (with force timeout fallback)
+  if (isActuallyLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
         <p className="text-sm text-muted-foreground">Loading leads...</p>
-      </div>
-    );
-  }
-  
-  // If loading timed out, show a helpful message with retry option
-  if (loadingTimeout) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <p className="text-sm text-muted-foreground">Loading is taking longer than expected.</p>
-        <Button variant="outline" onClick={() => { setLoadingTimeout(false); fetchLeads(); }}>
-          Retry Loading
-        </Button>
       </div>
     );
   }
