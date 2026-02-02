@@ -103,19 +103,28 @@ serve(async (req) => {
       }
     }
 
-    // Calculate discount amount
+    // Calculate discount amount with minimum price floor (£1 minimum for Stripe)
+    const MINIMUM_FINAL_AMOUNT = 1; // £1 minimum - Stripe requires at least £0.50 GBP
+    
     let discountAmount = 0;
     if (discountCode.type === 'percentage') {
       discountAmount = (orderAmount * discountCode.value) / 100;
     } else {
       discountAmount = Math.min(discountCode.value, orderAmount);
     }
+    
+    // Cap discount so final amount is at least £1
+    const maxAllowedDiscount = orderAmount - MINIMUM_FINAL_AMOUNT;
+    const effectiveDiscountAmount = Math.min(discountAmount, maxAllowedDiscount);
+    const finalAmount = Math.max(MINIMUM_FINAL_AMOUNT, orderAmount - effectiveDiscountAmount);
 
     logStep("Discount code validated successfully", {
       code,
-      discountAmount,
+      originalDiscountAmount: discountAmount,
+      effectiveDiscountAmount,
       type: discountCode.type,
-      value: discountCode.value
+      value: discountCode.value,
+      finalAmount
     });
 
     return new Response(JSON.stringify({
@@ -128,8 +137,8 @@ serve(async (req) => {
         stripe_coupon_id: discountCode.stripe_coupon_id,
         stripe_promo_code_id: discountCode.stripe_promo_code_id
       },
-      discountAmount,
-      finalAmount: orderAmount - discountAmount
+      discountAmount: effectiveDiscountAmount,
+      finalAmount
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
