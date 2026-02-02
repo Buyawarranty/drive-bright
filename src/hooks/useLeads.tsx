@@ -143,13 +143,23 @@ export const useLeads = () => {
   };
 
   const fetchLeads = useCallback(async () => {
+    setLoading(true);
+    
     try {
-      setLoading(true);
-      
+      // Create timeout wrapper to prevent hanging queries
+      const timeoutPromise = (promise: Promise<any>, ms: number) => {
+        return Promise.race([
+          promise,
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Query timeout')), ms)
+          )
+        ]);
+      };
+
       // Use Promise.all to fetch all data sources in parallel for better performance
       const [salesLeadsResult, abandonedCartsResult] = await Promise.all([
-        // Fetch sales_leads with optimized column selection
-        (async () => {
+        // Fetch sales_leads with optimized column selection (with 15s timeout)
+        timeoutPromise((async () => {
           let query = supabase
             .from('sales_leads')
             .select(`
@@ -162,34 +172,34 @@ export const useLeads = () => {
               assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email)
             `)
             .order('created_at', { ascending: false })
-            .limit(500); // Limit initial fetch for performance
+            .limit(500);
 
           if (filter === 'all') {
-            // Exclude lost and fake leads from the main "All" view
             query = query.not('status', 'in', '("lost","fake_lead")');
           } else if (filter === 'high_priority') {
             query = query.in('priority', ['high', 'urgent']);
           } else if (filter === 'fake') {
             query = query.eq('status', 'fake_lead' as any);
           } else {
-            // Cast to any to allow custom status values not yet in database types
             query = query.eq('status', filter as any);
           }
 
           return query;
-        })(),
-        // Fetch abandoned carts with optimized column selection and limit
-        supabase
-          .from('abandoned_carts')
-          .select(`
-            id, full_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
-            vehicle_type, mileage, plan_name, payment_type, step_abandoned, contact_status,
-            contacted_by, last_contacted_at, contact_notes, cart_metadata, is_converted,
-            call_count, created_at, updated_at
-          `)
-          .eq('is_converted', false)
-          .order('created_at', { ascending: false })
-          .limit(500) // Limit for performance
+        })(), 15000),
+        // Fetch abandoned carts with timeout
+        timeoutPromise((async () => {
+          return supabase
+            .from('abandoned_carts')
+            .select(`
+              id, full_name, email, phone, vehicle_reg, vehicle_make, vehicle_model, vehicle_year,
+              vehicle_type, mileage, plan_name, payment_type, step_abandoned, contact_status,
+              contacted_by, last_contacted_at, contact_notes, cart_metadata, is_converted,
+              call_count, created_at, updated_at
+            `)
+            .eq('is_converted', false)
+            .order('created_at', { ascending: false })
+            .limit(500);
+        })(), 15000)
       ]);
 
       const { data: salesLeadsData, error: salesError } = salesLeadsResult;
@@ -419,9 +429,14 @@ export const useLeads = () => {
       }));
 
       setLeads(leadsWithTags as Lead[]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching leads:', error);
-      toast.error('Failed to load leads');
+      const errorMessage = error?.message === 'Query timeout' 
+        ? 'Loading leads took too long. Please try again.'
+        : 'Failed to load leads';
+      toast.error(errorMessage);
+      // Set empty leads to show "No leads found" state instead of infinite loading
+      setLeads([]);
     } finally {
       setLoading(false);
     }
