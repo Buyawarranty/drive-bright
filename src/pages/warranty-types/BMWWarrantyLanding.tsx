@@ -32,7 +32,7 @@ import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import pandaMechanic from '@/assets/panda-mechanic.png';
 import pandaGarage from '@/assets/panda-garage-service.png';
 import bmwWhyChooseUs from '@/assets/bmw-extended-used-car-warranty.webp';
-import bmwHighMileage from '@/assets/bmw-high-mileage-transparent.png';
+import bmwHighMileage from '@/assets/bmw-i3-warranty.webp';
 
 // BMW Models covered (grouped by category)
 const bmwModelCategories = {
@@ -1166,6 +1166,17 @@ const BMWWarrantyLanding: React.FC = () => {
         <section className="py-10 md:py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-6 md:gap-10 items-center">
+              {/* Image on LEFT side */}
+              <div className="flex justify-center">
+                <OptimizedImage 
+                  src={bmwHighMileage}
+                  alt="BMW i3 with BuyAWarranty branding - High mileage BMW warranty coverage"
+                  className="w-64 sm:w-80 md:w-96 lg:w-[28rem] h-auto object-contain"
+                  width={448}
+                  height={300}
+                />
+              </div>
+              {/* Text on RIGHT side */}
               <div className="text-center lg:text-left">
                 <div className="text-green-600 text-xs md:text-sm font-semibold uppercase tracking-wide mb-3 md:mb-4">
                   High Mileage BMW, No Problem!
@@ -1193,15 +1204,6 @@ const BMWWarrantyLanding: React.FC = () => {
                     <span className="text-sm md:text-base text-gray-700">Unlimited claims value</span>
                   </div>
                 </div>
-              </div>
-              <div className="flex justify-center order-first lg:order-last">
-                <OptimizedImage 
-                  src={bmwHighMileage}
-                  alt="Miles the Panda with phone showing BuyAWarranty - High mileage BMW warranty coverage"
-                  className="w-48 sm:w-64 md:w-80 lg:w-96 h-auto object-contain"
-                  width={384}
-                  height={384}
-                />
               </div>
             </div>
             
