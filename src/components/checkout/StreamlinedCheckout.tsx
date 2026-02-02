@@ -367,16 +367,27 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Pay in full uses 10% discount on the floored monthly total
   const stripeTotalPrice = Math.floor(bumperTotalPrice * 0.90);
 
-  // Calculate discounts
+  // Calculate discounts with minimum price floor (Stripe requires minimum £0.50, we use £1 for safety)
+  const MINIMUM_PRICE = 1; // £1 minimum charge for Stripe
   const hasValidDiscountCodes = appliedDiscountCodes.length > 0;
   const totalDiscountAmount = appliedDiscountCodes.reduce((sum, code) => sum + code.discountAmount, 0);
-  const discountedBumperPrice = Math.floor(bumperTotalPrice - totalDiscountAmount);
-  const discountedStripePrice = Math.floor(stripeTotalPrice - totalDiscountAmount);
+  
+  // Apply discount but ensure we never go below minimum price
+  // For bumper (monthly): cap discount so final price >= £1
+  const maxBumperDiscount = bumperTotalPrice - MINIMUM_PRICE;
+  const effectiveBumperDiscount = Math.min(totalDiscountAmount, maxBumperDiscount);
+  const discountedBumperPrice = Math.max(MINIMUM_PRICE, Math.floor(bumperTotalPrice - effectiveBumperDiscount));
+  
+  // For stripe (pay in full): cap discount so final price >= £1
+  const maxStripeDiscount = stripeTotalPrice - MINIMUM_PRICE;
+  const effectiveStripeDiscount = Math.min(totalDiscountAmount, maxStripeDiscount);
+  const discountedStripePrice = Math.max(MINIMUM_PRICE, Math.floor(stripeTotalPrice - effectiveStripeDiscount));
+  
   const savings = bumperTotalPrice - stripeTotalPrice;
   
   // Calculate discounted monthly price - use Step 3 monthly price when no discounts, otherwise recalculate
   const discountedMonthlyPrice = hasValidDiscountCodes 
-    ? Math.floor(discountedBumperPrice / 12) 
+    ? Math.max(1, Math.floor(discountedBumperPrice / 12)) 
     : monthlyPrice;
 
   // Check section completion status - now includes address fields
