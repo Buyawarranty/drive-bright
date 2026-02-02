@@ -259,17 +259,15 @@ const WarrantyTypes: React.FC = () => {
 
               {/* Right Content - Hero Image */}
               <div className="relative hidden lg:block">
-                <div className="max-w-[25%] mx-auto">
-                  <img 
-                    src="/assets/warranty-types-hero-car.png"
-                    alt="Blue Audi car - Buy A Warranty vehicle protection" 
-                    className="w-full h-auto object-contain"
-                    loading="eager"
-                    decoding="async"
-                    width={250}
-                    height={150}
-                  />
-                </div>
+                <OptimizedImage 
+                  src="/extended_warranty_uk-car-trustworthy-reviews.png"
+                  alt="Extended warranty UK - Car trustworthy reviews - Panda mascot with vehicle collection" 
+                  className="w-full h-auto"
+                  priority={true}
+                  width={651}
+                  height={434}
+                  sizes="(max-width: 768px) 100vw, 651px"
+                />
                 {/* Vehicle Types */}
                 <div className="mt-6 flex items-center justify-center gap-6 flex-wrap">
                   <div className="flex items-center space-x-1.5">
@@ -463,8 +461,10 @@ const WarrantyTypes: React.FC = () => {
                 </span>
               </Link>
 
-              {/* Dynamic Pages from Database */}
-              {dynamicPages.map((page) => {
+              {/* Dynamic Pages from Database - exclude BMW since it's hardcoded above */}
+              {dynamicPages
+                .filter((page) => page.brand_name.toLowerCase() !== 'bmw')
+                .map((page) => {
                 const IconComponent = getIconForPageType(page.page_type, page.brand_name);
                 return (
                   <Link 
