@@ -25,6 +25,7 @@ interface Customer {
   final_amount: number | null;
   warranty_reference_number: string | null;
   purchase_source: string | null;
+  vehicle_fuel_type: string | null;
 }
 
 // Test names to exclude from analytics (matching CustomersTab filtering)
@@ -65,7 +66,7 @@ export const AnalyticsTab = () => {
       // Match CustomersTab filtering exactly
       const { data, error } = await supabase
         .from('customers')
-        .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source')
+        .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, vehicle_fuel_type')
         .not('email', 'ilike', '%@test.com%')
         .not('email', 'ilike', '%testuser%')
         .not('email', 'ilike', '%guest@%')
@@ -159,7 +160,12 @@ export const AnalyticsTab = () => {
   // Helper function to check if customer is cancelled/refunded (excluded from revenue)
   const isRevenueLost = (status: string): boolean => {
     const lowerStatus = status?.toLowerCase() || '';
-    return lowerStatus === 'cancelled' || lowerStatus === 'refunded';
+    return lowerStatus === 'cancelled' || lowerStatus === 'refunded' || lowerStatus === 'test purchase';
+  };
+  
+  // Helper function to check if status is specifically a refund
+  const isRefunded = (status: string): boolean => {
+    return status?.toLowerCase() === 'refunded';
   };
 
   // Filter customers based on date range and source
@@ -273,16 +279,76 @@ export const AnalyticsTab = () => {
     };
   }, [customers, effectiveDateRange]);
 
-  // Plan distribution data
-  const planDistribution = filteredCustomers.reduce((acc: Record<string, number>, customer) => {
-    acc[customer.plan_type] = (acc[customer.plan_type] || 0) + 1;
-    return acc;
-  }, {});
+  // Refund metrics calculation
+  const refundMetrics = useMemo(() => {
+    const refundedCustomers = filteredCustomers.filter(c => isRefunded(c.status));
+    const totalRefundAmount = refundedCustomers.reduce((sum, c) => sum + (Number(c.final_amount) || 0), 0);
+    return {
+      count: refundedCustomers.length,
+      totalAmount: totalRefundAmount
+    };
+  }, [filteredCustomers]);
 
-  const planData = Object.entries(planDistribution).map(([name, value]) => ({
-    name,
-    value,
-  }));
+  // Monthly refund data (last 12 months)
+  const monthlyRefunds = useMemo(() => {
+    const months = Array.from({ length: 12 }, (_, i) => {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      return {
+        month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        monthKey: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
+        refundAmount: 0,
+        refundCount: 0
+      };
+    }).reverse();
+
+    customers.forEach(customer => {
+      if (isRefunded(customer.status) && customer.final_amount && customer.signup_date) {
+        const signupDate = new Date(customer.signup_date);
+        const monthKey = `${signupDate.getFullYear()}-${String(signupDate.getMonth() + 1).padStart(2, '0')}`;
+        const monthData = months.find(m => m.monthKey === monthKey);
+        if (monthData) {
+          monthData.refundAmount += Number(customer.final_amount) || 0;
+          monthData.refundCount += 1;
+        }
+      }
+    });
+
+    return months;
+  }, [customers]);
+
+  // Normalize and categorize vehicle fuel types
+  const normalizeVehicleType = (fuelType: string | null): string => {
+    if (!fuelType) return 'Unknown';
+    const lower = fuelType.toLowerCase().trim();
+    
+    // Electric
+    if (lower.includes('electric') || lower === 'electricity' || lower === 'ev') {
+      if (lower.includes('hybrid')) return 'Hybrid';
+      return 'Electric';
+    }
+    // Hybrid
+    if (lower.includes('hybrid')) return 'Hybrid';
+    // Diesel
+    if (lower.includes('diesel')) return 'Diesel';
+    // Petrol
+    if (lower.includes('petrol') || lower === 'ss') return 'Petrol';
+    
+    return fuelType; // Return original if no match
+  };
+
+  // Vehicle type distribution data (replaces plan distribution)
+  const vehicleTypeDistribution = useMemo(() => {
+    const distribution = filteredCustomers.reduce((acc: Record<string, number>, customer) => {
+      const vehicleType = normalizeVehicleType(customer.vehicle_fuel_type);
+      acc[vehicleType] = (acc[vehicleType] || 0) + 1;
+      return acc;
+    }, {});
+
+    return Object.entries(distribution)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value); // Sort by count descending
+  }, [filteredCustomers]);
 
   // Monthly signup data (last 6 months)
   const monthlySignups = useMemo(() => {
@@ -537,7 +603,60 @@ export const AnalyticsTab = () => {
         </Card>
       </div>
 
-      {/* Monthly Revenue Chart */}
+      {/* Refunds Section */}
+      <Card className="border-l-4 border-l-red-500">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <div>
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <TrendingDown className="h-4 w-4 text-red-500" />
+              Refunds {selectedMonth ? `(${format(new Date(parseInt(selectedMonth.split('-')[0]), parseInt(selectedMonth.split('-')[1]) - 1), 'MMMM yyyy')})` : effectiveDateRange?.from ? '(Filtered Period)' : '(All Time)'}
+            </CardTitle>
+            <CardDescription className="mt-1">
+              Money refunded to customers
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-1">
+              <span className="text-sm text-muted-foreground">Total Refunds</span>
+              <p className="text-2xl font-bold text-red-600">
+                £{refundMetrics.totalAmount.toLocaleString('en-GB')}
+              </p>
+            </div>
+            <div className="space-y-1">
+              <span className="text-sm text-muted-foreground">Refund Count</span>
+              <p className="text-2xl font-bold">{refundMetrics.count}</p>
+            </div>
+            <div className="space-y-1">
+              <span className="text-sm text-muted-foreground">Avg Refund</span>
+              <p className="text-2xl font-bold text-red-600">
+                £{refundMetrics.count > 0 ? Math.round(refundMetrics.totalAmount / refundMetrics.count) : 0}
+              </p>
+            </div>
+          </div>
+          
+          {/* Monthly refunds breakdown */}
+          <div className="mt-4 pt-4 border-t">
+            <p className="text-sm font-medium text-muted-foreground mb-2">Monthly Refunds (Last 12 Months)</p>
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {monthlyRefunds.map((month) => (
+                <div 
+                  key={month.monthKey}
+                  className="flex-shrink-0 min-w-[80px] text-center p-2 bg-muted/30 rounded"
+                >
+                  <p className="text-xs text-muted-foreground">{month.month}</p>
+                  <p className="text-sm font-semibold text-red-600">
+                    £{month.refundAmount.toLocaleString()}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{month.refundCount} refunds</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
@@ -617,14 +736,17 @@ export const AnalyticsTab = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Plan Distribution</CardTitle>
+            <CardTitle>Vehicle Type Distribution</CardTitle>
+            <CardDescription>
+              Breakdown by fuel type (Petrol, Diesel, Electric, Hybrid)
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            {planData.length > 0 ? (
+            {vehicleTypeDistribution.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={planData}
+                    data={vehicleTypeDistribution}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
@@ -636,7 +758,7 @@ export const AnalyticsTab = () => {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {planData.map((entry, index) => (
+                    {vehicleTypeDistribution.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -645,7 +767,7 @@ export const AnalyticsTab = () => {
               </ResponsiveContainer>
             ) : (
               <div className="flex items-center justify-center h-[300px] text-gray-500">
-                No plan data available
+                No vehicle type data available
               </div>
             )}
           </CardContent>
@@ -679,11 +801,16 @@ export const AnalyticsTab = () => {
                     <p className="text-xs text-gray-500">
                       {new Date(customer.signup_date).toLocaleDateString()}
                     </p>
-                    {customer.final_amount && (
+                    {/* Only show amount for active customers - hide for cancelled/refunded/test */}
+                    {customer.final_amount && !isRevenueLost(customer.status) ? (
                       <p className="text-xs font-semibold text-green-600">
                         £{Number(customer.final_amount).toLocaleString()}
                       </p>
-                    )}
+                    ) : isRevenueLost(customer.status) ? (
+                      <Badge variant="outline" className="text-xs mt-1 text-red-600 border-red-200">
+                        {customer.status}
+                      </Badge>
+                    ) : null}
                   </div>
                 </div>
               ))}
