@@ -246,7 +246,7 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
       </div>
 
       {/* Discount Applied Row */}
-      {appliedDiscountCodes.length > 0 && (
+      {appliedDiscountCodes.length > 0 && totalDiscountAmount > 0 && (
         <div className="mt-4 border border-[#0BA360] bg-green-50 rounded-lg px-4 py-3">
           {appliedDiscountCodes.map((discount) => (
             <div key={discount.code} className="flex items-center justify-between gap-2">
@@ -256,7 +256,10 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                 <span className="text-sm text-gray-600 flex-shrink-0">applied</span>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
-                <span className="text-[#0BA360] font-bold text-base whitespace-nowrap">-£{discount.discountAmount.toFixed(2)}</span>
+                {/* Display the total calculated discount amount */}
+                <span className="text-[#0BA360] font-bold text-base whitespace-nowrap">
+                  -£{totalDiscountAmount.toFixed(2)}
+                </span>
                 <button
                   type="button"
                   onClick={() => onRemoveDiscountCode(discount.code)}

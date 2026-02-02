@@ -370,20 +370,44 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Calculate discounts with minimum price floor (Stripe requires minimum £0.50, we use £1 for safety)
   const MINIMUM_PRICE = 1; // £1 minimum charge for Stripe
   const hasValidDiscountCodes = appliedDiscountCodes.length > 0;
-  const totalDiscountAmount = appliedDiscountCodes.reduce((sum, code) => sum + code.discountAmount, 0);
+  
+  // CRITICAL: Calculate discount amounts based on the SELECTED payment method
+  // For monthly payments (Bumper): discount applies to bumperTotalPrice
+  // For pay in full (Stripe): discount applies to stripeTotalPrice (which already has 10% off)
+  const calculateDiscountForPaymentMethod = (basePrice: number) => {
+    return appliedDiscountCodes.reduce((sum, code) => {
+      const discountAmount = code.type === 'percentage' 
+        ? basePrice * (code.value / 100)
+        : code.value;
+      return sum + discountAmount;
+    }, 0);
+  };
+  
+  // Calculate discounts separately for each payment method
+  const bumperDiscountAmount = calculateDiscountForPaymentMethod(bumperTotalPrice);
+  const stripeDiscountAmount = calculateDiscountForPaymentMethod(stripeTotalPrice);
   
   // Apply discount but ensure we never go below minimum price
   // For bumper (monthly): cap discount so final price >= £1
   const maxBumperDiscount = bumperTotalPrice - MINIMUM_PRICE;
-  const effectiveBumperDiscount = Math.min(totalDiscountAmount, maxBumperDiscount);
+  const effectiveBumperDiscount = Math.min(bumperDiscountAmount, maxBumperDiscount);
   const discountedBumperPrice = Math.max(MINIMUM_PRICE, Math.floor(bumperTotalPrice - effectiveBumperDiscount));
   
   // For stripe (pay in full): cap discount so final price >= £1
+  // IMPORTANT: Discount is calculated on stripeTotalPrice (already 10% off), not bumperTotalPrice
   const maxStripeDiscount = stripeTotalPrice - MINIMUM_PRICE;
-  const effectiveStripeDiscount = Math.min(totalDiscountAmount, maxStripeDiscount);
+  const effectiveStripeDiscount = Math.min(stripeDiscountAmount, maxStripeDiscount);
   const discountedStripePrice = Math.max(MINIMUM_PRICE, Math.floor(stripeTotalPrice - effectiveStripeDiscount));
   
-  const savings = bumperTotalPrice - stripeTotalPrice;
+  // For display purposes, show the discount amount relevant to the current selection
+  const totalDiscountAmount = selectedPayment === 'full' ? effectiveStripeDiscount : effectiveBumperDiscount;
+  
+  // Base savings from 10% pay-in-full discount
+  const baseSavings = bumperTotalPrice - stripeTotalPrice;
+  // Total savings including promo code (for "Pay in Full" option)
+  const totalSavings = bumperTotalPrice - discountedStripePrice;
+  // Use totalSavings when promo codes are applied, otherwise baseSavings
+  const savings = hasValidDiscountCodes ? totalSavings : baseSavings;
   
   // Calculate discounted monthly price - use Step 3 monthly price when no discounts, otherwise recalculate
   const discountedMonthlyPrice = hasValidDiscountCodes 
@@ -918,15 +942,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         return;
       }
       
-      const discountAmount = discountCode.type === 'percentage' 
-        ? bumperTotalPrice * (discountCode.value / 100)
-        : discountCode.value;
-      
+      // Store the discount code details - discountAmount will be calculated dynamically
+      // based on the selected payment method (monthly vs pay in full)
       setAppliedDiscountCodes(prev => [...prev, {
         code: promoCodeInput.toUpperCase(),
         type: discountCode.type,
         value: discountCode.value,
-        discountAmount,
+        discountAmount: 0, // Will be calculated dynamically in useMemo
         stripe_coupon_id: discountCode.stripe_coupon_id,
         stripe_promo_code_id: discountCode.stripe_promo_code_id
       }]);
