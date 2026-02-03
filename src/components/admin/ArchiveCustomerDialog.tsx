@@ -8,9 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Archive, Ban, PoundSterling, RotateCcw, UserX, AlertTriangle, FlaskConical } from 'lucide-react';
+import { Archive, Ban, PoundSterling, RotateCcw, UserX, AlertTriangle, FlaskConical, UserMinus } from 'lucide-react';
 
-export type ArchiveAction = 'cancel' | 'refund' | 'archive' | 'test';
+export type ArchiveAction = 'cancel' | 'refund' | 'archive' | 'test' | 'fake';
 
 interface ArchiveCustomerDialogProps {
   isOpen: boolean;
@@ -37,6 +37,7 @@ const ARCHIVE_REASONS = [
   'Duplicate policy',
   'Administrative error',
   'Test record cleanup',
+  'Fake/Spam lead',
   'Other'
 ];
 
@@ -55,13 +56,15 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
 
   const isBulk = customers.length > 1;
 
-  // Auto-select reason when refund or test is chosen
+  // Auto-select reason when refund, test, or fake is chosen
   const handleActionChange = (newAction: ArchiveAction) => {
     setAction(newAction);
     if (newAction === 'refund' && !reason) {
       setReason('Customer refund processed');
     } else if (newAction === 'test' && !reason) {
       setReason('Test record cleanup');
+    } else if (newAction === 'fake' && !reason) {
+      setReason('Fake/Spam lead');
     }
   };
 
@@ -87,9 +90,11 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
 
       for (const customer of customers) {
         try {
-          if (action === 'archive' || action === 'test') {
+          if (action === 'archive' || action === 'test' || action === 'fake') {
             // Soft delete - hide from view but keep in database
-            // For test purchases, also mark the status
+            // For test purchases or fake leads, also mark the status
+            const statusUpdate = action === 'test' ? 'Test Purchase' : action === 'fake' ? 'Fake Lead' : undefined;
+            
             const { error } = await supabase.rpc('soft_delete_customer', {
               customer_uuid: customer.id,
               admin_uuid: adminId
@@ -103,28 +108,29 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
                   is_deleted: true,
                   deleted_at: new Date().toISOString(),
                   deleted_by: adminId,
-                  ...(action === 'test' ? { status: 'Test Purchase' } : {})
+                  ...(statusUpdate ? { status: statusUpdate } : {})
                 })
                 .eq('id', customer.id);
               
               if (directError) throw directError;
-            } else if (action === 'test') {
-              // Update status to Test Purchase
+            } else if (statusUpdate) {
+              // Update status to Test Purchase or Fake Lead
               await supabase
                 .from('customers')
-                .update({ status: 'Test Purchase' })
+                .update({ status: statusUpdate })
                 .eq('id', customer.id);
             }
             
             // Also archive related policies
             if (customer.policy_id) {
+              const policyStatus = action === 'test' ? 'test' : action === 'fake' ? 'fake_lead' : undefined;
               await supabase
                 .from('customer_policies')
                 .update({
                   is_deleted: true,
                   deleted_at: new Date().toISOString(),
                   deleted_by: adminId,
-                  ...(action === 'test' ? { status: 'test' } : {})
+                  ...(policyStatus ? { status: policyStatus } : {})
                 })
                 .eq('id', customer.policy_id);
             }
@@ -164,7 +170,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
           }
 
           // Log the action as a note
-          const actionLabel = action === 'archive' ? 'ARCHIVED' : action === 'test' ? 'TEST PURCHASE ARCHIVED' : action === 'refund' ? 'REFUNDED' : 'CANCELLED';
+          const actionLabel = action === 'archive' ? 'ARCHIVED' : action === 'test' ? 'TEST PURCHASE ARCHIVED' : action === 'fake' ? 'FAKE LEAD ARCHIVED' : action === 'refund' ? 'REFUNDED' : 'CANCELLED';
           const noteText = `WARRANTY ${actionLabel}\n` +
             `Reason: ${reason}\n` +
             `${action === 'refund' && refundAmount ? `Refund Amount: £${refundAmount}\n` : ''}` +
@@ -186,7 +192,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
       }
 
       if (successCount > 0) {
-        const actionText = action === 'archive' ? 'archived' : action === 'test' ? 'marked as test and archived' : action === 'refund' ? 'marked as refunded' : 'cancelled';
+        const actionText = action === 'archive' ? 'archived' : action === 'test' ? 'marked as test and archived' : action === 'fake' ? 'marked as fake lead and archived' : action === 'refund' ? 'marked as refunded' : 'cancelled';
         toast.success(
           isBulk 
             ? `${successCount} customer(s) ${actionText} successfully`
@@ -221,6 +227,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
       case 'refund': return <PoundSterling className="h-5 w-5" />;
       case 'archive': return <Archive className="h-5 w-5" />;
       case 'test': return <FlaskConical className="h-5 w-5" />;
+      case 'fake': return <UserMinus className="h-5 w-5" />;
       default: return <Ban className="h-5 w-5" />;
     }
   };
@@ -230,6 +237,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
       case 'refund': return 'text-amber-600';
       case 'archive': return 'text-gray-600';
       case 'test': return 'text-purple-600';
+      case 'fake': return 'text-orange-600';
       default: return 'text-red-600';
     }
   };
@@ -239,6 +247,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
       case 'refund': return 'default';
       case 'archive': return 'secondary';
       case 'test': return 'default';
+      case 'fake': return 'default';
       default: return 'destructive';
     }
   };
@@ -250,6 +259,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
       case 'refund': return `Mark as Refunded${count}`;
       case 'archive': return `Archive${count}`;
       case 'test': return `Mark as Test${count}`;
+      case 'fake': return `Mark as Fake Lead${count}`;
       default: return `Cancel Warranty${count}`;
     }
   };
@@ -304,6 +314,12 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
                   <div className="flex items-center gap-2">
                     <FlaskConical className="h-4 w-4 text-purple-500" />
                     <span>Mark as Test Purchase</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="fake">
+                  <div className="flex items-center gap-2">
+                    <UserMinus className="h-4 w-4 text-orange-500" />
+                    <span>Mark as Fake Lead</span>
                   </div>
                 </SelectItem>
               </SelectContent>
@@ -365,6 +381,16 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
             </div>
           )}
 
+          {action === 'fake' && (
+            <div className="flex items-start gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+              <UserMinus className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-orange-800">
+                <p className="font-medium">Fake/Spam lead - Hidden from active view</p>
+                <p className="text-xs mt-1">Record will be marked as "Fake Lead" and moved to archive. Use for spam or fraudulent entries.</p>
+              </div>
+            </div>
+          )}
+
           {/* Reason Selector */}
           <div className="space-y-2">
             <Label htmlFor="reason">Reason *</Label>
@@ -392,8 +418,8 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
             />
           </div>
 
-          {/* Revoke Portal Access - only for cancel/refund */}
-          {action !== 'archive' && !isBulk && customers[0]?.user_id && (
+          {/* Revoke Portal Access - only for cancel/refund (not for archive, test, fake) */}
+          {action !== 'archive' && action !== 'test' && action !== 'fake' && !isBulk && customers[0]?.user_id && (
             <div className="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
               <Checkbox
                 id="revokeAccess"
@@ -425,7 +451,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
             variant={getButtonVariant() as any}
             onClick={handleSubmit}
             disabled={isProcessing || !reason}
-            className={action === 'refund' ? 'bg-amber-600 hover:bg-amber-700' : action === 'test' ? 'bg-purple-600 hover:bg-purple-700' : ''}
+            className={action === 'refund' ? 'bg-amber-600 hover:bg-amber-700' : action === 'test' ? 'bg-purple-600 hover:bg-purple-700' : action === 'fake' ? 'bg-orange-600 hover:bg-orange-700' : ''}
           >
             {getButtonText()}
           </Button>
