@@ -11,6 +11,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Lead, AdminUser } from '@/hooks/useLeads';
 import { useLeadDistribution } from '@/hooks/useLeadDistribution';
 import { PresenceBadge } from './distribution/PresenceBadge';
@@ -18,10 +20,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { 
   Users, ChevronDown, ChevronRight, Phone, Mail, Car, 
   Calendar, UserCircle, Hourglass, Info, Trash2, Save, Zap, UserPlus,
-  RotateCcw, Percent, ArrowRight, AlertCircle
+  RotateCcw, Percent, ArrowRight, AlertCircle, CalendarIcon, X
 } from 'lucide-react';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow, startOfWeek, startOfMonth, startOfYear, endOfDay, isWithinInterval } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
+import { DateRange } from 'react-day-picker';
 
 interface AgentsLeadsViewProps {
   leads: Lead[];
@@ -65,6 +68,14 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   const [editedPercentages, setEditedPercentages] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  
+  // Show all leads state per group
+  const [showAllLeads, setShowAllLeads] = useState<Set<string>>(new Set());
+  
+  // Date filter state
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [quickDateFilter, setQuickDateFilter] = useState<string>('all');
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [savingMode, setSavingMode] = useState(false);
   
   // Reassignment dialog state
@@ -306,12 +317,74 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
     return groups;
   }, [leads, salesUsers]);
 
+  // Handle quick date filter selection
+  const handleQuickDateFilter = (filter: string) => {
+    setQuickDateFilter(filter);
+    const now = new Date();
+    
+    switch (filter) {
+      case 'week':
+        setDateRange({ from: startOfWeek(now, { weekStartsOn: 1 }), to: endOfDay(now) });
+        break;
+      case 'month':
+        setDateRange({ from: startOfMonth(now), to: endOfDay(now) });
+        break;
+      case 'year':
+        setDateRange({ from: startOfYear(now), to: endOfDay(now) });
+        break;
+      case 'all':
+      default:
+        setDateRange(undefined);
+        break;
+    }
+    setIsCalendarOpen(false);
+  };
+
+  const clearDateFilter = () => {
+    setDateRange(undefined);
+    setQuickDateFilter('all');
+  };
+
+  // Filter leads by date
+  const filterLeadsByDate = (leadsToFilter: Lead[]) => {
+    if (!dateRange?.from) return leadsToFilter;
+    
+    return leadsToFilter.filter(lead => {
+      const leadDate = new Date(lead.created_at);
+      const from = dateRange.from!;
+      const to = dateRange.to || endOfDay(new Date());
+      return isWithinInterval(leadDate, { start: from, end: to });
+    });
+  };
+
   // Filter by selected agent
   const filteredGroups = useMemo(() => {
-    if (selectedAgent === 'all') return agentGroups;
-    if (selectedAgent === 'awaiting_contact') return agentGroups.filter(g => g.agentId === null);
-    return agentGroups.filter(g => g.agentId === selectedAgent);
-  }, [agentGroups, selectedAgent]);
+    let groups = agentGroups;
+    
+    // Filter by agent
+    if (selectedAgent === 'awaiting_contact') {
+      groups = groups.filter(g => g.agentId === null);
+    } else if (selectedAgent !== 'all') {
+      groups = groups.filter(g => g.agentId === selectedAgent);
+    }
+    
+    // Apply date filter to each group's leads
+    if (dateRange?.from) {
+      groups = groups.map(group => {
+        const filteredLeads = filterLeadsByDate(group.leads);
+        return {
+          ...group,
+          leads: filteredLeads,
+          newCount: filteredLeads.filter(l => l.status === 'new').length,
+          contactedCount: filteredLeads.filter(l => l.status === 'contacted').length,
+          convertedCount: filteredLeads.filter(l => l.status === 'converted' || l.is_paid).length,
+          lostCount: filteredLeads.filter(l => l.status === 'lost').length,
+        };
+      });
+    }
+    
+    return groups;
+  }, [agentGroups, selectedAgent, dateRange]);
 
   const toggleExpand = (agentId: string | null) => {
     const key = agentId || 'awaiting_contact';
@@ -767,6 +840,79 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
               ))}
             </SelectContent>
           </Select>
+
+          {/* Date Filter with Quick Options */}
+          <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+            <PopoverTrigger asChild>
+              <Button 
+                variant={dateRange?.from ? "default" : "outline"} 
+                size="sm" 
+                className="gap-2 min-w-[160px]"
+              >
+                <CalendarIcon className="h-4 w-4" />
+                {dateRange?.from ? (
+                  <span className="text-xs">
+                    {format(dateRange.from, 'dd MMM')} 
+                    {dateRange.to ? ` - ${format(dateRange.to, 'dd MMM')}` : ''}
+                  </span>
+                ) : (
+                  'Date Range'
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <div className="p-3 border-b space-y-2">
+                <div className="text-sm font-medium">Quick filters</div>
+                <div className="flex flex-wrap gap-1">
+                  <Button 
+                    variant={quickDateFilter === 'week' ? 'default' : 'outline'} 
+                    size="sm" 
+                    onClick={() => handleQuickDateFilter('week')}
+                  >
+                    This Week
+                  </Button>
+                  <Button 
+                    variant={quickDateFilter === 'month' ? 'default' : 'outline'} 
+                    size="sm" 
+                    onClick={() => handleQuickDateFilter('month')}
+                  >
+                    This Month
+                  </Button>
+                  <Button 
+                    variant={quickDateFilter === 'year' ? 'default' : 'outline'} 
+                    size="sm" 
+                    onClick={() => handleQuickDateFilter('year')}
+                  >
+                    This Year
+                  </Button>
+                  <Button 
+                    variant={quickDateFilter === 'all' ? 'default' : 'outline'} 
+                    size="sm" 
+                    onClick={() => handleQuickDateFilter('all')}
+                  >
+                    All Time
+                  </Button>
+                </div>
+              </div>
+              <CalendarComponent
+                mode="range"
+                defaultMonth={dateRange?.from}
+                selected={dateRange}
+                onSelect={(range) => {
+                  setDateRange(range);
+                  setQuickDateFilter('custom');
+                }}
+                numberOfMonths={2}
+                className="p-3"
+              />
+            </PopoverContent>
+          </Popover>
+          
+          {dateRange?.from && (
+            <Button variant="ghost" size="sm" onClick={clearDateFilter} className="h-8 px-2">
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
         
         <div className="flex items-center gap-2">
@@ -858,64 +1004,100 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {group.leads.slice(0, 20).map((lead) => (
-                              <TableRow key={lead.id}>
-                                <TableCell>
-                                  <div className="font-medium">
-                                    {`${lead.first_name || ''} ${lead.last_name || ''}`.trim() || 'Unknown'}
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="space-y-1">
-                                    <div className="flex items-center gap-1.5 text-sm">
-                                      <Mail className="h-3 w-3 text-muted-foreground" />
-                                      <span className="truncate max-w-[150px]">{lead.email}</span>
+                            {(() => {
+                              const groupKey = group.agentId || 'awaiting_contact';
+                              const isShowingAll = showAllLeads.has(groupKey);
+                              const leadsToShow = isShowingAll ? group.leads : group.leads.slice(0, 20);
+                              
+                              return leadsToShow.map((lead) => (
+                                <TableRow key={lead.id}>
+                                  <TableCell>
+                                    <div className="font-medium">
+                                      {`${lead.first_name || ''} ${lead.last_name || ''}`.trim() || 'Unknown'}
                                     </div>
-                                    {lead.phone && (
-                                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                                        <Phone className="h-3 w-3" />
-                                        {lead.phone}
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="space-y-1">
+                                      <div className="flex items-center gap-1.5 text-sm">
+                                        <Mail className="h-3 w-3 text-muted-foreground" />
+                                        <span className="truncate max-w-[150px]">{lead.email}</span>
+                                      </div>
+                                      {lead.phone && (
+                                        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                          <Phone className="h-3 w-3" />
+                                          {lead.phone}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    {lead.vehicle_reg && (
+                                      <div className="flex items-center gap-1.5">
+                                        <Car className="h-3 w-3 text-muted-foreground" />
+                                        <span className="font-mono text-sm">{lead.vehicle_reg}</span>
                                       </div>
                                     )}
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  {lead.vehicle_reg && (
-                                    <div className="flex items-center gap-1.5">
-                                      <Car className="h-3 w-3 text-muted-foreground" />
-                                      <span className="font-mono text-sm">{lead.vehicle_reg}</span>
+                                    {(lead.vehicle_make || lead.vehicle_model) && (
+                                      <div className="text-xs text-muted-foreground">
+                                        {`${lead.vehicle_make || ''} ${lead.vehicle_model || ''}`.trim()}
+                                      </div>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge className={getStatusBadgeVariant(lead.status)}>
+                                      {lead.status.replace('_', ' ')}
+                                    </Badge>
+                                    {lead.is_paid && (
+                                      <Badge className="ml-1 bg-green-600 text-white">Paid</Badge>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <span className="text-sm">{lead.plan_interest || '-'}</span>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                      <Calendar className="h-3 w-3" />
+                                      {format(new Date(lead.created_at), 'dd MMM yyyy')}
                                     </div>
-                                  )}
-                                  {(lead.vehicle_make || lead.vehicle_model) && (
-                                    <div className="text-xs text-muted-foreground">
-                                      {`${lead.vehicle_make || ''} ${lead.vehicle_model || ''}`.trim()}
-                                    </div>
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  <Badge className={getStatusBadgeVariant(lead.status)}>
-                                    {lead.status.replace('_', ' ')}
-                                  </Badge>
-                                  {lead.is_paid && (
-                                    <Badge className="ml-1 bg-green-600 text-white">Paid</Badge>
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  <span className="text-sm">{lead.plan_interest || '-'}</span>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                                    <Calendar className="h-3 w-3" />
-                                    {format(new Date(lead.created_at), 'dd MMM yyyy')}
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            ))}
+                                  </TableCell>
+                                </TableRow>
+                              ));
+                            })()}
                           </TableBody>
                         </Table>
                         {group.leads.length > 20 && (
-                          <div className="text-center py-2 text-sm text-muted-foreground bg-muted/30">
-                            Showing 20 of {group.leads.length} leads
+                          <div className="flex items-center justify-center gap-4 py-2 text-sm bg-muted/30">
+                            {(() => {
+                              const groupKey = group.agentId || 'awaiting_contact';
+                              const isShowingAll = showAllLeads.has(groupKey);
+                              
+                              return (
+                                <>
+                                  <span className="text-muted-foreground">
+                                    Showing {isShowingAll ? group.leads.length : 20} of {group.leads.length} leads
+                                  </span>
+                                  <Button 
+                                    variant="link" 
+                                    size="sm" 
+                                    className="h-auto p-0 text-primary font-medium"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowAllLeads(prev => {
+                                        const newSet = new Set(prev);
+                                        if (isShowingAll) {
+                                          newSet.delete(groupKey);
+                                        } else {
+                                          newSet.add(groupKey);
+                                        }
+                                        return newSet;
+                                      });
+                                    }}
+                                  >
+                                    {isShowingAll ? 'Show Less' : 'Show All'}
+                                  </Button>
+                                </>
+                              );
+                            })()}
                           </div>
                         )}
                       </div>
