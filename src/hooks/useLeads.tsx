@@ -838,11 +838,14 @@ export const useLeads = () => {
     }
   }, []);
 
-  // OPTIMISTIC UPDATE: Update notes - APPENDS new notes to history, does not replace
-  const updateLeadNotes = useCallback(async (leadId: string, newNoteText: string, replaceAll: boolean = false) => {
+  // ATOMIC UPDATE: Update notes - APPENDS new notes to history, does not replace
+  // Returns Promise to allow callers to handle success/failure
+  const updateLeadNotes = useCallback(async (leadId: string, newNoteText: string, replaceAll: boolean = false): Promise<void> => {
     const now = new Date().toISOString();
     const isAbandonedCart = leadId.startsWith('cart_');
     const actualId = isAbandonedCart ? leadId.replace('cart_', '') : leadId;
+    
+    console.log(`[useLeads] updateLeadNotes called for ${leadId}, content length: ${newNoteText.length}`);
     
     // Get current admin user info for attribution
     const { data: userData } = await supabase.auth.getUser();
@@ -883,39 +886,46 @@ export const useLeads = () => {
         : formattedNewNote;
     }
     
-    // Optimistic update
+    // Optimistic update - update local state immediately
     setLeads(prev => prev.map(lead => 
       lead.id === leadId ? { ...lead, notes: finalNotes, updated_at: now } : lead
     ));
 
-    try {
-      if (isAbandonedCart) {
-        // Update abandoned_carts table - use contact_notes field
-        const { error } = await supabase
-          .from('abandoned_carts')
-          .update({ 
-            contact_notes: finalNotes, 
-            updated_at: now 
-          })
-          .eq('id', actualId);
+    // Perform the actual database update
+    if (isAbandonedCart) {
+      // Update abandoned_carts table - use contact_notes field
+      const { error } = await supabase
+        .from('abandoned_carts')
+        .update({ 
+          contact_notes: finalNotes, 
+          updated_at: now 
+        })
+        .eq('id', actualId);
 
-        if (error) throw error;
-      } else {
-        // Update sales_leads table
-        const { error } = await supabase
-          .from('sales_leads')
-          .update({ notes: finalNotes, updated_at: now })
-          .eq('id', leadId);
-
-        if (error) throw error;
+      if (error) {
+        console.error('[useLeads] Error updating abandoned cart notes:', error);
+        // Revert optimistic update on error
+        fetchLeads();
+        throw new Error(error.message);
       }
-      toast.success('Notes saved');
-    } catch (error) {
-      console.error('Error updating notes:', error);
-      toast.error('Failed to save notes');
-      fetchLeads();
+    } else {
+      // Update sales_leads table
+      const { error } = await supabase
+        .from('sales_leads')
+        .update({ notes: finalNotes, updated_at: now })
+        .eq('id', leadId);
+
+      if (error) {
+        console.error('[useLeads] Error updating sales lead notes:', error);
+        // Revert optimistic update on error
+        fetchLeads();
+        throw new Error(error.message);
+      }
     }
-  }, [leads]);
+    
+    console.log(`[useLeads] Note saved successfully for ${leadId}`);
+    // Note: Toast is handled by the caller (LeadDetailsPanel) to avoid duplicates
+  }, [leads, fetchLeads]);
 
   // OPTIMISTIC UPDATE: Mark contacted instantly
   const markContactedAt = useCallback(async (leadId: string) => {

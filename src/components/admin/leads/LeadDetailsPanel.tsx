@@ -6,10 +6,12 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Phone, Mail, MessageSquare, Car, User, 
   ChevronDown, ChevronUp, Bold, Italic, List, 
-  Clock, Save, X, Plus, CreditCard, FileText, StickyNote
+  Clock, Save, X, Plus, CreditCard, FileText, StickyNote,
+  AlertCircle, RefreshCw, Loader2, Check
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -17,10 +19,11 @@ import { cn } from '@/lib/utils';
 import { ManualOrderEntry } from '../ManualOrderEntry';
 import { RemindMePopover } from './RemindMePopover';
 import { MarkAsPaidDialog } from './MarkAsPaidDialog';
+import { useAtomicNoteSave } from '@/hooks/useAtomicNoteSave';
 
 interface LeadDetailsPanelProps {
   lead: Lead;
-  onUpdateNotes: (leadId: string, notes: string, replaceAll?: boolean) => void;
+  onUpdateNotes: (leadId: string, notes: string, replaceAll?: boolean) => void | Promise<void>;
   onLogActivity: (leadId: string, type: string, description: string) => void;
   onRefresh?: () => void;
   onNavigateToQuote?: (lead: Lead) => void;
@@ -39,43 +42,70 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   const [notesOpen, setNotesOpen] = useState(true);
   const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
   const [isMarkPaidDialogOpen, setIsMarkPaidDialogOpen] = useState(false);
-  const [isSavingQuickNote, setIsSavingQuickNote] = useState(false);
+  const [manualSaveSuccess, setManualSaveSuccess] = useState(false);
   
-  const autosaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const lastSavedQuickNoteRef = useRef('');
+  const previousLeadIdRef = useRef<string | null>(null);
 
-  // Reset inputs when switching leads
-  useEffect(() => {
-    setNewNoteValue('');
-    setQuickNoteValue('');
-    lastSavedQuickNoteRef.current = '';
-  }, [lead.id]);
-
-  // Autosave Quick Notes with debounce
-  useEffect(() => {
-    // Clear any existing timeout
-    if (autosaveTimeoutRef.current) {
-      clearTimeout(autosaveTimeoutRef.current);
+  // Atomic note save for manual notes (Add Notes section)
+  const manualNoteSave = useAtomicNoteSave({
+    debounceMs: 1000,
+    onSave: async (content: string) => {
+      console.log(`[LeadDetailsPanel] Manual save executing for lead ${lead.id}`);
+      await onUpdateNotes(lead.id, content, false);
+    },
+    onSuccess: () => {
+      console.log(`[LeadDetailsPanel] Manual save success`);
+      setManualSaveSuccess(true);
+      setTimeout(() => setManualSaveSuccess(false), 2000);
+      // Don't show toast here - parent hook shows it
+    },
+    onError: (error) => {
+      console.error(`[LeadDetailsPanel] Manual save error:`, error);
+      // Toast is shown by parent hook
     }
+  });
 
-    // Only autosave if there's content and it's different from last saved
-    if (quickNoteValue.trim() && quickNoteValue.trim() !== lastSavedQuickNoteRef.current) {
-      autosaveTimeoutRef.current = setTimeout(() => {
-        setIsSavingQuickNote(true);
-        onUpdateNotes(lead.id, quickNoteValue.trim(), false);
-        lastSavedQuickNoteRef.current = quickNoteValue.trim();
-        setIsSavingQuickNote(false);
-        toast.success('Quick note saved ✓', { duration: 1500 });
-        setQuickNoteValue(''); // Clear after save
-      }, 1500); // 1.5 second debounce
+  // Atomic note save for quick notes (autosave section)
+  const quickNoteSave = useAtomicNoteSave({
+    debounceMs: 1000, // 1 second debounce
+    onSave: async (content: string) => {
+      console.log(`[LeadDetailsPanel] Quick save executing for lead ${lead.id}`);
+      await onUpdateNotes(lead.id, content, false);
+    },
+    onSuccess: () => {
+      console.log(`[LeadDetailsPanel] Quick save success - clearing input`);
+      setQuickNoteValue(''); // Clear after successful save
+      toast.success('Quick note saved ✓', { duration: 1500 });
+    },
+    onError: (error) => {
+      console.error(`[LeadDetailsPanel] Quick save error:`, error);
+      toast.error('Failed to save quick note. Please try again.');
     }
+  });
 
+  // Reset inputs and save states when switching leads
+  useEffect(() => {
+    if (previousLeadIdRef.current !== lead.id) {
+      console.log(`[LeadDetailsPanel] Lead changed from ${previousLeadIdRef.current} to ${lead.id} - resetting state`);
+      setNewNoteValue('');
+      setQuickNoteValue('');
+      setManualSaveSuccess(false);
+      manualNoteSave.reset();
+      quickNoteSave.reset();
+      previousLeadIdRef.current = lead.id;
+    }
+  }, [lead.id, manualNoteSave.reset, quickNoteSave.reset]);
+
+  // Trigger debounced autosave when quick note value changes
+  useEffect(() => {
+    if (quickNoteValue.trim()) {
+      quickNoteSave.debouncedSave(quickNoteValue);
+    }
+    // Cleanup on unmount or lead change
     return () => {
-      if (autosaveTimeoutRef.current) {
-        clearTimeout(autosaveTimeoutRef.current);
-      }
+      quickNoteSave.clearDebounce();
     };
-  }, [quickNoteValue, lead.id, onUpdateNotes]);
+  }, [quickNoteValue, quickNoteSave.debouncedSave, quickNoteSave.clearDebounce]);
 
   // Prepare customer data for ManualOrderEntry pre-fill
   const customerDataForOrder = {
@@ -92,15 +122,30 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
     mileage: lead.mileage || '',
   };
 
-  const handleSaveNotes = () => {
+  const handleSaveNotes = async () => {
     if (!newNoteValue.trim()) {
       toast.error('Please enter a note before saving');
       return;
     }
-    // Pass replaceAll=false to APPEND the new note to existing history
-    onUpdateNotes(lead.id, newNoteValue.trim(), false);
-    // Keep the note in the field after saving for user verification
-    toast.success('Note added ✓');
+    
+    console.log(`[LeadDetailsPanel] Manual save button clicked`);
+    const success = await manualNoteSave.immediateSave(newNoteValue);
+    if (success) {
+      // Keep the note in the field after saving for user verification
+      // Success toast is handled by the hook
+    }
+  };
+
+  const handleRetryManualSave = async () => {
+    if (newNoteValue.trim()) {
+      await manualNoteSave.retry(newNoteValue);
+    }
+  };
+
+  const handleRetryQuickSave = async () => {
+    if (quickNoteValue.trim()) {
+      await quickNoteSave.retry(quickNoteValue);
+    }
   };
 
   const handleCall = () => {
@@ -438,28 +483,69 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
                     <div className="h-8 w-8 rounded-md bg-primary/20 flex items-center justify-center">
                       <FileText className="h-4 w-4 text-primary" />
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <h4 className="font-semibold text-sm">Add Notes</h4>
                       <p className="text-xs text-muted-foreground">Click to add notes about this lead</p>
                     </div>
+                    {manualSaveSuccess && (
+                      <span className="text-xs text-green-600 flex items-center gap-1">
+                        <Check className="h-3 w-3" />
+                        Saved
+                      </span>
+                    )}
                   </div>
+                  
+                  {/* Error Banner for Manual Notes */}
+                  {manualNoteSave.error && (
+                    <Alert variant="destructive" className="mb-3">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription className="flex items-center justify-between">
+                        <span>Failed to save note: {manualNoteSave.error}</span>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={handleRetryManualSave}
+                          className="ml-2"
+                        >
+                          <RefreshCw className="h-3 w-3 mr-1" />
+                          Retry
+                        </Button>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  
                   <Textarea
                     id="lead-notes-textarea"
                     value={newNoteValue}
                     onChange={(e) => setNewNoteValue(e.target.value)}
                     placeholder="Type your detailed note here..."
                     className="min-h-[80px] text-sm leading-relaxed resize-none focus:ring-2 focus:ring-primary/20 bg-background"
+                    disabled={manualNoteSave.isWriting}
                   />
                   <div className="flex items-center gap-2 mt-3">
-                    <Button size="sm" onClick={handleSaveNotes} disabled={!newNoteValue.trim()}>
-                      <Save className="h-4 w-4 mr-1" />
-                      Save Note
+                    <Button 
+                      size="sm" 
+                      onClick={handleSaveNotes} 
+                      disabled={!newNoteValue.trim() || manualNoteSave.isWriting}
+                      className="min-w-[100px]"
+                    >
+                      {manualNoteSave.isWriting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-1" />
+                          Save Note
+                        </>
+                      )}
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setNewNoteValue('')}
-                      disabled={!newNoteValue}
+                      disabled={!newNoteValue || manualNoteSave.isWriting}
                     >
                       <X className="h-4 w-4 mr-1" />
                       Clear
@@ -475,17 +561,41 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
                     </div>
                     <div className="flex-1">
                       <h4 className="font-semibold text-sm text-amber-900">Quick Notes</h4>
-                      <p className="text-xs text-amber-700">Add a quick note... (autosaves)</p>
+                      <p className="text-xs text-amber-700">Add a quick note... (autosaves after 1s)</p>
                     </div>
-                    {isSavingQuickNote && (
-                      <span className="text-xs text-amber-600 animate-pulse">Saving...</span>
+                    {quickNoteSave.isWriting && (
+                      <span className="text-xs text-amber-600 flex items-center gap-1 animate-pulse">
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                        Saving...
+                      </span>
                     )}
                   </div>
+                  
+                  {/* Error Banner for Quick Notes */}
+                  {quickNoteSave.error && (
+                    <Alert variant="destructive" className="mb-3">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription className="flex items-center justify-between">
+                        <span>Failed to save: {quickNoteSave.error}</span>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={handleRetryQuickSave}
+                          className="ml-2"
+                        >
+                          <RefreshCw className="h-3 w-3 mr-1" />
+                          Retry
+                        </Button>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  
                   <Textarea
                     value={quickNoteValue}
                     onChange={(e) => setQuickNoteValue(e.target.value)}
                     placeholder="Quick note - starts saving after you stop typing..."
                     className="min-h-[60px] text-sm leading-relaxed resize-none focus:ring-2 focus:ring-amber-300 bg-white border-amber-200"
+                    disabled={quickNoteSave.isWriting}
                   />
                 </div>
 
