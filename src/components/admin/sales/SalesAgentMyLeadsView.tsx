@@ -9,11 +9,10 @@ import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Search, RefreshCw, CalendarIcon, X, ArrowUpDown,
-  Bell, Users, Phone, FileText, Clock, AlertTriangle
+  Bell, Users, Clock, AlertTriangle
 } from 'lucide-react';
-import { Lead, LeadTag, LeadStatus, AdminUser } from '@/hooks/useLeads';
+import { Lead, LeadTag, LeadStatus } from '@/hooks/useLeads';
 import { LeadsTable } from '../leads/LeadsTable';
-import { LeadsTableControlBar } from '../leads/LeadsTableControlBar';
 import { LeadsTableFooter } from '../leads/LeadsTableFooter';
 import { useDebounce } from '@/hooks/useDebounce';
 import { usePagination } from '@/hooks/usePagination';
@@ -49,7 +48,8 @@ export const SalesAgentMyLeadsView: React.FC<SalesAgentMyLeadsViewProps> = ({
   onSendQuote,
   onRefresh
 }) => {
-  const [filter, setFilter] = useState<LeadStatus | 'all' | 'high_priority' | 'paid'>('all');
+  // Default to 'new' instead of 'all' since we removed the All tab
+  const [filter, setFilter] = useState<LeadStatus | 'all' | 'high_priority' | 'paid'>('new');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({ from: undefined, to: undefined });
@@ -245,12 +245,9 @@ export const SalesAgentMyLeadsView: React.FC<SalesAgentMyLeadsViewProps> = ({
         </div>
       )}
 
-      {/* Status Tabs */}
+      {/* Status Tabs - No "All" tab for sales agents, they only see their assigned leads */}
       <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
         <TabsList className="flex flex-wrap h-auto gap-1 p-1 bg-muted/50">
-          <TabsTrigger value="all" className="relative data-[state=active]:bg-white">
-            All <Badge variant="secondary" className="ml-1.5 h-5 px-1.5 text-xs">{leadCounts.all}</Badge>
-          </TabsTrigger>
           {leadCounts.urgent_callback > 0 && (
             <TabsTrigger value="urgent_callback" className="relative data-[state=active]:bg-white">
               <Bell className="h-3.5 w-3.5 mr-1 text-orange-500" />
@@ -361,19 +358,31 @@ export const SalesAgentMyLeadsView: React.FC<SalesAgentMyLeadsViewProps> = ({
       {/* Leads Table */}
       <Card className="overflow-hidden">
         <CardContent className="p-0">
-          {/* Control Bar */}
-          <LeadsTableControlBar
-            totalItems={pagination.totalItems}
-            pageSize={pagination.pageSize}
-            onPageSizeChange={pagination.setPageSize}
-            selectedCount={selectedLeads.size}
-            totalVisible={pagination.paginatedData.length}
-            allSelected={selectedLeads.size === filteredLeads.length && filteredLeads.length > 0}
-            onSelectAll={handleSelectAll}
-            salesUsers={[]} // Sales agents don't see assignment options
-            onBulkAssign={async () => {}} // No bulk assign for agents
-            onBulkAutoAssign={async () => {}} // No auto assign for agents
-          />
+          {/* Control Bar - Simplified for sales agents (no bulk actions) */}
+          <div className="sticky top-0 z-20 bg-background border-b px-4 py-3 flex items-center justify-between gap-4">
+            <div className="text-sm text-muted-foreground">
+              <span className="font-semibold text-foreground">{pagination.totalItems.toLocaleString()}</span>
+              {' '}leads found
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground">Leads per page</span>
+              <div className="inline-flex items-center rounded-lg border bg-muted/30 p-1">
+                {[25, 50, 100, 200].map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => pagination.setPageSize(size)}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                      pagination.pageSize === size
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
           
           {/* Main Table - Reusing admin LeadsTable */}
           <LeadsTable
