@@ -302,25 +302,24 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }));
   };
 
-  const renderNoteRow = (note: QuickNote) => {
+  const renderNoteRow = (note: QuickNote, isLast: boolean) => {
     const isEditing = editingNoteId === note.id;
     
     return (
       <div
         key={note.id}
         className={cn(
-          "group relative p-3 rounded-lg border transition-all",
-          note.is_pinned 
-            ? "bg-amber-50/50 border-amber-200 dark:bg-amber-950/20" 
-            : "bg-card border-border hover:bg-muted/50"
+          "group flex items-start gap-2 py-1.5 px-2 hover:bg-muted/50 transition-colors",
+          !isLast && "border-b border-dashed border-border/50",
+          note.is_pinned && "bg-amber-50/30 dark:bg-amber-950/10"
         )}
       >
         {isEditing ? (
-          <div className="space-y-2">
+          <div className="flex-1 space-y-1.5">
             <Textarea
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
-              className="min-h-[60px] text-sm resize-none"
+              className="min-h-[40px] text-xs resize-none py-1"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -332,115 +331,78 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                 }
               }}
             />
-            <div className="flex items-center gap-2 justify-end">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7"
-                onClick={handleCancelEdit}
-              >
-                <X className="h-3 w-3 mr-1" />
+            <div className="flex items-center gap-1 justify-end">
+              <Button variant="ghost" size="sm" className="h-5 px-2 text-[10px]" onClick={handleCancelEdit}>
                 Cancel
               </Button>
-              <Button
-                size="sm"
-                className="h-7"
-                onClick={handleSaveEdit}
-              >
-                <Check className="h-3 w-3 mr-1" />
+              <Button size="sm" className="h-5 px-2 text-[10px]" onClick={handleSaveEdit}>
                 Save
               </Button>
             </div>
           </div>
         ) : (
-          <div className="flex items-start gap-3">
-            {/* Action buttons - LEFT SIDE, always visible */}
-            <div className="flex flex-col items-center gap-1 flex-shrink-0 pt-0.5">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0"
+          <>
+            {/* Actions - compact inline */}
+            <div className="flex items-center gap-0.5 flex-shrink-0 opacity-60 hover:opacity-100">
+              <button
                 onClick={() => handleStartEdit(note)}
+                className="p-1 hover:bg-muted rounded"
                 title="Edit"
               >
                 <Edit2 className="h-3 w-3" />
-              </Button>
+              </button>
               {!isAbandonedCart && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0"
+                <button
                   onClick={() => togglePin(note.id, note.is_pinned)}
+                  className="p-1 hover:bg-muted rounded"
                   title={note.is_pinned ? 'Unpin' : 'Pin'}
                 >
                   {note.is_pinned ? <PinOff className="h-3 w-3" /> : <Pin className="h-3 w-3" />}
-                </Button>
+                </button>
               )}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+              <button
                 onClick={() => handleDelete(note)}
+                className="p-1 hover:bg-muted rounded text-destructive"
                 title="Delete"
               >
                 <Trash2 className="h-3 w-3" />
-              </Button>
+              </button>
             </div>
             
-            {/* Note content */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start gap-2">
-                {note.is_pinned && (
-                  <Pin className="h-3.5 w-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
-                )}
-                <p className={cn(
-                  "text-sm flex-1 whitespace-pre-wrap",
-                  note.note_text.length > 150 && "line-clamp-3"
-                )}>
-                  {note.note_text}
-                </p>
-              </div>
-              
-              {/* Metadata row */}
-              <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <User className="h-3 w-3" />
-                  {getAuthorName(note)}
-                </span>
-                <span className="flex items-center gap-1" title={format(new Date(note.created_at), 'PPpp')}>
-                  <Clock className="h-3 w-3" />
-                  {formatDistanceToNow(new Date(note.created_at), { addSuffix: true })}
-                </span>
-              </div>
+            {/* Note content - compact inline */}
+            <div className="flex-1 min-w-0 flex items-baseline gap-2">
+              {note.is_pinned && <Pin className="h-2.5 w-2.5 text-amber-600 flex-shrink-0" />}
+              <span className="text-xs truncate flex-1">{note.note_text}</span>
+              <span className="text-[10px] text-muted-foreground flex-shrink-0 whitespace-nowrap">
+                {getAuthorName(note)} · {formatDistanceToNow(new Date(note.created_at), { addSuffix: true })}
+              </span>
             </div>
-          </div>
+          </>
         )}
       </div>
     );
   };
 
-  const renderNoteGroup = (title: string, groupNotes: QuickNote[], groupKey: string) => {
-    if (groupNotes.length === 0) return null;
-    
-    const isExpanded = expandedGroups[groupKey];
-    
+  // Flat list rendering - all notes in one box
+  const renderAllNotes = () => {
+    const allNotes = [
+      ...groupedNotes.today,
+      ...groupedNotes.yesterday,
+      ...groupedNotes.thisWeek,
+      ...groupedNotes.older
+    ];
+
+    if (allNotes.length === 0) {
+      return (
+        <div className="text-xs text-muted-foreground text-center py-4">
+          No notes yet. Add the first one above.
+        </div>
+      );
+    }
+
     return (
-      <div key={groupKey} className="space-y-2">
-        <button
-          onClick={() => toggleGroup(groupKey)}
-          className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide hover:text-foreground transition-colors w-full"
-        >
-          {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
-          {title}
-          <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">
-            {groupNotes.length}
-          </Badge>
-        </button>
-        {isExpanded && (
-          <div className="space-y-2">
-            {groupNotes.map(renderNoteRow)}
-          </div>
-        )}
+      <div className="divide-y-0">
+        {allNotes.map((note, idx) => renderNoteRow(note, idx === allNotes.length - 1))}
       </div>
     );
   };
@@ -526,12 +488,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
             <p className="text-sm">No notes yet. Add the first one.</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {renderNoteGroup('Today', groupedNotes.today, 'today')}
-            {renderNoteGroup('Yesterday', groupedNotes.yesterday, 'yesterday')}
-            {renderNoteGroup('This Week', groupedNotes.thisWeek, 'thisWeek')}
-            {renderNoteGroup('Older', groupedNotes.older, 'older')}
-          </div>
+          renderAllNotes()
         )}
       </ScrollArea>
 
