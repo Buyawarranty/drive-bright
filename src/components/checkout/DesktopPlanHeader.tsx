@@ -60,6 +60,18 @@ const DesktopPlanHeader: React.FC<DesktopPlanHeaderProps> = ({
           <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
           <span>Comprehensive – {duration} cover</span>
         </div>
+        {duration.toLowerCase().includes('2 year') && (
+          <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+            <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+            <span className="font-semibold">No payments in year 2</span>
+          </div>
+        )}
+        {duration.toLowerCase().includes('3 year') && (
+          <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+            <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+            <span className="font-semibold">No payments in years 2 and 3</span>
+          </div>
+        )}
         <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
           <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
           <span>Cancel anytime within 14 days for a full refund</span>

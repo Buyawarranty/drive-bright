@@ -86,6 +86,18 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
                   <span className="text-gray-600">Duration:</span>
                   <span className="font-semibold text-[#1a1a1a]">{duration}</span>
                 </div>
+                {duration.toLowerCase().includes('2 year') && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Payments:</span>
+                    <span className="font-semibold text-[#0BA360]">No payments in year 2</span>
+                  </div>
+                )}
+                {duration.toLowerCase().includes('3 year') && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Payments:</span>
+                    <span className="font-semibold text-[#0BA360]">No payments in years 2 and 3</span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Vehicle:</span>
                   <span 
