@@ -115,15 +115,15 @@ const WebsiteFooter = () => {
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900">Sales Enquiries:</p>
-                  <p className="text-lg font-bold text-[#eb4b00]">0800 494 7477</p>
+                  <a href="tel:08004947477" className="text-lg font-bold text-[#eb4b00] hover:underline">0800 494 7477</a>
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900">Claims Hotline:</p>
-                  <p className="text-lg font-bold text-[#eb4b00]">0800 494 7980</p>
+                  <a href="tel:08004947980" className="text-lg font-bold text-[#eb4b00] hover:underline">0800 494 7980</a>
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900">Email Support:</p>
-                  <p className="text-[#eb4b00] font-bold">support@buyawarranty.co.uk</p>
+                  <a href="mailto:support@buyawarranty.co.uk" className="text-[#eb4b00] font-bold hover:underline">support@buyawarranty.co.uk</a>
                 </div>
               </div>
             </div>
