@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -6,9 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, RefreshCw, Upload, Download, CalendarIcon, X, Filter, ArrowUpDown } from 'lucide-react';
+import { Search, RefreshCw, Upload, Download, CalendarIcon, X, Filter, ArrowUpDown, History } from 'lucide-react';
 import { LeadStatus } from '@/hooks/useLeads';
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { format, subDays, startOfDay, endOfDay, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths, subYears } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 
 export type AssignmentFilter = 'all' | 'total' | 'awaiting_contact' | 'assigned';
@@ -66,6 +66,38 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
 }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
+  // Generate month options for the past 24 months
+  const monthOptions = useMemo(() => {
+    const options = [];
+    for (let i = 0; i < 24; i++) {
+      const date = subMonths(new Date(), i);
+      options.push({
+        label: format(date, 'MMMM yyyy'),
+        value: `month_${i}`,
+        from: startOfMonth(date),
+        to: endOfMonth(date)
+      });
+    }
+    return options;
+  }, []);
+
+  // Generate year options (last 5 years)
+  const yearOptions = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const options = [];
+    for (let i = 0; i <= 5; i++) {
+      const year = currentYear - i;
+      const yearDate = new Date(year, 0, 1);
+      options.push({
+        label: year.toString(),
+        value: `year_${year}`,
+        from: startOfYear(yearDate),
+        to: i === 0 ? endOfDay(new Date()) : endOfYear(yearDate)
+      });
+    }
+    return options;
+  }, []);
+
   const handleDateSelect = (range: DateRange | undefined) => {
     if (onDateRangeChange) {
       onDateRangeChange({
@@ -84,6 +116,40 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
     }
   };
 
+  const handleAllTime = () => {
+    if (onDateRangeChange) {
+      // Set from to a very old date (e.g., 2020) to capture all leads
+      onDateRangeChange({ 
+        from: new Date(2020, 0, 1), 
+        to: endOfDay(new Date()) 
+      });
+      setIsCalendarOpen(false);
+    }
+  };
+
+  const handleMonthSelect = (monthIndex: number) => {
+    if (onDateRangeChange) {
+      const date = subMonths(new Date(), monthIndex);
+      onDateRangeChange({ 
+        from: startOfMonth(date), 
+        to: endOfMonth(date) 
+      });
+      setIsCalendarOpen(false);
+    }
+  };
+
+  const handleYearSelect = (year: number) => {
+    if (onDateRangeChange) {
+      const yearDate = new Date(year, 0, 1);
+      const isCurrentYear = year === new Date().getFullYear();
+      onDateRangeChange({ 
+        from: startOfYear(yearDate), 
+        to: isCurrentYear ? endOfDay(new Date()) : endOfYear(yearDate)
+      });
+      setIsCalendarOpen(false);
+    }
+  };
+
   const clearDateRange = () => {
     if (onDateRangeChange) {
       onDateRangeChange({ from: undefined, to: undefined });
@@ -91,6 +157,38 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
   };
 
   const hasDateFilter = dateRange?.from || dateRange?.to;
+
+  // Get a readable label for the current date filter
+  const getDateFilterLabel = () => {
+    if (!hasDateFilter) return 'Date Range';
+    
+    // Check if it matches "All Time"
+    if (dateRange?.from && dateRange.from.getFullYear() === 2020 && dateRange.from.getMonth() === 0) {
+      return 'All Time';
+    }
+    
+    // Check if it's a full year
+    if (dateRange?.from && dateRange?.to) {
+      const fromStart = startOfYear(dateRange.from);
+      const toEnd = endOfYear(dateRange.to);
+      if (dateRange.from.getTime() === fromStart.getTime() && 
+          (dateRange.to.getTime() === toEnd.getTime() || 
+           dateRange.to.toDateString() === new Date().toDateString())) {
+        return format(dateRange.from, 'yyyy');
+      }
+      
+      // Check if it's a full month
+      const monthStart = startOfMonth(dateRange.from);
+      const monthEnd = endOfMonth(dateRange.from);
+      if (dateRange.from.getTime() === monthStart.getTime() && 
+          dateRange.to.getTime() === monthEnd.getTime()) {
+        return format(dateRange.from, 'MMM yyyy');
+      }
+    }
+    
+    // Default to date range format
+    return `${dateRange?.from ? format(dateRange.from, 'dd MMM') : ''} ${dateRange?.to ? `- ${format(dateRange.to, 'dd MMM')}` : ''}`;
+  };
 
   return (
     <div className="space-y-4">
@@ -208,42 +306,100 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
                 className="gap-2 min-w-[140px]"
               >
                 <CalendarIcon className="h-4 w-4" />
-                {hasDateFilter ? (
-                  <span className="text-xs">
-                    {dateRange?.from ? format(dateRange.from, 'dd MMM') : ''} 
-                    {dateRange?.to ? ` - ${format(dateRange.to, 'dd MMM')}` : ''}
-                  </span>
-                ) : (
-                  'Date Range'
-                )}
+                <span className="text-xs">{getDateFilterLabel()}</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
+              {/* Quick Filters Row */}
               <div className="p-3 border-b space-y-2">
                 <div className="text-sm font-medium">Quick filters</div>
                 <div className="flex flex-wrap gap-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleAllTime}
+                    className="bg-primary/10 hover:bg-primary/20"
+                  >
+                    <History className="h-3 w-3 mr-1" />
+                    All Time
+                  </Button>
                   <Button variant="outline" size="sm" onClick={() => handleQuickFilter(7)}>Last 7 days</Button>
-                  <Button variant="outline" size="sm" onClick={() => handleQuickFilter(14)}>Last 14 days</Button>
                   <Button variant="outline" size="sm" onClick={() => handleQuickFilter(30)}>Last 30 days</Button>
                   <Button variant="outline" size="sm" onClick={() => handleQuickFilter(90)}>Last 90 days</Button>
                 </div>
               </div>
-              <Calendar
-                mode="range"
-                defaultMonth={dateRange?.from}
-                selected={{ from: dateRange?.from, to: dateRange?.to }}
-                onSelect={handleDateSelect}
-                numberOfMonths={2}
-                className="p-3"
-              />
+              
+              {/* Month & Year Selectors */}
+              <div className="p-3 border-b space-y-3">
+                <div className="flex gap-3">
+                  {/* Month Selector */}
+                  <div className="flex-1">
+                    <div className="text-xs font-medium text-muted-foreground mb-1.5">By Month</div>
+                    <Select onValueChange={(v) => handleMonthSelect(parseInt(v.replace('month_', '')))}>
+                      <SelectTrigger className="w-full h-8 text-xs">
+                        <SelectValue placeholder="Select month" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[200px]">
+                        {monthOptions.map((opt, idx) => (
+                          <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Year Selector */}
+                  <div className="flex-1">
+                    <div className="text-xs font-medium text-muted-foreground mb-1.5">By Year</div>
+                    <Select onValueChange={(v) => handleYearSelect(parseInt(v.replace('year_', '')))}>
+                      <SelectTrigger className="w-full h-8 text-xs">
+                        <SelectValue placeholder="Select year" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {yearOptions.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Calendar for Custom Range */}
+              <div className="p-3 border-b">
+                <div className="text-xs font-medium text-muted-foreground mb-2">Custom Range</div>
+                <Calendar
+                  mode="range"
+                  defaultMonth={dateRange?.from}
+                  selected={{ from: dateRange?.from, to: dateRange?.to }}
+                  onSelect={handleDateSelect}
+                  numberOfMonths={2}
+                  className="pointer-events-auto"
+                />
+              </div>
+              
+              {/* Clear button */}
+              {hasDateFilter && (
+                <div className="p-2 border-t flex justify-end">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => {
+                      clearDateRange();
+                      setIsCalendarOpen(false);
+                    }}
+                    className="text-xs"
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    Clear Filter
+                  </Button>
+                </div>
+              )}
             </PopoverContent>
           </Popover>
-          
-          {hasDateFilter && (
-            <Button variant="ghost" size="sm" onClick={clearDateRange} className="h-8 px-2">
-              <X className="h-4 w-4" />
-            </Button>
-          )}
 
           {/* Sort Dropdown */}
           {onSortChange && (
