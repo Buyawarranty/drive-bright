@@ -153,11 +153,11 @@ const coverageCategories = [
 const bmwFAQs = [
   {
     question: "Is a BMW extended warranty worth it in the UK?",
-    answer: "Yes, BMW repairs are among the most expensive in the UK due to advanced electronics and complex powertrains. An extended warranty protects key components like the engine, gearbox, fuel injectors, and ECUs, preventing sudden repair bills that can reach £6,000 to £9,000 on premium BMW models."
+    answer: "Yes, BMW repairs are among the most expensive in the UK due to advanced electronics and complex powertrains. Our extended warranty protects key components like the engine, gearbox, fuel injectors, and ECUs, preventing sudden repair bills with easy claims and fast payouts."
   },
   {
     question: "How much does a BMW extended warranty cost in the UK?",
-    answer: "Extended BMW warranty prices typically start from £35 to £95 per month, depending on your BMW model, mileage, and chosen claim limit. We offer plans from just 80p a day with flexible monthly or annual payment options."
+    answer: "Extended BMW warranty prices typically start from £24 a month, depending on your BMW model, mileage, and chosen claim limit. We offer plans from just 80p a day with flexible monthly or annual payment options."
   },
   {
     question: "Can I buy a BMW extended warranty after my original warranty has expired?",
