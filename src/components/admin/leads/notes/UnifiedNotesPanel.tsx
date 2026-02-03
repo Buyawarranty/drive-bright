@@ -353,34 +353,9 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
             </div>
           </div>
         ) : (
-          <>
-            {/* Note content */}
-            <div className="flex items-start gap-2">
-              {note.is_pinned && (
-                <Pin className="h-3.5 w-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
-              )}
-              <p className={cn(
-                "text-sm flex-1 whitespace-pre-wrap",
-                note.note_text.length > 150 && "line-clamp-3"
-              )}>
-                {note.note_text}
-              </p>
-            </div>
-            
-            {/* Metadata row */}
-            <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <User className="h-3 w-3" />
-                {getAuthorName(note)}
-              </span>
-              <span className="flex items-center gap-1" title={format(new Date(note.created_at), 'PPpp')}>
-                <Clock className="h-3 w-3" />
-                {formatDistanceToNow(new Date(note.created_at), { addSuffix: true })}
-              </span>
-            </div>
-            
-            {/* Action buttons - visible on hover */}
-            <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-start gap-3">
+            {/* Action buttons - LEFT SIDE, always visible */}
+            <div className="flex flex-col items-center gap-1 flex-shrink-0 pt-0.5">
               <Button
                 variant="ghost"
                 size="sm"
@@ -411,7 +386,34 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                 <Trash2 className="h-3 w-3" />
               </Button>
             </div>
-          </>
+            
+            {/* Note content */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start gap-2">
+                {note.is_pinned && (
+                  <Pin className="h-3.5 w-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
+                )}
+                <p className={cn(
+                  "text-sm flex-1 whitespace-pre-wrap",
+                  note.note_text.length > 150 && "line-clamp-3"
+                )}>
+                  {note.note_text}
+                </p>
+              </div>
+              
+              {/* Metadata row */}
+              <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <User className="h-3 w-3" />
+                  {getAuthorName(note)}
+                </span>
+                <span className="flex items-center gap-1" title={format(new Date(note.created_at), 'PPpp')}>
+                  <Clock className="h-3 w-3" />
+                  {formatDistanceToNow(new Date(note.created_at), { addSuffix: true })}
+                </span>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     );
