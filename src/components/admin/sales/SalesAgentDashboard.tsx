@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useLeads, Lead, LeadTag, AdminUser, LeadStatus } from '@/hooks/useLeads';
 import { useSalesStats } from '@/hooks/useSalesStats';
-import { SalesAgentLeadsTable } from './SalesAgentLeadsTable';
+import { SalesAgentMyLeadsView } from './SalesAgentMyLeadsView';
 import SalesCustomerManagement from './SalesCustomerManagement';
 import { 
   LayoutDashboard, Users, ShoppingBag, Bell,
@@ -294,10 +294,10 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
           )}
         </TabsContent>
 
-        {/* My Leads Tab - Restricted View */}
+        {/* My Leads Tab - Full UI matching admin All Leads view */}
         <TabsContent value="leads">
-          <SalesAgentLeadsTable
-            leads={myLeads}
+          <SalesAgentMyLeadsView
+            leads={leads}
             tags={tags}
             currentUserId={currentUserId}
             handlers={leadHandlers}
