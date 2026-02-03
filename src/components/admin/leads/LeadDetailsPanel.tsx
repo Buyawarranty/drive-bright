@@ -99,7 +99,7 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
     }
     // Pass replaceAll=false to APPEND the new note to existing history
     onUpdateNotes(lead.id, newNoteValue.trim(), false);
-    setNewNoteValue(''); // Clear after save
+    // Keep the note in the field after saving for user verification
     toast.success('Note added ✓');
   };
 
