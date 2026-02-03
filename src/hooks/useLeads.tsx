@@ -150,7 +150,7 @@ export const useLeads = () => {
       const [salesLeadsResult, abandonedCartsResult] = await Promise.all([
         // Fetch sales_leads with optimized column selection
         (async () => {
-          let query = supabase
+        let query = supabase
             .from('sales_leads')
             .select(`
               id, first_name, last_name, email, phone, lead_source, status, priority, priority_score,
@@ -162,7 +162,7 @@ export const useLeads = () => {
               assigned_user:admin_users!sales_leads_assigned_to_fkey(id, first_name, last_name, email)
             `)
             .order('created_at', { ascending: false })
-            .limit(500); // Limit initial fetch for performance
+            .limit(5000); // Increased limit to fetch all leads
 
           if (filter === 'all') {
             // Exclude lost and fake leads from the main "All" view
@@ -178,7 +178,7 @@ export const useLeads = () => {
 
           return query;
         })(),
-        // Fetch abandoned carts with optimized column selection and limit
+        // Fetch abandoned carts with optimized column selection
         supabase
           .from('abandoned_carts')
           .select(`
@@ -189,7 +189,7 @@ export const useLeads = () => {
           `)
           .eq('is_converted', false)
           .order('created_at', { ascending: false })
-          .limit(500) // Limit for performance
+          .limit(5000) // Increased limit to fetch all carts
       ]);
 
       const { data: salesLeadsData, error: salesError } = salesLeadsResult;
