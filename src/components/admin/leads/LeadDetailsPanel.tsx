@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Lead } from '@/hooks/useLeads';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,7 +9,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { 
   Phone, Mail, MessageSquare, Car, User, 
   ChevronDown, ChevronUp, Bold, Italic, List, 
-  Clock, Save, X, Plus, CreditCard
+  Clock, Save, X, Plus, CreditCard, FileText, StickyNote
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -33,16 +33,49 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   onRefresh,
   onNavigateToQuote
 }) => {
-  const [newNoteValue, setNewNoteValue] = useState(''); // Only for NEW note input
+  const [newNoteValue, setNewNoteValue] = useState(''); // For Add Notes section
+  const [quickNoteValue, setQuickNoteValue] = useState(''); // For Quick Notes with autosave
   const [contactOpen, setContactOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(true);
   const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
   const [isMarkPaidDialogOpen, setIsMarkPaidDialogOpen] = useState(false);
+  const [isSavingQuickNote, setIsSavingQuickNote] = useState(false);
+  
+  const autosaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSavedQuickNoteRef = useRef('');
 
-  // Reset new note input when switching leads
+  // Reset inputs when switching leads
   useEffect(() => {
     setNewNoteValue('');
+    setQuickNoteValue('');
+    lastSavedQuickNoteRef.current = '';
   }, [lead.id]);
+
+  // Autosave Quick Notes with debounce
+  useEffect(() => {
+    // Clear any existing timeout
+    if (autosaveTimeoutRef.current) {
+      clearTimeout(autosaveTimeoutRef.current);
+    }
+
+    // Only autosave if there's content and it's different from last saved
+    if (quickNoteValue.trim() && quickNoteValue.trim() !== lastSavedQuickNoteRef.current) {
+      autosaveTimeoutRef.current = setTimeout(() => {
+        setIsSavingQuickNote(true);
+        onUpdateNotes(lead.id, quickNoteValue.trim(), false);
+        lastSavedQuickNoteRef.current = quickNoteValue.trim();
+        setIsSavingQuickNote(false);
+        toast.success('Quick note saved ✓', { duration: 1500 });
+        setQuickNoteValue(''); // Clear after save
+      }, 1500); // 1.5 second debounce
+    }
+
+    return () => {
+      if (autosaveTimeoutRef.current) {
+        clearTimeout(autosaveTimeoutRef.current);
+      }
+    };
+  }, [quickNoteValue, lead.id, onUpdateNotes]);
 
   // Prepare customer data for ManualOrderEntry pre-fill
   const customerDataForOrder = {
@@ -66,7 +99,7 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
     }
     // Pass replaceAll=false to APPEND the new note to existing history
     onUpdateNotes(lead.id, newNoteValue.trim(), false);
-    // Keep the note in the field so user can see what was just saved
+    setNewNoteValue(''); // Clear after save
     toast.success('Note added ✓');
   };
 
@@ -399,20 +432,28 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
 
               {/* Notes Content Area */}
               <div className="p-4 space-y-4">
-                {/* NEW Note Input */}
-                <div className="space-y-3">
+                {/* Add Notes Section */}
+                <div className="border-2 border-dashed border-primary/30 rounded-lg p-4 bg-primary/5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="h-8 w-8 rounded-md bg-primary/20 flex items-center justify-center">
+                      <FileText className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-sm">Add Notes</h4>
+                      <p className="text-xs text-muted-foreground">Click to add notes about this lead</p>
+                    </div>
+                  </div>
                   <Textarea
                     id="lead-notes-textarea"
                     value={newNoteValue}
                     onChange={(e) => setNewNoteValue(e.target.value)}
-                    placeholder="Add a new note... (will be appended to history)"
-                    className="min-h-[100px] text-sm leading-relaxed resize-none focus:ring-2 focus:ring-primary/20"
-                    autoFocus
+                    placeholder="Type your detailed note here..."
+                    className="min-h-[80px] text-sm leading-relaxed resize-none focus:ring-2 focus:ring-primary/20 bg-background"
                   />
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 mt-3">
                     <Button size="sm" onClick={handleSaveNotes} disabled={!newNoteValue.trim()}>
                       <Save className="h-4 w-4 mr-1" />
-                      Save Notes
+                      Save Note
                     </Button>
                     <Button
                       variant="outline"
@@ -423,10 +464,29 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
                       <X className="h-4 w-4 mr-1" />
                       Clear
                     </Button>
-                    <span className="text-xs text-muted-foreground ml-auto">
-                      Use **bold** and _italic_ for formatting
-                    </span>
                   </div>
+                </div>
+
+                {/* Quick Notes Section - Autosave */}
+                <div className="border-2 border-dashed border-amber-300 rounded-lg p-4 bg-amber-50">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="h-8 w-8 rounded-md bg-amber-200 flex items-center justify-center">
+                      <StickyNote className="h-4 w-4 text-amber-700" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-sm text-amber-900">Quick Notes</h4>
+                      <p className="text-xs text-amber-700">Add a quick note... (autosaves)</p>
+                    </div>
+                    {isSavingQuickNote && (
+                      <span className="text-xs text-amber-600 animate-pulse">Saving...</span>
+                    )}
+                  </div>
+                  <Textarea
+                    value={quickNoteValue}
+                    onChange={(e) => setQuickNoteValue(e.target.value)}
+                    placeholder="Quick note - starts saving after you stop typing..."
+                    className="min-h-[60px] text-sm leading-relaxed resize-none focus:ring-2 focus:ring-amber-300 bg-white border-amber-200"
+                  />
                 </div>
 
                 {/* Notes History (read-only) */}
