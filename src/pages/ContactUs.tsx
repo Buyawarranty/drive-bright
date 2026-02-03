@@ -204,7 +204,7 @@ const ContactUs = () => {
       console.error('Submission error:', error);
       toast({
         title: "Submission Failed",
-        description: error.message || "Please try again or call us at 0800 494 7980.",
+        description: error.message || "Please try again or call us at 0330 229 5045.",
         variant: "destructive",
       });
     } finally {
@@ -272,7 +272,7 @@ const ContactUs = () => {
                     </div>
                     <div className="text-sm sm:text-base">
                       <span className="font-medium text-gray-700">Phone:</span>
-                      <span className="font-bold text-brand-orange"> 0800 494 7477</span>
+                      <span className="font-bold text-brand-orange"> 0330 229 5040</span>
                     </div>
                   </div>
                 </div>
@@ -292,7 +292,7 @@ const ContactUs = () => {
                     </div>
                     <div className="text-sm sm:text-base">
                       <span className="font-medium text-gray-700">Phone:</span>
-                      <span className="font-bold text-brand-orange"> 0800 494 7980</span>
+                      <span className="font-bold text-brand-orange"> 0330 229 5045</span>
                     </div>
                   </div>
                 </div>

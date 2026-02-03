@@ -543,10 +543,10 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     <span className="text-gray-400">|</span>
                     <span className="text-gray-600">Speak to an expert:</span>
                     <a 
-                      href="tel:08004947477" 
+                      href="tel:03302295040" 
                       className="font-bold text-brand-green hover:underline"
                     >
-                      0800 494 7477
+                      0330 229 5040
                     </a>
                     <span className="text-gray-400">or</span>
                     <button

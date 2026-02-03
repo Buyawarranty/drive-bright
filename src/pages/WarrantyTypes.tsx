@@ -159,9 +159,9 @@ const WarrantyTypes: React.FC = () => {
                 <Link to="/claims" className="text-gray-700 hover:text-orange-500 transition-colors font-medium">
                   Claims
                 </Link>
-                <a href="tel:08004947477" className="flex items-center gap-2 text-orange-500 font-semibold">
+                <a href="tel:03302295040" className="flex items-center gap-2 text-orange-500 font-semibold">
                   <Phone className="h-4 w-4" />
-                  0800 494 7477
+                  0330 229 5040
                 </a>
               </nav>
               
@@ -186,9 +186,9 @@ const WarrantyTypes: React.FC = () => {
                     <Link to="/claims" className="text-lg font-medium text-gray-700 hover:text-orange-500 py-2">
                       Claims
                     </Link>
-                    <a href="tel:08004947477" className="flex items-center gap-2 text-lg font-medium text-orange-500 py-2">
+                    <a href="tel:03302295040" className="flex items-center gap-2 text-lg font-medium text-orange-500 py-2">
                       <Phone className="h-5 w-5" />
-                      0800 494 7477
+                      0330 229 5040
                     </a>
                   </nav>
                 </SheetContent>
@@ -243,10 +243,10 @@ const WarrantyTypes: React.FC = () => {
                   <Button 
                     size="lg"
                     variant="outline"
-                    onClick={() => window.location.href = 'tel:08004947477'}
+                    onClick={() => window.location.href = 'tel:03302295040'}
                     className="border-primary text-primary hover:bg-primary hover:text-white font-semibold px-8 py-6 text-lg"
                   >
-                    <Phone className="mr-2 h-5 w-5" /> Call 0800 494 7477
+                    <Phone className="mr-2 h-5 w-5" /> Call 0330 229 5040
                   </Button>
                 </div>
               </div>

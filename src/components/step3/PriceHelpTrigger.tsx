@@ -45,11 +45,11 @@ const PriceHelpTrigger: React.FC<PriceHelpTriggerProps> = ({ onClick, className 
             <span className="text-gray-600">
               {' '}Call{' '}
               <a
-                href="tel:08004947477"
+                href="tel:03302295040"
                 onClick={handlePhoneClick}
                 className="font-medium text-brand-green hover:text-brand-orange underline underline-offset-2 decoration-1"
               >
-                0800 494 7477
+                0330 229 5040
               </a>
               {' '}or{' '}
               <span className="font-medium text-brand-green group-hover:text-brand-orange underline underline-offset-2 decoration-1">

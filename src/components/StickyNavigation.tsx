@@ -62,18 +62,18 @@ const StickyNavigation: React.FC = () => {
                       <Clock className="h-4 w-4 text-gray-600" />
                       Mon-Fri 9am to 5:30pm
                     </div>
-                    <a href="tel:08004947477" className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <a href="tel:03302295040" className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
                       <Phone className="h-5 w-5 mr-3 text-orange-500" />
                       <div>
                         <div className="font-semibold text-base text-black">Get a Quote</div>
-                        <div className="text-orange-500 font-semibold text-base">0800 494 7477</div>
+                        <div className="text-orange-500 font-semibold text-base">0330 229 5040</div>
                       </div>
                     </a>
-                    <a href="tel:08004947980" className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <a href="tel:03302295045" className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
                       <Phone className="h-5 w-5 mr-3 text-orange-500" />
                       <div>
                         <div className="font-semibold text-base text-black">Make a Claim</div>
-                        <div className="text-orange-500 font-semibold text-base">0800 494 7980</div>
+                        <div className="text-orange-500 font-semibold text-base">0330 229 5045</div>
                       </div>
                     </a>
                     
