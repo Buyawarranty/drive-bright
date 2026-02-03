@@ -517,10 +517,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     trackStripeCheckoutPageLoad();
   }, []);
 
-  // Auto-scroll to "How to Pay" section on mobile when all address fields are complete
+  // Auto-scroll to "How to Pay" section when all address fields are complete
   useEffect(() => {
-    // Only on mobile and only if address is complete
-    if (!isMobile || !addressComplete) return;
+    // Only if address is complete
+    if (!addressComplete) return;
     
     // Only trigger once per session
     if (hasAutoScrolledToPaymentRef.current) return;
@@ -544,7 +544,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         }
       }, 300);
     }
-  }, [isMobile, addressComplete, addressData.postcode, addressData.address_line_1, addressData.town]);
+  }, [addressComplete, addressData.postcode, addressData.address_line_1, addressData.town]);
 
   // Auto-validate pre-filled fields from Step 2
   useEffect(() => {
