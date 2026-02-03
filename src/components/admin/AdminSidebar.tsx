@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star } from 'lucide-react';
+import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star, Megaphone } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -168,6 +168,12 @@ const defaultTabs: Tab[] = [
     label: 'Pending Register',
     icon: Clock,
     description: 'Scheduled warranty submissions to register'
+  },
+  {
+    id: 'marketing-audience',
+    label: 'Marketing Audience',
+    icon: Megaphone,
+    description: 'Unified mailing list for remarketing'
   },
   {
     id: 'emails',

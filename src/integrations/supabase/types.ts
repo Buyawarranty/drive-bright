@@ -3158,6 +3158,108 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_audience: {
+        Row: {
+          contact_count: number | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          is_subscribed: boolean | null
+          last_contacted_at: string | null
+          lead_id: string | null
+          lead_status: string | null
+          metadata: Json | null
+          mileage: string | null
+          phone: string | null
+          reg_plate: string | null
+          source: string | null
+          source_type: string | null
+          synced_at: string
+          tags: string[] | null
+          unsubscribed_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          contact_count?: number | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          is_subscribed?: boolean | null
+          last_contacted_at?: string | null
+          lead_id?: string | null
+          lead_status?: string | null
+          metadata?: Json | null
+          mileage?: string | null
+          phone?: string | null
+          reg_plate?: string | null
+          source?: string | null
+          source_type?: string | null
+          synced_at?: string
+          tags?: string[] | null
+          unsubscribed_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          contact_count?: number | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          is_subscribed?: boolean | null
+          last_contacted_at?: string | null
+          lead_id?: string | null
+          lead_status?: string | null
+          metadata?: Json | null
+          mileage?: string | null
+          phone?: string | null
+          reg_plate?: string | null
+          source?: string | null
+          source_type?: string | null
+          synced_at?: string
+          tags?: string[] | null
+          unsubscribed_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      marketing_audience_sync_log: {
+        Row: {
+          completed_at: string | null
+          errors: Json | null
+          id: string
+          leads_added: number | null
+          leads_processed: number | null
+          leads_updated: number | null
+          started_at: string
+          status: string | null
+          sync_type: string
+        }
+        Insert: {
+          completed_at?: string | null
+          errors?: Json | null
+          id?: string
+          leads_added?: number | null
+          leads_processed?: number | null
+          leads_updated?: number | null
+          started_at?: string
+          status?: string | null
+          sync_type: string
+        }
+        Update: {
+          completed_at?: string | null
+          errors?: Json | null
+          id?: string
+          leads_added?: number | null
+          leads_processed?: number | null
+          leads_updated?: number | null
+          started_at?: string
+          status?: string | null
+          sync_type?: string
+        }
+        Relationships: []
+      }
       mot_history: {
         Row: {
           co2_emissions: number | null
@@ -5089,6 +5191,7 @@ export type Database = {
         Args: { admin_uuid: string; customer_uuid: string }
         Returns: undefined
       }
+      sync_leads_to_marketing_audience: { Args: never; Returns: Json }
       update_campaign_analytics: {
         Args: { p_campaign_id: string }
         Returns: undefined
