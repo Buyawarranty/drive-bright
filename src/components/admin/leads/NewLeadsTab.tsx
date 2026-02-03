@@ -11,7 +11,7 @@ import { SalespersonDashboard } from './SalespersonDashboard';
 import { ManagerDashboard } from './ManagerDashboard';
 import { AgentsLeadsView } from './AgentsLeadsView';
 import { SalesAgentDashboard } from '../sales/SalesAgentDashboard';
-import { LeadDistributionControlBar, SalesExecutiveHeader } from './distribution';
+import { SalesExecutiveHeader } from './distribution';
 import { AdminNotificationBell, AdminNotification } from '@/components/admin/AdminNotificationBell';
 import { Users, UserCircle, LayoutDashboard, Download, FileSpreadsheet, Archive, UsersRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -549,18 +549,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       {/* Content based on view - Using CSS visibility for instant switching */}
       <div className={activeView === 'leads' ? 'block' : 'hidden'}>
         <div className="space-y-4">
-          {/* Lead Distribution Controls - Admin Only */}
-          {isAdmin && (
-            <LeadDistributionControlBar
-              salesUsers={salesUsers.map(u => ({
-                id: u.id,
-                email: u.email,
-                first_name: u.first_name,
-                last_name: u.last_name
-              }))}
-            />
-          )}
-
           {/* Sales Executive Header - Non-Admin with view permissions */}
           {!isAdmin && canSeeMyDashboard && (
             <SalesExecutiveHeader
