@@ -196,8 +196,8 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
 
             <p className="text-xs text-center text-muted-foreground">
               Or call us now on{' '}
-              <a href="tel:08004947477" className="text-brand-orange font-medium hover:underline">
-                0800 494 7477
+              <a href="tel:03302295040" className="text-brand-orange font-medium hover:underline">
+                0330 229 5040
               </a>
             </p>
           </form>
