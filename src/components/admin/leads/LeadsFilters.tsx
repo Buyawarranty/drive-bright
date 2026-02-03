@@ -190,11 +190,30 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
     return `${dateRange?.from ? format(dateRange.from, 'dd MMM') : ''} ${dateRange?.to ? `- ${format(dateRange.to, 'dd MMM')}` : ''}`;
   };
 
+  // Track if awaiting contact filter is active (separate from status tabs)
+  const isAwaitingActive = assignmentFilter === 'awaiting_contact';
+
+  const handleTabChange = (value: string) => {
+    // If clicking Awaiting, set assignment filter instead
+    if (value === 'awaiting_contact') {
+      onAssignmentFilterChange?.('awaiting_contact');
+      return;
+    }
+    // For other tabs, reset assignment filter and set status filter
+    if (isAwaitingActive) {
+      onAssignmentFilterChange?.('all');
+    }
+    onFilterChange(value as LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback');
+  };
+
+  // Determine effective tab value - if awaiting is active, show it as selected
+  const effectiveTabValue = isAwaitingActive ? 'awaiting_contact' : filter;
+
   return (
     <div className="space-y-4">
       {/* Tabs for status filter */}
-      <Tabs value={filter} onValueChange={(v) => onFilterChange(v as LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback')}>
-        <TabsList className="grid w-full grid-cols-10">
+      <Tabs value={effectiveTabValue} onValueChange={handleTabChange}>
+        <TabsList className="grid w-full grid-cols-11">
           <TabsTrigger value="all" className="relative">
             All
             <Badge variant="secondary" className="ml-1 h-5 px-1.5">{leadCounts.all}</Badge>
@@ -208,6 +227,12 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
           <TabsTrigger value="new" className="relative">
             New
             <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-blue-100">{leadCounts.new}</Badge>
+          </TabsTrigger>
+          <TabsTrigger value="awaiting_contact" className="relative">
+            Awaiting
+            {assignmentCounts && (
+              <Badge variant="secondary" className="ml-1 h-5 px-1.5 bg-amber-100">{assignmentCounts.awaiting_contact}</Badge>
+            )}
           </TabsTrigger>
           <TabsTrigger value="contacted">
             Contacted
