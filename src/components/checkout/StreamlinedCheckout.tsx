@@ -989,9 +989,19 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         stripe_promo_code_id: discountCode.stripe_promo_code_id
       }]);
       
+      // CRITICAL: If payment form is already showing, we need to re-create the PaymentIntent
+      // with the new discounted amount - close the form so user re-triggers payment
+      if (showEmbeddedCheckout && stripeClientSecret) {
+        console.log('💳 Promo code applied while payment form open - need to recreate PaymentIntent');
+        setShowEmbeddedCheckout(false);
+        setStripeClientSecret(null);
+        toast.success('Promo code applied! Click "Pay in Full" again to continue.');
+      } else {
+        toast.success('Promo code applied!');
+      }
+      
       setPromoCodeInput('');
       setPromoOpen(false);
-      toast.success('Promo code applied!');
     } catch (error) {
       setPromoCodeError('Error validating code');
     } finally {
@@ -1001,7 +1011,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
   const removePromoCode = (code: string) => {
     setAppliedDiscountCodes(prev => prev.filter(d => d.code !== code));
-    toast.success('Promo code removed');
+    
+    // CRITICAL: If payment form is already showing, we need to re-create the PaymentIntent
+    // with the updated amount (without discount) - close the form so user re-triggers payment
+    if (showEmbeddedCheckout && stripeClientSecret) {
+      console.log('💳 Promo code removed while payment form open - need to recreate PaymentIntent');
+      setShowEmbeddedCheckout(false);
+      setStripeClientSecret(null);
+      toast.success('Promo code removed! Click "Pay in Full" again to continue.');
+    } else {
+      toast.success('Promo code removed');
+    }
   };
 
   const processPayment = async () => {
@@ -1177,6 +1197,18 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     try {
       console.log('💳 processStripeCheckout: Starting...');
       const finalPrice = discountedStripePrice;
+      
+      // Debug: Log discount calculation
+      console.log('💳 processStripeCheckout: Price calculation:', {
+        baseTotalPrice,
+        bumperTotalPrice,
+        stripeTotalPrice,
+        hasDiscountCodes: appliedDiscountCodes.length > 0,
+        appliedCodes: appliedDiscountCodes.map(c => ({ code: c.code, type: c.type, value: c.value })),
+        stripeDiscountAmount,
+        discountedStripePrice,
+        finalPriceSentToAPI: finalPrice
+      });
       
       const firstName = customerData.first_name?.trim() || '';
       const lastName = customerData.last_name?.trim() || '';
