@@ -6,7 +6,7 @@ import { Car, Truck, Shield, ArrowRight, Phone, Menu, Battery, Bike, Award, Chev
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
-import WebsiteFooter from '@/components/WebsiteFooter';
+// WebsiteFooter removed - rendered globally via App.tsx ConditionalFooter
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
@@ -609,7 +609,7 @@ const WarrantyTypes: React.FC = () => {
           </div>
         </section>
 
-        <WebsiteFooter />
+        {/* Footer is rendered globally in App.tsx via ConditionalFooter */}
       </div>
     </>
   );

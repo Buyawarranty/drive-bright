@@ -5,8 +5,7 @@ import { CheckCircle2, Shield, Clock, Phone, AlertCircle, Menu } from 'lucide-re
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { SEOHead } from '@/components/SEOHead';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
-import NewFooter from '@/components/NewFooter';
-import WebsiteFooter from '@/components/WebsiteFooter';
+// Footer components removed - rendered globally via App.tsx ConditionalFooter
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trackButtonClick } from '@/utils/analytics';
 import motorcycleSavings from '@/assets/motorcycle-warranty-uk-savings.png';
@@ -596,8 +595,7 @@ const MotorbikeWarranty = () => {
           </div>
         </section>
 
-        <NewFooter />
-        <WebsiteFooter />
+        {/* Footer is rendered globally in App.tsx via ConditionalFooter */}
 
         {/* Floating Contact Buttons */}
         {!isMobile && (

@@ -10,8 +10,7 @@ import { ProductSchema } from '@/components/schema/ProductSchema';
 import { FAQSchema } from '@/components/schema/FAQSchema';
 import { BreadcrumbSchema } from '@/components/schema/BreadcrumbSchema';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
-import NewFooter from '@/components/NewFooter';
-import WebsiteFooter from '@/components/WebsiteFooter';
+// Footer components removed - rendered globally via App.tsx ConditionalFooter
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trackButtonClick } from '@/utils/analytics';
 import motorcycleHero from '@/assets/motorcycle-hero.png';
@@ -591,7 +590,7 @@ const MotorcycleWarranty = () => {
           </div>
         </section>
 
-        <NewFooter />
+        {/* Footer is rendered globally in App.tsx via ConditionalFooter */}
 
         {/* Floating Contact Buttons */}
         {isMobile && (

@@ -7,7 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trackButtonClick } from '@/utils/analytics';
 import { OptimizedImage } from '@/components/OptimizedImage';
-import WebsiteFooter from '@/components/WebsiteFooter';
+// WebsiteFooter is rendered globally in App.tsx via ConditionalFooter
 import MileageQuickSelect from '@/components/MileageQuickSelect';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -1390,8 +1390,6 @@ const BMWWarrantyLanding: React.FC = () => {
           </div>
         )}
       </main>
-
-      <WebsiteFooter />
     </>
   );
 };

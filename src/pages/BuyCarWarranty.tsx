@@ -6,7 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { SEOHead } from '@/components/SEOHead';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import HomepageFAQ from '@/components/HomepageFAQ';
-import WebsiteFooter from '@/components/WebsiteFooter';
+// WebsiteFooter removed - rendered globally via App.tsx ConditionalFooter
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trackButtonClick } from '@/utils/analytics';
 import carWarrantyHero from '@/assets/car-warranty-uk-diesel-car-warranty.png';
@@ -699,7 +699,7 @@ const BuyCarWarranty: React.FC = () => {
         </div>
       </div>
 
-      <WebsiteFooter />
+      {/* Footer is rendered globally in App.tsx via ConditionalFooter */}
 
       {/* Mobile Floating Buttons */}
       {isMobile && (
