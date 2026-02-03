@@ -24,7 +24,7 @@ import AddOnProtectionPackages from '@/components/AddOnProtectionPackages';
 import { validateVehicleEligibility, calculateVehiclePriceAdjustment, applyPriceAdjustment } from '@/lib/vehicleValidation';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { 
-  BASE_PRICING_MATRIX, 
+  getBasePrice as getCentralizedBasePrice,
   DURATION_MONTHS,
   calculateLabourRateAdjustment,
   calculateBoostAdjustment,
@@ -795,18 +795,10 @@ const PricingTable: React.FC<PricingTableProps> = ({
     }
   };
 
-  // Get pricing data using centralized pricing matrix
-  // PROMO: For 2yr/3yr plans, if claim limit is £2000, use £1250 price (customer gets £2000 for price of £1250)
-  const getPricingData = (excess: number, claimLimit: number, paymentPeriod: string) => {
-    const periodData = BASE_PRICING_MATRIX[paymentPeriod as PaymentPeriod] || BASE_PRICING_MATRIX['12months'];
-    const excessData = periodData[excess as keyof typeof periodData] || periodData[100];
-    
-    // PROMO LOGIC: For 2yr/3yr plans with £2000 claim limit, use £1250 pricing
-    const isMultiYearPlan = paymentPeriod === '24months' || paymentPeriod === '36months';
-    const pricingClaimLimit = (isMultiYearPlan && claimLimit === 2000) ? 1250 : claimLimit;
-    
-    return excessData[pricingClaimLimit as keyof typeof excessData] || excessData[1250];
-  };
+  // Get pricing data using centralized pricing matrix (includes promo logic)
+  const getPricingData = useCallback((excess: number, claimLimit: number, paymentPeriod: string) => {
+    return getCentralizedBasePrice(paymentPeriod as PaymentPeriod, excess, claimLimit);
+  }, []);
 
   // Memoized price calculation to prevent pricing fluctuations
   const basePlanPrice = useMemo(() => {
