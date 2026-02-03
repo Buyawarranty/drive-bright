@@ -30,41 +30,48 @@ serve(async (req) => {
     // Get authorization header for admin verification
     const authHeader = req.headers.get("Authorization");
     
+    // Authorization is required
+    if (!authHeader) {
+      logStep("Missing authorization header");
+      return new Response(
+        JSON.stringify({ error: "Missing authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
     // Verify the user is an admin
-    if (authHeader) {
-      const token = authHeader.replace("Bearer ", "");
-      const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-      
-      if (authError || !user) {
-        logStep("Auth failed", { error: authError });
-        return new Response(
-          JSON.stringify({ error: "Unauthorized" }),
-          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      // Check if user is an admin
-      const { data: adminUser, error: adminError } = await supabaseClient
-        .from('admin_users')
-        .select('id, email, first_name, last_name, is_active')
-        .eq('user_id', user.id)
-        .single();
-
-      if (adminError || !adminUser?.is_active) {
-        logStep("Not an admin user", { error: adminError });
-        return new Response(
-          JSON.stringify({ error: "Admin access required" }),
-          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      logStep("Admin verified", { adminEmail: adminUser.email });
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    
+    if (authError || !user) {
+      logStep("Auth failed", { error: authError });
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    // Check if user is an admin
+    const { data: adminUser, error: adminError } = await supabaseClient
+      .from('admin_users')
+      .select('id, email, first_name, last_name, is_active')
+      .eq('user_id', user.id)
+      .single();
+
+    if (adminError || !adminUser?.is_active) {
+      logStep("Not an admin user", { error: adminError });
+      return new Response(
+        JSON.stringify({ error: "Admin access required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    logStep("Admin verified", { adminEmail: adminUser.email });
 
     const body = await req.json();
     const {
