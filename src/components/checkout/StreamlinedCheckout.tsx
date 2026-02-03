@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ArrowLeft, CheckCircle, CreditCard, MapPin, Check, Lock, ChevronDown, ChevronUp, Tag, Shield, AlertCircle, User, X, Info, Calendar, Loader2, Search } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { trackFormSubmission, trackBumperCheckoutClick, trackStripeCheckoutClick, trackStripeCheckoutPageLoad, trackStep4EmailEntry } from '@/utils/analytics';
@@ -90,6 +91,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   onNext 
 }) => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  
+  // Ref to track if we've already auto-scrolled to payment section
+  const hasAutoScrolledToPaymentRef = useRef(false);
+  // Ref for the How to Pay section
+  const howToPayRef = useRef<HTMLDivElement>(null);
   
   // Pre-populate from Step 2 data in localStorage
   const [customerData, setCustomerData] = useState(() => {
@@ -509,6 +516,35 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   useEffect(() => {
     trackStripeCheckoutPageLoad();
   }, []);
+
+  // Auto-scroll to "How to Pay" section on mobile when all address fields are complete
+  useEffect(() => {
+    // Only on mobile and only if address is complete
+    if (!isMobile || !addressComplete) return;
+    
+    // Only trigger once per session
+    if (hasAutoScrolledToPaymentRef.current) return;
+    
+    // Ensure all required address fields are filled
+    const isAddressFullyComplete = 
+      addressData.postcode?.trim() &&
+      addressData.address_line_1?.trim() &&
+      addressData.town?.trim();
+    
+    if (isAddressFullyComplete) {
+      hasAutoScrolledToPaymentRef.current = true;
+      
+      // Small delay to ensure DOM is updated
+      setTimeout(() => {
+        if (howToPayRef.current) {
+          howToPayRef.current.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          });
+        }
+      }, 300);
+    }
+  }, [isMobile, addressComplete, addressData.postcode, addressData.address_line_1, addressData.town]);
 
   // Auto-validate pre-filled fields from Step 2
   useEffect(() => {
@@ -1820,40 +1856,42 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           </section>
 
           {/* ==================== HOW TO PAY SECTION (BOTTOM) ==================== */}
-          <HowToPaySection
-            selectedPayment={selectedPayment}
-            onPaymentChange={async (payment) => {
-              setSelectedPayment(payment);
-              setPaymentError('');
-              
-              // Auto-trigger Stripe checkout when "Pay in Full" is selected
-              if (payment === 'full') {
-                // Small delay to allow state to update
-                setTimeout(() => {
-                  processPayment();
-                }, 100);
-              }
-            }}
-            monthlyPrice={discountedMonthlyPrice}
-            totalPrice={bumperTotalPrice}
-            fullPrice={discountedStripePrice}
-            originalPrice={bumperTotalPrice}
-            savings={savings}
-            isLoading={isLoading}
-            onPayClick={processPayment}
-            planDurationMonths={paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36}
-            promoOpen={promoOpen}
-            setPromoOpen={setPromoOpen}
-            promoCodeInput={promoCodeInput}
-            setPromoCodeInput={setPromoCodeInput}
-            promoCodeError={promoCodeError}
-            isValidatingPromoCode={isValidatingPromoCode}
-            onApplyPromoCode={applyPromoCode}
-            appliedDiscountCodes={appliedDiscountCodes}
-            onRemoveDiscountCode={removePromoCode}
-            totalDiscountAmount={totalDiscountAmount}
-            hidePayButton={showEmbeddedCheckout && selectedPayment === 'full'}
-          />
+          <div ref={howToPayRef} id="how-to-pay-section">
+            <HowToPaySection
+              selectedPayment={selectedPayment}
+              onPaymentChange={async (payment) => {
+                setSelectedPayment(payment);
+                setPaymentError('');
+                
+                // Auto-trigger Stripe checkout when "Pay in Full" is selected
+                if (payment === 'full') {
+                  // Small delay to allow state to update
+                  setTimeout(() => {
+                    processPayment();
+                  }, 100);
+                }
+              }}
+              monthlyPrice={discountedMonthlyPrice}
+              totalPrice={bumperTotalPrice}
+              fullPrice={discountedStripePrice}
+              originalPrice={bumperTotalPrice}
+              savings={savings}
+              isLoading={isLoading}
+              onPayClick={processPayment}
+              planDurationMonths={paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36}
+              promoOpen={promoOpen}
+              setPromoOpen={setPromoOpen}
+              promoCodeInput={promoCodeInput}
+              setPromoCodeInput={setPromoCodeInput}
+              promoCodeError={promoCodeError}
+              isValidatingPromoCode={isValidatingPromoCode}
+              onApplyPromoCode={applyPromoCode}
+              appliedDiscountCodes={appliedDiscountCodes}
+              onRemoveDiscountCode={removePromoCode}
+              totalDiscountAmount={totalDiscountAmount}
+              hidePayButton={showEmbeddedCheckout && selectedPayment === 'full'}
+            />
+          </div>
 
           {/* ==================== INLINE STRIPE PAYMENT ==================== */}
           {(() => {
