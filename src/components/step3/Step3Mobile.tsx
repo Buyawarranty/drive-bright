@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { validateVehicleEligibility, calculateVehiclePriceAdjustment, applyPriceAdjustment } from '@/lib/vehicleValidation';
 import { calculateAddOnPrice, getAutoIncludedAddOns } from '@/lib/addOnsUtils';
 import { 
-  BASE_PRICING_MATRIX, 
+  getBasePrice as getCentralizedBasePrice,
   DURATION_MONTHS,
   calculateLabourRateAdjustment,
   calculateBoostAdjustment,
@@ -196,11 +196,9 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     });
   }, [paymentType]);
 
-  // Get base price from centralized pricing matrix (no local duplicate needed)
+  // Get base price from centralized pricing matrix (uses promo logic for 2yr/3yr £2000 limit)
   const getBasePrice = useCallback((term: string, excess: number, claimLimit: number) => {
-    const periodData = BASE_PRICING_MATRIX[term as PaymentPeriod] || BASE_PRICING_MATRIX['12months'];
-    const excessData = periodData[excess as keyof typeof periodData] || periodData[100];
-    return excessData[claimLimit as keyof typeof excessData] || excessData[1250];
+    return getCentralizedBasePrice(term as PaymentPeriod, excess, claimLimit);
   }, []);
 
   // Calculate vehicle price adjustment
