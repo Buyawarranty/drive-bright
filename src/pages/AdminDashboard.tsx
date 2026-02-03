@@ -29,6 +29,7 @@ import { NewLeadsTab } from '@/components/admin/leads/NewLeadsTab';
 import { SellingTipsSection } from '@/components/admin/SellingTipsSection';
 import { TimesheetsTab } from '@/components/admin/timesheets/TimesheetsTab';
 import { ReviewsTab } from '@/components/admin/ReviewsTab';
+import { MarketingAudienceTab } from '@/components/admin/marketing/MarketingAudienceTab';
 import SalesCustomerManagement from '@/components/admin/sales/SalesCustomerManagement';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -252,6 +253,8 @@ const AdminDashboard = () => {
         return <AbandonedCartsTab />;
       case 'pending-w2000':
         return <PendingW2000Tab />;
+      case 'marketing-audience':
+        return <MarketingAudienceTab />;
       case 'emails':
         return <UnifiedEmailHub />;
       case 'analytics':
