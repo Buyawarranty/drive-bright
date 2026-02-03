@@ -32,6 +32,7 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
   handlers: propHandlers
 }) => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [unreadNotifications, setUnreadNotifications] = useState(0);
 
@@ -61,12 +62,13 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
       if (user) {
         const { data: adminUser } = await supabase
           .from('admin_users')
-          .select('id')
+          .select('id, email')
           .eq('user_id', user.id)
           .single();
         
         if (adminUser) {
           setCurrentUserId(adminUser.id);
+          setCurrentUserEmail(adminUser.email);
         }
       }
     };
@@ -126,8 +128,10 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
       {/* Header - Sales Safe */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">My Dashboard</h1>
-          <p className="text-muted-foreground">Your sales performance and assigned work</p>
+          <h1 className="text-2xl font-bold">My Leads</h1>
+          <p className="text-muted-foreground">
+            Assigned to: <span className="font-medium text-foreground">{currentUserEmail || 'Loading...'}</span>
+          </p>
         </div>
       </div>
 
