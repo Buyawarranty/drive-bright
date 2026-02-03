@@ -358,7 +358,12 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
           {/* Contact Form */}
           <div className="space-y-4">
             {/* Phone - Essential field with prominent styling */}
-            <div className="p-4 bg-brand-green/5 rounded-xl border-2 border-brand-green/30">
+            <div className={cn(
+              "p-4 rounded-xl border-2 transition-all duration-200",
+              isPhoneValid && !phoneError 
+                ? "bg-brand-green/5 border-brand-green" 
+                : "bg-brand-green/5 border-brand-green/30"
+            )}>
               <Label htmlFor="request-phone" className="text-sm font-semibold text-gray-800 mb-1.5 flex items-center gap-1.5">
                 📞 Phone number <span className="text-red-500">*</span>
                 <span className="text-xs font-normal text-brand-green ml-auto">Required for callback</span>
@@ -372,20 +377,31 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                   onBlur={handlePhoneBlur}
                   placeholder="07123 456789"
                   className={cn(
-                    "h-12 rounded-lg bg-white text-lg font-medium pr-10",
-                    phoneError ? "border-red-500 focus-visible:ring-red-500" : isPhoneValid ? "border-brand-green focus:border-brand-green focus:ring-brand-green" : "border-gray-300 focus:border-brand-green focus:ring-brand-green"
+                    "h-12 rounded-lg bg-white text-lg font-medium pr-12 transition-all duration-200",
+                    phoneError 
+                      ? "border-2 border-red-500 focus-visible:ring-red-500" 
+                      : isPhoneValid 
+                        ? "border-2 border-brand-green focus:border-brand-green focus:ring-brand-green bg-brand-green/5" 
+                        : "border border-gray-300 focus:border-brand-green focus:ring-brand-green"
                   )}
                   disabled={isSubmitting}
                   autoComplete="tel"
                 />
                 {isPhoneValid && !phoneError && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <Check className="w-5 h-5 text-brand-green" />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 animate-in fade-in-50 zoom-in-95 duration-200">
+                    <div className="w-6 h-6 rounded-full bg-brand-green flex items-center justify-center">
+                      <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                    </div>
                   </div>
                 )}
               </div>
               {phoneError && (
                 <p className="text-sm text-red-500 mt-1">{phoneError}</p>
+              )}
+              {isPhoneValid && !phoneError && (
+                <p className="text-xs text-brand-green mt-1.5 flex items-center gap-1">
+                  <Check className="w-3 h-3" /> Valid UK phone number
+                </p>
               )}
             </div>
 
@@ -402,18 +418,27 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                   onChange={(e) => handleEmailChange(e.target.value)}
                   placeholder="your@email.com"
                   className={cn(
-                    "h-12 rounded-lg bg-gray-50 focus:bg-white pr-10",
-                    isEmailValid ? "border-brand-green focus:border-brand-green" : "border-gray-300"
+                    "h-12 rounded-lg focus:bg-white pr-12 transition-all duration-200",
+                    isEmailValid 
+                      ? "border-2 border-brand-green focus:border-brand-green bg-brand-green/5" 
+                      : "border border-gray-300 bg-gray-50"
                   )}
                   disabled={isSubmitting}
                   autoComplete="email"
                 />
                 {isEmailValid && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <Check className="w-5 h-5 text-brand-green" />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 animate-in fade-in-50 zoom-in-95 duration-200">
+                    <div className="w-6 h-6 rounded-full bg-brand-green flex items-center justify-center">
+                      <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                    </div>
                   </div>
                 )}
               </div>
+              {isEmailValid && (
+                <p className="text-xs text-brand-green mt-1.5 flex items-center gap-1">
+                  <Check className="w-3 h-3" /> Valid email address
+                </p>
+              )}
             </div>
           </div>
 
@@ -539,7 +564,12 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
           {/* Contact Form */}
           <div className="space-y-3">
             {/* Phone - Essential field with prominent styling */}
-            <div className="p-3 bg-brand-green/5 rounded-xl border-2 border-brand-green/30">
+            <div className={cn(
+              "p-3 rounded-xl border-2 transition-all duration-200",
+              isPhoneValid && !phoneError 
+                ? "bg-brand-green/5 border-brand-green" 
+                : "bg-brand-green/5 border-brand-green/30"
+            )}>
               <Label htmlFor="mobile-phone" className="text-sm font-semibold text-gray-800 mb-1.5 flex items-center gap-1.5">
                 📞 Phone number <span className="text-red-500">*</span>
                 <span className="text-xs font-normal text-brand-green ml-auto">Required</span>
@@ -553,20 +583,31 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                   onBlur={handlePhoneBlur}
                   placeholder="07123 456789"
                   className={cn(
-                    "h-11 rounded-lg bg-white text-base font-medium pr-10",
-                    phoneError ? "border-red-500 focus-visible:ring-red-500" : isPhoneValid ? "border-brand-green focus:border-brand-green" : "border-gray-300 focus:border-brand-green"
+                    "h-12 rounded-lg bg-white text-base font-medium pr-12 transition-all duration-200",
+                    phoneError 
+                      ? "border-2 border-red-500 focus-visible:ring-red-500" 
+                      : isPhoneValid 
+                        ? "border-2 border-brand-green focus:border-brand-green bg-brand-green/5" 
+                        : "border border-gray-300 focus:border-brand-green"
                   )}
                   disabled={isSubmitting}
                   autoComplete="tel"
                 />
                 {isPhoneValid && !phoneError && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <Check className="w-5 h-5 text-brand-green" />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 animate-in fade-in-50 zoom-in-95 duration-200">
+                    <div className="w-6 h-6 rounded-full bg-brand-green flex items-center justify-center">
+                      <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                    </div>
                   </div>
                 )}
               </div>
               {phoneError && (
                 <p className="text-xs text-red-500 mt-1">{phoneError}</p>
+              )}
+              {isPhoneValid && !phoneError && (
+                <p className="text-xs text-brand-green mt-1.5 flex items-center gap-1">
+                  <Check className="w-3 h-3" /> Valid UK phone number
+                </p>
               )}
             </div>
 
@@ -583,18 +624,27 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                   onChange={(e) => handleEmailChange(e.target.value)}
                   placeholder="your@email.com"
                   className={cn(
-                    "h-11 rounded-lg bg-gray-50 focus:bg-white pr-10",
-                    isEmailValid ? "border-brand-green focus:border-brand-green" : "border-gray-300"
+                    "h-12 rounded-lg focus:bg-white pr-12 transition-all duration-200",
+                    isEmailValid 
+                      ? "border-2 border-brand-green focus:border-brand-green bg-brand-green/5" 
+                      : "border border-gray-300 bg-gray-50"
                   )}
                   disabled={isSubmitting}
                   autoComplete="email"
                 />
                 {isEmailValid && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <Check className="w-5 h-5 text-brand-green" />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 animate-in fade-in-50 zoom-in-95 duration-200">
+                    <div className="w-6 h-6 rounded-full bg-brand-green flex items-center justify-center">
+                      <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                    </div>
                   </div>
                 )}
               </div>
+              {isEmailValid && (
+                <p className="text-xs text-brand-green mt-1.5 flex items-center gap-1">
+                  <Check className="w-3 h-3" /> Valid email address
+                </p>
+              )}
             </div>
           </div>
 
