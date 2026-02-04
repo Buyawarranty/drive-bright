@@ -207,16 +207,17 @@ const CustomerDashboard = () => {
         updateLastLogin();
       }
       
-      // Set up real-time updates for new warranties
+      // Set up real-time updates for warranties and customer data changes
+      const effectiveEmail = user?.email || impersonatedCustomer?.customerEmail;
       const channel = supabase
-        .channel('customer-policies-changes')
+        .channel('customer-data-changes')
         .on(
           'postgres_changes',
           {
             event: 'INSERT',
             schema: 'public',
             table: 'customer_policies',
-            filter: `email=eq.${user?.email || impersonatedCustomer?.customerEmail}`
+            filter: `email=eq.${effectiveEmail}`
           },
           (payload) => {
             console.log('New warranty detected, refreshing policies');
@@ -229,10 +230,23 @@ const CustomerDashboard = () => {
             event: 'UPDATE',
             schema: 'public',
             table: 'customer_policies',
-            filter: `email=eq.${user?.email || impersonatedCustomer?.customerEmail}`
+            filter: `email=eq.${effectiveEmail}`
           },
           (payload) => {
             console.log('Warranty updated, refreshing policies');
+            fetchPolicies();
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'customers',
+            filter: `email=eq.${effectiveEmail}`
+          },
+          (payload) => {
+            console.log('Customer data updated (including reg plate), refreshing policies');
             fetchPolicies();
           }
         )
@@ -247,6 +261,28 @@ const CustomerDashboard = () => {
       setPolicyLoading(false);
     }
   }, [user, loading, isImpersonating, impersonatedCustomer]);
+
+  // Update customerData when selectedPolicy changes to ensure address form and display show correct data
+  useEffect(() => {
+    if (selectedPolicy?.customers) {
+      const customers = selectedPolicy.customers;
+      setCustomerData(customers);
+      setAddress(prev => ({
+        ...prev,
+        phone: customers.phone || '',
+        firstName: customers.first_name || '',
+        lastName: customers.last_name || '',
+        flatNumber: customers.flat_number || '',
+        buildingName: customers.building_name || '',
+        buildingNumber: customers.building_number || '',
+        street: customers.street || '',
+        city: customers.town || '',
+        county: (customers as any).county || '',
+        postcode: customers.postcode || '',
+        country: customers.country || 'United Kingdom'
+      }));
+    }
+  }, [selectedPolicy]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1326,7 +1362,7 @@ const CustomerDashboard = () => {
                               <div className="text-center sm:text-left">
                                 <Label className="text-xs font-medium text-blue-700 uppercase tracking-wide">Vehicle Registration</Label>
                                 <p className="text-lg font-bold text-blue-900 mt-1">
-                                  {customerData?.registration_plate || selectedPolicy?.policy_number?.split('-').pop() || 'Not provided'}
+                                  {selectedPolicy?.customers?.registration_plate || customerData?.registration_plate || selectedPolicy?.policy_number?.split('-').pop() || 'Not provided'}
                                 </p>
                               </div>
                               <div className="text-center">
