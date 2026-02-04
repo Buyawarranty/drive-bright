@@ -125,16 +125,76 @@ const AdminDashboard = () => {
     };
   }, [activeTab, tabHistory]);
 
+  // Track if we've already checked access to prevent multiple redirects
+  const hasCheckedAccessRef = React.useRef(false);
+
   useEffect(() => {
-    // Only run check when auth is done loading
-    if (!authLoading) {
+    // Only run check when auth is done loading AND we haven't already redirected
+    if (!authLoading && !hasCheckedAccessRef.current) {
       checkAdminAccess();
     }
   }, [session, authLoading]);
 
+  // Handle page visibility changes (returning from another tab/page)
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible' && hasAdminAccess) {
+        console.log('[AdminDashboard] Page became visible, refreshing session');
+        // Refresh session when returning to tab
+        const { data: { session: refreshedSession } } = await supabase.auth.getSession();
+        if (!refreshedSession?.user) {
+          console.log('[AdminDashboard] Session lost, redirecting to auth');
+          navigate('/auth', { replace: true });
+        }
+      }
+    };
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        console.log('[AdminDashboard] Page restored from bfcache');
+        // Force re-check session on bfcache restore
+        supabase.auth.getSession().then(({ data: { session: refreshedSession } }) => {
+          if (!refreshedSession?.user && !isCheckingRole) {
+            navigate('/auth', { replace: true });
+          }
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pageshow', handlePageShow);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, [hasAdminAccess, isCheckingRole, navigate]);
+
   const checkAdminAccess = async () => {
-    // If no session after auth loading is complete, redirect to auth
+    // If no session after auth loading is complete, try one more time before redirecting
     if (!session?.user) {
+      console.log('[AdminDashboard] No session found, attempting refresh...');
+      
+      // Try to get the session one more time - this helps with bfcache/tab switches
+      const { data: { session: refreshedSession } } = await supabase.auth.getSession();
+      
+      if (!refreshedSession?.user) {
+        console.log('[AdminDashboard] Still no session after refresh, redirecting to auth');
+        hasCheckedAccessRef.current = true;
+        setIsCheckingRole(false);
+        navigate('/auth', { replace: true });
+        return;
+      }
+      
+      // Use the refreshed session to continue
+      console.log('[AdminDashboard] Session recovered, continuing with access check');
+    }
+
+    // Use the current session or the one we just refreshed
+    const currentSession = session || (await supabase.auth.getSession()).data.session;
+    
+    if (!currentSession?.user) {
+      hasCheckedAccessRef.current = true;
       setIsCheckingRole(false);
       navigate('/auth', { replace: true });
       return;
@@ -143,8 +203,8 @@ const AdminDashboard = () => {
     try {
       // Parallel fetch: roles and permissions at the same time for speed
       const [rolesResult, permissionsResult] = await Promise.all([
-        supabase.from('user_roles').select('role').eq('user_id', session.user.id),
-        supabase.from('admin_users').select('permissions').eq('user_id', session.user.id).maybeSingle()
+        supabase.from('user_roles').select('role').eq('user_id', currentSession.user.id),
+        supabase.from('admin_users').select('permissions').eq('user_id', currentSession.user.id).maybeSingle()
       ]);
 
       const { data, error } = rolesResult;
@@ -157,6 +217,7 @@ const AdminDashboard = () => {
       const userAdminRoles = data?.filter(r => adminRoles.includes(r.role)) || [];
       
       if (error || userAdminRoles.length === 0) {
+        hasCheckedAccessRef.current = true;
         setIsCheckingRole(false);
         navigate('/', { replace: true });
         return;
@@ -168,6 +229,7 @@ const AdminDashboard = () => {
       
       setUserRole(primaryRole);
       setHasAdminAccess(true);
+      hasCheckedAccessRef.current = true;
       
       if (adminUserData?.permissions) {
         setUserPermissions(adminUserData.permissions as Record<string, boolean>);
@@ -200,6 +262,7 @@ const AdminDashboard = () => {
       setIsCheckingRole(false);
     } catch (error) {
       console.error('Error checking admin access:', error);
+      hasCheckedAccessRef.current = true;
       setIsCheckingRole(false);
       navigate('/', { replace: true });
     }
