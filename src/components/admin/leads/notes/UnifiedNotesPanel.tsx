@@ -119,15 +119,15 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     isSavingRef.current = true;
     setSaveStatus('saving');
     
-    // Set a timeout to prevent infinite saving state
+    // Set a shorter timeout (8 seconds) to prevent infinite saving state
     const saveTimeout = setTimeout(() => {
       if (isSavingRef.current) {
-        console.error('[UnifiedNotesPanel] Save timed out after 15 seconds');
+        console.error('[UnifiedNotesPanel] Save timed out after 8 seconds');
         isSavingRef.current = false;
         setSaveStatus('error');
-        toast.error('Save timed out. Please try again.');
+        toast.error('Save timed out. Check your connection and try again.');
       }
-    }, 15000);
+    }, 8000);
     
     try {
       console.log('[UnifiedNotesPanel] Calling addNote with text:', noteText.substring(0, 50));
