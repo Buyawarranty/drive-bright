@@ -9,6 +9,8 @@ import { WebPageSchema } from '@/components/schema/WebPageSchema';
 import { ProductSchema } from '@/components/schema/ProductSchema';
 import { FAQSchema } from '@/components/schema/FAQSchema';
 import { BreadcrumbSchema } from '@/components/schema/BreadcrumbSchema';
+import { ServiceSchema } from '@/components/schema/ServiceSchema';
+import { HowToSchema, defaultClaimsSteps } from '@/components/schema/HowToSchema';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 // Footer components removed - rendered globally via App.tsx ConditionalFooter
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -74,35 +76,77 @@ const MercedesWarranty = () => {
     }
   ];
 
+  // Mercedes-specific claims process steps for HowTo schema
+  const mercedesClaimsSteps = [
+    {
+      name: "Diagnose the Issue",
+      text: "Take your Mercedes to any Mercedes-Benz dealership or approved independent specialist. The technician will identify the fault using Mercedes diagnostic equipment and provide an estimate.",
+      url: "https://buyawarranty.co.uk/make-a-claim/"
+    },
+    {
+      name: "Contact Us for Authorisation",
+      text: "Call our UK-based claims team on 0330 229 5040. We'll review the diagnosis for your Mercedes and authorise the repair quickly, typically within 2 hours.",
+      url: "https://buyawarranty.co.uk/make-a-claim/"
+    },
+    {
+      name: "Get Your Mercedes Repaired",
+      text: "Once authorised, the garage completes the repair using genuine Mercedes-Benz or OE-quality parts. You only pay any applicable excess.",
+      url: "https://buyawarranty.co.uk/make-a-claim/"
+    },
+    {
+      name: "We Pay the Garage Directly",
+      text: "We settle the invoice directly with the garage. No upfront costs, no claim forms, no waiting for reimbursement. Drive away in your repaired Mercedes.",
+      url: "https://buyawarranty.co.uk/make-a-claim/"
+    }
+  ];
+
   return (
     <>
       <SEOHead
-        title="Mercedes-Benz Car Extended Warranty | Affordable Used Car Cover"
-        description="Protect your Mercedes from costly repairs with our extended warranty. Covers new, used and high-mileage Mercedes up to 150,000 miles. Fast claims & wide garages."
-        keywords="mercedes extended warranty, mercedes warranty UK, used mercedes warranty, mercedes c class warranty, mercedes e class warranty, mercedes amg warranty"
-        canonical="https://buyawarranty.co.uk/car-extended-warranty/mercedes-benz/"
+        title="Mercedes-Benz Extended Warranty UK | Used Car Cover from £24/month"
+        description="Protect your Mercedes from costly repairs with our extended warranty. Covers new, used and high-mileage Mercedes up to 150,000 miles. 4.7★ Trustpilot. Fast claims. Use code SAVE10NOW for 10% off."
+        keywords="mercedes extended warranty, mercedes warranty UK, used mercedes warranty, mercedes c class warranty, mercedes e class warranty, mercedes amg warranty, mercedes benz warranty, mercedes used car warranty, mercedes high mileage warranty"
+        ogTitle="Mercedes-Benz Extended Warranty | Protect Your Mercedes from £24/month"
+        ogDescription="UK's trusted Mercedes extended warranty. Covers engine, gearbox, MBUX, electrics & more. High-mileage cover up to 150,000 miles. 14-day money back guarantee."
+        ogImage="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png"
+        canonical="https://buyawarranty.co.uk/warranty-types/mercedes/"
+        geoRegion="GB"
+        geoPlacename="United Kingdom"
+        geoPosition="51.5074;-0.1278"
+        ICBM="51.5074, -0.1278"
       />
       
+      {/* 7 JSON-LD Schemas for AI Discoverability */}
       <OrganizationSchema type="InsuranceAgency" />
       
       <WebPageSchema
-        name="Mercedes-Benz Extended Warranty - Buy A Warranty"
+        name="Mercedes-Benz Extended Warranty UK | Buy A Warranty"
         description="Protect your Mercedes from costly repairs with our extended warranty. Covers new, used and high-mileage Mercedes up to 150,000 miles. Fast claims & wide garages."
-        url="https://buyawarranty.co.uk/car-extended-warranty/mercedes-benz/"
+        url="https://buyawarranty.co.uk/warranty-types/mercedes/"
         lastReviewed={new Date().toISOString()}
         significantLink="https://buyawarranty.co.uk/"
-        specialty="Mercedes-Benz Extended Warranties"
+        specialty="Mercedes-Benz Extended Warranties, AMG Warranty, MBUX Cover, Mercedes EQ Warranty"
       />
       
       <ProductSchema
         name="Mercedes-Benz Extended Warranty"
-        description="Comprehensive extended warranty coverage for Mercedes-Benz vehicles including engine, gearbox, electrical systems, ECU, MBUX infotainment, hybrid and AMG models."
-        price="600.00"
+        description="Comprehensive extended warranty coverage for Mercedes-Benz vehicles including engine, gearbox, electrical systems, ECU, MBUX infotainment, hybrid and AMG models. Covers C-Class, E-Class, A-Class, GLC, GLE and more."
+        price="24.00"
         brand="Buy A Warranty"
         category="Car Insurance & Warranty"
         image="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png"
-        availability="https://schema.org/InStock"
+        availability="InStock"
         areaServed="United Kingdom"
+      />
+      
+      <ServiceSchema
+        name="Mercedes-Benz Extended Warranty Service"
+        description="Professional extended warranty service for Mercedes-Benz vehicles. Covers mechanical and electrical failures including engine, gearbox, MBUX, 4MATIC, 9G-TRONIC and AMG components."
+        provider="Buy A Warranty"
+        serviceType="Extended Vehicle Warranty"
+        areaServed="United Kingdom"
+        url="https://buyawarranty.co.uk/warranty-types/mercedes/"
+        priceRange="££"
       />
       
       <FAQSchema faqs={mercedesFAQs} />
@@ -110,12 +154,24 @@ const MercedesWarranty = () => {
       <BreadcrumbSchema
         items={[
           { name: 'Home', url: 'https://buyawarranty.co.uk/' },
-          { name: 'Car Extended Warranty', url: 'https://buyawarranty.co.uk/car-extended-warranty/' },
-          { name: 'Mercedes-Benz Warranty', url: 'https://buyawarranty.co.uk/car-extended-warranty/mercedes-benz/' }
+          { name: 'Warranty Types', url: 'https://buyawarranty.co.uk/warranty-types/' },
+          { name: 'Mercedes-Benz Warranty', url: 'https://buyawarranty.co.uk/warranty-types/mercedes/' }
         ]}
       />
+      
+      <HowToSchema
+        name="How to Claim on Your Mercedes-Benz Extended Warranty"
+        description="Simple 4-step claims process for Mercedes-Benz extended warranty. From diagnosis to payment, we handle everything so you can get back on the road quickly."
+        steps={mercedesClaimsSteps}
+        totalTime="PT48H"
+        estimatedCost={{ currency: 'GBP', value: '0' }}
+      />
 
-      <div className="min-h-screen bg-background">
+      <main 
+        className="min-h-screen bg-background"
+        itemScope 
+        itemType="https://schema.org/WebPage"
+      >
         <TrustpilotHeader />
         
         {/* Navigation */}
@@ -678,7 +734,7 @@ const MercedesWarranty = () => {
         )}
 
         {/* Footer is rendered globally in App.tsx via ConditionalFooter */}
-      </div>
+      </main>
     </>
   );
 };
