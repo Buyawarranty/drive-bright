@@ -623,8 +623,9 @@ serve(async (req) => {
         seasonal_bonus_months: seasonalBonusMonths, // Store seasonal bonus
         bumper_order_id: effectiveBumperOrderId, // Store Bumper order ID if present
         stripe_session_id: stripeSessionId,
-        // Store payment amount from final_amount in metadata or customerData
-        payment_amount: parseFloat(metadata?.final_amount) || customerData?.final_amount || null,
+        // CRITICAL: Use final_amount from customerData (which now contains actual Stripe amount)
+        // This ensures the actual payment amount shows in dashboards, not the pre-discount price
+        payment_amount: customerData?.final_amount || parseFloat(metadata?.final_amount) || null,
         // W2000 scheduling: if start date is in future, schedule for that date
         warranties_2000_status: isStartDateInFuture ? 'scheduled' : 'not_sent',
         warranties_2000_scheduled_for: isStartDateInFuture ? policyStartDate.toISOString() : null,
