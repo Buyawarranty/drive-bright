@@ -5184,6 +5184,7 @@ export type Database = {
         Returns: string
       }
       make_user_admin: { Args: { user_email: string }; Returns: undefined }
+      reset_agent_caps_daily: { Args: never; Returns: undefined }
       reset_daily_caps: { Args: never; Returns: undefined }
       restore_customer: { Args: { customer_uuid: string }; Returns: undefined }
       set_user_offline: { Args: never; Returns: undefined }

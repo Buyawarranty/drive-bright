@@ -1,10 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Zap, PauseCircle, Lock } from 'lucide-react';
 import { PresenceBadge } from './PresenceBadge';
 import { useLeadDistribution } from '@/hooks/useLeadDistribution';
@@ -20,21 +17,23 @@ export const SalesExecutiveHeader: React.FC<SalesExecutiveHeaderProps> = ({
   const {
     currentAgentCap,
     claimNextLead,
-    togglePauseReceiving,
     loading
   } = useLeadDistribution();
 
   const { status, isActive, lastInteractionAt } = useEnhancedPresence();
 
   const [claiming, setClaiming] = React.useState(false);
-  const [isPaused, setIsPaused] = React.useState(false);
 
   const assignedToday = currentAgentCap?.assigned_today ?? 0;
   const dailyCap = currentAgentCap?.daily_cap ?? 20;
   const capReached = assignedToday >= dailyCap;
   const progressPercent = dailyCap > 0 ? (assignedToday / dailyCap) * 100 : 0;
+  
+  // Use the paused status from agent_distribution_caps (set by admins)
+  // This is the authoritative source that the RPC function checks
+  const isPausedByAdmin = currentAgentCap?.paused ?? false;
 
-  const canClaim = isActive && !capReached && !isPaused;
+  const canClaim = isActive && !capReached && !isPausedByAdmin;
 
   const handleClaimLead = async () => {
     if (!canClaim) return;
@@ -48,17 +47,10 @@ export const SalesExecutiveHeader: React.FC<SalesExecutiveHeaderProps> = ({
     }
   };
 
-  const handleTogglePause = async () => {
-    const success = await togglePauseReceiving();
-    if (success) {
-      setIsPaused(!isPaused);
-    }
-  };
-
   const getClaimButtonText = () => {
     if (capReached) return 'Daily cap reached';
     if (!isActive) return 'Become active to claim';
-    if (isPaused) return 'Resume to claim';
+    if (isPausedByAdmin) return 'Paused by admin';
     return 'Get Next Lead';
   };
 
@@ -110,30 +102,13 @@ export const SalesExecutiveHeader: React.FC<SalesExecutiveHeaderProps> = ({
 
       {/* Right: Actions */}
       <div className="flex items-center gap-3 ml-auto">
-        {/* Pause toggle */}
-        <div className="flex items-center gap-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="pause-receiving"
-                  checked={isPaused}
-                  onCheckedChange={handleTogglePause}
-                />
-                <Label 
-                  htmlFor="pause-receiving" 
-                  className="text-xs text-muted-foreground cursor-pointer flex items-center gap-1"
-                >
-                  <PauseCircle className="h-3.5 w-3.5" />
-                  Pause receiving
-                </Label>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="text-xs">
-              Temporarily stop receiving auto-assigned leads
-            </TooltipContent>
-          </Tooltip>
-        </div>
+        {/* Paused by admin warning */}
+        {isPausedByAdmin && (
+          <Badge variant="destructive" className="gap-1 text-xs">
+            <PauseCircle className="h-3 w-3" />
+            Paused by Admin
+          </Badge>
+        )}
 
         {/* Get Next Lead button */}
         <Button
