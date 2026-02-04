@@ -59,9 +59,11 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   const [deletedNote, setDeletedNote] = useState<QuickNote | null>(null);
   const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Autosave refs
+  // Autosave refs - CRITICAL: use refs to prevent duplicate saves
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
+  const isSavingRef = useRef(false); // Lock to prevent concurrent saves
+  const lastSavedNoteRef = useRef<string>(''); // Track last saved to prevent duplicates
 
   // Reset state when lead changes
   useEffect(() => {
@@ -74,42 +76,9 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     setShowAllNotes(!compact);
   }, [leadId, compact]);
 
-  // Autosave logic - 1 second debounce
-  useEffect(() => {
-    if (!composerValue.trim()) {
-      setSaveStatus('idle');
-      return;
-    }
-
-    setSaveStatus('idle'); // Clear previous status when typing
-    
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-
-    saveTimeoutRef.current = setTimeout(async () => {
-      setSaveStatus('saving');
-      try {
-        await addNote(composerValue.trim());
-        setSaveStatus('saved');
-        setLastSavedTime(new Date());
-        setComposerValue(''); // Clear after successful save
-        
-        // Reset to idle after 3 seconds
-        setTimeout(() => {
-          setSaveStatus('idle');
-        }, 3000);
-      } catch (error) {
-        setSaveStatus('error');
-      }
-    }, 1000);
-
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-    };
-  }, [composerValue, addNote]);
+  // DISABLED AUTOSAVE - was causing duplicate notes
+  // Users must now press Enter or click Save to add notes
+  // This prevents race conditions and duplicate entries
 
   // Handle Enter to save, Shift+Enter for newline
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -124,22 +93,45 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   };
 
   const handleImmediateSave = async () => {
-    if (!composerValue.trim()) return;
+    const noteText = composerValue.trim();
+    if (!noteText) return;
+    
+    // Prevent duplicate saves with lock
+    if (isSavingRef.current) {
+      console.log('Save already in progress, skipping');
+      return;
+    }
+    
+    // Prevent saving the exact same note twice in a row
+    if (noteText === lastSavedNoteRef.current) {
+      console.log('Duplicate note prevented');
+      setComposerValue('');
+      return;
+    }
     
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
     
+    isSavingRef.current = true;
     setSaveStatus('saving');
+    
     try {
-      await addNote(composerValue.trim());
+      await addNote(noteText);
+      lastSavedNoteRef.current = noteText; // Track what we just saved
       setSaveStatus('saved');
       setLastSavedTime(new Date());
       setComposerValue('');
       
-      setTimeout(() => setSaveStatus('idle'), 3000);
+      setTimeout(() => {
+        setSaveStatus('idle');
+        // Clear the last saved note after 5 seconds to allow same note later
+        setTimeout(() => { lastSavedNoteRef.current = ''; }, 5000);
+      }, 3000);
     } catch (error) {
       setSaveStatus('error');
+    } finally {
+      isSavingRef.current = false;
     }
   };
 
@@ -430,7 +422,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
           value={composerValue}
           onChange={(e) => setComposerValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Type a note… it autosaves."
+          placeholder="Type a note and press Enter to save..."
           className={cn(
             "min-h-[44px] text-sm resize-none transition-all",
             "focus:ring-2 focus:ring-primary/20",
