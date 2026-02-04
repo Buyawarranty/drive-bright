@@ -31,6 +31,12 @@ export const useLeadQuickNotes = (leadId: string) => {
       return;
     }
     
+    // Create a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      console.warn('[fetchNotes] Fetch taking longer than 5 seconds, forcing completion');
+      setLoading(false);
+    }, 5000);
+    
     try {
       setLoading(true);
       
@@ -79,20 +85,31 @@ export const useLeadQuickNotes = (leadId: string) => {
 
         if (quickNotesResult.error) throw quickNotesResult.error;
 
-        // Fetch author info for each note
-        const notesWithAuthors = await Promise.all(
-          (quickNotesResult.data || []).map(async (note: any) => {
-            if (note.created_by) {
-              const { data: authorData } = await supabase
-                .from('admin_users')
-                .select('first_name, last_name, email')
-                .eq('id', note.created_by)
-                .maybeSingle();
-              return { ...note, author: authorData };
-            }
-            return note;
-          })
-        );
+        const quickNotes = quickNotesResult.data || [];
+        
+        // Batch fetch all author info in ONE query instead of N queries
+        const authorIds = [...new Set(quickNotes.filter((n: any) => n.created_by).map((n: any) => n.created_by))];
+        let authorsMap: Record<string, { first_name: string | null; last_name: string | null; email: string }> = {};
+        
+        if (authorIds.length > 0) {
+          const { data: authorsData } = await supabase
+            .from('admin_users')
+            .select('id, first_name, last_name, email')
+            .in('id', authorIds);
+          
+          if (authorsData) {
+            authorsMap = authorsData.reduce((acc, author) => {
+              acc[author.id] = { first_name: author.first_name, last_name: author.last_name, email: author.email };
+              return acc;
+            }, {} as Record<string, { first_name: string | null; last_name: string | null; email: string }>);
+          }
+        }
+        
+        // Map authors to notes instantly
+        const notesWithAuthors = quickNotes.map((note: any) => ({
+          ...note,
+          author: note.created_by ? authorsMap[note.created_by] || null : null
+        }));
 
         // Also include legacy notes from sales_leads.notes field if it exists
         // This ensures older notes are still visible
@@ -124,7 +141,9 @@ export const useLeadQuickNotes = (leadId: string) => {
       }
     } catch (error) {
       console.error('Error fetching quick notes:', error);
+      clearTimeout(timeoutId);
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   }, [leadId, isAbandonedCart, actualId]);
@@ -136,101 +155,112 @@ export const useLeadQuickNotes = (leadId: string) => {
   const addNote = async (noteText: string) => {
     console.log('[addNote] Starting for leadId:', leadId, 'isAbandonedCart:', isAbandonedCart);
     
-    // First try to get the current session - if expired, try to refresh
-    let { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    // Wrap entire operation in a timeout promise for safety
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Operation timed out after 7 seconds')), 7000);
+    });
     
-    if (sessionError || !session) {
-      console.log('[addNote] No session found, attempting refresh...');
-      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+    const addNoteOperation = async () => {
+      // First try to get the current session - if expired, try to refresh
+      let { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      if (refreshError || !refreshData.session) {
-        console.error('[addNote] Session refresh failed:', refreshError);
-        toast.error('Your session has expired. Please refresh the page and sign in again.');
-        throw new Error('Session expired - please refresh the page');
+      if (sessionError || !session) {
+        console.log('[addNote] No session found, attempting refresh...');
+        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+        
+        if (refreshError || !refreshData.session) {
+          console.error('[addNote] Session refresh failed:', refreshError);
+          toast.error('Session expired. Please refresh the page.');
+          throw new Error('Session expired - please refresh the page');
+        }
+        
+        session = refreshData.session;
+        console.log('[addNote] Session refreshed successfully');
       }
       
-      session = refreshData.session;
-      console.log('[addNote] Session refreshed successfully');
-    }
-    
-    const userId = session.user.id;
-    console.log('[addNote] Got user:', userId);
+      const userId = session.user.id;
+      console.log('[addNote] Got user:', userId);
 
-    const { data: adminUser, error: adminError } = await supabase
-      .from('admin_users')
-      .select('id, first_name, last_name, email')
-      .eq('user_id', userId)
-      .maybeSingle();
+      const { data: adminUser, error: adminError } = await supabase
+        .from('admin_users')
+        .select('id, first_name, last_name, email')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-    if (adminError) {
-      console.error('[addNote] Error finding admin user:', adminError);
-      toast.error('Database error. Please try again.');
-      throw new Error(`Database error: ${adminError.message}`);
-    }
-    
-    if (!adminUser) {
-      console.error('[addNote] Admin user not found for userId:', userId);
-      toast.error('Your admin account was not found. Please contact support.');
-      throw new Error('Admin user not found');
-    }
-    
-    console.log('[addNote] Found admin user:', adminUser.id, adminUser.email);
-
-    if (isAbandonedCart) {
-      // For abandoned carts, append to contact_notes field
-      const existingNotes = notes.length > 0 ? notes[0].note_text : '';
-      const timestamp = new Date().toLocaleString('en-GB', { 
-        day: '2-digit', 
-        month: 'short', 
-        year: 'numeric', 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      });
-      const authorName = adminUser.first_name || adminUser.email.split('@')[0];
-      const newNoteEntry = `[${timestamp} - ${authorName}] ${noteText.trim()}`;
-      const updatedNotes = existingNotes 
-        ? `${existingNotes}\n\n${newNoteEntry}` 
-        : newNoteEntry;
-
-      const { error } = await supabase
-        .from('abandoned_carts')
-        .update({ 
-          contact_notes: updatedNotes,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', actualId);
-
-      if (error) {
-        console.error('Error adding note to abandoned cart:', error);
-        toast.error('Failed to add note');
-        throw error;
+      if (adminError) {
+        console.error('[addNote] Error finding admin user:', adminError);
+        throw new Error(`Database error: ${adminError.message}`);
       }
-
-      await fetchNotes();
-      return { id: `cart_note_${actualId}`, note_text: updatedNotes };
-    } else {
-      // For sales leads, use the lead_quick_notes table
-      console.log('[addNote] Inserting note for lead_id:', leadId, 'created_by:', adminUser.id);
       
-      const { data, error } = await supabase
-        .from('lead_quick_notes')
-        .insert({
-          lead_id: leadId,
-          note_text: noteText.trim(),
-          created_by: adminUser.id
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('[addNote] Error inserting quick note:', error);
-        console.error('[addNote] Error details - code:', error.code, 'message:', error.message, 'details:', error.details);
-        throw error;
+      if (!adminUser) {
+        console.error('[addNote] Admin user not found for userId:', userId);
+        throw new Error('Admin user not found');
       }
+      
+      console.log('[addNote] Found admin user:', adminUser.id, adminUser.email);
+      return { session, adminUser };
+    };
+    
+    try {
+      const { adminUser } = await Promise.race([addNoteOperation(), timeoutPromise]) as { session: any; adminUser: any };
 
-      console.log('[addNote] Successfully inserted note:', data?.id);
-      await fetchNotes();
-      return data;
+      if (isAbandonedCart) {
+        // For abandoned carts, append to contact_notes field
+        const existingNotes = notes.length > 0 ? notes[0].note_text : '';
+        const timestamp = new Date().toLocaleString('en-GB', { 
+          day: '2-digit', 
+          month: 'short', 
+          year: 'numeric', 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        });
+        const authorName = adminUser.first_name || adminUser.email.split('@')[0];
+        const newNoteEntry = `[${timestamp} - ${authorName}] ${noteText.trim()}`;
+        const updatedNotes = existingNotes 
+          ? `${existingNotes}\n\n${newNoteEntry}` 
+          : newNoteEntry;
+
+        const { error } = await supabase
+          .from('abandoned_carts')
+          .update({ 
+            contact_notes: updatedNotes,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', actualId);
+
+        if (error) {
+          console.error('Error adding note to abandoned cart:', error);
+          throw error;
+        }
+
+        await fetchNotes();
+        return { id: `cart_note_${actualId}`, note_text: updatedNotes };
+      } else {
+        // For sales leads, use the lead_quick_notes table
+        console.log('[addNote] Inserting note for lead_id:', leadId, 'created_by:', adminUser.id);
+        
+        const { data, error } = await supabase
+          .from('lead_quick_notes')
+          .insert({
+            lead_id: leadId,
+            note_text: noteText.trim(),
+            created_by: adminUser.id
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('[addNote] Error inserting quick note:', error);
+          throw error;
+        }
+
+        console.log('[addNote] Successfully inserted note:', data?.id);
+        await fetchNotes();
+        return data;
+      }
+    } catch (error: any) {
+      console.error('[addNote] Error:', error?.message || error);
+      throw error;
     }
   };
 
