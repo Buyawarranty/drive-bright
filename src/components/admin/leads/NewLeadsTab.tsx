@@ -62,32 +62,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const isAdmin = userRole === 'admin';
   const isSalesAgent = userRole === 'sales';
   
-  // Sales agents get a completely restricted view - use SalesAgentDashboard
-  // They cannot see All Leads, Export, See Agents, or any other admin features
-  if (isSalesAgent) {
-    return (
-      <SalesAgentDashboard
-        leads={[]} // Will be filtered internally
-        tags={[]}
-        salesUsers={[]}
-        handlers={{
-          updateLeadStatus: async () => {},
-          assignLead: async () => {},
-          autoAssignLead: async () => {},
-          updateLeadPriority: async () => {},
-          scheduleFollowUp: async () => {},
-          addTagToLead: async () => {},
-          removeTagFromLead: async () => {},
-          updateLeadNotes: async () => {},
-          markContactedAt: async () => {},
-          logActivity: async () => {},
-          deleteLeads: async () => {},
-        }}
-        onNavigateToTab={onNavigateToTab}
-      />
-    );
-  }
-  
   // Delete permission - admin role OR explicit delete permission
   const canDelete = isAdmin || hasGranularPermission('new-leads', 'delete');
   
@@ -412,10 +386,25 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     updateCallCount,
   ]);
 
+  // Sales agents get a completely restricted view - use SalesAgentDashboard
+  // They cannot see All Leads, Export, See Agents, or any other admin features
+  // This is placed after all hooks to comply with React's rules of hooks
+  if (isSalesAgent) {
+    return (
+      <SalesAgentDashboard
+        leads={leads}
+        tags={tags}
+        salesUsers={salesUsers}
+        handlers={leadHandlers}
+        onNavigateToTab={onNavigateToTab}
+      />
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
