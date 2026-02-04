@@ -210,6 +210,17 @@ serve(async (req) => {
             email: fullSession.customer_email || fullSession.customer_details?.email || fullSession.metadata?.customer_email || ''
           };
 
+          // CRITICAL: Use actual Stripe payment amount, not metadata.final_amount (which may be pre-discount)
+          // session.amount_total is in cents/pence, divide by 100 to get pounds
+          const actualStripeAmount = (fullSession.amount_total || 0) / 100;
+          const metadataAmount = parseFloat(fullSession.metadata?.final_amount || '0');
+          
+          logStep("Payment amount comparison", {
+            actualStripeAmount,
+            metadataAmount,
+            usingActualStripeAmount: actualStripeAmount > 0
+          });
+
           const customerData = {
             first_name: fullSession.metadata?.customer_first_name || '',
             last_name: fullSession.metadata?.customer_last_name || '',
@@ -224,7 +235,9 @@ serve(async (req) => {
             building_number: fullSession.metadata?.customer_building_number || '',
             vehicle_reg: fullSession.metadata?.vehicle_reg || '',
             discount_code: fullSession.metadata?.discount_code || '',
-            final_amount: parseFloat(fullSession.metadata?.final_amount || '0'),
+            // Use ACTUAL Stripe payment amount - this is what the customer actually paid
+            final_amount: actualStripeAmount > 0 ? actualStripeAmount : metadataAmount,
+            original_amount: metadataAmount, // Store metadata amount as original (pre-discount)
             fullName: fullSession.metadata?.customer_name || '',
             phone: fullSession.metadata?.customer_phone || '',
             address: `${fullSession.metadata?.customer_street || ''}, ${fullSession.metadata?.customer_town || ''}, ${fullSession.metadata?.customer_county || ''}, ${fullSession.metadata?.customer_postcode || ''}`.replace(/^,\s*|,\s*$/g, '').replace(/,\s*,/g, ',').trim()
@@ -347,6 +360,17 @@ serve(async (req) => {
           email: metadata.customer_email || ''
         };
 
+        // CRITICAL: Use actual Stripe payment amount for embedded checkout
+        // paymentIntent.amount is in cents/pence, divide by 100 to get pounds
+        const actualStripeAmount = (paymentIntent.amount || 0) / 100;
+        const metadataAmount = parseFloat(metadata.final_amount || '0');
+        
+        logStep("PaymentIntent amount comparison", {
+          actualStripeAmount,
+          metadataAmount,
+          usingActualStripeAmount: actualStripeAmount > 0
+        });
+
         // Extract customer data from metadata
         const customerData = {
           first_name: metadata.customer_first_name || '',
@@ -362,7 +386,9 @@ serve(async (req) => {
           building_number: metadata.customer_building_number || '',
           vehicle_reg: metadata.vehicle_reg || '',
           discount_code: metadata.discount_code || '',
-          final_amount: parseFloat(metadata.final_amount || '0'),
+          // Use ACTUAL Stripe payment amount - this is what the customer actually paid
+          final_amount: actualStripeAmount > 0 ? actualStripeAmount : metadataAmount,
+          original_amount: metadataAmount, // Store metadata amount as original (pre-discount)
           fullName: metadata.customer_name || '',
           phone: metadata.customer_phone || '',
           address: `${metadata.customer_street || ''}, ${metadata.customer_town || ''}, ${metadata.customer_county || ''}, ${metadata.customer_postcode || ''}`.replace(/^,\s*|,\s*$/g, '').replace(/,\s*,/g, ',').trim()
