@@ -59,19 +59,26 @@ export const useLeadQuickNotes = (leadId: string) => {
           setNotes([]);
         }
       } else {
-        // For sales leads, use the lead_quick_notes table
-        const { data, error } = await supabase
-          .from('lead_quick_notes')
-          .select('*')
-          .eq('lead_id', leadId)
-          .order('is_pinned', { ascending: false })
-          .order('created_at', { ascending: false });
+        // For sales leads, use the lead_quick_notes table AND legacy notes from sales_leads.notes
+        const [quickNotesResult, leadResult] = await Promise.all([
+          supabase
+            .from('lead_quick_notes')
+            .select('*')
+            .eq('lead_id', leadId)
+            .order('is_pinned', { ascending: false })
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('sales_leads')
+            .select('notes, updated_at')
+            .eq('id', leadId)
+            .maybeSingle()
+        ]);
 
-        if (error) throw error;
+        if (quickNotesResult.error) throw quickNotesResult.error;
 
         // Fetch author info for each note
         const notesWithAuthors = await Promise.all(
-          (data || []).map(async (note: any) => {
+          (quickNotesResult.data || []).map(async (note: any) => {
             if (note.created_by) {
               const { data: authorData } = await supabase
                 .from('admin_users')
@@ -84,7 +91,33 @@ export const useLeadQuickNotes = (leadId: string) => {
           })
         );
 
-        setNotes(notesWithAuthors as QuickNote[]);
+        // Also include legacy notes from sales_leads.notes field if it exists
+        // This ensures older notes are still visible
+        let allNotes = notesWithAuthors as QuickNote[];
+        
+        if (leadResult.data?.notes && leadResult.data.notes.trim()) {
+          // Create a synthetic note from the legacy notes field
+          const legacyNote: QuickNote = {
+            id: `legacy_${leadId}`,
+            lead_id: leadId,
+            note_text: leadResult.data.notes,
+            is_pinned: true, // Pin legacy notes so they're always visible at top
+            created_by: '',
+            created_at: leadResult.data.updated_at || new Date().toISOString(),
+            updated_at: leadResult.data.updated_at || new Date().toISOString(),
+            author: { first_name: 'Previous', last_name: 'Notes', email: 'legacy@system' }
+          };
+          
+          // Add legacy note first (pinned) if there are no quick notes OR if legacy has content
+          // Check if we already have any notes - if not, always show legacy
+          // If we have notes, only show legacy if it has different content
+          const hasQuickNotes = allNotes.length > 0;
+          if (!hasQuickNotes || !allNotes.some(n => n.note_text === legacyNote.note_text)) {
+            allNotes = [legacyNote, ...allNotes];
+          }
+        }
+
+        setNotes(allNotes);
       }
     } catch (error) {
       console.error('Error fetching quick notes:', error);
