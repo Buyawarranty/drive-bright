@@ -134,13 +134,17 @@ export const useLeadQuickNotes = (leadId: string) => {
   }, [fetchNotes]);
 
   const addNote = async (noteText: string) => {
+    console.log('[addNote] Starting for leadId:', leadId, 'isAbandonedCart:', isAbandonedCart);
+    
     const { data: userData, error: userError } = await supabase.auth.getUser();
     
     if (userError || !userData.user) {
-      console.error('Error getting user:', userError);
+      console.error('[addNote] Error getting user:', userError);
       toast.error('Please sign in to add notes');
       throw new Error('User not authenticated');
     }
+    
+    console.log('[addNote] Got user:', userData.user.id);
 
     const { data: adminUser, error: adminError } = await supabase
       .from('admin_users')
@@ -149,10 +153,12 @@ export const useLeadQuickNotes = (leadId: string) => {
       .maybeSingle();
 
     if (adminError || !adminUser) {
-      console.error('Error finding admin user:', adminError);
+      console.error('[addNote] Error finding admin user:', adminError);
       toast.error('Could not identify your admin account');
       throw new Error('Admin user not found');
     }
+    
+    console.log('[addNote] Found admin user:', adminUser.id, adminUser.email);
 
     if (isAbandonedCart) {
       // For abandoned carts, append to contact_notes field
@@ -188,6 +194,8 @@ export const useLeadQuickNotes = (leadId: string) => {
       return { id: `cart_note_${actualId}`, note_text: updatedNotes };
     } else {
       // For sales leads, use the lead_quick_notes table
+      console.log('[addNote] Inserting note for lead_id:', leadId, 'created_by:', adminUser.id);
+      
       const { data, error } = await supabase
         .from('lead_quick_notes')
         .insert({
@@ -199,11 +207,12 @@ export const useLeadQuickNotes = (leadId: string) => {
         .single();
 
       if (error) {
-        console.error('Error adding quick note:', error);
-        toast.error('Failed to add note');
+        console.error('[addNote] Error inserting quick note:', error);
+        console.error('[addNote] Error details - code:', error.code, 'message:', error.message, 'details:', error.details);
         throw error;
       }
 
+      console.log('[addNote] Successfully inserted note:', data?.id);
       await fetchNotes();
       return data;
     }
