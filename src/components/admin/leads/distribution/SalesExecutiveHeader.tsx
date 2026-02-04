@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Zap, PauseCircle, Lock } from 'lucide-react';
+import { Zap, PauseCircle, Lock, User } from 'lucide-react';
 import { PresenceBadge } from './PresenceBadge';
 import { useLeadDistribution } from '@/hooks/useLeadDistribution';
 import { useEnhancedPresence } from '@/hooks/useEnhancedPresence';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SalesExecutiveHeaderProps {
   onLeadClaimed?: (leadId: string) => void;
@@ -22,7 +23,30 @@ export const SalesExecutiveHeader: React.FC<SalesExecutiveHeaderProps> = ({
 
   const { status, isActive, lastInteractionAt } = useEnhancedPresence();
 
-  const [claiming, setClaiming] = React.useState(false);
+  const [claiming, setClaiming] = useState(false);
+  const [currentUserName, setCurrentUserName] = useState<string>('');
+  const [currentUserEmail, setCurrentUserEmail] = useState<string>('');
+
+  // Fetch current user info for personalized greeting
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: adminUser } = await supabase
+          .from('admin_users')
+          .select('first_name, email')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (adminUser) {
+          const firstName = adminUser.first_name || adminUser.email?.split('@')[0] || '';
+          setCurrentUserName(firstName);
+          setCurrentUserEmail(adminUser.email);
+        }
+      }
+    };
+    fetchCurrentUser();
+  }, []);
 
   const assignedToday = currentAgentCap?.assigned_today ?? 0;
   const dailyCap = currentAgentCap?.daily_cap ?? 20;
@@ -94,10 +118,19 @@ export const SalesExecutiveHeader: React.FC<SalesExecutiveHeaderProps> = ({
         </div>
       </div>
 
-      {/* Center: Locked filter indicator */}
-      <div className="flex items-center gap-1.5 px-3 py-1 bg-muted/50 rounded-full">
-        <Lock className="h-3 w-3 text-muted-foreground" />
-        <span className="text-xs text-muted-foreground">Assigned to: Me</span>
+      {/* Center: Personalized greeting with user identity */}
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-full">
+        <User className="h-3.5 w-3.5 text-primary" />
+        <div className="flex flex-col">
+          <span className="text-sm font-medium text-foreground">
+            Hi {currentUserName}! Your assigned leads
+          </span>
+          {currentUserEmail && (
+            <span className="text-[10px] text-muted-foreground leading-tight">
+              {currentUserEmail}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Right: Actions */}
