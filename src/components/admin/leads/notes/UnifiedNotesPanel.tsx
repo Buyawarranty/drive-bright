@@ -428,13 +428,13 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
             "focus:ring-2 focus:ring-primary/20",
             composerValue && "min-h-[80px]"
           )}
-          disabled={saveStatus === 'saving'}
         />
         <div className="flex items-center justify-between mt-2 text-[11px] text-muted-foreground">
           <span>Enter to save • Shift+Enter for newline</span>
-          {composerValue && (
-            <span>{composerValue.length} chars</span>
-          )}
+          <div className="flex items-center gap-2">
+            {saveStatus === 'saving' && <span className="text-amber-600">Saving...</span>}
+            {composerValue && <span>{composerValue.length} chars</span>}
+          </div>
         </div>
       </div>
 
