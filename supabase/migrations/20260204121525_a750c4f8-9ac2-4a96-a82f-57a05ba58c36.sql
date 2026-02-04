@@ -1,0 +1,1 @@
+UPDATE customers SET final_amount = 486, original_amount = 540 WHERE registration_plate ILIKE '%LV67WTD%';
