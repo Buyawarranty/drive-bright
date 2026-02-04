@@ -96,15 +96,18 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     const noteText = composerValue.trim();
     if (!noteText) return;
     
+    // Log the lead ID for debugging
+    console.log('[UnifiedNotesPanel] handleImmediateSave called for leadId:', leadId);
+    
     // Prevent duplicate saves with lock
     if (isSavingRef.current) {
-      console.log('Save already in progress, skipping');
+      console.log('[UnifiedNotesPanel] Save already in progress, skipping');
       return;
     }
     
     // Prevent saving the exact same note twice in a row
     if (noteText === lastSavedNoteRef.current) {
-      console.log('Duplicate note prevented');
+      console.log('[UnifiedNotesPanel] Duplicate note prevented');
       setComposerValue('');
       return;
     }
@@ -119,7 +122,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     // Set a timeout to prevent infinite saving state
     const saveTimeout = setTimeout(() => {
       if (isSavingRef.current) {
-        console.error('Save timed out after 15 seconds');
+        console.error('[UnifiedNotesPanel] Save timed out after 15 seconds');
         isSavingRef.current = false;
         setSaveStatus('error');
         toast.error('Save timed out. Please try again.');
@@ -127,8 +130,10 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
     }, 15000);
     
     try {
+      console.log('[UnifiedNotesPanel] Calling addNote with text:', noteText.substring(0, 50));
       await addNote(noteText);
       clearTimeout(saveTimeout);
+      console.log('[UnifiedNotesPanel] addNote succeeded!');
       lastSavedNoteRef.current = noteText; // Track what we just saved
       setSaveStatus('saved');
       setLastSavedTime(new Date());
@@ -139,11 +144,19 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
         // Clear the last saved note after 5 seconds to allow same note later
         setTimeout(() => { lastSavedNoteRef.current = ''; }, 5000);
       }, 3000);
-    } catch (error) {
+    } catch (error: any) {
       clearTimeout(saveTimeout);
-      console.error('Failed to save note:', error);
+      console.error('[UnifiedNotesPanel] Failed to save note:', error);
+      console.error('[UnifiedNotesPanel] Error details:', {
+        message: error?.message,
+        code: error?.code,
+        details: error?.details,
+        hint: error?.hint
+      });
       setSaveStatus('error');
-      toast.error('Failed to save note. Please try again.');
+      // Show more specific error message
+      const errorMsg = error?.message || 'Failed to save note';
+      toast.error(`Save failed: ${errorMsg}`);
     } finally {
       isSavingRef.current = false;
     }
