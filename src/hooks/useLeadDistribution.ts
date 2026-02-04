@@ -303,7 +303,7 @@ export const useLeadDistribution = () => {
           .from('agent_distribution_caps')
           .insert(newUsers.map(u => ({
             admin_user_id: u.id,
-            daily_cap: 20,
+            daily_cap: null, // NULL = unlimited, don't set default cap
             assigned_today: 0,
             paused: false
           })));

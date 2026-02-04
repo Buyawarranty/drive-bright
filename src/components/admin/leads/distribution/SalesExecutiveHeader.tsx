@@ -49,9 +49,10 @@ export const SalesExecutiveHeader: React.FC<SalesExecutiveHeaderProps> = ({
   }, []);
 
   const assignedToday = currentAgentCap?.assigned_today ?? 0;
-  const dailyCap = currentAgentCap?.daily_cap ?? 20;
-  const capReached = assignedToday >= dailyCap;
-  const progressPercent = dailyCap > 0 ? (assignedToday / dailyCap) * 100 : 0;
+  const dailyCap = currentAgentCap?.daily_cap; // NULL = unlimited
+  const hasUnlimitedCap = dailyCap === null || dailyCap === undefined;
+  const capReached = !hasUnlimitedCap && assignedToday >= dailyCap;
+  const progressPercent = hasUnlimitedCap ? 0 : (dailyCap > 0 ? (assignedToday / dailyCap) * 100 : 0);
   
   // Use the paused status from agent_distribution_caps (set by admins)
   // This is the authoritative source that the RPC function checks
@@ -105,11 +106,17 @@ export const SalesExecutiveHeader: React.FC<SalesExecutiveHeaderProps> = ({
         <div className="flex items-center gap-3">
           <div className="text-sm">
             <span className="font-semibold">{assignedToday}</span>
-            <span className="text-muted-foreground"> of </span>
-            <span className="font-semibold">{dailyCap}</span>
-            <span className="text-muted-foreground text-xs ml-1">today</span>
+            {hasUnlimitedCap ? (
+              <span className="text-muted-foreground text-xs ml-1">leads today (no limit)</span>
+            ) : (
+              <>
+                <span className="text-muted-foreground"> of </span>
+                <span className="font-semibold">{dailyCap}</span>
+                <span className="text-muted-foreground text-xs ml-1">today</span>
+              </>
+            )}
           </div>
-          <Progress value={progressPercent} className="w-24 h-2" />
+          {!hasUnlimitedCap && <Progress value={progressPercent} className="w-24 h-2" />}
           {capReached && (
             <Badge variant="secondary" className="text-xs">
               Cap reached
