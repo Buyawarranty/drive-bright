@@ -22,7 +22,7 @@ import {
   Calendar, UserCircle, Hourglass, Info, Trash2, Save, Zap, UserPlus,
   RotateCcw, Percent, ArrowRight, AlertCircle, CalendarIcon, X
 } from 'lucide-react';
-import { format, formatDistanceToNow, startOfWeek, startOfMonth, startOfYear, endOfDay, isWithinInterval } from 'date-fns';
+import { format, formatDistanceToNow, startOfWeek, startOfMonth, startOfYear, endOfDay, isWithinInterval, subWeeks, subMonths, endOfWeek, endOfMonth } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 import { DateRange } from 'react-day-picker';
 
@@ -469,6 +469,63 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
 
   // Expand/collapse state for uncontacted leads per agent
   const [expandedUncontacted, setExpandedUncontacted] = useState<Set<string>>(new Set());
+  
+  // Date filter state for "Not Picked Up" section
+  const [uncontactedDateFilter, setUncontactedDateFilter] = useState<string>('all');
+  
+  // Get date range for uncontacted filter
+  const getUncontactedDateRange = (filter: string): { from: Date; to: Date } | null => {
+    const now = new Date();
+    switch (filter) {
+      case 'this_week':
+        return { from: startOfWeek(now, { weekStartsOn: 1 }), to: endOfDay(now) };
+      case 'last_week':
+        const lastWeekStart = startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
+        const lastWeekEnd = endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
+        return { from: lastWeekStart, to: lastWeekEnd };
+      case 'this_month':
+        return { from: startOfMonth(now), to: endOfDay(now) };
+      case 'last_month':
+        const lastMonthStart = startOfMonth(subMonths(now, 1));
+        const lastMonthEnd = endOfMonth(subMonths(now, 1));
+        return { from: lastMonthStart, to: lastMonthEnd };
+      case 'this_year':
+        return { from: startOfYear(now), to: endOfDay(now) };
+      default:
+        return null;
+    }
+  };
+  
+  // Filtered uncontacted leads by date
+  const filteredUncontactedByAgent = useMemo(() => {
+    const dateRange = getUncontactedDateRange(uncontactedDateFilter);
+    
+    return uncontactedByAgent.map(agent => {
+      if (!dateRange) return agent;
+      
+      const filteredLeads = agent.leads.filter(lead => {
+        const leadDate = new Date(lead.created_at);
+        return isWithinInterval(leadDate, { start: dateRange.from, end: dateRange.to });
+      });
+      
+      const oldestDate = filteredLeads.reduce((oldest, lead) => {
+        const leadDate = new Date(lead.created_at);
+        return !oldest || leadDate < oldest ? leadDate : oldest;
+      }, null as Date | null);
+      
+      return {
+        ...agent,
+        uncontactedCount: filteredLeads.length,
+        oldestUncontacted: oldestDate,
+        leads: filteredLeads,
+      };
+    }).filter(agent => agent.uncontactedCount > 0);
+  }, [uncontactedByAgent, uncontactedDateFilter]);
+  
+  // Total filtered uncontacted count
+  const filteredUncontactedTotal = useMemo(() => {
+    return filteredUncontactedByAgent.reduce((sum, agent) => sum + agent.uncontactedCount, 0);
+  }, [filteredUncontactedByAgent]);
 
   return (
     <div className="space-y-6">
@@ -591,7 +648,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
       {uncontactedByAgent.length > 0 && (
         <Card className="border-red-200 bg-red-50/30 dark:bg-red-950/10">
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-3">
               <div>
                 <CardTitle className="text-lg flex items-center gap-2 text-red-700 dark:text-red-400">
                   <AlertCircle className="h-5 w-5" />
@@ -601,14 +658,37 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                   These leads were assigned to agents but haven't been contacted yet
                 </CardDescription>
               </div>
-              <Badge variant="destructive" className="text-sm">
-                {totalStats.assignedUncontacted} leads
-              </Badge>
+              <div className="flex items-center gap-3">
+                {/* Date Filter */}
+                <Select value={uncontactedDateFilter} onValueChange={setUncontactedDateFilter}>
+                  <SelectTrigger className="w-[140px] h-8 text-xs">
+                    <CalendarIcon className="h-3 w-3 mr-1" />
+                    <SelectValue placeholder="All Time" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Time</SelectItem>
+                    <SelectItem value="this_week">This Week</SelectItem>
+                    <SelectItem value="last_week">Last Week</SelectItem>
+                    <SelectItem value="this_month">This Month</SelectItem>
+                    <SelectItem value="last_month">Last Month</SelectItem>
+                    <SelectItem value="this_year">This Year</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Badge variant="destructive" className="text-sm">
+                  {filteredUncontactedTotal} leads
+                </Badge>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
+            {filteredUncontactedByAgent.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">No uncontacted leads found for this period</p>
+              </div>
+            ) : (
             <div className="space-y-3">
-              {uncontactedByAgent.map(agent => {
+              {filteredUncontactedByAgent.map(agent => {
                 const isExpanded = expandedUncontacted.has(agent.agentId);
                 const presenceStatus = getAgentPresenceStatus(agent.agentId);
                 
@@ -727,6 +807,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 );
               })}
             </div>
+            )}
           </CardContent>
         </Card>
       )}
