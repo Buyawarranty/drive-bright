@@ -33,7 +33,6 @@ export const useLeadQuickNotes = (leadId: string) => {
     
     try {
       setLoading(true);
-      setLoading(true);
       
       if (isAbandonedCart) {
         // For abandoned carts, fetch from abandoned_carts.contact_notes
