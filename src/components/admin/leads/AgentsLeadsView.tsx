@@ -414,15 +414,61 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
       return status === 'active' && !cap.paused;
     }).length;
 
+    // Calculate assigned but uncontacted leads (leads assigned to an agent but still in 'new' status)
+    const assignedUncontactedLeads = leads.filter(l => l.assigned_to && l.status === 'new');
+
     return {
       totalLeads: leads.length,
       awaitingContact: leads.filter(l => !l.assigned_to).length,
       assigned: leads.filter(l => l.assigned_to).length,
+      assignedUncontacted: assignedUncontactedLeads.length,
       agentsWithLeads: agentGroups.filter(g => g.agentId && g.leads.length > 0).length,
       totalAgents: salesUsers.length,
       activeAgents,
     };
   }, [leads, agentGroups, salesUsers, agentCaps, getAgentPresenceStatus]);
+
+  // Calculate uncontacted leads per agent (assigned but status is still 'new')
+  const uncontactedByAgent = useMemo(() => {
+    const result: Array<{
+      agentId: string;
+      agentName: string;
+      agentEmail: string;
+      uncontactedCount: number;
+      oldestUncontacted: Date | null;
+      leads: Lead[];
+    }> = [];
+
+    salesUsers.forEach(user => {
+      const agentLeads = leads.filter(
+        l => l.assigned_to === user.id && l.status === 'new'
+      );
+      
+      if (agentLeads.length > 0) {
+        const oldestDate = agentLeads.reduce((oldest, lead) => {
+          const leadDate = new Date(lead.created_at);
+          return !oldest || leadDate < oldest ? leadDate : oldest;
+        }, null as Date | null);
+
+        result.push({
+          agentId: user.id,
+          agentName: getAgentName(user),
+          agentEmail: user.email,
+          uncontactedCount: agentLeads.length,
+          oldestUncontacted: oldestDate,
+          leads: agentLeads.sort((a, b) => 
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          ),
+        });
+      }
+    });
+
+    // Sort by uncontacted count (highest first)
+    return result.sort((a, b) => b.uncontactedCount - a.uncontactedCount);
+  }, [leads, salesUsers]);
+
+  // Expand/collapse state for uncontacted leads per agent
+  const [expandedUncontacted, setExpandedUncontacted] = useState<Set<string>>(new Set());
 
   return (
     <div className="space-y-6">
@@ -502,7 +548,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
       </Dialog>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Total Leads</CardDescription>
@@ -524,6 +570,15 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
             <CardTitle className="text-2xl text-green-600">{totalStats.assigned}</CardTitle>
           </CardHeader>
         </Card>
+        <Card className={totalStats.assignedUncontacted > 0 ? 'border-red-200 bg-red-50/50 dark:bg-red-950/20' : ''}>
+          <CardHeader className="pb-2">
+            <CardDescription className="flex items-center gap-1.5">
+              <AlertCircle className="h-3.5 w-3.5 text-red-500" />
+              Not Picked Up
+            </CardDescription>
+            <CardTitle className="text-2xl text-red-600">{totalStats.assignedUncontacted}</CardTitle>
+          </CardHeader>
+        </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Active Agents</CardDescription>
@@ -531,6 +586,150 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
           </CardHeader>
         </Card>
       </div>
+
+      {/* Not Picked Up Breakdown - Assigned but not contacted */}
+      {uncontactedByAgent.length > 0 && (
+        <Card className="border-red-200 bg-red-50/30 dark:bg-red-950/10">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg flex items-center gap-2 text-red-700 dark:text-red-400">
+                  <AlertCircle className="h-5 w-5" />
+                  Leads Not Picked Up by Agents
+                </CardTitle>
+                <CardDescription className="text-red-600/80">
+                  These leads were assigned to agents but haven't been contacted yet
+                </CardDescription>
+              </div>
+              <Badge variant="destructive" className="text-sm">
+                {totalStats.assignedUncontacted} leads
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {uncontactedByAgent.map(agent => {
+                const isExpanded = expandedUncontacted.has(agent.agentId);
+                const presenceStatus = getAgentPresenceStatus(agent.agentId);
+                
+                return (
+                  <div key={agent.agentId} className="border rounded-lg bg-background">
+                    <Collapsible
+                      open={isExpanded}
+                      onOpenChange={() => {
+                        setExpandedUncontacted(prev => {
+                          const newSet = new Set(prev);
+                          if (newSet.has(agent.agentId)) {
+                            newSet.delete(agent.agentId);
+                          } else {
+                            newSet.add(agent.agentId);
+                          }
+                          return newSet;
+                        });
+                      }}
+                    >
+                      <CollapsibleTrigger className="w-full">
+                        <div className="flex items-center justify-between p-4 hover:bg-muted/50 rounded-t-lg">
+                          <div className="flex items-center gap-3">
+                            <PresenceBadge status={presenceStatus} size="sm" />
+                            <div className="text-left">
+                              <div className="font-medium">{agent.agentName}</div>
+                              <div className="text-xs text-muted-foreground">{agent.agentEmail}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <div className="font-semibold text-red-600">{agent.uncontactedCount} leads</div>
+                              {agent.oldestUncontacted && (
+                                <div className="text-xs text-muted-foreground">
+                                  Oldest: {formatDistanceToNow(agent.oldestUncontacted, { addSuffix: true })}
+                                </div>
+                              )}
+                            </div>
+                            {isExpanded ? (
+                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </div>
+                        </div>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="border-t px-4 py-3">
+                          <Table>
+                            <TableHeader>
+                              <TableRow className="text-xs">
+                                <TableHead className="py-2">Name</TableHead>
+                                <TableHead className="py-2">Phone</TableHead>
+                                <TableHead className="py-2">Email</TableHead>
+                                <TableHead className="py-2">Vehicle</TableHead>
+                                <TableHead className="py-2">Assigned</TableHead>
+                                <TableHead className="py-2">Age</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {agent.leads.slice(0, 10).map(lead => (
+                                <TableRow key={lead.id} className="text-xs">
+                                  <TableCell className="py-2 font-medium">
+                                    {lead.first_name || lead.last_name 
+                                      ? `${lead.first_name || ''} ${lead.last_name || ''}`.trim()
+                                      : 'N/A'}
+                                  </TableCell>
+                                  <TableCell className="py-2">
+                                    {lead.phone ? (
+                                      <a href={`tel:${lead.phone}`} className="text-primary hover:underline flex items-center gap-1">
+                                        <Phone className="h-3 w-3" />
+                                        {lead.phone}
+                                      </a>
+                                    ) : (
+                                      <span className="text-muted-foreground">—</span>
+                                    )}
+                                  </TableCell>
+                                  <TableCell className="py-2">
+                                    <a href={`mailto:${lead.email}`} className="text-primary hover:underline flex items-center gap-1">
+                                      <Mail className="h-3 w-3" />
+                                      <span className="max-w-[150px] truncate">{lead.email}</span>
+                                    </a>
+                                  </TableCell>
+                                  <TableCell className="py-2">
+                                    {lead.vehicle_reg ? (
+                                      <div className="flex items-center gap-1">
+                                        <Car className="h-3 w-3 text-muted-foreground" />
+                                        <span className="uppercase font-mono">{lead.vehicle_reg}</span>
+                                      </div>
+                                    ) : (
+                                      <span className="text-muted-foreground">—</span>
+                                    )}
+                                  </TableCell>
+                                  <TableCell className="py-2 text-muted-foreground">
+                                    {lead.assigned_at 
+                                      ? format(new Date(lead.assigned_at), 'dd MMM, HH:mm')
+                                      : format(new Date(lead.created_at), 'dd MMM, HH:mm')}
+                                  </TableCell>
+                                  <TableCell className="py-2">
+                                    <Badge variant="outline" className="text-[10px] bg-red-50 text-red-700 border-red-200">
+                                      {formatDistanceToNow(new Date(lead.created_at))}
+                                    </Badge>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                          {agent.leads.length > 10 && (
+                            <div className="text-center text-xs text-muted-foreground mt-2 py-2 border-t">
+                              + {agent.leads.length - 10} more leads not shown
+                            </div>
+                          )}
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Agent Distribution Settings Section */}
       <Card>
