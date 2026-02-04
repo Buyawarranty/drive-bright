@@ -7,11 +7,16 @@ interface SEOHeadProps {
   ogTitle?: string;
   ogDescription?: string;
   ogImage?: string;
+  ogImageWidth?: string;
+  ogImageHeight?: string;
+  ogImageAlt?: string;
   canonical?: string;
   geoRegion?: string;
   geoPlacename?: string;
   geoPosition?: string;
   ICBM?: string;
+  author?: string;
+  publisher?: string;
 }
 
 export const SEOHead = ({
@@ -21,11 +26,16 @@ export const SEOHead = ({
   ogTitle,
   ogDescription,
   ogImage = "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+  ogImageWidth = "1200",
+  ogImageHeight = "630",
+  ogImageAlt = "Buy A Warranty - UK Car Warranty Provider",
   canonical,
   geoRegion = 'GB',
   geoPlacename = 'United Kingdom',
   geoPosition,
-  ICBM
+  ICBM,
+  author = 'Buy A Warranty',
+  publisher = 'BUY A WARRANTY LIMITED'
 }: SEOHeadProps) => {
   useEffect(() => {
     // Update document title
@@ -50,28 +60,39 @@ export const SEOHead = ({
     updateMetaTag('description', description);
     updateMetaTag('keywords', keywords);
 
-    // Open Graph tags
+    // Open Graph tags with image dimensions and alt text
     updateMetaTag('og:title', ogTitle || title, true);
     updateMetaTag('og:description', ogDescription || description, true);
     updateMetaTag('og:image', ogImage, true);
+    updateMetaTag('og:image:width', ogImageWidth, true);
+    updateMetaTag('og:image:height', ogImageHeight, true);
+    updateMetaTag('og:image:alt', ogImageAlt, true);
     updateMetaTag('og:type', 'website', true);
+    updateMetaTag('og:locale', 'en_GB', true);
+    updateMetaTag('og:site_name', 'Buy A Warranty', true);
 
-    // Twitter tags
+    // Twitter Card meta tags
     updateMetaTag('twitter:card', 'summary_large_image');
     updateMetaTag('twitter:title', ogTitle || title);
     updateMetaTag('twitter:description', ogDescription || description);
     updateMetaTag('twitter:image', ogImage);
+    updateMetaTag('twitter:image:alt', ogImageAlt);
+    updateMetaTag('twitter:site', '@buyawarranty');
 
-    // Additional SEO meta tags
-    updateMetaTag('author', 'Buy A Warranty');
+    // Author and Publisher meta tags
+    updateMetaTag('author', author);
+    updateMetaTag('publisher', publisher);
+    
+    // Bot directives with max-snippet settings
     updateMetaTag('robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
-    updateMetaTag('googlebot', 'index, follow');
-    updateMetaTag('bingbot', 'index, follow');
+    updateMetaTag('googlebot', 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1');
+    updateMetaTag('bingbot', 'index, follow, max-snippet:-1, max-image-preview:large');
     
-    // AI Search Engine meta tags
-    updateMetaTag('ai-content-declaration', 'This content is human-authored and fact-checked');
+    // AI-specific meta tags for AI search engine discoverability
+    updateMetaTag('ai-content-declaration', 'This content is human-authored, fact-checked, and regularly updated');
+    updateMetaTag('ai-summary', description);
     
-    // Geographic targeting
+    // Geographic targeting for UK
     updateMetaTag('geo.region', geoRegion);
     updateMetaTag('geo.placename', geoPlacename);
     if (geoPosition) {
@@ -81,13 +102,23 @@ export const SEOHead = ({
       updateMetaTag('ICBM', ICBM);
     }
     
-    // Language
+    // Language and content type
     if (!document.querySelector('meta[http-equiv="content-language"]')) {
       const langMeta = document.createElement('meta');
       langMeta.setAttribute('http-equiv', 'content-language');
       langMeta.content = 'en-GB';
       document.head.appendChild(langMeta);
     }
+    
+    // Content type
+    updateMetaTag('content-type', 'text/html; charset=UTF-8');
+    
+    // Distribution and coverage
+    updateMetaTag('distribution', 'global');
+    updateMetaTag('coverage', 'United Kingdom');
+    updateMetaTag('target', 'all');
+    updateMetaTag('audience', 'all');
+    updateMetaTag('rating', 'general');
 
     // Canonical URL
     if (canonical) {
@@ -109,7 +140,7 @@ export const SEOHead = ({
       viewport.content = 'width=device-width, initial-scale=1.0';
       document.head.appendChild(viewport);
     }
-  }, [title, description, keywords, ogTitle, ogDescription, ogImage, canonical, geoRegion, geoPlacename, geoPosition, ICBM]);
+  }, [title, description, keywords, ogTitle, ogDescription, ogImage, ogImageWidth, ogImageHeight, ogImageAlt, canonical, geoRegion, geoPlacename, geoPosition, ICBM, author, publisher]);
 
   return null;
 };
