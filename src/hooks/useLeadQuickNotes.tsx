@@ -136,25 +136,41 @@ export const useLeadQuickNotes = (leadId: string) => {
   const addNote = async (noteText: string) => {
     console.log('[addNote] Starting for leadId:', leadId, 'isAbandonedCart:', isAbandonedCart);
     
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    // First try to get the current session - if expired, try to refresh
+    let { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
-    if (userError || !userData.user) {
-      console.error('[addNote] Error getting user:', userError);
-      toast.error('Please sign in to add notes');
-      throw new Error('User not authenticated');
+    if (sessionError || !session) {
+      console.log('[addNote] No session found, attempting refresh...');
+      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+      
+      if (refreshError || !refreshData.session) {
+        console.error('[addNote] Session refresh failed:', refreshError);
+        toast.error('Your session has expired. Please refresh the page and sign in again.');
+        throw new Error('Session expired - please refresh the page');
+      }
+      
+      session = refreshData.session;
+      console.log('[addNote] Session refreshed successfully');
     }
     
-    console.log('[addNote] Got user:', userData.user.id);
+    const userId = session.user.id;
+    console.log('[addNote] Got user:', userId);
 
     const { data: adminUser, error: adminError } = await supabase
       .from('admin_users')
       .select('id, first_name, last_name, email')
-      .eq('user_id', userData.user.id)
+      .eq('user_id', userId)
       .maybeSingle();
 
-    if (adminError || !adminUser) {
+    if (adminError) {
       console.error('[addNote] Error finding admin user:', adminError);
-      toast.error('Could not identify your admin account');
+      toast.error('Database error. Please try again.');
+      throw new Error(`Database error: ${adminError.message}`);
+    }
+    
+    if (!adminUser) {
+      console.error('[addNote] Admin user not found for userId:', userId);
+      toast.error('Your admin account was not found. Please contact support.');
       throw new Error('Admin user not found');
     }
     

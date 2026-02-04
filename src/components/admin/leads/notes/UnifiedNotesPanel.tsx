@@ -154,9 +154,14 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
         hint: error?.hint
       });
       setSaveStatus('error');
-      // Show more specific error message
-      const errorMsg = error?.message || 'Failed to save note';
-      toast.error(`Save failed: ${errorMsg}`);
+      
+      // Check if it's a session/auth error
+      if (error?.message?.includes('session') || error?.message?.includes('Session')) {
+        // Don't show another toast - the hook already shows one
+      } else {
+        const errorMsg = error?.message || 'Failed to save note';
+        toast.error(`Save failed: ${errorMsg}`);
+      }
     } finally {
       isSavingRef.current = false;
     }
