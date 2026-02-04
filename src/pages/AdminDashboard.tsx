@@ -173,14 +173,16 @@ const AdminDashboard = () => {
         setUserPermissions(adminUserData.permissions as Record<string, boolean>);
       }
       
-      // Set default tab based on role (only if not already set via URL)
-      if (!hasSetInitialTab) {
+      // Set default tab based on role
+      // Sales agents ALWAYS start on new-leads, regardless of URL param
+      if (!hasSetInitialTab || primaryRole === 'sales') {
         setHasSetInitialTab(true);
         
         let defaultTab = 'customers';
         if (primaryRole === 'blog_writer') {
           defaultTab = 'blog-writing';
         } else if (primaryRole === 'sales') {
+          // Sales agents always default to new-leads - this is their primary workspace
           defaultTab = 'new-leads';
         } else if (!['admin'].includes(primaryRole) && adminUserData?.permissions) {
           const perms = adminUserData.permissions as Record<string, boolean>;
