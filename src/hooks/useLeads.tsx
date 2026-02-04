@@ -464,10 +464,40 @@ export const useLeads = () => {
   }, [fetchLeads, fetchTags, fetchSalesUsers]);
 
   // OPTIMISTIC UPDATE: Update status instantly, then sync to DB
+  // Auto-assigns unassigned leads to current user when status changes to 'contacted'
   const updateLeadStatus = useCallback(async (leadId: string, status: LeadStatus) => {
     const now = new Date().toISOString();
     const isAbandonedCart = leadId.startsWith('cart_');
     const actualId = isAbandonedCart ? leadId.replace('cart_', '') : leadId;
+    
+    // Find the current lead to check if it's unassigned
+    const currentLead = leads.find(l => l.id === leadId);
+    const isUnassigned = !currentLead?.assigned_to;
+    
+    // Get current user's admin ID for auto-assignment
+    let currentUserAdminId: string | null = null;
+    let currentUserData: AdminUser | null = null;
+    
+    // If changing to 'contacted' and lead is unassigned, get current user to auto-assign
+    if (status === 'contacted' && isUnassigned) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: adminUser } = await supabase
+            .from('admin_users')
+            .select('id, user_id, first_name, last_name, email, is_active')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (adminUser) {
+            currentUserAdminId = adminUser.id;
+            currentUserData = adminUser as AdminUser;
+          }
+        }
+      } catch (e) {
+        console.warn('Could not get current user for auto-assignment:', e);
+      }
+    }
     
     const updates: any = { 
       status, 
@@ -480,11 +510,31 @@ export const useLeads = () => {
     } else if (status === 'lost') {
       updates.lost_at = now;
     }
+    
+    // Auto-assign if contacted and unassigned
+    if (status === 'contacted' && isUnassigned && currentUserAdminId) {
+      updates.assigned_to = currentUserAdminId;
+      updates.assigned_at = now;
+    }
 
     // Optimistic update - instant UI response
-    setLeads(prev => prev.map(lead => 
-      lead.id === leadId ? { ...lead, ...updates } : lead
-    ));
+    setLeads(prev => prev.map(lead => {
+      if (lead.id !== leadId) return lead;
+      
+      const updatedLead = { ...lead, ...updates };
+      
+      // Add assigned user data for optimistic UI
+      if (status === 'contacted' && isUnassigned && currentUserData) {
+        updatedLead.assigned_user = {
+          id: currentUserData.id,
+          first_name: currentUserData.first_name,
+          last_name: currentUserData.last_name,
+          email: currentUserData.email
+        };
+      }
+      
+      return updatedLead;
+    }));
 
     try {
       if (isAbandonedCart) {
@@ -494,12 +544,20 @@ export const useLeads = () => {
                               status === 'converted' ? 'converted' :
                               status === 'lost' ? 'lost' : 'pending';
         
+        const cartUpdates: any = {
+          contact_status: contactStatus,
+          updated_at: now
+        };
+        
+        // Auto-assign abandoned cart as well
+        if (status === 'contacted' && isUnassigned && currentUserAdminId) {
+          cartUpdates.contacted_by = currentUserAdminId;
+          cartUpdates.last_contacted_at = now;
+        }
+        
         const { error } = await supabase
           .from('abandoned_carts')
-          .update({
-            contact_status: contactStatus,
-            updated_at: now
-          })
+          .update(cartUpdates)
           .eq('id', actualId);
 
         if (error) throw error;
@@ -513,16 +571,24 @@ export const useLeads = () => {
 
         // Log activity in background (don't await)
         logActivity(leadId, 'status_change', `Status changed to ${status}`);
+        
+        // Log auto-assignment if it happened
+        if (status === 'contacted' && isUnassigned && currentUserAdminId) {
+          logActivity(leadId, 'assignment', 'Auto-assigned to agent who contacted the lead');
+        }
       }
       
-      toast.success(`Lead status updated to ${status.replace('_', ' ')}`);
+      const autoAssignMsg = (status === 'contacted' && isUnassigned && currentUserAdminId) 
+        ? ' (auto-assigned to you)' 
+        : '';
+      toast.success(`Lead status updated to ${status.replace('_', ' ')}${autoAssignMsg}`);
     } catch (error) {
       console.error('Error updating lead status:', error);
       toast.error('Failed to update lead status');
       // Revert on error
       fetchLeads();
     }
-  }, []);
+  }, [leads]);
 
   // OPTIMISTIC UPDATE: Assign lead instantly
   const assignLead = useCallback(async (leadId: string, userId: string | null) => {
