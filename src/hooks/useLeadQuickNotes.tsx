@@ -19,16 +19,20 @@ export interface QuickNote {
 
 export const useLeadQuickNotes = (leadId: string) => {
   const [notes, setNotes] = useState<QuickNote[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start as true since we'll fetch on mount
 
   // Check if this is an abandoned cart lead (ID starts with 'cart_')
   const isAbandonedCart = leadId?.startsWith('cart_');
   const actualId = isAbandonedCart ? leadId.replace('cart_', '') : leadId;
 
   const fetchNotes = useCallback(async () => {
-    if (!leadId) return;
+    if (!leadId) {
+      setLoading(false);
+      return;
+    }
     
     try {
+      setLoading(true);
       setLoading(true);
       
       if (isAbandonedCart) {
