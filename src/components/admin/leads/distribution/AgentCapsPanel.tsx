@@ -61,6 +61,11 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
   const [deleting, setDeleting] = useState<string | null>(null);
 
   const handleCapChange = (adminUserId: string, value: string) => {
+    // Empty value = null (unlimited)
+    if (value === '' || value.trim() === '') {
+      setEditedCaps(prev => ({ ...prev, [adminUserId]: null as any }));
+      return;
+    }
     const numValue = parseInt(value, 10);
     if (!isNaN(numValue) && numValue >= 0) {
       setEditedCaps(prev => ({ ...prev, [adminUserId]: numValue }));
@@ -174,7 +179,8 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
           agentCaps.map(cap => {
             const presence = getPresence(cap.admin_user_id);
             const status = getAgentPresenceStatus(cap.admin_user_id);
-            const progressPercent = cap.daily_cap > 0 ? (cap.assigned_today / cap.daily_cap) * 100 : 0;
+            const hasUnlimitedCap = cap.daily_cap === null;
+            const progressPercent = hasUnlimitedCap ? 0 : (cap.daily_cap > 0 ? (cap.assigned_today / cap.daily_cap) * 100 : 0);
             const editedCap = editedCaps[cap.admin_user_id];
             const hasChanges = editedCap !== undefined && editedCap !== cap.daily_cap;
 
@@ -286,14 +292,18 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
                       Assigned today: <span className="font-medium text-foreground">{cap.assigned_today}</span>
                     </span>
                     <span className="text-muted-foreground">
-                      Daily cap: <span className="font-medium text-foreground">{cap.daily_cap}</span>
+                      Daily cap: <span className="font-medium text-foreground">
+                        {cap.daily_cap === null ? 'Unlimited' : cap.daily_cap}
+                      </span>
                     </span>
                   </div>
 
-                  <Progress 
-                    value={Math.min(progressPercent, 100)} 
-                    className={`h-2 ${progressPercent >= 100 ? '[&>div]:bg-red-500' : progressPercent >= 80 ? '[&>div]:bg-yellow-500' : ''}`}
-                  />
+                  {!hasUnlimitedCap && (
+                    <Progress 
+                      value={Math.min(progressPercent, 100)} 
+                      className={`h-2 ${progressPercent >= 100 ? '[&>div]:bg-red-500' : progressPercent >= 80 ? '[&>div]:bg-yellow-500' : ''}`}
+                    />
+                  )}
 
                   <div className="flex items-center gap-2 mt-3 pt-3 border-t">
                     <div className="flex items-center gap-2 flex-1">
@@ -301,10 +311,12 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
                       <Input
                         type="number"
                         min={0}
-                        value={editedCap ?? cap.daily_cap}
+                        placeholder="∞"
+                        value={editedCap ?? (cap.daily_cap === null ? '' : cap.daily_cap)}
                         onChange={(e) => handleCapChange(cap.admin_user_id, e.target.value)}
                         className="w-20 h-8 text-sm"
                       />
+                      <span className="text-[10px] text-muted-foreground">(blank = unlimited)</span>
                     </div>
                     {hasChanges && (
                       <Button

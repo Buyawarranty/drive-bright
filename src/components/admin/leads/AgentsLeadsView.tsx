@@ -1032,7 +1032,9 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{cap.assigned_today}</span>
-                            <span className="text-muted-foreground text-xs">/ {cap.daily_cap}</span>
+                            <span className="text-muted-foreground text-xs">
+                              / {cap.daily_cap === null ? '∞' : cap.daily_cap}
+                            </span>
                           </div>
                         </TableCell>
 
