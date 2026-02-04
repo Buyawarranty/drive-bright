@@ -5,15 +5,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useLeads, Lead, LeadTag, AdminUser, LeadStatus } from '@/hooks/useLeads';
-import { useSalesStats } from '@/hooks/useSalesStats';
 import { SalesAgentMyLeadsView } from './SalesAgentMyLeadsView';
 import SalesCustomerManagement from './SalesCustomerManagement';
+import { SalesDashboardKPIs } from './SalesDashboardKPIs';
+import { SalesBadges } from './SalesBadges';
 import { 
   LayoutDashboard, Users, ShoppingBag, Bell,
-  TrendingUp, Clock, AlertTriangle, Target, DollarSign
+  TrendingUp, Clock, AlertTriangle
 } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
-import { format, isToday, isPast } from 'date-fns';
+import { format, isToday, isPast, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 
 interface SalesAgentDashboardProps {
   onNavigateToTab?: (tab: string, leadData?: any) => void;
@@ -54,8 +54,6 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
   const leads = propLeads?.length ? propLeads : fetchedLeads;
   const tags = propTags?.length ? propTags : fetchedTags;
 
-  const { personalStats, loading: statsLoading } = useSalesStats(currentUserId || undefined);
-
   useEffect(() => {
     const getCurrentUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -82,6 +80,39 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
     return leads.filter(l => l.assigned_to === currentUserId && l.status !== 'fake_lead');
   }, [currentUserId, leads]);
 
+  // Calculate paid deals stats
+  const paidDealsStats = useMemo(() => {
+    const paidLeads = myLeads.filter(l => l.is_paid === true);
+    const revenue = paidLeads.reduce((sum, l) => 
+      sum + (l.payment_amount || l.cart_value || l.quote_amount || 0), 0
+    );
+    // For cancelled, we'd need a status - using 'lost' as proxy for now
+    const cancelled = myLeads.filter(l => l.status === 'lost' && l.is_paid === true).length;
+
+    return {
+      total: paidLeads.length,
+      revenue,
+      cancelled
+    };
+  }, [myLeads]);
+
+  // Monthly warranty count for badges
+  const monthlyWarrantyCount = useMemo(() => {
+    const now = new Date();
+    const monthStart = startOfMonth(now);
+    const monthEnd = endOfMonth(now);
+    
+    return myLeads.filter(l => 
+      l.is_paid === true && 
+      isWithinInterval(new Date(l.updated_at), { start: monthStart, end: monthEnd })
+    ).length;
+  }, [myLeads]);
+
+  // Total warranty count for badges
+  const totalWarrantyCount = useMemo(() => {
+    return myLeads.filter(l => l.is_paid === true).length;
+  }, [myLeads]);
+
   const todayFollowUps = useMemo(() => 
     myLeads.filter(l => l.next_action_date && isToday(new Date(l.next_action_date))),
     [myLeads]
@@ -91,20 +122,11 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
     myLeads.filter(l =>
       l.next_action_date && 
       isPast(new Date(l.next_action_date)) && 
+      !isToday(new Date(l.next_action_date)) &&
       l.follow_up_status === 'pending'
     ),
     [myLeads]
   );
-
-  const paidLeads = useMemo(() => 
-    myLeads.filter(l => l.is_paid),
-    [myLeads]
-  );
-
-  const monthlyTarget = 5000;
-  const targetProgress = personalStats 
-    ? Math.min((personalStats.totalRevenue / monthlyTarget) * 100, 100) 
-    : 0;
 
   // Create handlers object for the table
   const leadHandlers = useMemo(() => ({
@@ -115,7 +137,7 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
     logActivity: propHandlers?.logActivity || logActivity,
   }), [propHandlers, updateLeadStatus, scheduleFollowUp, updateLeadNotes, markContactedAt, logActivity]);
 
-  if (loading || statsLoading || !currentUserId) {
+  if (loading || !currentUserId) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
@@ -128,9 +150,9 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
       {/* Header - Sales Safe */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">My Leads</h1>
+          <h1 className="text-2xl font-bold">My Dashboard</h1>
           <p className="text-muted-foreground">
-            Assigned to: <span className="font-medium text-foreground">{currentUserEmail || 'Loading...'}</span>
+            Logged in as: <span className="font-medium text-foreground">{currentUserEmail || 'Loading...'}</span>
           </p>
         </div>
       </div>
@@ -140,11 +162,11 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
         <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
           <TabsTrigger value="dashboard" className="gap-2">
             <LayoutDashboard className="h-4 w-4" />
-            <span className="hidden sm:inline">Dashboard</span>
+            <span className="hidden sm:inline">My Dashboard</span>
           </TabsTrigger>
           <TabsTrigger value="leads" className="gap-2">
             <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">My Leads</span>
+            <span className="hidden sm:inline">All My Leads</span>
           </TabsTrigger>
           <TabsTrigger value="orders" className="gap-2">
             <ShoppingBag className="h-4 w-4" />
@@ -161,76 +183,27 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
           </TabsTrigger>
         </TabsList>
 
-        {/* Dashboard Tab */}
+        {/* Dashboard Tab - New KPI Layout */}
         <TabsContent value="dashboard" className="space-y-6">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Leads Due Today</CardDescription>
-                <CardTitle className="text-3xl">{todayFollowUps.length}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {overdueFollowUps.length > 0 && (
-                  <div className="flex items-center gap-2 text-sm text-red-600">
-                    <AlertTriangle className="h-4 w-4" />
-                    <span>{overdueFollowUps.length} overdue</span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          {/* Main KPI Cards */}
+          <SalesDashboardKPIs 
+            leads={myLeads}
+            currentUserEmail={currentUserEmail || ''}
+            paidDeals={paidDealsStats}
+          />
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>New Leads Assigned</CardDescription>
-                <CardTitle className="text-3xl">
-                  {myLeads.filter(l => l.status === 'new').length}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Badge variant="secondary" className="bg-blue-100">
-                  {myLeads.length} total assigned
-                </Badge>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Completed Sales</CardDescription>
-                <CardTitle className="text-3xl">{paidLeads.length}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2 text-sm text-green-600">
-                  <TrendingUp className="h-4 w-4" />
-                  <span>This week</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Revenue This Month</CardDescription>
-                <CardTitle className="text-3xl">
-                  £{personalStats?.totalRevenue.toLocaleString() || 0}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span>Target: £{monthlyTarget.toLocaleString()}</span>
-                    <span>{targetProgress.toFixed(0)}%</span>
-                  </div>
-                  <Progress value={targetProgress} className="h-2" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Badges Section */}
+          <SalesBadges
+            warrantyCount={totalWarrantyCount}
+            monthlyWarrantyCount={monthlyWarrantyCount}
+            trustpilotReviews={0} // TODO: Connect to actual Trustpilot review count
+          />
 
           {/* Today's Follow-ups */}
           {todayFollowUps.length > 0 && (
-            <Card>
+            <Card className="border-orange-200 bg-orange-50/30">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-orange-700">
                   <Clock className="h-5 w-5" />
                   Today's Follow-ups ({todayFollowUps.length})
                 </CardTitle>
@@ -240,7 +213,7 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
                   {todayFollowUps.slice(0, 5).map((lead) => (
                     <div 
                       key={lead.id}
-                      className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                      className="flex items-center justify-between p-3 bg-white rounded-lg border"
                     >
                       <div>
                         <div className="font-medium">
@@ -253,6 +226,15 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
                       <Badge variant="outline">{lead.status}</Badge>
                     </div>
                   ))}
+                  {todayFollowUps.length > 5 && (
+                    <Button 
+                      variant="ghost" 
+                      className="w-full text-sm"
+                      onClick={() => setActiveTab('leads')}
+                    >
+                      View all {todayFollowUps.length} follow-ups →
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>

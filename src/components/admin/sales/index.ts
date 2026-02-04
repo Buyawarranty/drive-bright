@@ -3,3 +3,5 @@ export { MyOrdersView } from './MyOrdersView';
 export { default as SalesCustomerManagement } from './SalesCustomerManagement';
 export { OrderCommunicationTimeline } from './OrderCommunicationTimeline';
 export { SalesAgentLeadsTable } from './SalesAgentLeadsTable';
+export { SalesDashboardKPIs } from './SalesDashboardKPIs';
+export { SalesBadges } from './SalesBadges';
