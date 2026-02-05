@@ -216,7 +216,7 @@ const testimonials = [
     name: "Mike T.",
     location: "Birmingham",
     model: "Ford Transit Custom",
-    text: "As a courier, my Transit is my livelihood. When the gearbox went at 95,000 miles, they sorted it in 3 days. Saved me over £2,500. Can't recommend enough.",
+    text: "My Transit is essential for my plumbing business. When the gearbox went at 95,000 miles, they sorted it in 3 days. Saved me over £2,500. Brilliant service all round.",
     rating: 5
   },
   {
