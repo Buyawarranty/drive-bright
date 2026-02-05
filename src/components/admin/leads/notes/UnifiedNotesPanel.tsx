@@ -1,534 +1,314 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  MessageSquare, Search, Clock, User, Pin, PinOff, Trash2, 
-  Edit2, Check, X, Loader2, WifiOff, Undo2, Filter,
-  ChevronDown, ChevronUp
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { format, isToday, isYesterday, isThisWeek, formatDistanceToNow } from 'date-fns';
-import { useLeadQuickNotes, QuickNote } from '@/hooks/useLeadQuickNotes';
-import { toast } from 'sonner';
-
-interface UnifiedNotesPanelProps {
-  leadId: string;
-  className?: string;
-  compact?: boolean;
-}
-
-type SaveStatus = 'idle' | 'saving' | 'saved' | 'offline' | 'error';
-type NoteFilter = 'all' | 'mine' | 'pinned';
-
-interface GroupedNotes {
-  today: QuickNote[];
-  yesterday: QuickNote[];
-  thisWeek: QuickNote[];
-  older: QuickNote[];
-}
-
-export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
-  leadId,
-  className,
-  compact = false
-}) => {
-  const { notes, loading, addNote, updateNote, togglePin, deleteNote, refetch, isAbandonedCart } = useLeadQuickNotes(leadId);
-  
-  // Composer state
-  const [composerValue, setComposerValue] = useState('');
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
-  const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
-  
-  // History state
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<NoteFilter>('all');
-  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState('');
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-    today: true,
-    yesterday: true,
-    thisWeek: false,
-    older: false
-  });
-  const [showAllNotes, setShowAllNotes] = useState(!compact);
-  
-  // Undo state
-  const [deletedNote, setDeletedNote] = useState<QuickNote | null>(null);
-  const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Autosave refs - CRITICAL: use refs to prevent duplicate saves
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const composerRef = useRef<HTMLTextAreaElement>(null);
-  const isSavingRef = useRef(false); // Lock to prevent concurrent saves
-  const lastSavedNoteRef = useRef<string>(''); // Track last saved to prevent duplicates
-
-  // Reset state when lead changes
-  useEffect(() => {
-    setComposerValue('');
-    setSaveStatus('idle');
-    setLastSavedTime(null);
-    setSearchQuery('');
-    setActiveFilter('all');
-    setEditingNoteId(null);
-    setShowAllNotes(!compact);
-  }, [leadId, compact]);
-
-  // DISABLED AUTOSAVE - was causing duplicate notes
-  // Users must now press Enter or click Save to add notes
-  // This prevents race conditions and duplicate entries
-
-  // Handle Enter to save, Shift+Enter for newline
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleImmediateSave();
-    }
-    if (e.key === 'Escape') {
-      setComposerValue('');
-      composerRef.current?.blur();
-    }
-  };
-
-  const handleImmediateSave = async () => {
-    const noteText = composerValue.trim();
-    if (!noteText) return;
-    
-    // Log the lead ID for debugging
-    console.log('[UnifiedNotesPanel] handleImmediateSave called for leadId:', leadId);
-    
-    // Prevent duplicate saves with lock
-    if (isSavingRef.current) {
-      console.log('[UnifiedNotesPanel] Save already in progress, skipping');
-      return;
-    }
-    
-    // Prevent saving the exact same note twice in a row
-    if (noteText === lastSavedNoteRef.current) {
-      console.log('[UnifiedNotesPanel] Duplicate note prevented');
-      setComposerValue('');
-      return;
-    }
-    
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-    
-    isSavingRef.current = true;
-    setSaveStatus('saving');
-    
-    // Set a shorter timeout (8 seconds) to prevent infinite saving state
-    const saveTimeout = setTimeout(() => {
-      if (isSavingRef.current) {
-        console.error('[UnifiedNotesPanel] Save timed out after 8 seconds');
-        isSavingRef.current = false;
-        setSaveStatus('error');
-        toast.error('Save timed out. Check your connection and try again.');
-      }
-    }, 8000);
-    
-    try {
-      console.log('[UnifiedNotesPanel] Calling addNote with text:', noteText.substring(0, 50));
-      await addNote(noteText);
-      clearTimeout(saveTimeout);
-      console.log('[UnifiedNotesPanel] addNote succeeded!');
-      lastSavedNoteRef.current = noteText; // Track what we just saved
-      setSaveStatus('saved');
-      setLastSavedTime(new Date());
-      setComposerValue('');
-      
-      setTimeout(() => {
-        setSaveStatus('idle');
-        // Clear the last saved note after 5 seconds to allow same note later
-        setTimeout(() => { lastSavedNoteRef.current = ''; }, 5000);
-      }, 3000);
-    } catch (error: any) {
-      clearTimeout(saveTimeout);
-      console.error('[UnifiedNotesPanel] Failed to save note:', error);
-      console.error('[UnifiedNotesPanel] Error details:', {
-        message: error?.message,
-        code: error?.code,
-        details: error?.details,
-        hint: error?.hint
-      });
-      setSaveStatus('error');
-      
-      // Check if it's a session/auth error
-      if (error?.message?.includes('session') || error?.message?.includes('Session')) {
-        // Don't show another toast - the hook already shows one
-      } else {
-        const errorMsg = error?.message || 'Failed to save note';
-        toast.error(`Save failed: ${errorMsg}`);
-      }
-    } finally {
-      isSavingRef.current = false;
-    }
-  };
-
-  // Inline edit handlers
-  const handleStartEdit = (note: QuickNote) => {
-    setEditingNoteId(note.id);
-    setEditValue(note.note_text);
-  };
-
-  const handleSaveEdit = async () => {
-    if (!editingNoteId || !editValue.trim()) {
-      setEditingNoteId(null);
-      setEditValue('');
-      return;
-    }
-    
-    try {
-      await updateNote(editingNoteId, editValue.trim());
-      toast.success('Note updated');
-    } catch (error) {
-      toast.error('Failed to update note');
-    }
-    
-    setEditingNoteId(null);
-    setEditValue('');
-  };
-
-  const handleCancelEdit = () => {
-    setEditingNoteId(null);
-    setEditValue('');
-  };
-
-  // Delete with undo
-  const handleDelete = async (note: QuickNote) => {
-    setDeletedNote(note);
-    
-    // Clear any existing undo timeout
-    if (undoTimeoutRef.current) {
-      clearTimeout(undoTimeoutRef.current);
-    }
-    
-    // Show undo toast
-    toast.success('Note deleted', {
-      duration: 10000,
-      action: {
-        label: 'Undo',
-        onClick: () => handleUndo(note)
-      }
-    });
-    
-    // Actually delete after 10 seconds
-    undoTimeoutRef.current = setTimeout(async () => {
-      try {
-        await deleteNote(note.id);
-        setDeletedNote(null);
-      } catch (error) {
-        toast.error('Failed to delete note');
-      }
-    }, 10000);
-  };
-
-  const handleUndo = async (note: QuickNote) => {
-    if (undoTimeoutRef.current) {
-      clearTimeout(undoTimeoutRef.current);
-    }
-    setDeletedNote(null);
-    toast.success('Note restored');
-    await refetch();
-  };
-
-  // Group notes by date
-  const groupedNotes = useMemo((): GroupedNotes => {
-    let filteredNotes = notes.filter(note => {
-      // Filter out deleted note if pending deletion
-      if (deletedNote && note.id === deletedNote.id) return false;
-      
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesText = note.note_text.toLowerCase().includes(query);
-        const matchesAuthor = note.author?.first_name?.toLowerCase().includes(query) ||
-          note.author?.email.toLowerCase().includes(query);
-        if (!matchesText && !matchesAuthor) return false;
-      }
-      
-      // Type filter
-      if (activeFilter === 'pinned' && !note.is_pinned) return false;
-      
-      return true;
-    });
-
-    const groups: GroupedNotes = {
-      today: [],
-      yesterday: [],
-      thisWeek: [],
-      older: []
-    };
-
-    filteredNotes.forEach(note => {
-      const noteDate = new Date(note.created_at);
-      if (isToday(noteDate)) {
-        groups.today.push(note);
-      } else if (isYesterday(noteDate)) {
-        groups.yesterday.push(note);
-      } else if (isThisWeek(noteDate)) {
-        groups.thisWeek.push(note);
-      } else {
-        groups.older.push(note);
-      }
-    });
-
-    return groups;
-  }, [notes, searchQuery, activeFilter, deletedNote]);
-
-  const todayNoteCount = groupedNotes.today.length;
-  const totalNoteCount = notes.length - (deletedNote ? 1 : 0);
-
-  // Get status display
-  const getStatusDisplay = () => {
-    switch (saveStatus) {
-      case 'saving':
-        return (
-          <span className="flex items-center gap-1.5 text-xs text-muted-foreground animate-pulse">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Saving...
-          </span>
-        );
-      case 'saved':
-        return (
-          <span className="flex items-center gap-1.5 text-xs text-green-600">
-            <Check className="h-3 w-3" />
-            Saved {lastSavedTime ? formatDistanceToNow(lastSavedTime, { addSuffix: true }) : 'just now'}
-          </span>
-        );
-      case 'offline':
-        return (
-          <span className="flex items-center gap-1.5 text-xs text-amber-600">
-            <WifiOff className="h-3 w-3" />
-            Offline. Will retry
-          </span>
-        );
-      case 'error':
-        return (
-          <span className="flex items-center gap-1.5 text-xs text-destructive">
-            <X className="h-3 w-3" />
-            Couldn't save. Try again
-          </span>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const getAuthorName = (note: QuickNote) => {
-    if (!note.author) return 'System';
-    return note.author.first_name || note.author.email.split('@')[0];
-  };
-
-  const toggleGroup = (group: string) => {
-    setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }));
-  };
-
-  const renderNoteRow = (note: QuickNote, isLast: boolean) => {
-    const isEditing = editingNoteId === note.id;
-    
-    return (
-      <div
-        key={note.id}
-        className={cn(
-          "group flex items-start gap-2 py-1.5 px-2 hover:bg-muted/50 transition-colors",
-          !isLast && "border-b border-dashed border-border/50",
-          note.is_pinned && "bg-amber-50/30 dark:bg-amber-950/10"
-        )}
-      >
-        {isEditing ? (
-          <div className="flex-1 space-y-1.5">
-            <Textarea
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              className="min-h-[40px] text-xs resize-none py-1"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSaveEdit();
-                }
-                if (e.key === 'Escape') {
-                  handleCancelEdit();
-                }
-              }}
-            />
-            <div className="flex items-center gap-1 justify-end">
-              <Button variant="ghost" size="sm" className="h-5 px-2 text-[10px]" onClick={handleCancelEdit}>
-                Cancel
-              </Button>
-              <Button size="sm" className="h-5 px-2 text-[10px]" onClick={handleSaveEdit}>
-                Save
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Actions - compact inline */}
-            <div className="flex items-center gap-0.5 flex-shrink-0 opacity-60 hover:opacity-100">
-              <button
-                onClick={() => handleStartEdit(note)}
-                className="p-1 hover:bg-muted rounded"
-                title="Edit"
-              >
-                <Edit2 className="h-3 w-3" />
-              </button>
-              {!isAbandonedCart && (
-                <button
-                  onClick={() => togglePin(note.id, note.is_pinned)}
-                  className="p-1 hover:bg-muted rounded"
-                  title={note.is_pinned ? 'Unpin' : 'Pin'}
-                >
-                  {note.is_pinned ? <PinOff className="h-3 w-3" /> : <Pin className="h-3 w-3" />}
-                </button>
-              )}
-              <button
-                onClick={() => handleDelete(note)}
-                className="p-1 hover:bg-muted rounded text-destructive"
-                title="Delete"
-              >
-                <Trash2 className="h-3 w-3" />
-              </button>
-            </div>
-            
-            {/* Note content - compact inline */}
-            <div className="flex-1 min-w-0 flex items-baseline gap-2">
-              {note.is_pinned && <Pin className="h-2.5 w-2.5 text-amber-600 flex-shrink-0" />}
-              <span className="text-xs truncate flex-1">{note.note_text}</span>
-              <span className="text-[10px] text-muted-foreground flex-shrink-0 whitespace-nowrap">
-                {getAuthorName(note)} · {formatDistanceToNow(new Date(note.created_at), { addSuffix: true })}
-              </span>
-            </div>
-          </>
-        )}
-      </div>
-    );
-  };
-
-  // Flat list rendering - all notes in one box
-  const renderAllNotes = () => {
-    const allNotes = [
-      ...groupedNotes.today,
-      ...groupedNotes.yesterday,
-      ...groupedNotes.thisWeek,
-      ...groupedNotes.older
-    ];
-
-    if (allNotes.length === 0) {
-      return (
-        <div className="text-xs text-muted-foreground text-center py-4">
-          No notes yet. Add the first one above.
-        </div>
-      );
-    }
-
-    return (
-      <div className="divide-y-0">
-        {allNotes.map((note, idx) => renderNoteRow(note, idx === allNotes.length - 1))}
-      </div>
-    );
-  };
-
-  return (
-    <div className={cn("rounded-lg border bg-card overflow-hidden", className)}>
-      {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b bg-muted/30">
-        <div className="flex items-center gap-2">
-          <MessageSquare className="h-4 w-4 text-primary" />
-          <h3 className="font-semibold text-sm">Notes</h3>
-          {todayNoteCount > 0 && (
-            <Badge variant="secondary" className="h-5 px-1.5 text-xs">
-              {todayNoteCount} today
-            </Badge>
-          )}
-        </div>
-        {getStatusDisplay()}
-      </div>
-
-      {/* Composer - always visible at top */}
-      <div className="p-3 border-b bg-background">
-        <Textarea
-          ref={composerRef}
-          value={composerValue}
-          onChange={(e) => setComposerValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Type a note and press Enter to save..."
-          className={cn(
-            "min-h-[44px] text-sm resize-none transition-all",
-            "focus:ring-2 focus:ring-primary/20",
-            composerValue && "min-h-[80px]"
-          )}
-        />
-        <div className="flex items-center justify-between mt-2 text-[11px] text-muted-foreground">
-          <span>Enter to save • Shift+Enter for newline</span>
-          <div className="flex items-center gap-2">
-            {saveStatus === 'saving' && <span className="text-amber-600">Saving...</span>}
-            {composerValue && <span>{composerValue.length} chars</span>}
-          </div>
-        </div>
-      </div>
-
-      {/* Filters & Search */}
-      {totalNoteCount > 0 && (
-        <div className="p-2 border-b flex items-center gap-2 flex-wrap">
-          <div className="relative flex-1 min-w-[120px] max-w-[200px]">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search notes..."
-              className="h-7 text-xs pl-7 pr-2"
-            />
-          </div>
-          <div className="flex items-center gap-1">
-            {(['all', 'pinned'] as NoteFilter[]).map((filter) => (
-              <Button
-                key={filter}
-                variant={activeFilter === filter ? 'default' : 'ghost'}
-                size="sm"
-                className="h-6 px-2 text-xs capitalize"
-                onClick={() => setActiveFilter(filter)}
-              >
-                {filter === 'pinned' && <Pin className="h-3 w-3 mr-1" />}
-                {filter}
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Notes History Stream */}
-      <ScrollArea className={cn("p-3", compact && !showAllNotes ? "max-h-[200px]" : "max-h-[400px]")}>
-        {loading ? (
-          <div className="flex items-center justify-center py-8 text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin mr-2" />
-            Loading notes...
-          </div>
-        ) : totalNoteCount === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">No notes yet. Add the first one.</p>
-          </div>
-        ) : (
-          renderAllNotes()
-        )}
-      </ScrollArea>
-
-      {/* Show more toggle for compact mode */}
-      {compact && totalNoteCount > 3 && (
-        <div className="p-2 border-t text-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-xs"
-            onClick={() => setShowAllNotes(!showAllNotes)}
-          >
-            {showAllNotes ? 'Show less' : `Show all ${totalNoteCount} notes`}
-          </Button>
-        </div>
-      )}
-    </div>
-  );
-};
+ import React, { useState, useEffect, useRef, useMemo } from 'react';
+ import { Button } from '@/components/ui/button';
+ import { Input } from '@/components/ui/input';
+ import { 
+   MessageSquare, Clock, Pin, PinOff, Trash2, 
+   Edit2, Check, X, Loader2
+ } from 'lucide-react';
+ import { cn } from '@/lib/utils';
+ import { format, formatDistanceToNow } from 'date-fns';
+ import { useLeadQuickNotes, QuickNote } from '@/hooks/useLeadQuickNotes';
+ import { toast } from 'sonner';
+ 
+ interface UnifiedNotesPanelProps {
+   leadId: string;
+   className?: string;
+   compact?: boolean;
+ }
+ 
+ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+ 
+ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
+   leadId,
+   className,
+   compact = false
+ }) => {
+   const { notes, loading, addNote, updateNote, togglePin, deleteNote, refetch, isAbandonedCart } = useLeadQuickNotes(leadId);
+   
+   // Quick note input state
+   const [quickNoteValue, setQuickNoteValue] = useState('');
+   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+   const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
+   
+   // Edit state
+   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+   const [editValue, setEditValue] = useState('');
+   
+   // Undo state
+   const [deletedNote, setDeletedNote] = useState<QuickNote | null>(null);
+   const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+   
+   // Save refs
+   const inputRef = useRef<HTMLInputElement>(null);
+   const isSavingRef = useRef(false);
+   const lastSavedNoteRef = useRef<string>('');
+ 
+   // Reset state when lead changes
+   useEffect(() => {
+     setQuickNoteValue('');
+     setSaveStatus('idle');
+     setLastSavedTime(null);
+     setEditingNoteId(null);
+   }, [leadId]);
+ 
+   // Handle Enter to save
+   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+     if (e.key === 'Enter') {
+       e.preventDefault();
+       handleSaveNote();
+     }
+     if (e.key === 'Escape') {
+       setQuickNoteValue('');
+       inputRef.current?.blur();
+     }
+   };
+ 
+   const handleSaveNote = async () => {
+     const noteText = quickNoteValue.trim();
+     if (!noteText) return;
+     
+     if (isSavingRef.current) return;
+     if (noteText === lastSavedNoteRef.current) {
+       setQuickNoteValue('');
+       return;
+     }
+     
+     isSavingRef.current = true;
+     setSaveStatus('saving');
+     
+     const saveTimeout = setTimeout(() => {
+       if (isSavingRef.current) {
+         isSavingRef.current = false;
+         setSaveStatus('error');
+         toast.error('Save timed out. Try again.');
+       }
+     }, 8000);
+     
+     try {
+       await addNote(noteText);
+       clearTimeout(saveTimeout);
+       lastSavedNoteRef.current = noteText;
+       setSaveStatus('saved');
+       setLastSavedTime(new Date());
+       setQuickNoteValue('');
+       
+       setTimeout(() => {
+         setSaveStatus('idle');
+         setTimeout(() => { lastSavedNoteRef.current = ''; }, 5000);
+       }, 2000);
+     } catch (error: any) {
+       clearTimeout(saveTimeout);
+       setSaveStatus('error');
+       if (!error?.message?.includes('session')) {
+         toast.error('Failed to save note');
+       }
+     } finally {
+       isSavingRef.current = false;
+     }
+   };
+ 
+   const handleStartEdit = (note: QuickNote) => {
+     setEditingNoteId(note.id);
+     setEditValue(note.note_text);
+   };
+ 
+   const handleSaveEdit = async () => {
+     if (!editingNoteId || !editValue.trim()) {
+       setEditingNoteId(null);
+       setEditValue('');
+       return;
+     }
+     
+     try {
+       await updateNote(editingNoteId, editValue.trim());
+       toast.success('Note updated');
+     } catch (error) {
+       toast.error('Failed to update note');
+     }
+     
+     setEditingNoteId(null);
+     setEditValue('');
+   };
+ 
+   const handleCancelEdit = () => {
+     setEditingNoteId(null);
+     setEditValue('');
+   };
+ 
+   const handleDelete = async (note: QuickNote) => {
+     setDeletedNote(note);
+     
+     if (undoTimeoutRef.current) {
+       clearTimeout(undoTimeoutRef.current);
+     }
+     
+     toast.success('Note deleted', {
+       duration: 10000,
+       action: {
+         label: 'Undo',
+         onClick: () => handleUndo(note)
+       }
+     });
+     
+     undoTimeoutRef.current = setTimeout(async () => {
+       try {
+         await deleteNote(note.id);
+         setDeletedNote(null);
+       } catch (error) {
+         toast.error('Failed to delete note');
+       }
+     }, 10000);
+   };
+ 
+   const handleUndo = async (note: QuickNote) => {
+     if (undoTimeoutRef.current) {
+       clearTimeout(undoTimeoutRef.current);
+     }
+     setDeletedNote(null);
+     toast.success('Note restored');
+     await refetch();
+   };
+ 
+   // Filter out deleted notes
+   const visibleNotes = useMemo(() => {
+     return notes.filter(note => !(deletedNote && note.id === deletedNote.id));
+   }, [notes, deletedNote]);
+ 
+   if (loading) {
+     return (
+       <div className={cn("space-y-3", className)}>
+         <div className="flex items-center gap-2 text-sm text-muted-foreground">
+           <Loader2 className="h-4 w-4 animate-spin" />
+           Loading notes...
+         </div>
+       </div>
+     );
+   }
+ 
+   return (
+     <div className={cn("space-y-3", className)}>
+       {/* Notes List - Simple continuous format */}
+       <div className="space-y-1">
+         {visibleNotes.length === 0 ? (
+           <p className="text-sm text-muted-foreground italic">No notes yet</p>
+         ) : (
+           visibleNotes.map((note) => {
+             const isEditing = editingNoteId === note.id;
+             const noteDate = new Date(note.created_at);
+             const datePrefix = format(noteDate, 'dd/MM');
+             
+             return (
+               <div
+                 key={note.id}
+                 className={cn(
+                   "group flex items-start gap-2 py-1 px-2 -mx-2 rounded hover:bg-muted/50 transition-colors",
+                   note.is_pinned && "bg-amber-50/50 dark:bg-amber-950/20"
+                 )}
+               >
+                 {isEditing ? (
+                   <div className="flex-1 flex items-center gap-2">
+                     <Input
+                       value={editValue}
+                       onChange={(e) => setEditValue(e.target.value)}
+                       className="h-7 text-sm flex-1"
+                       autoFocus
+                       onKeyDown={(e) => {
+                         if (e.key === 'Enter') {
+                           e.preventDefault();
+                           handleSaveEdit();
+                         }
+                         if (e.key === 'Escape') {
+                           handleCancelEdit();
+                         }
+                       }}
+                     />
+                     <Button size="icon" variant="ghost" className="h-6 w-6" onClick={handleSaveEdit}>
+                       <Check className="h-3 w-3 text-primary" />
+                     </Button>
+                     <Button size="icon" variant="ghost" className="h-6 w-6" onClick={handleCancelEdit}>
+                       <X className="h-3 w-3" />
+                     </Button>
+                   </div>
+                 ) : (
+                   <>
+                     {/* Note content - continuous format like "15/01 - NA VM" */}
+                     <div className="flex-1 min-w-0">
+                       <p className="text-sm">
+                         {note.is_pinned && <Pin className="h-3 w-3 text-amber-600 inline mr-1" />}
+                         <span className="text-muted-foreground">{datePrefix}</span>
+                         <span className="text-muted-foreground mx-1">-</span>
+                         <span>{note.note_text}</span>
+                       </p>
+                     </div>
+                     
+                     {/* Actions - show on hover */}
+                     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                       <button
+                         onClick={() => handleStartEdit(note)}
+                         className="p-1 hover:bg-muted rounded"
+                         title="Edit"
+                       >
+                         <Edit2 className="h-3 w-3 text-muted-foreground" />
+                       </button>
+                       {!isAbandonedCart && (
+                         <button
+                           onClick={() => togglePin(note.id, note.is_pinned)}
+                           className="p-1 hover:bg-muted rounded"
+                           title={note.is_pinned ? 'Unpin' : 'Pin'}
+                         >
+                           {note.is_pinned ? (
+                             <PinOff className="h-3 w-3 text-muted-foreground" />
+                           ) : (
+                             <Pin className="h-3 w-3 text-muted-foreground" />
+                           )}
+                         </button>
+                       )}
+                       <button
+                         onClick={() => handleDelete(note)}
+                         className="p-1 hover:bg-muted rounded"
+                         title="Delete"
+                       >
+                         <Trash2 className="h-3 w-3 text-destructive" />
+                       </button>
+                     </div>
+                   </>
+                 )}
+               </div>
+             );
+           })
+         )}
+       </div>
+ 
+       {/* Quick Notes Input - Simple single line */}
+       <div className="pt-2 border-t">
+         <div className="flex items-center gap-2">
+           <MessageSquare className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+           <span className="text-sm font-medium text-muted-foreground">Quick Notes</span>
+         </div>
+         <div className="mt-2 flex items-center gap-2">
+           <Input
+             ref={inputRef}
+             value={quickNoteValue}
+             onChange={(e) => setQuickNoteValue(e.target.value)}
+             onKeyDown={handleKeyDown}
+             placeholder="Add a quick note... (press Enter to save)"
+             className="flex-1 h-8 text-sm"
+             disabled={saveStatus === 'saving'}
+           />
+           {saveStatus === 'saving' && (
+             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+           )}
+           {saveStatus === 'saved' && (
+             <Check className="h-4 w-4 text-primary" />
+           )}
+         </div>
+         {lastSavedTime && saveStatus === 'saved' && (
+           <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+             <Clock className="h-2.5 w-2.5" />
+             Last updated {format(lastSavedTime, 'd MMM yyyy, HH:mm')}
+           </p>
+         )}
+       </div>
+     </div>
+   );
+ };
