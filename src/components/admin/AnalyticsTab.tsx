@@ -52,7 +52,7 @@ export const AnalyticsTab = () => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const [comparisonPeriod, setComparisonPeriod] = useState<'week' | 'month' | 'year' | null>(null);
+  const [comparisonPeriod, setComparisonPeriod] = useState<'week' | 'month' | 'last_month' | 'year' | null>(null);
 
 
   useEffect(() => {
@@ -113,7 +113,7 @@ export const AnalyticsTab = () => {
   }, []);
 
   // Handle period comparison selection
-  const handlePeriodComparison = useCallback((period: 'week' | 'month' | 'year' | null) => {
+  const handlePeriodComparison = useCallback((period: 'week' | 'month' | 'last_month' | 'year' | null) => {
     if (comparisonPeriod === period) {
       setComparisonPeriod(null);
       setDateRange(undefined);
@@ -132,6 +132,11 @@ export const AnalyticsTab = () => {
         case 'month':
           from = startOfMonth(now);
           to = endOfMonth(now);
+          break;
+        case 'last_month':
+          const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          from = startOfMonth(lastMonth);
+          to = endOfMonth(lastMonth);
           break;
         case 'year':
           from = startOfYear(now);
@@ -435,12 +440,15 @@ export const AnalyticsTab = () => {
           {/* Period Comparison Toggle */}
           <div className="space-y-1">
             <Label className="text-sm font-medium">Quick Period</Label>
-            <ToggleGroup type="single" value={comparisonPeriod || ''} onValueChange={(val) => handlePeriodComparison(val as 'week' | 'month' | 'year' | null)}>
+            <ToggleGroup type="single" value={comparisonPeriod || ''} onValueChange={(val) => handlePeriodComparison(val as 'week' | 'month' | 'last_month' | 'year' | null)}>
               <ToggleGroupItem value="week" aria-label="This Week" className="px-3">
                 This Week
               </ToggleGroupItem>
               <ToggleGroupItem value="month" aria-label="This Month" className="px-3">
                 This Month
+              </ToggleGroupItem>
+              <ToggleGroupItem value="last_month" aria-label="Last Month" className="px-3">
+                Last Month
               </ToggleGroupItem>
               <ToggleGroupItem value="year" aria-label="This Year" className="px-3">
                 This Year
