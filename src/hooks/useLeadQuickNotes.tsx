@@ -28,12 +28,14 @@ export const useLeadQuickNotes = (leadId: string) => {
   const fetchNotes = useCallback(async () => {
     if (!leadId) {
       setLoading(false);
+      setNotes([]);
       return;
     }
     
     // Create a timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       console.warn('[fetchNotes] Fetch taking longer than 5 seconds, forcing completion');
+      setNotes(prev => prev); // Keep existing notes on timeout
       setLoading(false);
     }, 5000);
     
@@ -140,7 +142,9 @@ export const useLeadQuickNotes = (leadId: string) => {
         setNotes(allNotes);
       }
     } catch (error) {
-      console.error('Error fetching quick notes:', error);
+      console.error('[fetchNotes] Error fetching quick notes:', error);
+      // On error, set empty notes to avoid stuck UI
+      setNotes([]);
       clearTimeout(timeoutId);
     } finally {
       clearTimeout(timeoutId);
