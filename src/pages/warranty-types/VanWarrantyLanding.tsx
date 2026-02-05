@@ -26,6 +26,8 @@ import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaMascot from '@/assets/warranty-panda-mascot.png';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import pandaMechanic from '@/assets/panda-mechanic.png';
+import vanHeroImage from '@/assets/used-van-reliable-warranty.webp';
+import fordTransitVan from '@/assets/uk-van-warranty-ford-transit.webp';
 
 // UK Van Models covered (grouped by manufacturer) - 2012-2026
 const vanModelCategories = {
@@ -780,12 +782,12 @@ const VanWarrantyLanding: React.FC = () => {
                 {/* Hero Image */}
                 <div className="relative">
                   <OptimizedImage
-                    src={pandaMascot}
-                    alt="Van extended warranty UK - Professional van warranty coverage with Miles the Panda"
-                    className="w-full h-auto max-w-md mx-auto"
+                    src={vanHeroImage}
+                    alt="UK van extended warranty - Miles the Panda with Ford Transit and Vauxhall vans"
+                    className="w-full h-auto max-w-lg mx-auto object-contain"
                     priority={true}
-                    width={400}
-                    height={400}
+                    width={600}
+                    height={450}
                   />
                   {/* Trustpilot Badge */}
                   <div className="absolute top-4 right-4">
@@ -1009,7 +1011,7 @@ const VanWarrantyLanding: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
-                Why Commercial Van Owners Choose Us
+                Why commercial van owners choose us
               </h2>
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -1044,8 +1046,8 @@ const VanWarrantyLanding: React.FC = () => {
               {/* Mascot */}
               <div className="hidden lg:flex justify-center items-end">
                 <OptimizedImage 
-                  src={pandaMechanic}
-                  alt="Miles the Panda mechanic - Why van owners choose us for extended warranty"
+                  src={fordTransitVan}
+                  alt="UK van warranty - Vauxhall Combo with buyawarranty branding"
                   className="w-[400px] h-auto object-contain"
                   width={400}
                   height={300}
