@@ -210,6 +210,41 @@ export const ClaimsTab = () => {
     }
   };
 
+  // Group claims by customer email + claim_reason (same matter = consolidated)
+  const groupClaimsByCustomer = (claimsList: ClaimSubmission[]): (ClaimSubmission & { relatedClaimsCount: number; relatedClaims: ClaimSubmission[] })[] => {
+    const grouped = new Map<string, ClaimSubmission[]>();
+    
+    claimsList.forEach(claim => {
+      // Create a key based on email + normalized claim reason
+      // If claim_reason is null/empty, each claim is unique
+      const reasonKey = claim.claim_reason?.toLowerCase().trim() || `unique_${claim.id}`;
+      const key = `${claim.email.toLowerCase()}_${reasonKey}`;
+      
+      if (!grouped.has(key)) {
+        grouped.set(key, []);
+      }
+      grouped.get(key)!.push(claim);
+    });
+    
+    // Return the most recent claim from each group with count
+    const result: (ClaimSubmission & { relatedClaimsCount: number; relatedClaims: ClaimSubmission[] })[] = [];
+    grouped.forEach((claimsInGroup) => {
+      // Sort by created_at descending to get the most recent
+      claimsInGroup.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      const primaryClaim = claimsInGroup[0];
+      result.push({
+        ...primaryClaim,
+        relatedClaimsCount: claimsInGroup.length,
+        relatedClaims: claimsInGroup,
+      });
+    });
+    
+    // Sort the result by created_at descending
+    result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    
+    return result;
+  };
+
   const filteredClaims = claims.filter(claim => {
     if (statusFilter !== 'all' && claim.status !== statusFilter) return false;
     if (warrantyFilter !== 'all' && claim.warranty_type !== warrantyFilter) return false;
@@ -238,6 +273,9 @@ export const ClaimsTab = () => {
     
     return true;
   });
+
+  // Group claims by customer and claim reason
+  const groupedFilteredClaims = groupClaimsByCustomer(filteredClaims);
 
   const handleExportCSV = () => {
     const exportData = filteredClaims.map(formatClaimForExport);
@@ -270,19 +308,26 @@ export const ClaimsTab = () => {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedClaimIds(new Set(filteredClaims.map(c => c.id)));
+      // Select all individual claim IDs from grouped claims
+      const allIds = new Set<string>();
+      groupedFilteredClaims.forEach(group => {
+        group.relatedClaims.forEach(claim => allIds.add(claim.id));
+      });
+      setSelectedClaimIds(allIds);
     } else {
       setSelectedClaimIds(new Set());
     }
   };
 
-  const handleSelectClaim = (claimId: string, checked: boolean) => {
+  const handleSelectClaim = (claimGroup: { relatedClaims: ClaimSubmission[] }, checked: boolean) => {
     const newSelected = new Set(selectedClaimIds);
-    if (checked) {
-      newSelected.add(claimId);
-    } else {
-      newSelected.delete(claimId);
-    }
+    claimGroup.relatedClaims.forEach(claim => {
+      if (checked) {
+        newSelected.add(claim.id);
+      } else {
+        newSelected.delete(claim.id);
+      }
+    });
     setSelectedClaimIds(newSelected);
   };
 
@@ -486,7 +531,7 @@ export const ClaimsTab = () => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Claims Submissions ({filteredClaims.length})</CardTitle>
+              <CardTitle>Claims Submissions ({groupedFilteredClaims.length} groups, {filteredClaims.length} total)</CardTitle>
               <CardDescription>
                 All claim submissions including website forms and emails to claims@buyawarranty.co.uk
               </CardDescription>
@@ -504,7 +549,7 @@ export const ClaimsTab = () => {
           </div>
         </CardHeader>
         <CardContent>
-          {filteredClaims.length === 0 ? (
+          {groupedFilteredClaims.length === 0 ? (
             <div className="text-center py-8">
               <FileSpreadsheet className="mx-auto h-12 w-12 text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No claims found</h3>
@@ -522,7 +567,7 @@ export const ClaimsTab = () => {
                   <TableRow>
                     <TableHead className="w-12">
                       <Checkbox
-                        checked={filteredClaims.length > 0 && selectedClaimIds.size === filteredClaims.length}
+                        checked={groupedFilteredClaims.length > 0 && selectedClaimIds.size === filteredClaims.length}
                         onCheckedChange={handleSelectAll}
                         aria-label="Select all claims"
                       />
@@ -535,6 +580,7 @@ export const ClaimsTab = () => {
                     </TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Customer</TableHead>
+                    <TableHead>Claim Reason</TableHead>
                     <TableHead>Vehicle Reg</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Priority</TableHead>
@@ -544,15 +590,19 @@ export const ClaimsTab = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredClaims.map((claim) => {
+                  {groupedFilteredClaims.map((claimGroup) => {
+                    const claim = claimGroup; // Primary claim in the group
                     const daysSinceClaim = getDaysSinceClaim(claim.created_at);
+                    const isGroupSelected = claimGroup.relatedClaims.every(c => selectedClaimIds.has(c.id));
+                    const totalPayment = claimGroup.relatedClaims.reduce((sum, c) => sum + (c.payment_amount || 0), 0);
+                    
                     return (
-                      <TableRow key={claim.id}>
+                      <TableRow key={claim.id} className={claimGroup.relatedClaimsCount > 1 ? 'bg-blue-50/50' : ''}>
                         <TableCell>
                           <Checkbox
-                            checked={selectedClaimIds.has(claim.id)}
-                            onCheckedChange={(checked) => handleSelectClaim(claim.id, checked as boolean)}
-                            aria-label={`Select claim ${claim.id}`}
+                            checked={isGroupSelected}
+                            onCheckedChange={(checked) => handleSelectClaim(claimGroup, checked as boolean)}
+                            aria-label={`Select claim group ${claim.id}`}
                           />
                         </TableCell>
                         <TableCell>
@@ -579,6 +629,11 @@ export const ClaimsTab = () => {
                             <div className="flex items-center gap-2">
                               <User className="h-4 w-4 text-gray-400" />
                               <span className="font-medium text-sm">{claim.name}</span>
+                              {claimGroup.relatedClaimsCount > 1 && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {claimGroup.relatedClaimsCount} submissions
+                                </Badge>
+                              )}
                             </div>
                             <div className="flex items-center gap-2 text-xs">
                               <Mail className="h-3 w-3 text-gray-400" />
@@ -601,6 +656,11 @@ export const ClaimsTab = () => {
                               </div>
                             )}
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm text-gray-700 max-w-[200px] truncate block" title={claim.claim_reason || '-'}>
+                            {claim.claim_reason || '-'}
+                          </span>
                         </TableCell>
                         <TableCell>
                           <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
@@ -648,10 +708,10 @@ export const ClaimsTab = () => {
                           </Select>
                         </TableCell>
                         <TableCell>
-                          {claim.payment_amount && claim.payment_amount > 0 ? (
+                          {totalPayment > 0 ? (
                             <div className="flex items-center gap-1">
                               <span className="font-semibold text-green-600">
-                                £{claim.payment_amount.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                £{totalPayment.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               </span>
                               <Button
                                 variant="ghost"
