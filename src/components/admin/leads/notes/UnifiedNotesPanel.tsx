@@ -76,17 +76,8 @@
      isSavingRef.current = true;
      setSaveStatus('saving');
      
-     const saveTimeout = setTimeout(() => {
-       if (isSavingRef.current) {
-         isSavingRef.current = false;
-         setSaveStatus('error');
-         toast.error('Save timed out. Try again.');
-       }
-     }, 8000);
-     
      try {
        await addNote(noteText);
-       clearTimeout(saveTimeout);
        lastSavedNoteRef.current = noteText;
        setSaveStatus('saved');
        setLastSavedTime(new Date());
@@ -97,11 +88,8 @@
          setTimeout(() => { lastSavedNoteRef.current = ''; }, 5000);
        }, 2000);
      } catch (error: any) {
-       clearTimeout(saveTimeout);
        setSaveStatus('error');
-       if (!error?.message?.includes('session')) {
-         toast.error('Failed to save note');
-       }
+      // Error toast is handled by the hook
      } finally {
        isSavingRef.current = false;
      }

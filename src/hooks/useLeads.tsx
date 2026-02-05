@@ -474,31 +474,6 @@ export const useLeads = () => {
     const currentLead = leads.find(l => l.id === leadId);
     const isUnassigned = !currentLead?.assigned_to;
     
-    // Get current user's admin ID for auto-assignment
-    let currentUserAdminId: string | null = null;
-    let currentUserData: AdminUser | null = null;
-    
-    // If changing to 'contacted' and lead is unassigned, get current user to auto-assign
-    if (status === 'contacted' && isUnassigned) {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: adminUser } = await supabase
-            .from('admin_users')
-            .select('id, user_id, first_name, last_name, email, is_active')
-            .eq('user_id', user.id)
-            .single();
-          
-          if (adminUser) {
-            currentUserAdminId = adminUser.id;
-            currentUserData = adminUser as AdminUser;
-          }
-        }
-      } catch (e) {
-        console.warn('Could not get current user for auto-assignment:', e);
-      }
-    }
-    
     const updates: any = { 
       status, 
       updated_at: now,
@@ -510,30 +485,11 @@ export const useLeads = () => {
     } else if (status === 'lost') {
       updates.lost_at = now;
     }
-    
-    // Auto-assign if contacted and unassigned
-    if (status === 'contacted' && isUnassigned && currentUserAdminId) {
-      updates.assigned_to = currentUserAdminId;
-      updates.assigned_at = now;
-    }
 
     // Optimistic update - instant UI response
     setLeads(prev => prev.map(lead => {
       if (lead.id !== leadId) return lead;
-      
-      const updatedLead = { ...lead, ...updates };
-      
-      // Add assigned user data for optimistic UI
-      if (status === 'contacted' && isUnassigned && currentUserData) {
-        updatedLead.assigned_user = {
-          id: currentUserData.id,
-          first_name: currentUserData.first_name,
-          last_name: currentUserData.last_name,
-          email: currentUserData.email
-        };
-      }
-      
-      return updatedLead;
+      return { ...lead, ...updates };
     }));
 
     try {
@@ -544,20 +500,12 @@ export const useLeads = () => {
                               status === 'converted' ? 'converted' :
                               status === 'lost' ? 'lost' : 'pending';
         
-        const cartUpdates: any = {
-          contact_status: contactStatus,
-          updated_at: now
-        };
-        
-        // Auto-assign abandoned cart as well
-        if (status === 'contacted' && isUnassigned && currentUserAdminId) {
-          cartUpdates.contacted_by = currentUserAdminId;
-          cartUpdates.last_contacted_at = now;
-        }
-        
         const { error } = await supabase
           .from('abandoned_carts')
-          .update(cartUpdates)
+          .update({
+          contact_status: contactStatus,
+          updated_at: now
+          })
           .eq('id', actualId);
 
         if (error) throw error;
@@ -571,22 +519,16 @@ export const useLeads = () => {
 
         // Log activity in background (don't await)
         logActivity(leadId, 'status_change', `Status changed to ${status}`);
-        
-        // Log auto-assignment if it happened
-        if (status === 'contacted' && isUnassigned && currentUserAdminId) {
-          logActivity(leadId, 'assignment', 'Auto-assigned to agent who contacted the lead');
-        }
       }
       
-      const autoAssignMsg = (status === 'contacted' && isUnassigned && currentUserAdminId) 
-        ? ' (auto-assigned to you)' 
-        : '';
-      toast.success(`Lead status updated to ${status.replace('_', ' ')}${autoAssignMsg}`);
+      toast.success(`Status: ${status.replace('_', ' ')}`);
     } catch (error) {
       console.error('Error updating lead status:', error);
       toast.error('Failed to update lead status');
-      // Revert on error
-      fetchLeads();
+      // Revert optimistic update without full page refresh
+      setLeads(prev => prev.map(lead => 
+        lead.id === leadId ? { ...lead, status: currentLead?.status || 'new' } : lead
+      ));
     }
   }, [leads]);
 
@@ -596,6 +538,9 @@ export const useLeads = () => {
     const user = salesUsersRef.current.find(u => u.id === userId);
     const isAbandonedCart = leadId.startsWith('cart_');
     const actualId = isAbandonedCart ? leadId.replace('cart_', '') : leadId;
+    
+    // Store previous state for rollback
+    const previousLead = leads.find(l => l.id === leadId);
     
     // Optimistic update
     setLeads(prev => prev.map(lead => 
@@ -617,9 +562,7 @@ export const useLeads = () => {
 
     try {
       if (isAbandonedCart) {
-        // Update abandoned_carts table - uses contacted_by field for assignment
-        // IMPORTANT: contacted_by references auth.users(id), so we need to get the user_id
-        // from admin_users, not the admin_users.id directly
+        // Update abandoned_carts table
         let authUserId: string | null = null;
         if (userId) {
           const { data: adminUser } = await supabase
@@ -641,74 +584,20 @@ export const useLeads = () => {
 
         if (error) throw error;
       } else {
-        // Get current user's admin ID to check if this is a self-assignment
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        
-        if (authUser && userId) {
-          // Check if this is self-assignment by comparing to current user's admin_users.id
-          const { data: currentAdminUser } = await supabase
-            .from('admin_users')
-            .select('id')
-            .eq('user_id', authUser.id)
-            .maybeSingle();
-          
-          const isSelfAssignment = currentAdminUser?.id === userId;
-          
-          // Get the current lead to check if it's unassigned
-          const { data: currentLead } = await supabase
-            .from('sales_leads')
-            .select('assigned_to')
-            .eq('id', actualId)
-            .maybeSingle();
-          
-          const isUnassignedLead = currentLead?.assigned_to === null;
-          
-          // Use RPC for self-assignment of unassigned leads (bypasses RLS issues)
-          if (isSelfAssignment && isUnassignedLead) {
-            // Force presence update before claiming
-            await supabase.rpc('log_agent_interaction', { p_event_type: 'claim_attempt' });
-            
-            const { data: result, error: claimError } = await supabase
-              .rpc('claim_lead_for_agent', {
-                p_lead_id: actualId,
-                p_agent_id: userId
-              });
-            
-            if (claimError) throw claimError;
-            
-            const claimResult = result as { success: boolean; error?: string; message?: string };
-            
-            if (!claimResult.success) {
-              throw new Error(claimResult.error || 'Failed to claim lead');
-            }
-          } else {
-            // Regular update for admins or reassignments
-            const { error } = await supabase
-              .from('sales_leads')
-              .update({
-                assigned_to: userId,
-                assigned_at: now,
-                updated_at: now
-              })
-              .eq('id', actualId);
+        // Direct update - RLS policies handle permissions
+        const { error } = await supabase
+          .from('sales_leads')
+          .update({
+            assigned_to: userId,
+            assigned_at: userId ? now : null,
+            updated_at: now
+          })
+          .eq('id', actualId);
 
-            if (error) throw error;
-          }
-        } else if (userId === null) {
-          // Removing assignment
-          const { error } = await supabase
-            .from('sales_leads')
-            .update({
-              assigned_to: null,
-              assigned_at: null,
-              updated_at: now
-            })
-            .eq('id', actualId);
-
-          if (error) throw error;
-        }
+        if (error) throw error;
 
         if (userId && user) {
+          // Log in background, don't await
           logActivity(leadId, 'assignment', `Assigned to ${user.first_name || user.email || 'Unknown'}`);
         }
       }
@@ -717,9 +606,14 @@ export const useLeads = () => {
     } catch (error) {
       console.error('Error assigning lead:', error);
       toast.error('Failed to assign lead');
-      fetchLeads();
+      // Revert optimistic update without full page refresh
+      if (previousLead) {
+        setLeads(prev => prev.map(lead => 
+          lead.id === leadId ? previousLead : lead
+        ));
+      }
     }
-  }, []);
+  }, [leads]);
 
   const autoAssignLead = useCallback(async (leadId: string) => {
     try {

@@ -2,6 +2,10 @@ import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// Cache admin user to avoid repeated lookups
+let cachedAdminUser: { id: string; first_name: string | null; last_name: string | null; email: string } | null = null;
+let cacheExpiry = 0;
+
 export interface QuickNote {
   id: string;
   lead_id: string;
@@ -159,55 +163,47 @@ export const useLeadQuickNotes = (leadId: string) => {
   const addNote = async (noteText: string) => {
     console.log('[addNote] Starting for leadId:', leadId, 'isAbandonedCart:', isAbandonedCart);
     
-    // Wrap entire operation in a timeout promise for safety
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Operation timed out after 7 seconds')), 7000);
-    });
-    
-    const addNoteOperation = async () => {
-      // First try to get the current session - if expired, try to refresh
-      let { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    try {
+      // Use cached admin user if available and not expired (5 min cache)
+      const now = Date.now();
+      let adminUser = cachedAdminUser;
       
-      if (sessionError || !session) {
-        console.log('[addNote] No session found, attempting refresh...');
-        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+      if (!adminUser || now > cacheExpiry) {
+        // Get session without blocking - use getSession which is faster
+        let { data: { session } } = await supabase.auth.getSession();
         
-        if (refreshError || !refreshData.session) {
-          console.error('[addNote] Session refresh failed:', refreshError);
-          toast.error('Session expired. Please refresh the page.');
-          throw new Error('Session expired - please refresh the page');
+        if (!session) {
+          // Try quick refresh
+          const { data: refreshData } = await supabase.auth.refreshSession();
+          if (!refreshData.session) {
+            toast.error('Session expired. Please refresh the page.');
+            throw new Error('Session expired');
+          }
+          session = refreshData.session;
         }
         
-        session = refreshData.session;
-        console.log('[addNote] Session refreshed successfully');
+        const userId = session?.user?.id;
+        if (!userId) {
+          throw new Error('No user session');
+        }
+        
+        const { data: adminData, error: adminError } = await supabase
+          .from('admin_users')
+          .select('id, first_name, last_name, email')
+          .eq('user_id', userId)
+          .maybeSingle();
+        
+        if (adminError || !adminData) {
+          console.error('[addNote] Admin user error:', adminError);
+          throw new Error('Admin user not found');
+        }
+        
+        // Cache for 5 minutes
+        cachedAdminUser = adminData;
+        cacheExpiry = now + 5 * 60 * 1000;
+        adminUser = adminData;
       }
       
-      const userId = session.user.id;
-      console.log('[addNote] Got user:', userId);
-
-      const { data: adminUser, error: adminError } = await supabase
-        .from('admin_users')
-        .select('id, first_name, last_name, email')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (adminError) {
-        console.error('[addNote] Error finding admin user:', adminError);
-        throw new Error(`Database error: ${adminError.message}`);
-      }
-      
-      if (!adminUser) {
-        console.error('[addNote] Admin user not found for userId:', userId);
-        throw new Error('Admin user not found');
-      }
-      
-      console.log('[addNote] Found admin user:', adminUser.id, adminUser.email);
-      return { session, adminUser };
-    };
-    
-    try {
-      const { adminUser } = await Promise.race([addNoteOperation(), timeoutPromise]) as { session: any; adminUser: any };
-
       if (isAbandonedCart) {
         // For abandoned carts, append to contact_notes field
         const existingNotes = notes.length > 0 ? notes[0].note_text : '';
