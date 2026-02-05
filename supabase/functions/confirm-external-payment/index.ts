@@ -284,37 +284,49 @@ serve(async (req) => {
     let w2kSent = false;
     if (sendToW2k) {
       try {
-        const { error: w2kError } = await supabase.functions.invoke('send-to-warranties-2000', {
-          body: {
-            customerName,
-            customerFirstName,
-            customerLastName,
-            customerEmail,
-            customerPhone,
-            vehicleReg: vehicleReg?.toUpperCase(),
-            vehicleMake,
-            vehicleModel,
-            vehicleYear,
-            vehicleFuelType,
-            vehicleTransmission,
-            mileage,
-            claimLimit: effectiveClaimLimit,
-            labourRate,
-            excessAmount,
-            policyNumber,
-            warrantyReference,
-            startDate: startDate.toISOString(),
-            endDate: endDate.toISOString(),
-            address: !skipAddressDetails ? address : null,
-          }
-        });
+        // Pre-check to prevent duplicate W2000 submissions (defensive check)
+        const { data: freshPolicy } = await supabase
+          .from('customer_policies')
+          .select('warranties_2000_status')
+          .eq('id', policyData.id)
+          .single();
         
-        if (!w2kError) {
-          w2kSent = true;
-          await supabase
-            .from('customer_policies')
-            .update({ warranties_2000_status: 'sent' })
-            .eq('id', policyData.id);
+        if (freshPolicy?.warranties_2000_status === 'sent') {
+          logStep("DUPLICATE PREVENTED: Policy already sent to W2000", { policyId: policyData.id });
+          w2kSent = true; // Already sent, treat as success
+        } else {
+          // Pass policyId to enable duplicate prevention in send-to-warranties-2000
+          const { error: w2kError } = await supabase.functions.invoke('send-to-warranties-2000', {
+            body: {
+              policyId: policyData.id,
+              customerId,
+              customerName,
+              customerFirstName,
+              customerLastName,
+              customerEmail,
+              customerPhone,
+              vehicleReg: vehicleReg?.toUpperCase(),
+              vehicleMake,
+              vehicleModel,
+              vehicleYear,
+              vehicleFuelType,
+              vehicleTransmission,
+              mileage,
+              claimLimit: effectiveClaimLimit,
+              labourRate,
+              excessAmount,
+              policyNumber,
+              warrantyReference,
+              startDate: startDate.toISOString(),
+              endDate: endDate.toISOString(),
+              address: !skipAddressDetails ? address : null,
+            }
+          });
+          
+          if (!w2kError) {
+            w2kSent = true;
+            // Note: send-to-warranties-2000 now updates status internally when policyId is passed
+          }
         }
       } catch (w2kErr) {
         logStep("Warning: W2K submission failed", w2kErr);
