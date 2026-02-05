@@ -310,6 +310,7 @@ export const CustomersTab = () => {
   const [filterByStatus, setFilterByStatus] = useState('all');
   const [filterByTag, setFilterByTag] = useState('all');
   const [filterBySource, setFilterBySource] = useState('all_view'); // Default to All View
+  const [filterByWarrantyPeriod, setFilterByWarrantyPeriod] = useState('all');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [availableTags, setAvailableTags] = useState<any[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -387,7 +388,7 @@ export const CustomersTab = () => {
 
   useEffect(() => {
     applyFiltersAndSort();
-  }, [debouncedSearchTerm, customers, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, dateRange]);
+  }, [debouncedSearchTerm, customers, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, dateRange]);
 
   const fetchAvailableTags = async () => {
     try {
@@ -528,6 +529,15 @@ export const CustomersTab = () => {
                  customer.is_manual_entry;
         }
         return true;
+      });
+    }
+
+    // Apply warranty period filter
+    if (filterByWarrantyPeriod !== 'all') {
+      const targetMonths = parseInt(filterByWarrantyPeriod, 10);
+      filtered = filtered.filter(customer => {
+        const warrantyMonths = getWarrantyDurationInMonths(customer.payment_type || '');
+        return warrantyMonths === targetMonths;
       });
     }
 
@@ -2368,6 +2378,24 @@ export const CustomersTab = () => {
                 dateRange={dateRange}
                 onDateRangeChange={setDateRange}
               />
+
+              {/* Filter by Warranty Period */}
+              <div className="space-y-1">
+                <Label htmlFor="warrantyPeriodFilter" className="text-sm font-medium">Warranty Period</Label>
+                <Select value={filterByWarrantyPeriod} onValueChange={setFilterByWarrantyPeriod}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Periods</SelectItem>
+                    <SelectItem value="12">1 Year (12 months)</SelectItem>
+                    <SelectItem value="24">2 Years (24 months)</SelectItem>
+                    <SelectItem value="36">3 Years (36 months)</SelectItem>
+                    <SelectItem value="48">4 Years (48 months)</SelectItem>
+                    <SelectItem value="60">5 Years (60 months)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
               {/* Filter by Source */}
               <div className="space-y-1">
