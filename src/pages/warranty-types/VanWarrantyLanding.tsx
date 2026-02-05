@@ -486,8 +486,35 @@ const VanWarrantyLanding: React.FC = () => {
       "@type": "Country",
       "name": "United Kingdom"
     },
-    "description": "Extended warranty coverage for all commercial vans including Ford Transit, Mercedes Sprinter, VW Transporter, and more. Covers engine, transmission, electrical systems, turbocharger, and more. Nationwide UK coverage with any VAT-registered garage. 24/7 roadside assistance included.",
-    "serviceType": "Vehicle Extended Warranty"
+    "description": "Extended warranty coverage for all commercial vans including Ford Transit, Ford Transit Custom, Mercedes Sprinter, VW Transporter, VW Crafter, Renault Master, Renault Trafic, Vauxhall Movano, Vauxhall Vivaro, Peugeot Boxer, Citroen Relay, Fiat Ducato, Nissan NV400, Toyota Proace, Iveco Daily, and MAN TGE. Covers engine, transmission, electrical systems, turbocharger, diesel systems and more. Nationwide UK coverage with any VAT-registered garage. 24/7 roadside assistance included.",
+    "serviceType": "Vehicle Extended Warranty",
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Van Warranty Plans",
+      "itemListElement": [
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "1 Year Van Warranty"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "2 Year Van Warranty"
+          }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "3 Year Van Warranty"
+          }
+        }
+      ]
+    }
   };
 
   const faqSchema = {
@@ -567,8 +594,25 @@ const VanWarrantyLanding: React.FC = () => {
       { "@type": "Brand", "name": "Ford" },
       { "@type": "Brand", "name": "Mercedes-Benz" },
       { "@type": "Brand", "name": "Volkswagen" },
+      { "@type": "Brand", "name": "Renault" },
+      { "@type": "Brand", "name": "Citroën" },
+      { "@type": "Brand", "name": "Peugeot" },
+      { "@type": "Brand", "name": "Vauxhall" },
+      { "@type": "Brand", "name": "Fiat" },
+      { "@type": "Brand", "name": "Nissan" },
+      { "@type": "Brand", "name": "Toyota" },
+      { "@type": "Brand", "name": "Iveco" },
+      { "@type": "Brand", "name": "MAN" },
       { "@type": "Thing", "name": "Commercial Van Warranty" }
-    ]
+    ],
+    "speakable": {
+      "@type": "SpeakableSpecification",
+      "cssSelector": ["h1", "h2", ".hero-description"]
+    },
+    "mainContentOfPage": {
+      "@type": "WebPageElement",
+      "cssSelector": "main"
+    }
   };
 
   const howToSchema = {
@@ -603,12 +647,12 @@ const VanWarrantyLanding: React.FC = () => {
     <>
       <Helmet>
         <title>Van Extended Warranty UK | Commercial Van Cover | Buy A Warranty</title>
-        <meta name="description" content="Protect your commercial van with comprehensive extended warranty cover. Ford Transit, Mercedes Sprinter, VW Transporter & more. Engine, gearbox, electrics covered. Nationwide UK coverage, any garage. Prices from £32/month. Get your instant quote in 60 seconds." />
-        <meta name="keywords" content="van extended warranty, commercial van warranty, van warranty UK, Ford Transit warranty, Mercedes Sprinter warranty, VW Transporter warranty, used van warranty, second hand van warranty, van breakdown cover" />
+        <meta name="description" content="Protect your commercial van with comprehensive extended warranty cover. Ford Transit, Mercedes Sprinter, VW Transporter, Renault Master, Vauxhall Vivaro & more. Engine, gearbox, electrics covered. Nationwide UK coverage, any garage. Prices from £32/month. Get your instant quote in 60 seconds." />
+        <meta name="keywords" content="van extended warranty, commercial van warranty, van warranty UK, Ford Transit warranty, Ford Transit Custom warranty, Mercedes Sprinter warranty, VW Transporter warranty, VW Crafter warranty, Renault Master warranty, Renault Trafic warranty, Vauxhall Movano warranty, Vauxhall Vivaro warranty, Peugeot Boxer warranty, Citroen Relay warranty, Fiat Ducato warranty, Nissan NV400 warranty, Toyota Proace warranty, Iveco Daily warranty, MAN TGE warranty, used van warranty, second hand van warranty, van breakdown cover, commercial vehicle warranty, panel van warranty, transit van warranty, work van warranty, delivery van warranty UK" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/vans/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-        <meta name="googlebot" content="index, follow" />
-        <meta name="bingbot" content="index, follow" />
+        <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large" />
         
         {/* Geographic targeting */}
         <meta name="geo.region" content="GB" />
@@ -619,23 +663,35 @@ const VanWarrantyLanding: React.FC = () => {
         
         {/* Open Graph */}
         <meta property="og:title" content="Van Extended Warranty UK | Commercial Van Cover from £32/month" />
-        <meta property="og:description" content="Comprehensive van warranty coverage. Engine, gearbox, electrics & more. All major makes covered. Nationwide UK coverage with any garage. Get your instant quote now." />
+        <meta property="og:description" content="Comprehensive van warranty coverage. Engine, gearbox, electrics & more. Ford Transit, Mercedes Sprinter, VW Transporter, Renault Master & all major makes covered. Nationwide UK coverage with any garage. Get your instant quote now." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/vans/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="Van Extended Warranty UK - Buy A Warranty" />
+        <meta property="og:image:alt" content="Van Extended Warranty UK - Buy A Warranty Commercial Vehicle Cover" />
         <meta property="og:site_name" content="Buy A Warranty" />
         <meta property="og:locale" content="en_GB" />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Van Extended Warranty UK | From £32/month" />
-        <meta name="twitter:description" content="Protect your commercial van with comprehensive extended warranty. All major makes covered. Nationwide UK coverage. Get instant quote." />
+        <meta name="twitter:description" content="Protect your commercial van with comprehensive extended warranty. Ford Transit, Mercedes Sprinter, VW Transporter & all major makes covered. Nationwide UK coverage. Get instant quote." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
+        <meta name="twitter:image:alt" content="Van Extended Warranty UK - Commercial Vehicle Cover" />
         
-        {/* Structured Data */}
+        {/* AI Search Engine Optimization */}
+        <meta name="ai-content-declaration" content="This page provides information about commercial van extended warranty services in the UK. Human-authored and fact-checked content for Ford Transit, Mercedes Sprinter, VW Transporter and all major van makes." />
+        <meta name="author" content="Buy A Warranty" />
+        <meta name="publisher" content="BUY A WARRANTY LIMITED" />
+        <meta name="coverage" content="United Kingdom" />
+        <meta name="distribution" content="global" />
+        <meta name="rating" content="general" />
+        <meta name="revisit-after" content="7 days" />
+        <meta name="target" content="all" />
+        <meta name="audience" content="Commercial van owners, fleet managers, couriers, tradespeople" />
+        
+        {/* Structured Data - 7 JSON-LD schemas */}
         <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(serviceSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
