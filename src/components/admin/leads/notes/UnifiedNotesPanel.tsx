@@ -236,29 +236,23 @@ import { format } from 'date-fns';
  
        {/* Quick Notes Input - Simple single line */}
        <div className="pt-2 border-t">
-         <div className="mt-2 flex items-center gap-2">
+          <div className="mt-2 space-y-2">
            <Input
              value={quickNoteValue}
              onChange={(e) => setQuickNoteValue(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSaveNote()}
               placeholder="Add a note..."
-             className="flex-1 h-8 text-sm"
+              className="w-full h-8 text-sm"
               disabled={isSaving}
            />
             <Button 
               size="sm" 
               onClick={handleSaveNote} 
               disabled={!quickNoteValue.trim() || isSaving}
-              className="h-8"
+               className="h-8 w-full"
             >
-              {isSaving ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  <Save className="h-4 w-4 mr-1" />
-                  Save
-                </>
-              )}
+               <Save className="h-4 w-4 mr-1" />
+               Save
             </Button>
          </div>
        </div>
