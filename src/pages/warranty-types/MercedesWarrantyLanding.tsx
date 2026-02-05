@@ -1019,7 +1019,7 @@ const MercedesWarrantyLanding: React.FC = () => {
               </div>
               
               {/* Mercedes with Buy A Warranty branding */}
-              <div className="hidden lg:flex justify-center items-center">
+              <div className="hidden lg:flex justify-center items-start pt-16">
                 <OptimizedImage 
                   src={mercedesWhyChooseUs}
                   alt="Mercedes-Benz with Buy A Warranty logo - Extended warranty coverage UK"
