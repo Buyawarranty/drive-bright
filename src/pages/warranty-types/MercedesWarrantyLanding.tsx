@@ -22,7 +22,6 @@ const WarrantyBenefitsSection = lazy(() => import('@/components/homepage/Warrant
 
 // Assets
 import mercedesLogo from '@/assets/logos/mercedes.svg';
-import mercedesHeroImage from '@/assets/mercedes-hero.png';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
@@ -31,8 +30,12 @@ import pandaMascot from '@/assets/warranty-panda-mascot.png';
 import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import pandaMechanic from '@/assets/panda-mechanic.png';
 import pandaGarage from '@/assets/panda-garage-service.png';
-import mercedesWhyChooseUs from '@/assets/mercedes-hero.png';
 import mercedesHighMileage from '@/assets/mercedes-van.png';
+
+// Hero image: Panda mascot with two Mercedes cars
+const mercedesHeroImage = '/lovable-uploads/MERCEDES-BENZ-extended-warranty.webp';
+// Why Choose Us section: Mercedes with buyawarranty logo
+const mercedesWhyChooseUs = '/lovable-uploads/mercedes-used-car-warranty-expired.webp';
 
 // Mercedes-Benz Models covered (grouped by category)
 const mercedesModelCategories = {
@@ -1015,14 +1018,14 @@ const MercedesWarrantyLanding: React.FC = () => {
                 ))}
               </div>
               
-              {/* Mascot - Miles the Panda with Mercedes-Benz */}
-              <div className="hidden lg:flex justify-center items-end">
+              {/* Mercedes with Buy A Warranty branding */}
+              <div className="hidden lg:flex justify-center items-center">
                 <OptimizedImage 
                   src={mercedesWhyChooseUs}
-                  alt="Miles the Panda mechanic with Mercedes-Benz - Why Mercedes-Benz owners choose us for extended warranty"
-                  className="w-[400px] h-auto object-contain"
-                  width={400}
-                  height={300}
+                  alt="Mercedes-Benz with Buy A Warranty logo - Extended warranty coverage UK"
+                  className="w-full max-w-[380px] h-auto object-contain"
+                  width={600}
+                  height={400}
                 />
               </div>
             </div>
