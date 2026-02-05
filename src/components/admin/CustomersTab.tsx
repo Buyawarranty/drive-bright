@@ -465,9 +465,34 @@ export const CustomersTab = () => {
 
     // Apply status filter
     if (filterByStatus !== 'all') {
-      filtered = filtered.filter(customer =>
-        customer.status?.toLowerCase() === filterByStatus.toLowerCase()
-      );
+      if (filterByStatus === 'refunded') {
+        // Refunded customers are identified by the "Refunded" tag, not status
+        try {
+          const { data: refundedTagData } = await supabase
+            .from('customer_tags')
+            .select('id')
+            .ilike('name', 'refunded')
+            .single();
+          
+          if (refundedTagData) {
+            const { data: refundedCustomers } = await supabase
+              .from('customer_tag_assignments')
+              .select('customer_id')
+              .eq('tag_id', refundedTagData.id);
+            
+            if (refundedCustomers) {
+              const refundedCustomerIds = new Set(refundedCustomers.map(r => r.customer_id));
+              filtered = filtered.filter(customer => refundedCustomerIds.has(customer.id));
+            }
+          }
+        } catch (error) {
+          console.error('Error filtering by refunded tag:', error);
+        }
+      } else {
+        filtered = filtered.filter(customer =>
+          customer.status?.toLowerCase() === filterByStatus.toLowerCase()
+        );
+      }
     }
 
     // Apply tag filter
