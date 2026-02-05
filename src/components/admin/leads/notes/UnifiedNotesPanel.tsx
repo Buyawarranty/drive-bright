@@ -2,11 +2,11 @@
  import { Button } from '@/components/ui/button';
  import { Input } from '@/components/ui/input';
  import { 
-   MessageSquare, Clock, Pin, PinOff, Trash2, 
-   Edit2, Check, X, Loader2
+  MessageSquare, Pin, PinOff, Trash2, 
+  Edit2, Check, X, Loader2, Save
  } from 'lucide-react';
  import { cn } from '@/lib/utils';
- import { format, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
  import { useLeadQuickNotes, QuickNote } from '@/hooks/useLeadQuickNotes';
  import { toast } from 'sonner';
  
@@ -27,8 +27,7 @@
    
    // Quick note input state
    const [quickNoteValue, setQuickNoteValue] = useState('');
-   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
-   const [lastSavedTime, setLastSavedTime] = useState<Date | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
    
    // Edit state
    const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
@@ -37,61 +36,29 @@
    // Undo state
    const [deletedNote, setDeletedNote] = useState<QuickNote | null>(null);
    const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-   
-   // Save refs
-   const inputRef = useRef<HTMLInputElement>(null);
-   const isSavingRef = useRef(false);
-   const lastSavedNoteRef = useRef<string>('');
  
    // Reset state when lead changes
    useEffect(() => {
      setQuickNoteValue('');
-     setSaveStatus('idle');
-     setLastSavedTime(null);
+    setIsSaving(false);
      setEditingNoteId(null);
    }, [leadId]);
- 
-   // Handle Enter to save
-   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-     if (e.key === 'Enter') {
-       e.preventDefault();
-       handleSaveNote();
-     }
-     if (e.key === 'Escape') {
-       setQuickNoteValue('');
-       inputRef.current?.blur();
-     }
-   };
  
    const handleSaveNote = async () => {
      const noteText = quickNoteValue.trim();
      if (!noteText) return;
+    if (isSaving) return;
      
-     if (isSavingRef.current) return;
-     if (noteText === lastSavedNoteRef.current) {
-       setQuickNoteValue('');
-       return;
-     }
-     
-     isSavingRef.current = true;
-     setSaveStatus('saving');
+    setIsSaving(true);
      
      try {
        await addNote(noteText);
-       lastSavedNoteRef.current = noteText;
-       setSaveStatus('saved');
-       setLastSavedTime(new Date());
        setQuickNoteValue('');
-       
-       setTimeout(() => {
-         setSaveStatus('idle');
-         setTimeout(() => { lastSavedNoteRef.current = ''; }, 5000);
-       }, 2000);
+      toast.success('Note saved');
      } catch (error: any) {
-       setSaveStatus('error');
-      // Error toast is handled by the hook
+      toast.error('Failed to save note');
      } finally {
-       isSavingRef.current = false;
+      setIsSaving(false);
      }
    };
  
@@ -269,33 +236,31 @@
  
        {/* Quick Notes Input - Simple single line */}
        <div className="pt-2 border-t">
-         <div className="flex items-center gap-2">
-           <MessageSquare className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-           <span className="text-sm font-medium text-muted-foreground">Quick Notes</span>
-         </div>
          <div className="mt-2 flex items-center gap-2">
            <Input
-             ref={inputRef}
              value={quickNoteValue}
              onChange={(e) => setQuickNoteValue(e.target.value)}
-             onKeyDown={handleKeyDown}
-             placeholder="Add a quick note... (press Enter to save)"
+              onKeyDown={(e) => e.key === 'Enter' && handleSaveNote()}
+              placeholder="Add a note..."
              className="flex-1 h-8 text-sm"
-             disabled={saveStatus === 'saving'}
+              disabled={isSaving}
            />
-           {saveStatus === 'saving' && (
-             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-           )}
-           {saveStatus === 'saved' && (
-             <Check className="h-4 w-4 text-primary" />
-           )}
+            <Button 
+              size="sm" 
+              onClick={handleSaveNote} 
+              disabled={!quickNoteValue.trim() || isSaving}
+              className="h-8"
+            >
+              {isSaving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-1" />
+                  Save
+                </>
+              )}
+            </Button>
          </div>
-         {lastSavedTime && saveStatus === 'saved' && (
-           <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-             <Clock className="h-2.5 w-2.5" />
-             Last updated {format(lastSavedTime, 'd MMM yyyy, HH:mm')}
-           </p>
-         )}
        </div>
      </div>
    );
