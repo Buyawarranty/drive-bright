@@ -1,61 +1,37 @@
 
-# uChat WhatsApp Integration - IMPLEMENTED ✅
 
-## Status: Complete
+## Fix: Notes Not Saving in Sales Admin Dashboard
 
-The uChat WhatsApp welcome message integration has been implemented.
+### Root Cause Analysis
 
-## What Was Done
+After investigating the database, RLS policies, and code:
+- The database table `lead_quick_notes` and its RLS policies are correctly configured
+- Notes ARE being saved for some users (140 notes exist, latest from minutes ago)
+- The issue is **intermittent**, likely caused by **session expiration** during long dashboard sessions
 
-### 1. Secret Added ✅
-- `UCHAT_WEBHOOK_URL` secret configured with the provided webhook URL
+The main problems identified:
 
-### 2. Database Table Created ✅
-- `whatsapp_message_log` table created with:
-  - Deduplication support via `normalized_phone`
-  - Status tracking (`pending`, `sent`, `failed`)
-  - Links to `sales_leads` and `abandoned_carts`
-  - RLS enabled with admin-only access
+1. **Session expiry during long tab sessions** - When a sales agent's tab is inactive (common during phone calls), the auth session expires. The current recovery logic tries once and gives up.
+2. **No clear error feedback** - When the session refresh fails, the error toast may be missed or unclear.
+3. **The `isSaving` state can get stuck** - If an unexpected error occurs, the Save button may remain disabled permanently until the lead is changed.
 
-### 3. Edge Function Created ✅
-- `send-uchat-whatsapp` function:
-  - Normalizes UK phone numbers to +44 format
-  - Checks for duplicate welcome messages (7-day window)
-  - POSTs to uChat webhook with lead data
-  - Logs all attempts to `whatsapp_message_log`
+### Plan
 
-### 4. Integration Added ✅
-- `track-abandoned-cart` now triggers WhatsApp welcome message:
-  - Only for NEW cart entries (not updates)
-  - Only when phone number is provided
-  - Runs asynchronously (fire-and-forget) to not block cart tracking
+**File: `src/hooks/useLeadQuickNotes.tsx`**
 
-## Your Next Steps (uChat Setup)
+1. Add **retry logic** for session recovery - attempt `refreshSession()` up to 2 times with a small delay before giving up
+2. Add a **fallback** that tries `getUser()` if `getSession()` returns null (sometimes the session is still valid but not cached)
+3. Improve error messages to be more specific (e.g., "Session expired - please log in again" vs "Failed to save note")
 
-Configure uChat to handle the incoming webhook data:
+**File: `src/components/admin/leads/notes/UnifiedNotesPanel.tsx`**
 
-1. **In uChat Flow Builder**: Create a flow triggered by the inbound webhook
-2. **Map fields**: `{{phone}}`, `{{firstName}}`, `{{vehicleMake}}`, `{{vehicleModel}}`
-3. **Send WhatsApp template** with the welcome message using dynamic variables
+4. Add a **safety reset** for the `isSaving` state - if it's stuck for more than 10 seconds, auto-reset it
+5. Add `e.preventDefault()` to the Enter key handler to prevent potential form submission conflicts
+6. Add **optimistic UI update** - immediately show the note in the list while saving, and remove it if the save fails. This gives instant feedback to the user.
 
-### Welcome Message Template:
-```
-Hey {{firstName}},
+### Technical Details
 
-Welcome to Buy A Warranty 🚗
-
-Great news! You're just minutes away from securing reliable vehicle cover...
-
-Kind regards,
-James Reed
-```
-
-## Webhook Payload Format
-```json
-{
-  "phone": "+447123456789",
-  "firstName": "John",
-  "vehicleMake": "BMW",
-  "vehicleModel": "3 Series"
-}
-```
+- The session recovery will use `supabase.auth.getUser()` as a secondary check (server-side validation) before declaring the session expired
+- The optimistic note will have a temporary ID (prefixed with `temp_`) and a subtle loading indicator
+- If the save fails, the optimistic note is removed and the error toast is shown
+- A `useRef` timer will track the `isSaving` duration and auto-reset after 10 seconds as a safety net
