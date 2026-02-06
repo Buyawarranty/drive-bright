@@ -145,7 +145,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
       // Track abandoned cart
       await supabase.functions.invoke('track-abandoned-cart', {
         body: {
-          full_name: email.trim(),
+          full_name: firstName.trim() || email.trim(),
           email: email.trim(),
           phone: phone || '',
           vehicle_reg: vehicleData?.regNumber,

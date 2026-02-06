@@ -162,14 +162,35 @@ const handler = async (req: Request): Promise<Response> => {
         try {
           console.log(`📱 Triggering WhatsApp welcome message for: ${cartData.phone}`);
           
-          // Call send-uchat-whatsapp function asynchronously (don't await to avoid blocking)
+          // Resolve vehicle make/model - fall back to sales_leads if empty
+          let resolvedMake = cartData.vehicle_make || '';
+          let resolvedModel = cartData.vehicle_model || '';
+          
+          if (!resolvedMake || !resolvedModel) {
+            console.log('🔍 Vehicle make/model empty, looking up from sales_leads...');
+            const { data: leadData } = await supabase
+              .from('sales_leads')
+              .select('vehicle_make, vehicle_model')
+              .eq('email', cartData.email.toLowerCase())
+              .not('vehicle_make', 'is', null)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            
+            if (leadData) {
+              resolvedMake = resolvedMake || leadData.vehicle_make || '';
+              resolvedModel = resolvedModel || leadData.vehicle_model || '';
+              console.log(`✅ Found vehicle from sales_leads: ${resolvedMake} ${resolvedModel}`);
+            }
+          }
+          
           const whatsappPayload = {
             phone: cartData.phone,
             email: cartData.email,
             firstName: cartData.full_name?.split(' ')[0] || 'there',
-            vehicleMake: cartData.vehicle_make,
-            vehicleModel: cartData.vehicle_model,
-            abandonedCartId: null // We don't have the ID here since we used insert without returning
+            vehicleMake: resolvedMake,
+            vehicleModel: resolvedModel,
+            abandonedCartId: null
           };
 
           // Fire and forget - don't block the cart tracking response
