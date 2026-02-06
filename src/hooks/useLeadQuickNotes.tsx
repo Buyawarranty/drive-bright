@@ -25,6 +25,21 @@ export const useLeadQuickNotes = (leadId: string) => {
   const [notes, setNotes] = useState<QuickNote[]>([]);
   const [loading, setLoading] = useState(true);
   const hasFetchedRef = useRef(false);
+  const notesRef = useRef<QuickNote[]>([]);
+  
+  // Keep ref in sync - supports both direct value and updater function
+  const updateNotes = useCallback((newNotesOrUpdater: QuickNote[] | ((prev: QuickNote[]) => QuickNote[])) => {
+    if (typeof newNotesOrUpdater === 'function') {
+      setNotes(prev => {
+        const result = newNotesOrUpdater(prev);
+        notesRef.current = result;
+        return result;
+      });
+    } else {
+      notesRef.current = newNotesOrUpdater;
+      setNotes(newNotesOrUpdater);
+    }
+  }, []);
 
   const isAbandonedCart = leadId?.startsWith('cart_');
   const actualId = isAbandonedCart ? leadId.replace('cart_', '') : leadId;
@@ -33,8 +48,8 @@ export const useLeadQuickNotes = (leadId: string) => {
   useEffect(() => {
     hasFetchedRef.current = false;
     setLoading(true);
-    setNotes([]);
-  }, [leadId]);
+    updateNotes([]);
+  }, [leadId, updateNotes]);
 
   const ensureSession = async (): Promise<boolean> => {
     let { data: { session } } = await supabase.auth.getSession();
@@ -56,7 +71,7 @@ export const useLeadQuickNotes = (leadId: string) => {
   const fetchNotes = useCallback(async (isRefetch = false) => {
     if (!leadId) {
       setLoading(false);
-      setNotes([]);
+      updateNotes([]);
       return;
     }
     
@@ -73,8 +88,16 @@ export const useLeadQuickNotes = (leadId: string) => {
     }, 5000);
     
     try {
-      await ensureSession();
-      
+      const hasSession = await ensureSession();
+      if (!hasSession) {
+        console.warn('[fetchNotes] No session available, keeping existing notes');
+        // Don't clear notes - keep whatever we have
+        if (!hasFetchedRef.current) {
+          // Only on initial load with no session, stop loading
+          setLoading(false);
+        }
+        return;
+      }
       if (isAbandonedCart) {
         const { data: cartData, error: cartError } = await supabase
           .from('abandoned_carts')
@@ -95,9 +118,9 @@ export const useLeadQuickNotes = (leadId: string) => {
             updated_at: cartData.updated_at || new Date().toISOString(),
             author: null
           };
-          setNotes([syntheticNote]);
+          updateNotes([syntheticNote]);
         } else {
-          setNotes([]);
+          updateNotes([]);
         }
       } else {
         const [quickNotesResult, leadResult] = await Promise.all([
@@ -161,22 +184,21 @@ export const useLeadQuickNotes = (leadId: string) => {
           }
         }
 
-        setNotes(allNotes);
+        updateNotes(allNotes);
       }
       
       hasFetchedRef.current = true;
     } catch (error) {
       console.error('[fetchNotes] Error:', error);
       // CRITICAL: Do NOT clear notes on error if we already had notes loaded
-      // Only set empty on initial load failure
-      if (!hasFetchedRef.current) {
-        setNotes([]);
+      if (!hasFetchedRef.current && notesRef.current.length === 0) {
+        updateNotes([]);
       }
     } finally {
       clearTimeout(timeoutId);
       setLoading(false);
     }
-  }, [leadId, isAbandonedCart, actualId]);
+  }, [leadId, isAbandonedCart, actualId, updateNotes]);
 
   useEffect(() => {
     fetchNotes(false); // initial load
@@ -270,7 +292,7 @@ export const useLeadQuickNotes = (leadId: string) => {
           updated_at: new Date().toISOString(),
           author: null
         };
-        setNotes([syntheticNote]);
+        updateNotes([syntheticNote]);
         
         // Background refetch
         fetchNotes(true);
@@ -298,8 +320,7 @@ export const useLeadQuickNotes = (leadId: string) => {
             email: adminUser.email
           }
         };
-        setNotes(prev => {
-          // Insert at the top (after any pinned notes)
+        updateNotes(prev => {
           const pinned = prev.filter(n => n.is_pinned);
           const unpinned = prev.filter(n => !n.is_pinned);
           return [...pinned, newNote, ...unpinned];
@@ -332,7 +353,7 @@ export const useLeadQuickNotes = (leadId: string) => {
       }
       
       // Update local state immediately
-      setNotes(prev => prev.map(n => 
+      updateNotes(prev => prev.map(n => 
         n.id === noteId ? { ...n, note_text: noteText.trim(), updated_at: new Date().toISOString() } : n
       ));
       
@@ -365,7 +386,7 @@ export const useLeadQuickNotes = (leadId: string) => {
       if (error) throw error;
       
       // Update local state
-      setNotes(prev => prev.map(n => ({
+      updateNotes(prev => prev.map(n => ({
         ...n,
         is_pinned: n.id === noteId ? !isPinned : (isPinned ? n.is_pinned : false)
       })));
@@ -385,7 +406,7 @@ export const useLeadQuickNotes = (leadId: string) => {
           .update({ contact_notes: null, updated_at: new Date().toISOString() })
           .eq('id', actualId);
         if (error) throw error;
-        setNotes([]);
+        updateNotes([]);
         toast.success('Note cleared');
       } else {
         const { error } = await supabase
@@ -395,7 +416,7 @@ export const useLeadQuickNotes = (leadId: string) => {
         if (error) throw error;
         
         // Remove from local state immediately
-        setNotes(prev => prev.filter(n => n.id !== noteId));
+        updateNotes(prev => prev.filter(n => n.id !== noteId));
         
         fetchNotes(true);
         toast.success('Note deleted');
