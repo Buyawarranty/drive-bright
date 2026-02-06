@@ -160,49 +160,69 @@ export const useLeadQuickNotes = (leadId: string) => {
     fetchNotes();
   }, [fetchNotes]);
 
+  const getAuthenticatedAdmin = async () => {
+    const now = Date.now();
+    
+    // Use cached admin user if available and not expired (5 min cache)
+    if (cachedAdminUser && now < cacheExpiry) {
+      return cachedAdminUser;
+    }
+
+    // Try getSession first (fastest, local cache)
+    let { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      // Fallback 1: Try getUser() which validates server-side
+      console.log('[getAuthenticatedAdmin] No session, trying getUser fallback...');
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        // Session exists server-side, refresh it locally
+        const { data: refreshData } = await supabase.auth.refreshSession();
+        session = refreshData.session;
+      }
+    }
+
+    if (!session) {
+      // Fallback 2: Retry refreshSession with delay (up to 2 attempts)
+      for (let attempt = 0; attempt < 2; attempt++) {
+        console.log(`[getAuthenticatedAdmin] Retry attempt ${attempt + 1}...`);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const { data: refreshData } = await supabase.auth.refreshSession();
+        if (refreshData.session) {
+          session = refreshData.session;
+          break;
+        }
+      }
+    }
+
+    if (!session?.user?.id) {
+      toast.error('Session expired — please log in again.');
+      throw new Error('Session expired');
+    }
+
+    const { data: adminData, error: adminError } = await supabase
+      .from('admin_users')
+      .select('id, first_name, last_name, email')
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+
+    if (adminError || !adminData) {
+      console.error('[getAuthenticatedAdmin] Admin user error:', adminError);
+      throw new Error('Admin user not found');
+    }
+
+    // Cache for 5 minutes
+    cachedAdminUser = adminData;
+    cacheExpiry = now + 5 * 60 * 1000;
+    return adminData;
+  };
+
   const addNote = async (noteText: string) => {
     console.log('[addNote] Starting for leadId:', leadId, 'isAbandonedCart:', isAbandonedCart);
     
     try {
-      // Use cached admin user if available and not expired (5 min cache)
-      const now = Date.now();
-      let adminUser = cachedAdminUser;
-      
-      if (!adminUser || now > cacheExpiry) {
-        // Get session without blocking - use getSession which is faster
-        let { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          // Try quick refresh
-          const { data: refreshData } = await supabase.auth.refreshSession();
-          if (!refreshData.session) {
-            toast.error('Session expired. Please refresh the page.');
-            throw new Error('Session expired');
-          }
-          session = refreshData.session;
-        }
-        
-        const userId = session?.user?.id;
-        if (!userId) {
-          throw new Error('No user session');
-        }
-        
-        const { data: adminData, error: adminError } = await supabase
-          .from('admin_users')
-          .select('id, first_name, last_name, email')
-          .eq('user_id', userId)
-          .maybeSingle();
-        
-        if (adminError || !adminData) {
-          console.error('[addNote] Admin user error:', adminError);
-          throw new Error('Admin user not found');
-        }
-        
-        // Cache for 5 minutes
-        cachedAdminUser = adminData;
-        cacheExpiry = now + 5 * 60 * 1000;
-        adminUser = adminData;
-      }
+      const adminUser = await getAuthenticatedAdmin();
       
       if (isAbandonedCart) {
         // For abandoned carts, append to contact_notes field
