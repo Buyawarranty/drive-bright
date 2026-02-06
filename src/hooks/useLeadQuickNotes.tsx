@@ -29,6 +29,25 @@ export const useLeadQuickNotes = (leadId: string) => {
   const isAbandonedCart = leadId?.startsWith('cart_');
   const actualId = isAbandonedCart ? leadId.replace('cart_', '') : leadId;
 
+  const ensureSession = async (): Promise<boolean> => {
+    let { data: { session } } = await supabase.auth.getSession();
+    if (session) return true;
+    
+    // Try refreshing
+    const { data: refreshData } = await supabase.auth.refreshSession();
+    if (refreshData.session) return true;
+    
+    // Try getUser fallback
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: retryRefresh } = await supabase.auth.refreshSession();
+      if (retryRefresh.session) return true;
+    }
+    
+    console.warn('[fetchNotes] No valid session - notes will appear empty');
+    return false;
+  };
+
   const fetchNotes = useCallback(async () => {
     if (!leadId) {
       setLoading(false);
@@ -39,12 +58,15 @@ export const useLeadQuickNotes = (leadId: string) => {
     // Create a timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       console.warn('[fetchNotes] Fetch taking longer than 5 seconds, forcing completion');
-      setNotes(prev => prev); // Keep existing notes on timeout
+      setNotes(prev => prev);
       setLoading(false);
     }, 5000);
     
     try {
       setLoading(true);
+      
+      // Ensure we have a valid session before querying (RLS returns empty without one)
+      await ensureSession();
       
       if (isAbandonedCart) {
         // For abandoned carts, fetch from abandoned_carts.contact_notes
