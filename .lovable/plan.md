@@ -1,68 +1,80 @@
 
-# Fix uChat Webhook Payload to Match Your Inbound Webhook Setup
 
-## What's Happening Now
+# Fix: Name Showing Email + Blank Vehicle Make/Model in uChat
 
-Your uChat Inbound Webhook ("Webhook BAW") expects this JSON format for user matching:
+## Problem 1: firstName Contains Email Address
 
-```text
-{
-  "user_ns": "",
-  "phone": "",
-  "email": ""
-}
-```
-
-But our edge function currently sends:
+When the Step 2 form is submitted in `QuoteDeliveryStep.tsx`, the abandoned cart is tracked with:
 
 ```text
-{
-  "phone": "+447...",
-  "firstName": "John",
-  "vehicleMake": "BMW",
-  "vehicleModel": "3 Series"
-}
+full_name: email.trim()   // <-- Bug! Should use firstName
 ```
 
-The `phone` field matches, but `email` is missing -- uChat needs it as a fallback to identify the user. Also, `firstName`, `vehicleMake`, and `vehicleModel` should still be sent so you can use them as custom variables in your uChat flow.
+Then in `track-abandoned-cart`, this `full_name` is split to get `firstName`:
+
+```text
+firstName: cartData.full_name?.split(' ')[0]   // Returns the email!
+```
+
+**Fix:** Update `QuoteDeliveryStep.tsx` line 148 to use the actual `firstName` value instead of the email.
+
+## Problem 2: vehicleMake and vehicleModel Are Blank
+
+The console logs show that `vehicleData.make` and `vehicleData.model` are empty strings when Step 2 renders. This means the DVLA lookup either didn't find data or the values weren't populated for this registration.
+
+The `QuoteDeliveryStep` passes `vehicleData?.make` and `vehicleData?.model` to `track-abandoned-cart`, which then passes them to `send-uchat-whatsapp` -- but since they're empty from the start, they arrive empty in uChat.
+
+**Fix:** In the `track-abandoned-cart` edge function, when triggering the WhatsApp message, fall back to the values stored in the abandoned cart record (which may have been updated by a previous interaction) if the current values are empty. Also look up the vehicle data from `sales_leads` if available, since the DVLA data is stored there too.
 
 ## Changes
 
-### 1. Update `send-uchat-whatsapp` Edge Function
+### 1. Fix `full_name` in `QuoteDeliveryStep.tsx`
 
-**File:** `supabase/functions/send-uchat-whatsapp/index.ts`
+**File:** `src/components/QuoteDeliveryStep.tsx`
 
-- Add `email` to the `WhatsAppMessageRequest` interface
-- Update the uChat payload to include `phone`, `email`, plus custom fields (`firstName`, `vehicleMake`, `vehicleModel`) that your uChat flow can reference
-
-Updated payload will be:
+On line 148, change:
 ```text
-{
-  "phone": "+447123456789",
-  "email": "user@example.com",
-  "firstName": "John",
-  "vehicleMake": "BMW",
-  "vehicleModel": "3 Series"
-}
+full_name: email.trim(),
+```
+to:
+```text
+full_name: firstName.trim() || email.trim(),
 ```
 
-This gives uChat both `phone` and `email` for user matching (via `$.phone` and `$.email`), plus extra fields for personalization.
+Wait -- line 64 already does this correctly for the skip flow. Only line 148 (the submit flow) has the bug. Fix line 148 to use `firstName.trim()` like line 64 does.
 
-### 2. Update `track-abandoned-cart` to Pass Email
+### 2. Fix WhatsApp payload in `track-abandoned-cart`
 
 **File:** `supabase/functions/track-abandoned-cart/index.ts`
 
-- Add `email` to the WhatsApp payload sent from the abandoned cart trigger (it already has `cartData.email` available)
+Update line 167 to use `firstName` properly:
+```text
+firstName: cartData.full_name?.split(' ')[0] || 'there',
+```
+This is already correct IF `full_name` is fixed upstream. But as a safety net, also add the user's explicit first name if the cart data has it parsed separately.
 
-### 3. uChat Setup (Your Side)
+### 3. Handle empty vehicle make/model gracefully
 
-After deployment, in your uChat Inbound Webhook:
+**File:** `supabase/functions/track-abandoned-cart/index.ts`
 
-1. **Phone** field: already mapped to `$.phone` -- correct
-2. **Email** field: already mapped to `$.email` -- correct
-3. For custom variables (`firstName`, `vehicleMake`, `vehicleModel`), add custom field mappings in uChat or use them in your flow via `$.firstName`, `$.vehicleMake`, `$.vehicleModel`
-4. Click **"Listen to data payload"**, then test by submitting a form on your site to verify uChat receives the data
+When building the WhatsApp payload, if `vehicle_make` and `vehicle_model` are empty, try to look them up from the `sales_leads` table using the email address. This handles the case where the DVLA lookup didn't return data initially but may have been stored from a previous interaction.
+
+## Technical Details
+
+### File: `src/components/QuoteDeliveryStep.tsx`
+- Line 148: Change `full_name: email.trim()` to `full_name: firstName.trim() || email.trim()`
+
+### File: `supabase/functions/track-abandoned-cart/index.ts`
+- After inserting the abandoned cart record, before triggering the WhatsApp message:
+  - If `vehicle_make` or `vehicle_model` are empty, query `sales_leads` by email to get the stored vehicle data
+  - Pass the resolved values to the WhatsApp payload
+- Update the `firstName` derivation to prefer splitting `full_name` but fall back properly
+
+### File: `supabase/functions/send-uchat-whatsapp/index.ts`
+- No changes needed -- it already passes through whatever it receives
 
 ## Summary
 
-Two small edge function updates to include `email` in the webhook payload, matching what uChat expects for user identification.
+Two fixes:
+1. **QuoteDeliveryStep.tsx**: Use `firstName` (not email) as `full_name` when tracking abandoned cart on submit
+2. **track-abandoned-cart**: Look up vehicle make/model from `sales_leads` if the values coming in are empty, so uChat gets actual vehicle details
