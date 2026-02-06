@@ -74,32 +74,8 @@ const handler = async (req: Request): Promise<Response> => {
     const normalizedPhone = normalizePhoneNumber(data.phone);
     console.log(`📱 Processing WhatsApp message for: ${normalizedPhone}`);
 
-    // Check for duplicate welcome message in last 7 days
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const { data: existingMessage, error: checkError } = await supabase
-      .from('whatsapp_message_log')
-      .select('id, created_at')
-      .eq('normalized_phone', normalizedPhone)
-      .eq('message_type', 'welcome')
-      .eq('status', 'sent')
-      .gte('created_at', sevenDaysAgo)
-      .limit(1);
-
-    if (checkError) {
-      console.error('Error checking existing messages:', checkError);
-    }
-
-    if (existingMessage && existingMessage.length > 0) {
-      console.log(`⏭️ Skipping - Welcome message already sent to ${normalizedPhone} within 7 days`);
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          skipped: true, 
-          message: "Welcome message already sent within 7 days" 
-        }),
-        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
+    // Deduplication temporarily disabled for testing
+    console.log(`🔓 Deduplication disabled - proceeding with message to ${normalizedPhone}`);
 
     // Create pending log entry
     const { data: logEntry, error: insertError } = await supabase
