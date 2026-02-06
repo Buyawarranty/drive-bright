@@ -162,17 +162,20 @@ const handler = async (req: Request): Promise<Response> => {
         try {
           console.log(`📱 Triggering WhatsApp welcome message for: ${cartData.phone}`);
           
-          // Resolve vehicle make/model - fall back to sales_leads if empty
-          let resolvedMake = cartData.vehicle_make || '';
-          let resolvedModel = cartData.vehicle_model || '';
+          // Resolve vehicle make/model - fall back to sales_leads if empty or "Unknown"
+          const isValidVehicle = (val: string | undefined) => val && val.trim() !== '' && val.trim().toLowerCase() !== 'unknown';
+          let resolvedMake = isValidVehicle(cartData.vehicle_make) ? cartData.vehicle_make! : '';
+          let resolvedModel = isValidVehicle(cartData.vehicle_model) ? cartData.vehicle_model! : '';
           
           if (!resolvedMake || !resolvedModel) {
-            console.log('🔍 Vehicle make/model empty, looking up from sales_leads...');
+            console.log('🔍 Vehicle make/model empty/unknown, looking up from sales_leads...');
             const { data: leadData } = await supabase
               .from('sales_leads')
               .select('vehicle_make, vehicle_model')
               .eq('email', cartData.email.toLowerCase())
               .not('vehicle_make', 'is', null)
+              .neq('vehicle_make', '')
+              .neq('vehicle_make', 'Unknown')
               .order('created_at', { ascending: false })
               .limit(1)
               .maybeSingle();
