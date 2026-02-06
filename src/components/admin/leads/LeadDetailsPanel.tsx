@@ -324,12 +324,10 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
             </div>
           )}
 
-          {/* Notes Content - Collapsible - Now using UnifiedNotesPanel */}
-          {notesOpen && (
-            <div className="p-4">
-              <UnifiedNotesPanel leadId={lead.id} />
-            </div>
-          )}
+          {/* Notes Content - Always mounted to preserve state, hidden when collapsed */}
+          <div className={cn("p-4", !notesOpen && "hidden")}>
+            <UnifiedNotesPanel leadId={lead.id} />
+          </div>
         </CardContent>
       </Card>
 
