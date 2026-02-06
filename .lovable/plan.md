@@ -1,37 +1,68 @@
 
+# Fix uChat Webhook Payload to Match Your Inbound Webhook Setup
 
-## Fix: Notes Not Saving in Sales Admin Dashboard
+## What's Happening Now
 
-### Root Cause Analysis
+Your uChat Inbound Webhook ("Webhook BAW") expects this JSON format for user matching:
 
-After investigating the database, RLS policies, and code:
-- The database table `lead_quick_notes` and its RLS policies are correctly configured
-- Notes ARE being saved for some users (140 notes exist, latest from minutes ago)
-- The issue is **intermittent**, likely caused by **session expiration** during long dashboard sessions
+```text
+{
+  "user_ns": "",
+  "phone": "",
+  "email": ""
+}
+```
 
-The main problems identified:
+But our edge function currently sends:
 
-1. **Session expiry during long tab sessions** - When a sales agent's tab is inactive (common during phone calls), the auth session expires. The current recovery logic tries once and gives up.
-2. **No clear error feedback** - When the session refresh fails, the error toast may be missed or unclear.
-3. **The `isSaving` state can get stuck** - If an unexpected error occurs, the Save button may remain disabled permanently until the lead is changed.
+```text
+{
+  "phone": "+447...",
+  "firstName": "John",
+  "vehicleMake": "BMW",
+  "vehicleModel": "3 Series"
+}
+```
 
-### Plan
+The `phone` field matches, but `email` is missing -- uChat needs it as a fallback to identify the user. Also, `firstName`, `vehicleMake`, and `vehicleModel` should still be sent so you can use them as custom variables in your uChat flow.
 
-**File: `src/hooks/useLeadQuickNotes.tsx`**
+## Changes
 
-1. Add **retry logic** for session recovery - attempt `refreshSession()` up to 2 times with a small delay before giving up
-2. Add a **fallback** that tries `getUser()` if `getSession()` returns null (sometimes the session is still valid but not cached)
-3. Improve error messages to be more specific (e.g., "Session expired - please log in again" vs "Failed to save note")
+### 1. Update `send-uchat-whatsapp` Edge Function
 
-**File: `src/components/admin/leads/notes/UnifiedNotesPanel.tsx`**
+**File:** `supabase/functions/send-uchat-whatsapp/index.ts`
 
-4. Add a **safety reset** for the `isSaving` state - if it's stuck for more than 10 seconds, auto-reset it
-5. Add `e.preventDefault()` to the Enter key handler to prevent potential form submission conflicts
-6. Add **optimistic UI update** - immediately show the note in the list while saving, and remove it if the save fails. This gives instant feedback to the user.
+- Add `email` to the `WhatsAppMessageRequest` interface
+- Update the uChat payload to include `phone`, `email`, plus custom fields (`firstName`, `vehicleMake`, `vehicleModel`) that your uChat flow can reference
 
-### Technical Details
+Updated payload will be:
+```text
+{
+  "phone": "+447123456789",
+  "email": "user@example.com",
+  "firstName": "John",
+  "vehicleMake": "BMW",
+  "vehicleModel": "3 Series"
+}
+```
 
-- The session recovery will use `supabase.auth.getUser()` as a secondary check (server-side validation) before declaring the session expired
-- The optimistic note will have a temporary ID (prefixed with `temp_`) and a subtle loading indicator
-- If the save fails, the optimistic note is removed and the error toast is shown
-- A `useRef` timer will track the `isSaving` duration and auto-reset after 10 seconds as a safety net
+This gives uChat both `phone` and `email` for user matching (via `$.phone` and `$.email`), plus extra fields for personalization.
+
+### 2. Update `track-abandoned-cart` to Pass Email
+
+**File:** `supabase/functions/track-abandoned-cart/index.ts`
+
+- Add `email` to the WhatsApp payload sent from the abandoned cart trigger (it already has `cartData.email` available)
+
+### 3. uChat Setup (Your Side)
+
+After deployment, in your uChat Inbound Webhook:
+
+1. **Phone** field: already mapped to `$.phone` -- correct
+2. **Email** field: already mapped to `$.email` -- correct
+3. For custom variables (`firstName`, `vehicleMake`, `vehicleModel`), add custom field mappings in uChat or use them in your flow via `$.firstName`, `$.vehicleMake`, `$.vehicleModel`
+4. Click **"Listen to data payload"**, then test by submitting a form on your site to verify uChat receives the data
+
+## Summary
+
+Two small edge function updates to include `email` in the webhook payload, matching what uChat expects for user identification.
