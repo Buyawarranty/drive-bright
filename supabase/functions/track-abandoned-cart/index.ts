@@ -165,6 +165,7 @@ const handler = async (req: Request): Promise<Response> => {
           // Call send-uchat-whatsapp function asynchronously (don't await to avoid blocking)
           const whatsappPayload = {
             phone: cartData.phone,
+            email: cartData.email,
             firstName: cartData.full_name?.split(' ')[0] || 'there',
             vehicleMake: cartData.vehicle_make,
             vehicleModel: cartData.vehicle_model,

@@ -9,6 +9,7 @@ const corsHeaders = {
 
 interface WhatsAppMessageRequest {
   phone: string;
+  email?: string;
   firstName?: string;
   vehicleMake?: string;
   vehicleModel?: string;
@@ -121,6 +122,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Prepare payload for uChat webhook
     const uchatPayload = {
       phone: normalizedPhone,
+      email: data.email || '',
       firstName: data.firstName || 'there',
       vehicleMake: data.vehicleMake || '',
       vehicleModel: data.vehicleModel || ''
