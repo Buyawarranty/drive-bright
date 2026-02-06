@@ -187,6 +187,27 @@ const handler = async (req: Request): Promise<Response> => {
             }
           }
           
+          // Second fallback: check abandoned_carts by vehicle_reg for historical data
+          if ((!resolvedMake || !resolvedModel) && cartData.vehicle_reg) {
+            console.log('🔍 Still missing vehicle data, looking up by vehicle_reg in abandoned_carts...');
+            const { data: cartHistory } = await supabase
+              .from('abandoned_carts')
+              .select('vehicle_make, vehicle_model')
+              .eq('vehicle_reg', cartData.vehicle_reg)
+              .not('vehicle_make', 'is', null)
+              .neq('vehicle_make', '')
+              .neq('vehicle_make', 'Unknown')
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            
+            if (cartHistory) {
+              resolvedMake = resolvedMake || cartHistory.vehicle_make || '';
+              resolvedModel = resolvedModel || cartHistory.vehicle_model || '';
+              console.log(`✅ Found vehicle from abandoned_carts history: ${resolvedMake} ${resolvedModel}`);
+            }
+          }
+          
           const whatsappPayload = {
             phone: cartData.phone,
             email: cartData.email,
