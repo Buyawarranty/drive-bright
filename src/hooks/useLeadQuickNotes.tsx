@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -23,54 +23,59 @@ export interface QuickNote {
 
 export const useLeadQuickNotes = (leadId: string) => {
   const [notes, setNotes] = useState<QuickNote[]>([]);
-  const [loading, setLoading] = useState(true); // Start as true since we'll fetch on mount
+  const [loading, setLoading] = useState(true);
+  const hasFetchedRef = useRef(false);
 
-  // Check if this is an abandoned cart lead (ID starts with 'cart_')
   const isAbandonedCart = leadId?.startsWith('cart_');
   const actualId = isAbandonedCart ? leadId.replace('cart_', '') : leadId;
+
+  // Reset when lead changes
+  useEffect(() => {
+    hasFetchedRef.current = false;
+    setLoading(true);
+    setNotes([]);
+  }, [leadId]);
 
   const ensureSession = async (): Promise<boolean> => {
     let { data: { session } } = await supabase.auth.getSession();
     if (session) return true;
     
-    // Try refreshing
     const { data: refreshData } = await supabase.auth.refreshSession();
     if (refreshData.session) return true;
     
-    // Try getUser fallback
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       const { data: retryRefresh } = await supabase.auth.refreshSession();
       if (retryRefresh.session) return true;
     }
     
-    console.warn('[fetchNotes] No valid session - notes will appear empty');
+    console.warn('[fetchNotes] No valid session');
     return false;
   };
 
-  const fetchNotes = useCallback(async () => {
+  const fetchNotes = useCallback(async (isRefetch = false) => {
     if (!leadId) {
       setLoading(false);
       setNotes([]);
       return;
     }
     
-    // Create a timeout to prevent infinite loading
+    // CRITICAL: Only show loading spinner on initial load, NOT on refetch
+    // This prevents "No notes yet" flash when collapsing/expanding
+    if (!isRefetch) {
+      setLoading(true);
+    }
+    
     const timeoutId = setTimeout(() => {
-      console.warn('[fetchNotes] Fetch taking longer than 5 seconds, forcing completion');
-      setNotes(prev => prev);
+      console.warn('[fetchNotes] Fetch timeout 5s');
+      // DON'T clear notes on timeout - keep existing ones
       setLoading(false);
     }, 5000);
     
     try {
-      setLoading(true);
-      
-      // Ensure we have a valid session before querying (RLS returns empty without one)
       await ensureSession();
       
       if (isAbandonedCart) {
-        // For abandoned carts, fetch from abandoned_carts.contact_notes
-        // We'll parse it as a single note if it exists
         const { data: cartData, error: cartError } = await supabase
           .from('abandoned_carts')
           .select('contact_notes, updated_at')
@@ -80,7 +85,6 @@ export const useLeadQuickNotes = (leadId: string) => {
         if (cartError) throw cartError;
 
         if (cartData?.contact_notes) {
-          // Create a synthetic note from the contact_notes field
           const syntheticNote: QuickNote = {
             id: `cart_note_${actualId}`,
             lead_id: leadId,
@@ -96,7 +100,6 @@ export const useLeadQuickNotes = (leadId: string) => {
           setNotes([]);
         }
       } else {
-        // For sales leads, use the lead_quick_notes table AND legacy notes from sales_leads.notes
         const [quickNotesResult, leadResult] = await Promise.all([
           supabase
             .from('lead_quick_notes')
@@ -115,7 +118,7 @@ export const useLeadQuickNotes = (leadId: string) => {
 
         const quickNotes = quickNotesResult.data || [];
         
-        // Batch fetch all author info in ONE query instead of N queries
+        // Batch fetch author info
         const authorIds = [...new Set(quickNotes.filter((n: any) => n.created_by).map((n: any) => n.created_by))];
         let authorsMap: Record<string, { first_name: string | null; last_name: string | null; email: string }> = {};
         
@@ -133,32 +136,25 @@ export const useLeadQuickNotes = (leadId: string) => {
           }
         }
         
-        // Map authors to notes instantly
         const notesWithAuthors = quickNotes.map((note: any) => ({
           ...note,
           author: note.created_by ? authorsMap[note.created_by] || null : null
         }));
 
-        // Also include legacy notes from sales_leads.notes field if it exists
-        // This ensures older notes are still visible
         let allNotes = notesWithAuthors as QuickNote[];
         
         if (leadResult.data?.notes && leadResult.data.notes.trim()) {
-          // Create a synthetic note from the legacy notes field
           const legacyNote: QuickNote = {
             id: `legacy_${leadId}`,
             lead_id: leadId,
             note_text: leadResult.data.notes,
-            is_pinned: true, // Pin legacy notes so they're always visible at top
+            is_pinned: true,
             created_by: '',
             created_at: leadResult.data.updated_at || new Date().toISOString(),
             updated_at: leadResult.data.updated_at || new Date().toISOString(),
             author: { first_name: 'Previous', last_name: 'Notes', email: 'legacy@system' }
           };
           
-          // Add legacy note first (pinned) if there are no quick notes OR if legacy has content
-          // Check if we already have any notes - if not, always show legacy
-          // If we have notes, only show legacy if it has different content
           const hasQuickNotes = allNotes.length > 0;
           if (!hasQuickNotes || !allNotes.some(n => n.note_text === legacyNote.note_text)) {
             allNotes = [legacyNote, ...allNotes];
@@ -167,11 +163,15 @@ export const useLeadQuickNotes = (leadId: string) => {
 
         setNotes(allNotes);
       }
+      
+      hasFetchedRef.current = true;
     } catch (error) {
-      console.error('[fetchNotes] Error fetching quick notes:', error);
-      // On error, set empty notes to avoid stuck UI
-      setNotes([]);
-      clearTimeout(timeoutId);
+      console.error('[fetchNotes] Error:', error);
+      // CRITICAL: Do NOT clear notes on error if we already had notes loaded
+      // Only set empty on initial load failure
+      if (!hasFetchedRef.current) {
+        setNotes([]);
+      }
     } finally {
       clearTimeout(timeoutId);
       setLoading(false);
@@ -179,34 +179,29 @@ export const useLeadQuickNotes = (leadId: string) => {
   }, [leadId, isAbandonedCart, actualId]);
 
   useEffect(() => {
-    fetchNotes();
+    fetchNotes(false); // initial load
   }, [fetchNotes]);
 
   const getAuthenticatedAdmin = async () => {
     const now = Date.now();
     
-    // Use cached admin user if available and not expired (5 min cache)
     if (cachedAdminUser && now < cacheExpiry) {
       return cachedAdminUser;
     }
 
-    // Try getSession first (fastest, local cache)
     let { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
-      // Fallback 1: Try getUser() which validates server-side
       console.log('[getAuthenticatedAdmin] No session, trying getUser fallback...');
       const { data: { user } } = await supabase.auth.getUser();
       
       if (user) {
-        // Session exists server-side, refresh it locally
         const { data: refreshData } = await supabase.auth.refreshSession();
         session = refreshData.session;
       }
     }
 
     if (!session) {
-      // Fallback 2: Retry refreshSession with delay (up to 2 attempts)
       for (let attempt = 0; attempt < 2; attempt++) {
         console.log(`[getAuthenticatedAdmin] Retry attempt ${attempt + 1}...`);
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -234,27 +229,22 @@ export const useLeadQuickNotes = (leadId: string) => {
       throw new Error('Admin user not found');
     }
 
-    // Cache for 5 minutes
     cachedAdminUser = adminData;
     cacheExpiry = now + 5 * 60 * 1000;
     return adminData;
   };
 
   const addNote = async (noteText: string) => {
-    console.log('[addNote] Starting for leadId:', leadId, 'isAbandonedCart:', isAbandonedCart);
+    console.log('[addNote] Starting for leadId:', leadId);
     
     try {
       const adminUser = await getAuthenticatedAdmin();
       
       if (isAbandonedCart) {
-        // For abandoned carts, append to contact_notes field
         const existingNotes = notes.length > 0 ? notes[0].note_text : '';
         const timestamp = new Date().toLocaleString('en-GB', { 
-          day: '2-digit', 
-          month: 'short', 
-          year: 'numeric', 
-          hour: '2-digit', 
-          minute: '2-digit' 
+          day: '2-digit', month: 'short', year: 'numeric', 
+          hour: '2-digit', minute: '2-digit' 
         });
         const authorName = adminUser.first_name || adminUser.email.split('@')[0];
         const newNoteEntry = `[${timestamp} - ${authorName}] ${noteText.trim()}`;
@@ -264,23 +254,28 @@ export const useLeadQuickNotes = (leadId: string) => {
 
         const { error } = await supabase
           .from('abandoned_carts')
-          .update({ 
-            contact_notes: updatedNotes,
-            updated_at: new Date().toISOString()
-          })
+          .update({ contact_notes: updatedNotes, updated_at: new Date().toISOString() })
           .eq('id', actualId);
 
-        if (error) {
-          console.error('Error adding note to abandoned cart:', error);
-          throw error;
-        }
+        if (error) throw error;
 
-        await fetchNotes();
+        // Update local state immediately
+        const syntheticNote: QuickNote = {
+          id: `cart_note_${actualId}`,
+          lead_id: leadId,
+          note_text: updatedNotes,
+          is_pinned: true,
+          created_by: '',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          author: null
+        };
+        setNotes([syntheticNote]);
+        
+        // Background refetch
+        fetchNotes(true);
         return { id: `cart_note_${actualId}`, note_text: updatedNotes };
       } else {
-        // For sales leads, use the lead_quick_notes table
-        console.log('[addNote] Inserting note for lead_id:', leadId, 'created_by:', adminUser.id);
-        
         const { data, error } = await supabase
           .from('lead_quick_notes')
           .insert({
@@ -291,13 +286,27 @@ export const useLeadQuickNotes = (leadId: string) => {
           .select()
           .single();
 
-        if (error) {
-          console.error('[addNote] Error inserting quick note:', error);
-          throw error;
-        }
+        if (error) throw error;
 
-        console.log('[addNote] Successfully inserted note:', data?.id);
-        await fetchNotes();
+        // CRITICAL: Update local state immediately with the new note
+        // This ensures the note appears instantly without waiting for refetch
+        const newNote: QuickNote = {
+          ...data,
+          author: {
+            first_name: adminUser.first_name,
+            last_name: adminUser.last_name,
+            email: adminUser.email
+          }
+        };
+        setNotes(prev => {
+          // Insert at the top (after any pinned notes)
+          const pinned = prev.filter(n => n.is_pinned);
+          const unpinned = prev.filter(n => !n.is_pinned);
+          return [...pinned, newNote, ...unpinned];
+        });
+        
+        // Background refetch to sync with server
+        fetchNotes(true);
         return data;
       }
     } catch (error: any) {
@@ -309,25 +318,25 @@ export const useLeadQuickNotes = (leadId: string) => {
   const updateNote = async (noteId: string, noteText: string) => {
     try {
       if (isAbandonedCart) {
-        // For abandoned carts, replace the entire contact_notes
         const { error } = await supabase
           .from('abandoned_carts')
-          .update({ 
-            contact_notes: noteText.trim(),
-            updated_at: new Date().toISOString()
-          })
+          .update({ contact_notes: noteText.trim(), updated_at: new Date().toISOString() })
           .eq('id', actualId);
-
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('lead_quick_notes')
           .update({ note_text: noteText.trim() })
           .eq('id', noteId);
-
         if (error) throw error;
       }
-      await fetchNotes();
+      
+      // Update local state immediately
+      setNotes(prev => prev.map(n => 
+        n.id === noteId ? { ...n, note_text: noteText.trim(), updated_at: new Date().toISOString() } : n
+      ));
+      
+      fetchNotes(true);
     } catch (error) {
       console.error('Error updating quick note:', error);
       toast.error('Failed to update note');
@@ -335,14 +344,12 @@ export const useLeadQuickNotes = (leadId: string) => {
   };
 
   const togglePin = async (noteId: string, isPinned: boolean) => {
-    // Pinning not supported for abandoned carts (they only have one note field)
     if (isAbandonedCart) {
       toast.info('Pinning is not available for this lead type');
       return;
     }
 
     try {
-      // If pinning, unpin all others first
       if (!isPinned) {
         await supabase
           .from('lead_quick_notes')
@@ -356,7 +363,14 @@ export const useLeadQuickNotes = (leadId: string) => {
         .eq('id', noteId);
 
       if (error) throw error;
-      await fetchNotes();
+      
+      // Update local state
+      setNotes(prev => prev.map(n => ({
+        ...n,
+        is_pinned: n.id === noteId ? !isPinned : (isPinned ? n.is_pinned : false)
+      })));
+      
+      fetchNotes(true);
     } catch (error) {
       console.error('Error toggling pin:', error);
       toast.error('Failed to update note');
@@ -366,15 +380,10 @@ export const useLeadQuickNotes = (leadId: string) => {
   const deleteNote = async (noteId: string) => {
     try {
       if (isAbandonedCart) {
-        // For abandoned carts, clear the contact_notes field
         const { error } = await supabase
           .from('abandoned_carts')
-          .update({ 
-            contact_notes: null,
-            updated_at: new Date().toISOString()
-          })
+          .update({ contact_notes: null, updated_at: new Date().toISOString() })
           .eq('id', actualId);
-
         if (error) throw error;
         setNotes([]);
         toast.success('Note cleared');
@@ -383,9 +392,12 @@ export const useLeadQuickNotes = (leadId: string) => {
           .from('lead_quick_notes')
           .delete()
           .eq('id', noteId);
-
         if (error) throw error;
-        await fetchNotes();
+        
+        // Remove from local state immediately
+        setNotes(prev => prev.filter(n => n.id !== noteId));
+        
+        fetchNotes(true);
         toast.success('Note deleted');
       }
     } catch (error) {
@@ -401,7 +413,7 @@ export const useLeadQuickNotes = (leadId: string) => {
     updateNote,
     togglePin,
     deleteNote,
-    refetch: fetchNotes,
+    refetch: () => fetchNotes(true),
     isAbandonedCart
   };
 };
