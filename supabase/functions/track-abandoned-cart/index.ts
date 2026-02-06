@@ -53,6 +53,80 @@ interface AbandonedCartData {
   };
 }
 
+async function triggerWhatsAppMessage(supabase: any, supabaseUrl: string, supabaseServiceKey: string, cartData: AbandonedCartData) {
+  try {
+    console.log(`📱 Triggering WhatsApp welcome message for: ${cartData.phone}`);
+    
+    const isValidVehicle = (val: string | undefined) => val && val.trim() !== '' && val.trim().toLowerCase() !== 'unknown';
+    let resolvedMake = isValidVehicle(cartData.vehicle_make) ? cartData.vehicle_make! : '';
+    let resolvedModel = isValidVehicle(cartData.vehicle_model) ? cartData.vehicle_model! : '';
+    
+    if (!resolvedMake || !resolvedModel) {
+      console.log('🔍 Vehicle make/model empty/unknown, looking up from sales_leads...');
+      const { data: leadData } = await supabase
+        .from('sales_leads')
+        .select('vehicle_make, vehicle_model')
+        .eq('email', cartData.email.toLowerCase())
+        .not('vehicle_make', 'is', null)
+        .neq('vehicle_make', '')
+        .neq('vehicle_make', 'Unknown')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (leadData) {
+        resolvedMake = resolvedMake || leadData.vehicle_make || '';
+        resolvedModel = resolvedModel || leadData.vehicle_model || '';
+        console.log(`✅ Found vehicle from sales_leads: ${resolvedMake} ${resolvedModel}`);
+      }
+    }
+    
+    if ((!resolvedMake || !resolvedModel) && cartData.vehicle_reg) {
+      console.log('🔍 Still missing vehicle data, looking up by vehicle_reg in abandoned_carts...');
+      const { data: cartHistory } = await supabase
+        .from('abandoned_carts')
+        .select('vehicle_make, vehicle_model')
+        .eq('vehicle_reg', cartData.vehicle_reg)
+        .not('vehicle_make', 'is', null)
+        .neq('vehicle_make', '')
+        .neq('vehicle_make', 'Unknown')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (cartHistory) {
+        resolvedMake = resolvedMake || cartHistory.vehicle_make || '';
+        resolvedModel = resolvedModel || cartHistory.vehicle_model || '';
+        console.log(`✅ Found vehicle from abandoned_carts history: ${resolvedMake} ${resolvedModel}`);
+      }
+    }
+    
+    const whatsappPayload = {
+      phone: cartData.phone,
+      email: cartData.email,
+      firstName: cartData.full_name?.split(' ')[0] || 'there',
+      vehicleMake: resolvedMake,
+      vehicleModel: resolvedModel,
+      abandonedCartId: null
+    };
+
+    fetch(`${supabaseUrl}/functions/v1/send-uchat-whatsapp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseServiceKey}`
+      },
+      body: JSON.stringify(whatsappPayload)
+    }).then(response => {
+      console.log(`📱 WhatsApp trigger response status: ${response.status}`);
+    }).catch(err => {
+      console.error('📱 WhatsApp trigger error (non-blocking):', err);
+    });
+  } catch (whatsappError) {
+    console.error('Error triggering WhatsApp message (non-blocking):', whatsappError);
+  }
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -133,6 +207,11 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       console.log(`Updated existing abandoned cart entry for: ${cartData.email} (step ${existingCart[0].step_abandoned} → ${cartData.step_abandoned})`);
+      
+      // Also trigger WhatsApp for updated carts with phone numbers
+      if (cartData.phone && cartData.phone.trim() !== '') {
+        await triggerWhatsAppMessage(supabase, supabaseUrl, supabaseServiceKey, cartData);
+      }
     } else {
       // Create new abandoned cart entry with extended metadata
       const { error: insertError } = await supabase
@@ -159,81 +238,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       // Trigger WhatsApp welcome message for new cart entries with phone numbers
       if (cartData.phone && cartData.phone.trim() !== '') {
-        try {
-          console.log(`📱 Triggering WhatsApp welcome message for: ${cartData.phone}`);
-          
-          // Resolve vehicle make/model - fall back to sales_leads if empty or "Unknown"
-          const isValidVehicle = (val: string | undefined) => val && val.trim() !== '' && val.trim().toLowerCase() !== 'unknown';
-          let resolvedMake = isValidVehicle(cartData.vehicle_make) ? cartData.vehicle_make! : '';
-          let resolvedModel = isValidVehicle(cartData.vehicle_model) ? cartData.vehicle_model! : '';
-          
-          if (!resolvedMake || !resolvedModel) {
-            console.log('🔍 Vehicle make/model empty/unknown, looking up from sales_leads...');
-            const { data: leadData } = await supabase
-              .from('sales_leads')
-              .select('vehicle_make, vehicle_model')
-              .eq('email', cartData.email.toLowerCase())
-              .not('vehicle_make', 'is', null)
-              .neq('vehicle_make', '')
-              .neq('vehicle_make', 'Unknown')
-              .order('created_at', { ascending: false })
-              .limit(1)
-              .maybeSingle();
-            
-            if (leadData) {
-              resolvedMake = resolvedMake || leadData.vehicle_make || '';
-              resolvedModel = resolvedModel || leadData.vehicle_model || '';
-              console.log(`✅ Found vehicle from sales_leads: ${resolvedMake} ${resolvedModel}`);
-            }
-          }
-          
-          // Second fallback: check abandoned_carts by vehicle_reg for historical data
-          if ((!resolvedMake || !resolvedModel) && cartData.vehicle_reg) {
-            console.log('🔍 Still missing vehicle data, looking up by vehicle_reg in abandoned_carts...');
-            const { data: cartHistory } = await supabase
-              .from('abandoned_carts')
-              .select('vehicle_make, vehicle_model')
-              .eq('vehicle_reg', cartData.vehicle_reg)
-              .not('vehicle_make', 'is', null)
-              .neq('vehicle_make', '')
-              .neq('vehicle_make', 'Unknown')
-              .order('created_at', { ascending: false })
-              .limit(1)
-              .maybeSingle();
-            
-            if (cartHistory) {
-              resolvedMake = resolvedMake || cartHistory.vehicle_make || '';
-              resolvedModel = resolvedModel || cartHistory.vehicle_model || '';
-              console.log(`✅ Found vehicle from abandoned_carts history: ${resolvedMake} ${resolvedModel}`);
-            }
-          }
-          
-          const whatsappPayload = {
-            phone: cartData.phone,
-            email: cartData.email,
-            firstName: cartData.full_name?.split(' ')[0] || 'there',
-            vehicleMake: resolvedMake,
-            vehicleModel: resolvedModel,
-            abandonedCartId: null
-          };
-
-          // Fire and forget - don't block the cart tracking response
-          fetch(`${supabaseUrl}/functions/v1/send-uchat-whatsapp`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${supabaseServiceKey}`
-            },
-            body: JSON.stringify(whatsappPayload)
-          }).then(response => {
-            console.log(`📱 WhatsApp trigger response status: ${response.status}`);
-          }).catch(err => {
-            console.error('📱 WhatsApp trigger error (non-blocking):', err);
-          });
-        } catch (whatsappError) {
-          // Log but don't fail the cart tracking
-          console.error('Error triggering WhatsApp message (non-blocking):', whatsappError);
-        }
+        await triggerWhatsAppMessage(supabase, supabaseUrl, supabaseServiceKey, cartData);
       }
     }
 
