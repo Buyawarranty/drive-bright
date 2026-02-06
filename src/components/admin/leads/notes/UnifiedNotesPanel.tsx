@@ -183,8 +183,8 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
 
   return (
     <div className={cn("space-y-3", className)}>
-      {/* Notes List */}
-      <div className="space-y-1">
+      {/* Notes List - stacked newest on top */}
+      <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
         {visibleNotes.length === 0 ? (
           <p className="text-sm text-muted-foreground italic">No notes yet</p>
         ) : (
@@ -193,13 +193,16 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
             const isOptimistic = note.id.startsWith('temp_');
             const noteDate = new Date(note.created_at);
             const datePrefix = format(noteDate, 'dd/MM');
+            const timeStr = format(noteDate, 'HH:mm');
             
             return (
               <div
                 key={note.id}
                 className={cn(
-                  "group flex items-start gap-2 py-1 px-2 -mx-2 rounded hover:bg-muted/50 transition-colors",
-                  note.is_pinned && "bg-amber-50/50 dark:bg-amber-950/20",
+                  "group flex items-start gap-2 py-1.5 px-2 -mx-2 rounded border-l-2 transition-colors",
+                  note.is_pinned 
+                    ? "bg-amber-50/50 dark:bg-amber-950/20 border-l-amber-400" 
+                    : "hover:bg-muted/50 border-l-transparent hover:border-l-muted-foreground/30",
                   isOptimistic && "opacity-60"
                 )}
               >
@@ -230,11 +233,11 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
                 ) : (
                   <>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm">
+                      <p className="text-sm leading-relaxed">
                         {note.is_pinned && <Pin className="h-3 w-3 text-amber-600 inline mr-1" />}
                         {isOptimistic && <Loader2 className="h-3 w-3 animate-spin inline mr-1" />}
-                        <span className="text-muted-foreground">{datePrefix}</span>
-                        <span className="text-muted-foreground mx-1">-</span>
+                        <span className="text-muted-foreground text-xs font-mono">{datePrefix} {timeStr}</span>
+                        <span className="text-muted-foreground mx-1">—</span>
                         <span>{note.note_text}</span>
                       </p>
                     </div>
