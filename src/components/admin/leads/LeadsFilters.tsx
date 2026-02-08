@@ -107,11 +107,17 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
     }
   };
 
-  const handleQuickFilter = (days: number) => {
+  const handleQuickFilter = (days: number, exactDay = false) => {
     if (onDateRangeChange) {
-      const to = endOfDay(new Date());
-      const from = startOfDay(subDays(new Date(), days));
-      onDateRangeChange({ from, to });
+      if (exactDay) {
+        // For "Yesterday" - show only that specific day
+        const targetDay = subDays(new Date(), days);
+        onDateRangeChange({ from: startOfDay(targetDay), to: endOfDay(targetDay) });
+      } else {
+        const to = endOfDay(new Date());
+        const from = startOfDay(subDays(new Date(), days));
+        onDateRangeChange({ from, to });
+      }
       setIsCalendarOpen(false);
     }
   };
@@ -348,6 +354,8 @@ export const LeadsFilters: React.FC<LeadsFiltersProps> = ({
                     <History className="h-3 w-3 mr-1" />
                     All Time
                   </Button>
+                  <Button variant="outline" size="sm" onClick={() => handleQuickFilter(0)}>Today</Button>
+                  <Button variant="outline" size="sm" onClick={() => handleQuickFilter(1, true)}>Yesterday</Button>
                   <Button variant="outline" size="sm" onClick={() => handleQuickFilter(7)}>Last 7 days</Button>
                   <Button variant="outline" size="sm" onClick={() => handleQuickFilter(30)}>Last 30 days</Button>
                   <Button variant="outline" size="sm" onClick={() => handleQuickFilter(90)}>Last 90 days</Button>
