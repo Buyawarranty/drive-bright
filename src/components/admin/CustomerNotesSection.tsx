@@ -221,7 +221,7 @@ export const CustomerNotesSection = ({ customerId, onNotesChange }: CustomerNote
           created_by: currentUser.id,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (noteError) throw noteError;
 

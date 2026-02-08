@@ -157,7 +157,7 @@ export function StructuredNoteDialog({
         .from('admin_users')
         .select('id')
         .eq('user_id', userData.user?.id)
-        .single();
+        .maybeSingle();
 
       const noteData = {
         customer_id: customerId,

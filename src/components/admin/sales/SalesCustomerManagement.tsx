@@ -140,7 +140,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
           .from('admin_users')
           .select('id, role')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
         
         if (adminError) {
           console.error('[SalesCustomerManagement] Error fetching admin user:', adminError);
