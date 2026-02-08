@@ -899,34 +899,44 @@ const MercedesWarrantyLanding: React.FC = () => {
               ))}
             </div>
 
-            {/* Models Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+            {/* Models Grid - Compact Cards */}
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-3">
               {filteredModels.map(({ model, generations, category }) => (
                 <button
                   key={`${category}-${model}`}
                   onClick={() => setSelectedModel(selectedModel === model ? null : model)}
-                  className={`p-3 md:p-4 rounded-xl border-2 transition-all text-left group ${
+                  className={`group relative bg-white rounded-lg px-2 py-3 md:px-3 md:py-3 text-center border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 ${
                     selectedModel === model
-                      ? 'border-brand-orange bg-brand-orange/5 shadow-lg'
-                      : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-md'
+                      ? 'border-brand-orange ring-1 ring-orange-500/20 shadow-md scale-[1.02]'
+                      : 'border-slate-200 hover:border-slate-300 hover:shadow-sm focus:ring-slate-400'
                   }`}
                 >
-                  <div className="flex items-center gap-2 mb-1 md:mb-2">
-                    <Car className={`w-4 h-4 md:w-5 md:h-5 ${selectedModel === model ? 'text-brand-orange' : 'text-slate-400 group-hover:text-slate-600'}`} />
-                    <span className="text-xs text-slate-500 font-medium">{category}</span>
-                  </div>
-                  <h3 className={`font-bold text-sm md:text-base ${selectedModel === model ? 'text-brand-orange' : 'text-slate-900'}`}>
+                  {/* Model Icon - minimal, no background */}
+                  <Car className={`w-6 h-6 mx-auto mb-1.5 transition-colors ${
+                    selectedModel === model 
+                      ? 'text-brand-orange' 
+                      : 'text-slate-400 group-hover:text-slate-600'
+                  }`} strokeWidth={1.25} />
+                  
+                  {/* Model Name */}
+                  <h3 className="text-[11px] md:text-xs font-bold text-slate-900 leading-tight mb-0.5 truncate">
                     {model}
                   </h3>
-                  <p className="text-xs text-slate-500 mt-0.5 md:mt-1">
-                    {generations.join(', ')}
+                  
+                  {/* Category */}
+                  <p className="text-[9px] md:text-[10px] text-slate-500 font-medium leading-tight">
+                    {category}
                   </p>
+                  
+                  {/* Chassis Codes */}
+                  <p className="text-[8px] md:text-[9px] text-slate-400 leading-tight mt-0.5">
+                    {generations.join(' · ')}
+                  </p>
+
+                  {/* Selected check */}
                   {selectedModel === model && (
-                    <div className="mt-2 pt-2 border-t border-brand-orange/20">
-                      <div className="flex items-center gap-1 text-green-600 text-xs font-medium">
-                        <Check className="w-3 h-3" />
-                        Fully covered
-                      </div>
+                    <div className="absolute top-1 right-1 w-4 h-4 bg-brand-orange rounded-full flex items-center justify-center">
+                      <Check className="w-2.5 h-2.5 text-white" />
                     </div>
                   )}
                 </button>
