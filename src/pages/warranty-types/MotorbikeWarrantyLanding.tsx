@@ -883,7 +883,7 @@ const MotorbikeWarrantyLanding: React.FC = () => {
             </div>
 
             {/* Models Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-3">
               {filteredModels.map(({ model, years, category }) => (
                 <button
                   key={`${category}-${model}`}
@@ -891,46 +891,34 @@ const MotorbikeWarrantyLanding: React.FC = () => {
                     setSelectedModel(model);
                     scrollToQuoteForm();
                   }}
-                  className={`group relative bg-white rounded-xl p-4 md:p-5 text-center border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                  className={`group relative bg-white rounded-lg px-2 py-3 md:px-3 md:py-3 text-center border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 ${
                     selectedModel === model
-                      ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-xl shadow-blue-500/10 scale-[1.02]'
-                      : 'border-slate-200 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-900/5 hover:-translate-y-1 focus:ring-slate-400'
+                      ? 'border-blue-500 ring-1 ring-blue-500/20 shadow-md scale-[1.02]'
+                      : 'border-slate-200 hover:border-slate-300 hover:shadow-sm focus:ring-slate-400'
                   }`}
                   aria-label={`${category} ${model}, years ${years.join(', ')}`}
                 >
-                  {/* Model Icon */}
-                  <div className={`w-12 h-12 md:w-14 md:h-14 mx-auto mb-3 rounded-full flex items-center justify-center transition-colors ${
+                  {/* Model Icon - minimal, no background */}
+                  <Bike className={`w-6 h-6 mx-auto mb-1.5 transition-colors ${
                     selectedModel === model 
-                      ? 'bg-blue-500 text-white' 
-                      : 'bg-slate-100 text-slate-700 group-hover:bg-slate-200'
-                  }`}>
-                    <Bike className="w-5 h-5 md:w-6 md:h-6" />
-                  </div>
+                      ? 'text-blue-500' 
+                      : 'text-slate-400 group-hover:text-slate-600'
+                  }`} strokeWidth={1.25} />
                   
                   {/* Model Name */}
-                  <h3 className="text-xs md:text-sm font-bold text-slate-900 mb-1">
+                  <h3 className="text-[11px] md:text-xs font-bold text-slate-900 leading-tight mb-0.5 truncate">
                     {model}
                   </h3>
                   
                   {/* Manufacturer */}
-                  <p className="text-[10px] md:text-xs text-slate-500 font-medium">
+                  <p className="text-[9px] md:text-[10px] text-slate-500 font-medium leading-tight">
                     {category}
                   </p>
                   
                   {/* Years */}
-                  <p className="text-[9px] md:text-[10px] text-slate-400 mt-1">
+                  <p className="text-[8px] md:text-[9px] text-slate-400 leading-tight mt-0.5">
                     {years.join(' · ')}
                   </p>
-                  
-                  {/* Hover Arrow */}
-                  <div className={`mt-3 flex items-center justify-center gap-1 text-xs font-medium transition-all ${
-                    selectedModel === model 
-                      ? 'text-blue-600 opacity-100' 
-                      : 'text-slate-400 opacity-0 group-hover:opacity-100'
-                  }`}>
-                    <span>Get quote</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </div>
                 </button>
               ))}
             </div>
