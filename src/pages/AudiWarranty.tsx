@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, Shield, Clock, Phone, Menu, X } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { CheckCircle2, Phone } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { OrganizationSchema } from '@/components/schema/OrganizationSchema';
 import { WebPageSchema } from '@/components/schema/WebPageSchema';
@@ -10,10 +9,10 @@ import { ProductSchema } from '@/components/schema/ProductSchema';
 import { FAQSchema } from '@/components/schema/FAQSchema';
 import { BreadcrumbSchema } from '@/components/schema/BreadcrumbSchema';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
-// Footer components removed - rendered globally via App.tsx ConditionalFooter
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trackButtonClick } from '@/utils/analytics';
-import trustpilotLogo from '@/assets/trustpilot-excellent-box.webp';
+import { OptimizedImage } from '@/components/OptimizedImage';
+import LazySection from '@/components/homepage/LazySection';
 import whatsappIconNew from '@/assets/whatsapp-icon-new.png';
 import audiHeroImage from '@/assets/audi-hero.png';
 import audiCarImage from '@/assets/audi-car.png';
@@ -22,7 +21,6 @@ const AudiWarranty = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -125,10 +123,13 @@ const AudiWarranty = () => {
               </div>
             </div>
             <div className="space-y-6">
-              <img 
+              <OptimizedImage 
                 src={audiHeroImage} 
                 alt="Audi extended warranty quote on mobile" 
-                className="w-full h-auto object-cover"
+                className="w-full h-auto object-contain max-w-lg mx-auto"
+                width={600}
+                height={500}
+                priority
               />
               <div className="flex justify-center lg:justify-start">
                 <TrustpilotHeader />
@@ -170,13 +171,17 @@ const AudiWarranty = () => {
 
         {/* Audi Car Image Section */}
         <section className="container mx-auto px-4 py-16">
-          <div className="max-w-3xl mx-auto">
-            <img 
-              src={audiCarImage} 
-              alt="Audi car with buyawarranty branding" 
-              className="w-full h-auto object-cover rounded-lg"
-            />
-          </div>
+          <LazySection>
+            <div className="max-w-3xl mx-auto">
+              <OptimizedImage 
+                src={audiCarImage} 
+                alt="Audi car with buyawarranty branding" 
+                className="w-full h-auto object-contain rounded-lg max-w-lg mx-auto"
+                width={600}
+                height={400}
+              />
+            </div>
+          </LazySection>
         </section>
 
         {/* What's Covered */}
@@ -529,10 +534,12 @@ const AudiWarranty = () => {
           rel="noopener noreferrer"
           className="fixed bottom-24 left-6 z-40"
         >
-          <img 
+          <OptimizedImage 
             src={whatsappIconNew} 
             alt="WhatsApp" 
             className="h-14 w-14 hover:scale-110 transition-transform"
+            width={56}
+            height={56}
           />
         </a>
       </div>
