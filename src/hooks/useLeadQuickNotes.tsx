@@ -52,19 +52,15 @@ export const useLeadQuickNotes = (leadId: string) => {
   }, [leadId, updateNotes]);
 
   const ensureSession = async (): Promise<boolean> => {
-    let { data: { session } } = await supabase.auth.getSession();
-    if (session) return true;
+    // Use getUser() for reliable server-side validation (works on all browsers including Mac)
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) return true;
     
+    // One retry: try refreshing the session
     const { data: refreshData } = await supabase.auth.refreshSession();
     if (refreshData.session) return true;
     
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: retryRefresh } = await supabase.auth.refreshSession();
-      if (retryRefresh.session) return true;
-    }
-    
-    console.warn('[fetchNotes] No valid session');
+    console.warn('[ensureSession] No valid session after retry');
     return false;
   };
 
@@ -207,51 +203,28 @@ export const useLeadQuickNotes = (leadId: string) => {
   const getAuthenticatedAdmin = async () => {
     const now = Date.now();
     
+    // Use cache if valid (short-circuit, no network call)
     if (cachedAdminUser && now < cacheExpiry) {
-      // Verify session is still valid (critical for Safari/iOS)
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) return cachedAdminUser;
-      // Cache invalid, clear and re-auth
-      cachedAdminUser = null;
-      cacheExpiry = 0;
+      return cachedAdminUser;
     }
 
-    // CRITICAL: Use getUser() first — it validates server-side.
-    // getSession() reads from localStorage which Safari/iOS can clear or return stale tokens.
+    // Single getUser() call — validates server-side, works on all browsers
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
-    if (user) {
-      // Force refresh to ensure fresh access token for subsequent queries
+    if (!user) {
+      // One retry: refresh session then check again
+      console.warn('[getAuthenticatedAdmin] getUser failed, refreshing session...', userError?.message);
       const { data: refreshData } = await supabase.auth.refreshSession();
-      if (!refreshData.session) {
-        console.warn('[getAuthenticatedAdmin] User valid but refresh failed, trying getSession...');
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          toast.error('Session expired — please log in again.');
-          throw new Error('Session expired');
-        }
-      }
-    } else {
-      // No user from server check — try refresh as last resort
-      console.warn('[getAuthenticatedAdmin] getUser failed:', userError?.message);
-      for (let attempt = 0; attempt < 2; attempt++) {
-        console.log(`[getAuthenticatedAdmin] Retry attempt ${attempt + 1}...`);
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const { data: refreshData } = await supabase.auth.refreshSession();
-        if (refreshData.session) break;
-      }
       
-      // Final check
-      const { data: { user: retryUser } } = await supabase.auth.getUser();
-      if (!retryUser) {
+      if (!refreshData.session?.user) {
         toast.error('Session expired — please log in again.');
         throw new Error('Session expired');
       }
     }
 
-    // At this point we have a valid user — get the user ID from getUser (most reliable)
-    const { data: { user: currentUser } } = await supabase.auth.getUser();
-    if (!currentUser?.id) {
+    // Get current user ID (from the successful call above or the refresh)
+    const userId = user?.id || (await supabase.auth.getUser()).data.user?.id;
+    if (!userId) {
       toast.error('Session expired — please log in again.');
       throw new Error('Session expired');
     }
@@ -259,7 +232,7 @@ export const useLeadQuickNotes = (leadId: string) => {
     const { data: adminData, error: adminError } = await supabase
       .from('admin_users')
       .select('id, first_name, last_name, email')
-      .eq('user_id', currentUser.id)
+      .eq('user_id', userId)
       .maybeSingle();
 
     if (adminError || !adminData) {
