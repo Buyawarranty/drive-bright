@@ -24,7 +24,7 @@ import { EditCustomerDetailsDialog } from '../EditCustomerDetailsDialog';
 import { InlineWarrantyUpgrade } from '../InlineWarrantyUpgrade';
 import { InlineUpgradeCell } from '../InlineUpgradeCell';
 import { 
-  Search, RefreshCw, Plus, AlertCircle, Edit, ExternalLink, Sparkles
+  Search, RefreshCw, Plus, AlertCircle, Edit, ExternalLink, Sparkles, Send, CheckCircle, Clock, Mail
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -83,6 +83,7 @@ interface Customer {
   consequential?: boolean | null;
   // Policy info
   policy?: {
+    id: string;
     policy_number: string;
     policy_start_date: string;
     policy_end_date: string;
@@ -114,6 +115,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
   const [activeTab, setActiveTab] = useState('active');
   const [currentUserId, setCurrentUserId] = useState<string | null>(propUserId || null);
   const [currentAuthUserId, setCurrentAuthUserId] = useState<string | null>(null);
+  const [emailSendingLoading, setEmailSendingLoading] = useState<Record<string, { email?: boolean; warranties2000?: boolean }>>({});
   
   const [editDetailsDialog, setEditDetailsDialog] = useState<{
     open: boolean;
@@ -237,6 +239,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
         return {
           ...c,
           policy: policy ? {
+            id: policy.id,
             policy_number: policy.policy_number,
             policy_start_date: policy.policy_start_date,
             policy_end_date: policy.policy_end_date,
@@ -404,16 +407,61 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
     }
   };
 
-  const getWarranties2000Status = (status: string | null) => {
+  const getWarrantyRegisterStatus = (status: string | null) => {
     switch (status) {
       case 'sent':
-        return <Badge className="bg-green-500 text-white text-xs">Registered</Badge>;
+        return <Badge className="bg-green-500 text-white text-xs"><CheckCircle className="w-3 h-3 mr-1" />Registered</Badge>;
       case 'scheduled':
-        return <Badge variant="secondary" className="text-xs">Scheduled</Badge>;
+        return <Badge variant="secondary" className="text-xs"><Clock className="w-3 h-3 mr-1" />Scheduled</Badge>;
       case 'failed':
-        return <Badge variant="destructive" className="text-xs">Failed</Badge>;
+        return <Badge variant="destructive" className="text-xs"><AlertCircle className="w-3 h-3 mr-1" />Failed</Badge>;
       default:
-        return <Badge variant="outline" className="text-xs">Not Sent</Badge>;
+        return <Badge variant="outline" className="text-xs"><Clock className="w-3 h-3 mr-1" />Not Sent</Badge>;
+    }
+  };
+
+  const getEmailSentStatus = (status: string | null) => {
+    switch (status) {
+      case 'sent':
+        return <Badge className="bg-green-100 text-green-800 text-xs"><CheckCircle className="w-3 h-3 mr-1" />Sent</Badge>;
+      case 'failed':
+        return <Badge variant="destructive" className="bg-red-100 text-red-800 text-xs"><AlertCircle className="w-3 h-3 mr-1" />Failed</Badge>;
+      default:
+        return <Badge variant="outline" className="bg-gray-100 text-gray-800 text-xs"><Clock className="w-3 h-3 mr-1" />Not Sent</Badge>;
+    }
+  };
+
+  const handleSendWelcomeEmail = async (policyId: string, customerId: string) => {
+    setEmailSendingLoading(prev => ({ ...prev, [customerId]: { ...prev[customerId], email: true } }));
+    try {
+      const { data, error } = await supabase.functions.invoke('send-welcome-email-manual', {
+        body: { policyId, customerId }
+      });
+      if (error) throw error;
+      toast.success('Welcome email sent successfully!');
+      fetchCustomers();
+    } catch (error: any) {
+      console.error('Error sending welcome email:', error);
+      toast.error(`Failed to send email: ${error.message}`);
+    } finally {
+      setEmailSendingLoading(prev => ({ ...prev, [customerId]: { ...prev[customerId], email: false } }));
+    }
+  };
+
+  const handleSendToWarrantiesRegister = async (policyId: string, customerId: string) => {
+    setEmailSendingLoading(prev => ({ ...prev, [customerId]: { ...prev[customerId], warranties2000: true } }));
+    try {
+      const { data, error } = await supabase.functions.invoke('send-to-warranties-2000', {
+        body: { policyId, customerId, force: true }
+      });
+      if (error) throw error;
+      toast.success('Successfully sent to Warranty Register!');
+      fetchCustomers();
+    } catch (error: any) {
+      console.error('Error sending to Warranty Register:', error);
+      toast.error(`Failed to send to Warranty Register: ${error.message}`);
+    } finally {
+      setEmailSendingLoading(prev => ({ ...prev, [customerId]: { ...prev[customerId], warranties2000: false } }));
     }
   };
 
@@ -617,14 +665,15 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                 <TableHead>Mileage</TableHead>
                 <TableHead>Tags</TableHead>
                 <TableHead className="bg-purple-50">Source</TableHead>
-                <TableHead>Warranties2000</TableHead>
+                <TableHead>Customer Email</TableHead>
+                <TableHead>Warranty Register</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredCustomers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={21} className="text-center py-8">
+                  <TableCell colSpan={22} className="text-center py-8">
                     <div className="space-y-4">
                       <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto" />
                       <div>
@@ -841,9 +890,50 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                       />
                     </TableCell>
                     
-                    {/* Warranties2000 */}
+                    {/* Customer Email Sent */}
                     <TableCell>
-                      {getWarranties2000Status(customer.policy?.warranties_2000_status || null)}
+                      <div className="flex items-center gap-1">
+                        {getEmailSentStatus(customer.policy?.email_sent_status || null)}
+                        {customer.policy?.id && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleSendWelcomeEmail(customer.policy!.id, customer.id)}
+                            disabled={emailSendingLoading[customer.id]?.email}
+                            title="Send Welcome Email"
+                            className="hover:bg-blue-50 hover:text-blue-600 h-6 w-6 p-0"
+                          >
+                            {emailSendingLoading[customer.id]?.email ? (
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                            ) : (
+                              <Send className="h-3 w-3" />
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                    
+                    {/* Warranty Register */}
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        {getWarrantyRegisterStatus(customer.policy?.warranties_2000_status || null)}
+                        {customer.policy?.id && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleSendToWarrantiesRegister(customer.policy!.id, customer.id)}
+                            disabled={emailSendingLoading[customer.id]?.warranties2000}
+                            title="Send to Warranty Register"
+                            className="hover:bg-purple-50 hover:text-purple-600 h-6 w-6 p-0"
+                          >
+                            {emailSendingLoading[customer.id]?.warranties2000 ? (
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-purple-600"></div>
+                            ) : (
+                              <Send className="h-3 w-3" />
+                            )}
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                     
                     {/* Status */}
