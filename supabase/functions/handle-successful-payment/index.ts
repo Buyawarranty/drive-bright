@@ -390,7 +390,7 @@ serve(async (req) => {
           logStep("Vehicle data missing, checking mot_history for backfill", { regPlate });
           const { data: motData } = await supabaseClient
             .from('mot_history')
-            .select('make, model, fuel_type, primary_colour')
+            .select('make, model, fuel_type, primary_colour, manufacture_date')
             .or(`registration.eq.${regPlate},registration.eq.${regPlate.replace(/^(.{4})/, '$1 ')}`)
             .order('updated_at', { ascending: false })
             .limit(1)
@@ -398,12 +398,14 @@ serve(async (req) => {
           
           if (motData?.make) {
             logStep("Backfilling vehicle data from mot_history", motData);
+            const yearFromDate = motData.manufacture_date ? new Date(motData.manufacture_date).getFullYear().toString() : null;
             await supabaseClient
               .from('customers')
               .update({
                 vehicle_make: motData.make,
                 vehicle_model: motData.model || customerData2.vehicle_model,
                 vehicle_fuel_type: motData.fuel_type || customerData2.vehicle_fuel_type,
+                ...(yearFromDate && (!customerData2.vehicle_year || customerData2.vehicle_year === 'Unknown') && { vehicle_year: yearFromDate }),
               })
               .eq('id', customerData2.id);
           }

@@ -69,6 +69,9 @@ interface CustomerPolicy {
     id: string;
     vehicle_make?: string;
     vehicle_model?: string;
+    vehicle_year?: string;
+    vehicle_fuel_type?: string;
+    vehicle_transmission?: string;
     registration_plate?: string;
     mileage?: string;
     phone?: string;
@@ -515,7 +518,7 @@ const CustomerDashboard = () => {
         if (customerIds.length > 0) {
         const { data: customersData } = await supabase
             .from('customers')
-            .select('id, vehicle_make, vehicle_model, registration_plate, mileage, phone, first_name, last_name, flat_number, building_name, building_number, street, town, county, postcode, country, labour_rate')
+            .select('id, vehicle_make, vehicle_model, vehicle_year, vehicle_fuel_type, vehicle_transmission, registration_plate, mileage, phone, first_name, last_name, flat_number, building_name, building_number, street, town, county, postcode, country, labour_rate')
             .in('id', customerIds);
           
           console.log("Customers data:", customersData);
@@ -1335,7 +1338,7 @@ const CustomerDashboard = () => {
                                                  policy.policy_number?.split('-').pop() || 
                                                  'Unknown Vehicle';
                                 const vehicleName = policy.customers?.vehicle_make && policy.customers?.vehicle_model
-                                  ? `${policy.customers.vehicle_make} ${policy.customers.vehicle_model}`.toUpperCase()
+                                  ? `${policy.customers.vehicle_year ? policy.customers.vehicle_year + ' ' : ''}${policy.customers.vehicle_make} ${policy.customers.vehicle_model}`.toUpperCase()
                                   : (policy.plan_type?.includes('motorbike') || policy.plan_type?.includes('Motorbike'))
                                   ? 'Motorbike'
                                   : 'Vehicle';
@@ -1417,16 +1420,21 @@ const CustomerDashboard = () => {
                                 )}
                               </p>
                             </div>
-                            <div>
+                             <div>
                                <Label className="text-xs sm:text-sm font-medium text-gray-500">Vehicle</Label>
                                <p className="font-semibold text-sm sm:text-base text-black">
                                  {customerData?.vehicle_make && customerData?.vehicle_model && 
                                   customerData.vehicle_make !== 'Unknown' && customerData.vehicle_model !== 'Unknown'
-                                   ? `${customerData.vehicle_make} ${customerData.vehicle_model}`.toUpperCase()
+                                   ? `${customerData.vehicle_year ? customerData.vehicle_year + ' ' : ''}${customerData.vehicle_make} ${customerData.vehicle_model}`.toUpperCase()
                                    : (selectedPolicy?.plan_type?.includes('motorbike') || selectedPolicy?.plan_type?.includes('Motorbike'))
                                    ? 'Motorbike Details Not Provided'
                                    : 'Vehicle Details Not Provided'}
                                </p>
+                               {customerData?.vehicle_fuel_type && customerData.vehicle_fuel_type !== 'Unknown' && (
+                                 <p className="text-xs text-muted-foreground mt-0.5">
+                                   {customerData.vehicle_fuel_type}{customerData.vehicle_transmission && customerData.vehicle_transmission !== 'Unknown' ? ` • ${customerData.vehicle_transmission}` : ''}
+                                 </p>
+                               )}
                              </div>
                               <div>
                                 <Label className="text-xs sm:text-sm font-medium text-gray-500">Mileage</Label>
