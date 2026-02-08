@@ -218,7 +218,7 @@ export const useLeadReminders = (leadId?: string) => {
           label: label?.trim() || null
         })
         .select()
-        .single() as any);
+        .maybeSingle() as any);
 
       if (error) {
         if (error.code === '23505') {

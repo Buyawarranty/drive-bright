@@ -56,7 +56,7 @@ export const useSalesStats = (userId?: string) => {
         .from('admin_users')
         .select('id, first_name, last_name, email')
         .eq('id', adminUserId)
-        .single();
+        .maybeSingle();
 
       if (!userData) return null;
 

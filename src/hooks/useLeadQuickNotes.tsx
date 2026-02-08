@@ -306,7 +306,7 @@ export const useLeadQuickNotes = (leadId: string) => {
             created_by: adminUser.id
           })
           .select()
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
 

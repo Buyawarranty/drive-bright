@@ -718,7 +718,7 @@ export const useLeads = () => {
         .from('admin_users')
         .select('id')
         .eq('user_id', userData.user?.id)
-        .single();
+        .maybeSingle();
 
       const { error } = await supabase
         .from('lead_tag_assignments')
@@ -773,7 +773,7 @@ export const useLeads = () => {
         .from('admin_users')
         .select('id')
         .eq('user_id', userData.user?.id)
-        .single();
+        .maybeSingle();
 
       const { error } = await supabase
         .from('lead_activities')
@@ -996,7 +996,7 @@ export const useLeads = () => {
           .from('sales_leads')
           .select('id')
           .eq('abandoned_cart_id', cart.id)
-          .single();
+          .maybeSingle();
 
         if (existing) continue;
 

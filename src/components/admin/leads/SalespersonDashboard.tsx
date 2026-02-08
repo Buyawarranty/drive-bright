@@ -58,7 +58,7 @@ export const SalespersonDashboard: React.FC<SalespersonDashboardProps> = ({
           .from('admin_users')
           .select('id')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
         
         if (adminUser) {
           setCurrentUserId(adminUser.id);
