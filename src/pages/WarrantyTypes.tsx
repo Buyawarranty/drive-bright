@@ -473,6 +473,20 @@ const WarrantyTypes: React.FC = () => {
                 </span>
               </Link>
 
+              {/* Motorbike Warranty Card */}
+              <Link 
+                to="/warranty-types/motorbike-motorcycle-warranty"
+                className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
+              >
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform border-2 border-orange-100">
+                  <Bike className="h-8 w-8 text-orange-500" />
+                </div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Motorcycles</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">
+                  View <ChevronRight className="h-3 w-3 ml-0.5" />
+                </span>
+              </Link>
+
               {/* Dynamic Pages from Database - exclude BMW, Mercedes and vans since they're hardcoded above */}
               {dynamicPages
                 .filter((page) => page.brand_name.toLowerCase() !== 'bmw' && page.brand_name.toLowerCase() !== 'mercedes-benz' && page.brand_name.toLowerCase() !== 'mercedes')
