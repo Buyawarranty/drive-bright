@@ -28,6 +28,7 @@ import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
 import pandaMechanic from '@/assets/panda-mechanic.png';
 import vanHeroImage from '@/assets/used-van-reliable-warranty.webp';
 import fordTransitVan from '@/assets/uk-van-warranty-ford-transit.webp';
+import vanIcon from '@/assets/van-icon.png';
 
 // UK Van Models covered (grouped by manufacturer) - 2012-2026
 const vanModelCategories = {
@@ -928,29 +929,34 @@ const VanWarrantyLanding: React.FC = () => {
 
             {/* Models Grid */}
             {filteredModels.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-3">
                 {filteredModels.map(({ model, manufacturer, variants }) => (
                   <button
                     key={`${manufacturer}-${model}`}
                     onClick={() => setSelectedModel(selectedModel === model ? null : model)}
-                    className={`group relative p-4 md:p-5 rounded-xl border-2 transition-all duration-200 text-left ${
+                    className={`group relative bg-white rounded-lg px-2 py-3 md:px-3 md:py-3 text-center border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 ${
                       selectedModel === model
-                        ? 'border-brand-orange bg-orange-50 shadow-lg'
-                        : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-md'
+                        ? 'border-brand-orange ring-1 ring-orange-500/20 shadow-md scale-[1.02]'
+                        : 'border-slate-200 hover:border-slate-300 hover:shadow-sm focus:ring-slate-400'
                     }`}
                   >
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
-                        selectedModel === model ? 'bg-brand-orange' : 'bg-slate-100 group-hover:bg-slate-200'
-                      }`}>
-                        <Truck className={`w-5 h-5 ${selectedModel === model ? 'text-white' : 'text-slate-600'}`} />
-                      </div>
-                    </div>
-                    <h3 className="font-bold text-slate-900 text-sm md:text-base">{model}</h3>
-                    <p className="text-xs text-slate-500 mt-0.5">{manufacturer}</p>
+                    {/* Van Icon - compact */}
+                    <img src={vanIcon} alt="" className="w-7 h-7 mx-auto mb-1.5 opacity-60 group-hover:opacity-80 transition-opacity" />
+                    
+                    {/* Model Name */}
+                    <h3 className="text-[11px] md:text-xs font-bold text-slate-900 leading-tight mb-0.5 truncate">
+                      {model}
+                    </h3>
+                    
+                    {/* Manufacturer */}
+                    <p className="text-[9px] md:text-[10px] text-slate-500 font-medium leading-tight">
+                      {manufacturer}
+                    </p>
+
+                    {/* Selected check */}
                     {selectedModel === model && (
-                      <div className="absolute top-2 right-2 w-5 h-5 bg-brand-orange rounded-full flex items-center justify-center">
-                        <Check className="w-3 h-3 text-white" />
+                      <div className="absolute top-1 right-1 w-4 h-4 bg-brand-orange rounded-full flex items-center justify-center">
+                        <Check className="w-2.5 h-2.5 text-white" />
                       </div>
                     )}
                   </button>
