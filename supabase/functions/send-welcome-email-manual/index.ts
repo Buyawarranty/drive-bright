@@ -391,6 +391,19 @@ const handler = async (req: Request): Promise<Response> => {
       } else if (userData?.user) {
         userId = userData.user.id;
         console.log(JSON.stringify({ evt: "user.created", rid, userId }));
+        
+        // Store credentials in admin notes for reference (single source of truth)
+        try {
+          await supabase
+            .from('admin_notes')
+            .insert({
+              customer_id: policy.customer_id,
+              note: `Dashboard credentials auto-created:\nEmail: ${customer.email}\nPassword: ${tempPassword}\nUser ID: ${userData.user.id}`
+            });
+          console.log(JSON.stringify({ evt: "admin.note.created", rid }));
+        } catch (noteErr) {
+          console.log(JSON.stringify({ evt: "admin.note.failed", rid, error: String(noteErr) }));
+        }
       }
     } else {
       // User has reset password, so they manage their own account - try to find them
