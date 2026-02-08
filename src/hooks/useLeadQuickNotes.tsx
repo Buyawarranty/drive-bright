@@ -208,34 +208,50 @@ export const useLeadQuickNotes = (leadId: string) => {
     const now = Date.now();
     
     if (cachedAdminUser && now < cacheExpiry) {
-      return cachedAdminUser;
-    }
-
-    let { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      console.log('[getAuthenticatedAdmin] No session, trying getUser fallback...');
+      // Verify session is still valid (critical for Safari/iOS)
       const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        const { data: refreshData } = await supabase.auth.refreshSession();
-        session = refreshData.session;
-      }
+      if (user) return cachedAdminUser;
+      // Cache invalid, clear and re-auth
+      cachedAdminUser = null;
+      cacheExpiry = 0;
     }
 
-    if (!session) {
+    // CRITICAL: Use getUser() first — it validates server-side.
+    // getSession() reads from localStorage which Safari/iOS can clear or return stale tokens.
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (user) {
+      // Force refresh to ensure fresh access token for subsequent queries
+      const { data: refreshData } = await supabase.auth.refreshSession();
+      if (!refreshData.session) {
+        console.warn('[getAuthenticatedAdmin] User valid but refresh failed, trying getSession...');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          toast.error('Session expired — please log in again.');
+          throw new Error('Session expired');
+        }
+      }
+    } else {
+      // No user from server check — try refresh as last resort
+      console.warn('[getAuthenticatedAdmin] getUser failed:', userError?.message);
       for (let attempt = 0; attempt < 2; attempt++) {
         console.log(`[getAuthenticatedAdmin] Retry attempt ${attempt + 1}...`);
         await new Promise(resolve => setTimeout(resolve, 500));
         const { data: refreshData } = await supabase.auth.refreshSession();
-        if (refreshData.session) {
-          session = refreshData.session;
-          break;
-        }
+        if (refreshData.session) break;
+      }
+      
+      // Final check
+      const { data: { user: retryUser } } = await supabase.auth.getUser();
+      if (!retryUser) {
+        toast.error('Session expired — please log in again.');
+        throw new Error('Session expired');
       }
     }
 
-    if (!session?.user?.id) {
+    // At this point we have a valid user — get the user ID from getUser (most reliable)
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (!currentUser?.id) {
       toast.error('Session expired — please log in again.');
       throw new Error('Session expired');
     }
@@ -243,7 +259,7 @@ export const useLeadQuickNotes = (leadId: string) => {
     const { data: adminData, error: adminError } = await supabase
       .from('admin_users')
       .select('id, first_name, last_name, email')
-      .eq('user_id', session.user.id)
+      .eq('user_id', currentUser.id)
       .maybeSingle();
 
     if (adminError || !adminData) {
