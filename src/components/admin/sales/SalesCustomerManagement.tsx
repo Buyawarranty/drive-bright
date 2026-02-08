@@ -190,54 +190,32 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
       setLoading(true);
       console.log('[SalesCustomerManagement] fetchCustomers called with adminUserId:', userIdToUse, 'authUserId:', authUserIdToUse);
       
-      // Fetch in parallel: customers, sales_leads, and abandoned_carts assigned to this user
-      const [customersResult, salesLeadsResult, abandonedCartsResult] = await Promise.all([
-        // Get customers assigned to this user (by admin_users.id)
-        supabase
-          .from('customers')
-          .select(`
-            *,
-            customer_tag_assignments (
-              tag_id,
-              customer_tags (id, name, color, category)
-            )
-          `)
-          .eq('assigned_to', userIdToUse)
-          .eq('is_deleted', false)
-          .order('created_at', { ascending: false }),
-        
-        // Get sales_leads assigned to this user (by admin_users.id) - this is the main leads table
-        supabase
-          .from('sales_leads')
-          .select('*')
-          .eq('assigned_to', userIdToUse)
-          .neq('status', 'fake_lead')
-          .order('created_at', { ascending: false }),
-        
-        // Get abandoned_carts assigned to this user (by auth.user_id in contacted_by)
-        supabase
-          .from('abandoned_carts')
-          .select('*')
-          .eq('contacted_by', authUserIdToUse)
-          .eq('is_converted', false)
-          .order('created_at', { ascending: false })
-      ]);
+      // Only fetch COMPLETED SALES - customers where this agent:
+      // 1. Is assigned_to (deal owner)
+      // 2. Confirmed the payment (payment_confirmed_by)
+      // 3. Sent the original quote (quote_sent_by)
+      // 4. Manually created the record (is_manual_entry)
+      // We use .or() to combine these conditions
+      const { data: customerData, error: customersError } = await supabase
+        .from('customers')
+        .select(`
+          *,
+          customer_tag_assignments (
+            tag_id,
+            customer_tags (id, name, color, category)
+          )
+        `)
+        .eq('is_deleted', false)
+        .or(`assigned_to.eq.${userIdToUse},payment_confirmed_by.eq.${userIdToUse},quote_sent_by.eq.${userIdToUse}`)
+        .order('created_at', { ascending: false });
 
-      console.log('[SalesCustomerManagement] Customers result:', customersResult.data?.length || 0, 'rows, error:', customersResult.error);
-      console.log('[SalesCustomerManagement] Sales Leads result:', salesLeadsResult.data?.length || 0, 'rows, error:', salesLeadsResult.error);
-      console.log('[SalesCustomerManagement] Abandoned Carts result:', abandonedCartsResult.data?.length || 0, 'rows, error:', abandonedCartsResult.error);
+      if (customersError) throw customersError;
 
-      if (customersResult.error) throw customersResult.error;
-      if (salesLeadsResult.error) throw salesLeadsResult.error;
-      if (abandonedCartsResult.error) throw abandonedCartsResult.error;
-
-      const customerData = customersResult.data || [];
-      const salesLeadsData = salesLeadsResult.data || [];
-      const abandonedCartsData = abandonedCartsResult.data || [];
+      console.log('[SalesCustomerManagement] Customers (completed sales) result:', customerData?.length || 0, 'rows');
 
       // Get policies for customers if we have any
       let policies: any[] = [];
-      if (customerData.length > 0) {
+      if (customerData && customerData.length > 0) {
         const customerIds = customerData.map(c => c.id);
         const { data: policiesData, error: policiesError } = await supabase
           .from('customer_policies')
@@ -250,7 +228,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
       }
 
       // Map customers with their policies and tags
-      const customersWithData: Customer[] = customerData.map(c => {
+      const customersWithData: Customer[] = (customerData || []).map(c => {
         const policy = policies.find(p => p.customer_id === c.id);
         const tags = c.customer_tag_assignments
           ?.map((ta: any) => ta.customer_tags)
@@ -273,107 +251,10 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
         };
       });
 
-      // Convert sales_leads to customer-like format for display
-      const salesLeadsAsCustomers: Customer[] = salesLeadsData.map(lead => ({
-        id: lead.id,
-        name: `${lead.first_name || ''} ${lead.last_name || ''}`.trim() || lead.email?.split('@')[0] || 'Unknown',
-        first_name: lead.first_name || null,
-        last_name: lead.last_name || null,
-        email: lead.email || '',
-        phone: lead.phone || null,
-        registration_plate: lead.vehicle_reg || null,
-        vehicle_make: lead.vehicle_make || null,
-        vehicle_model: lead.vehicle_model || null,
-        vehicle_year: lead.vehicle_year || null,
-        plan_type: lead.plan_interest || 'Lead',
-        payment_type: null,
-        status: lead.is_paid ? 'active' : 'lead', // Show as active if paid, otherwise lead
-        signup_date: lead.created_at,
-        created_at: lead.created_at,
-        claim_limit: null,
-        voluntary_excess: null,
-        labour_rate: null,
-        mileage: lead.mileage || null,
-        flat_number: null,
-        building_name: null,
-        building_number: null,
-        street: null,
-        town: null,
-        county: null,
-        postcode: null,
-        purchase_source: 'lead',
-        policy: null,
-        tags: [],
-      }));
-
-      // Convert abandoned_carts to customer-like format for display
-      const abandonedCartsAsCustomers: Customer[] = abandonedCartsData.map(lead => ({
-        id: lead.id,
-        name: lead.full_name || lead.email?.split('@')[0] || 'Unknown',
-        first_name: null,
-        last_name: null,
-        email: lead.email || '',
-        phone: lead.phone || null,
-        registration_plate: lead.vehicle_reg || null,
-        vehicle_make: lead.vehicle_make || null,
-        vehicle_model: lead.vehicle_model || null,
-        vehicle_year: lead.vehicle_year || null,
-        plan_type: lead.plan_name || 'Lead',
-        payment_type: lead.payment_type || null,
-        status: 'lead', // Mark as lead
-        signup_date: lead.created_at,
-        created_at: lead.created_at,
-        claim_limit: null,
-        voluntary_excess: null,
-        labour_rate: null,
-        mileage: lead.mileage || null,
-        flat_number: null,
-        building_name: null,
-        building_number: null,
-        street: null,
-        town: null,
-        county: null,
-        postcode: null,
-        purchase_source: 'abandoned_cart',
-        policy: null,
-        tags: [],
-      }));
-
-      // Combine customers and leads, with customers first, then sales leads, then abandoned carts
-      // Use a Set to deduplicate by email
-      const seenEmails = new Set<string>();
-      const allData: Customer[] = [];
-      
-      // Add customers first (highest priority)
-      for (const customer of customersWithData) {
-        if (customer.email && !seenEmails.has(customer.email.toLowerCase())) {
-          seenEmails.add(customer.email.toLowerCase());
-          allData.push(customer);
-        } else if (!customer.email) {
-          allData.push(customer);
-        }
-      }
-      
-      // Add sales leads (excluding duplicates)
-      for (const lead of salesLeadsAsCustomers) {
-        if (lead.email && !seenEmails.has(lead.email.toLowerCase())) {
-          seenEmails.add(lead.email.toLowerCase());
-          allData.push(lead);
-        }
-      }
-      
-      // Add abandoned carts (excluding duplicates)
-      for (const cart of abandonedCartsAsCustomers) {
-        if (cart.email && !seenEmails.has(cart.email.toLowerCase())) {
-          seenEmails.add(cart.email.toLowerCase());
-          allData.push(cart);
-        }
-      }
-      
       // Sort by created_at descending
-      allData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      customersWithData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-      setCustomers(allData);
+      setCustomers(customersWithData);
     } catch (error) {
       console.error('Error fetching customers:', error);
       toast.error('Failed to load customers');
