@@ -294,8 +294,8 @@ export const useLeadQuickNotes = (leadId: string) => {
         };
         updateNotes([syntheticNote]);
         
-        // Background refetch
-        fetchNotes(true);
+        // Background refetch (fire-and-forget with error handling)
+        fetchNotes(true).catch(e => console.warn('[addNote] Background refetch error:', e));
         return { id: `cart_note_${actualId}`, note_text: updatedNotes };
       } else {
         const { data, error } = await supabase
@@ -326,8 +326,8 @@ export const useLeadQuickNotes = (leadId: string) => {
           return [...pinned, newNote, ...unpinned];
         });
         
-        // Background refetch to sync with server
-        fetchNotes(true);
+        // Background refetch to sync with server (fire-and-forget with error handling)
+        fetchNotes(true).catch(e => console.warn('[addNote] Background refetch error:', e));
         return data;
       }
     } catch (error: any) {
@@ -357,7 +357,7 @@ export const useLeadQuickNotes = (leadId: string) => {
         n.id === noteId ? { ...n, note_text: noteText.trim(), updated_at: new Date().toISOString() } : n
       ));
       
-      fetchNotes(true);
+      fetchNotes(true).catch(e => console.warn('[updateNote] Background refetch error:', e));
     } catch (error) {
       console.error('Error updating quick note:', error);
       toast.error('Failed to update note');
@@ -391,7 +391,7 @@ export const useLeadQuickNotes = (leadId: string) => {
         is_pinned: n.id === noteId ? !isPinned : (isPinned ? n.is_pinned : false)
       })));
       
-      fetchNotes(true);
+      fetchNotes(true).catch(e => console.warn('[togglePin] Background refetch error:', e));
     } catch (error) {
       console.error('Error toggling pin:', error);
       toast.error('Failed to update note');
@@ -418,7 +418,7 @@ export const useLeadQuickNotes = (leadId: string) => {
         // Remove from local state immediately
         updateNotes(prev => prev.filter(n => n.id !== noteId));
         
-        fetchNotes(true);
+        fetchNotes(true).catch(e => console.warn('[deleteNote] Background refetch error:', e));
         toast.success('Note deleted');
       }
     } catch (error) {
