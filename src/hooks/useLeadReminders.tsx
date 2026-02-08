@@ -38,7 +38,7 @@ export const useLeadReminders = (leadId?: string) => {
       .from('admin_users')
       .select('id')
       .eq('user_id', userData.user.id)
-      .single();
+      .maybeSingle();
     
     return adminUser?.id || null;
   }, []);
@@ -150,9 +150,9 @@ export const useLeadReminders = (leadId?: string) => {
         .eq('lead_id', leadId)
         .eq('user_id', userId)
         .in('status', ['pending', 'snoozed'])
-        .single() as any);
+        .maybeSingle() as any);
 
-      if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows
+      if (error) throw error;
       
       if (data) {
         setCurrentReminder({
