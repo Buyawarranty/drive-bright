@@ -383,6 +383,33 @@ serve(async (req) => {
     } else {
       logStep("Customer record created successfully", { customerId: customerData2.id });
       
+      // Backfill vehicle data from mot_history if missing
+      if (customerData2.vehicle_make === 'Unknown' || !customerData2.vehicle_make) {
+        const regPlate = customerData2.registration_plate?.replace(/\s/g, '');
+        if (regPlate) {
+          logStep("Vehicle data missing, checking mot_history for backfill", { regPlate });
+          const { data: motData } = await supabaseClient
+            .from('mot_history')
+            .select('make, model, fuel_type, primary_colour')
+            .or(`registration.eq.${regPlate},registration.eq.${regPlate.replace(/^(.{4})/, '$1 ')}`)
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          
+          if (motData?.make) {
+            logStep("Backfilling vehicle data from mot_history", motData);
+            await supabaseClient
+              .from('customers')
+              .update({
+                vehicle_make: motData.make,
+                vehicle_model: motData.model || customerData2.vehicle_model,
+                vehicle_fuel_type: motData.fuel_type || customerData2.vehicle_fuel_type,
+              })
+              .eq('id', customerData2.id);
+          }
+        }
+      }
+      
       // Track referral conversion if discount code was used
       if (customerData?.discount_code) {
         try {
