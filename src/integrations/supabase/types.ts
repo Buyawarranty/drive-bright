@@ -524,6 +524,63 @@ export type Database = {
           },
         ]
       }
+      agent_daily_targets: {
+        Row: {
+          actual_leads: number
+          actual_sales: number
+          agent_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          set_by: string
+          target_date: string
+          target_leads: number
+          target_sales: number
+          updated_at: string
+        }
+        Insert: {
+          actual_leads?: number
+          actual_sales?: number
+          agent_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          set_by: string
+          target_date: string
+          target_leads?: number
+          target_sales?: number
+          updated_at?: string
+        }
+        Update: {
+          actual_leads?: number
+          actual_sales?: number
+          agent_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          set_by?: string
+          target_date?: string
+          target_leads?: number
+          target_sales?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_daily_targets_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_daily_targets_set_by_fkey"
+            columns: ["set_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_distribution_caps: {
         Row: {
           admin_user_id: string
@@ -5250,6 +5307,7 @@ export type Database = {
         | "guest"
         | "blog_writer"
         | "sales"
+        | "sales_lead"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -5427,6 +5485,7 @@ export const Constants = {
         "guest",
         "blog_writer",
         "sales",
+        "sales_lead",
       ],
     },
   },

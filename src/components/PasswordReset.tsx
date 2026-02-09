@@ -170,7 +170,7 @@ const PasswordReset = () => {
           .eq('user_id', session.user.id);
 
         // Define admin roles that should go to admin dashboard
-        const adminRoles = ['admin', 'member', 'viewer', 'guest', 'sales', 'blog_writer'];
+        const adminRoles = ['admin', 'member', 'viewer', 'guest', 'sales', 'sales_lead', 'blog_writer'];
         
         // Check if user has ANY admin role
         const hasAdminRole = roleData && roleData.some(r => adminRoles.includes(r.role));

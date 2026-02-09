@@ -277,6 +277,41 @@ export const ROLE_TEMPLATES: Record<string, PermissionPolicy> = {
     },
     actions: baseActionPermissions,
   },
+
+  sales_lead: {
+    name: 'Sales Lead',
+    description: 'Team leader who assigns leads, sets targets, and monitors sales agent performance',
+    department: 'sales',
+    security: baseSecuritySettings,
+    tabs: {
+      analytics: { view: 'team', create: false, edit: false, delete: false, export: true, approve: false },
+      new_leads: { view: true, create: true, edit: true, delete: false, export: true, approve: true },
+      get_quote: { view: true, create: true, edit: true, delete: false, export: false, approve: false },
+      customers: { view: true, create: false, edit: false, delete: false, export: true, approve: false },
+      abandoned_carts: { view: true, create: false, edit: true, delete: false, export: true, approve: false },
+      discount_codes: { view: true, create: false, edit: false, delete: false, export: false, approve: false },
+      referrals: { view: true, create: false, edit: false, delete: false, export: false, approve: false },
+    },
+    columns: {
+      'customers.email': noMask,
+      'customers.phone': noMask,
+      'customers.address': partialMask,
+      'orders.customer_email': noMask,
+      'orders.customer_phone': noMask,
+      'orders.vehicle_reg': noMask,
+      'orders.policy_number': noMask,
+      'orders.net_price': noMask,
+      'orders.commission': fullMask,
+    },
+    actions: {
+      approve_discount: { allowed: true, limit_percent: 10 },
+      invite_user: { allowed: false, scope: 'none' },
+      manage_roles: { allowed: false, scope: 'none' },
+      resend_invite: { allowed: false },
+      deactivate_user: { allowed: false },
+      reactivate_user: { allowed: false },
+    },
+  },
 };
 
 // Get template by role name

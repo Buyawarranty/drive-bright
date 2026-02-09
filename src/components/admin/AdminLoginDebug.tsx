@@ -91,7 +91,7 @@ const AdminLoginDebug = () => {
       console.log('Role check result:', { roleData, roleError });
 
       // Define admin roles
-      const adminRoles = ['admin', 'member', 'viewer', 'guest', 'sales', 'blog_writer'];
+      const adminRoles = ['admin', 'member', 'viewer', 'guest', 'sales', 'sales_lead', 'blog_writer'];
       const userRoles = roleData?.map(r => r.role) || [];
       const hasAdminRole = userRoles.some(role => adminRoles.includes(role));
 

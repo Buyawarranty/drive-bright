@@ -31,7 +31,7 @@ const SalesLogin = () => {
         
         const userRoles = roles?.map(r => r.role) || [];
         
-        if (userRoles.includes('sales') || userRoles.includes('admin') || userRoles.includes('member')) {
+        if (userRoles.includes('sales') || userRoles.includes('sales_lead') || userRoles.includes('admin') || userRoles.includes('member')) {
           navigate('/admin-dashboard/', { replace: true });
           return;
         }
@@ -74,7 +74,7 @@ const SalesLogin = () => {
       }
 
       const userRoles = roles?.map(r => r.role) || [];
-      const hasAccess = userRoles.includes('sales') || userRoles.includes('admin') || userRoles.includes('member');
+      const hasAccess = userRoles.includes('sales') || userRoles.includes('sales_lead') || userRoles.includes('admin') || userRoles.includes('member');
 
       if (!hasAccess) {
         // Sign out the user since they don't have sales access

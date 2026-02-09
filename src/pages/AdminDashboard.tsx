@@ -31,6 +31,7 @@ import { TimesheetsTab } from '@/components/admin/timesheets/TimesheetsTab';
 import { ReviewsTab } from '@/components/admin/ReviewsTab';
 import { MarketingAudienceTab } from '@/components/admin/marketing/MarketingAudienceTab';
 import SalesCustomerManagement from '@/components/admin/sales/SalesCustomerManagement';
+import { SalesLeadDashboard } from '@/components/admin/sales/SalesLeadDashboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -211,7 +212,7 @@ const AdminDashboard = () => {
       const adminUserData = permissionsResult.data;
 
       // Define admin roles
-      const adminRoles = ['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales'];
+      const adminRoles = ['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead'];
       
       // Check if user has ANY admin role
       const userAdminRoles = data?.filter(r => adminRoles.includes(r.role)) || [];
@@ -224,7 +225,7 @@ const AdminDashboard = () => {
       }
 
       // Use the highest priority role
-      const rolePriority = ['admin', 'member', 'viewer', 'guest', 'sales', 'blog_writer'];
+      const rolePriority = ['admin', 'member', 'sales_lead', 'viewer', 'guest', 'sales', 'blog_writer'];
       const primaryRole = rolePriority.find(role => userAdminRoles.some(r => r.role === role)) || userAdminRoles[0].role;
       
       setUserRole(primaryRole);
@@ -237,7 +238,7 @@ const AdminDashboard = () => {
       
       // Set default tab based on role
       // Sales agents ALWAYS start on new-leads, regardless of URL param
-      if (!hasSetInitialTab || primaryRole === 'sales') {
+      if (!hasSetInitialTab || primaryRole === 'sales' || primaryRole === 'sales_lead') {
         setHasSetInitialTab(true);
         
         let defaultTab = 'customers';
@@ -245,6 +246,9 @@ const AdminDashboard = () => {
           defaultTab = 'blog-writing';
         } else if (primaryRole === 'sales') {
           // Sales agents always default to new-leads - this is their primary workspace
+          defaultTab = 'new-leads';
+        } else if (primaryRole === 'sales_lead') {
+          // Sales leads default to new-leads where they manage lead assignment
           defaultTab = 'new-leads';
         } else if (!['admin'].includes(primaryRole) && adminUserData?.permissions) {
           const perms = adminUserData.permissions as Record<string, boolean>;
@@ -337,6 +341,9 @@ const AdminDashboard = () => {
       case 'get-quote':
         return <GetQuoteTab prePopulatedLead={selectedLeadForQuote} />;
       case 'new-leads':
+        if (userRole === 'sales_lead') {
+          return <SalesLeadDashboard onNavigateToTab={handleTabChange} />;
+        }
         return (
           <NewLeadsTab 
             notifications={notifications}
