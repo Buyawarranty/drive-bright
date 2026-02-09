@@ -64,6 +64,7 @@ export const ClaimStatusDropdown: React.FC<ClaimStatusDropdownProps> = ({
         'Rejected': 'rejected',
         'On Hold': 'in_progress',
         'Escalated': 'in_progress',
+        'Fake/Test': 'fake_test',
       };
 
       const newStatus = tag ? statusMap[tag.name] || 'in_progress' : currentStatus;

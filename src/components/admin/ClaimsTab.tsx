@@ -122,6 +122,8 @@ export const ClaimsTab = () => {
     const triageFn = getTriageFilterFn(triageFilter);
     
     return claims.filter(claim => {
+      // Hide fake/test claims unless explicitly filtering for them
+      if (claim.status === 'fake_test' && statusFilter !== 'fake_test') return false;
       if (!triageFn(claim)) return false;
       if (statusFilter !== 'all' && claim.status !== statusFilter) return false;
       if (priorityFilter !== 'all' && claim.priority !== priorityFilter) return false;
@@ -348,7 +350,7 @@ export const ClaimsTab = () => {
 
       {/* Analytics */}
       <div id="claims-analytics-section" className="scroll-mt-4">
-        <ClaimsAnalyticsPanel claims={claims} />
+        <ClaimsAnalyticsPanel claims={claims.filter(c => c.status !== 'fake_test')} />
       </div>
 
       {/* Dialogs */}
