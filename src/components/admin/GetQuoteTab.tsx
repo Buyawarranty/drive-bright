@@ -492,18 +492,28 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
 
     setIsLookingUp(true);
     try {
-      // Add timeout to prevent infinite loading
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Lookup timeout - please try again')), 15000);
-      });
+      // Add timeout to prevent infinite loading - 30s for cold starts
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
       
-      const lookupPromise = supabase.functions.invoke('dvla-vehicle-lookup', {
+      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
         body: { registrationNumber: regNumber }
       });
       
-      const { data, error } = await Promise.race([lookupPromise, timeoutPromise]) as any;
+      clearTimeout(timeoutId);
 
-      if (error || data?.error || !data?.make || !data?.model) {
+      if (error) {
+        console.error('DVLA lookup error:', error);
+        toast({
+          title: "Lookup Failed",
+          description: error.message || "Unable to connect to vehicle database. Please try again.",
+          variant: "destructive",
+        });
+        setIsLookingUp(false);
+        return;
+      }
+
+      if (data?.error || !data?.make || !data?.model) {
         toast({
           title: "Vehicle Not Found",
           description: data?.error || "Unable to find vehicle details. Please check the registration number and try again.",
@@ -542,11 +552,14 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       });
       
       setStep(2);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error looking up vehicle:', error);
+      const msg = error?.name === 'AbortError' 
+        ? 'Request timed out. Please try again.' 
+        : (error?.message || 'Unable to connect to vehicle database. Please try again.');
       toast({
         title: "Lookup Failed",
-        description: "Unable to connect to vehicle database. Please try again.",
+        description: msg,
         variant: "destructive",
       });
     } finally {
@@ -570,18 +583,27 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
 
     setIsQuickConfirming(true);
     try {
-      // Add timeout to prevent infinite loading
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Lookup timeout - please try again')), 15000);
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
       
-      const lookupPromise = supabase.functions.invoke('dvla-vehicle-lookup', {
+      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
         body: { registrationNumber: regNumber }
       });
       
-      const { data, error } = await Promise.race([lookupPromise, timeoutPromise]) as any;
+      clearTimeout(timeoutId);
 
-      if (error || data?.error || !data?.make || !data?.model) {
+      if (error) {
+        console.error('DVLA lookup error:', error);
+        toast({
+          title: "Lookup Failed",
+          description: error.message || "Unable to connect to vehicle database. Please try again.",
+          variant: "destructive",
+        });
+        setIsQuickConfirming(false);
+        return;
+      }
+
+      if (data?.error || !data?.make || !data?.model) {
         toast({
           title: "Vehicle Not Found",
           description: data?.error || "Unable to find vehicle details. Please check the registration number and try again.",
@@ -637,11 +659,14 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         title: "Vehicle Found",
         description: `${data.make} ${data.model} (${data.yearOfManufacture || data.year}) - Ready to confirm order`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error looking up vehicle:', error);
+      const msg = error?.name === 'AbortError' 
+        ? 'Request timed out. Please try again.' 
+        : (error?.message || 'Unable to connect to vehicle database. Please try again.');
       toast({
         title: "Lookup Failed",
-        description: "Unable to connect to vehicle database. Please try again.",
+        description: msg,
         variant: "destructive",
       });
     } finally {
