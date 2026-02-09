@@ -59,7 +59,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const { exportToCSV, exportToExcel } = useDataExport();
   
   // Role-based restrictions
-  const isAdmin = userRole === 'admin';
+  const isAdmin = userRole === 'admin' || userRole === 'sales_lead';
   const isSalesAgent = userRole === 'sales';
   
   // Delete permission - admin role OR explicit delete permission
