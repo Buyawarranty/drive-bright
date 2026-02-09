@@ -251,17 +251,26 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
 
     setIsLookingUp(true);
     try {
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Lookup timeout')), 15000);
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
       
-      const lookupPromise = supabase.functions.invoke('dvla-vehicle-lookup', {
+      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
         body: { registrationNumber: reg.replace(/\s/g, '') }
       });
       
-      const { data, error } = await Promise.race([lookupPromise, timeoutPromise]) as any;
+      clearTimeout(timeoutId);
 
-      if (error || data?.error || !data?.make || !data?.model) {
+      if (error) {
+        console.error('DVLA lookup error:', error);
+        toast({
+          title: "Lookup Failed",
+          description: error.message || "Unable to connect to vehicle database. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data?.error || !data?.make || !data?.model) {
         toast({
           title: "Vehicle Not Found",
           description: data?.error || "Unable to find vehicle details. Please check the registration.",
@@ -302,11 +311,14 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
         title: "Vehicle Found",
         description: `${data.make} ${data.model} (${data.yearOfManufacture || data.year})`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error looking up vehicle:', error);
+      const msg = error?.name === 'AbortError' 
+        ? 'Request timed out. Please try again.' 
+        : (error?.message || 'Unable to connect to vehicle database. Please try again.');
       toast({
         title: "Lookup Failed",
-        description: "Unable to connect to vehicle database.",
+        description: msg,
         variant: "destructive",
       });
     } finally {
