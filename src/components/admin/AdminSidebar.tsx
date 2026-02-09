@@ -248,8 +248,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     }
     
     if (userRole === 'sales_lead') {
-      // Sales leads: manage team, assign leads, view customers, quotes, tips
-      const salesLeadTabIds = ['new-leads', 'get-quote', 'customers', 'selling-tips'];
+      // Sales leads: manage team, assign leads, view customers, quotes, tips, account
+      const salesLeadTabIds = ['new-leads', 'get-quote', 'customers', 'selling-tips', 'account'];
       return defaultTabs.filter(tab => salesLeadTabIds.includes(tab.id));
     }
 
@@ -272,7 +272,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
       
       // Fallback: restricted view for sales without custom permissions
       // Only their dashboard, quotes, and tips
-      const salesTabIds = ['new-leads', 'get-quote', 'selling-tips'];
+      const salesTabIds = ['new-leads', 'get-quote', 'selling-tips', 'account'];
       return defaultTabs.filter(tab => salesTabIds.includes(tab.id));
     }
     
