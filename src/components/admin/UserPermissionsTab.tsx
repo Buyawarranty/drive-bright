@@ -697,6 +697,7 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="guest">Guest - Minimal access</SelectItem>
                     <SelectItem value="blog_writer">Blog Writer - Blog & Landing Pages only</SelectItem>
                     <SelectItem value="sales">Sales - Sales team tabs only</SelectItem>
+                    <SelectItem value="sales_lead">Sales Lead - Team management & lead assignment</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -871,6 +872,7 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="guest">Guest - Minimal access</SelectItem>
                     <SelectItem value="blog_writer">Blog Writer - Blog & Landing Pages only</SelectItem>
                     <SelectItem value="sales">Sales - Sales team tabs only</SelectItem>
+                    <SelectItem value="sales_lead">Sales Lead - Team management & lead assignment</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
