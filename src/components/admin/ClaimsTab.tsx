@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileSpreadsheet, FileDown, Plus, Trash2 } from 'lucide-react';
+import { FileSpreadsheet, FileDown, Plus, Trash2, Car } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ClaimsAnalyticsPanel } from './claims/ClaimsAnalyticsPanel';
 import { ClaimDetailDialog } from './claims/ClaimDetailDialog';
@@ -13,6 +13,7 @@ import { ClaimsTriageBlocks, getTriageFilterFn, TriageFilter } from './claims/Cl
 import { ClaimsFilterBar, getReadinessState } from './claims/ClaimsFilterBar';
 import { ClaimsEnhancedTable } from './claims/ClaimsEnhancedTable';
 import { exportToCSV, exportToPDF, formatClaimForExport } from './claims/exportUtils';
+import { VehicleIntelligenceExplorer } from './claims/VehicleIntelligenceExplorer';
 
 interface ClaimSubmission {
   id: string;
@@ -53,6 +54,7 @@ export const ClaimsTab = () => {
   const [emailingClaim, setEmailingClaim] = useState<ClaimSubmission | null>(null);
   const [showAddClaimDialog, setShowAddClaimDialog] = useState(false);
   const [selectedClaimIds, setSelectedClaimIds] = useState<Set<string>>(new Set());
+  const [activeSubTab, setActiveSubTab] = useState<'claims' | 'vehicle-intelligence'>('claims');
 
   // Filters
   const [triageFilter, setTriageFilter] = useState<TriageFilter>('all');
@@ -271,7 +273,18 @@ export const ClaimsTab = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => document.getElementById('claims-analytics-section')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => setActiveSubTab('vehicle-intelligence')}
+            className="gap-1.5"
+          >
+            <Car className="h-4 w-4" /> Vehicle Intelligence
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setActiveSubTab('claims');
+              setTimeout(() => document.getElementById('claims-analytics-section')?.scrollIntoView({ behavior: 'smooth' }), 100);
+            }}
           >
             📊 Analytics & Charts
           </Button>
@@ -287,71 +300,97 @@ export const ClaimsTab = () => {
         </div>
       </div>
 
-      {/* Triage Command Centre */}
-      <ClaimsTriageBlocks
-        claims={claims}
-        activeFilter={triageFilter}
-        onFilterChange={setTriageFilter}
-        avgResolutionDays={avgResolutionDays}
-      />
+      {/* Sub-tab navigation */}
+      <div className="flex gap-1 border-b border-border">
+        <button
+          onClick={() => setActiveSubTab('claims')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeSubTab === 'claims' ? 'border-orange-500 text-orange-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+        >
+          Claims List
+        </button>
+        <button
+          onClick={() => setActiveSubTab('vehicle-intelligence')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${activeSubTab === 'vehicle-intelligence' ? 'border-orange-500 text-orange-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+        >
+          <Car className="h-3.5 w-3.5" /> Vehicle Intelligence
+        </button>
+      </div>
 
-      {/* Filters */}
-      <ClaimsFilterBar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
-        priorityFilter={priorityFilter}
-        onPriorityChange={setPriorityFilter}
-        readinessFilter={readinessFilter}
-        onReadinessChange={setReadinessFilter}
-        warrantyFilter={warrantyFilter}
-        onWarrantyChange={setWarrantyFilter}
-        costRange={costRange}
-        onCostRangeChange={setCostRange}
-        dateFrom={dateFrom}
-        dateTo={dateTo}
-        onDateFromChange={setDateFrom}
-        onDateToChange={setDateTo}
-        onClearAll={clearAllFilters}
-        hasActiveFilters={hasActiveFilters}
-        uniqueWarrantyTypes={uniqueWarrantyTypes}
-      />
-
-      {/* Bulk actions */}
-      {selectedClaimIds.size > 0 && (
-        <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
-          <span className="text-sm font-medium">{selectedClaimIds.size} selected</span>
-          <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={loading}>
-            <Trash2 className="h-4 w-4 mr-1" /> Delete
-          </Button>
-        </div>
+      {/* Vehicle Intelligence Sub-tab */}
+      {activeSubTab === 'vehicle-intelligence' && (
+        <VehicleIntelligenceExplorer claims={claims.filter(c => c.status !== 'fake_test')} />
       )}
 
-      {/* Enhanced Table */}
-      <Card>
-        <CardContent className="p-0">
-          <ClaimsEnhancedTable
-            groupedClaims={groupedFilteredClaims}
-            filteredClaimsCount={filteredClaims.length}
-            selectedClaimIds={selectedClaimIds}
-            onSelectAll={handleSelectAll}
-            onSelectClaim={handleSelectClaim}
-            onViewClaim={setSelectedClaim}
-            onEditAmount={setEditingClaim}
-            onEmailClaim={setEmailingClaim}
-            onPriorityChange={handlePriorityChange}
-            onStatusUpdate={fetchClaims}
-            onDownloadFile={downloadFile}
-            loading={loading}
+      {/* Claims List Sub-tab */}
+      {activeSubTab === 'claims' && (
+        <>
+          {/* Triage Command Centre */}
+          <ClaimsTriageBlocks
+            claims={claims}
+            activeFilter={triageFilter}
+            onFilterChange={setTriageFilter}
+            avgResolutionDays={avgResolutionDays}
           />
-        </CardContent>
-      </Card>
 
-      {/* Analytics */}
-      <div id="claims-analytics-section" className="scroll-mt-4">
-        <ClaimsAnalyticsPanel claims={claims.filter(c => c.status !== 'fake_test')} />
-      </div>
+          {/* Filters */}
+          <ClaimsFilterBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            statusFilter={statusFilter}
+            onStatusChange={setStatusFilter}
+            priorityFilter={priorityFilter}
+            onPriorityChange={setPriorityFilter}
+            readinessFilter={readinessFilter}
+            onReadinessChange={setReadinessFilter}
+            warrantyFilter={warrantyFilter}
+            onWarrantyChange={setWarrantyFilter}
+            costRange={costRange}
+            onCostRangeChange={setCostRange}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
+            onClearAll={clearAllFilters}
+            hasActiveFilters={hasActiveFilters}
+            uniqueWarrantyTypes={uniqueWarrantyTypes}
+          />
+
+          {/* Bulk actions */}
+          {selectedClaimIds.size > 0 && (
+            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
+              <span className="text-sm font-medium">{selectedClaimIds.size} selected</span>
+              <Button variant="destructive" size="sm" onClick={handleBulkDelete} disabled={loading}>
+                <Trash2 className="h-4 w-4 mr-1" /> Delete
+              </Button>
+            </div>
+          )}
+
+          {/* Enhanced Table */}
+          <Card>
+            <CardContent className="p-0">
+              <ClaimsEnhancedTable
+                groupedClaims={groupedFilteredClaims}
+                filteredClaimsCount={filteredClaims.length}
+                selectedClaimIds={selectedClaimIds}
+                onSelectAll={handleSelectAll}
+                onSelectClaim={handleSelectClaim}
+                onViewClaim={setSelectedClaim}
+                onEditAmount={setEditingClaim}
+                onEmailClaim={setEmailingClaim}
+                onPriorityChange={handlePriorityChange}
+                onStatusUpdate={fetchClaims}
+                onDownloadFile={downloadFile}
+                loading={loading}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Analytics */}
+          <div id="claims-analytics-section" className="scroll-mt-4">
+            <ClaimsAnalyticsPanel claims={claims.filter(c => c.status !== 'fake_test')} />
+          </div>
+        </>
+      )}
 
       {/* Dialogs */}
       {selectedClaim && (
