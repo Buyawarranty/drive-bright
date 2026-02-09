@@ -123,11 +123,12 @@ export const useSalesStats = (userId?: string) => {
 
       const leadsData = leads || [];
 
-      // Get all sales users
+      // Get only sales-role users (sales agents and sales leads)
       const { data: users } = await supabase
         .from('admin_users')
-        .select('id, first_name, last_name, email')
-        .eq('is_active', true);
+        .select('id, first_name, last_name, email, role')
+        .eq('is_active', true)
+        .in('role', ['sales', 'sales_lead']);
 
       // Calculate leaderboard
       const leaderboard: SalespersonStats[] = await Promise.all(
