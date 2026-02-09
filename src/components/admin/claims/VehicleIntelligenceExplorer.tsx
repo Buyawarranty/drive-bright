@@ -12,11 +12,12 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { buildVehicleTaxonomy, normaliseMake, normaliseModelFamily, VehicleTaxonomy } from './vehicleNormalisation';
 
 interface SearchSuggestion {
-  type: 'make' | 'family' | 'variant';
+  type: 'make' | 'family' | 'variant' | 'fuel' | 'bodyType';
   label: string;
   make: string;
   family?: string;
   count: number;
+  value?: string;
 }
 
 interface ClaimData {
@@ -37,6 +38,33 @@ interface VehicleInfo {
   vehicle_model: string | null;
   vehicle_fuel_type: string | null;
   vehicle_year: string | null;
+  vehicle_transmission: string | null;
+}
+
+// Simple body type inference from model name
+function inferBodyType(make: string, model: string): string {
+  const m = `${make} ${model}`.toLowerCase();
+  // Motorbike makes
+  if (['yamaha', 'honda', 'kawasaki', 'suzuki', 'ducati', 'triumph', 'harley', 'ktm', 'bmw motorrad', 'aprilia', 'indian'].some(b => m.includes(b) && !['civic', 'jazz', 'cr-v', 'hr-v', 'accord'].some(car => m.includes(car)))) {
+    // Honda makes both cars and bikes - check model
+    if (make.toLowerCase() === 'honda' && ['cbr', 'cb', 'crf', 'africa twin', 'rebel', 'goldwing', 'monkey', 'grom', 'nc', 'ctx'].some(bike => m.includes(bike))) return 'Motorbike';
+  }
+  if (['motorcycle', 'motorbike', 'bike'].some(k => m.includes(k))) return 'Motorbike';
+  // Vans
+  if (['transit', 'sprinter', 'vito', 'vivaro', 'crafter', 'caddy', 'transporter', 'combo', 'movano', 'relay', 'dispatch', 'expert', 'partner', 'berlingo', 'kangoo', 'trafic', 'master', 'nv200', 'nv300', 'nv400', 'proace', 'hiace', 'caravelle', 'multivan'].some(v => m.includes(v))) return 'Van';
+  // SUV / Crossover
+  if (['suv', 'x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7', 'rav4', 'rav 4', 'cr-v', 'crv', 'hr-v', 'hrv', 'tucson', 'sportage', 'qashqai', 'juke', 'tiguan', 'touareg', 'q2', 'q3', 'q4', 'q5', 'q7', 'q8', 'gla', 'glb', 'glc', 'gle', 'gls', 'range rover', 'discovery', 'defender', 'freelander', 'kuga', 'puma', 'ecosport', 'mokka', 'crossland', 'grandland', 'c-hr', 'chr', 'highlander', 't-roc', 'troc', 't-cross', 'tcross', 'explorer', 'edge', 'mustang mach-e', 'ix', 'ix3', 'eqa', 'eqb', 'eqc'].some(s => m.includes(s))) return 'SUV';
+  // Pickup
+  if (['hilux', 'ranger', 'l200', 'navara', 'amarok', 'pickup', 'pick-up'].some(p => m.includes(p))) return 'Pickup';
+  // Hatchback indicators
+  if (['fiesta', 'focus', 'polo', 'golf', 'corsa', 'astra', 'yaris', 'aygo', 'up!', 'clio', 'micra', 'ibiza', 'fabia', 'i10', 'i20', 'i30', 'swift', 'jazz', 'civic', 'leon'].some(h => m.includes(h))) return 'Hatchback';
+  // Saloon / Sedan
+  if (['a-class', 'c-class', 'e-class', 's-class', '3 series', '5 series', '7 series', 'a4', 'a6', 'a8', 'passat', 'mondeo', 'insignia', 'camry', 'corolla', 'arteon'].some(s => m.includes(s))) return 'Saloon';
+  // Estate / Touring
+  if (['estate', 'touring', 'avant', 'sportback', 'wagon'].some(e => m.includes(e))) return 'Estate';
+  // Coupe / Sports
+  if (['coupe', 'coupé', 'gt86', 'supra', 'tt', 'r8', 'z4', 'mustang', 'scirocco', 'cayman', 'boxster', '911'].some(c => m.includes(c))) return 'Coupe/Sports';
+  return 'Car';
 }
 
 // Fuel type and year filters
@@ -51,6 +79,7 @@ export const VehicleIntelligenceExplorer: React.FC<VehicleIntelligenceExplorerPr
   const [selectedFamilies, setSelectedFamilies] = useState<string[]>([]);
   const [selectedFuel, setSelectedFuel] = useState<FuelFilter>('all');
   const [selectedYear, setSelectedYear] = useState<YearFilter>('all');
+  const [selectedBodyType, setSelectedBodyType] = useState<string>('all');
   const [expandedMakes, setExpandedMakes] = useState<Set<string>>(new Set());
   const [expandedFamilies, setExpandedFamilies] = useState<Set<string>>(new Set());
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -65,7 +94,7 @@ export const VehicleIntelligenceExplorer: React.FC<VehicleIntelligenceExplorerPr
     const fetchVehicles = async () => {
       const { data } = await supabase
         .from('customers')
-        .select('registration_plate, vehicle_make, vehicle_model, vehicle_fuel_type, vehicle_year')
+        .select('registration_plate, vehicle_make, vehicle_model, vehicle_fuel_type, vehicle_year, vehicle_transmission')
         .in('registration_plate', regs);
 
       if (data) {
@@ -81,7 +110,7 @@ export const VehicleIntelligenceExplorer: React.FC<VehicleIntelligenceExplorerPr
 
   // Build raw records from claims + vehicle data
   const rawRecords = useMemo(() => {
-    const byKey = new Map<string, { make: string; model: string; fuel: string; year: string; claimCount: number; totalCost: number; paidCount: number }>();
+    const byKey = new Map<string, { make: string; model: string; fuel: string; year: string; bodyType: string; claimCount: number; totalCost: number; paidCount: number }>();
 
     claims.forEach(c => {
       const reg = c.vehicle_registration?.toUpperCase();
@@ -95,6 +124,7 @@ export const VehicleIntelligenceExplorer: React.FC<VehicleIntelligenceExplorerPr
           model: info.vehicle_model || '',
           fuel: info.vehicle_fuel_type || 'Unknown',
           year: info.vehicle_year || 'Unknown',
+          bodyType: inferBodyType(info.vehicle_make, info.vehicle_model || ''),
           claimCount: 0,
           totalCost: 0,
           paidCount: 0,
@@ -124,6 +154,12 @@ export const VehicleIntelligenceExplorer: React.FC<VehicleIntelligenceExplorerPr
     return Array.from(years).sort().reverse();
   }, [rawRecords]);
 
+  const availableBodyTypes = useMemo(() => {
+    const types = new Set<string>();
+    rawRecords.forEach(r => { if (r.bodyType !== 'Unknown') types.add(r.bodyType); });
+    return Array.from(types).sort();
+  }, [rawRecords]);
+
   // Build taxonomy
   const taxonomy = useMemo(() => {
     let filtered = rawRecords;
@@ -134,9 +170,12 @@ export const VehicleIntelligenceExplorer: React.FC<VehicleIntelligenceExplorerPr
     if (selectedYear !== 'all') {
       filtered = filtered.filter(r => r.year === selectedYear);
     }
+    if (selectedBodyType !== 'all') {
+      filtered = filtered.filter(r => r.bodyType === selectedBodyType);
+    }
 
     return buildVehicleTaxonomy(filtered);
-  }, [rawRecords, selectedFuel, selectedYear]);
+  }, [rawRecords, selectedFuel, selectedYear, selectedBodyType]);
 
   // Apply search + chip filters
   const filteredTaxonomy = useMemo(() => {
@@ -232,16 +271,33 @@ export const VehicleIntelligenceExplorer: React.FC<VehicleIntelligenceExplorerPr
     setSelectedFamilies([]);
     setSelectedFuel('all');
     setSelectedYear('all');
+    setSelectedBodyType('all');
     setSearchQuery('');
   };
 
-  const hasFilters = selectedMakes.length > 0 || selectedFamilies.length > 0 || selectedFuel !== 'all' || selectedYear !== 'all' || searchQuery !== '';
+  const hasFilters = selectedMakes.length > 0 || selectedFamilies.length > 0 || selectedFuel !== 'all' || selectedYear !== 'all' || selectedBodyType !== 'all' || searchQuery !== '';
 
   // Autocomplete suggestions
   const suggestions = useMemo<SearchSuggestion[]>(() => {
     if (!searchQuery || searchQuery.length < 1) return [];
     const q = searchQuery.toLowerCase();
     const results: SearchSuggestion[] = [];
+
+    // Fuel type matches
+    availableFuels.forEach(f => {
+      if (f.toLowerCase().includes(q)) {
+        const count = rawRecords.filter(r => r.fuel === f).reduce((s, r) => s + r.claimCount, 0);
+        results.push({ type: 'fuel', label: f, make: '', value: f, count });
+      }
+    });
+
+    // Body type matches
+    availableBodyTypes.forEach(bt => {
+      if (bt.toLowerCase().includes(q)) {
+        const count = rawRecords.filter(r => r.bodyType === bt).reduce((s, r) => s + r.claimCount, 0);
+        results.push({ type: 'bodyType', label: bt, make: '', value: bt, count });
+      }
+    });
 
     taxonomy.forEach(m => {
       if (m.make.toLowerCase().includes(q)) {
@@ -260,10 +316,14 @@ export const VehicleIntelligenceExplorer: React.FC<VehicleIntelligenceExplorerPr
     });
 
     return results.slice(0, 12);
-  }, [searchQuery, taxonomy]);
+  }, [searchQuery, taxonomy, availableFuels, availableBodyTypes, rawRecords]);
 
   const handleSuggestionClick = (s: SearchSuggestion) => {
-    if (s.type === 'make') {
+    if (s.type === 'fuel' && s.value) {
+      setSelectedFuel(s.value);
+    } else if (s.type === 'bodyType' && s.value) {
+      setSelectedBodyType(s.value);
+    } else if (s.type === 'make') {
       addMakeChip(s.make);
     } else if (s.type === 'family' && s.family) {
       addMakeChip(s.make);
@@ -303,7 +363,7 @@ export const VehicleIntelligenceExplorer: React.FC<VehicleIntelligenceExplorerPr
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
             <Input
               ref={searchInputRef}
-              placeholder="Search make, model, reg, variant..."
+              placeholder="Search make, model, diesel, hybrid, SUV, van..."
               value={searchQuery}
               onChange={e => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
               onFocus={() => setShowSuggestions(true)}
@@ -328,9 +388,11 @@ export const VehicleIntelligenceExplorer: React.FC<VehicleIntelligenceExplorerPr
                       <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${
                         s.type === 'make' ? 'border-orange-300 text-orange-700' :
                         s.type === 'family' ? 'border-blue-300 text-blue-700' :
+                        s.type === 'fuel' ? 'border-green-300 text-green-700' :
+                        s.type === 'bodyType' ? 'border-purple-300 text-purple-700' :
                         'border-muted-foreground/30 text-muted-foreground'
                       }`}>
-                        {s.type === 'make' ? 'Make' : s.type === 'family' ? 'Family' : 'Variant'}
+                        {s.type === 'make' ? 'Make' : s.type === 'family' ? 'Family' : s.type === 'fuel' ? 'Fuel' : s.type === 'bodyType' ? 'Category' : 'Variant'}
                       </Badge>
                       <span className="font-medium">{s.label}</span>
                     </div>
@@ -426,6 +488,28 @@ export const VehicleIntelligenceExplorer: React.FC<VehicleIntelligenceExplorerPr
                   </div>
                 </div>
 
+                {/* Body / Vehicle Type */}
+                <div>
+                  <h4 className="text-sm font-medium mb-2">Vehicle Category</h4>
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      onClick={() => setSelectedBodyType('all')}
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${selectedBodyType === 'all' ? 'bg-foreground text-background border-foreground' : 'border-border hover:bg-muted'}`}
+                    >
+                      All
+                    </button>
+                    {availableBodyTypes.map(bt => (
+                      <button
+                        key={bt}
+                        onClick={() => setSelectedBodyType(bt)}
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${selectedBodyType === bt ? 'bg-foreground text-background border-foreground' : 'border-border hover:bg-muted'}`}
+                      >
+                        {bt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Year Range */}
                 <div>
                   <h4 className="text-sm font-medium mb-2">Year</h4>
@@ -474,6 +558,11 @@ export const VehicleIntelligenceExplorer: React.FC<VehicleIntelligenceExplorerPr
           {selectedYear !== 'all' && (
             <Badge variant="secondary" className="gap-1 cursor-pointer" onClick={() => setSelectedYear('all')}>
               {selectedYear} <X className="h-3 w-3" />
+            </Badge>
+          )}
+          {selectedBodyType !== 'all' && (
+            <Badge variant="secondary" className="gap-1 cursor-pointer" onClick={() => setSelectedBodyType('all')}>
+              {selectedBodyType} <X className="h-3 w-3" />
             </Badge>
           )}
           <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-6 text-xs">
