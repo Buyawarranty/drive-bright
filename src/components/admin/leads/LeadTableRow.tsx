@@ -274,17 +274,23 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
             >
               <div className="flex items-center gap-1.5 w-full">
                 {lead.assigned_to ? (
-                  // Assigned state - show initials avatar
-                  // Fall back to salesUsers lookup if assigned_user is not populated
+                  // Assigned state - show initials avatar with per-agent color
                   (() => {
+                    const AGENT_COLORS = [
+                      'bg-blue-600', 'bg-purple-600', 'bg-teal-600', 'bg-orange-600',
+                      'bg-pink-600', 'bg-indigo-600', 'bg-emerald-600', 'bg-rose-600',
+                      'bg-cyan-600', 'bg-amber-600'
+                    ];
                     const assignedUser = lead.assigned_user || salesUsers.find(u => u.id === lead.assigned_to);
+                    const agentIndex = salesUsers.findIndex(u => u.id === lead.assigned_to);
+                    const agentColor = AGENT_COLORS[agentIndex >= 0 ? agentIndex % AGENT_COLORS.length : 0];
                     const initial = assignedUser?.first_name?.[0]?.toUpperCase() || assignedUser?.email?.[0]?.toUpperCase() || 'A';
                     const displayName = assignedUser 
                       ? `${assignedUser.first_name || ''}`.trim() || assignedUser.email?.split('@')[0] || 'Assigned'
                       : 'Assigned';
                     return (
                       <>
-                        <div className="h-5 w-5 rounded-full bg-green-600 text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                        <div className={`h-5 w-5 rounded-full ${agentColor} text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0`}>
                           {initial}
                         </div>
                         <span className="truncate">{displayName}</span>
@@ -330,16 +336,24 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
                 </div>
               </SelectItem>
               <div className="h-px bg-border my-1" />
-              {salesUsers.map((user) => (
+              {salesUsers.map((user, idx) => {
+                const AGENT_COLORS = [
+                  'bg-blue-600', 'bg-purple-600', 'bg-teal-600', 'bg-orange-600',
+                  'bg-pink-600', 'bg-indigo-600', 'bg-emerald-600', 'bg-rose-600',
+                  'bg-cyan-600', 'bg-amber-600'
+                ];
+                const color = AGENT_COLORS[idx % AGENT_COLORS.length];
+                return (
                 <SelectItem key={user.id} value={user.id}>
                   <div className="flex items-center gap-2">
-                    <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-medium">
+                    <div className={`h-5 w-5 rounded-full ${color} text-white flex items-center justify-center text-[10px] font-medium`}>
                       {user.first_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
                     </div>
                     <span>{`${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}</span>
                   </div>
                 </SelectItem>
-              ))}
+                );
+              })}
             </SelectContent>
           </Select>
       </TableCell>
