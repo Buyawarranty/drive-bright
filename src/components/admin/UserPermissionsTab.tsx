@@ -78,6 +78,41 @@ const GRANULAR_PERMISSIONS = {
   ],
 };
 
+// Default tab permissions per role - auto-applied when role is selected
+const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
+  admin: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
+  sales_lead: {
+    'tab_new-leads': true,
+    'tab_get-quote': true,
+    'tab_customers': true,
+    'tab_selling-tips': true,
+    'tab_new-leads_view': true,
+    'tab_new-leads_all-leads': true,
+    'tab_new-leads_team-view': true,
+    'tab_new-leads_my-dashboard': true,
+    'tab_customers_view': true,
+  },
+  sales: {
+    'tab_new-leads': true,
+    'tab_get-quote': true,
+    'tab_customers': true,
+    'tab_selling-tips': true,
+    'tab_abandoned-carts': true,
+    'tab_discount-codes': true,
+    'tab_new-leads_view': true,
+    'tab_new-leads_my-dashboard': true,
+    'tab_customers_view': true,
+    'tab_customers_own-only': true,
+  },
+  blog_writer: {
+    'tab_blog-writing': true,
+    'tab_landing-pages': true,
+  },
+  viewer: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
+  member: {},
+  guest: {},
+};
+
 export const UserPermissionsTab = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -686,7 +721,19 @@ export const UserPermissionsTab = () => {
 
               <div>
                 <Label htmlFor="role">Role</Label>
-                <Select value={inviteData.role} onValueChange={(value: any) => setInviteData(prev => ({ ...prev, role: value }))}>
+                <Select 
+                  value={inviteData.role} 
+                  onValueChange={(value: any) => {
+                    const defaults = ROLE_DEFAULT_PERMISSIONS[value] || {};
+                    // Clear all tab permissions first, then apply role defaults
+                    const clearedPerms = Object.keys(inviteData.permissions).reduce((acc, key) => {
+                      if (key.startsWith('tab_')) return acc;
+                      acc[key] = inviteData.permissions[key];
+                      return acc;
+                    }, {} as Record<string, boolean>);
+                    setInviteData(prev => ({ ...prev, role: value, permissions: { ...clearedPerms, ...defaults } }));
+                  }}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -860,7 +907,19 @@ export const UserPermissionsTab = () => {
                 <Label htmlFor="editRole">Role</Label>
                 <Select 
                   value={editingUser.role} 
-                  onValueChange={(value: any) => setEditingUser(prev => prev ? { ...prev, role: value } : null)}
+                  onValueChange={(value: any) => {
+                    const defaults = ROLE_DEFAULT_PERMISSIONS[value] || {};
+                    setEditingUser(prev => {
+                      if (!prev) return null;
+                      // Clear all tab permissions first, then apply role defaults
+                      const clearedPerms = Object.keys(prev.permissions).reduce((acc, key) => {
+                        if (key.startsWith('tab_')) return acc;
+                        acc[key] = prev.permissions[key];
+                        return acc;
+                      }, {} as Record<string, boolean>);
+                      return { ...prev, role: value, permissions: { ...clearedPerms, ...defaults } };
+                    });
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue />
