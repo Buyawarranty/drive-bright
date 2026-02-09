@@ -266,6 +266,13 @@ export const ClaimsTab = () => {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => document.getElementById('claims-analytics-section')?.scrollIntoView({ behavior: 'smooth' })}
+          >
+            📊 Analytics & Charts
+          </Button>
           <Button onClick={() => setShowAddClaimDialog(true)} size="sm">
             <Plus className="h-4 w-4 mr-1" /> Add Claim
           </Button>
@@ -339,15 +346,10 @@ export const ClaimsTab = () => {
         </CardContent>
       </Card>
 
-      {/* Analytics (collapsible below) */}
-      <details>
-        <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2">
-          📊 Show Analytics & Charts
-        </summary>
-        <div className="mt-3">
-          <ClaimsAnalyticsPanel claims={claims} />
-        </div>
-      </details>
+      {/* Analytics */}
+      <div id="claims-analytics-section" className="scroll-mt-4">
+        <ClaimsAnalyticsPanel claims={claims} />
+      </div>
 
       {/* Dialogs */}
       {selectedClaim && (

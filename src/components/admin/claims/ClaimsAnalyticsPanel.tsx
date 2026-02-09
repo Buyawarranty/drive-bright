@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PoundSterling, FileText, CheckCircle, TrendingUp } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
+import { ClaimsVehicleAnalytics } from './ClaimsVehicleAnalytics';
 import {
   format,
   startOfWeek, endOfWeek,
@@ -162,6 +163,7 @@ export const ClaimsAnalyticsPanel: React.FC<ClaimsAnalyticsPanelProps> = ({ clai
 
   return (
     <div className="space-y-4">
+      <h2 className="text-lg font-semibold flex items-center gap-2">📊 Analytics & Charts</h2>
       {/* Filters */}
       <Card>
         <CardContent className="pt-4">
@@ -289,6 +291,10 @@ export const ClaimsAnalyticsPanel: React.FC<ClaimsAnalyticsPanelProps> = ({ clai
             </ResponsiveContainer>
           </CardContent>
         </Card>
+
+
+        {/* Vehicle Reliability & Cost Intelligence */}
+        <ClaimsVehicleAnalytics claims={claims} />
       </div>
     </div>
   );
