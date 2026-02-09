@@ -4,6 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { supabase } from '@/integrations/supabase/client';
 import { Car, AlertTriangle, TrendingDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { normaliseMake, normaliseModelFamily } from './vehicleNormalisation';
 
 interface ClaimData {
   id: string;
@@ -28,7 +29,6 @@ const COLORS = ['#f97316', '#ef4444', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'
 export const ClaimsVehicleAnalytics: React.FC<ClaimsVehicleAnalyticsProps> = ({ claims }) => {
   const [vehicleMap, setVehicleMap] = useState<Map<string, VehicleInfo>>(new Map());
 
-  // Fetch vehicle make/model from customers table (read-only, no API changes)
   useEffect(() => {
     const regs = Array.from(new Set(claims.map(c => c.vehicle_registration?.toUpperCase()).filter(Boolean))) as string[];
     if (regs.length === 0) return;
@@ -50,14 +50,14 @@ export const ClaimsVehicleAnalytics: React.FC<ClaimsVehicleAnalyticsProps> = ({ 
     fetchVehicles();
   }, [claims]);
 
-  // Claims by vehicle make
+  // Claims by normalised make
   const makeStats = useMemo(() => {
     const byMake = new Map<string, { count: number; totalCost: number; paidCount: number }>();
 
     claims.forEach(c => {
       const reg = c.vehicle_registration?.toUpperCase();
       const info = reg ? vehicleMap.get(reg) : null;
-      const make = info?.vehicle_make || 'Unknown';
+      const make = normaliseMake(info?.vehicle_make || '');
 
       if (!byMake.has(make)) byMake.set(make, { count: 0, totalCost: 0, paidCount: 0 });
       const entry = byMake.get(make)!;
@@ -79,19 +79,17 @@ export const ClaimsVehicleAnalytics: React.FC<ClaimsVehicleAnalyticsProps> = ({ 
       .sort((a, b) => b.claims - a.claims);
   }, [claims, vehicleMap]);
 
-  // Most costly makes
   const costliestMakes = useMemo(
     () => [...makeStats].sort((a, b) => b.totalCost - a.totalCost).slice(0, 10),
     [makeStats]
   );
 
-  // Most claims by make (least reliable)
   const leastReliable = useMemo(
     () => [...makeStats].sort((a, b) => b.claims - a.claims).slice(0, 10),
     [makeStats]
   );
 
-  // Claims by make/model (top 15)
+  // Claims by normalised make/model family (top 15)
   const modelStats = useMemo(() => {
     const byModel = new Map<string, { count: number; totalCost: number; paidCount: number }>();
 
@@ -99,7 +97,9 @@ export const ClaimsVehicleAnalytics: React.FC<ClaimsVehicleAnalyticsProps> = ({ 
       const reg = c.vehicle_registration?.toUpperCase();
       const info = reg ? vehicleMap.get(reg) : null;
       if (!info?.vehicle_make) return;
-      const key = `${info.vehicle_make} ${info.vehicle_model || ''}`.trim();
+      const make = normaliseMake(info.vehicle_make);
+      const family = normaliseModelFamily(make, info.vehicle_model || '');
+      const key = `${make} ${family}`;
 
       if (!byModel.has(key)) byModel.set(key, { count: 0, totalCost: 0, paidCount: 0 });
       const entry = byModel.get(key)!;

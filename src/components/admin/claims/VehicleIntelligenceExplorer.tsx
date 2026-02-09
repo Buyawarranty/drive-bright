@@ -11,6 +11,14 @@ import { Search, X, Filter, ChevronDown, ChevronRight, Car, AlertTriangle, Trend
 import { useDebounce } from '@/hooks/useDebounce';
 import { buildVehicleTaxonomy, normaliseMake, normaliseModelFamily, VehicleTaxonomy } from './vehicleNormalisation';
 
+interface SearchSuggestion {
+  type: 'make' | 'family' | 'variant';
+  label: string;
+  make: string;
+  family?: string;
+  count: number;
+}
+
 interface ClaimData {
   id: string;
   status: string;
@@ -46,6 +54,8 @@ export const VehicleIntelligenceExplorer: React.FC<VehicleIntelligenceExplorerPr
   const [expandedMakes, setExpandedMakes] = useState<Set<string>>(new Set());
   const [expandedFamilies, setExpandedFamilies] = useState<Set<string>>(new Set());
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
 
   // Fetch vehicle data
   useEffect(() => {
@@ -227,6 +237,45 @@ export const VehicleIntelligenceExplorer: React.FC<VehicleIntelligenceExplorerPr
 
   const hasFilters = selectedMakes.length > 0 || selectedFamilies.length > 0 || selectedFuel !== 'all' || selectedYear !== 'all' || searchQuery !== '';
 
+  // Autocomplete suggestions
+  const suggestions = useMemo<SearchSuggestion[]>(() => {
+    if (!searchQuery || searchQuery.length < 1) return [];
+    const q = searchQuery.toLowerCase();
+    const results: SearchSuggestion[] = [];
+
+    taxonomy.forEach(m => {
+      if (m.make.toLowerCase().includes(q)) {
+        results.push({ type: 'make', label: m.make, make: m.make, count: m.count });
+      }
+      m.families.forEach(f => {
+        if (f.family.toLowerCase().includes(q) || `${m.make} ${f.family}`.toLowerCase().includes(q)) {
+          results.push({ type: 'family', label: `${m.make} ${f.family}`, make: m.make, family: f.family, count: f.count });
+        }
+        f.variants.forEach(v => {
+          if (v.variant.toLowerCase().includes(q) && !results.some(r => r.label === `${m.make} ${v.variant}`)) {
+            results.push({ type: 'variant', label: `${m.make} ${v.variant}`, make: m.make, family: f.family, count: v.count });
+          }
+        });
+      });
+    });
+
+    return results.slice(0, 12);
+  }, [searchQuery, taxonomy]);
+
+  const handleSuggestionClick = (s: SearchSuggestion) => {
+    if (s.type === 'make') {
+      addMakeChip(s.make);
+    } else if (s.type === 'family' && s.family) {
+      addMakeChip(s.make);
+      addFamilyChip(s.make, s.family);
+    } else if (s.type === 'variant' && s.family) {
+      addMakeChip(s.make);
+      addFamilyChip(s.make, s.family);
+    }
+    setSearchQuery('');
+    setShowSuggestions(false);
+  };
+
   if (taxonomy.length === 0) {
     return (
       <Card>
@@ -250,18 +299,45 @@ export const VehicleIntelligenceExplorer: React.FC<VehicleIntelligenceExplorerPr
         </div>
 
         <div className="flex gap-2 items-center w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div className="relative flex-1 sm:w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
             <Input
-              placeholder="Search make, model, variant..."
+              ref={searchInputRef}
+              placeholder="Search make, model, reg, variant..."
               value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
+              onChange={e => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               className="pl-10 h-9"
             />
             {searchQuery && (
-              <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2">
+              <button onClick={() => { setSearchQuery(''); setShowSuggestions(false); }} className="absolute right-3 top-1/2 -translate-y-1/2 z-10">
                 <X className="h-3 w-3 text-muted-foreground" />
               </button>
+            )}
+            {/* Autocomplete dropdown */}
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+                {suggestions.map((s, i) => (
+                  <button
+                    key={`${s.label}-${i}`}
+                    onMouseDown={(e) => { e.preventDefault(); handleSuggestionClick(s); }}
+                    className="w-full text-left px-3 py-2 text-sm flex items-center justify-between hover:bg-muted/60 transition-colors border-b border-border/30 last:border-0"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${
+                        s.type === 'make' ? 'border-orange-300 text-orange-700' :
+                        s.type === 'family' ? 'border-blue-300 text-blue-700' :
+                        'border-muted-foreground/30 text-muted-foreground'
+                      }`}>
+                        {s.type === 'make' ? 'Make' : s.type === 'family' ? 'Family' : 'Variant'}
+                      </Badge>
+                      <span className="font-medium">{s.label}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{s.count} claims</span>
+                  </button>
+                ))}
+              </div>
             )}
           </div>
 
