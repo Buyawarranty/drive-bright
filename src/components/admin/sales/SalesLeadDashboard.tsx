@@ -141,24 +141,24 @@ export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({ onNaviga
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
-          <TabsTrigger value="all-leads" className="gap-2">
+        <TabsList className="flex flex-wrap h-auto gap-1 w-full lg:w-auto p-1">
+          <TabsTrigger value="all-leads" className="gap-2 flex-1 lg:flex-none">
             <ClipboardList className="h-4 w-4" />
             <span className="hidden sm:inline">All Leads</span>
           </TabsTrigger>
-          <TabsTrigger value="overview" className="gap-2">
+          <TabsTrigger value="overview" className="gap-2 flex-1 lg:flex-none">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Agent Overview</span>
           </TabsTrigger>
-          <TabsTrigger value="targets" className="gap-2">
+          <TabsTrigger value="targets" className="gap-2 flex-1 lg:flex-none">
             <Target className="h-4 w-4" />
             <span className="hidden sm:inline">Set Targets</span>
           </TabsTrigger>
-          <TabsTrigger value="customers" className="gap-2">
+          <TabsTrigger value="customers" className="gap-2 flex-1 lg:flex-none">
             <ShoppingBag className="h-4 w-4" />
             <span className="hidden sm:inline">All Customers</span>
           </TabsTrigger>
-          <TabsTrigger value="kpis" className="gap-2">
+          <TabsTrigger value="kpis" className="gap-2 flex-1 lg:flex-none">
             <TrendingUp className="h-4 w-4" />
             <span className="hidden sm:inline">Team KPIs</span>
           </TabsTrigger>
