@@ -480,15 +480,22 @@ export const UserPermissionsTab = () => {
     }
   };
 
-  const getRoleBadgeVariant = (role: string) => {
+  const getRoleBadgeVariant = (role: string): "destructive" | "default" | "secondary" | "outline" => {
     switch (role) {
       case 'admin': return 'destructive';
+      case 'sales_lead': return 'destructive';
       case 'member': return 'default';
       case 'viewer': return 'secondary';
       case 'blog_writer': return 'default';
       case 'sales': return 'default';
       default: return 'outline';
     }
+  };
+
+  const getRoleBadgeClassName = (role: string) => {
+    if (role === 'sales_lead') return 'bg-violet-600 hover:bg-violet-700 text-white border-violet-600';
+    if (role === 'sales') return 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600';
+    return '';
   };
 
   const countActiveTabPermissions = (permissions: Record<string, boolean>) => {
@@ -996,7 +1003,7 @@ export const UserPermissionsTab = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getRoleBadgeVariant(user.role)} className="flex items-center gap-1 w-fit">
+                    <Badge variant={getRoleBadgeVariant(user.role)} className={`flex items-center gap-1 w-fit ${getRoleBadgeClassName(user.role)}`}>
                       {getRoleIcon(user.role)}
                       {user.role}
                     </Badge>
