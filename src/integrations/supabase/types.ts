@@ -5216,6 +5216,7 @@ export type Database = {
       is_admin_or_sales: { Args: { _user_id: string }; Returns: boolean }
       is_blog_writer: { Args: { user_id: string }; Returns: boolean }
       is_ip_blocked: { Args: { check_ip: unknown }; Returns: boolean }
+      is_sales_lead: { Args: { _user_id: string }; Returns: boolean }
       log_agent_interaction: {
         Args: { p_event_type?: string }
         Returns: undefined
