@@ -103,6 +103,7 @@ export const ROLE_HIERARCHY = {
   global_admin: 6,
   department_admin: 5,
   sales_manager: 4,
+  sales_lead: 4,
   accounts_admin: 4,
   manager: 3,
   sales_agent: 2,

@@ -112,6 +112,7 @@ export interface AdminUser {
   last_name: string | null;
   email: string;
   is_active: boolean;
+  role?: string;
 }
 
 export const useLeads = () => {
@@ -445,7 +446,7 @@ export const useLeads = () => {
   const fetchSalesUsers = useCallback(async () => {
     const { data, error } = await supabase
       .from('admin_users')
-      .select('id, user_id, first_name, last_name, email, is_active')
+      .select('id, user_id, first_name, last_name, email, is_active, role')
       .eq('is_active', true)
       .order('first_name');
 
