@@ -9,8 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Eye, Download, Calendar, User, Mail, Phone, Paperclip, FileDown, FileSpreadsheet, Search, Filter, Trash2, Edit, Clock, Send, AlertTriangle, ArrowUp, ArrowDown, Minus, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { ClaimsSummaryCards } from './claims/ClaimsSummaryCards';
-import { ClaimsChart } from './claims/ClaimsChart';
+import { ClaimsAnalyticsPanel } from './claims/ClaimsAnalyticsPanel';
 import { ClaimDetailDialog } from './claims/ClaimDetailDialog';
 import { ClaimAmountEditDialog } from './claims/ClaimAmountEditDialog';
 import { ClaimStatusDropdown } from './claims/ClaimStatusDropdown';
@@ -64,24 +63,10 @@ export const ClaimsTab = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
-  const [monthlyData, setMonthlyData] = useState<any[]>([]);
-  const [summaryData, setSummaryData] = useState({
-    totalClaims: 0,
-    approvedClaims: 0,
-    pendingClaims: 0,
-    totalPaid: 0,
-    avgClaimValue: 0,
-    monthlyChange: 0,
-  });
 
   useEffect(() => {
     fetchClaims();
-    fetchMonthlyStats();
   }, []);
-
-  useEffect(() => {
-    calculateSummary();
-  }, [claims]);
 
   const fetchClaims = async () => {
     try {
@@ -108,68 +93,6 @@ export const ClaimsTab = () => {
     }
   };
 
-  const fetchMonthlyStats = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('monthly_claims_stats')
-        .select('*')
-        .limit(12);
-
-      if (error) {
-        console.error('Error fetching monthly stats:', error);
-        return;
-      }
-
-      const formattedData = (data || []).map(item => ({
-        month: new Date(item.month).toLocaleDateString('en-GB', { month: 'short', year: '2-digit' }),
-        totalClaims: item.total_claims || 0,
-        approvedClaims: item.approved_claims || 0,
-        totalPaid: item.total_paid || 0,
-      })).reverse();
-
-      setMonthlyData(formattedData);
-    } catch (error) {
-      console.error('Error fetching monthly stats:', error);
-    }
-  };
-
-  const calculateSummary = () => {
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-    
-    const thisMonthClaims = claims.filter(c => {
-      const claimDate = new Date(c.created_at);
-      return claimDate.getMonth() === currentMonth && claimDate.getFullYear() === currentYear;
-    });
-
-    const approvedClaims = claims.filter(c => c.status === 'approved' || c.status === 'paid');
-    const pendingClaims = claims.filter(c => c.status === 'new' || c.status === 'in_progress' || c.status === 'awaiting_info');
-    const totalPaid = thisMonthClaims.reduce((sum, c) => sum + (c.payment_amount || 0), 0);
-    const paidClaims = approvedClaims.filter(c => c.payment_amount && c.payment_amount > 0);
-    const avgClaimValue = paidClaims.length > 0 
-      ? paidClaims.reduce((sum, c) => sum + (c.payment_amount || 0), 0) / paidClaims.length 
-      : 0;
-
-    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-    const lastMonthClaims = claims.filter(c => {
-      const claimDate = new Date(c.created_at);
-      return claimDate.getMonth() === lastMonth && claimDate.getFullYear() === lastMonthYear;
-    });
-
-    const monthlyChange = lastMonthClaims.length > 0 
-      ? ((thisMonthClaims.length - lastMonthClaims.length) / lastMonthClaims.length) * 100 
-      : 0;
-
-    setSummaryData({
-      totalClaims: thisMonthClaims.length,
-      approvedClaims: approvedClaims.length,
-      pendingClaims: pendingClaims.length,
-      totalPaid,
-      avgClaimValue,
-      monthlyChange: Math.round(monthlyChange),
-    });
-  };
 
   const getDaysSinceClaim = (createdAt: string) => {
     const claimDate = new Date(createdAt);
@@ -407,11 +330,8 @@ export const ClaimsTab = () => {
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <ClaimsSummaryCards summaryData={summaryData} />
-
-      {/* Charts */}
-      <ClaimsChart monthlyData={monthlyData} />
+      {/* Analytics Panel with charts, date filter, and summary */}
+      <ClaimsAnalyticsPanel claims={claims} />
 
       {/* Filters */}
       <Card>
@@ -708,24 +628,24 @@ export const ClaimsTab = () => {
                           </Select>
                         </TableCell>
                         <TableCell>
-                          {totalPayment > 0 ? (
-                            <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1">
+                            {totalPayment > 0 ? (
                               <span className="font-semibold text-green-600">
                                 £{totalPayment.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               </span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setEditingClaim(claim)}
-                                className="h-6 w-6 p-0"
-                                title="Edit amount"
-                              >
-                                <Edit className="h-3 w-3 text-blue-600" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <span className="text-gray-400">-</span>
-                          )}
+                            ) : (
+                              <span className="text-gray-400 text-sm">£0.00</span>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setEditingClaim(claim)}
+                              className="h-6 w-6 p-0"
+                              title={totalPayment > 0 ? "Edit amount" : "Add payment amount"}
+                            >
+                              <Edit className="h-3 w-3 text-blue-600" />
+                            </Button>
+                          </div>
                         </TableCell>
                         <TableCell>
                           {claim.file_url && claim.file_name ? (
