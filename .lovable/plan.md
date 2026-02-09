@@ -1,80 +1,133 @@
 
 
-# Fix: Name Showing Email + Blank Vehicle Make/Model in uChat
+# New "Sales Lead" Role Implementation
 
-## Problem 1: firstName Contains Email Address
+## Overview
 
-When the Step 2 form is submitted in `QuoteDeliveryStep.tsx`, the abandoned cart is tracked with:
+Create a new **Sales Lead** role (team leader/manager) that sits between Admin and Sales Agent. This role can assign leads to sales agents, set daily targets, monitor agent activity, and view all leads and customers -- while the existing **Sales Agent** role becomes restricted to only seeing leads assigned to them.
+
+## Current System
+
+- Roles exist as a Postgres enum: `admin`, `customer`, `member`, `viewer`, `guest`, `blog_writer`, `sales`
+- Sales agents (`sales` role) already have a restricted dashboard (`SalesAgentDashboard`) showing only their assigned leads
+- Lead assignment is handled via `admin_users.id` in `sales_leads.assigned_to`
+- Distribution settings, agent caps, and presence tracking are already in place
+
+## What Changes
+
+### 1. Database: Add `sales_lead` to the `user_role` enum
+
+A new enum value `sales_lead` will be added so it can be assigned via `user_roles` and `admin_users` tables.
+
+### 2. Database: Daily Targets Table
+
+A new `agent_daily_targets` table to let Sales Leads set targets per agent:
 
 ```text
-full_name: email.trim()   // <-- Bug! Should use firstName
+agent_daily_targets
++-------------------+--------+----------------------------------+
+| Column            | Type   | Purpose                          |
++-------------------+--------+----------------------------------+
+| id                | uuid   | Primary key                      |
+| agent_id          | uuid   | FK to admin_users.id             |
+| set_by            | uuid   | FK to admin_users.id (the lead)  |
+| target_date       | date   | Date the target applies to       |
+| target_leads      | int    | Number of leads to contact       |
+| target_sales      | int    | Number of sales to close         |
+| actual_leads      | int    | Auto-tracked: leads contacted    |
+| actual_sales      | int    | Auto-tracked: sales closed       |
+| notes             | text   | Optional notes from sales lead   |
+| created_at        | timestamptz | Auto                         |
+| updated_at        | timestamptz | Auto                         |
++-------------------+--------+----------------------------------+
 ```
 
-Then in `track-abandoned-cart`, this `full_name` is split to get `firstName`:
+RLS: Sales Leads can read/write targets for agents; agents can read their own targets.
 
-```text
-firstName: cartData.full_name?.split(' ')[0]   // Returns the email!
-```
+### 3. Permission Template
 
-**Fix:** Update `QuoteDeliveryStep.tsx` line 148 to use the actual `firstName` value instead of the email.
+A new `sales_lead` template in `src/lib/permissions/templates.ts` granting:
+- **New Leads**: full view of ALL leads, ability to assign leads to agents
+- **Customers**: full view of ALL customer purchases
+- **Analytics**: team-level view
+- **Agent Activity**: view presence, daily online time, interaction logs
+- No access to admin-only tabs (user permissions, document mapping, etc.)
 
-## Problem 2: vehicleMake and vehicleModel Are Blank
+### 4. Frontend: Sales Lead Dashboard
 
-The console logs show that `vehicleData.make` and `vehicleData.model` are empty strings when Step 2 renders. This means the DVLA lookup either didn't find data or the values weren't populated for this registration.
+A new `SalesLeadDashboard` component with tabs:
 
-The `QuoteDeliveryStep` passes `vehicleData?.make` and `vehicleData?.model` to `track-abandoned-cart`, which then passes them to `send-uchat-whatsapp` -- but since they're empty from the start, they arrive empty in uChat.
+- **All Leads** -- see every incoming lead, assign/reassign to agents
+- **Agent Overview** -- see all agents, their assigned leads count, activity status, daily targets vs actuals
+- **All Customers** -- full customer/purchase view (existing `CustomersTab`)
+- **Set Targets** -- set daily lead/sales targets per agent per day
+- **My KPIs** -- team-level metrics (total leads, conversion rate, revenue)
 
-**Fix:** In the `track-abandoned-cart` edge function, when triggering the WhatsApp message, fall back to the values stored in the abandoned cart record (which may have been updated by a previous interaction) if the current values are empty. Also look up the vehicle data from `sales_leads` if available, since the DVLA data is stored there too.
+### 5. Frontend: Routing Logic Updates
 
-## Changes
+In `AdminDashboard.tsx` and related files:
+- Add `sales_lead` to the `adminRoles` array so the role grants dashboard access
+- Add `sales_lead` to `rolePriority` between `member` and `sales`
+- Route `sales_lead` users to the Sales Lead Dashboard by default
+- In `NewLeadsTab.tsx`, give `sales_lead` the same lead visibility as admin (all leads) plus assignment capability
 
-### 1. Fix `full_name` in `QuoteDeliveryStep.tsx`
+### 6. Sales Agent Restrictions (Reinforced)
 
-**File:** `src/components/QuoteDeliveryStep.tsx`
+Confirm the existing behaviour:
+- Sales agents can ONLY see leads where `assigned_to` matches their `admin_users.id`
+- Sales agents CANNOT self-assign leads (the `claim_lead_for_agent` function already prevents this for agents not meeting criteria, but we add an explicit UI block)
+- Purchases/customers tab for sales agents only shows orders linked to their assigned leads
 
-On line 148, change:
-```text
-full_name: email.trim(),
-```
-to:
-```text
-full_name: firstName.trim() || email.trim(),
-```
+### 7. Auth & Login Updates
 
-Wait -- line 64 already does this correctly for the skip flow. Only line 148 (the submit flow) has the bug. Fix line 148 to use `firstName.trim()` like line 64 does.
+- Add `sales_lead` to the `adminRoles` arrays in `SalesLogin.tsx`, `Auth.tsx`, `PasswordReset.tsx`, `CustomerDashboard.tsx`, `useAuth.tsx`, and `AdminLoginDebug.tsx`
+- The sales login portal will accept `sales_lead` role users
 
-### 2. Fix WhatsApp payload in `track-abandoned-cart`
+### 8. RLS Policy Updates
 
-**File:** `supabase/functions/track-abandoned-cart/index.ts`
-
-Update line 167 to use `firstName` properly:
-```text
-firstName: cartData.full_name?.split(' ')[0] || 'there',
-```
-This is already correct IF `full_name` is fixed upstream. But as a safety net, also add the user's explicit first name if the cart data has it parsed separately.
-
-### 3. Handle empty vehicle make/model gracefully
-
-**File:** `supabase/functions/track-abandoned-cart/index.ts`
-
-When building the WhatsApp payload, if `vehicle_make` and `vehicle_model` are empty, try to look them up from the `sales_leads` table using the email address. This handles the case where the DVLA lookup didn't return data initially but may have been stored from a previous interaction.
+- Update `is_admin_or_sales` function to include `sales_lead` role
+- Sales Lead users get full read access to `sales_leads`, `abandoned_carts`, and `customers` tables
+- Sales Lead users can UPDATE `sales_leads.assigned_to` (assign leads)
 
 ## Technical Details
 
-### File: `src/components/QuoteDeliveryStep.tsx`
-- Line 148: Change `full_name: email.trim()` to `full_name: firstName.trim() || email.trim()`
+### Files to Create
+- `src/components/admin/sales/SalesLeadDashboard.tsx` -- main dashboard
+- `src/components/admin/sales/AgentOverviewPanel.tsx` -- agent activity/targets view
+- `src/components/admin/sales/SetTargetsPanel.tsx` -- target setting UI
 
-### File: `supabase/functions/track-abandoned-cart/index.ts`
-- After inserting the abandoned cart record, before triggering the WhatsApp message:
-  - If `vehicle_make` or `vehicle_model` are empty, query `sales_leads` by email to get the stored vehicle data
-  - Pass the resolved values to the WhatsApp payload
-- Update the `firstName` derivation to prefer splitting `full_name` but fall back properly
+### Files to Modify
+- `supabase/migrations/` -- new migration for enum + table
+- `src/lib/permissions/templates.ts` -- add `sales_lead` template
+- `src/lib/permissions/types.ts` -- add to `ROLE_HIERARCHY`
+- `src/pages/AdminDashboard.tsx` -- routing for `sales_lead` role
+- `src/components/admin/leads/NewLeadsTab.tsx` -- `sales_lead` gets full lead view with assignment
+- `src/hooks/useAuth.tsx` -- add to role arrays
+- `src/pages/SalesLogin.tsx` -- add to allowed roles
+- `src/pages/Auth.tsx` -- add to admin roles
+- `src/pages/CustomerDashboard.tsx` -- add to admin roles
+- `src/components/PasswordReset.tsx` -- add to admin roles
+- `src/components/admin/AdminLoginDebug.tsx` -- add to admin roles
 
-### File: `supabase/functions/send-uchat-whatsapp/index.ts`
-- No changes needed -- it already passes through whatever it receives
+### Migration SQL Summary
+```text
+1. ALTER TYPE user_role ADD VALUE 'sales_lead'
+2. CREATE TABLE agent_daily_targets (with RLS)
+3. Update is_admin_or_sales() to include 'sales_lead'
+```
 
-## Summary
+## Scope Summary
 
-Two fixes:
-1. **QuoteDeliveryStep.tsx**: Use `firstName` (not email) as `full_name` when tracking abandoned cart on submit
-2. **track-abandoned-cart**: Look up vehicle make/model from `sales_leads` if the values coming in are empty, so uChat gets actual vehicle details
+| Capability                        | Sales Lead | Sales Agent |
+|-----------------------------------|:----------:|:-----------:|
+| View ALL incoming leads           |     Yes    |      No     |
+| Assign leads to agents            |     Yes    |      No     |
+| Self-assign leads                 |      No    |      No     |
+| View only assigned leads          |      No    |     Yes     |
+| Set daily targets for agents      |     Yes    |      No     |
+| View agent activity/presence      |     Yes    |      No     |
+| View ALL customer purchases       |     Yes    |      No     |
+| View own customer purchases       |      No    |     Yes     |
+| Export data                       |   Limited  |      No     |
+| Manage user permissions           |      No    |      No     |
+
