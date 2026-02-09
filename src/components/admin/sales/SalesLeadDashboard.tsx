@@ -1,77 +1,88 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { useLeads } from '@/hooks/useLeads';
 import { CustomersTab } from '@/components/admin/CustomersTab';
 import { AgentOverviewPanel } from './AgentOverviewPanel';
 import { SetTargetsPanel } from './SetTargetsPanel';
 import { NewLeadsTab } from '@/components/admin/leads/NewLeadsTab';
 import { 
-  LayoutDashboard, Users, ShoppingBag, Target, 
-  TrendingUp, UserCheck, AlertTriangle, ClipboardList
+  Users, ShoppingBag, Target, 
+  TrendingUp, UserCheck, ClipboardList
 } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 
 interface SalesLeadDashboardProps {
   onNavigateToTab?: (tab: string, leadData?: any) => void;
 }
 
-export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({
-  onNavigateToTab,
-}) => {
+// Lightweight stats hook - avoids duplicating the heavy useLeads() fetch
+const useDashboardStats = () => {
+  const [stats, setStats] = useState({
+    totalLeads: 0, unassignedLeads: 0, paidLeads: 0,
+    monthlyPaid: 0, totalRevenue: 0, conversionRate: '0'
+  });
+  const [salesUsers, setSalesUsers] = useState<any[]>([]);
+  const [agentStats, setAgentStats] = useState<any[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('all-leads');
-
-  const {
-    leads,
-    tags,
-    salesUsers,
-    loading,
-  } = useLeads();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const getCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: adminUser } = await supabase
-          .from('admin_users')
-          .select('id, email')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        if (adminUser) {
-          setCurrentUserId(adminUser.id);
-        }
+    const fetchAll = async () => {
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+      const [leadsRes, cartsRes, usersRes, userRes] = await Promise.all([
+        supabase.from('sales_leads').select('id, assigned_to, is_paid, payment_amount, cart_value, quote_amount, updated_at, status', { count: 'exact' }).limit(10000),
+        supabase.from('abandoned_carts').select('id, contacted_by, is_converted', { count: 'exact' }).eq('is_converted', false).limit(10000),
+        supabase.from('admin_users').select('id, user_id, first_name, last_name, email, is_active, role').eq('is_active', true).order('first_name'),
+        supabase.auth.getUser()
+      ]);
+
+      const leads = leadsRes.data || [];
+      const carts = cartsRes.data || [];
+      const users = usersRes.data || [];
+
+      // Current user
+      if (userRes.data?.user) {
+        const adminUser = users.find((u: any) => u.user_id === userRes.data.user!.id);
+        if (adminUser) setCurrentUserId(adminUser.id);
       }
+
+      setSalesUsers(users);
+
+      const totalLeads = leads.length + carts.length;
+      const unassignedLeads = leads.filter((l: any) => !l.assigned_to).length + carts.filter((c: any) => !c.contacted_by).length;
+      const paidLeads = leads.filter((l: any) => l.is_paid === true);
+      const monthlyPaid = paidLeads.filter((l: any) => l.updated_at >= monthStart);
+      const totalRevenue = paidLeads.reduce((sum: number, l: any) => sum + (l.payment_amount || l.cart_value || l.quote_amount || 0), 0);
+      const conversionRate = totalLeads > 0 ? ((paidLeads.length / totalLeads) * 100).toFixed(1) : '0';
+
+      setStats({ totalLeads, unassignedLeads, paidLeads: paidLeads.length, monthlyPaid: monthlyPaid.length, totalRevenue, conversionRate });
+
+      // Agent stats for KPI tab
+      const agents = users.filter((u: any) => u.role !== 'admin');
+      const agentData = agents.map((agent: any) => {
+        const agentLeads = leads.filter((l: any) => l.assigned_to === agent.id);
+        const agentSales = agentLeads.filter((l: any) => l.is_paid === true).length;
+        const agentConversion = agentLeads.length > 0 ? ((agentSales / agentLeads.length) * 100).toFixed(0) : '0';
+        return { ...agent, leadCount: agentLeads.length, salesCount: agentSales, conversionRate: agentConversion };
+      });
+      setAgentStats(agentData);
+      setLoading(false);
     };
-    getCurrentUser();
+
+    fetchAll();
   }, []);
 
-  // KPI calculations
-  const stats = useMemo(() => {
-    const now = new Date();
-    const monthStart = startOfMonth(now);
-    const monthEnd = endOfMonth(now);
+  const activeAgentCount = useMemo(() => salesUsers.filter((u: any) => u.role !== 'admin').length, [salesUsers]);
 
-    const totalLeads = leads.length;
-    const unassignedLeads = leads.filter(l => !l.assigned_to).length;
-    const paidLeads = leads.filter(l => l.is_paid === true);
-    const monthlyPaid = paidLeads.filter(l => 
-      isWithinInterval(new Date(l.updated_at), { start: monthStart, end: monthEnd })
-    );
-    const totalRevenue = paidLeads.reduce((sum, l) => 
-      sum + (l.payment_amount || l.cart_value || l.quote_amount || 0), 0
-    );
-    const conversionRate = totalLeads > 0 ? ((paidLeads.length / totalLeads) * 100).toFixed(1) : '0';
+  return { stats, salesUsers, agentStats, activeAgentCount, currentUserId, loading };
+};
 
-    return { totalLeads, unassignedLeads, paidLeads: paidLeads.length, monthlyPaid: monthlyPaid.length, totalRevenue, conversionRate };
-  }, [leads]);
-
-  // Active agents count
-  const activeAgentCount = useMemo(() => {
-    return salesUsers?.filter(u => u.role !== 'admin').length || 0;
-  }, [salesUsers]);
+export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({ onNavigateToTab }) => {
+  const [activeTab, setActiveTab] = useState('all-leads');
+  const { stats, salesUsers, agentStats, activeAgentCount, currentUserId, loading } = useDashboardStats();
 
   if (loading) {
     return (
@@ -83,7 +94,6 @@ export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold">Sales Lead Dashboard</h1>
         <p className="text-muted-foreground">Manage your team, assign leads, and track performance</p>
@@ -155,18 +165,15 @@ export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({
         </TabsList>
 
         <TabsContent value="all-leads">
-          <NewLeadsTab 
-            onNavigateToTab={onNavigateToTab}
-            userRole="sales_lead"
-          />
+          <NewLeadsTab onNavigateToTab={onNavigateToTab} userRole="sales_lead" />
         </TabsContent>
 
         <TabsContent value="overview">
-          <AgentOverviewPanel leads={leads} salesUsers={salesUsers || []} />
+          <AgentOverviewPanel leads={[]} salesUsers={salesUsers} />
         </TabsContent>
 
         <TabsContent value="targets">
-          <SetTargetsPanel salesUsers={salesUsers || []} currentUserId={currentUserId} />
+          <SetTargetsPanel salesUsers={salesUsers} currentUserId={currentUserId} />
         </TabsContent>
 
         <TabsContent value="customers">
@@ -184,27 +191,18 @@ export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {(salesUsers || [])
-                    .filter(u => u.role !== 'admin')
-                    .map(agent => {
-                      const agentLeads = leads.filter(l => l.assigned_to === agent.id);
-                      const agentSales = agentLeads.filter(l => l.is_paid === true).length;
-                      const agentConversion = agentLeads.length > 0 
-                        ? ((agentSales / agentLeads.length) * 100).toFixed(0) 
-                        : '0';
-                      return (
-                        <div key={agent.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                          <div>
-                            <p className="font-medium text-sm">{agent.first_name} {agent.last_name}</p>
-                            <p className="text-xs text-muted-foreground">{agentLeads.length} leads assigned</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-bold text-green-600">{agentSales} sales</p>
-                            <p className="text-xs text-muted-foreground">{agentConversion}% rate</p>
-                          </div>
-                        </div>
-                      );
-                    })}
+                  {agentStats.map((agent: any) => (
+                    <div key={agent.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                      <div>
+                        <p className="font-medium text-sm">{agent.first_name} {agent.last_name}</p>
+                        <p className="text-xs text-muted-foreground">{agent.leadCount} leads assigned</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-green-600">{agent.salesCount} sales</p>
+                        <p className="text-xs text-muted-foreground">{agent.conversionRate}% rate</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -125,6 +125,43 @@ export const useLeads = () => {
   // Cache sales users for optimistic updates
   const salesUsersRef = useRef<AdminUser[]>([]);
   salesUsersRef.current = salesUsers;
+
+  // Cache admin user ID to avoid repeated auth lookups
+  const cachedAdminUserRef = useRef<{ id: string; firstName: string; email: string } | null>(null);
+  const adminUserPromiseRef = useRef<Promise<{ id: string; firstName: string; email: string } | null> | null>(null);
+
+  const getCachedAdminUser = useCallback(async () => {
+    if (cachedAdminUserRef.current) return cachedAdminUserRef.current;
+    
+    // Prevent duplicate concurrent requests
+    if (adminUserPromiseRef.current) return adminUserPromiseRef.current;
+    
+    adminUserPromiseRef.current = (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+      
+      const { data: adminUser } = await supabase
+        .from('admin_users')
+        .select('id, first_name, email')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (adminUser) {
+        const cached = { 
+          id: adminUser.id, 
+          firstName: adminUser.first_name || adminUser.email?.split('@')[0] || 'Admin',
+          email: adminUser.email 
+        };
+        cachedAdminUserRef.current = cached;
+        return cached;
+      }
+      return null;
+    })();
+    
+    const result = await adminUserPromiseRef.current;
+    adminUserPromiseRef.current = null;
+    return result;
+  }, []);
 
   // Helper to detect test/fake leads based on known test data
   const isTestLead = (name: string | null, phone: string | null): boolean => {
@@ -714,12 +751,7 @@ export const useLeads = () => {
     }));
 
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      const { data: adminUser } = await supabase
-        .from('admin_users')
-        .select('id')
-        .eq('user_id', userData.user?.id)
-        .maybeSingle();
+      const adminUser = await getCachedAdminUser();
 
       const { error } = await supabase
         .from('lead_tag_assignments')
@@ -740,7 +772,7 @@ export const useLeads = () => {
       toast.error('Failed to add tag');
       fetchLeads();
     }
-  }, [tags]);
+  }, [tags, getCachedAdminUser]);
 
   // OPTIMISTIC UPDATE: Remove tag instantly
   const removeTagFromLead = useCallback(async (leadId: string, tagId: string) => {
@@ -769,12 +801,7 @@ export const useLeads = () => {
 
   const logActivity = useCallback(async (leadId: string, activityType: string, description: string, outcome?: string) => {
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      const { data: adminUser } = await supabase
-        .from('admin_users')
-        .select('id')
-        .eq('user_id', userData.user?.id)
-        .maybeSingle();
+      const adminUser = await getCachedAdminUser();
 
       const { error } = await supabase
         .from('lead_activities')
@@ -797,7 +824,7 @@ export const useLeads = () => {
     } catch (error) {
       console.error('Error logging activity:', error);
     }
-  }, []);
+  }, [getCachedAdminUser]);
 
   // ATOMIC UPDATE: Update notes - APPENDS new notes to history, does not replace
   // Returns Promise to allow callers to handle success/failure
@@ -808,19 +835,9 @@ export const useLeads = () => {
     
     console.log(`[useLeads] updateLeadNotes called for ${leadId}, content length: ${newNoteText.length}`);
     
-    // Get current admin user info for attribution
-    const { data: userData } = await supabase.auth.getUser();
-    let authorName = 'Admin';
-    if (userData?.user) {
-      const { data: adminUser } = await supabase
-        .from('admin_users')
-        .select('first_name, last_name, email')
-        .eq('user_id', userData.user.id)
-        .maybeSingle();
-      if (adminUser) {
-        authorName = adminUser.first_name || adminUser.email?.split('@')[0] || 'Admin';
-      }
-    }
+    // Get current admin user info for attribution (cached)
+    const adminUserCached = await getCachedAdminUser();
+    const authorName = adminUserCached?.firstName || 'Admin';
 
     // Format timestamp for the note entry
     const timestamp = new Date().toLocaleString('en-GB', { 
@@ -886,7 +903,7 @@ export const useLeads = () => {
     
     console.log(`[useLeads] Note saved successfully for ${leadId}`);
     // Note: Toast is handled by the caller (LeadDetailsPanel) to avoid duplicates
-  }, [leads, fetchLeads]);
+  }, [leads, fetchLeads, getCachedAdminUser]);
 
   // OPTIMISTIC UPDATE: Mark contacted instantly
   const markContactedAt = useCallback(async (leadId: string) => {

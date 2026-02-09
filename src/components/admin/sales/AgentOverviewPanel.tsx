@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { Users, Clock, Activity } from 'lucide-react';
-import type { Lead, AdminUser } from '@/hooks/useLeads';
+import { Users } from 'lucide-react';
+import type { AdminUser } from '@/hooks/useLeads';
 
 interface AgentOverviewPanelProps {
-  leads: Lead[];
+  leads?: any[];
   salesUsers: AdminUser[];
 }
 
@@ -18,8 +18,17 @@ interface AgentPresence {
   current_tab: string | null;
 }
 
+interface AgentLeadCounts {
+  assigned_to: string;
+  total: number;
+  new_count: number;
+  contacted_count: number;
+  paid_count: number;
+}
+
 export const AgentOverviewPanel: React.FC<AgentOverviewPanelProps> = ({ leads, salesUsers }) => {
   const [presenceData, setPresenceData] = useState<AgentPresence[]>([]);
+  const [leadCounts, setLeadCounts] = useState<Record<string, { total: number; new: number; contacted: number; paid: number }>>({});
 
   useEffect(() => {
     const fetchPresence = async () => {
@@ -28,18 +37,50 @@ export const AgentOverviewPanel: React.FC<AgentOverviewPanelProps> = ({ leads, s
         .select('admin_user_id, status, last_seen_at, last_interaction_at, current_tab');
       if (data) setPresenceData(data);
     };
-    fetchPresence();
 
-    // Refresh every 30 seconds
+    const fetchLeadCounts = async () => {
+      // If leads are passed (non-empty), use them directly
+      if (leads && leads.length > 0) {
+        const counts: Record<string, { total: number; new: number; contacted: number; paid: number }> = {};
+        leads.forEach((l: any) => {
+          if (!l.assigned_to) return;
+          if (!counts[l.assigned_to]) counts[l.assigned_to] = { total: 0, new: 0, contacted: 0, paid: 0 };
+          counts[l.assigned_to].total++;
+          if (l.status === 'new') counts[l.assigned_to].new++;
+          if (l.status === 'contacted') counts[l.assigned_to].contacted++;
+          if (l.is_paid === true) counts[l.assigned_to].paid++;
+        });
+        setLeadCounts(counts);
+        return;
+      }
+
+      // Otherwise fetch lightweight counts from DB
+      const { data } = await supabase
+        .from('sales_leads')
+        .select('assigned_to, status, is_paid')
+        .not('assigned_to', 'is', null);
+      
+      if (data) {
+        const counts: Record<string, { total: number; new: number; contacted: number; paid: number }> = {};
+        data.forEach((l: any) => {
+          if (!counts[l.assigned_to]) counts[l.assigned_to] = { total: 0, new: 0, contacted: 0, paid: 0 };
+          counts[l.assigned_to].total++;
+          if (l.status === 'new') counts[l.assigned_to].new++;
+          if (l.status === 'contacted') counts[l.assigned_to].contacted++;
+          if (l.is_paid === true) counts[l.assigned_to].paid++;
+        });
+        setLeadCounts(counts);
+      }
+    };
+
+    fetchPresence();
+    fetchLeadCounts();
+
     const interval = setInterval(fetchPresence, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [leads]);
 
   const agents = salesUsers.filter(u => u.role !== 'admin');
-
-  const getAgentPresence = (agentId: string) => {
-    return presenceData.find(p => p.admin_user_id === agentId);
-  };
 
   const getStatusBadge = (status?: string) => {
     switch (status) {
@@ -80,11 +121,8 @@ export const AgentOverviewPanel: React.FC<AgentOverviewPanelProps> = ({ leads, s
             </thead>
             <tbody>
               {agents.map(agent => {
-                const presence = getAgentPresence(agent.id);
-                const agentLeads = leads.filter(l => l.assigned_to === agent.id);
-                const newLeads = agentLeads.filter(l => l.status === 'new').length;
-                const contactedLeads = agentLeads.filter(l => l.status === 'contacted').length;
-                const paidLeads = agentLeads.filter(l => l.is_paid === true).length;
+                const presence = presenceData.find(p => p.admin_user_id === agent.id);
+                const counts = leadCounts[agent.id] || { total: 0, new: 0, contacted: 0, paid: 0 };
 
                 return (
                   <tr key={agent.id} className="border-b hover:bg-muted/30">
@@ -95,15 +133,15 @@ export const AgentOverviewPanel: React.FC<AgentOverviewPanelProps> = ({ leads, s
                       </div>
                     </td>
                     <td className="py-3">{getStatusBadge(presence?.status)}</td>
-                    <td className="py-3 text-center font-medium">{agentLeads.length}</td>
+                    <td className="py-3 text-center font-medium">{counts.total}</td>
                     <td className="py-3 text-center">
-                      <Badge variant="outline">{newLeads}</Badge>
+                      <Badge variant="outline">{counts.new}</Badge>
                     </td>
                     <td className="py-3 text-center">
-                      <Badge variant="secondary">{contactedLeads}</Badge>
+                      <Badge variant="secondary">{counts.contacted}</Badge>
                     </td>
                     <td className="py-3 text-center">
-                      <Badge className="bg-green-100 text-green-700">{paidLeads}</Badge>
+                      <Badge className="bg-green-100 text-green-700">{counts.paid}</Badge>
                     </td>
                     <td className="py-3 text-xs text-muted-foreground">
                       {presence?.last_interaction_at 
