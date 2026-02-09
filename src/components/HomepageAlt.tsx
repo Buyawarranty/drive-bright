@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, Phone, Mail, Shield, Award, Clock, Wrench, BadgeCheck, Car } from 'lucide-react';
+import { Check, Phone, Mail, Shield, Award, Clock, Wrench, BadgeCheck, Car, Sliders, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
@@ -334,6 +334,75 @@ const HomepageAlt: React.FC<HomepageAltProps> = ({ onRegistrationSubmit }) => {
               <p className="text-gray-600">
                 Round-the-clock breakdown assistance to get you back on the road quickly
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How Your Price Is Calculated Section */}
+      <section className="py-12 md:py-20 bg-gray-50">
+        <div className="max-w-3xl mx-auto px-5 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-10 space-y-8">
+            {/* Header */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2.5">
+                <Shield className="w-6 h-6 text-brand-green flex-shrink-0" />
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                  How Your Price Is Calculated
+                </h2>
+              </div>
+              <p className="text-gray-600 text-base sm:text-lg">
+                Fair, transparent pricing. No hidden fees. No surprises.
+              </p>
+            </div>
+
+            {/* Quote factors */}
+            <div className="space-y-3">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
+                Your quote is personalised using:
+              </h3>
+              <ul className="space-y-3">
+                {[
+                  "Your vehicle's age and mileage",
+                  "The cover level you choose",
+                  "Your claim limit",
+                  "Your labour rate",
+                  "Your chosen excess",
+                  "How far (and how often) you drive",
+                ].map((item, index) => (
+                  <li key={index} className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-brand-green flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-base">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* You're in Control */}
+            <div className="bg-green-50 border border-green-100 rounded-xl p-5 sm:p-6 space-y-2">
+              <div className="flex items-center gap-2">
+                <Sliders className="w-5 h-5 text-brand-green" />
+                <h4 className="text-lg font-bold text-gray-900">You're in Control</h4>
+              </div>
+              <p className="text-gray-700 text-sm sm:text-base leading-relaxed">
+                Set your cover, excess and limits to get a price that suits you.
+                <br />
+                <strong>No pressure. No sales calls. Just options tailored to your car.</strong>
+              </p>
+            </div>
+
+            {/* CTA */}
+            <div className="pt-2 text-center">
+              <p className="text-gray-900 font-semibold text-base sm:text-lg mb-4">
+                Ready to build your perfect warranty?
+              </p>
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="inline-flex items-center justify-center gap-2 bg-brand-orange text-white font-bold px-8 py-4 text-lg rounded-lg animate-breathing w-full sm:w-auto"
+              >
+                See My Final Price
+                <ArrowRight className="w-5 h-5" />
+              </button>
             </div>
           </div>
         </div>
