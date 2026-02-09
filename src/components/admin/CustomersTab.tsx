@@ -364,6 +364,34 @@ export const CustomersTab = () => {
   // Pagination for customers table - only paginate filtered results
   const customersPagination = usePagination(filteredCustomers, { initialPageSize: 50 });
 
+  // Cache for tag assignments to avoid DB calls in filter function
+  const [tagAssignmentsCache, setTagAssignmentsCache] = useState<Record<string, Set<string>>>({});
+  const [refundedCustomerIds, setRefundedCustomerIds] = useState<Set<string>>(new Set());
+
+  const fetchTagAssignmentsCache = useCallback(async () => {
+    try {
+      const { data } = await supabase
+        .from('customer_tag_assignments')
+        .select('customer_id, tag_id');
+      if (data) {
+        const cache: Record<string, Set<string>> = {};
+        data.forEach(({ customer_id, tag_id }) => {
+          if (!cache[tag_id]) cache[tag_id] = new Set();
+          cache[tag_id].add(customer_id);
+        });
+        setTagAssignmentsCache(cache);
+
+        // Find refunded tag
+        const refundedTag = availableTags.find(t => t.name?.toLowerCase() === 'refunded');
+        if (refundedTag && cache[refundedTag.id]) {
+          setRefundedCustomerIds(cache[refundedTag.id]);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching tag assignments cache:', error);
+    }
+  }, [availableTags]);
+
   useEffect(() => {
     fetchCustomers();
     fetchDeletedCustomers();
@@ -374,6 +402,13 @@ export const CustomersTab = () => {
     getCurrentUser();
     fetchAvailableTags();
   }, []);
+
+  // Fetch tag assignments after tags and customers are loaded
+  useEffect(() => {
+    if (availableTags.length > 0 && customers.length > 0) {
+      fetchTagAssignmentsCache();
+    }
+  }, [availableTags, customers.length]);
 
   // Listen for URL search parameter changes
   useEffect(() => {
@@ -388,7 +423,7 @@ export const CustomersTab = () => {
 
   useEffect(() => {
     applyFiltersAndSort();
-  }, [debouncedSearchTerm, customers, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, dateRange]);
+  }, [debouncedSearchTerm, customers, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, dateRange, tagAssignmentsCache, refundedCustomerIds]);
 
   const fetchAvailableTags = async () => {
     try {
@@ -405,21 +440,18 @@ export const CustomersTab = () => {
     }
   };
 
-  const applyFiltersAndSort = useCallback(async () => {
+  const applyFiltersAndSort = useCallback(() => {
     let filtered = [...customers];
 
     // Apply comprehensive search filter across all customer fields using debounced search term
     if (debouncedSearchTerm) {
       const searchLower = debouncedSearchTerm.toLowerCase();
       filtered = filtered.filter(customer =>
-        // Basic info
         customer.name?.toLowerCase().includes(searchLower) ||
         customer.email?.toLowerCase().includes(searchLower) ||
         customer.first_name?.toLowerCase().includes(searchLower) ||
         customer.last_name?.toLowerCase().includes(searchLower) ||
         customer.phone?.toLowerCase().includes(searchLower) ||
-        
-        // Vehicle info
         customer.registration_plate?.toLowerCase().includes(searchLower) ||
         customer.vehicle_make?.toLowerCase().includes(searchLower) ||
         customer.vehicle_model?.toLowerCase().includes(searchLower) ||
@@ -427,8 +459,6 @@ export const CustomersTab = () => {
         customer.vehicle_fuel_type?.toLowerCase().includes(searchLower) ||
         customer.vehicle_transmission?.toLowerCase().includes(searchLower) ||
         customer.mileage?.toLowerCase().includes(searchLower) ||
-        
-        // Address fields
         customer.flat_number?.toLowerCase().includes(searchLower) ||
         customer.building_name?.toLowerCase().includes(searchLower) ||
         customer.building_number?.toLowerCase().includes(searchLower) ||
@@ -437,8 +467,6 @@ export const CustomersTab = () => {
         customer.county?.toLowerCase().includes(searchLower) ||
         customer.postcode?.toLowerCase().includes(searchLower) ||
         customer.country?.toLowerCase().includes(searchLower) ||
-        
-        // Warranty & payment info
         customer.warranty_reference_number?.toLowerCase().includes(searchLower) ||
         customer.warranty_number?.toLowerCase().includes(searchLower) ||
         customer.plan_type?.toLowerCase().includes(searchLower) ||
@@ -448,8 +476,6 @@ export const CustomersTab = () => {
         customer.bumper_order_id?.toLowerCase().includes(searchLower) ||
         customer.stripe_customer_id?.toLowerCase().includes(searchLower) ||
         customer.status?.toLowerCase().includes(searchLower) ||
-        
-        // Policy numbers from related policies
         customer.customer_policies?.some(policy => 
           policy.policy_number?.toLowerCase().includes(searchLower) ||
           policy.warranty_number?.toLowerCase().includes(searchLower)
@@ -464,31 +490,10 @@ export const CustomersTab = () => {
       );
     }
 
-    // Apply status filter
+    // Apply status filter - using cached data instead of DB calls
     if (filterByStatus !== 'all') {
       if (filterByStatus === 'refunded') {
-        // Refunded customers are identified by the "Refunded" tag, not status
-        try {
-          const { data: refundedTagData } = await supabase
-            .from('customer_tags')
-            .select('id')
-            .ilike('name', 'refunded')
-            .single();
-          
-          if (refundedTagData) {
-            const { data: refundedCustomers } = await supabase
-              .from('customer_tag_assignments')
-              .select('customer_id')
-              .eq('tag_id', refundedTagData.id);
-            
-            if (refundedCustomers) {
-              const refundedCustomerIds = new Set(refundedCustomers.map(r => r.customer_id));
-              filtered = filtered.filter(customer => refundedCustomerIds.has(customer.id));
-            }
-          }
-        } catch (error) {
-          console.error('Error filtering by refunded tag:', error);
-        }
+        filtered = filtered.filter(customer => refundedCustomerIds.has(customer.id));
       } else {
         filtered = filtered.filter(customer =>
           customer.status?.toLowerCase() === filterByStatus.toLowerCase()
@@ -496,20 +501,13 @@ export const CustomersTab = () => {
       }
     }
 
-    // Apply tag filter
+    // Apply tag filter - using cached data instead of DB calls
     if (filterByTag !== 'all') {
-      try {
-        const { data: taggedCustomers, error } = await supabase
-          .from('customer_tag_assignments')
-          .select('customer_id')
-          .eq('tag_id', filterByTag);
-
-        if (!error && taggedCustomers) {
-          const taggedCustomerIds = new Set(taggedCustomers.map(t => t.customer_id));
-          filtered = filtered.filter(customer => taggedCustomerIds.has(customer.id));
-        }
-      } catch (error) {
-        console.error('Error filtering by tag:', error);
+      const taggedIds = tagAssignmentsCache[filterByTag];
+      if (taggedIds) {
+        filtered = filtered.filter(customer => taggedIds.has(customer.id));
+      } else {
+        filtered = [];
       }
     }
 
@@ -517,12 +515,10 @@ export const CustomersTab = () => {
     if (filterBySource !== 'all_view') {
       filtered = filtered.filter(customer => {
         if (filterBySource === 'website') {
-          // Website purchases: purchase_source is 'website' or warranty starts with BAW
           return customer.purchase_source === 'website' || 
                  customer.warranty_reference_number?.startsWith('BAW') ||
                  (!customer.is_manual_entry && !customer.purchase_source);
         } else if (filterBySource === 'quote_order') {
-          // Quote/Order link or External: purchase_source is 'quote_link' or 'external', or warranty starts with ADM
           return customer.purchase_source === 'quote_link' || 
                  customer.purchase_source === 'external' ||
                  customer.warranty_reference_number?.startsWith('ADM') ||
@@ -564,9 +560,9 @@ export const CustomersTab = () => {
       
       switch (sortBy) {
         case 'newest':
-          return dateB - dateA; // Newest first (default)
+          return dateB - dateA;
         case 'oldest':
-          return dateA - dateB; // Oldest first
+          return dateA - dateB;
         case 'name':
           return a.name.localeCompare(b.name);
         case 'email':
@@ -574,12 +570,12 @@ export const CustomersTab = () => {
         case 'plan':
           return (a.plan_type || '').localeCompare(b.plan_type || '');
         default:
-          return dateB - dateA; // Default to newest first
+          return dateB - dateA;
       }
     });
 
     setFilteredCustomers(filtered);
-  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, dateRange]);
+  }, [customers, debouncedSearchTerm, sortBy, filterByPlan, filterByStatus, filterByTag, filterBySource, filterByWarrantyPeriod, dateRange, tagAssignmentsCache, refundedCustomerIds]);
 
   const getCurrentUser = async () => {
     try {
@@ -714,14 +710,16 @@ export const CustomersTab = () => {
         .not('name', 'eq', 'Test Customer')
         .not('name', 'eq', 'Guest Customer')
         .eq('is_deleted', false)
-        .order('updated_at', { ascending: false });
+        .order('updated_at', { ascending: false })
+        .limit(3000);
 
       // Then get orphaned policies (policies without customer records)
       const { data: orphanedPolicies, error: orphanedError } = await supabase
         .from('customer_policies')
         .select('*')
         .is('customer_id', null)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(500);
 
       let directData = customersData || [];
       let directError = customersError;
