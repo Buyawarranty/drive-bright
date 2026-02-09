@@ -462,7 +462,9 @@ const MotorbikeWarrantyLanding: React.FC = () => {
           manufactureDate: data.manufactureDate
         };
         
-        localStorage.setItem('vehicleData', JSON.stringify(vehicleData));
+        saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
+        saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
+        saveWithTimestamp('buyawarranty_currentStep', '2');
         navigate('/?step=2');
       } else {
         toast({
