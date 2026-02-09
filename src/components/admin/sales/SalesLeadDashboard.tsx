@@ -7,9 +7,10 @@ import { useLeads } from '@/hooks/useLeads';
 import { CustomersTab } from '@/components/admin/CustomersTab';
 import { AgentOverviewPanel } from './AgentOverviewPanel';
 import { SetTargetsPanel } from './SetTargetsPanel';
+import { NewLeadsTab } from '@/components/admin/leads/NewLeadsTab';
 import { 
   LayoutDashboard, Users, ShoppingBag, Target, 
-  TrendingUp, UserCheck, AlertTriangle
+  TrendingUp, UserCheck, AlertTriangle, ClipboardList
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 
@@ -21,7 +22,7 @@ export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({
   onNavigateToTab,
 }) => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('all-leads');
 
   const {
     leads,
@@ -130,7 +131,11 @@ export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+          <TabsTrigger value="all-leads" className="gap-2">
+            <ClipboardList className="h-4 w-4" />
+            <span className="hidden sm:inline">All Leads</span>
+          </TabsTrigger>
           <TabsTrigger value="overview" className="gap-2">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Agent Overview</span>
@@ -148,6 +153,13 @@ export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({
             <span className="hidden sm:inline">Team KPIs</span>
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="all-leads">
+          <NewLeadsTab 
+            onNavigateToTab={onNavigateToTab}
+            userRole="sales_lead"
+          />
+        </TabsContent>
 
         <TabsContent value="overview">
           <AgentOverviewPanel leads={leads} salesUsers={salesUsers || []} />
