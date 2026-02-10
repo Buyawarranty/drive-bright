@@ -252,7 +252,6 @@ export const PrintableWarrantyLetter: React.FC<PrintableWarrantyLetterProps> = (
     
     setTimeout(() => {
       printWindow.print();
-      printWindow.close();
     }, 250);
   };
 
