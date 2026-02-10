@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck, Key, Copy, Check } from 'lucide-react';
+import { UserPlus, Shield, Eye, Users, Trash2, RotateCcw, Mail, Settings, Download, ShieldCheck, Key, Copy, Check, TestTube } from 'lucide-react';
 import { AccessRequestsPanel } from './AccessRequestsPanel';
 import { TeamActivityPanel } from './TeamActivityPanel';
 import { useAuth } from '@/hooks/useAuth';
@@ -81,6 +81,7 @@ const GRANULAR_PERMISSIONS = {
 // Default tab permissions per role - auto-applied when role is selected
 const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
   admin: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
+  dev_tester: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
   sales_lead: {
     'tab_new-leads': true,
     'tab_get-quote': true,
@@ -128,7 +129,7 @@ export const UserPermissionsTab = () => {
     lastName: '',
     username: '',
     password: '',
-    role: 'member' as 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales',
+    role: 'member' as 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales' | 'dev_tester',
     permissions: {} as Record<string, boolean>
   });
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
@@ -226,7 +227,7 @@ export const UserPermissionsTab = () => {
     if (!editingUser) return;
 
     try {
-      const validRoles = ['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'customer'] as const;
+      const validRoles = ['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead', 'dev_tester', 'customer'] as const;
       const roleValue = validRoles.includes(editingUser.role as any) 
         ? editingUser.role as typeof validRoles[number]
         : 'guest';
@@ -476,6 +477,7 @@ export const UserPermissionsTab = () => {
       case 'viewer': return <Eye className="h-4 w-4" />;
       case 'blog_writer': return <UserPlus className="h-4 w-4" />;
       case 'sales': return <Users className="h-4 w-4" />;
+      case 'dev_tester': return <TestTube className="h-4 w-4" />;
       default: return <UserPlus className="h-4 w-4" />;
     }
   };
@@ -484,6 +486,7 @@ export const UserPermissionsTab = () => {
     switch (role) {
       case 'admin': return 'destructive';
       case 'sales_lead': return 'destructive';
+      case 'dev_tester': return 'default';
       case 'member': return 'default';
       case 'viewer': return 'secondary';
       case 'blog_writer': return 'default';
@@ -495,6 +498,7 @@ export const UserPermissionsTab = () => {
   const getRoleBadgeClassName = (role: string) => {
     if (role === 'sales_lead') return 'bg-violet-600 hover:bg-violet-700 text-white border-violet-600';
     if (role === 'sales') return 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600';
+    if (role === 'dev_tester') return 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600';
     return '';
   };
 
@@ -752,6 +756,7 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="blog_writer">Blog Writer - Blog & Landing Pages only</SelectItem>
                     <SelectItem value="sales">Sales - Sales team tabs only</SelectItem>
                     <SelectItem value="sales_lead">Sales Lead - Team management & lead assignment</SelectItem>
+                    <SelectItem value="dev_tester">Dev/Tester - Full access, no destructive actions</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -761,12 +766,12 @@ export const UserPermissionsTab = () => {
               </div>
 
               {/* Show tab permissions for all non-admin roles */}
-              {inviteData.role !== 'admin' && (
+              {inviteData.role !== 'admin' && inviteData.role !== 'dev_tester' && (
                 renderTabPermissionsSection(inviteData.permissions, false)
               )}
 
               {/* Legacy permissions section */}
-              {inviteData.role !== 'admin' && Object.keys(groupedPermissions).length > 0 && (
+              {inviteData.role !== 'admin' && inviteData.role !== 'dev_tester' && Object.keys(groupedPermissions).length > 0 && (
                 <div className="space-y-4">
                   <Label className="text-base font-semibold">Additional Permissions</Label>
                   {Object.entries(groupedPermissions).map(([category, categoryPermissions]) => (
@@ -939,12 +944,13 @@ export const UserPermissionsTab = () => {
                     <SelectItem value="blog_writer">Blog Writer - Blog & Landing Pages only</SelectItem>
                     <SelectItem value="sales">Sales - Sales team tabs only</SelectItem>
                     <SelectItem value="sales_lead">Sales Lead - Team management & lead assignment</SelectItem>
+                    <SelectItem value="dev_tester">Dev/Tester - Full access, no destructive actions</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Show tab permissions for all non-admin roles */}
-              {editingUser.role !== 'admin' && (
+              {editingUser.role !== 'admin' && editingUser.role !== 'dev_tester' && (
                 renderTabPermissionsSection(editingUser.permissions, true)
               )}
 
@@ -1031,11 +1037,11 @@ export const UserPermissionsTab = () => {
                   <TableCell>
                     <Badge variant={getRoleBadgeVariant(user.role)} className={`flex items-center gap-1 w-fit ${getRoleBadgeClassName(user.role)}`}>
                       {getRoleIcon(user.role)}
-                      {user.role}
+                      {user.role === 'dev_tester' ? 'Dev/Tester' : user.role}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {user.role === 'admin' ? (
+                    {(user.role === 'admin' || user.role === 'dev_tester') ? (
                       <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                         All Tabs
                       </Badge>
@@ -1063,6 +1069,7 @@ export const UserPermissionsTab = () => {
                       >
                         <Settings className="h-4 w-4" />
                       </Button>
+                      {currentAdminUser?.role !== 'dev_tester' && (
                       <Button
                         size="sm"
                         variant={user.is_active ? "outline" : "default"}
@@ -1070,6 +1077,7 @@ export const UserPermissionsTab = () => {
                       >
                         {user.is_active ? 'Deactivate' : 'Activate'}
                       </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="secondary"
@@ -1095,6 +1103,7 @@ export const UserPermissionsTab = () => {
                       >
                         <Key className="h-4 w-4" />
                       </Button>
+                      {currentAdminUser?.role !== 'dev_tester' && (
                       <Button
                         size="sm"
                         variant="destructive"
@@ -1102,6 +1111,7 @@ export const UserPermissionsTab = () => {
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
