@@ -66,6 +66,7 @@ export const PolicyDocumentsTab: React.FC = () => {
   const [customerPolicies, setCustomerPolicies] = useState<PolicyData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showPreview, setShowPreview] = useState(false);
+  const [printMode, setPrintMode] = useState<'bw' | 'colour'>('bw');
   const [showDropdown, setShowDropdown] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -243,7 +244,7 @@ export const PolicyDocumentsTab: React.FC = () => {
             .contact-item .clabel { color: #64748b; font-size: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
             .contact-item .cvalue { color: #eb4b00; font-weight: 600; font-size: 12px; margin-top: 2px; }
             .legal-footer { margin-top: 12px; padding-top: 8px; border-top: 1px solid #e2e8f0; font-size: 8px; color: #94a3b8; text-align: center; }
-            @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+            ${isBW ? '' : '@media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }'}
           </style>
         </head>
         <body>
@@ -268,6 +269,38 @@ export const PolicyDocumentsTab: React.FC = () => {
   const todayDate = format(new Date(), 'd MMMM yyyy');
   const addons = getAddonsList();
   const address = formatAddress();
+  const isBW = printMode === 'bw';
+
+  // Colour palette - switches between colour and B&W
+  const c = {
+    accent: isBW ? '#333' : '#eb4b00',
+    accentGrad: isBW ? '#333' : 'linear-gradient(135deg, #eb4b00 0%, #ff6b2b 100%)',
+    accentText: isBW ? 'white' : 'white',
+    heading: isBW ? '#000' : '#1e3a5f',
+    border: isBW ? '#999' : '#e2e8f0',
+    borderAccent: isBW ? '#333' : '#eb4b00',
+    glanceBg: isBW ? '#f5f5f5' : '#f8fafc',
+    glanceBorder: isBW ? '#ccc' : '#e2e8f0',
+    benefitsBg: isBW ? '#f5f5f5' : '#f0fdf4',
+    benefitsBorder: isBW ? '#aaa' : '#86efac',
+    benefitsHeading: isBW ? '#000' : '#166534',
+    benefitsText: isBW ? '#333' : '#15803d',
+    addonsBg: isBW ? '#f5f5f5' : '#eff6ff',
+    addonsBorder: isBW ? '#aaa' : '#93c5fd',
+    addonsHeading: isBW ? '#000' : '#1e40af',
+    addonsText: isBW ? '#333' : '#1d4ed8',
+    claimsBg: isBW ? '#f5f5f5' : '#fef3c7',
+    claimsBorder: isBW ? '#aaa' : '#fbbf24',
+    claimsHeading: isBW ? '#000' : '#92400e',
+    claimsText: isBW ? '#333' : '#78350f',
+    accountBg: isBW ? '#f5f5f5' : '#f8fafc',
+    accountBorder: isBW ? '#ccc' : '#e2e8f0',
+    accountHeading: isBW ? '#000' : '#1e3a5f',
+    contactValue: isBW ? '#000' : '#eb4b00',
+    muted: isBW ? '#555' : '#64748b',
+    legal: isBW ? '#777' : '#94a3b8',
+    divider: isBW ? '#ccc' : '#f0f0f0',
+  };
 
   return (
     <div className="space-y-6">
@@ -398,7 +431,7 @@ export const PolicyDocumentsTab: React.FC = () => {
 
       {/* Generate / Print */}
       {selectedCustomer && selectedPolicy && (
-        <div className="flex gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Button onClick={() => setShowPreview(true)} className="gap-2">
             <FileText className="h-4 w-4" />
             Generate Letter Preview
@@ -409,6 +442,20 @@ export const PolicyDocumentsTab: React.FC = () => {
               Print / Save as PDF
             </Button>
           )}
+          <div className="flex items-center gap-1 ml-2 border rounded-lg overflow-hidden">
+            <button
+              onClick={() => setPrintMode('bw')}
+              className={`px-3 py-1.5 text-xs font-medium transition-colors ${printMode === 'bw' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
+            >
+              B&W
+            </button>
+            <button
+              onClick={() => setPrintMode('colour')}
+              className={`px-3 py-1.5 text-xs font-medium transition-colors ${printMode === 'colour' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
+            >
+              Colour
+            </button>
+          </div>
         </div>
       )}
 
@@ -418,8 +465,8 @@ export const PolicyDocumentsTab: React.FC = () => {
           <CardContent className="p-8 bg-white">
             <div ref={printRef} className="policy-letter">
               {/* Header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '12px', borderBottom: '3px solid #eb4b00', marginBottom: '14px' }}>
-                <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" alt="Buy A Warranty" style={{ height: '40px' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '12px', borderBottom: `3px solid ${c.borderAccent}`, marginBottom: '14px' }}>
+                <img src="https://buyawarranty.co.uk/lovable-uploads/baw-logo-new-2025.png" alt="Buy A Warranty" style={{ height: '40px', filter: isBW ? 'grayscale(100%)' : 'none' }} />
                 <div style={{ textAlign: 'right', fontSize: '9px', color: '#666', lineHeight: '1.4' }}>
                   <p style={{ fontWeight: '600' }}>Buy A Warranty Ltd</p>
                   <p>Warranty House, 62 Berkhamsted Ave</p>
@@ -428,10 +475,8 @@ export const PolicyDocumentsTab: React.FC = () => {
                 </div>
               </div>
 
-              {/* Date */}
               <div style={{ textAlign: 'right', fontSize: '10px', color: '#666', marginBottom: '12px' }}>{todayDate}</div>
 
-              {/* Customer Address */}
               <div style={{ marginBottom: '14px', fontSize: '11px' }}>
                 <p style={{ fontWeight: '700', fontSize: '12px', margin: '1px 0' }}>{selectedCustomer.name}</p>
                 {address.map((line, i) => (
@@ -440,13 +485,12 @@ export const PolicyDocumentsTab: React.FC = () => {
                 <p style={{ margin: '4px 0 0', color: '#666' }}>{selectedCustomer.email}</p>
               </div>
 
-              {/* Title */}
-              <h1 style={{ fontSize: '18px', fontWeight: '700', color: '#1e3a5f', marginBottom: '10px' }}>
+              <h1 style={{ fontSize: '18px', fontWeight: '700', color: c.heading, marginBottom: '10px' }}>
                 Your Warranty Cover Document
               </h1>
 
               {/* Warranty Badge */}
-              <div style={{ background: 'linear-gradient(135deg, #eb4b00 0%, #ff6b2b 100%)', color: 'white', padding: '8px 16px', borderRadius: '6px', display: 'inline-block', marginBottom: '14px' }}>
+              <div style={{ background: isBW ? '#333' : c.accentGrad, color: c.accentText, padding: '8px 16px', borderRadius: '6px', display: 'inline-block', marginBottom: '14px' }}>
                 <div style={{ fontSize: '8px', textTransform: 'uppercase', letterSpacing: '1px', opacity: '0.9' }}>Warranty Reference</div>
                 <div style={{ fontSize: '15px', fontWeight: '700', marginTop: '2px' }}>{warrantyRef}</div>
               </div>
@@ -456,70 +500,53 @@ export const PolicyDocumentsTab: React.FC = () => {
                 Thank you for choosing Buyawarranty to protect your vehicle. Please find below a summary of your warranty cover. Your policy provides protection against the cost of unexpected mechanical or electrical breakdowns, helping you stay on the road with peace of mind.
               </p>
 
-              {/* Your Cover at a Glance */}
+              {/* Cover at a Glance */}
               <div style={{ marginBottom: '14px' }}>
-                <div style={{ fontSize: '13px', fontWeight: '700', color: '#1e3a5f', marginBottom: '8px', borderBottom: '2px solid #e2e8f0', paddingBottom: '4px' }}>Your Cover at a Glance</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 20px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '12px 14px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <span style={{ color: '#64748b', fontWeight: '500' }}>Vehicle</span>
-                    <span style={{ fontWeight: '600' }}>{selectedCustomer.registration_plate || '—'}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <span style={{ color: '#64748b', fontWeight: '500' }}>Plan Type</span>
-                    <span style={{ fontWeight: '600' }}>{planType}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <span style={{ color: '#64748b', fontWeight: '500' }}>Duration</span>
-                    <span style={{ fontWeight: '600' }}>{getDuration()}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <span style={{ color: '#64748b', fontWeight: '500' }}>Mileage</span>
-                    <span style={{ fontWeight: '600' }}>{selectedCustomer.mileage ? `${parseInt(selectedCustomer.mileage).toLocaleString()} miles` : 'N/A'}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <span style={{ color: '#64748b', fontWeight: '500' }}>Start Date</span>
-                    <span style={{ fontWeight: '600' }}>{format(new Date(selectedPolicy.policy_start_date), 'd MMM yyyy')}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: '1px solid #f0f0f0' }}>
-                    <span style={{ color: '#64748b', fontWeight: '500' }}>End Date</span>
-                    <span style={{ fontWeight: '600' }}>{format(new Date(selectedPolicy.policy_end_date), 'd MMM yyyy')}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}>
-                    <span style={{ color: '#64748b', fontWeight: '500' }}>Warranty Ref</span>
-                    <span style={{ fontWeight: '600' }}>{warrantyRef}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}>
-                    <span style={{ color: '#64748b', fontWeight: '500' }}>Policy No.</span>
-                    <span style={{ fontWeight: '600' }}>{selectedPolicy.policy_number}</span>
-                  </div>
+                <div style={{ fontSize: '13px', fontWeight: '700', color: c.heading, marginBottom: '8px', borderBottom: `2px solid ${c.border}`, paddingBottom: '4px' }}>Your Cover at a Glance</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 20px', background: c.glanceBg, border: `1px solid ${c.glanceBorder}`, borderRadius: '6px', padding: '12px 14px' }}>
+                  {[
+                    ['Vehicle', selectedCustomer.registration_plate || '-'],
+                    ['Plan Type', planType],
+                    ['Duration', getDuration()],
+                    ['Mileage', selectedCustomer.mileage ? `${parseInt(selectedCustomer.mileage).toLocaleString()} miles` : 'N/A'],
+                    ['Start Date', format(new Date(selectedPolicy.policy_start_date), 'd MMM yyyy')],
+                    ['End Date', format(new Date(selectedPolicy.policy_end_date), 'd MMM yyyy')],
+                    ['Warranty Ref', warrantyRef],
+                    ['Policy No.', selectedPolicy.policy_number],
+                  ].map(([label, value], i) => (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', borderBottom: `1px solid ${c.divider}` }}>
+                      <span style={{ color: c.muted, fontWeight: '500' }}>{label}</span>
+                      <span style={{ fontWeight: '600' }}>{value}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* What Your Warranty Includes */}
+              {/* Benefits */}
               <div style={{ marginBottom: '14px' }}>
-                <div style={{ fontSize: '13px', fontWeight: '700', color: '#1e3a5f', marginBottom: '8px', borderBottom: '2px solid #e2e8f0', paddingBottom: '4px' }}>What Your Warranty Includes</div>
-                <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '6px', padding: '10px 14px', marginBottom: '8px' }}>
-                  <h4 style={{ color: '#166534', fontSize: '12px', marginBottom: '6px', fontWeight: '700' }}>Key Benefits of Your Cover</h4>
-                  <ul style={{ margin: '0', paddingLeft: '16px', color: '#15803d', fontSize: '10.5px' }}>
+                <div style={{ fontSize: '13px', fontWeight: '700', color: c.heading, marginBottom: '8px', borderBottom: `2px solid ${c.border}`, paddingBottom: '4px' }}>What Your Warranty Includes</div>
+                <div style={{ background: c.benefitsBg, border: `1px solid ${c.benefitsBorder}`, borderRadius: '6px', padding: '10px 14px', marginBottom: '8px' }}>
+                  <h4 style={{ color: c.benefitsHeading, fontSize: '12px', marginBottom: '6px', fontWeight: '700' }}>Key Benefits of Your Cover</h4>
+                  <ul style={{ margin: '0', paddingLeft: '16px', color: c.benefitsText, fontSize: '10.5px' }}>
                     <li style={{ marginBottom: '3px' }}>Protection for major mechanical and electrical components</li>
                     {claimLimit && <li style={{ marginBottom: '3px' }}>Claims limit of £{claimLimit.toLocaleString()} per claim</li>}
                     {labourRate && <li style={{ marginBottom: '3px' }}>Labour rate covered up to £{labourRate}/hour</li>}
                     {excess !== undefined && excess !== null && <li style={{ marginBottom: '3px' }}>Voluntary excess of £{excess} per claim</li>}
-                    <li style={{ marginBottom: '3px' }}>Access to our trusted UK‑wide repair network</li>
+                    <li style={{ marginBottom: '3px' }}>Access to our trusted UK-wide repair network</li>
                     <li style={{ marginBottom: '3px' }}>Fast, simple claims process via our dedicated claims team</li>
                     {selectedCustomer.breakdown_recovery && <li style={{ marginBottom: '3px' }}>Breakdown recovery included</li>}
                   </ul>
                 </div>
 
                 {addons.length > 0 && (
-                  <div style={{ background: '#eff6ff', border: '1px solid #93c5fd', borderRadius: '6px', padding: '10px 14px' }}>
-                    <h4 style={{ color: '#1e40af', fontSize: '12px', marginBottom: '6px', fontWeight: '700' }}>Additional Included Services</h4>
-                    <ul style={{ margin: '0', paddingLeft: '16px', color: '#1d4ed8', fontSize: '10.5px' }}>
+                  <div style={{ background: c.addonsBg, border: `1px solid ${c.addonsBorder}`, borderRadius: '6px', padding: '10px 14px' }}>
+                    <h4 style={{ color: c.addonsHeading, fontSize: '12px', marginBottom: '6px', fontWeight: '700' }}>Additional Included Services</h4>
+                    <ul style={{ margin: '0', paddingLeft: '16px', color: c.addonsText, fontSize: '10.5px' }}>
                       {addons.map((addon, i) => (
                         <li key={i} style={{ marginBottom: '3px' }}>✓ {addon}</li>
                       ))}
                       {selectedCustomer.seasonal_bonus_months && selectedCustomer.seasonal_bonus_months > 0 && (
-                        <li style={{ marginBottom: '3px' }}>✓ Free extended cover — {selectedCustomer.seasonal_bonus_months} bonus month{selectedCustomer.seasonal_bonus_months > 1 ? 's' : ''}</li>
+                        <li style={{ marginBottom: '3px' }}>✓ Free extended cover: {selectedCustomer.seasonal_bonus_months} bonus month{selectedCustomer.seasonal_bonus_months > 1 ? 's' : ''}</li>
                       )}
                     </ul>
                   </div>
@@ -530,18 +557,18 @@ export const PolicyDocumentsTab: React.FC = () => {
                 </p>
               </div>
 
-              {/* How to Make a Claim */}
-              <div style={{ background: '#fef3c7', border: '1px solid #fbbf24', borderRadius: '6px', padding: '10px 14px', marginBottom: '14px' }}>
-                <h4 style={{ color: '#92400e', fontSize: '12px', marginBottom: '4px', fontWeight: '700' }}>How to Make a Claim</h4>
-                <p style={{ color: '#78350f', fontSize: '10.5px', margin: '2px 0' }}>If your vehicle experiences a fault, simply contact our Claims Team <strong>before</strong> any repairs are carried out so we can authorise the work.</p>
-                <p style={{ color: '#78350f', fontSize: '10.5px', margin: '4px 0', fontWeight: '700' }}>Claims Hotline: 0330 229 5045</p>
-                <p style={{ color: '#78350f', fontSize: '10.5px', margin: '2px 0' }}>Opening Hours: Monday–Friday, 9am–5pm</p>
-                <p style={{ color: '#78350f', fontSize: '10.5px', margin: '4px 0 0' }}>We aim to make claims as smooth and stress‑free as possible. Our team will guide you through each step and liaise with the repairer on your behalf.</p>
+              {/* Claims */}
+              <div style={{ background: c.claimsBg, border: `1px solid ${c.claimsBorder}`, borderRadius: '6px', padding: '10px 14px', marginBottom: '14px' }}>
+                <h4 style={{ color: c.claimsHeading, fontSize: '12px', marginBottom: '4px', fontWeight: '700' }}>How to Make a Claim</h4>
+                <p style={{ color: c.claimsText, fontSize: '10.5px', margin: '2px 0' }}>If your vehicle experiences a fault, simply contact our Claims Team <strong>before</strong> any repairs are carried out so we can authorise the work.</p>
+                <p style={{ color: c.claimsText, fontSize: '10.5px', margin: '4px 0', fontWeight: '700' }}>Claims Hotline: 0330 229 5045</p>
+                <p style={{ color: c.claimsText, fontSize: '10.5px', margin: '2px 0' }}>Opening Hours: Monday to Friday, 9am to 5pm</p>
+                <p style={{ color: c.claimsText, fontSize: '10.5px', margin: '4px 0 0' }}>We aim to make claims as smooth and stress-free as possible. Our team will guide you through each step and liaise with the repairer on your behalf.</p>
               </div>
 
-              {/* Your Account & Policy Documents */}
-              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '10px 14px', marginBottom: '14px' }}>
-                <h4 style={{ color: '#1e3a5f', fontSize: '12px', marginBottom: '4px', fontWeight: '700' }}>Your Account &amp; Policy Documents</h4>
+              {/* Account */}
+              <div style={{ background: c.accountBg, border: `1px solid ${c.accountBorder}`, borderRadius: '6px', padding: '10px 14px', marginBottom: '14px' }}>
+                <h4 style={{ color: c.accountHeading, fontSize: '12px', marginBottom: '4px', fontWeight: '700' }}>Your Account &amp; Policy Documents</h4>
                 <p style={{ fontSize: '10.5px', color: '#333', margin: '2px 0' }}>You can view or download your policy documents anytime by logging into your Buyawarranty account:</p>
                 <p style={{ fontSize: '10.5px', color: '#333', margin: '4px 0' }}><strong>Login:</strong> buyawarranty.co.uk &nbsp; | &nbsp; <strong>Email:</strong> {selectedCustomer.email}</p>
                 <ul style={{ margin: '4px 0 0', paddingLeft: '16px', fontSize: '10px', color: '#555' }}>
@@ -553,35 +580,32 @@ export const PolicyDocumentsTab: React.FC = () => {
                 </ul>
               </div>
 
-              {/* We're Here to Help */}
               <p style={{ fontSize: '10.5px', color: '#333', marginBottom: '6px' }}>
                 If there's anything you're unsure about, or if you simply want to understand your cover better, we're here for you.
               </p>
 
-              {/* Signature */}
               <div style={{ marginTop: '16px', fontSize: '11px' }}>
                 <p style={{ margin: '1px 0' }}>Warm regards,</p>
                 <p style={{ margin: '10px 0 1px', fontWeight: '600' }}>The Buyawarranty Team</p>
               </div>
 
               {/* Contact Footer */}
-              <div style={{ marginTop: '18px', paddingTop: '10px', borderTop: '2px solid #e2e8f0', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', fontSize: '10px' }}>
+              <div style={{ marginTop: '18px', paddingTop: '10px', borderTop: `2px solid ${c.border}`, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', fontSize: '10px' }}>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ color: '#64748b', fontSize: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Sales Enquiries</div>
-                  <div style={{ color: '#eb4b00', fontWeight: '600', fontSize: '12px', marginTop: '2px' }}>0330 229 5040</div>
+                  <div style={{ color: c.muted, fontSize: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Sales Enquiries</div>
+                  <div style={{ color: c.contactValue, fontWeight: '600', fontSize: '12px', marginTop: '2px' }}>0330 229 5040</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ color: '#64748b', fontSize: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Claims Hotline</div>
-                  <div style={{ color: '#eb4b00', fontWeight: '600', fontSize: '12px', marginTop: '2px' }}>0330 229 5045</div>
+                  <div style={{ color: c.muted, fontSize: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Claims Hotline</div>
+                  <div style={{ color: c.contactValue, fontWeight: '600', fontSize: '12px', marginTop: '2px' }}>0330 229 5045</div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ color: '#64748b', fontSize: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Customer Support</div>
-                  <div style={{ color: '#eb4b00', fontWeight: '600', fontSize: '12px', marginTop: '2px' }}>support@buyawarranty.co.uk</div>
+                  <div style={{ color: c.muted, fontSize: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Customer Support</div>
+                  <div style={{ color: c.contactValue, fontWeight: '600', fontSize: '12px', marginTop: '2px' }}>support@buyawarranty.co.uk</div>
                 </div>
               </div>
 
-              {/* Legal Footer */}
-              <div style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px solid #e2e8f0', fontSize: '8px', color: '#94a3b8', textAlign: 'center' }}>
+              <div style={{ marginTop: '12px', paddingTop: '8px', borderTop: `1px solid ${c.border}`, fontSize: '8px', color: c.legal, textAlign: 'center' }}>
                 Buy A Warranty Ltd is registered in England &amp; Wales. Company No: 10314863.
                 Registered Address: Warranty House, 62 Berkhamsted Ave, Wembley, HA9 6DT.
               </div>
