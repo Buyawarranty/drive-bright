@@ -26,6 +26,7 @@ import seatLogo from '@/assets/logos/seat.webp';
 import skodaLogo from '@/assets/logos/skoda.webp';
 import ssangyongLogo from '@/assets/logos/ssangyong.png';
 import { supabase } from '@/integrations/supabase/client';
+import { saveWithTimestamp } from '@/utils/localStorage';
 import { toast } from 'sonner';
 import MileageSlider from '@/components/MileageSlider';
 import { OptimizedImage } from '@/components/OptimizedImage';
@@ -255,9 +256,9 @@ const CarExtendedWarranty: React.FC = () => {
       trackQuoteRequest();
       
       // Store in localStorage for the homepage to pick up
-      localStorage.setItem('buyawarranty_vehicleData', JSON.stringify(vehicleData));
-      localStorage.setItem('buyawarranty_formData', JSON.stringify(vehicleData));
-      localStorage.setItem('buyawarranty_currentStep', '2');
+      saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
+      saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
+      saveWithTimestamp('buyawarranty_currentStep', '2');
       
       // Navigate to homepage step 2
       navigate('/?step=2');
@@ -274,9 +275,9 @@ const CarExtendedWarranty: React.FC = () => {
         mileage: mileage.replace(/,/g, ''),
       };
       
-      localStorage.setItem('buyawarranty_vehicleData', JSON.stringify(vehicleData));
-      localStorage.setItem('buyawarranty_formData', JSON.stringify(vehicleData));
-      localStorage.setItem('buyawarranty_currentStep', '2');
+      saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
+      saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
+      saveWithTimestamp('buyawarranty_currentStep', '2');
       
       navigate('/?step=2');
     } finally {

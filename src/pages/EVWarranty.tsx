@@ -8,6 +8,7 @@ import TrustpilotHeader from '@/components/TrustpilotHeader';
 import NewFooter from '@/components/NewFooter';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trackButtonClick } from '@/utils/analytics';
+import { saveWithTimestamp } from '@/utils/localStorage';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import { BreadcrumbSchema } from '@/components/schema/BreadcrumbSchema';
 import VehicleDetailsStep from '@/components/VehicleDetailsStep';
@@ -30,22 +31,21 @@ const EVWarranty = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   const handleVehicleNext = (data: any) => {
-    // Navigate to step 2 with vehicle data
-    const params = new URLSearchParams({
-      step: '2',
-      reg: data.regNumber,
+    const vehicleData = {
+      regNumber: data.regNumber,
       mileage: data.mileage,
-      referrer: '/ev-warranty/'
-    });
+      make: data.make,
+      model: data.model,
+      fuelType: data.fuelType,
+      year: data.year,
+      vehicleType: data.vehicleType || 'car',
+    };
     
-    // Add optional vehicle details if available
-    if (data.make) params.set('make', data.make);
-    if (data.model) params.set('model', data.model);
-    if (data.fuelType) params.set('fuelType', data.fuelType);
-    if (data.year) params.set('year', data.year);
-    if (data.vehicleType) params.set('vehicleType', data.vehicleType);
+    saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
+    saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
+    saveWithTimestamp('buyawarranty_currentStep', '2');
     
-    navigate(`/?${params.toString()}`);
+    navigate('/?step=2');
   };
 
   useEffect(() => {

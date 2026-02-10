@@ -10,9 +10,10 @@ import { ProductSchema } from '@/components/schema/ProductSchema';
 import { FAQSchema } from '@/components/schema/FAQSchema';
 import { BreadcrumbSchema } from '@/components/schema/BreadcrumbSchema';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
-// Footer components removed - rendered globally via App.tsx ConditionalFooter
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trackButtonClick } from '@/utils/analytics';
+import { saveWithTimestamp } from '@/utils/localStorage';
+import VehicleDetailsStep from '@/components/VehicleDetailsStep';
 import motorcycleHero from '@/assets/motorcycle-hero.png';
 import motorcycleCoverage from '@/assets/motorcycle-coverage.png';
 import motorcyclePanda from '@/assets/motorcycle-panda.png';
@@ -40,13 +41,28 @@ const MotorcycleWarranty = () => {
 
   const navigateToQuoteForm = () => {
     trackButtonClick('motorcycle_warranty_get_quote_cta');
-    navigate('/');
-    setTimeout(() => {
-      const element = document.getElementById('quote-form');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
+    const el = document.getElementById('motorcycle-quote-form');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleVehicleNext = (data: any) => {
+    const vehicleData = {
+      regNumber: data.regNumber,
+      mileage: data.mileage,
+      make: data.make,
+      model: data.model,
+      fuelType: data.fuelType,
+      year: data.year,
+      vehicleType: data.vehicleType || 'motorcycle',
+    };
+    
+    saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
+    saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
+    saveWithTimestamp('buyawarranty_currentStep', '2');
+    
+    navigate('/?step=2');
   };
 
   const motorcycleFAQs = [
@@ -224,6 +240,31 @@ const MotorcycleWarranty = () => {
             </div>
             <div className="relative flex justify-center">
               <img src={motorcycleHero} alt="Motorcycle Extended Warranty UK - Protect Your Bike" className="w-full h-auto" />
+            </div>
+          </div>
+        </section>
+
+        {/* Quote Form Section */}
+        <section id="motorcycle-quote-form" className="py-12 md:py-16 bg-muted/30">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Get Your Instant Motorcycle Warranty Quote
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                From just 80p a day • Easy claims • Fast payouts<br />
+                Unlimited claims • Complete Cover • No excess
+              </p>
+            </div>
+            <div className="bg-card rounded-lg shadow-lg p-6 md:p-8 border border-border">
+              <VehicleDetailsStep 
+                onNext={handleVehicleNext}
+              />
+            </div>
+            <div className="mt-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                Protection for motorcycles up to 150,000 miles and 15 years.
+              </p>
             </div>
           </div>
         </section>

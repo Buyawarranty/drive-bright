@@ -12,6 +12,7 @@ import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import { getResponsiveImageProps } from '@/utils/imageOptimizer';
 import VehicleDetailsStep from '@/components/VehicleDetailsStep';
+import { saveWithTimestamp } from '@/utils/localStorage';
 import vanHero from '@/assets/van-warranty-hero.png';
 import vanFast from '@/assets/van-warranty-fast.png';
 import vanCoverage from '@/assets/van-warranty-coverage.png';
@@ -25,22 +26,21 @@ const VanWarrantyNew = () => {
   };
   
   const handleVehicleNext = (data: any) => {
-    // Navigate to step 2 with vehicle data
-    const params = new URLSearchParams({
-      step: '2',
-      reg: data.regNumber,
+    const vehicleData = {
+      regNumber: data.regNumber,
       mileage: data.mileage,
-      referrer: '/van-warranty/'
-    });
+      make: data.make,
+      model: data.model,
+      fuelType: data.fuelType,
+      year: data.year,
+      vehicleType: data.vehicleType || 'van',
+    };
     
-    // Add optional vehicle details if available
-    if (data.make) params.set('make', data.make);
-    if (data.model) params.set('model', data.model);
-    if (data.fuelType) params.set('fuelType', data.fuelType);
-    if (data.year) params.set('year', data.year);
-    if (data.vehicleType) params.set('vehicleType', data.vehicleType);
+    saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
+    saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
+    saveWithTimestamp('buyawarranty_currentStep', '2');
     
-    navigate(`/?${params.toString()}`);
+    navigate('/?step=2');
   };
 
   const vanWarrantyFAQs = [
