@@ -618,7 +618,8 @@ export const useLeads = () => {
     }
   }, [leads]);
 
-  // OPTIMISTIC UPDATE: Assign lead instantly
+  // OPTIMISTIC UPDATE: Assign lead instantly using SECURITY DEFINER function
+  // This guarantees the DB write succeeds regardless of RLS policy complexity
   const assignLead = useCallback(async (leadId: string, userId: string | null) => {
     const now = new Date().toISOString();
     const user = salesUsersRef.current.find(u => u.id === userId);
@@ -647,51 +648,30 @@ export const useLeads = () => {
     ));
 
     try {
-      if (isAbandonedCart) {
-        // Update abandoned_carts table
-        let authUserId: string | null = null;
-        if (userId) {
-          const { data: adminUser } = await supabase
-            .from('admin_users')
-            .select('user_id')
-            .eq('id', userId)
-            .maybeSingle();
-          authUserId = adminUser?.user_id || null;
-        }
-        
-        const { error } = await supabase
-          .from('abandoned_carts')
-          .update({
-            contacted_by: authUserId,
-            last_contacted_at: authUserId ? now : null,
-            updated_at: now
-          })
-          .eq('id', actualId);
+      // Use SECURITY DEFINER function for reliable assignment
+      const { data: result, error: rpcError } = await supabase
+        .rpc('assign_lead_to_agent', {
+          p_lead_id: actualId,
+          p_agent_id: userId,
+          p_is_abandoned_cart: isAbandonedCart
+        });
 
-        if (error) throw error;
-      } else {
-        // Direct update - RLS policies handle permissions
-        const { error } = await supabase
-          .from('sales_leads')
-          .update({
-            assigned_to: userId,
-            assigned_at: userId ? now : null,
-            updated_at: now
-          })
-          .eq('id', actualId);
+      if (rpcError) throw rpcError;
 
-        if (error) throw error;
+      const assignResult = result as { success: boolean; error?: string };
+      if (!assignResult.success) {
+        throw new Error(assignResult.error || 'Assignment failed');
+      }
 
-        if (userId && user) {
-          // Log in background, don't await
-          logActivity(leadId, 'assignment', `Assigned to ${user.first_name || user.email || 'Unknown'}`);
-        }
+      if (userId && user && !isAbandonedCart) {
+        // Log in background, don't await
+        logActivity(leadId, 'assignment', `Assigned to ${user.first_name || user.email || 'Unknown'}`);
       }
 
       toast.success(userId ? `Assigned to ${user?.first_name || user?.email || 'user'}` : 'Assignment removed');
     } catch (error) {
       console.error('Error assigning lead:', error);
-      toast.error('Failed to assign lead');
+      toast.error('Failed to assign lead. Please try again.');
       // Revert optimistic update without full page refresh
       if (previousLead) {
         setLeads(prev => prev.map(lead => 
