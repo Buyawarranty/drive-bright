@@ -5180,6 +5180,10 @@ export type Database = {
         Args: { p_agent_id: string; p_lead_id: string }
         Returns: Json
       }
+      delete_admin_user_cascade: {
+        Args: { p_admin_user_id: string }
+        Returns: undefined
+      }
       fix_customer_role: { Args: { p_user_id: string }; Returns: undefined }
       generate_policy_number: { Args: never; Returns: string }
       generate_random_password: { Args: never; Returns: string }
