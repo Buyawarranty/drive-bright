@@ -201,7 +201,7 @@ const defaultTabs: Tab[] = [
   },
   {
     id: 'policy-documents',
-    label: 'Policy Documents',
+    label: 'Policy Letters',
     icon: FileText,
     description: 'Generate printable A4 policy letters for customers'
   },
