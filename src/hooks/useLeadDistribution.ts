@@ -18,6 +18,7 @@ interface AgentCap {
   assigned_today: number;
   last_assigned_at: string | null;
   paused: boolean;
+  percentage: number | null;
   admin_user?: {
     id: string;
     email: string;

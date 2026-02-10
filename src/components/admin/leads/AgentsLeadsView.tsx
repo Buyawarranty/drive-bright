@@ -187,6 +187,22 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
     setSaving(null);
   };
 
+  // Handle save percentage
+  const handleSavePercentage = async (adminUserId: string) => {
+    const newPercent = editedPercentages[adminUserId];
+    if (newPercent === undefined) return;
+
+    setSaving(adminUserId);
+    const success = await updateAgentCap(adminUserId, { percentage: newPercent });
+    if (success) {
+      setEditedPercentages(prev => {
+        const { [adminUserId]: _, ...rest } = prev;
+        return rest;
+      });
+    }
+    setSaving(null);
+  };
+
   // Handle toggle pause
   const handleTogglePause = async (adminUserId: string) => {
     setSaving(adminUserId);
@@ -1022,17 +1038,30 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                                 )}
                               </>
                             ) : (
-                              <div className="flex items-center gap-1">
-                                <Input
-                                  type="number"
-                                  min={0}
-                                  max={100}
-                                  value={editedPercent ?? 0}
-                                  onChange={(e) => handlePercentageChange(cap.admin_user_id, e.target.value)}
-                                  className="w-16 h-8 text-sm"
-                                />
-                                <span className="text-muted-foreground">%</span>
-                              </div>
+                              <>
+                                <div className="flex items-center gap-1">
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    max={100}
+                                    value={editedPercent ?? cap.percentage ?? 0}
+                                    onChange={(e) => handlePercentageChange(cap.admin_user_id, e.target.value)}
+                                    className="w-16 h-8 text-sm"
+                                  />
+                                  <span className="text-muted-foreground">%</span>
+                                </div>
+                                {editedPercent !== undefined && editedPercent !== (cap.percentage ?? 0) && (
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    className="h-8 w-8 p-0"
+                                    onClick={() => handleSavePercentage(cap.admin_user_id)}
+                                    disabled={saving === cap.admin_user_id}
+                                  >
+                                    <Save className="h-3.5 w-3.5" />
+                                  </Button>
+                                )}
+                              </>
                             )}
                           </div>
                         </TableCell>
