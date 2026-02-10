@@ -5163,6 +5163,14 @@ export type Database = {
       }
     }
     Functions: {
+      assign_lead_to_agent: {
+        Args: {
+          p_agent_id: string
+          p_is_abandoned_cart?: boolean
+          p_lead_id: string
+        }
+        Returns: Json
+      }
       auto_expire_discount_codes: { Args: never; Returns: number }
       calculate_lead_priority_score: {
         Args: {
