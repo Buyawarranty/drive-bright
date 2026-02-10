@@ -108,7 +108,7 @@ export const PrintablePolicySummary: React.FC<PrintablePolicySummaryProps> = ({
   ].filter(Boolean);
 
   const addOns = [
-    policy.breakdown_recovery && 'Breakdown Recovery',
+    // Breakdown recovery shown in key benefits, not as separate add-on
     policy.vehicle_rental && 'Vehicle Rental Cover',
     policy.mot_fee && 'MOT Test Fee Cover',
     policy.mot_repair && 'MOT Repair Cover',
@@ -266,9 +266,10 @@ export const PrintablePolicySummary: React.FC<PrintablePolicySummaryProps> = ({
                 <li style={{ marginBottom: '4px' }}>Protection for major mechanical and electrical components</li>
                 <li style={{ marginBottom: '4px' }}>Claims limit of £{(policy.claim_limit || 1250).toLocaleString()} per claim</li>
                 <li style={{ marginBottom: '4px' }}>Labour rate covered up to £{policy.labour_rate || 70}/hour</li>
-                <li style={{ marginBottom: '4px' }}>Access to our trusted UK-wide repair network</li>
+                <li style={{ marginBottom: '4px' }}>Access to trusted UK-wide VAT registered repair garages</li>
+                <li style={{ marginBottom: '4px' }}>Choose your own VAT registered garage option</li>
                 <li style={{ marginBottom: '4px' }}>Fast, simple claims process via our dedicated claims team</li>
-                {policy.breakdown_recovery && <li style={{ marginBottom: '4px' }}>Breakdown recovery included</li>}
+                {policy.breakdown_recovery && <li style={{ marginBottom: '4px' }}>Breakdown recovery claimback</li>}
               </ul>
             </div>
 
