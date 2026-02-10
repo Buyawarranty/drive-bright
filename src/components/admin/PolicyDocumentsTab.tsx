@@ -1,11 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Search, Printer, FileText, User, Car } from 'lucide-react';
+import { Search, Printer, FileText, User, Car, Mail, Phone } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface CustomerData {
@@ -43,6 +43,7 @@ interface CustomerData {
   consequential?: boolean;
   payment_type?: string;
   seasonal_bonus_months?: number;
+  created_at?: string;
 }
 
 interface PolicyData {
@@ -59,42 +60,66 @@ interface PolicyData {
 
 export const PolicyDocumentsTab: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<CustomerData[]>([]);
+  const [allCustomers, setAllCustomers] = useState<CustomerData[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerData | null>(null);
   const [selectedPolicy, setSelectedPolicy] = useState<PolicyData | null>(null);
   const [customerPolicies, setCustomerPolicies] = useState<PolicyData[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [showPreview, setShowPreview] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const searchCustomers = async () => {
-    if (!searchQuery.trim()) return;
-    setIsSearching(true);
-    try {
-      const normalizedReg = searchQuery.replace(/\s/g, '').toUpperCase();
+  // Load all customers on mount, newest first
+  useEffect(() => {
+    const loadCustomers = async () => {
+      setIsLoading(true);
       const { data, error } = await supabase
         .from('customers')
         .select('*')
-        .or(`name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%,registration_plate.ilike.%${normalizedReg}%,warranty_number.ilike.%${searchQuery}%`)
         .or('is_deleted.is.null,is_deleted.eq.false')
-        .limit(20);
+        .order('created_at', { ascending: false })
+        .limit(500);
 
-      if (error) throw error;
-      setSearchResults(data || []);
-      if (!data?.length) {
-        toast({ title: 'No customers found', description: 'Try a different search term.', variant: 'destructive' });
+      if (!error && data) {
+        setAllCustomers(data);
       }
-    } catch (err) {
-      console.error('Search error:', err);
-      toast({ title: 'Search failed', variant: 'destructive' });
-    } finally {
-      setIsSearching(false);
-    }
-  };
+      setIsLoading(false);
+    };
+    loadCustomers();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Filter customers based on search query
+  const filteredCustomers = useMemo(() => {
+    if (!searchQuery.trim()) return allCustomers;
+    const q = searchQuery.toLowerCase().replace(/\s/g, '');
+    return allCustomers.filter((c) => {
+      const reg = (c.registration_plate || '').toLowerCase().replace(/\s/g, '');
+      return (
+        c.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (c.phone || '').includes(searchQuery) ||
+        reg.includes(q) ||
+        (c.warranty_number || '').toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
+  }, [searchQuery, allCustomers]);
 
   const selectCustomer = async (customer: CustomerData) => {
     setSelectedCustomer(customer);
-    setSearchResults([]);
+    setShowDropdown(false);
+    setSearchQuery('');
     setShowPreview(false);
 
     // Fetch policies for this customer
@@ -263,40 +288,56 @@ export const PolicyDocumentsTab: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-3">
-            <Input
-              placeholder="Search by name, email, registration, or warranty number..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && searchCustomers()}
-              className="flex-1"
-            />
-            <Button onClick={searchCustomers} disabled={isSearching}>
-              {isSearching ? 'Searching...' : 'Search'}
-            </Button>
-          </div>
-
-          {/* Search Results */}
-          {searchResults.length > 0 && (
-            <div className="mt-4 border rounded-lg divide-y max-h-64 overflow-y-auto">
-              {searchResults.map((customer) => (
-                <button
-                  key={customer.id}
-                  onClick={() => selectCustomer(customer)}
-                  className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors flex items-center justify-between"
-                >
-                  <div>
-                    <p className="font-medium text-gray-900">{customer.name}</p>
-                    <p className="text-sm text-gray-500">{customer.email}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-mono text-gray-700">{customer.registration_plate || '—'}</p>
-                    <p className="text-xs text-gray-400">{customer.plan_type}</p>
-                  </div>
-                </button>
-              ))}
+          <div className="relative" ref={dropdownRef}>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, email, phone, reg..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowDropdown(true);
+                }}
+                onFocus={() => setShowDropdown(true)}
+                className="pl-10"
+              />
             </div>
-          )}
+
+            {showDropdown && (
+              <div className="absolute z-50 mt-1 w-full bg-background border rounded-lg shadow-lg max-h-80 overflow-y-auto">
+                {isLoading ? (
+                  <div className="px-4 py-6 text-center text-sm text-muted-foreground">Loading customers...</div>
+                ) : filteredCustomers.length === 0 ? (
+                  <div className="px-4 py-6 text-center text-sm text-muted-foreground">No customers found</div>
+                ) : (
+                  filteredCustomers.slice(0, 50).map((customer) => (
+                    <button
+                      key={customer.id}
+                      onClick={() => selectCustomer(customer)}
+                      className="w-full text-left px-4 py-3 hover:bg-muted/50 transition-colors flex items-center justify-between border-b last:border-b-0"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-semibold text-foreground">{customer.name}</p>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+                          <span className="flex items-center gap-1 truncate"><Mail className="h-3 w-3 shrink-0" />{customer.email}</span>
+                          {customer.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3 shrink-0" />{customer.phone}</span>}
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0 ml-3">
+                        {customer.registration_plate && (
+                          <span className="inline-flex items-center gap-1 bg-muted px-2 py-0.5 rounded text-xs font-mono font-semibold">
+                            <Car className="h-3 w-3" />
+                            {customer.registration_plate}
+                          </span>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-0.5">{customer.vehicle_make} {customer.vehicle_model}</p>
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
