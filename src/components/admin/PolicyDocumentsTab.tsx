@@ -257,7 +257,6 @@ export const PolicyDocumentsTab: React.FC = () => {
     printWindow.focus();
     setTimeout(() => {
       printWindow.print();
-      printWindow.close();
     }, 250);
   };
 
