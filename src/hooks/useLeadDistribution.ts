@@ -335,6 +335,24 @@ export const useLeadDistribution = () => {
       )
       .subscribe();
 
+    // Real-time sync for distribution settings (admin ↔ sales lead)
+    const settingsChannel = supabase
+      .channel('distribution-settings-sync')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'lead_distribution_settings' },
+        () => fetchSettings()
+      )
+      .subscribe();
+
+    // Real-time sync for agent caps (admin ↔ sales lead)
+    const capsChannel = supabase
+      .channel('agent-caps-sync')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'agent_distribution_caps' },
+        () => fetchAgentCaps()
+      )
+      .subscribe();
+
     // Refresh caps every 30 seconds
     const refreshInterval = setInterval(() => {
       fetchAgentCaps();
@@ -343,6 +361,8 @@ export const useLeadDistribution = () => {
 
     return () => {
       presenceChannel.unsubscribe();
+      settingsChannel.unsubscribe();
+      capsChannel.unsubscribe();
       clearInterval(refreshInterval);
     };
   }, [fetchSettings, fetchAgentCaps, fetchAgentPresences]);
