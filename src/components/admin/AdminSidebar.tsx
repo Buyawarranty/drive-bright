@@ -200,6 +200,12 @@ const defaultTabs: Tab[] = [
     description: 'Manage plan to document mappings'
   },
   {
+    id: 'policy-documents',
+    label: 'Policy Documents',
+    icon: FileText,
+    description: 'Generate printable A4 policy letters for customers'
+  },
+  {
     id: 'blog-writing',
     label: 'Blog Writing',
     icon: PenTool,
