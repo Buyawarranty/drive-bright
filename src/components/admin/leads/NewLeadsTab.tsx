@@ -637,6 +637,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
           <AgentsLeadsView 
             leads={leads}
             salesUsers={salesUsers}
+            viewerRole={userRole}
           />
         </div>
       )}
