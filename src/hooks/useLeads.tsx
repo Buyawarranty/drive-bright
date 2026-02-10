@@ -530,7 +530,9 @@ export const useLeads = () => {
         { event: '*', schema: 'public', table: 'sales_leads' },
         () => debouncedRealtimeRefetch()
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[Realtime] leads channel status:', status);
+      });
 
     const cartsChannel = supabase
       .channel('carts-realtime-sync')
@@ -538,11 +540,36 @@ export const useLeads = () => {
         { event: '*', schema: 'public', table: 'abandoned_carts' },
         () => debouncedRealtimeRefetch()
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[Realtime] carts channel status:', status);
+      });
+
+    // Polling fallback: refresh every 30s in case realtime silently disconnects
+    const pollingInterval = setInterval(() => {
+      fetchLeads();
+    }, 30000);
+
+    // Visibility change: auto-refresh when user returns to tab
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('[Leads] Tab visible again, refreshing leads...');
+        fetchLeads();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Also refresh on window focus (catches alt-tab scenarios)
+    const handleFocus = () => {
+      fetchLeads();
+    };
+    window.addEventListener('focus', handleFocus);
 
     return () => {
       leadsChannel.unsubscribe();
       cartsChannel.unsubscribe();
+      clearInterval(pollingInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
       if (realtimeRefetchTimerRef.current) {
         clearTimeout(realtimeRefetchTimerRef.current);
       }
