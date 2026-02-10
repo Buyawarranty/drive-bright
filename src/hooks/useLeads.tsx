@@ -122,6 +122,7 @@ export const useLeads = () => {
   const [salesUsers, setSalesUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const initialLoadDoneRef = useRef(false);
+  const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [filter, setFilter] = useState<LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback'>('all');
   
   // Cache sales users for optimistic updates
@@ -187,6 +188,13 @@ export const useLeads = () => {
       // Only show loading spinner on initial load, not on refreshes/realtime updates
       if (!initialLoadDoneRef.current) {
         setLoading(true);
+        // Safety timeout: force loading off after 12s to prevent infinite loading
+        if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
+        loadingTimeoutRef.current = setTimeout(() => {
+          setLoading(false);
+          initialLoadDoneRef.current = true;
+          console.warn('[Leads] Loading safety timeout triggered after 12s');
+        }, 12000);
       }
       
       // Use Promise.all to fetch all data sources in parallel for better performance
@@ -439,13 +447,21 @@ export const useLeads = () => {
       let tagsByLeadId: Record<string, any[]> = {};
       
       if (salesLeadIds.length > 0) {
-        const { data: allTagData } = await supabase
-          .from('lead_tag_assignments')
-          .select('lead_id, tag_id, lead_tags(id, name, color, description)')
-          .in('lead_id', salesLeadIds);
+        // Batch the .in() query to avoid URL-too-long errors with many IDs
+        const BATCH_SIZE = 300;
+        const allTagData: any[] = [];
+        
+        for (let i = 0; i < salesLeadIds.length; i += BATCH_SIZE) {
+          const batch = salesLeadIds.slice(i, i + BATCH_SIZE);
+          const { data: batchData } = await supabase
+            .from('lead_tag_assignments')
+            .select('lead_id, tag_id, lead_tags(id, name, color, description)')
+            .in('lead_id', batch);
+          if (batchData) allTagData.push(...batchData);
+        }
 
         // Group tags by lead_id
-        (allTagData || []).forEach((assignment: any) => {
+        allTagData.forEach((assignment: any) => {
           if (!tagsByLeadId[assignment.lead_id]) {
             tagsByLeadId[assignment.lead_id] = [];
           }
@@ -466,6 +482,7 @@ export const useLeads = () => {
       console.error('Error fetching leads:', error);
       toast.error('Failed to load leads');
     } finally {
+      if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
       setLoading(false);
       initialLoadDoneRef.current = true;
     }
