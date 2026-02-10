@@ -13,7 +13,7 @@ import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trackButtonClick } from '@/utils/analytics';
 import { saveWithTimestamp } from '@/utils/localStorage';
-import VehicleDetailsStep from '@/components/VehicleDetailsStep';
+import QuoteFormInline from '@/components/QuoteFormInline';
 import motorcycleHero from '@/assets/motorcycle-hero.png';
 import motorcycleCoverage from '@/assets/motorcycle-coverage.png';
 import motorcyclePanda from '@/assets/motorcycle-panda.png';
@@ -256,10 +256,8 @@ const MotorcycleWarranty = () => {
                 Unlimited claims • Complete Cover • No excess
               </p>
             </div>
-            <div className="bg-card rounded-lg shadow-lg p-6 md:p-8 border border-border">
-              <VehicleDetailsStep 
-                onNext={handleVehicleNext}
-              />
+            <div className="flex justify-center">
+              <QuoteFormInline vehicleType="motorcycle" />
             </div>
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">

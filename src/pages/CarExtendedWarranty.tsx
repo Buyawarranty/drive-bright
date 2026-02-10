@@ -29,6 +29,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import { toast } from 'sonner';
 import MileageSlider from '@/components/MileageSlider';
+import QuoteFormInline from '@/components/QuoteFormInline';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 
@@ -432,87 +433,8 @@ const CarExtendedWarranty: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Registration Input Form */}
-                    <form onSubmit={handleGetQuote} className="space-y-3 w-full max-w-full">
-                      <div className="flex items-stretch rounded-lg overflow-hidden shadow-lg border-2 border-black w-full max-w-full">
-                        {/* UK Section with flag */}
-                        <div className="bg-blue-600 text-white font-bold px-2 sm:px-4 py-3 sm:py-4 flex items-center justify-center w-[60px] sm:w-[80px] flex-shrink-0 h-[54px] sm:h-[66px]">
-                          <div className="flex flex-col items-center">
-                            <div className="text-base sm:text-lg leading-tight mb-0.5 sm:mb-1">🇬🇧</div>
-                            <div className="text-xs sm:text-base font-bold leading-none">UK</div>
-                          </div>
-                        </div>
-                        {/* Registration Input */}
-                        <input
-                          type="text"
-                          value={regNumber}
-                          onChange={handleRegChange}
-                          placeholder="ENTER REG"
-                          className="bg-yellow-400 border-none outline-none text-lg sm:text-xl md:text-2xl lg:text-3xl text-black flex-1 font-black placeholder:text-black/70 px-2 sm:px-3 md:px-4 py-3 sm:py-4 uppercase tracking-wide sm:tracking-wider h-[54px] sm:h-[66px] min-w-0 w-full"
-                          maxLength={8}
-                        />
-                      </div>
-                      <p className="text-xs sm:text-sm text-black text-left mt-0.5 px-1">
-                        Protection for vehicles up to 150,000 miles and 15 years.
-                      </p>
-
-                      {/* Mileage Options */}
-                      <div className="space-y-2 w-full">
-                        <div className="w-full">
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            pattern="[0-9]*"
-                            value={mileage}
-                            onChange={handleMileageChange}
-                            onFocus={handleMileageFocus}
-                            onBlur={handleMileageBlur}
-                            placeholder={mileagePlaceholder}
-                            className={`w-full max-w-full px-3 sm:px-4 py-2.5 sm:py-3 text-base sm:text-lg border-2 rounded-lg focus:outline-none ${
-                              mileageError ? 'border-destructive focus:border-destructive' : 'border-gray-300 focus:border-orange-500'
-                            }`}
-                          />
-                        </div>
-
-                        {/* Slider Option */}
-                        <div className="w-full px-1">
-                          <MileageSlider
-                            value={sliderMileage}
-                            onChange={handleSliderChange}
-                            min={0}
-                            max={150000}
-                          />
-                        </div>
-
-                        {/* Error Message (single) */}
-                        {mileageError && (
-                          <p className="text-xs sm:text-sm text-destructive font-medium px-1 text-left">
-                            {mileageError}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Get Quote Button */}
-                      <div className="space-y-2 mt-2 w-full">
-                        <Button 
-                          type="submit"
-                          className={`w-full max-w-full px-4 sm:px-6 md:px-12 h-[54px] sm:h-[66px] text-base sm:text-lg md:text-xl font-bold rounded-lg transition-all ${
-                            isLookingUp || mileageError
-                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                              : 'bg-brand-orange hover:bg-brand-orange/90 text-white animate-cta-enhanced'
-                          }`}
-                          disabled={isLookingUp || !!mileageError}
-                        >
-                          {isLookingUp ? 'Looking up...' : (
-                            <>
-                              <span className="hidden sm:inline">Get my instant quote</span>
-                              <span className="sm:hidden">Get quote</span>
-                              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" strokeWidth={2.5} />
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </form>
+                    {/* Quote Form - Same as Homepage */}
+                    <QuoteFormInline vehicleType="car" />
                   </div>
 
                   {/* Right Content - Hero Image */}

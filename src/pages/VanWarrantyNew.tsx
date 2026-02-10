@@ -11,8 +11,7 @@ import { BreadcrumbSchema } from '@/components/schema/BreadcrumbSchema';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import { getResponsiveImageProps } from '@/utils/imageOptimizer';
-import VehicleDetailsStep from '@/components/VehicleDetailsStep';
-import { saveWithTimestamp } from '@/utils/localStorage';
+import QuoteFormInline from '@/components/QuoteFormInline';
 import vanHero from '@/assets/van-warranty-hero.png';
 import vanFast from '@/assets/van-warranty-fast.png';
 import vanCoverage from '@/assets/van-warranty-coverage.png';
@@ -25,23 +24,7 @@ const VanWarrantyNew = () => {
     window.location.href = '/#get-quote';
   };
   
-  const handleVehicleNext = (data: any) => {
-    const vehicleData = {
-      regNumber: data.regNumber,
-      mileage: data.mileage,
-      make: data.make,
-      model: data.model,
-      fuelType: data.fuelType,
-      year: data.year,
-      vehicleType: data.vehicleType || 'van',
-    };
-    
-    saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
-    saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
-    saveWithTimestamp('buyawarranty_currentStep', '2');
-    
-    navigate('/?step=2');
-  };
+  // handleVehicleNext is now handled by QuoteFormInline component
 
   const vanWarrantyFAQs = [
     {
@@ -192,10 +175,8 @@ const VanWarrantyNew = () => {
               </p>
             </div>
             
-            <div className="bg-card rounded-lg shadow-lg p-6 md:p-8 border border-border">
-              <VehicleDetailsStep 
-                onNext={handleVehicleNext}
-              />
+            <div className="flex justify-center">
+              <QuoteFormInline vehicleType="van" />
             </div>
             
             <div className="mt-6 text-center">
@@ -479,11 +460,8 @@ const VanWarrantyNew = () => {
                 </Button>
               </div>
             ) : (
-              <div className="max-w-2xl mx-auto mb-12 bg-background p-6 rounded-lg shadow-lg">
-                <VehicleDetailsStep 
-                  onNext={handleVehicleNext}
-                  onFormDataUpdate={() => {}}
-                />
+              <div className="flex justify-center mb-12">
+                <QuoteFormInline vehicleType="van" />
               </div>
             )}
 
