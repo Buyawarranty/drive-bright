@@ -263,13 +263,12 @@ export const UserPermissionsTab = () => {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to remove this user?')) return;
+    if (!confirm('Are you sure you want to permanently remove this user and clean up all their references? This cannot be undone.')) return;
 
     try {
-      const { error } = await supabase
-        .from('admin_users')
-        .delete()
-        .eq('id', userId);
+      const { error } = await supabase.rpc('delete_admin_user_cascade', {
+        p_admin_user_id: userId
+      });
 
       if (error) throw error;
       
