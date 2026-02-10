@@ -510,14 +510,17 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 ) : null}
 
                 {/* Mileage Quick Select */}
-                <MileageQuickSelect
-                  value={mileageSelection}
-                  onChange={handleMileageSelection}
-                  onAutoSubmit={handleGetQuote}
-                  error={eligibilityError}
-                  isLoading={isLookingUp}
-                  isRegValid={regNumber.replace(/\s/g, '').length >= 5}
-                />
+                <div id="mileage-section">
+                  <MileageQuickSelect
+                    value={mileageSelection}
+                    onChange={handleMileageSelection}
+                    onAutoSubmit={handleGetQuote}
+                    error={eligibilityError}
+                    isLoading={isLookingUp}
+                    isRegValid={regNumber.replace(/\s/g, '').length >= 5}
+                    autoScrollOnValid
+                  />
+                </div>
                 
                 {/* Pricing Reassurance Section - Conversion Optimised */}
                 <div className="mt-5 sm:mt-7 space-y-3 text-center lg:text-left">
