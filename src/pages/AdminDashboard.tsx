@@ -1,37 +1,9 @@
-import { ClaimsTab } from '@/components/admin/ClaimsTab';
-import ContactSubmissionsTab from '@/components/admin/ContactSubmissionsTab';
-import { AbandonedCartsTab } from '@/components/admin/AbandonedCartsTab';
-import { GetQuoteTab } from '@/components/admin/GetQuoteTab';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SEOHead } from '@/components/SEOHead';
-import { CustomersTab } from '@/components/admin/CustomersTab';
-import { PlansTab } from '@/components/admin/PlansTab';
-import SpecialVehiclePlansTab from '@/components/admin/SpecialVehiclePlansTab';
-import { DiscountCodesTab } from '@/components/admin/DiscountCodesTab';
-import { ReferralsTab } from '@/components/admin/ReferralsTab';
-import { AnalyticsTab } from '@/components/admin/AnalyticsTab';
-import UnifiedEmailHub from '@/components/admin/UnifiedEmailHub';
-import AccountSettings from '@/components/admin/AccountSettings';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { ApiConnectivityTest } from '@/components/admin/ApiConnectivityTest';
-import { UserPermissionsTab } from '@/components/admin/UserPermissionsTab';
-import { DocumentMappingTab } from '@/components/admin/DocumentMappingTab';
-import { BulkPricingTab } from '@/components/admin/BulkPricingTab';
-import { BlogWritingTab } from '@/components/admin/BlogWritingTab';
-import { LandingPageBuilder } from '@/components/admin/LandingPageBuilder';
-import { ClickFraudTab } from '@/components/admin/ClickFraudTab';
-import { PendingW2000Tab } from '@/components/admin/PendingW2000Tab';
-import { TestingTabContent } from '@/components/admin/TestingTabContent';
-import { NewLeadsTab } from '@/components/admin/leads/NewLeadsTab';
-import { SellingTipsSection } from '@/components/admin/SellingTipsSection';
-import { TimesheetsTab } from '@/components/admin/timesheets/TimesheetsTab';
-import { ReviewsTab } from '@/components/admin/ReviewsTab';
-import { MarketingAudienceTab } from '@/components/admin/marketing/MarketingAudienceTab';
-import SalesCustomerManagement from '@/components/admin/sales/SalesCustomerManagement';
-import { SalesLeadDashboard } from '@/components/admin/sales/SalesLeadDashboard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -39,6 +11,43 @@ import { Menu } from 'lucide-react';
 import { AdminNotificationBell } from '@/components/admin/AdminNotificationBell';
 import { useAdminNotifications } from '@/hooks/useAdminNotifications';
 import { useUserPresence } from '@/hooks/useUserPresence';
+
+// Lazy-load ALL tab components to drastically reduce initial bundle
+const ClaimsTab = lazy(() => import('@/components/admin/ClaimsTab').then(m => ({ default: m.ClaimsTab })));
+const ContactSubmissionsTab = lazy(() => import('@/components/admin/ContactSubmissionsTab'));
+const AbandonedCartsTab = lazy(() => import('@/components/admin/AbandonedCartsTab').then(m => ({ default: m.AbandonedCartsTab })));
+const GetQuoteTab = lazy(() => import('@/components/admin/GetQuoteTab').then(m => ({ default: m.GetQuoteTab })));
+const CustomersTab = lazy(() => import('@/components/admin/CustomersTab').then(m => ({ default: m.CustomersTab })));
+const PlansTab = lazy(() => import('@/components/admin/PlansTab').then(m => ({ default: m.PlansTab })));
+const SpecialVehiclePlansTab = lazy(() => import('@/components/admin/SpecialVehiclePlansTab'));
+const DiscountCodesTab = lazy(() => import('@/components/admin/DiscountCodesTab').then(m => ({ default: m.DiscountCodesTab })));
+const ReferralsTab = lazy(() => import('@/components/admin/ReferralsTab').then(m => ({ default: m.ReferralsTab })));
+const AnalyticsTab = lazy(() => import('@/components/admin/AnalyticsTab').then(m => ({ default: m.AnalyticsTab })));
+const UnifiedEmailHub = lazy(() => import('@/components/admin/UnifiedEmailHub'));
+const AccountSettings = lazy(() => import('@/components/admin/AccountSettings'));
+const ApiConnectivityTest = lazy(() => import('@/components/admin/ApiConnectivityTest').then(m => ({ default: m.ApiConnectivityTest })));
+const UserPermissionsTab = lazy(() => import('@/components/admin/UserPermissionsTab').then(m => ({ default: m.UserPermissionsTab })));
+const DocumentMappingTab = lazy(() => import('@/components/admin/DocumentMappingTab').then(m => ({ default: m.DocumentMappingTab })));
+const BulkPricingTab = lazy(() => import('@/components/admin/BulkPricingTab').then(m => ({ default: m.BulkPricingTab })));
+const BlogWritingTab = lazy(() => import('@/components/admin/BlogWritingTab').then(m => ({ default: m.BlogWritingTab })));
+const LandingPageBuilder = lazy(() => import('@/components/admin/LandingPageBuilder').then(m => ({ default: m.LandingPageBuilder })));
+const ClickFraudTab = lazy(() => import('@/components/admin/ClickFraudTab').then(m => ({ default: m.ClickFraudTab })));
+const PendingW2000Tab = lazy(() => import('@/components/admin/PendingW2000Tab').then(m => ({ default: m.PendingW2000Tab })));
+const TestingTabContent = lazy(() => import('@/components/admin/TestingTabContent').then(m => ({ default: m.TestingTabContent })));
+const NewLeadsTab = lazy(() => import('@/components/admin/leads/NewLeadsTab').then(m => ({ default: m.NewLeadsTab })));
+const SellingTipsSection = lazy(() => import('@/components/admin/SellingTipsSection').then(m => ({ default: m.SellingTipsSection })));
+const TimesheetsTab = lazy(() => import('@/components/admin/timesheets/TimesheetsTab').then(m => ({ default: m.TimesheetsTab })));
+const ReviewsTab = lazy(() => import('@/components/admin/ReviewsTab').then(m => ({ default: m.ReviewsTab })));
+const MarketingAudienceTab = lazy(() => import('@/components/admin/marketing/MarketingAudienceTab').then(m => ({ default: m.MarketingAudienceTab })));
+const SalesCustomerManagement = lazy(() => import('@/components/admin/sales/SalesCustomerManagement'));
+const SalesLeadDashboard = lazy(() => import('@/components/admin/sales/SalesLeadDashboard').then(m => ({ default: m.SalesLeadDashboard })));
+
+// Tab loading spinner
+const TabFallback = () => (
+  <div className="flex items-center justify-center h-64">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  </div>
+);
 
 // Lead data type for passing to GetQuoteTab
 interface LeadForQuote {
@@ -537,7 +546,9 @@ const AdminDashboard = () => {
         
         <div className="flex-1 lg:ml-64 overflow-hidden">
           <main className="p-4 lg:p-6 overflow-y-auto h-[calc(100vh-104px)]">
-            {renderContent()}
+            <Suspense fallback={<TabFallback />}>
+              {renderContent()}
+            </Suspense>
           </main>
         </div>
       </div>
