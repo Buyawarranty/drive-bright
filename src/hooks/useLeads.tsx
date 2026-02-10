@@ -121,6 +121,7 @@ export const useLeads = () => {
   const [tags, setTags] = useState<LeadTag[]>([]);
   const [salesUsers, setSalesUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const initialLoadDoneRef = useRef(false);
   const [filter, setFilter] = useState<LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback'>('all');
   
   // Cache sales users for optimistic updates
@@ -183,7 +184,10 @@ export const useLeads = () => {
 
   const fetchLeads = useCallback(async () => {
     try {
-      setLoading(true);
+      // Only show loading spinner on initial load, not on refreshes/realtime updates
+      if (!initialLoadDoneRef.current) {
+        setLoading(true);
+      }
       
       // Use Promise.all to fetch all data sources in parallel for better performance
       const [salesLeadsResult, abandonedCartsResult] = await Promise.all([
@@ -463,6 +467,7 @@ export const useLeads = () => {
       toast.error('Failed to load leads');
     } finally {
       setLoading(false);
+      initialLoadDoneRef.current = true;
     }
   }, [filter]);
 
