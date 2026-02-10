@@ -237,8 +237,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
 
   // Filter tabs based on user role and permissions
   const getVisibleTabs = () => {
-    // Admins see all tabs
-    if (userRole === 'admin') {
+    // Admins and dev_testers see all tabs
+    if (userRole === 'admin' || userRole === 'dev_tester') {
       return defaultTabs;
     }
     
@@ -307,7 +307,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
     const visibleTabs = getVisibleTabs();
     
     // Blog writers and sales users don't need custom ordering
-    if (userRole === 'blog_writer' || userRole === 'sales' || userRole === 'sales_lead') {
+    if (userRole === 'blog_writer' || userRole === 'sales' || userRole === 'sales_lead' || userRole === 'dev_tester') {
       setTabs(visibleTabs);
       return;
     }
