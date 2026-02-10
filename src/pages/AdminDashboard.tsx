@@ -108,25 +108,32 @@ const AdminDashboard = () => {
   }, [setSearchParams]);
 
   // Back navigation guard - prevent leaving admin dashboard
+  const tabHistoryRef = React.useRef<string[]>([]);
+  
+  useEffect(() => {
+    tabHistoryRef.current = tabHistory;
+  }, [tabHistory]);
+
   useEffect(() => {
     // Push initial history state
-    window.history.pushState({ adminGuard: true, tab: activeTab }, '', window.location.href);
+    window.history.pushState({ adminGuard: true }, '', window.location.href);
 
     const handlePopState = (event: PopStateEvent) => {
       // Always prevent leaving the admin dashboard
       event.preventDefault();
       
       // If we have tab history, go back to previous tab
-      if (tabHistory.length > 1) {
-        const newHistory = [...tabHistory];
+      if (tabHistoryRef.current.length > 1) {
+        const newHistory = [...tabHistoryRef.current];
         newHistory.pop(); // Remove current tab
         const previousTab = newHistory[newHistory.length - 1];
         setTabHistory(newHistory);
         setActiveTab(previousTab);
+        setSearchParams({ tab: previousTab }, { replace: true });
       }
       
       // Push state again to maintain the guard
-      window.history.pushState({ adminGuard: true, tab: activeTab }, '', window.location.href);
+      window.history.pushState({ adminGuard: true }, '', window.location.href);
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -134,14 +141,14 @@ const AdminDashboard = () => {
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [activeTab, tabHistory]);
+  }, []); // Empty deps - register once
 
   // Track if we've already checked access to prevent multiple redirects
   const hasCheckedAccessRef = React.useRef(false);
 
   useEffect(() => {
-    // Only run check when auth is done loading AND we haven't already redirected
-    if (!authLoading && !hasCheckedAccessRef.current) {
+    // Only run check when auth is done loading AND we haven't already confirmed access
+    if (!authLoading && !hasCheckedAccessRef.current && !hasAdminAccess) {
       checkAdminAccess();
     }
   }, [session, authLoading]);
@@ -248,7 +255,7 @@ const AdminDashboard = () => {
       
       // Set default tab based on role
       // Sales agents ALWAYS start on new-leads, regardless of URL param
-      if (!hasSetInitialTab || primaryRole === 'sales' || primaryRole === 'sales_lead') {
+      if (!hasSetInitialTab) {
         setHasSetInitialTab(true);
         
         let defaultTab = 'customers';
