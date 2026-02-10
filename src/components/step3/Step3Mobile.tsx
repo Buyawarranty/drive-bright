@@ -282,26 +282,11 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     setLoading(true);
     try {
       const term = paymentType!;
-      const durationMonths = term === '12months' ? 12 : term === '24months' ? 24 : 36;
-      const basePrice = getBasePrice(term, voluntaryExcess!, selectedClaimLimit!);
-      const adjustedPrice = applyPriceAdjustment(basePrice, vehiclePriceAdjustment);
 
-      // No additional discounts - base prices from Excel are already final
-      const addOnPrice = calculateAddOnPrice(selectedProtectionAddOns, term, durationMonths);
-      
-      // Boost addon: +£5/month for duration
-      const boostCost = boostAddon ? (5 * durationMonths) : 0;
-      
-      // Labour rate adjustment: £50=-£5/mo, £70=base(0), £100=+£8/mo, £200=+£24/mo
-      const labourMonthlyAdjust = selectedLabourRate === 50 ? -5 : selectedLabourRate === 70 ? 0 : selectedLabourRate === 100 ? 8 : selectedLabourRate === 200 ? 24 : 0;
-      const labourAdjust = labourMonthlyAdjust * durationMonths;
-
-      const rawTotalPrice = adjustedPrice + addOnPrice + boostCost + labourAdjust;
-      
-      // CRITICAL: Use Math.floor for monthly price to match display exactly
-      // This ensures Step 3 and Step 4 display identical prices
-      const monthlyPrice = Math.floor(rawTotalPrice / 12);
-      const totalPrice = rawTotalPrice; // Pass raw total, Step 4 will normalize
+      // CRITICAL: Use the SAME values that are displayed on screen (currentMonthlyPrice, currentTotalPrice)
+      // instead of recalculating, to guarantee Step 3 display matches what Step 4 receives.
+      const displayedMonthly = currentMonthlyPrice;
+      const displayedTotal = currentTotalPrice;
       
       const effectiveClaimLimit = boostAddon ? selectedClaimLimit! + 1000 : selectedClaimLimit!;
 
@@ -314,10 +299,10 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
         address: vehicleData?.address
       });
 
-      trackBeginCheckout(totalPrice, [{
+      trackBeginCheckout(displayedTotal, [{
         item_name: 'Platinum Complete Plan',
         item_id: 'platinum',
-        price: totalPrice,
+        price: displayedTotal,
         quantity: 1
       }], {
         email: vehicleData?.email,
@@ -327,14 +312,18 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
         address: vehicleData?.address
       });
 
+      // Use displayMonthlyPrice * 12 as totalPrice to match what's shown in Step 3
+      // This ensures Step 4 receives the EXACT same values displayed on screen
+      const consistentTotalPrice = displayedMonthly * 12;
+
       // Call onPlanSelected
       onPlanSelected?.(
         'platinum',
         term,
         'Platinum Complete Plan',
         {
-          totalPrice,
-          monthlyPrice, // Use pre-calculated monthly price for consistency
+          totalPrice: consistentTotalPrice,
+          monthlyPrice: displayedMonthly,
           voluntaryExcess: voluntaryExcess!,
           selectedAddOns: {},
           protectionAddOns: selectedProtectionAddOns,
