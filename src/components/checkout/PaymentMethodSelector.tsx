@@ -58,7 +58,7 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
                   Pay Monthly: £{monthlyPrice}/month
                 </p>
                 <p className="text-sm text-[#1a1a1a] mt-0.5">
-                  Total £{totalPrice} – 0% APR, 12 payments
+                  <span className="font-bold">Total £{totalPrice}</span> – 0% APR, 12 payments
                 </p>
               </div>
             </div>
