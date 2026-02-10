@@ -187,10 +187,33 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
     setSaving(null);
   };
 
+  // Compute total percentage across all agents (using edited values where present)
+  const totalPercentage = useMemo(() => {
+    return agentCaps.reduce((sum, cap) => {
+      const value = editedPercentages[cap.admin_user_id] ?? cap.percentage ?? 0;
+      return sum + value;
+    }, 0);
+  }, [agentCaps, editedPercentages]);
+
+  // Check if saving a specific agent's percentage would exceed 100%
+  const wouldExceed100 = (adminUserId: string) => {
+    return totalPercentage > 100;
+  };
+
   // Handle save percentage
   const handleSavePercentage = async (adminUserId: string) => {
     const newPercent = editedPercentages[adminUserId];
     if (newPercent === undefined) return;
+
+    // Safety net: validate total doesn't exceed 100%
+    if (totalPercentage > 100) {
+      toast({
+        title: 'Total percentage exceeds 100%',
+        description: `Total percentage cannot exceed 100%. Currently at ${totalPercentage}%.`,
+        variant: 'destructive'
+      });
+      return;
+    }
 
     setSaving(adminUserId);
     const success = await updateAgentCap(adminUserId, { percentage: newPercent });
@@ -1050,16 +1073,27 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                                   />
                                   <span className="text-muted-foreground">%</span>
                                 </div>
-                                {editedPercent !== undefined && editedPercent !== (cap.percentage ?? 0) && (
-                                  <Button
-                                    size="sm"
-                                    variant="default"
-                                    className="h-8 w-8 p-0"
-                                    onClick={() => handleSavePercentage(cap.admin_user_id)}
-                                    disabled={saving === cap.admin_user_id}
-                                  >
-                                    <Save className="h-3.5 w-3.5" />
-                                  </Button>
+                {editedPercent !== undefined && editedPercent !== (cap.percentage ?? 0) && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span>
+                                        <Button
+                                          size="sm"
+                                          variant="default"
+                                          className="h-8 w-8 p-0"
+                                          onClick={() => handleSavePercentage(cap.admin_user_id)}
+                                          disabled={saving === cap.admin_user_id || totalPercentage > 100}
+                                        >
+                                          <Save className="h-3.5 w-3.5" />
+                                        </Button>
+                                      </span>
+                                    </TooltipTrigger>
+                                    {totalPercentage > 100 && (
+                                      <TooltipContent side="top" className="text-xs bg-red-600 text-white">
+                                        Total is {totalPercentage}% — must be ≤ 100% to save
+                                      </TooltipContent>
+                                    )}
+                                  </Tooltip>
                                 )}
                               </>
                             )}
@@ -1117,6 +1151,44 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                       </TableRow>
                     );
                   })
+                )}
+                {/* Total percentage indicator row (only in percentage mode) */}
+                {displayMode === 'percentage' && agentCaps.length > 0 && !loading && (
+                  <TableRow className="bg-muted/50 border-t-2">
+                    <TableCell colSpan={2} className="py-3">
+                      <span className="font-semibold text-sm">Total</span>
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <div className="flex items-center gap-2">
+                        <span className={`font-bold text-sm ${
+                          totalPercentage === 100
+                            ? 'text-green-600'
+                            : totalPercentage > 100
+                              ? 'text-red-600'
+                              : 'text-amber-600'
+                        }`}>
+                          {totalPercentage}%
+                        </span>
+                        {totalPercentage > 100 && (
+                          <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                            <AlertCircle className="h-2.5 w-2.5 mr-0.5" />
+                            Exceeds 100%
+                          </Badge>
+                        )}
+                        {totalPercentage < 100 && totalPercentage > 0 && (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-400 text-amber-700 bg-amber-50">
+                            {100 - totalPercentage}% unallocated
+                          </Badge>
+                        )}
+                        {totalPercentage === 100 && (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-green-400 text-green-700 bg-green-50">
+                            ✓ Fully allocated
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell colSpan={isFullAdmin ? 3 : 2} />
+                  </TableRow>
                 )}
               </TableBody>
             </Table>
