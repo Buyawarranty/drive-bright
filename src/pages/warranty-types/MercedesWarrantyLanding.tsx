@@ -347,19 +347,27 @@ const MercedesWarrantyLanding: React.FC = () => {
         saveWithTimestamp('buyawarranty_currentStep', '2');
         navigate('/?step=2');
       } else {
-        toast({
-          title: "Vehicle Not Found",
-          description: "We couldn't find your vehicle. Please check the registration and try again.",
-          variant: "destructive",
-        });
+        const vehicleData = {
+          regNumber: regNumber,
+          mileage: mileage,
+          vehicleType: 'car',
+        };
+        saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
+        saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
+        saveWithTimestamp('buyawarranty_currentStep', '2');
+        navigate('/?step=2');
       }
     } catch (err) {
       console.error('Vehicle lookup error:', err);
-      toast({
-        title: "Lookup Error",
-        description: "There was a problem looking up your vehicle. Please try again.",
-        variant: "destructive",
-      });
+      const vehicleData = {
+        regNumber: regNumber,
+        mileage: mileage,
+        vehicleType: 'car',
+      };
+      saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
+      saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
+      saveWithTimestamp('buyawarranty_currentStep', '2');
+      navigate('/?step=2');
     } finally {
       setIsLookingUp(false);
     }
