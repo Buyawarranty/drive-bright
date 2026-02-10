@@ -76,7 +76,7 @@ export const PolicyDocumentsTab: React.FC = () => {
         .from('customers')
         .select('*')
         .or(`name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%,registration_plate.ilike.%${normalizedReg}%,warranty_number.ilike.%${searchQuery}%`)
-        .eq('is_deleted', false)
+        .or('is_deleted.is.null,is_deleted.eq.false')
         .limit(20);
 
       if (error) throw error;
@@ -102,7 +102,7 @@ export const PolicyDocumentsTab: React.FC = () => {
       .from('customer_policies')
       .select('*')
       .eq('email', customer.email)
-      .eq('is_deleted', false)
+      .or('is_deleted.is.null,is_deleted.eq.false')
       .order('created_at', { ascending: false });
 
     setCustomerPolicies(policies || []);
