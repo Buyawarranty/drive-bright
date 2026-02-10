@@ -496,30 +496,38 @@ export const useLeads = () => {
     setSalesUsers(data || []);
   }, []);
 
+  // Use refs so callbacks always call the latest fetchLeads without re-creating the effect
+  const fetchLeadsRef = useRef(fetchLeads);
+  fetchLeadsRef.current = fetchLeads;
+
   // Debounced refetch for realtime - prevents stampeding when multiple changes arrive
   const realtimeRefetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingRealtimeRef = useRef(false);
+  // Debounce guard for focus/visibility to prevent double-firing
+  const lastRefetchTimeRef = useRef(0);
 
   const debouncedRealtimeRefetch = useCallback(() => {
-    // Mark that we have a pending update
     pendingRealtimeRef.current = true;
     
-    // Clear any existing timer
     if (realtimeRefetchTimerRef.current) {
       clearTimeout(realtimeRefetchTimerRef.current);
     }
     
-    // Batch realtime updates: wait 1.5s of quiet before refetching
     realtimeRefetchTimerRef.current = setTimeout(() => {
       if (pendingRealtimeRef.current) {
         pendingRealtimeRef.current = false;
-        fetchLeads();
+        fetchLeadsRef.current();
       }
     }, 1500);
-  }, [fetchLeads]);
+  }, []);
 
+  // Initial fetch + fetch on filter change (no subscription teardown)
   useEffect(() => {
     fetchLeads();
+  }, [fetchLeads]);
+
+  // One-time setup for realtime, polling, and visibility listeners
+  useEffect(() => {
     fetchTags();
     fetchSalesUsers();
 
@@ -546,21 +554,27 @@ export const useLeads = () => {
 
     // Polling fallback: refresh every 30s in case realtime silently disconnects
     const pollingInterval = setInterval(() => {
-      fetchLeads();
+      fetchLeadsRef.current();
     }, 30000);
 
-    // Visibility change: auto-refresh when user returns to tab
+    // Debounced visibility/focus handler - prevents rapid-fire refetches
+    const throttledRefetch = () => {
+      const now = Date.now();
+      if (now - lastRefetchTimeRef.current < 3000) return; // Skip if refetched <3s ago
+      lastRefetchTimeRef.current = now;
+      fetchLeadsRef.current();
+    };
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         console.log('[Leads] Tab visible again, refreshing leads...');
-        fetchLeads();
+        throttledRefetch();
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // Also refresh on window focus (catches alt-tab scenarios)
     const handleFocus = () => {
-      fetchLeads();
+      throttledRefetch();
     };
     window.addEventListener('focus', handleFocus);
 
@@ -574,7 +588,7 @@ export const useLeads = () => {
         clearTimeout(realtimeRefetchTimerRef.current);
       }
     };
-  }, [fetchLeads, fetchTags, fetchSalesUsers, debouncedRealtimeRefetch]);
+  }, [fetchTags, fetchSalesUsers, debouncedRealtimeRefetch]);
 
   // OPTIMISTIC UPDATE: Update status instantly, then sync to DB
   // Auto-assigns unassigned leads to current user when status changes to 'contacted'
