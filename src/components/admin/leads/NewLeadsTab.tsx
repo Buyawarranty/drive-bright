@@ -294,21 +294,17 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     setSelectedLeads(new Set());
   }, [selectedLeads, updateLeadStatus]);
 
-  // Bulk assign selected leads to a user
+  // Bulk assign selected leads to a user - parallel for speed
   const handleBulkAssign = useCallback(async (userId: string | null) => {
     if (selectedLeads.size === 0) return;
     
     const leadIds = Array.from(selectedLeads);
-    let successCount = 0;
     
-    for (const leadId of leadIds) {
-      try {
-        await assignLead(leadId, userId);
-        successCount++;
-      } catch (error) {
-        console.error(`Failed to assign lead ${leadId}:`, error);
-      }
-    }
+    const results = await Promise.allSettled(
+      leadIds.map(leadId => assignLead(leadId, userId))
+    );
+    
+    const successCount = results.filter(r => r.status === 'fulfilled').length;
     
     if (successCount > 0) {
       toast.success(`Assigned ${successCount} lead${successCount > 1 ? 's' : ''} successfully`);
@@ -316,7 +312,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
     }
   }, [selectedLeads, assignLead]);
 
-  // Bulk auto-assign selected leads
+  // Bulk auto-assign selected leads - sequential to respect round-robin order
   const handleBulkAutoAssign = useCallback(async () => {
     if (selectedLeads.size === 0) return;
     
@@ -617,29 +613,27 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         </div>
       </div>
 
-      {/* Pre-render dashboards but hide them - keeps state and avoids re-fetching */}
-      <div className={activeView === 'my-dashboard' ? 'block' : 'hidden'}>
+      {/* Lazy-mount views - only render when active to reduce memory/CPU for multi-user */}
+      {activeView === 'my-dashboard' && (
         <SalespersonDashboard 
           leads={leads}
           tags={tags}
           salesUsers={salesUsers}
           handlers={leadHandlers}
         />
-      </div>
+      )}
       
-      <div className={activeView === 'team-dashboard' ? 'block' : 'hidden'}>
+      {activeView === 'team-dashboard' && (
         <ManagerDashboard />
-      </div>
+      )}
       
       {/* Agents View - Admin only */}
-      {isAdmin && (
-        <div className={activeView === 'agents-view' ? 'block' : 'hidden'}>
-          <AgentsLeadsView 
-            leads={leads}
-            salesUsers={salesUsers}
-            viewerRole={userRole}
-          />
-        </div>
+      {isAdmin && activeView === 'agents-view' && (
+        <AgentsLeadsView 
+          leads={leads}
+          salesUsers={salesUsers}
+          viewerRole={userRole}
+        />
       )}
     </div>
   );
