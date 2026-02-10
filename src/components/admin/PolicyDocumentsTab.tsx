@@ -168,7 +168,7 @@ export const PolicyDocumentsTab: React.FC = () => {
   const getAddonsList = () => {
     if (!selectedCustomer) return [];
     const addons: string[] = [];
-    if (selectedCustomer.breakdown_recovery) addons.push('Breakdown Recovery Service');
+    // Breakdown recovery is shown in key benefits, not as a separate add-on
     if (selectedCustomer.wear_tear) addons.push('Wear & Tear Cover');
     if (selectedCustomer.europe_cover) addons.push('European Cover');
     if (selectedCustomer.mot_fee) addons.push('MOT Test Fee Cover');
@@ -532,9 +532,10 @@ export const PolicyDocumentsTab: React.FC = () => {
                     {claimLimit && <li style={{ marginBottom: '3px' }}>Claims limit of £{claimLimit.toLocaleString()} per claim</li>}
                     {labourRate && <li style={{ marginBottom: '3px' }}>Labour rate covered up to £{labourRate}/hour</li>}
                     {excess !== undefined && excess !== null && <li style={{ marginBottom: '3px' }}>Voluntary excess of £{excess} per claim</li>}
-                    <li style={{ marginBottom: '3px' }}>Access to our trusted UK-wide repair network</li>
+                    <li style={{ marginBottom: '3px' }}>Access to trusted UK-wide VAT registered repair garages</li>
+                    <li style={{ marginBottom: '3px' }}>Choose your own VAT registered garage option</li>
                     <li style={{ marginBottom: '3px' }}>Fast, simple claims process via our dedicated claims team</li>
-                    {selectedCustomer.breakdown_recovery && <li style={{ marginBottom: '3px' }}>Breakdown recovery included</li>}
+                    {selectedCustomer.breakdown_recovery && <li style={{ marginBottom: '3px' }}>Breakdown recovery claimback</li>}
                   </ul>
                 </div>
 
