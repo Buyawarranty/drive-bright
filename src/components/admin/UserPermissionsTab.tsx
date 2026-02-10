@@ -136,6 +136,7 @@ export const UserPermissionsTab = () => {
   const [newPassword, setNewPassword] = useState('');
   const [settingPassword, setSettingPassword] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchUsers();
@@ -968,6 +969,19 @@ export const UserPermissionsTab = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={selectedUsers.size === users.length && users.length > 0}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setSelectedUsers(new Set(users.map(u => u.id)));
+                      } else {
+                        setSelectedUsers(new Set());
+                      }
+                    }}
+                    aria-label="Select all users"
+                  />
+                </TableHead>
                 <TableHead>User</TableHead>
                 <TableHead>Login Email</TableHead>
                 <TableHead>Role</TableHead>
@@ -979,7 +993,20 @@ export const UserPermissionsTab = () => {
             </TableHeader>
             <TableBody>
               {users.map((user) => (
-                <TableRow key={user.id}>
+                <TableRow key={user.id} data-state={selectedUsers.has(user.id) ? 'selected' : undefined}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedUsers.has(user.id)}
+                      onCheckedChange={(checked) => {
+                        setSelectedUsers(prev => {
+                          const next = new Set(prev);
+                          if (checked) { next.add(user.id); } else { next.delete(user.id); }
+                          return next;
+                        });
+                      }}
+                      aria-label={`Select ${user.first_name} ${user.last_name}`}
+                    />
+                  </TableCell>
                   <TableCell>
                     <div className="font-medium">
                       {user.first_name} {user.last_name}
