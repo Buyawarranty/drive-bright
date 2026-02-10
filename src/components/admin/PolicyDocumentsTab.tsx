@@ -569,12 +569,15 @@ export const PolicyDocumentsTab: React.FC = () => {
               {/* Account */}
               <div style={{ background: c.accountBg, border: `1px solid ${c.accountBorder}`, borderRadius: '6px', padding: '10px 14px', marginBottom: '14px' }}>
                 <h4 style={{ color: c.accountHeading, fontSize: '12px', marginBottom: '4px', fontWeight: '700' }}>Your Account &amp; Policy Documents</h4>
-                <p style={{ fontSize: '10.5px', color: '#333', margin: '2px 0' }}>You can view or download your policy documents anytime by logging into your Buyawarranty account:</p>
-                <p style={{ fontSize: '10.5px', color: '#333', margin: '4px 0' }}><strong>Login:</strong> buyawarranty.co.uk &nbsp; | &nbsp; <strong>Email:</strong> {selectedCustomer.email}</p>
+                <p style={{ fontSize: '10.5px', color: '#333', margin: '2px 0' }}>Your warranty policy documents are also available online. You can access them at any time by visiting:</p>
+                <p style={{ fontSize: '11px', color: c.contactValue, margin: '6px 0', fontWeight: '700' }}>https://buyawarranty.co.uk/customer-dashboard/</p>
+                <p style={{ fontSize: '10.5px', color: '#333', margin: '4px 0' }}>Simply click the <strong>Login</strong> option at the top of the homepage, or go directly to the link above. Use your registered email to sign in:</p>
+                <p style={{ fontSize: '10.5px', color: '#333', margin: '4px 0' }}><strong>Email:</strong> {selectedCustomer.email}</p>
+                <p style={{ fontSize: '10px', color: '#555', margin: '6px 0 0' }}>Once logged in, you can:</p>
                 <ul style={{ margin: '4px 0 0', paddingLeft: '16px', fontSize: '10px', color: '#555' }}>
-                  <li style={{ marginBottom: '2px' }}>View your warranty plan</li>
-                  <li style={{ marginBottom: '2px' }}>Download your T&Cs</li>
-                  <li style={{ marginBottom: '2px' }}>Check your vehicle details</li>
+                  <li style={{ marginBottom: '2px' }}>View and download your full warranty policy</li>
+                  <li style={{ marginBottom: '2px' }}>Download your Terms &amp; Conditions</li>
+                  <li style={{ marginBottom: '2px' }}>Check your vehicle and cover details</li>
                   <li style={{ marginBottom: '2px' }}>Manage your contact information</li>
                   <li style={{ marginBottom: '2px' }}>Renew or upgrade your plan when the time comes</li>
                 </ul>
