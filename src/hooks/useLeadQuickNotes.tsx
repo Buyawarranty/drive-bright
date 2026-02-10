@@ -78,21 +78,23 @@ export const useLeadQuickNotes = (leadId: string) => {
     }
     
     const timeoutId = setTimeout(() => {
-      console.warn('[fetchNotes] Fetch timeout 5s');
+      console.warn('[fetchNotes] Fetch timeout 8s');
       // DON'T clear notes on timeout - keep existing ones
       setLoading(false);
-    }, 5000);
+    }, 8000);
     
     try {
-      const hasSession = await ensureSession();
-      if (!hasSession) {
-        console.warn('[fetchNotes] No session available, keeping existing notes');
-        // Don't clear notes - keep whatever we have
-        if (!hasFetchedRef.current) {
-          // Only on initial load with no session, stop loading
-          setLoading(false);
-        }
-        return;
+      // Try to ensure session, but don't block note fetching entirely if it fails
+      // Notes are read-only on failure anyway, and RLS will handle auth
+      let sessionOk = false;
+      try {
+        sessionOk = await ensureSession();
+      } catch (sessionErr) {
+        console.warn('[fetchNotes] Session check threw error, attempting fetch anyway:', sessionErr);
+      }
+      
+      if (!sessionOk) {
+        console.warn('[fetchNotes] No session available, attempting fetch anyway (RLS will gate)');
       }
       if (isAbandonedCart) {
         const { data: cartData, error: cartError } = await supabase
