@@ -11,7 +11,7 @@ import { trackButtonClick } from '@/utils/analytics';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import { BreadcrumbSchema } from '@/components/schema/BreadcrumbSchema';
-import VehicleDetailsStep from '@/components/VehicleDetailsStep';
+import QuoteFormInline from '@/components/QuoteFormInline';
 import evHeroImage from '@/assets/ev-hero-car.png';
 import evActiveImage from '@/assets/ev-warranty-active.png';
 import trustpilotLogo from '@/assets/trustpilot-excellent-box.webp';
@@ -330,10 +330,8 @@ const EVWarranty = () => {
               </p>
             </div>
             
-            <div className="bg-card rounded-lg shadow-lg p-6 md:p-8 border border-border">
-              <VehicleDetailsStep 
-                onNext={handleVehicleNext}
-              />
+            <div className="flex justify-center">
+              <QuoteFormInline vehicleType="car" />
             </div>
             
             <div className="mt-6 text-center">
