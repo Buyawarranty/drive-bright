@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { CustomersTab } from '@/components/admin/CustomersTab';
-import { AgentOverviewPanel } from './AgentOverviewPanel';
 import { SetTargetsPanel } from './SetTargetsPanel';
 import { NewLeadsTab } from '@/components/admin/leads/NewLeadsTab';
 import { 
@@ -146,10 +145,6 @@ export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({ onNaviga
             <ClipboardList className="h-4 w-4" />
             <span className="hidden sm:inline">All Leads</span>
           </TabsTrigger>
-          <TabsTrigger value="overview" className="gap-2 flex-1 lg:flex-none">
-            <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">Agent Overview</span>
-          </TabsTrigger>
           <TabsTrigger value="targets" className="gap-2 flex-1 lg:flex-none">
             <Target className="h-4 w-4" />
             <span className="hidden sm:inline">Set Targets</span>
@@ -166,10 +161,6 @@ export const SalesLeadDashboard: React.FC<SalesLeadDashboardProps> = ({ onNaviga
 
         <TabsContent value="all-leads">
           <NewLeadsTab onNavigateToTab={onNavigateToTab} userRole="sales_lead" />
-        </TabsContent>
-
-        <TabsContent value="overview">
-          <AgentOverviewPanel leads={[]} salesUsers={salesUsers} />
         </TabsContent>
 
         <TabsContent value="targets">

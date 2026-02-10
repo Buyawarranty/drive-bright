@@ -29,6 +29,7 @@ import { DateRange } from 'react-day-picker';
 interface AgentsLeadsViewProps {
   leads: Lead[];
   salesUsers: AdminUser[];
+  viewerRole?: string | null;
 }
 
 interface AgentLeadGroup {
@@ -61,7 +62,10 @@ type DistributionMode = 'round_robin' | 'percentage';
 export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   leads,
   salesUsers,
+  viewerRole,
 }) => {
+  // Admin has ultimate control — only admin can delete agents and change distribution mode
+  const isFullAdmin = viewerRole === 'admin' || viewerRole === 'global_admin' || viewerRole === 'super_admin';
   const [selectedAgent, setSelectedAgent] = useState<string>('all');
   const [expandedAgents, setExpandedAgents] = useState<Set<string>>(new Set(['awaiting_contact']));
   const [editedCaps, setEditedCaps] = useState<Record<string, number>>({});
@@ -867,7 +871,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
             </div>
           </div>
 
-          {/* Distribution Mode Toggle */}
+          {/* Distribution Mode Toggle - Admin only can change */}
           <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
             <span className="text-sm font-medium">Distribution Mode:</span>
             <div className="flex gap-2">
@@ -876,6 +880,7 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 size="sm"
                 onClick={() => handleModeChange('round_robin')}
                 className="gap-2"
+                disabled={!isFullAdmin}
               >
                 <RotateCcw className="h-4 w-4" />
                 Round Robin
@@ -885,11 +890,15 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 size="sm"
                 onClick={() => handleModeChange('percentage')}
                 className="gap-2"
+                disabled={!isFullAdmin}
               >
                 <Percent className="h-4 w-4" />
                 Percentage Split
               </Button>
             </div>
+            {!isFullAdmin && (
+              <span className="text-xs text-muted-foreground italic">Only admins can change distribution mode</span>
+            )}
             {hasPendingModeChange && (
               <Button 
                 size="sm" 
@@ -918,19 +927,19 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                   </TableHead>
                   <TableHead className="w-[100px]">Today</TableHead>
                   <TableHead className="w-[120px]">ON/OFF</TableHead>
-                  <TableHead className="w-[80px] text-center">Delete</TableHead>
+                  {isFullAdmin && <TableHead className="w-[80px] text-center">Delete</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={isFullAdmin ? 6 : 5} className="text-center py-8 text-muted-foreground">
                       <p>Loading agent distribution settings...</p>
                     </TableCell>
                   </TableRow>
                 ) : agentCaps.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={isFullAdmin ? 6 : 5} className="text-center py-8 text-muted-foreground">
                       <p className="mb-2">No agents configured for lead distribution.</p>
                       {salesUsers.length > 0 ? (
                         <Button variant="outline" size="sm" onClick={initializeAgentCaps}>
@@ -1062,18 +1071,20 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                           </Tooltip>
                         </TableCell>
 
-                        {/* Delete - Opens reassignment dialog */}
-                        <TableCell className="text-center">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-8 p-0 text-muted-foreground hover:text-red-600 hover:bg-red-50"
-                            disabled={deleting === cap.admin_user_id}
-                            onClick={() => openReassignDialog(cap.admin_user_id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
+                        {/* Delete - Opens reassignment dialog (Admin only) */}
+                        {isFullAdmin && (
+                          <TableCell className="text-center">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0 text-muted-foreground hover:text-red-600 hover:bg-red-50"
+                              disabled={deleting === cap.admin_user_id}
+                              onClick={() => openReassignDialog(cap.admin_user_id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        )}
                       </TableRow>
                     );
                   })
