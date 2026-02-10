@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 export type LeadStatus = 'new' | 'contacted' | 'follow_up' | 'quote_sent' | 'negotiating' | 'converted' | 'lost' | 'fake_lead' | 'urgent_callback';
 export type LeadPriority = 'low' | 'medium' | 'high' | 'urgent';
@@ -495,11 +496,58 @@ export const useLeads = () => {
     setSalesUsers(data || []);
   }, []);
 
+  // Debounced refetch for realtime - prevents stampeding when multiple changes arrive
+  const realtimeRefetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingRealtimeRef = useRef(false);
+
+  const debouncedRealtimeRefetch = useCallback(() => {
+    // Mark that we have a pending update
+    pendingRealtimeRef.current = true;
+    
+    // Clear any existing timer
+    if (realtimeRefetchTimerRef.current) {
+      clearTimeout(realtimeRefetchTimerRef.current);
+    }
+    
+    // Batch realtime updates: wait 1.5s of quiet before refetching
+    realtimeRefetchTimerRef.current = setTimeout(() => {
+      if (pendingRealtimeRef.current) {
+        pendingRealtimeRef.current = false;
+        fetchLeads();
+      }
+    }, 1500);
+  }, [fetchLeads]);
+
   useEffect(() => {
     fetchLeads();
     fetchTags();
     fetchSalesUsers();
-  }, [fetchLeads, fetchTags, fetchSalesUsers]);
+
+    // Real-time subscriptions for multi-user sync
+    const leadsChannel = supabase
+      .channel('leads-realtime-sync')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'sales_leads' },
+        () => debouncedRealtimeRefetch()
+      )
+      .subscribe();
+
+    const cartsChannel = supabase
+      .channel('carts-realtime-sync')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'abandoned_carts' },
+        () => debouncedRealtimeRefetch()
+      )
+      .subscribe();
+
+    return () => {
+      leadsChannel.unsubscribe();
+      cartsChannel.unsubscribe();
+      if (realtimeRefetchTimerRef.current) {
+        clearTimeout(realtimeRefetchTimerRef.current);
+      }
+    };
+  }, [fetchLeads, fetchTags, fetchSalesUsers, debouncedRealtimeRefetch]);
 
   // OPTIMISTIC UPDATE: Update status instantly, then sync to DB
   // Auto-assigns unassigned leads to current user when status changes to 'contacted'
