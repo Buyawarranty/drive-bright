@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Check, Zap, ChevronRight, ArrowRight, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -9,6 +9,7 @@ interface MileageQuickSelectProps {
   error?: string;
   isLoading?: boolean;
   isRegValid?: boolean;
+  autoScrollOnValid?: boolean;
 }
 
 const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({ 
@@ -17,13 +18,29 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
   onAutoSubmit,
   error,
   isLoading = false,
-  isRegValid = false
+  isRegValid = false,
+  autoScrollOnValid = false
 }) => {
   const [showLoadingMessage, setShowLoadingMessage] = useState(false);
+  const [highlight, setHighlight] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const prevRegValid = useRef(isRegValid);
   const isUnder120k = value === 'under120k';
   const isOver120k = value === 'over120k';
   const hasSelection = isUnder120k || isOver120k;
   
+  // Auto-scroll and highlight when reg becomes valid
+  useEffect(() => {
+    if (autoScrollOnValid && isRegValid && !prevRegValid.current && !hasSelection) {
+      setTimeout(() => {
+        containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setHighlight(true);
+        setTimeout(() => setHighlight(false), 2400);
+      }, 200);
+    }
+    prevRegValid.current = isRegValid;
+  }, [isRegValid, autoScrollOnValid, hasSelection]);
+
   // Reset loading message when isLoading prop changes to false (e.g., after error)
   useEffect(() => {
     if (!isLoading) {
@@ -67,7 +84,14 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
   }
   
   return (
-    <div className="space-y-3">
+    <div
+      ref={containerRef}
+      className={`space-y-3 transition-all duration-700 rounded-2xl ${
+        highlight
+          ? 'ring-2 ring-brand-orange/40 bg-brand-orange/5 shadow-[0_0_20px_rgba(255,111,0,0.15)] p-3 -m-3'
+          : ''
+      }`}
+    >
       {/* Headline */}
       <p className="text-base sm:text-lg font-semibold text-gray-800">
         What's your approximate mileage?
