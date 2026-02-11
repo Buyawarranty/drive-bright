@@ -392,13 +392,13 @@ export function calculateVehiclePriceAdjustment(
       break;
       
     case 'range_rover':
-      if (warrantyDurationYears === 1) adjustmentAmount = 200;
-      else if (warrantyDurationYears === 2) adjustmentAmount = 400;
-      else if (warrantyDurationYears === 3) adjustmentAmount = 600;
+      if (warrantyDurationYears === 1) adjustmentAmount = 300;
+      else if (warrantyDurationYears === 2) adjustmentAmount = 500;
+      else if (warrantyDurationYears === 3) adjustmentAmount = 700;
       adjustmentType = 'range_rover_premium';
       breakdown.push({
         baseAdjustment: adjustmentAmount,
-        adjustmentReason: `Premium vehicle (Range Rover/Jaguar/Porsche): +£${adjustmentAmount} for ${warrantyDurationYears} year warranty`
+        adjustmentReason: `Premium vehicle (Range Rover/Jaguar/Porsche/Tesla): +£${adjustmentAmount} for ${warrantyDurationYears} year warranty`
       });
       break;
       
