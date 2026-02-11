@@ -473,6 +473,25 @@ const WarrantyTypes: React.FC = () => {
                 </span>
               </Link>
 
+              {/* Honda Brand Card */}
+              <Link 
+                to="/warranty-types/honda"
+                className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
+              >
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Honda.svg/800px-Honda.svg.png" 
+                    alt="Honda logo"
+                    className="max-h-12 max-w-12 object-contain"
+                    loading="lazy"
+                  />
+                </div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Honda</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">
+                  View <ChevronRight className="h-3 w-3 ml-0.5" />
+                </span>
+              </Link>
+
               {/* Motorbike Warranty Card */}
               <Link 
                 to="/warranty-types/motorbike-motorcycle-warranty"
@@ -489,7 +508,7 @@ const WarrantyTypes: React.FC = () => {
 
               {/* Dynamic Pages from Database - exclude BMW, Mercedes and vans since they're hardcoded above */}
               {dynamicPages
-                .filter((page) => page.brand_name.toLowerCase() !== 'bmw' && page.brand_name.toLowerCase() !== 'mercedes-benz' && page.brand_name.toLowerCase() !== 'mercedes')
+                .filter((page) => page.brand_name.toLowerCase() !== 'bmw' && page.brand_name.toLowerCase() !== 'mercedes-benz' && page.brand_name.toLowerCase() !== 'mercedes' && page.brand_name.toLowerCase() !== 'honda')
                 .map((page) => {
                 const IconComponent = getIconForPageType(page.page_type, page.brand_name);
                 return (
