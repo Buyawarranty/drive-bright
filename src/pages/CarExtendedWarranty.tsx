@@ -261,6 +261,8 @@ const CarExtendedWarranty: React.FC = () => {
       saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_currentStep', '2');
       
+      // Store landing page referrer so back button returns here
+      sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
       // Navigate to homepage step 2
       navigate('/?step=2');
       
@@ -280,6 +282,7 @@ const CarExtendedWarranty: React.FC = () => {
       saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_currentStep', '2');
       
+      sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
       navigate('/?step=2');
     } finally {
       setIsLookingUp(false);

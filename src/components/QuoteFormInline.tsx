@@ -154,6 +154,10 @@ const QuoteFormInline: React.FC<QuoteFormInlineProps> = ({
       saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_currentStep', '2');
 
+      // Store landing page referrer so back button returns here (only for non-homepage)
+      if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+        sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
+      }
       navigate('/?step=2');
     } catch (err) {
       console.error('Vehicle lookup error:', err);
@@ -169,6 +173,9 @@ const QuoteFormInline: React.FC<QuoteFormInlineProps> = ({
       saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_currentStep', '2');
 
+      if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+        sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
+      }
       navigate('/?step=2');
     } finally {
       setIsLookingUp(false);

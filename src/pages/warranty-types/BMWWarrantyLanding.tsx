@@ -344,6 +344,7 @@ const BMWWarrantyLanding: React.FC = () => {
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
         saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
         saveWithTimestamp('buyawarranty_currentStep', '2');
+        sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
         navigate('/?step=2');
       } else {
         // Vehicle not found - still proceed with basic data so user can continue
@@ -355,6 +356,7 @@ const BMWWarrantyLanding: React.FC = () => {
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
         saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
         saveWithTimestamp('buyawarranty_currentStep', '2');
+        sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
         navigate('/?step=2');
       }
     } catch (err) {
@@ -368,6 +370,7 @@ const BMWWarrantyLanding: React.FC = () => {
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_currentStep', '2');
+      sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
       navigate('/?step=2');
     } finally {
       setIsLookingUp(false);

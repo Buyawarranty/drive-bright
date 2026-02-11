@@ -45,6 +45,7 @@ const EVWarranty = () => {
     saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
     saveWithTimestamp('buyawarranty_currentStep', '2');
     
+    sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
     navigate('/?step=2');
   };
 
