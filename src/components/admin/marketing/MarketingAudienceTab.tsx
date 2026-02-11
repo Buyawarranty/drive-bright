@@ -80,7 +80,7 @@ export const MarketingAudienceTab: React.FC = () => {
         .from('marketing_audience')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(500);
+        .limit(2000);
 
       if (searchTerm) {
         query = query.or(`email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%,full_name.ilike.%${searchTerm}%,reg_plate.ilike.%${searchTerm}%`);
@@ -120,30 +120,18 @@ export const MarketingAudienceTab: React.FC = () => {
   const { data: stats } = useQuery({
     queryKey: ['marketing-audience-stats'],
     queryFn: async () => {
-      const { data: total } = await supabase
-        .from('marketing_audience')
-        .select('id', { count: 'exact', head: true });
-
-      const { data: subscribed } = await supabase
-        .from('marketing_audience')
-        .select('id', { count: 'exact', head: true })
-        .eq('is_subscribed', true);
-
-      const { data: salesLeads } = await supabase
-        .from('marketing_audience')
-        .select('id', { count: 'exact', head: true })
-        .eq('source_type', 'sales_lead');
-
-      const { data: abandonedCarts } = await supabase
-        .from('marketing_audience')
-        .select('id', { count: 'exact', head: true })
-        .eq('source_type', 'abandoned_cart');
+      const [totalRes, subscribedRes, salesLeadsRes, abandonedCartsRes] = await Promise.all([
+        supabase.from('marketing_audience').select('*', { count: 'exact', head: true }),
+        supabase.from('marketing_audience').select('*', { count: 'exact', head: true }).eq('is_subscribed', true),
+        supabase.from('marketing_audience').select('*', { count: 'exact', head: true }).eq('source_type', 'sales_lead'),
+        supabase.from('marketing_audience').select('*', { count: 'exact', head: true }).eq('source_type', 'abandoned_cart'),
+      ]);
 
       return {
-        total: (total as any)?.length ?? 0,
-        subscribed: (subscribed as any)?.length ?? 0,
-        salesLeads: (salesLeads as any)?.length ?? 0,
-        abandonedCarts: (abandonedCarts as any)?.length ?? 0
+        total: totalRes.count ?? 0,
+        subscribed: subscribedRes.count ?? 0,
+        salesLeads: salesLeadsRes.count ?? 0,
+        abandonedCarts: abandonedCartsRes.count ?? 0
       };
     }
   });
