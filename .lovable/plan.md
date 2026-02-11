@@ -1,41 +1,26 @@
 
-# Fix: Percentage Split Validation (Must Total 100%)
+## Accept +91 (Indian) Phone Numbers in Step 2
 
-## Problem
-The Percentage Split mode allows saving any value per agent without checking the total. As shown in the screenshot, one agent has 97% and another has 30% -- totaling 127%, which is impossible. There is no validation preventing this.
+### What Changes
 
-## Solution
-Add real-time total tracking and validation so that:
-1. A live "Total: X%" indicator shows the current sum of all agent percentages
-2. The total turns red when it exceeds 100% or shows a warning when under 100%
-3. The Save button is **disabled** if saving would cause the total to exceed 100%
-4. A toast error explains the issue if a user tries to save an invalid value
+**1. `src/components/QuoteDeliveryStep.tsx` (line 56)**
 
-## Changes (single file)
+Update the phone validation regex to also accept Indian mobile numbers (+91 followed by 10 digits):
 
-### `src/components/admin/leads/AgentsLeadsView.tsx`
+```typescript
+// Before
+const isValidPhone = /^(?:(?:\+44\s?|0)7\d{9}|(?:\+44\s?|0)[1-9]\d{8,9})$/.test(phone.replace(/\s/g, ''));
 
-1. **Add a computed `totalPercentage`** that sums all current agent percentages (using edited values where present, falling back to saved database values):
-   - Loop through all `agentCaps`, for each agent use `editedPercentages[id] ?? cap.percentage ?? 0`
-   - Display this total below the table header or above the agent list
+// After
+const isValidPhone = /^(?:(?:\+44\s?|0)7\d{9}|(?:\+44\s?|0)[1-9]\d{8,9}|\+91[6-9]\d{9})$/.test(phone.replace(/\s/g, ''));
+```
 
-2. **Add a "Total" row/indicator** below the percentage column showing something like:
-   - "Total: 100%" in green when valid
-   - "Total: 127%" in red when over 100
-   - "Total: 70%" in amber when under 100
+This accepts numbers like `+918076411880`, `+919876543210`, etc. (Indian mobiles start with 6-9 after the country code).
 
-3. **Disable the Save button** when saving would make the total exceed 100%:
-   - Calculate what the total would be if this agent's new percentage is saved
-   - If total > 100, disable the save button and show a tooltip explaining why
+**2. `supabase/functions/send-uchat-whatsapp/index.ts`**
 
-4. **Validate on save** as a safety net:
-   - In `handleSavePercentage`, compute the projected total
-   - If it exceeds 100%, show a toast error and abort the save
-   - Message: "Total percentage cannot exceed 100%. Currently at X%."
+The normalizer already has the international pass-through from the previous change, so +91 numbers will flow through correctly to uChat without being mangled into +44 format. No further backend changes needed.
 
-5. **Allow 0% entries** -- agents with 0% simply won't receive leads in percentage mode
-
-## What stays unchanged
-- No backend changes
-- No changes to round robin mode, distribution logic, loading behavior, or any other functionality
-- The `handlePercentageChange` input handler stays the same (still allows typing any value 0-100 per field for flexibility while editing)
+### Summary
+- One-line regex update to allow +91 numbers alongside existing UK validation
+- No changes to pricing, payment, or other logic
