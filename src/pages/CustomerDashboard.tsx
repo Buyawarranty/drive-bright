@@ -65,6 +65,8 @@ interface CustomerPolicy {
   lost_key?: boolean;
   consequential?: boolean;
   additional_notes?: string;
+  is_manual_entry?: boolean;
+  created_at?: string;
   customer_id?: string;
   customers?: {
     id: string;
@@ -538,8 +540,19 @@ const CustomerDashboard = () => {
         const policiesWithDocuments = await fetchPolicyDocuments(data);
         console.log("Policies with documents:", policiesWithDocuments);
         
-        setPolicies(policiesWithDocuments);
-        setSelectedPolicy(policiesWithDocuments[0]);
+        // Sort policies: prioritize Stripe/Bumper-verified over manual admin entries,
+        // then by created_at descending within each group
+        const sortedPolicies = [...policiesWithDocuments].sort((a, b) => {
+          const aIsManual = a.is_manual_entry === true;
+          const bIsManual = b.is_manual_entry === true;
+          // Verified (non-manual) policies come first
+          if (aIsManual !== bIsManual) return aIsManual ? 1 : -1;
+          // Within same group, newest first
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
+        
+        setPolicies(sortedPolicies);
+        setSelectedPolicy(sortedPolicies[0]);
         
         // Set customer data from the first policy
         const firstPolicy = policiesWithDocuments[0];
