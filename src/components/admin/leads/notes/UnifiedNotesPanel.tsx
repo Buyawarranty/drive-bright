@@ -52,7 +52,7 @@ export const UnifiedNotesPanel: React.FC<UnifiedNotesPanelProps> = ({
   useEffect(() => {
     if (isSaving) {
       savingTimerRef.current = setTimeout(() => {
-        console.warn('[UnifiedNotesPanel] isSaving stuck for 10s, auto-resetting');
+        setIsSaving(false);
         setIsSaving(false);
       }, 10000);
     } else {

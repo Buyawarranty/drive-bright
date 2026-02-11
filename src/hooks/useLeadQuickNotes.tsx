@@ -52,15 +52,12 @@ export const useLeadQuickNotes = (leadId: string) => {
   }, [leadId, updateNotes]);
 
   const ensureSession = async (): Promise<boolean> => {
-    // Use getUser() for reliable server-side validation (works on all browsers including Mac)
     const { data: { user } } = await supabase.auth.getUser();
     if (user) return true;
     
-    // One retry: try refreshing the session
     const { data: refreshData } = await supabase.auth.refreshSession();
     if (refreshData.session) return true;
     
-    console.warn('[ensureSession] No valid session after retry');
     return false;
   };
 
@@ -78,23 +75,15 @@ export const useLeadQuickNotes = (leadId: string) => {
     }
     
     const timeoutId = setTimeout(() => {
-      console.warn('[fetchNotes] Fetch timeout 8s');
-      // DON'T clear notes on timeout - keep existing ones
       setLoading(false);
     }, 8000);
     
     try {
       // Try to ensure session, but don't block note fetching entirely if it fails
-      // Notes are read-only on failure anyway, and RLS will handle auth
-      let sessionOk = false;
       try {
-        sessionOk = await ensureSession();
+        await ensureSession();
       } catch (sessionErr) {
-        console.warn('[fetchNotes] Session check threw error, attempting fetch anyway:', sessionErr);
-      }
-      
-      if (!sessionOk) {
-        console.warn('[fetchNotes] No session available, attempting fetch anyway (RLS will gate)');
+        // Session check failed - RLS will gate access
       }
       if (isAbandonedCart) {
         const { data: cartData, error: cartError } = await supabase
@@ -214,8 +203,6 @@ export const useLeadQuickNotes = (leadId: string) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (!user) {
-      // One retry: refresh session then check again
-      console.warn('[getAuthenticatedAdmin] getUser failed, refreshing session...', userError?.message);
       const { data: refreshData } = await supabase.auth.refreshSession();
       
       if (!refreshData.session?.user) {
@@ -238,7 +225,6 @@ export const useLeadQuickNotes = (leadId: string) => {
       .maybeSingle();
 
     if (adminError || !adminData) {
-      console.error('[getAuthenticatedAdmin] Admin user error:', adminError);
       throw new Error('Admin user not found');
     }
 
@@ -248,7 +234,6 @@ export const useLeadQuickNotes = (leadId: string) => {
   };
 
   const addNote = async (noteText: string) => {
-    console.log('[addNote] Starting for leadId:', leadId);
     
     try {
       const adminUser = await getAuthenticatedAdmin();

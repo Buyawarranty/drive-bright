@@ -560,9 +560,7 @@ export const useLeads = () => {
         { event: '*', schema: 'public', table: 'sales_leads' },
         () => debouncedRealtimeRefetch()
       )
-      .subscribe((status) => {
-        console.log('[Realtime] leads channel status:', status);
-      });
+      .subscribe();
 
     const cartsChannel = supabase
       .channel('carts-realtime-sync')
@@ -570,9 +568,7 @@ export const useLeads = () => {
         { event: '*', schema: 'public', table: 'abandoned_carts' },
         () => debouncedRealtimeRefetch()
       )
-      .subscribe((status) => {
-        console.log('[Realtime] carts channel status:', status);
-      });
+      .subscribe();
 
     // Polling fallback: refresh every 30s in case realtime silently disconnects
     const pollingInterval = setInterval(() => {
@@ -582,14 +578,13 @@ export const useLeads = () => {
     // Debounced visibility/focus handler - prevents rapid-fire refetches
     const throttledRefetch = () => {
       const now = Date.now();
-      if (now - lastRefetchTimeRef.current < 3000) return; // Skip if refetched <3s ago
+      if (now - lastRefetchTimeRef.current < 3000) return;
       lastRefetchTimeRef.current = now;
       fetchLeadsRef.current();
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        console.log('[Leads] Tab visible again, refreshing leads...');
         throttledRefetch();
       }
     };
