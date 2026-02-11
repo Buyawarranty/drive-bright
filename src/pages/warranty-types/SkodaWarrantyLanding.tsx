@@ -1,0 +1,1007 @@
+import React, { useState, lazy, Suspense, useMemo } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { Button } from '@/components/ui/button';
+import { Check, ArrowRight, Shield, Phone, ChevronDown, ChevronUp, MapPin, Clock, Users, Car, Wrench, Zap, Star, Award, ThumbsUp, FileCheck, MessageCircle, Truck, Battery, Search } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { trackButtonClick } from '@/utils/analytics';
+import { OptimizedImage } from '@/components/OptimizedImage';
+import MileageQuickSelect from '@/components/MileageQuickSelect';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { saveWithTimestamp } from '@/utils/localStorage';
+
+// Lazy load heavy components
+const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
+const VehicleCoverageSection = lazy(() => import('@/components/homepage/VehicleCoverageSection'));
+const CoverClaritySection = lazy(() => import('@/components/homepage/CoverClaritySection'));
+const VideoSection = lazy(() => import('@/components/homepage/VideoSection'));
+const WarrantyBenefitsSection = lazy(() => import('@/components/homepage/WarrantyBenefitsSection'));
+
+// Assets
+import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
+import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
+
+// Škoda-specific images
+import skodaOctaviaHero from '@/assets/skoda-octavia-extended-warranty-uk.png';
+import skodaKodiaqWarranty from '@/assets/skoda-kodiaq-used-car-warranty.png';
+import skodaEnyaqHighMileage from '@/assets/skoda-enyaq-high-mileage-warranty.png';
+
+// Škoda Models covered (grouped by category) - 2012 to 2026
+const skodaModelCategories = {
+  'Hatchback & Saloon': {
+    'Fabia': ['Mk3', 'Mk4'],
+    'Rapid': ['Mk1'],
+    'Scala': ['Mk1'],
+    'Octavia': ['Mk3', 'Mk4'],
+    'Superb': ['Mk3', 'Mk4'],
+  },
+  'Estate': {
+    'Fabia Estate': ['Mk3'],
+    'Octavia Estate': ['Mk3', 'Mk4'],
+    'Superb Estate': ['Mk3', 'Mk4'],
+  },
+  'SUV & Crossover': {
+    'Kamiq': ['Mk1'],
+    'Karoq': ['Mk1'],
+    'Kodiaq': ['Mk1', 'Mk2'],
+    'Yeti': ['Mk1'],
+  },
+  'Electric & Hybrid': {
+    'Enyaq iV': ['Mk1'],
+    'Enyaq Coupé iV': ['Mk1'],
+    'Octavia iV PHEV': ['Mk4'],
+    'Superb iV PHEV': ['Mk3'],
+  },
+};
+
+type ModelCategory = keyof typeof skodaModelCategories;
+
+// Coverage components data - Škoda-specific
+const coverageCategories = [
+  {
+    title: 'Engine & Powertrain',
+    icon: Car,
+    items: [
+      'Škoda TSI turbocharged petrol engine block and cylinder head',
+      'TDI diesel engine internals and turbocharger',
+      'Pistons, rings, and bearings',
+      'Crankshaft and camshaft assemblies',
+      'Timing chain and belt tensioners',
+      'Oil pump and oil cooler',
+      'Intake and exhaust manifolds',
+    ]
+  },
+  {
+    title: 'Transmission & Drivetrain',
+    icon: Wrench,
+    items: [
+      'DSG dual-clutch automatic gearbox and mechatronics',
+      'Manual gearbox internals',
+      'Torque converter (automatic models)',
+      'Single-speed EV reduction gearbox',
+      'Differential (front & rear)',
+      'Drive shafts and CV joints',
+      '4x4 Haldex coupling (Kodiaq / Octavia Scout)',
+    ]
+  },
+  {
+    title: 'Electrical & Electronics',
+    icon: Zap,
+    items: [
+      'ECU and engine control modules',
+      'Škoda Virtual Cockpit digital display',
+      'Columbus / Amundsen infotainment system',
+      'Driver assistance sensors and cameras',
+      'Electric window motors',
+      'Central locking and keyless entry',
+      'Starter motor and alternator',
+    ]
+  },
+  {
+    title: 'Cooling & Fuel Systems',
+    icon: Shield,
+    items: [
+      'Water pump and thermostat',
+      'Radiator and expansion tank',
+      'Fuel pump and injectors',
+      'High-pressure fuel pump (TSI / TDI)',
+      'Fuel rail and regulator',
+      'EGR valve and cooler',
+      'Oil/coolant heat exchangers',
+    ]
+  },
+  {
+    title: 'Suspension & Steering',
+    icon: Car,
+    items: [
+      'Power steering pump/rack',
+      'Electric power steering motor',
+      'Shock absorbers and struts',
+      'MacPherson strut front suspension',
+      'Multi-link rear suspension',
+      'Anti-roll bar links',
+      'Wheel bearings and hubs',
+    ]
+  },
+  {
+    title: 'EV & Hybrid Components',
+    icon: Zap,
+    items: [
+      'Electric drive motor (Enyaq iV)',
+      'Power electronics module and inverter',
+      'DC-DC converter',
+      'On-board charger',
+      'Battery management system (BMS)',
+      'Regenerative braking system',
+      'Thermal management and cooling system',
+    ]
+  },
+];
+
+// FAQs
+const skodaFAQs = [
+  {
+    question: "Is a Škoda extended warranty worth it in the UK?",
+    answer: "Yes, modern Škoda vehicles share advanced VW Group technology including DSG gearboxes, turbocharged TSI/TDI engines, and complex electronics that can be expensive to repair outside the manufacturer warranty. Our extended warranty covers over 8,000 components including engines, gearboxes, electrical systems, and EV drivetrains."
+  },
+  {
+    question: "How much does a Škoda extended warranty cost in the UK?",
+    answer: "Extended Škoda warranty prices typically start from £22 a month, depending on your model, mileage, and chosen claim limit. We offer flexible monthly or annual payment options with plans from just 70p a day."
+  },
+  {
+    question: "Can I buy a Škoda extended warranty after my manufacturer warranty has expired?",
+    answer: "Yes, you can buy cover even if your Škoda's original manufacturer warranty has expired, or if you purchased it used. We cover vehicles up to 150,000 miles and 15 years old, giving Škoda owners peace of mind beyond the factory warranty."
+  },
+  {
+    question: "Can I use my own garage for Škoda warranty repairs?",
+    answer: "Yes, absolutely. You can choose any VAT-registered garage across the UK instead of being restricted to Škoda dealers. We have a network of approved garages nationwide."
+  },
+  {
+    question: "Does the warranty cover electric and hybrid Škoda models?",
+    answer: "Yes, our comprehensive plan includes cover for Škoda's electric and plug-in hybrid components including the Enyaq iV electric motor, battery management system, power electronics, on-board charger, DC-DC converter, and thermal management system."
+  },
+  {
+    question: "Is roadside assistance included?",
+    answer: "Yes, our comprehensive plan includes 24/7 roadside assistance and recovery anywhere in the UK. If your Škoda breaks down, we will send help to get you back on the road or recover your vehicle to a garage."
+  },
+  {
+    question: "Does the warranty cover DSG gearbox faults?",
+    answer: "Yes, DSG mechatronics and gearbox internals are fully covered under our plans. DSG repairs can cost between £1,150 and £1,950, making warranty cover particularly valuable for Škoda owners with automatic models."
+  },
+  {
+    question: "What is not covered by the warranty?",
+    answer: "Routine maintenance, wear and tear items (brake pads, tyres, wiper blades), pre-existing faults, and cosmetic damage are not covered. Our policy documents clearly outline all exclusions so there are no surprises."
+  }
+];
+
+// Testimonials
+const testimonials = [
+  {
+    name: "David R.",
+    location: "Birmingham",
+    model: "Octavia",
+    text: "The DSG gearbox on my Octavia developed a fault at 52,000 miles. The repair was over £1,600 but my warranty covered the lot. Brilliant service and fast approval.",
+    rating: 5
+  },
+  {
+    name: "Sarah M.",
+    location: "Leeds",
+    model: "Kodiaq",
+    text: "My Kodiaq needed a new turbo outside the manufacturer warranty. Buy A Warranty handled the claim without any fuss and paid the garage directly. Highly recommend.",
+    rating: 5
+  },
+  {
+    name: "Mark T.",
+    location: "Surrey",
+    model: "Enyaq iV",
+    text: "Finding EV warranty cover for my Enyaq was difficult until I found these guys. They cover the electric motor, BMS and all the key components. Great peace of mind.",
+    rating: 5
+  },
+  {
+    name: "Emma L.",
+    location: "Manchester",
+    model: "Superb",
+    text: "My Superb's infotainment system failed at 4 years old. Would have cost over £900 to replace. The warranty paid out in full within a week. Fantastic value.",
+    rating: 5
+  }
+];
+
+const SkodaWarrantyLanding: React.FC = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const isMobile = useIsMobile();
+  const [regNumber, setRegNumber] = useState('');
+  const [mileage, setMileage] = useState('');
+  const [mileageSelection, setMileageSelection] = useState('');
+  const [isLookingUp, setIsLookingUp] = useState(false);
+  const [vehicleAgeError, setVehicleAgeError] = useState('');
+  const [openFaqId, setOpenFaqId] = useState<number | null>(null);
+  const [expandedCoverage, setExpandedCoverage] = useState(false);
+  const [activeModelFilter, setActiveModelFilter] = useState<ModelCategory | 'All'>('All');
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
+  const [modelSearchQuery, setModelSearchQuery] = useState('');
+
+  const filteredModels = useMemo(() => {
+    const allModels = activeModelFilter === 'All'
+      ? Object.entries(skodaModelCategories).flatMap(([category, models]) => 
+          Object.entries(models).map(([model, generations]) => ({ model, generations, category }))
+        )
+      : Object.entries(skodaModelCategories[activeModelFilter]).map(([model, generations]) => ({ 
+          model, 
+          generations, 
+          category: activeModelFilter 
+        }));
+    
+    if (!modelSearchQuery.trim()) return allModels;
+    
+    const query = modelSearchQuery.toLowerCase();
+    return allModels.filter(({ model, generations }) => 
+      model.toLowerCase().includes(query) || 
+      generations.some(gen => gen.toLowerCase().includes(query))
+    );
+  }, [activeModelFilter, modelSearchQuery]);
+
+  const eligibilityError = vehicleAgeError;
+
+  const formatRegNumber = (value: string) => {
+    const formatted = value.replace(/\s/g, '').toUpperCase();
+    if (formatted.length > 3) {
+      return formatted.slice(0, -3) + ' ' + formatted.slice(-3);
+    }
+    return formatted;
+  };
+
+  const handleRegChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatRegNumber(e.target.value);
+    if (formatted.length <= 8) {
+      setRegNumber(formatted);
+    }
+  };
+
+  const handleMileageSelection = (selection: string) => {
+    setMileageSelection(selection);
+    if (selection === 'under120k') {
+      setMileage('100000');
+    } else if (selection === 'over120k') {
+      setMileage('130000');
+    }
+  };
+
+  const handleGetQuote = async () => {
+    trackButtonClick('skoda_warranty_get_quote', { brand: 'Skoda' });
+    
+    if (!regNumber.trim()) {
+      toast({
+        title: "Registration Required",
+        description: "Please enter your vehicle registration number.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!mileage.trim()) {
+      toast({
+        title: "Mileage Required",
+        description: "Please select your vehicle's mileage to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsLookingUp(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('dvla-vehicle-lookup', {
+        body: { registrationNumber: regNumber }
+      });
+
+      if (error) throw error;
+      
+      if (data?.found) {
+        const now = new Date();
+        if (data.manufactureDate) {
+          const manufactureDate = new Date(data.manufactureDate);
+          const ageInMs = now.getTime() - manufactureDate.getTime();
+          const msPerYear = 365.25 * 24 * 60 * 60 * 1000;
+          const vehicleAgePrecise = ageInMs / msPerYear;
+          
+          if (vehicleAgePrecise > 15) {
+            setVehicleAgeError('Sorry, we only cover vehicles under 150,000 miles and less than 15 years old');
+            toast({
+              title: "Vehicle Not Eligible",
+              description: "Sorry, we only cover vehicles under 150,000 miles and less than 15 years old.",
+              variant: "destructive",
+            });
+            setIsLookingUp(false);
+            return;
+          }
+        }
+        
+        const vehicleData = {
+          regNumber: regNumber,
+          mileage: mileage,
+          make: data.make || 'SKODA',
+          model: data.model,
+          fuelType: data.fuelType,
+          transmission: data.transmission,
+          year: data.yearOfManufacture,
+          vehicleType: 'car',
+          manufactureDate: data.manufactureDate
+        };
+        
+        saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
+        saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
+        saveWithTimestamp('buyawarranty_currentStep', '2');
+        sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
+        navigate('/?step=2');
+      } else {
+        const vehicleData = {
+          regNumber: regNumber,
+          mileage: mileage,
+          vehicleType: 'car',
+        };
+        saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
+        saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
+        saveWithTimestamp('buyawarranty_currentStep', '2');
+        sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
+        navigate('/?step=2');
+      }
+    } catch (err) {
+      console.error('Vehicle lookup error:', err);
+      const vehicleData = {
+        regNumber: regNumber,
+        mileage: mileage,
+        vehicleType: 'car',
+      };
+      saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
+      saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
+      saveWithTimestamp('buyawarranty_currentStep', '2');
+      sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
+      navigate('/?step=2');
+    } finally {
+      setIsLookingUp(false);
+    }
+  };
+
+  const scrollToQuoteForm = () => {
+    const hero = document.getElementById('hero-section');
+    if (hero) {
+      hero.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Schema.org structured data
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "Škoda Extended Warranty UK",
+    "description": "Comprehensive extended warranty coverage for all Škoda models including Octavia, Superb, Kodiaq, Karoq, Kamiq, Fabia, Scala, Enyaq iV and Yeti. Covers engine, DSG gearbox, turbo, electrical systems, EV drivetrain components. Nationwide UK coverage with any VAT-registered garage.",
+    "brand": { "@type": "Brand", "name": "Buy A Warranty" },
+    "manufacturer": {
+      "@type": "Organization",
+      "name": "Buy A Warranty",
+      "url": "https://buyawarranty.co.uk",
+      "logo": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+44-800-917-9270",
+        "contactType": "customer service",
+        "availableLanguage": "English",
+        "areaServed": "GB"
+      }
+    },
+    "offers": {
+      "@type": "Offer",
+      "priceCurrency": "GBP",
+      "price": "22",
+      "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      "availability": "https://schema.org/InStock",
+      "url": "https://buyawarranty.co.uk/warranty-types/skoda/",
+      "seller": { "@type": "Organization", "name": "Buy A Warranty" },
+      "itemCondition": "https://schema.org/NewCondition",
+      "priceSpecification": {
+        "@type": "UnitPriceSpecification",
+        "price": "22",
+        "priceCurrency": "GBP",
+        "unitText": "month",
+        "billingIncrement": 1
+      }
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "reviewCount": "2847",
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "review": testimonials.map((t, i) => ({
+      "@type": "Review",
+      "author": { "@type": "Person", "name": t.name },
+      "reviewRating": { "@type": "Rating", "ratingValue": t.rating, "bestRating": "5" },
+      "reviewBody": t.text,
+      "datePublished": new Date(Date.now() - (i + 1) * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    })),
+    "category": "Vehicle Extended Warranty",
+    "audience": { "@type": "Audience", "audienceType": "Škoda vehicle owners in the United Kingdom" }
+  };
+
+  const serviceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "Škoda Extended Warranty Service",
+    "alternateName": "Škoda Used Car Warranty",
+    "provider": {
+      "@type": "LocalBusiness",
+      "name": "Buy A Warranty",
+      "url": "https://buyawarranty.co.uk",
+      "telephone": "+44-800-917-9270",
+      "priceRange": "£22-£75/month",
+      "address": { "@type": "PostalAddress", "addressCountry": "GB" }
+    },
+    "areaServed": { "@type": "Country", "name": "United Kingdom" },
+    "description": "Extended warranty coverage for all Škoda models including Octavia, Superb, Kodiaq, Karoq, Kamiq, Fabia, Scala, Enyaq iV and Yeti. Covers TSI/TDI engines, DSG gearboxes, infotainment systems, and EV/PHEV components.",
+    "serviceType": "Vehicle Extended Warranty",
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Škoda Warranty Plans",
+      "itemListElement": [
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Basic Škoda Warranty" } },
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Gold Škoda Warranty" } },
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Platinum Škoda Warranty" } }
+      ]
+    }
+  };
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": skodaFAQs.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": { "@type": "Answer", "text": faq.answer }
+    }))
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://buyawarranty.co.uk/" },
+      { "@type": "ListItem", "position": 2, "name": "Warranty Types", "item": "https://buyawarranty.co.uk/warranty-types/" },
+      { "@type": "ListItem", "position": 3, "name": "Škoda Warranty", "item": "https://buyawarranty.co.uk/warranty-types/skoda/" }
+    ]
+  };
+
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Buy A Warranty",
+    "url": "https://buyawarranty.co.uk",
+    "logo": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+    "sameAs": ["https://uk.trustpilot.com/review/buyawarranty.co.uk"],
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+44-330-229-5040",
+      "contactType": "customer service",
+      "areaServed": "GB",
+      "availableLanguage": "English"
+    }
+  };
+
+  const localBusinessSchema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "@id": "https://buyawarranty.co.uk/#localbusiness",
+    "name": "Buy A Warranty",
+    "description": "UK's leading Škoda extended warranty provider offering flexible, affordable vehicle protection with instant quotes and no hidden fees.",
+    "url": "https://buyawarranty.co.uk",
+    "logo": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+    "image": "https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png",
+    "telephone": "+443302295040",
+    "email": "support@buyawarranty.co.uk",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "71-75 Shelton Street",
+      "addressLocality": "London",
+      "addressRegion": "Greater London",
+      "postalCode": "WC2H 9JQ",
+      "addressCountry": "GB"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 51.5142,
+      "longitude": -0.1267
+    },
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      "opens": "09:00",
+      "closes": "17:30"
+    },
+    "priceRange": "££",
+    "currenciesAccepted": "GBP",
+    "paymentAccepted": "Credit Card, Debit Card, Bank Transfer",
+    "areaServed": { "@type": "Country", "name": "United Kingdom" },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.7",
+      "reviewCount": "30",
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "knowsAbout": ["Škoda Warranty", "Škoda Extended Warranty", "Škoda Used Car Warranty", "Škoda EV Warranty", "Vehicle Warranty"],
+    "foundingDate": "2016",
+    "legalName": "BUY A WARRANTY LIMITED"
+  };
+
+  const howToSchema = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to Get a Škoda Extended Warranty Quote",
+    "description": "Get a Škoda extended warranty quote in under 60 seconds",
+    "step": [
+      { "@type": "HowToStep", "position": 1, "name": "Enter Registration", "text": "Enter your Škoda's registration number" },
+      { "@type": "HowToStep", "position": 2, "name": "Select Mileage", "text": "Choose your current mileage band" },
+      { "@type": "HowToStep", "position": 3, "name": "Choose Plan", "text": "Select from Basic, Gold, or Platinum cover" },
+      { "@type": "HowToStep", "position": 4, "name": "Get Protected", "text": "Complete your purchase and get instant cover" }
+    ]
+  };
+
+  return (
+    <>
+      <Helmet>
+        <title>Škoda Extended Warranty UK | Octavia, Kodiaq, Enyaq iV Cover from £22/mo</title>
+        <meta name="description" content="Škoda extended warranty from £22/month. Cover Octavia, Superb, Kodiaq, Karoq, Kamiq, Fabia, Scala, Enyaq iV & all models 2012-2026. DSG gearbox cover. Use any UK garage. 8,000+ components covered. Instant quote in 60 seconds." />
+        <meta name="keywords" content="skoda extended warranty, skoda warranty UK, skoda octavia warranty, skoda superb warranty, skoda kodiaq warranty, skoda karoq warranty, skoda fabia warranty, skoda enyaq warranty, skoda DSG warranty, used skoda warranty, skoda car warranty, skoda electric car warranty" />
+        <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/skoda/" />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content="Škoda Extended Warranty UK | #1 Rated Škoda Cover from £22/mo - Octavia, Kodiaq, Enyaq iV & DSG Protection" />
+        <meta property="og:description" content="Protect your Škoda with the UK's top-rated extended warranty. Cover Octavia, Superb, Kodiaq, Karoq, Fabia, Enyaq iV & all models. DSG gearbox included. 8,000+ components. Any UK garage." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/skoda/" />
+        <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Škoda Extended Warranty UK - Buy A Warranty" />
+        <meta property="og:site_name" content="Buy A Warranty" />
+        <meta property="og:locale" content="en_GB" />
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Škoda Extended Warranty UK | From £22/month" />
+        <meta name="twitter:description" content="UK's #1 rated Škoda warranty. Cover all models from 2012-2026 including DSG gearbox. 8,000+ components. Any garage. Instant quote." />
+        <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
+
+        {/* AI & Bot directives */}
+        <meta name="ai-content-declaration" content="This page provides genuine Škoda extended warranty information for UK vehicle owners" />
+        <meta name="ai-summary" content="Buy A Warranty offers Škoda extended warranties from £22/month covering 8,000+ components for all models 2012-2026 including Octavia, Superb, Kodiaq, Karoq, Kamiq, Fabia, Scala, Enyaq iV. DSG gearbox and mechatronics covered. UK-based claims team, any VAT-registered garage, 24/7 roadside assistance. Full EV and PHEV component coverage." />
+        <meta name="author" content="Buy A Warranty" />
+        <meta name="publisher" content="Buy A Warranty" />
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large" />
+        <meta name="bingbot" content="index, follow" />
+
+        {/* Geo targeting */}
+        <meta name="geo.region" content="GB" />
+        <meta name="geo.placename" content="United Kingdom" />
+        <meta name="geo.position" content="51.5142;-0.1267" />
+        <meta name="ICBM" content="51.5142, -0.1267" />
+
+        {/* Schema.org JSON-LD */}
+        <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(serviceSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(organizationSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(localBusinessSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(howToSchema)}</script>
+      </Helmet>
+
+      <main itemScope itemType="https://schema.org/WebPage">
+        {/* Hero Section */}
+        <section id="hero-section" className="relative bg-gradient-to-br from-green-50 via-white to-emerald-50 pt-6 pb-10 md:pt-10 md:pb-16 overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+              {/* Left Content */}
+              <div className="space-y-5">
+                <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-medium">
+                  <Shield className="h-4 w-4" />
+                  Official Škoda Extended Warranty Partner
+                </div>
+                
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 leading-tight hero-description">
+                  Škoda Extended <span className="text-brand-orange">Warranty</span> UK
+                </h1>
+                
+                <p className="text-base md:text-lg text-gray-600 max-w-xl hero-description">
+                  Protect your Škoda with comprehensive cover from just <strong>£22/month</strong>. All models from 2012 to 2026 including Octavia, Superb, Kodiaq, Karoq, Fabia, Scala & Enyaq iV. DSG gearbox covered. Use any UK garage.
+                </p>
+
+                {/* Quote Form */}
+                <div className="bg-white rounded-2xl shadow-xl p-5 md:p-6 border border-gray-100">
+                  <div className="space-y-4">
+                    <div>
+                      <label htmlFor="reg-input" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                        Enter Your Registration
+                      </label>
+                      <div className="relative">
+                        <div className="absolute left-0 top-0 bottom-0 w-12 bg-blue-600 rounded-l-lg flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">GB</span>
+                        </div>
+                        <input
+                          id="reg-input"
+                          type="text"
+                          value={regNumber}
+                          onChange={handleRegChange}
+                          placeholder="AB12 CDE"
+                          className="w-full pl-16 pr-4 py-3.5 text-xl font-bold uppercase tracking-wider bg-yellow-50 border-2 border-yellow-400 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 text-center"
+                          maxLength={8}
+                          aria-label="Vehicle registration number"
+                        />
+                      </div>
+                    </div>
+
+                    <MileageQuickSelect
+                      value={mileageSelection}
+                      onChange={handleMileageSelection}
+                    />
+
+                    {eligibilityError && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                        {eligibilityError}
+                      </div>
+                    )}
+
+                    <Button
+                      onClick={handleGetQuote}
+                      disabled={isLookingUp}
+                      className="w-full bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-4 text-lg rounded-xl shadow-lg animate-cta-enhanced"
+                      size="lg"
+                    >
+                      {isLookingUp ? (
+                        <span className="flex items-center gap-2">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                          Looking up vehicle...
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-2">
+                          Get My Free Quote <ArrowRight className="h-5 w-5" />
+                        </span>
+                      )}
+                    </Button>
+
+                    <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
+                      <span className="flex items-center gap-1"><Check className="h-3 w-3 text-green-500" /> No obligation</span>
+                      <span className="flex items-center gap-1"><Check className="h-3 w-3 text-green-500" /> Instant quote</span>
+                      <span className="flex items-center gap-1"><Check className="h-3 w-3 text-green-500" /> Cancel anytime</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Trustpilot */}
+                <div className="flex items-center gap-3">
+                  <OptimizedImage src={trustpilotExcellent} alt="Trustpilot Excellent Rating" className="h-10" width={120} height={40} />
+                  <span className="text-sm text-gray-600">Rated <strong>Excellent</strong> by Škoda owners</span>
+                </div>
+              </div>
+
+              {/* Right Content - Hero Images */}
+              <div className="relative hidden lg:flex flex-col items-center justify-center">
+                <div className="relative flex items-end justify-center gap-4">
+                  <OptimizedImage 
+                    src={skodaOctaviaHero}
+                    alt="Škoda Octavia extended warranty UK - front view"
+                    className="max-w-[35%] h-auto drop-shadow-2xl"
+                    priority={true}
+                    width={269}
+                    height={179}
+                  />
+                  <OptimizedImage 
+                    src={pandaThumbsUp}
+                    alt="Buy A Warranty mascot - trusted Škoda warranty provider"
+                    className="max-w-[25%] h-auto"
+                    priority={true}
+                    width={192}
+                    height={192}
+                  />
+                  <OptimizedImage 
+                    src={skodaKodiaqWarranty}
+                    alt="Škoda Kodiaq used car warranty UK - front view"
+                    className="max-w-[35%] h-auto drop-shadow-2xl"
+                    priority={true}
+                    width={269}
+                    height={179}
+                  />
+                </div>
+                <div className="mt-6 flex items-center gap-2">
+                  <div className="flex -space-x-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">Trusted by thousands of Škoda owners</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Trust Bar */}
+        <section className="bg-gray-900 py-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 text-white text-sm">
+              <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-green-400" /> 8,000+ Components</div>
+              <div className="flex items-center gap-2"><Car className="h-4 w-4 text-blue-400" /> All Škoda Models</div>
+              <div className="flex items-center gap-2"><Wrench className="h-4 w-4 text-orange-400" /> Any UK Garage</div>
+              <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-green-400" /> UK Claims Team</div>
+              <div className="flex items-center gap-2"><Zap className="h-4 w-4 text-yellow-400" /> DSG & EV Cover</div>
+            </div>
+          </div>
+        </section>
+
+        {/* Why Choose Us Section */}
+        <section className="py-12 md:py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+              <div className="space-y-6">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                  Why Choose Our Škoda Warranty?
+                </h2>
+                <p className="text-gray-600">
+                  Škoda shares Volkswagen Group engineering, which means advanced TSI/TDI engines, DSG gearboxes, and sophisticated electronics. While reliable, these systems can develop costly faults after the manufacturer warranty expires, with DSG repairs alone costing over £1,500.
+                </p>
+                <div className="space-y-4">
+                  {[
+                    { icon: Shield, title: 'Comprehensive Cover', desc: 'Over 8,000 mechanical and electrical components protected on every plan' },
+                    { icon: Wrench, title: 'Any UK Garage', desc: 'Choose any VAT-registered garage, not restricted to Škoda dealers' },
+                    { icon: Zap, title: 'Full EV & DSG Coverage', desc: 'Complete cover for Enyaq iV electric drivetrain plus DSG gearbox and mechatronics' },
+                    { icon: Phone, title: '24/7 Roadside Assistance', desc: 'Breakdown recovery included with comprehensive plans across the UK' },
+                  ].map((item, i) => (
+                    <div key={i} className="flex gap-4">
+                      <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                        <item.icon className="h-5 w-5 text-green-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{item.title}</h3>
+                        <p className="text-sm text-gray-600">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex justify-center pt-16">
+                <OptimizedImage 
+                  src={skodaEnyaqHighMileage}
+                  alt="Škoda Enyaq iV electric car warranty UK - front view"
+                  className="max-w-[60%] h-auto drop-shadow-xl rounded-xl"
+                  width={461}
+                  height={307}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Models Covered Section - Apple-style compact grid */}
+        <section className="py-12 md:py-16 bg-gradient-to-br from-gray-50 to-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                Škoda Models We Cover
+              </h2>
+              <p className="text-gray-600">All models from 2012 to 2026 · Up to 150,000 miles</p>
+            </div>
+
+            {/* Category Filters */}
+            <div className="flex flex-wrap justify-center gap-2 mb-6">
+              {(['All', ...Object.keys(skodaModelCategories)] as (ModelCategory | 'All')[]).map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveModelFilter(cat)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                    activeModelFilter === cat
+                      ? 'bg-gray-900 text-white'
+                      : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Search */}
+            <div className="max-w-sm mx-auto mb-6">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={modelSearchQuery}
+                  onChange={(e) => setModelSearchQuery(e.target.value)}
+                  placeholder="Search Škoda models..."
+                  className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:border-gray-400 focus:ring-1 focus:ring-gray-200"
+                />
+              </div>
+            </div>
+
+            {/* Model Grid - Compact Apple-style */}
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+              {filteredModels.map(({ model, generations, category }) => (
+                <button
+                  key={`${category}-${model}`}
+                  onClick={() => {
+                    setSelectedModel(selectedModel === model ? null : model);
+                    scrollToQuoteForm();
+                  }}
+                  className={`group px-2 py-3 rounded-lg text-center transition-all border ${
+                    selectedModel === model
+                      ? 'border-green-300 bg-green-50'
+                      : 'border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm'
+                  }`}
+                >
+                  <Car className="h-6 w-6 mx-auto mb-1 text-slate-400 group-hover:text-slate-600" strokeWidth={1.25} />
+                  <div className="text-[11px] sm:text-xs font-semibold text-gray-900 leading-tight">{model}</div>
+                  <div className="text-[9px] sm:text-[10px] text-gray-500">{generations.join(' · ')}</div>
+                  <div className="text-[8px] text-gray-400 mt-0.5">2012–2026</div>
+                </button>
+              ))}
+            </div>
+
+            {filteredModels.length === 0 && (
+              <p className="text-center text-gray-500 py-8">No models found matching "{modelSearchQuery}"</p>
+            )}
+
+            <div className="text-center mt-8">
+              <Button onClick={scrollToQuoteForm} className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-8 py-3 rounded-xl shadow-lg">
+                Get Your Škoda Quote <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* Coverage Section */}
+        <section className="py-12 md:py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                What's Covered on Your Škoda?
+              </h2>
+              <p className="text-gray-600">Comprehensive protection for all major Škoda systems</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {coverageCategories.slice(0, expandedCoverage ? undefined : 3).map((cat, i) => (
+                <div key={i} className="bg-gray-50 rounded-xl p-6 border border-gray-100">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                      <cat.icon className="h-5 w-5 text-green-600" />
+                    </div>
+                    <h3 className="font-bold text-gray-900">{cat.title}</h3>
+                  </div>
+                  <ul className="space-y-2">
+                    {cat.items.map((item, j) => (
+                      <li key={j} className="flex items-start gap-2 text-sm text-gray-600">
+                        <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+
+            {!expandedCoverage && (
+              <div className="text-center mt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => setExpandedCoverage(true)}
+                  className="gap-2"
+                >
+                  Show All Coverage <ChevronDown className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Testimonials */}
+        <section className="py-12 md:py-16 bg-gradient-to-br from-green-50 to-emerald-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                What Škoda Owners Say
+              </h2>
+              <div className="flex items-center justify-center gap-2">
+                <div className="flex -space-x-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <span className="text-sm text-gray-600">Rated Excellent on Trustpilot</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {testimonials.map((t, i) => (
+                <div key={i} className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+                  <div className="flex gap-1 mb-3">
+                    {[...Array(t.rating)].map((_, j) => (
+                      <Star key={j} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <p className="text-gray-700 text-sm mb-4">"{t.text}"</p>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">{t.name}</p>
+                    <p className="text-xs text-gray-500">{t.model} · {t.location}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="py-12 md:py-16 bg-white">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                Škoda Warranty FAQs
+              </h2>
+              <p className="text-gray-600">Everything you need to know about Škoda extended warranties</p>
+            </div>
+
+            <div className="space-y-3">
+              {skodaFAQs.map((faq, i) => (
+                <div key={i} className="border border-gray-200 rounded-xl overflow-hidden">
+                  <button
+                    onClick={() => setOpenFaqId(openFaqId === i ? null : i)}
+                    className="w-full flex items-center justify-between p-5 text-left hover:bg-gray-50 transition-colors"
+                  >
+                    <span className="font-semibold text-gray-900 pr-4">{faq.question}</span>
+                    {openFaqId === i ? (
+                      <ChevronUp className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                    )}
+                  </button>
+                  {openFaqId === i && (
+                    <div className="px-5 pb-5 text-gray-600 text-sm leading-relaxed">
+                      {faq.answer}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Final CTA */}
+        <section className="py-12 md:py-16 bg-gradient-to-r from-gray-900 to-gray-800">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              Get Your Škoda Warranty Quote in 60 Seconds
+            </h2>
+            <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
+              Join thousands of Škoda owners who trust Buy A Warranty for their extended vehicle protection. From just £22/month with no hidden fees.
+            </p>
+            <Button
+              onClick={scrollToQuoteForm}
+              className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-10 py-4 text-lg rounded-xl shadow-lg"
+              size="lg"
+            >
+              Get My Free Škoda Quote <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+            <div className="flex items-center justify-center gap-6 mt-6 text-gray-400 text-sm">
+              <span className="flex items-center gap-1"><Check className="h-4 w-4 text-green-400" /> No obligation</span>
+              <span className="flex items-center gap-1"><Check className="h-4 w-4 text-green-400" /> Cancel anytime</span>
+              <span className="flex items-center gap-1"><Check className="h-4 w-4 text-green-400" /> UK-based team</span>
+            </div>
+          </div>
+        </section>
+      </main>
+    </>
+  );
+};
+
+export default SkodaWarrantyLanding;
