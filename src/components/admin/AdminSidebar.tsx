@@ -171,7 +171,7 @@ const defaultTabs: Tab[] = [
   },
   {
     id: 'marketing-audience',
-    label: 'Marketing Audience',
+    label: 'Marketing Contacts',
     icon: Megaphone,
     description: 'Unified mailing list for remarketing'
   },
