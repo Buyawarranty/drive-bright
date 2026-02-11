@@ -11,12 +11,12 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CONFIRM-EXTERNAL-PAYMENT] ${step}${detailsStr}`);
 };
 
-// Generate warranty reference
+// Generate warranty reference - ADM prefix for admin/external payments
 const generateWarrantyReference = async (supabase: any): Promise<string> => {
   const { data, error } = await supabase.rpc('get_next_warranty_serial');
   if (error) throw error;
   const datePart = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }).replace('/', '');
-  return `BAW-${datePart}-${String(data).padStart(6, '0')}`;
+  return `ADM-${datePart}-${String(data).padStart(6, '0')}`;
 };
 
 // Calculate policy end date
@@ -333,44 +333,35 @@ serve(async (req) => {
       }
     }
 
-    // Send welcome email if requested
+    // Always send welcome email and create dashboard login for external payments
+    // This ensures external payment customers get the same experience as website buyers
     let emailSent = false;
-    if (sendWelcomeEmail) {
-      try {
-        const { error: emailError } = await supabase.functions.invoke('send-welcome-email', {
-          body: {
-            customerEmail,
-            customerName,
-            vehicleReg: vehicleReg?.toUpperCase(),
-            policyNumber,
-            warrantyReference,
-          }
-        });
-        
-        if (!emailError) {
-          emailSent = true;
-          await supabase
-            .from('customer_policies')
-            .update({ email_sent_status: 'sent' })
-            .eq('id', policyData.id);
-        }
-      } catch (emailErr) {
-        logStep("Warning: Welcome email failed", emailErr);
-      }
-    }
-
-    // Create customer auth account
     try {
-      await supabase.functions.invoke('create-customer-account', {
+      logStep("Sending welcome email with dashboard credentials");
+      const { error: emailError } = await supabase.functions.invoke('send-welcome-email', {
         body: {
           email: customerEmail,
+          planType: 'Platinum',
+          paymentType: paymentTypeLabel,
+          policyNumber: warrantyReference,
+          registrationPlate: vehicleReg?.toUpperCase(),
           customerName,
-          customerId,
+          labourRate,
         }
       });
-      logStep("Customer account created/updated");
-    } catch (accountErr) {
-      logStep("Warning: Customer account creation failed", accountErr);
+      
+      if (!emailError) {
+        emailSent = true;
+        await supabase
+          .from('customer_policies')
+          .update({ email_sent_status: 'sent' })
+          .eq('id', policyData.id);
+        logStep("Welcome email sent successfully");
+      } else {
+        logStep("Warning: Welcome email failed", emailError);
+      }
+    } catch (emailErr) {
+      logStep("Warning: Welcome email failed", emailErr);
     }
 
     logStep("Confirm external payment completed successfully");
