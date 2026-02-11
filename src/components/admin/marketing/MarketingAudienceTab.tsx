@@ -25,6 +25,7 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RenewalsTab } from './RenewalsTab';
 import {
   Select,
   SelectContent,
@@ -297,6 +298,7 @@ export const MarketingAudienceTab: React.FC = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="audience">Audience List</TabsTrigger>
+          <TabsTrigger value="renewals">Call Renewals</TabsTrigger>
           <TabsTrigger value="sync-history">Sync History</TabsTrigger>
         </TabsList>
 
@@ -455,6 +457,10 @@ export const MarketingAudienceTab: React.FC = () => {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="renewals">
+          <RenewalsTab />
         </TabsContent>
 
         <TabsContent value="sync-history">
