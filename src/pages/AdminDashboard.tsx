@@ -72,6 +72,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState<string>(urlTab || 'customers');
   const [isCheckingRole, setIsCheckingRole] = useState(true);
   const [hasAdminAccess, setHasAdminAccess] = useState(false);
+  const accessCheckTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userPermissions, setUserPermissions] = useState<Record<string, boolean> | null>(null);
@@ -150,7 +151,22 @@ const AdminDashboard = () => {
     // Only run check when auth is done loading AND we haven't already confirmed access
     if (!authLoading && !hasCheckedAccessRef.current && !hasAdminAccess) {
       checkAdminAccess();
+      
+      // Safety timeout: if access check hangs for 10s, force stop loading
+      if (accessCheckTimeoutRef.current) clearTimeout(accessCheckTimeoutRef.current);
+      accessCheckTimeoutRef.current = setTimeout(() => {
+        if (!hasCheckedAccessRef.current) {
+          console.warn('[AdminDashboard] Access check safety timeout triggered after 10s');
+          hasCheckedAccessRef.current = true;
+          setIsCheckingRole(false);
+          // Don't redirect - let the guard condition handle it
+        }
+      }, 10000);
     }
+    
+    return () => {
+      if (accessCheckTimeoutRef.current) clearTimeout(accessCheckTimeoutRef.current);
+    };
   }, [session, authLoading]);
 
   // Handle page visibility changes (returning from another tab/page)
@@ -184,21 +200,23 @@ const AdminDashboard = () => {
   }, [hasAdminAccess, isCheckingRole, navigate]);
 
   const checkAdminAccess = async () => {
-    // Get a valid session - try current first, then refresh
-    let currentUser = session?.user;
-    if (!currentUser) {
-      const { data: { session: refreshedSession } } = await supabase.auth.getSession();
-      currentUser = refreshedSession?.user ?? undefined;
-    }
-
-    if (!currentUser) {
-      hasCheckedAccessRef.current = true;
-      setIsCheckingRole(false);
-      navigate('/auth', { replace: true });
-      return;
-    }
-
     try {
+      // Always use server-verified getUser() to avoid stale session issues
+      const { data: { user: verifiedUser }, error: userError } = await supabase.auth.getUser();
+
+      let currentUser = verifiedUser;
+      if (userError || !currentUser) {
+        // Fallback: try getSession as last resort  
+        const { data: { session: fallbackSession } } = await supabase.auth.getSession();
+        if (!fallbackSession?.user) {
+          hasCheckedAccessRef.current = true;
+          setIsCheckingRole(false);
+          navigate('/auth', { replace: true });
+          return;
+        }
+        currentUser = fallbackSession.user;
+      }
+
       // Parallel fetch: roles and permissions at the same time for speed
       const [rolesResult, permissionsResult] = await Promise.all([
         supabase.from('user_roles').select('role').eq('user_id', currentUser.id),
