@@ -15,12 +15,13 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Lead, AdminUser } from '@/hooks/useLeads';
 import { useLeadDistribution } from '@/hooks/useLeadDistribution';
+import { useAdminConfig } from '@/hooks/useAdminConfig';
 import { PresenceBadge } from './distribution/PresenceBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Users, ChevronDown, ChevronRight, Phone, Mail, Car, 
   Calendar, UserCircle, Hourglass, Info, Trash2, Save, Zap, UserPlus,
-  RotateCcw, Percent, ArrowRight, AlertCircle, CalendarIcon, X
+  RotateCcw, Percent, ArrowRight, AlertCircle, CalendarIcon, X, ShieldCheck
 } from 'lucide-react';
 import { format, formatDistanceToNow, startOfWeek, startOfMonth, startOfYear, endOfDay, isWithinInterval, subWeeks, subMonths, endOfWeek, endOfMonth } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
@@ -66,6 +67,15 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
 }) => {
   // Admin has ultimate control — only admin can delete agents and change distribution mode
   const isFullAdmin = viewerRole === 'admin' || viewerRole === 'global_admin' || viewerRole === 'super_admin';
+  const isSalesLead = viewerRole === 'sales_lead';
+  
+  // Check if sales leads have distribution access (admin-controlled toggle)
+  const { value: salesLeadDistributionAccess, loading: configLoading, updateConfig: updateDistributionAccess } = useAdminConfig('sales_lead_distribution_access');
+  
+  // Sales leads can see distribution settings only if admin has granted access
+  // Default to true if config not set (backwards compatible)
+  const canSeeDistributionSettings = isFullAdmin || (isSalesLead && salesLeadDistributionAccess !== false);
+  
   const [selectedAgent, setSelectedAgent] = useState<string>('all');
   const [expandedAgents, setExpandedAgents] = useState<Set<string>>(new Set(['awaiting_contact']));
   const [editedCaps, setEditedCaps] = useState<Record<string, number>>({});
@@ -855,7 +865,33 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
         </Card>
       )}
 
+      {/* Admin toggle: Sales Lead distribution access */}
+      {isFullAdmin && (
+        <div className="flex items-center gap-3 p-3 bg-muted/30 border rounded-lg">
+          <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium">Sales Lead Distribution Access</span>
+          <Switch
+            checked={salesLeadDistributionAccess !== false}
+            onCheckedChange={async (checked) => {
+              const success = await updateDistributionAccess(checked);
+              if (success) {
+                toast({
+                  title: checked ? 'Access granted' : 'Access revoked',
+                  description: checked
+                    ? 'Sales Leads can now view and manage distribution settings.'
+                    : 'Sales Leads can no longer access distribution settings.',
+                });
+              }
+            }}
+          />
+          <span className="text-xs text-muted-foreground">
+            {salesLeadDistributionAccess !== false ? 'Sales Leads can manage distribution' : 'Distribution restricted to admins only'}
+          </span>
+        </div>
+      )}
+
       {/* Agent Distribution Settings Section */}
+      {canSeeDistributionSettings ? (
       <Card>
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
@@ -1205,6 +1241,17 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
           </div>
         </CardContent>
       </Card>
+      ) : (
+        <Card className="border-dashed">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg flex items-center gap-2 text-muted-foreground">
+              <ShieldCheck className="h-5 w-5" />
+              Lead Distribution Settings
+            </CardTitle>
+            <CardDescription>Distribution settings are managed by administrators. Contact your admin for changes.</CardDescription>
+          </CardHeader>
+        </Card>
+      )}
 
       {/* Filter and Controls */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
