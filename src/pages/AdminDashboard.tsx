@@ -157,11 +157,8 @@ const AdminDashboard = () => {
   useEffect(() => {
     const handleVisibilityChange = async () => {
       if (document.visibilityState === 'visible' && hasAdminAccess) {
-        console.log('[AdminDashboard] Page became visible, refreshing session');
-        // Refresh session when returning to tab
         const { data: { session: refreshedSession } } = await supabase.auth.getSession();
         if (!refreshedSession?.user) {
-          console.log('[AdminDashboard] Session lost, redirecting to auth');
           navigate('/auth', { replace: true });
         }
       }
@@ -169,8 +166,6 @@ const AdminDashboard = () => {
 
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
-        console.log('[AdminDashboard] Page restored from bfcache');
-        // Force re-check session on bfcache restore
         supabase.auth.getSession().then(({ data: { session: refreshedSession } }) => {
           if (!refreshedSession?.user && !isCheckingRole) {
             navigate('/auth', { replace: true });
@@ -189,29 +184,14 @@ const AdminDashboard = () => {
   }, [hasAdminAccess, isCheckingRole, navigate]);
 
   const checkAdminAccess = async () => {
-    // If no session after auth loading is complete, try one more time before redirecting
-    if (!session?.user) {
-      console.log('[AdminDashboard] No session found, attempting refresh...');
-      
-      // Try to get the session one more time - this helps with bfcache/tab switches
+    // Get a valid session - try current first, then refresh
+    let currentUser = session?.user;
+    if (!currentUser) {
       const { data: { session: refreshedSession } } = await supabase.auth.getSession();
-      
-      if (!refreshedSession?.user) {
-        console.log('[AdminDashboard] Still no session after refresh, redirecting to auth');
-        hasCheckedAccessRef.current = true;
-        setIsCheckingRole(false);
-        navigate('/auth', { replace: true });
-        return;
-      }
-      
-      // Use the refreshed session to continue
-      console.log('[AdminDashboard] Session recovered, continuing with access check');
+      currentUser = refreshedSession?.user ?? undefined;
     }
 
-    // Use the current session or the one we just refreshed
-    const currentSession = session || (await supabase.auth.getSession()).data.session;
-    
-    if (!currentSession?.user) {
+    if (!currentUser) {
       hasCheckedAccessRef.current = true;
       setIsCheckingRole(false);
       navigate('/auth', { replace: true });
@@ -221,17 +201,14 @@ const AdminDashboard = () => {
     try {
       // Parallel fetch: roles and permissions at the same time for speed
       const [rolesResult, permissionsResult] = await Promise.all([
-        supabase.from('user_roles').select('role').eq('user_id', currentSession.user.id),
-        supabase.from('admin_users').select('permissions').eq('user_id', currentSession.user.id).maybeSingle()
+        supabase.from('user_roles').select('role').eq('user_id', currentUser.id),
+        supabase.from('admin_users').select('permissions').eq('user_id', currentUser.id).maybeSingle()
       ]);
 
       const { data, error } = rolesResult;
       const adminUserData = permissionsResult.data;
 
-      // Define admin roles
       const adminRoles = ['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead'];
-      
-      // Check if user has ANY admin role
       const userAdminRoles = data?.filter(r => adminRoles.includes(r.role)) || [];
       
       if (error || userAdminRoles.length === 0) {
@@ -241,7 +218,6 @@ const AdminDashboard = () => {
         return;
       }
 
-      // Use the highest priority role
       const rolePriority = ['admin', 'member', 'sales_lead', 'viewer', 'guest', 'sales', 'blog_writer'];
       const primaryRole = rolePriority.find(role => userAdminRoles.some(r => r.role === role)) || userAdminRoles[0].role;
       
@@ -253,8 +229,7 @@ const AdminDashboard = () => {
         setUserPermissions(adminUserData.permissions as Record<string, boolean>);
       }
       
-      // Set default tab based on role
-      // Sales agents ALWAYS start on new-leads, regardless of URL param
+      // Set default tab based on role (only if no URL tab param was provided)
       if (!hasSetInitialTab) {
         setHasSetInitialTab(true);
         
@@ -262,10 +237,8 @@ const AdminDashboard = () => {
         if (primaryRole === 'blog_writer') {
           defaultTab = 'blog-writing';
         } else if (primaryRole === 'sales') {
-          // Sales agents always default to new-leads - this is their primary workspace
           defaultTab = 'new-leads';
         } else if (primaryRole === 'sales_lead') {
-          // Sales leads default to new-leads where they manage lead assignment
           defaultTab = 'new-leads';
         } else if (!['admin'].includes(primaryRole) && adminUserData?.permissions) {
           const perms = adminUserData.permissions as Record<string, boolean>;
