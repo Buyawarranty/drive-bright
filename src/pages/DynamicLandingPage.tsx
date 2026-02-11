@@ -115,7 +115,7 @@ const DynamicLandingPage: React.FC = () => {
         'buy-a-used-car-warranty-reliable-warranties', 'van-warranty',
         'ev-warranty', 'motorbike-repair-warranty-uk-warranties',
         'motorcycle-warranty', 'car-extended-warranty', 'used-car-warranty-uk',
-        'home', 'warranty-types/bmw', 'warranty-types/mercedes', 'warranty-types/honda', 'warranty-types/toyota'
+        'home', 'warranty-types/bmw', 'warranty-types/mercedes', 'warranty-types/honda', 'warranty-types/toyota', 'warranty-types/ford'
       ];
 
       // Clean slug for comparison
