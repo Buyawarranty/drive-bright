@@ -139,12 +139,17 @@ export const useLeadDistribution = () => {
       const existing = agentCaps.find(cap => cap.admin_user_id === adminUserId);
 
       if (existing) {
-        const { error } = await supabase
+        const { error, count } = await supabase
           .from('agent_distribution_caps')
           .update(updates)
-          .eq('admin_user_id', adminUserId);
+          .eq('admin_user_id', adminUserId)
+          .select();
 
         if (error) throw error;
+        // RLS may silently block the update — check if rows were actually affected
+        if (!count && count !== null) {
+          throw new Error('Update blocked — you may not have permission to change distribution settings.');
+        }
       } else {
         const { error } = await supabase
           .from('agent_distribution_caps')
@@ -153,11 +158,17 @@ export const useLeadDistribution = () => {
         if (error) throw error;
       }
 
-      await fetchAgentCaps();
+      // Optimistically update local state to prevent realtime flicker
+      setAgentCaps(prev => prev.map(cap => 
+        cap.admin_user_id === adminUserId ? { ...cap, ...updates } : cap
+      ));
+      
+      // Delay refetch slightly so realtime doesn't race
+      setTimeout(() => fetchAgentCaps(), 500);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating agent cap:', error);
-      toast({ title: 'Error', description: 'Failed to update agent cap.', variant: 'destructive' });
+      toast({ title: 'Error', description: error?.message || 'Failed to update agent cap.', variant: 'destructive' });
       return false;
     }
   }, [agentCaps, fetchAgentCaps]);
