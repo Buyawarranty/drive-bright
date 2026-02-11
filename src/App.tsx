@@ -78,6 +78,7 @@ const BMWWarrantyLanding = lazy(() => import("./pages/warranty-types/BMWWarranty
 const MercedesWarrantyLanding = lazy(() => import("./pages/warranty-types/MercedesWarrantyLanding"));
 const VanWarrantyLanding = lazy(() => import("./pages/warranty-types/VanWarrantyLanding"));
 const MotorbikeWarrantyLanding = lazy(() => import("./pages/warranty-types/MotorbikeWarrantyLanding"));
+const HondaWarrantyLanding = lazy(() => import("./pages/warranty-types/HondaWarrantyLanding"));
 const HyundaiWarranty = lazy(() => import("./pages/HyundaiWarranty"));
 const AudiWarranty = lazy(() => import("./pages/AudiWarranty"));
 const MercedesWarranty = lazy(() => import("./pages/MercedesWarranty"));
@@ -213,6 +214,8 @@ const App = () => {
                     <Route path="/warranty-types/vans/" element={<VanWarrantyLanding />} />
                     <Route path="/warranty-types/motorbike-motorcycle-warranty" element={<MotorbikeWarrantyLanding />} />
                     <Route path="/warranty-types/motorbike-motorcycle-warranty/" element={<MotorbikeWarrantyLanding />} />
+                    <Route path="/warranty-types/honda" element={<HondaWarrantyLanding />} />
+                    <Route path="/warranty-types/honda/" element={<HondaWarrantyLanding />} />
                     
                     {/* Dynamic landing pages from admin - supports nested paths under warranty-types */}
                     <Route path="/warranty-types/:brand" element={<DynamicLandingPage />} />
