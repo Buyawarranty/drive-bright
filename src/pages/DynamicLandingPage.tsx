@@ -209,6 +209,8 @@ const DynamicLandingPage: React.FC = () => {
     };
     saveWithTimestamp('warrantyJourneyState', JSON.stringify(journeyState));
     
+    // Store landing page referrer so back button returns here
+    sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
     // Navigate to homepage with step 2
     navigate('/?step=2');
     window.scrollTo({ top: 0, behavior: 'smooth' });

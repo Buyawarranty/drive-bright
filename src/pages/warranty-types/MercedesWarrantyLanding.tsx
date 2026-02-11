@@ -345,6 +345,7 @@ const MercedesWarrantyLanding: React.FC = () => {
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
         saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
         saveWithTimestamp('buyawarranty_currentStep', '2');
+        sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
         navigate('/?step=2');
       } else {
         const vehicleData = {
@@ -355,6 +356,7 @@ const MercedesWarrantyLanding: React.FC = () => {
         saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
         saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
         saveWithTimestamp('buyawarranty_currentStep', '2');
+        sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
         navigate('/?step=2');
       }
     } catch (err) {
@@ -367,6 +369,7 @@ const MercedesWarrantyLanding: React.FC = () => {
       saveWithTimestamp('buyawarranty_vehicleData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_formData', JSON.stringify(vehicleData));
       saveWithTimestamp('buyawarranty_currentStep', '2');
+      sessionStorage.setItem('buyawarranty_landing_referrer', window.location.pathname);
       navigate('/?step=2');
     } finally {
       setIsLookingUp(false);

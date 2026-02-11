@@ -152,6 +152,20 @@ export const useMobileBackNavigation = ({
         trigger: 'mobile_back_button'
       });
       
+      // LANDING PAGE REDIRECT: If going from step 2 back to step 1,
+      // check if user came from a landing page and redirect there instead
+      if (currentStep === 2 && previousStep === 1) {
+        const landingReferrer = sessionStorage.getItem('buyawarranty_landing_referrer');
+        if (landingReferrer) {
+          console.log('📱 Redirecting back to landing page:', landingReferrer);
+          sessionStorage.removeItem('buyawarranty_landing_referrer');
+          isHandlingBackRef.current = false;
+          // Use window.location for a clean navigation back to landing page
+          window.location.href = landingReferrer;
+          return;
+        }
+      }
+      
       // Restore state for previous step if handler provided
       if (restoreStateFromStep) {
         restoreStateFromStep(previousStep);
