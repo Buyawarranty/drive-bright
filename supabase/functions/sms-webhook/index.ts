@@ -17,6 +17,10 @@ If you would like to speak to us sooner, call 0330 229 5040.`,
   OPT_OUT: `BuyaWarranty: You are now opted out and will not receive further messages.
 
 If you want to hear from us again, reply BACK at any time.`,
+
+  STOP: `BuyaWarranty: You've been opted out and will no longer receive messages from us.
+
+If this was a mistake, reply START to re-subscribe.`,
   
   RE_SUBSCRIBE: `Thanks for reconnecting with us.
 
@@ -173,7 +177,7 @@ serve(async (req) => {
       };
       console.log('Customer opted IN');
       
-    } else if (messageUpper === 'NO' || messageUpper === 'N' || messageUpper === 'STOP') {
+    } else if (messageUpper === 'NO' || messageUpper === 'N') {
       responseMessage = MESSAGES.OPT_OUT;
       newStatus = 'opted_out';
       updateData = {
@@ -184,8 +188,20 @@ serve(async (req) => {
         last_interaction_at: new Date().toISOString(),
       };
       console.log('Customer opted OUT');
+
+    } else if (messageUpper === 'STOP') {
+      responseMessage = MESSAGES.STOP;
+      newStatus = 'opted_out';
+      updateData = {
+        consent_status: newStatus,
+        opted_out_at: new Date().toISOString(),
+        last_message_received: messageBody,
+        last_message_sent: responseMessage,
+        last_interaction_at: new Date().toISOString(),
+      };
+      console.log('Customer STOPPED');
       
-    } else if (messageUpper === 'BACK') {
+    } else if (messageUpper === 'BACK' || messageUpper === 'START') {
       responseMessage = MESSAGES.RE_SUBSCRIBE;
       newStatus = 'opted_in';
       updateData = {
