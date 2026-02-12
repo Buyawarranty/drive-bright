@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star, Megaphone } from 'lucide-react';
+import { Users, FileText, Car, BarChart3, Mail, Settings, Menu, X, TestTube, Percent, Shield, FolderOpen, Receipt, MessageSquare, PenTool, ShoppingCart, Calculator, GripVertical, UserPlus, Clock, Globe, Target, Lightbulb, CalendarClock, Star, Megaphone, Eye } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -186,6 +186,12 @@ const defaultTabs: Tab[] = [
     label: 'Analytics',
     icon: BarChart3,
     description: 'View reports and analytics'
+  },
+  {
+    id: 'page-analytics',
+    label: 'Page Analytics',
+    icon: Eye,
+    description: 'Track page visits, traffic sources & Google Ads'
   },
   {
     id: 'user-permissions',

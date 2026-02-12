@@ -42,6 +42,7 @@ const MarketingAudienceTab = lazy(() => import('@/components/admin/marketing/Mar
 const SalesCustomerManagement = lazy(() => import('@/components/admin/sales/SalesCustomerManagement'));
 const SalesLeadDashboard = lazy(() => import('@/components/admin/sales/SalesLeadDashboard').then(m => ({ default: m.SalesLeadDashboard })));
 const PolicyDocumentsTab = lazy(() => import('@/components/admin/PolicyDocumentsTab').then(m => ({ default: m.PolicyDocumentsTab })));
+const PageAnalyticsTab = lazy(() => import('@/components/admin/PageAnalyticsTab').then(m => ({ default: m.PageAnalyticsTab })));
 
 // Tab loading spinner
 const TabFallback = () => (
@@ -336,6 +337,8 @@ const AdminDashboard = () => {
         return <UnifiedEmailHub />;
       case 'analytics':
         return <AnalyticsTab />;
+      case 'page-analytics':
+        return <PageAnalyticsTab />;
       case 'security':
         return <ClickFraudTab />;
       case 'user-permissions':
