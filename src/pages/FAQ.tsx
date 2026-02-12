@@ -265,8 +265,8 @@ const FAQ = () => {
         },
         {
           id: 'thirty-day-wait',
-          question: 'Is there a 30 day wait for new customers?',
-          answer: 'The 30 day period helps protect everyone by stopping claims for problems that existed before the plan started. It makes sure the warranty is being used for genuine unexpected faults rather than known issues. For example "Your car shows a fault on day 15 and a garage diagnoses it on day 20. You can proceed with the covered repair once the 30 days have passed and the claim is approved."'
+          question: 'Is there a 30‑day wait for new customers?',
+          answer: 'No - your cover begins immediately. As long as there are no pre‑existing faults on the vehicle, you\'re protected from the moment your warranty starts. The only things we can\'t cover are issues that were already present before the plan began.'
         }
       ]
     },
