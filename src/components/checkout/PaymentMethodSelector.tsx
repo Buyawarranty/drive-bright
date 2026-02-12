@@ -109,7 +109,7 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
                     Pay in Full: £{discountedPrice}
                   </p>
                   <p className="text-sm text-[#1a1a1a] mt-0.5">
-                    <span className="text-gray-500">Was £{totalPrice}</span> Save £{savings} (10% off)
+                    <span className="font-bold text-[#1a1a1a]">Was £{totalPrice}</span> Save £{savings} (10% off)
                   </p>
                 </div>
               </div>
