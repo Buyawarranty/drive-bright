@@ -264,7 +264,6 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       baseLeads = baseLeads.filter(lead => new Date(lead.created_at) >= sevenDaysAgo);
-      toast.info(`Export limited to leads from the last 7 days (${baseLeads.length} leads)`);
     }
 
     const leadsToExport = baseLeads;
