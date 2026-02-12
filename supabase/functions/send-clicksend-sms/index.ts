@@ -7,9 +7,9 @@ const corsHeaders = {
 };
 
 // Welcome message for new leads
-const WELCOME_MESSAGE = `BuyaWarranty: Your personalised vehicle warranty quote is ready. Avoid expensive repair bills on your vehicle.
+const WELCOME_MESSAGE = `BuyaWarranty: Your Personalised Vehicle Warranty Quote is Ready. You could Save Hundreds on Unexpected Repair Costs.
 
-Reply YES to view your options or NO to opt out.`;
+Reply YES for a quick call or STOP to opt out.`;
 
 serve(async (req) => {
   // Handle CORS preflight requests
