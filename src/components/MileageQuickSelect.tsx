@@ -86,9 +86,9 @@ const MileageQuickSelect: React.FC<MileageQuickSelectProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`space-y-3 transition-all duration-700 rounded-2xl ${
+      className={`space-y-3 transition-all duration-500 rounded-xl ${
         highlight
-          ? 'ring-2 ring-brand-orange/40 bg-brand-orange/5 shadow-[0_0_20px_rgba(255,111,0,0.15)] p-3 -m-3'
+          ? 'border border-gray-300 bg-gray-50/50 p-3 -m-3'
           : ''
       }`}
     >
