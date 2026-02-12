@@ -55,8 +55,18 @@ export const AnalyticsTab = () => {
   const [comparisonPeriod, setComparisonPeriod] = useState<'week' | 'month' | 'last_month' | 'year' | null>(null);
 
 
+  // Refetch data whenever the component mounts or becomes visible
   useEffect(() => {
     fetchAnalyticsData();
+    
+    // Also refetch when tab becomes visible (user switches back to analytics)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchAnalyticsData();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
   const fetchAnalyticsData = async () => {
