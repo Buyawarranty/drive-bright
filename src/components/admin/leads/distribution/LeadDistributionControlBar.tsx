@@ -207,6 +207,8 @@ export const LeadDistributionControlBar: React.FC<LeadDistributionControlBarProp
               onDeleteAgent={deleteAgentFromDistribution}
               getAgentPresenceStatus={getAgentPresenceStatus}
               onInitializeCaps={initializeAgentCaps}
+              overflowRecipientId={settings?.overflow_recipient_id}
+              onOverflowChange={(id) => updateSettings({ overflow_recipient_id: id })}
             />
           </SheetContent>
         </Sheet>
