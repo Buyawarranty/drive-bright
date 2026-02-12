@@ -148,12 +148,30 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   
   // Address fields state - simplified to match API requirements
   // Addr1 = address_line_1, Addr2 = address_line_2, Town = town, PCode = postcode
-  const [addressData, setAddressData] = useState({
-    postcode: '',
-    address_line_1: '',  // Maps to street/building_number combo for W2000 Addr1
-    address_line_2: '',  // Maps to flat_number/building_name for W2000 Addr2 (optional)
-    town: '',
-    county: '',
+  const [addressData, setAddressData] = useState(() => {
+    try {
+      const savedAddress = localStorage.getItem('buyawarranty_addressData');
+      if (savedAddress) {
+        const parsed = JSON.parse(savedAddress);
+        console.log('✅ Restored address data from localStorage:', parsed);
+        return {
+          postcode: parsed.postcode || '',
+          address_line_1: parsed.address_line_1 || '',
+          address_line_2: parsed.address_line_2 || '',
+          town: parsed.town || '',
+          county: parsed.county || '',
+        };
+      }
+    } catch (error) {
+      console.error('❌ Error restoring address data:', error);
+    }
+    return {
+      postcode: '',
+      address_line_1: '',
+      address_line_2: '',
+      town: '',
+      county: '',
+    };
   });
   
   // Address field errors
@@ -644,6 +662,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             if (parsed.customerData) {
               setCustomerData(parsed.customerData);
             }
+            // Restore address data if available
+            if (parsed.addressData) {
+              setAddressData(parsed.addressData);
+              setShowAddressFields(true);
+              setPostcodeInput(parsed.addressData.postcode || '');
+            }
             // Restore payment type if available
             if (parsed.paymentType) {
               setSelectedPayment(parsed.paymentType === 'monthly' ? 'monthly' : 'full');
@@ -796,6 +820,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       console.error('Error saving customer data:', error);
     }
   }, [customerData]);
+
+  // Save address data to localStorage for recovery after Bumper/payment redirects
+  useEffect(() => {
+    try {
+      localStorage.setItem('buyawarranty_addressData', JSON.stringify(addressData));
+    } catch (error) {
+      console.error('Error saving address data:', error);
+    }
+  }, [addressData]);
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setCustomerData((prev: typeof customerData) => ({ ...prev, [field]: value }));
@@ -1169,6 +1202,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           formData: pricingData,
           vehicleData,
           customerData,
+          addressData,
           planId,
           paymentType,
           appliedDiscountCodes,
