@@ -1,26 +1,54 @@
 
-## Accept +91 (Indian) Phone Numbers in Step 2
 
-### What Changes
+# Activate ClickSend SMS -- Update Messages
 
-**1. `src/components/QuoteDeliveryStep.tsx` (line 56)**
+## What's Already in Place
+- ClickSend credentials (CLICKSEND_USERNAME, CLICKSEND_API_KEY) are configured
+- The `send-clicksend-sms` edge function sends the initial SMS when a customer submits their quote
+- The `sms-webhook` edge function handles YES, NO, and BACK replies
+- The `sms_consents` table tracks consent status
+- SMS is triggered from the Quote Delivery step (Step 2 of the customer journey)
 
-Update the phone validation regex to also accept Indian mobile numbers (+91 followed by 10 digits):
+## What Needs to Change
 
-```typescript
-// Before
-const isValidPhone = /^(?:(?:\+44\s?|0)7\d{9}|(?:\+44\s?|0)[1-9]\d{8,9})$/.test(phone.replace(/\s/g, ''));
+### 1. Update the Initial Welcome SMS
+**File:** `supabase/functions/send-clicksend-sms/index.ts`
 
-// After
-const isValidPhone = /^(?:(?:\+44\s?|0)7\d{9}|(?:\+44\s?|0)[1-9]\d{8,9}|\+91[6-9]\d{9})$/.test(phone.replace(/\s/g, ''));
-```
+Update the `WELCOME_MESSAGE` to match the exact wording:
 
-This accepts numbers like `+918076411880`, `+919876543210`, etc. (Indian mobiles start with 6-9 after the country code).
+> BuyaWarranty: Your personalised vehicle warranty quote is ready. Avoid expensive repair bills on your vehicle.
+> Reply YES to view your options or NO to opt out.
 
-**2. `supabase/functions/send-uchat-whatsapp/index.ts`**
+### 2. Update Reply Messages and Add STOP Handler
+**File:** `supabase/functions/sms-webhook/index.ts`
 
-The normalizer already has the international pass-through from the previous change, so +91 numbers will flow through correctly to uChat without being mangled into +44 format. No further backend changes needed.
+The YES, NO, and BACK replies already match your wording. Two additions needed:
 
-### Summary
-- One-line regex update to allow +91 numbers alongside existing UK validation
-- No changes to pricing, payment, or other logic
+- **Add STOP keyword handling**: When a customer replies STOP, send:
+  > BuyaWarranty: You've been opted out and will no longer receive messages from us.
+  > If this was a mistake, reply START to re-subscribe.
+
+- **Add START keyword handling**: Treat START the same as BACK -- re-subscribe the customer and send:
+  > Thanks for reconnecting with us.
+  > A BuyaWarranty expert will be in touch shortly to help you with your warranty options.
+  > If you would like to speak to us now, call 0330 229 5040.
+
+### 3. Deploy Edge Functions
+Both `send-clicksend-sms` and `sms-webhook` will be redeployed with the updated messages.
+
+---
+
+## Technical Summary
+
+| Item | Status |
+|------|--------|
+| ClickSend API keys | Already configured |
+| Initial SMS trigger (Quote Step 2) | Already wired up |
+| `sms_consents` table | Already exists with data |
+| Welcome message wording | Needs update |
+| STOP keyword | Needs adding |
+| START keyword | Needs adding |
+| YES / NO / BACK handling | Already correct |
+
+No database changes needed. Only two edge function files are updated.
+
