@@ -21,7 +21,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { 
   Users, ChevronDown, ChevronRight, Phone, Mail, Car, 
   Calendar, UserCircle, Hourglass, Info, Trash2, Save, Zap, UserPlus,
-  RotateCcw, Percent, ArrowRight, AlertCircle, CalendarIcon, X, ShieldCheck
+  RotateCcw, Percent, ArrowRight, AlertCircle, CalendarIcon, X, ShieldCheck, UserCheck
 } from 'lucide-react';
 import { format, formatDistanceToNow, startOfWeek, startOfMonth, startOfYear, endOfDay, isWithinInterval, subWeeks, subMonths, endOfWeek, endOfMonth } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
@@ -988,6 +988,34 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
             {loading && (
               <span className="text-sm text-muted-foreground">Loading...</span>
             )}
+          </div>
+
+          {/* Overflow Recipient Selector */}
+          <div className="flex items-center gap-4 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+            <div className="flex items-center gap-2 shrink-0">
+              <UserCheck className="h-4 w-4 text-amber-600" />
+              <span className="text-sm font-medium">Overflow Recipient:</span>
+            </div>
+            <Select
+              value={settings?.overflow_recipient_id || 'none'}
+              onValueChange={(value) => updateSettings({ overflow_recipient_id: value === 'none' ? null : value })}
+              disabled={!isFullAdmin}
+            >
+              <SelectTrigger className="w-[200px] h-9 text-sm">
+                <SelectValue placeholder="Select overflow" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None (stays unassigned)</SelectItem>
+                {salesUsers.map(user => (
+                  <SelectItem key={user.id} value={user.id}>
+                    {user.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user.email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <span className="text-xs text-amber-700 dark:text-amber-300">
+              When all agents hit their daily cap, extra leads go to this person.
+            </span>
           </div>
 
           {/* Agent Controls Table */}
