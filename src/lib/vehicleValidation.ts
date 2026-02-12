@@ -413,8 +413,7 @@ export function calculateVehiclePriceAdjustment(
       });
   }
   
-  // Configuration flag: set to true to stack mileage AND age surcharges (default: non-stacking)
-  const ENABLE_SURCHARGE_STACKING = false;
+  // Mileage and age surcharges with tiered amounts (non-stacking)
   
   // Calculate mileage-based premium for vehicles between 120,001 and 150,000 miles
   // Boundary: 120,001 triggers, 120,000 does NOT. 150,000 triggers, 150,001 does NOT.
@@ -467,65 +466,48 @@ export function calculateVehiclePriceAdjustment(
     currentDate: now.toISOString()
   });
   
-  // Determine surcharge amount based on warranty duration
-  // Matches Jaguar/Range Rover pricing: +£200/+£400/+£600 for 1/2/3-year cover
-  const getSurchargeAmount = (years: number): number => {
+  // Surcharge tiers by warranty duration
+  // Age-only surcharge (lower): +£100/£200/£300
+  const getAgeSurcharge = (years: number): number => {
+    if (years === 1) return 100;
+    if (years === 2) return 200;
+    if (years === 3) return 300;
+    return 0;
+  };
+  // Mileage surcharge (higher): +£200/£400/£600
+  const getMileageSurcharge = (years: number): number => {
     if (years === 1) return 200;
     if (years === 2) return 400;
     if (years === 3) return 600;
     return 0;
   };
-  
-  const surchargeAmount = getSurchargeAmount(warrantyDurationYears);
-  
-  if (ENABLE_SURCHARGE_STACKING) {
-    // STACKING MODE: Apply both surcharges if both conditions are true
-    if (mileageQualifies) {
-      adjustmentAmount += surchargeAmount;
-      breakdown.push({
-        baseAdjustment: surchargeAmount,
-        adjustmentReason: `High mileage premium (${mileage?.toLocaleString()} miles): +£${surchargeAmount} for ${warrantyDurationYears} year warranty`
-      });
-      console.log('💰 Mileage Premium Applied (Stacking):', { mileage, surchargeAmount, warrantyDurationYears });
-    }
-    
+
+  // NON-STACKING: If both qualify, apply only the higher mileage surcharge once.
+  // If only age qualifies, apply the lower age surcharge.
+  // If only mileage qualifies, apply the mileage surcharge.
+  if (mileageQualifies) {
+    // Mileage qualifies (with or without age) → apply full mileage surcharge
+    const surcharge = getMileageSurcharge(warrantyDurationYears);
+    adjustmentAmount += surcharge;
+
+    let reasonParts: string[] = [`high mileage (${mileage?.toLocaleString()} miles)`];
     if (ageQualifies) {
-      adjustmentAmount += surchargeAmount;
-      breakdown.push({
-        baseAdjustment: surchargeAmount,
-        adjustmentReason: `Older vehicle premium (${vehicleAgeYears} years old): +£${surchargeAmount} for ${warrantyDurationYears} year warranty`
-      });
-      console.log('💰 Age Premium Applied (Stacking):', { vehicleAgeYears, surchargeAmount, warrantyDurationYears });
+      reasonParts.push(`older vehicle (${vehicleAgeYears} years old)`);
     }
-  } else {
-    // NON-STACKING MODE (DEFAULT): Apply single surcharge if either condition is true
-    if (mileageQualifies || ageQualifies) {
-      adjustmentAmount += surchargeAmount;
-      
-      // Build descriptive reason based on which conditions apply
-      let reasonParts: string[] = [];
-      if (mileageQualifies) {
-        reasonParts.push(`high mileage (${mileage?.toLocaleString()} miles)`);
-      }
-      if (ageQualifies) {
-        reasonParts.push(`older vehicle (${vehicleAgeYears} years old)`);
-      }
-      
-      const reasonDescription = reasonParts.join(' and ');
-      breakdown.push({
-        baseAdjustment: surchargeAmount,
-        adjustmentReason: `Premium for ${reasonDescription}: +£${surchargeAmount} for ${warrantyDurationYears} year warranty`
-      });
-      
-      console.log('💰 Mileage/Age Premium Applied (Non-Stacking):', { 
-        mileage, 
-        vehicleAgeYears, 
-        mileageQualifies, 
-        ageQualifies, 
-        surchargeAmount, 
-        warrantyDurationYears 
-      });
-    }
+    breakdown.push({
+      baseAdjustment: surcharge,
+      adjustmentReason: `Premium for ${reasonParts.join(' and ')}: +£${surcharge} for ${warrantyDurationYears} year warranty`
+    });
+    console.log('💰 Mileage Surcharge Applied:', { mileage, vehicleAgeYears, surcharge, warrantyDurationYears });
+  } else if (ageQualifies) {
+    // Only age qualifies → apply lower age surcharge
+    const surcharge = getAgeSurcharge(warrantyDurationYears);
+    adjustmentAmount += surcharge;
+    breakdown.push({
+      baseAdjustment: surcharge,
+      adjustmentReason: `Older vehicle premium (${vehicleAgeYears} years old): +£${surcharge} for ${warrantyDurationYears} year warranty`
+    });
+    console.log('💰 Age Surcharge Applied:', { vehicleAgeYears, surcharge, warrantyDurationYears });
   }
   
   const result = {
