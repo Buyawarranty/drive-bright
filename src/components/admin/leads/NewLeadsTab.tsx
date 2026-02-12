@@ -253,10 +253,21 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   }, []);
 
   const handleExport = useCallback((format: 'csv' | 'xlsx') => {
-    // Export selected leads if any are selected, otherwise export all filtered leads
-    const leadsToExport = selectedLeads.size > 0 
+    // Non-admin roles can only export the last 7 days of leads
+    const isFullExportAllowed = userRole === 'admin';
+    
+    let baseLeads = selectedLeads.size > 0 
       ? filteredLeads.filter(lead => selectedLeads.has(lead.id))
       : filteredLeads;
+
+    if (!isFullExportAllowed) {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      baseLeads = baseLeads.filter(lead => new Date(lead.created_at) >= sevenDaysAgo);
+      toast.info(`Export limited to leads from the last 7 days (${baseLeads.length} leads)`);
+    }
+
+    const leadsToExport = baseLeads;
 
     const exportData = leadsToExport.map(lead => ({
       'First Name': lead.first_name || '',
