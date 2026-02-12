@@ -1,54 +1,38 @@
 
 
-# Activate ClickSend SMS -- Update Messages
+# Add Organic Traffic Highlighting to Page Analytics
 
-## What's Already in Place
-- ClickSend credentials (CLICKSEND_USERNAME, CLICKSEND_API_KEY) are configured
-- The `send-clicksend-sms` edge function sends the initial SMS when a customer submits their quote
-- The `sms-webhook` edge function handles YES, NO, and BACK replies
-- The `sms_consents` table tracks consent status
-- SMS is triggered from the Quote Delivery step (Step 2 of the customer journey)
+## Overview
+Add a prominent "Organic Reach" KPI card and an "Organic" column to the pages table so you can instantly see how many visitors found your site naturally through search engines (SEO) -- without any paid ads or UTM-tagged campaigns.
 
-## What Needs to Change
+## How Organic Traffic Is Identified
+A visit is classified as **organic** when:
+- No `gclid` (Google Ads click ID)
+- No `utm_source`, `utm_medium`, `utm_campaign` parameters
+- Either no referrer (direct/bookmark) OR referrer is from a known search engine (google, bing, yahoo, duckduckgo, etc.)
 
-### 1. Update the Initial Welcome SMS
-**File:** `supabase/functions/send-clicksend-sms/index.ts`
+This separates truly organic/SEO visitors from paid ad clicks and social/email campaigns.
 
-Update the `WELCOME_MESSAGE` to match the exact wording:
+## Changes to `PageAnalyticsTab.tsx`
 
-> BuyaWarranty: Your personalised vehicle warranty quote is ready. Avoid expensive repair bills on your vehicle.
-> Reply YES to view your options or NO to opt out.
+### 1. New KPI Card -- "Organic Reach"
+- Add a 5th KPI card (green, with a leaf/sprout icon) showing total organic page views and unique organic visitors
+- Positioned prominently alongside Total Views, Unique Visitors, Sessions, and Google Ads
 
-### 2. Update Reply Messages and Add STOP Handler
-**File:** `supabase/functions/sms-webhook/index.ts`
+### 2. Daily Trend Chart -- Organic vs Paid Line
+- Add a second line to the daily trend chart showing organic views in green alongside total views in orange
+- Makes it easy to see organic growth over time
 
-The YES, NO, and BACK replies already match your wording. Two additions needed:
+### 3. Pages Table -- New "Organic" Column
+- Add an "Organic" column next to the existing "Google Ads" column
+- Organic counts shown with a green badge to visually stand out
+- Each page row shows how many of its views were purely organic
 
-- **Add STOP keyword handling**: When a customer replies STOP, send:
-  > BuyaWarranty: You've been opted out and will no longer receive messages from us.
-  > If this was a mistake, reply START to re-subscribe.
+### 4. Traffic Source Pie Chart Enhancement
+- The existing source classification already shows "direct" -- this will be refined to separate "organic search" (from search engine referrers) from "direct" (no referrer at all)
 
-- **Add START keyword handling**: Treat START the same as BACK -- re-subscribe the customer and send:
-  > Thanks for reconnecting with us.
-  > A BuyaWarranty expert will be in touch shortly to help you with your warranty options.
-  > If you would like to speak to us now, call 0330 229 5040.
-
-### 3. Deploy Edge Functions
-Both `send-clicksend-sms` and `sms-webhook` will be redeployed with the updated messages.
-
----
-
-## Technical Summary
-
-| Item | Status |
-|------|--------|
-| ClickSend API keys | Already configured |
-| Initial SMS trigger (Quote Step 2) | Already wired up |
-| `sms_consents` table | Already exists with data |
-| Welcome message wording | Needs update |
-| STOP keyword | Needs adding |
-| START keyword | Needs adding |
-| YES / NO / BACK handling | Already correct |
-
-No database changes needed. Only two edge function files are updated.
-
+## Technical Details
+- All changes are in a single file: `src/components/admin/PageAnalyticsTab.tsx`
+- No database changes needed -- organic status is computed from existing `gclid`, `utm_source`, `utm_medium`, `utm_campaign`, and `referrer` fields already stored in `page_views`
+- A helper function `isOrganic(pageView)` will classify each row
+- Search engine detection uses hostname matching against common engines (google, bing, yahoo, duckduckgo, baidu, ecosia)
