@@ -404,20 +404,8 @@ export function calculateVehiclePriceAdjustment(
       
     case 'special_variant':
     case 'suv_van':
-      // SUV & Van Vehicles: +£100 for 1-year, +£200 for 2-year, +£300 for 3-year
-      // Special Variant Vehicles: Same increase as SUV/Vans
-      if (warrantyDurationYears === 1) adjustmentAmount = 100;
-      else if (warrantyDurationYears === 2) adjustmentAmount = 200;
-      else if (warrantyDurationYears === 3) adjustmentAmount = 300;
-      adjustmentType = category === 'special_variant' ? 'special_variant_premium' : 'suv_van_premium';
-      const vehicleTypeLabel = category === 'special_variant' ? 'Special variant' : 'SUV/Van';
-      breakdown.push({
-        baseAdjustment: adjustmentAmount,
-        adjustmentReason: `${vehicleTypeLabel} premium: +£${adjustmentAmount} for ${warrantyDurationYears} year warranty`
-      });
-      break;
-      
     default:
+      // All non-premium, non-motorbike vehicles get standard pricing (no surcharge)
       adjustmentType = 'standard';
       breakdown.push({
         baseAdjustment: 0,
