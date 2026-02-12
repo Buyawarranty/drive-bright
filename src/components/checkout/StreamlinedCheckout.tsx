@@ -1587,16 +1587,22 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   )}
                   {/* Postcode reminder when last name is completed but postcode is empty */}
                   {validatedFields.last_name && customerData.last_name?.trim()?.length >= 2 && !addressData.postcode?.trim() && (
-                    <p className="text-sm mt-2 flex items-center gap-1.5 text-[#0BA360] bg-[#0BA360]/5 px-3 py-2 rounded-lg border border-[#0BA360]/20">
+                    <p 
+                      className="text-sm mt-2 flex items-center gap-1.5 text-[#0BA360] bg-[#0BA360]/5 px-3 py-2 rounded-lg border border-[#0BA360]/20 cursor-pointer"
+                      ref={(el) => {
+                        if (el) {
+                          setTimeout(() => {
+                            document.getElementById('postcode-lookup')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          }, 300);
+                        }
+                      }}
+                      onClick={() => {
+                        document.getElementById('postcode-lookup')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        setTimeout(() => document.getElementById('postcode-lookup')?.focus(), 400);
+                      }}
+                    >
                       <MapPin className="w-4 h-4 flex-shrink-0" />
-                      <span>Great! Now enter your <button 
-                        type="button" 
-                        onClick={() => {
-                          document.getElementById('postcode-lookup')?.focus();
-                          document.getElementById('postcode-lookup')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }}
-                        className="font-semibold underline hover:no-underline"
-                      >postcode</button> to continue</span>
+                      <span>Great! Now enter your <span className="font-semibold underline">postcode</span> to continue</span>
                     </p>
                   )}
                 </div>
