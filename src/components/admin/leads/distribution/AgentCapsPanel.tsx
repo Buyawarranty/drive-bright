@@ -5,10 +5,12 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { PresenceBadge } from './PresenceBadge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Save, UserPlus, Trash2, Info, Zap } from 'lucide-react';
+import { Save, UserPlus, Trash2, Info, Zap, AlertCircle, UserCheck } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -44,6 +46,8 @@ interface AgentCapsPanelProps {
   onDeleteAgent: (adminUserId: string) => Promise<boolean>;
   getAgentPresenceStatus: (adminUserId: string) => 'active' | 'idle' | 'offline';
   onInitializeCaps: () => Promise<void>;
+  overflowRecipientId?: string | null;
+  onOverflowChange?: (recipientId: string | null) => void;
 }
 
 export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
@@ -54,7 +58,9 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
   onTogglePause,
   onDeleteAgent,
   getAgentPresenceStatus,
-  onInitializeCaps
+  onInitializeCaps,
+  overflowRecipientId,
+  onOverflowChange
 }) => {
   const [editedCaps, setEditedCaps] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState<string | null>(null);
@@ -138,6 +144,37 @@ export const AgentCapsPanel: React.FC<AgentCapsPanelProps> = ({
 
   return (
     <div className="mt-6 space-y-4">
+      {/* Overflow Recipient Selector */}
+      {onOverflowChange && (
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+          <div className="flex items-start gap-2 mb-3">
+            <UserCheck className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Overflow Recipient</p>
+              <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+                When all agents hit their daily cap, extra leads go to this person (ignoring their cap).
+              </p>
+            </div>
+          </div>
+          <Select
+            value={overflowRecipientId || 'none'}
+            onValueChange={(value) => onOverflowChange(value === 'none' ? null : value)}
+          >
+            <SelectTrigger className="w-full h-9 text-sm">
+              <SelectValue placeholder="Select overflow recipient" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">None (leads stay unassigned)</SelectItem>
+              {salesUsers.map(user => (
+                <SelectItem key={user.id} value={user.id}>
+                  {user.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user.email}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
       {/* Active Status Explanation */}
       <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
         <div className="flex items-start gap-2">
