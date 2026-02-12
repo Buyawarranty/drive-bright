@@ -477,7 +477,34 @@ export const useLeads = () => {
         tags: lead.is_from_abandoned_cart ? [] : (tagsByLeadId[lead.id] || [])
       }));
 
-      setLeads(leadsWithTags as Lead[]);
+      // Preserve optimistic updates for recently changed leads
+      // This prevents realtime refetches from reverting status/assignment changes mid-flight
+      if (recentOptimisticUpdatesRef.current.size > 0) {
+        setLeads(prev => {
+          const protectedLeads = new Map<string, Lead>();
+          prev.forEach(lead => {
+            if (recentOptimisticUpdatesRef.current.has(lead.id)) {
+              protectedLeads.set(lead.id, lead);
+            }
+          });
+          
+          // Merge: use fetched data but override with protected leads
+          const merged = (leadsWithTags as Lead[]).map(lead => 
+            protectedLeads.has(lead.id) ? protectedLeads.get(lead.id)! : lead
+          );
+          
+          // Add any protected leads that were filtered out by the query (e.g., "lost" leads in "all" view)
+          protectedLeads.forEach((lead, id) => {
+            if (!merged.find(l => l.id === id)) {
+              merged.push(lead);
+            }
+          });
+          
+          return merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        });
+      } else {
+        setLeads(leadsWithTags as Lead[]);
+      }
     } catch (error) {
       console.error('Error fetching leads:', error);
       toast.error('Failed to load leads');
@@ -607,16 +634,15 @@ export const useLeads = () => {
     };
   }, [fetchTags, fetchSalesUsers, debouncedRealtimeRefetch]);
 
+  // Track recently updated lead IDs to prevent realtime from overwriting optimistic updates
+  const recentOptimisticUpdatesRef = useRef<Set<string>>(new Set());
+
   // OPTIMISTIC UPDATE: Update status instantly, then sync to DB
-  // Auto-assigns unassigned leads to current user when status changes to 'contacted'
+  // Uses functional state updates to avoid stale closure issues
   const updateLeadStatus = useCallback(async (leadId: string, status: LeadStatus) => {
     const now = new Date().toISOString();
     const isAbandonedCart = leadId.startsWith('cart_');
     const actualId = isAbandonedCart ? leadId.replace('cart_', '') : leadId;
-    
-    // Find the current lead to check if it's unassigned
-    const currentLead = leads.find(l => l.id === leadId);
-    const isUnassigned = !currentLead?.assigned_to;
     
     const updates: any = { 
       status, 
@@ -630,9 +656,17 @@ export const useLeads = () => {
       updates.lost_at = now;
     }
 
-    // Optimistic update - instant UI response
+    // Capture previous state for rollback using functional update
+    let previousLeadSnapshot: Lead | null = null;
+    
+    // Mark this lead as recently updated to protect from realtime overwrites
+    recentOptimisticUpdatesRef.current.add(leadId);
+    setTimeout(() => recentOptimisticUpdatesRef.current.delete(leadId), 5000);
+
+    // Optimistic update - instant UI response, capture previous state
     setLeads(prev => prev.map(lead => {
       if (lead.id !== leadId) return lead;
+      previousLeadSnapshot = { ...lead };
       return { ...lead, ...updates };
     }));
 
@@ -643,7 +677,6 @@ export const useLeads = () => {
         await supabase.auth.refreshSession();
       }
       if (isAbandonedCart) {
-        // Map status directly to contact_status for abandoned_carts table
         const contactStatus = status;
         
         const { data, error } = await supabase
@@ -669,7 +702,6 @@ export const useLeads = () => {
 
         if (error) throw error;
         
-        // Detect silent RLS failure: update succeeded but 0 rows affected
         if (!data || data.length === 0) {
           throw new Error('Status update was blocked by permissions. Please refresh and try again.');
         }
@@ -682,12 +714,16 @@ export const useLeads = () => {
     } catch (error) {
       console.error('Error updating lead status:', error);
       toast.error('Failed to update lead status');
-      // Revert optimistic update without full page refresh
-      setLeads(prev => prev.map(lead => 
-        lead.id === leadId ? { ...lead, status: currentLead?.status || 'new' } : lead
-      ));
+      // Revert to full previous state snapshot (not just status)
+      if (previousLeadSnapshot) {
+        const snapshot = previousLeadSnapshot;
+        setLeads(prev => prev.map(lead => 
+          lead.id === leadId ? snapshot : lead
+        ));
+      }
+      recentOptimisticUpdatesRef.current.delete(leadId);
     }
-  }, [leads]);
+  }, []);
 
   // OPTIMISTIC UPDATE: Assign lead instantly using SECURITY DEFINER function
   // This guarantees the DB write succeeds regardless of RLS policy complexity
@@ -697,26 +733,30 @@ export const useLeads = () => {
     const isAbandonedCart = leadId.startsWith('cart_');
     const actualId = isAbandonedCart ? leadId.replace('cart_', '') : leadId;
     
-    // Store previous state for rollback
-    const previousLead = leads.find(l => l.id === leadId);
+    // Capture previous state for rollback using functional update
+    let previousLeadSnapshot: Lead | null = null;
+    
+    // Protect from realtime overwrites
+    recentOptimisticUpdatesRef.current.add(leadId);
+    setTimeout(() => recentOptimisticUpdatesRef.current.delete(leadId), 5000);
     
     // Optimistic update
-    setLeads(prev => prev.map(lead => 
-      lead.id === leadId 
-        ? { 
-            ...lead, 
-            assigned_to: userId,
-            assigned_at: userId ? now : null,
-            updated_at: now,
-            assigned_user: user ? {
-              id: user.id,
-              first_name: user.first_name,
-              last_name: user.last_name,
-              email: user.email
-            } : null
-          } 
-        : lead
-    ));
+    setLeads(prev => prev.map(lead => {
+      if (lead.id !== leadId) return lead;
+      previousLeadSnapshot = { ...lead };
+      return { 
+        ...lead, 
+        assigned_to: userId,
+        assigned_at: userId ? now : null,
+        updated_at: now,
+        assigned_user: user ? {
+          id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email: user.email
+        } : null
+      };
+    }));
 
     try {
       // Use SECURITY DEFINER function for reliable assignment
@@ -735,7 +775,6 @@ export const useLeads = () => {
       }
 
       if (userId && user && !isAbandonedCart) {
-        // Log in background, don't await
         logActivity(leadId, 'assignment', `Assigned to ${user.first_name || user.email || 'Unknown'}`);
       }
 
@@ -743,14 +782,16 @@ export const useLeads = () => {
     } catch (error) {
       console.error('Error assigning lead:', error);
       toast.error('Failed to assign lead. Please try again.');
-      // Revert optimistic update without full page refresh
-      if (previousLead) {
+      // Revert to full previous state snapshot
+      if (previousLeadSnapshot) {
+        const snapshot = previousLeadSnapshot;
         setLeads(prev => prev.map(lead => 
-          lead.id === leadId ? previousLead : lead
+          lead.id === leadId ? snapshot : lead
         ));
       }
+      recentOptimisticUpdatesRef.current.delete(leadId);
     }
-  }, [leads]);
+  }, []);
 
   const autoAssignLead = useCallback(async (leadId: string) => {
     try {
