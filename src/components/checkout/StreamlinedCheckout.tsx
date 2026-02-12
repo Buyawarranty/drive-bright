@@ -372,7 +372,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const bumperTotalPrice = monthlyPrice * 12;
   
   // Pay in full uses 10% discount on the floored monthly total
-  const stripeTotalPrice = Math.floor(bumperTotalPrice * 0.90);
+  // CRITICAL: Must match Step 3's formula: total - Math.floor(total * 0.10)
+  // NOT Math.floor(total * 0.90) which can differ by £1 due to rounding
+  const stripeSavingsBase = Math.floor(bumperTotalPrice * 0.10);
+  const stripeTotalPrice = bumperTotalPrice - stripeSavingsBase;
 
   // Calculate discounts with minimum price floor (Stripe requires minimum £0.50, we use £1 for safety)
   const MINIMUM_PRICE = 1; // £1 minimum charge for Stripe
