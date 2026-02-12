@@ -8,19 +8,11 @@ const corsHeaders = {
 
 // Response messages
 const MESSAGES = {
-  OPT_IN: (name?: string) => `Thanks for confirming${name ? `, ${name}` : ''}.
-
-A BuyaWarranty expert will call you shortly to get your warranty cover set up.
-
-If you would like to speak to us sooner, call 0330 229 5040.`,
+  OPT_IN: (_name?: string) => `Thanks. A BuyaWarranty specialist will call shortly to help you secure the best price. Prefer now? 0330 229 5040.`,
   
-  OPT_OUT: `BuyaWarranty: You are now opted out and will not receive further messages.
+  OPT_OUT: `You're opted out from BuyaWarranty. No further messages will be sent.`,
 
-If you want to hear from us again, reply BACK at any time.`,
-
-  STOP: `BuyaWarranty: You've been opted out and will no longer receive messages from us.
-
-If this was a mistake, reply START to re-subscribe.`,
+  STOP: `You're opted out from BuyaWarranty. No further messages will be sent.`,
   
   RE_SUBSCRIBE: `Thanks for reconnecting with us.
 
