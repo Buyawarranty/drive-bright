@@ -4,12 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { BarChart3, Eye, Users, Globe, TrendingUp, Monitor, Smartphone, ArrowUpRight, Search, Filter } from 'lucide-react';
-import { format, subDays, subHours, startOfDay, endOfDay, startOfMonth, endOfMonth, subMonths, startOfYear } from 'date-fns';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { Eye, Users, Globe, TrendingUp, ArrowUpRight, Search, Leaf } from 'lucide-react';
+import { format, subDays, startOfDay, endOfDay, startOfMonth, endOfMonth, subMonths, startOfYear } from 'date-fns';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, BarChart, Bar } from 'recharts';
 import { Input } from '@/components/ui/input';
 
 const COLORS = ['#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899', '#f59e0b'];
+
+const SEARCH_ENGINES = ['google', 'bing', 'yahoo', 'duckduckgo', 'baidu', 'ecosia', 'yandex', 'ask'];
 
 type Period = 'today' | 'yesterday' | 'this_week' | 'this_month' | 'last_month' | 'this_year';
 
@@ -29,6 +31,23 @@ const getPeriodDates = (period: Period) => {
     case 'this_year':
       return { from: startOfYear(now), to: endOfDay(now) };
   }
+};
+
+const isSearchEngineReferrer = (referrer: string | null): boolean => {
+  if (!referrer) return false;
+  try {
+    const hostname = new URL(referrer).hostname.toLowerCase();
+    return SEARCH_ENGINES.some(engine => hostname.includes(engine));
+  } catch {
+    return false;
+  }
+};
+
+const isOrganic = (pv: any): boolean => {
+  if (pv.gclid) return false;
+  if (pv.utm_source || pv.utm_medium || pv.utm_campaign) return false;
+  // No paid markers — either direct (no referrer) or from a search engine
+  return !pv.referrer || isSearchEngineReferrer(pv.referrer);
 };
 
 export const PageAnalyticsTab: React.FC = () => {
@@ -59,13 +78,19 @@ export const PageAnalyticsTab: React.FC = () => {
     const uniqueSessions = new Set(pageViews.map(pv => pv.session_id)).size;
     const googleAdsViews = pageViews.filter(pv => pv.is_google_ads).length;
 
+    // Organic
+    const organicViews = pageViews.filter(isOrganic);
+    const totalOrganic = organicViews.length;
+    const uniqueOrganicVisitors = new Set(organicViews.map(pv => pv.visitor_id)).size;
+
     // Page breakdown
-    const pageMap = new Map<string, { views: number; uniqueVisitors: Set<string>; googleAds: number }>();
+    const pageMap = new Map<string, { views: number; uniqueVisitors: Set<string>; googleAds: number; organic: number }>();
     pageViews.forEach(pv => {
-      const existing = pageMap.get(pv.page_path) || { views: 0, uniqueVisitors: new Set<string>(), googleAds: 0 };
+      const existing = pageMap.get(pv.page_path) || { views: 0, uniqueVisitors: new Set<string>(), googleAds: 0, organic: 0 };
       existing.views++;
       if (pv.visitor_id) existing.uniqueVisitors.add(pv.visitor_id);
       if (pv.is_google_ads) existing.googleAds++;
+      if (isOrganic(pv)) existing.organic++;
       pageMap.set(pv.page_path, existing);
     });
 
@@ -75,13 +100,23 @@ export const PageAnalyticsTab: React.FC = () => {
         views: data.views,
         uniqueVisitors: data.uniqueVisitors.size,
         googleAds: data.googleAds,
+        organic: data.organic,
       }))
       .sort((a, b) => b.views - a.views);
 
-    // Source breakdown
+    // Source breakdown — refined to separate organic search from direct
     const sourceMap = new Map<string, number>();
     pageViews.forEach(pv => {
-      const source = pv.utm_source || (pv.gclid ? 'google_ads' : pv.referrer ? new URL(pv.referrer).hostname : 'direct');
+      let source: string;
+      if (pv.utm_source) {
+        source = pv.utm_source;
+      } else if (pv.gclid) {
+        source = 'google_ads';
+      } else if (pv.referrer) {
+        source = isSearchEngineReferrer(pv.referrer) ? 'organic_search' : new URL(pv.referrer).hostname;
+      } else {
+        source = 'direct';
+      }
       sourceMap.set(source, (sourceMap.get(source) || 0) + 1);
     });
     const sources = Array.from(sourceMap.entries())
@@ -99,17 +134,20 @@ export const PageAnalyticsTab: React.FC = () => {
       { name: 'Mobile', value: mobile },
     ].filter(d => d.value > 0);
 
-    // Daily trend
-    const dayMap = new Map<string, number>();
+    // Daily trend (total + organic)
+    const dayMap = new Map<string, { views: number; organic: number }>();
     pageViews.forEach(pv => {
       const day = format(new Date(pv.created_at), 'MMM dd');
-      dayMap.set(day, (dayMap.get(day) || 0) + 1);
+      const existing = dayMap.get(day) || { views: 0, organic: 0 };
+      existing.views++;
+      if (isOrganic(pv)) existing.organic++;
+      dayMap.set(day, existing);
     });
     const dailyTrend = Array.from(dayMap.entries())
-      .map(([date, views]) => ({ date, views }))
+      .map(([date, d]) => ({ date, views: d.views, organic: d.organic }))
       .reverse();
 
-    return { totalViews, uniqueVisitors, uniqueSessions, googleAdsViews, pages, sources, devices, dailyTrend };
+    return { totalViews, uniqueVisitors, uniqueSessions, googleAdsViews, totalOrganic, uniqueOrganicVisitors, pages, sources, devices, dailyTrend };
   }, [pageViews]);
 
   const filteredPages = useMemo(() => {
@@ -156,7 +194,7 @@ export const PageAnalyticsTab: React.FC = () => {
       ) : stats ? (
         <>
           {/* KPI Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
@@ -196,6 +234,20 @@ export const PageAnalyticsTab: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
+            <Card className="border-green-200 bg-green-50/30">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Leaf className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-green-700 font-medium">Organic Reach</p>
+                    <p className="text-2xl font-bold text-green-800">{stats.totalOrganic.toLocaleString()}</p>
+                    <p className="text-xs text-green-600">{stats.uniqueOrganicVisitors.toLocaleString()} unique</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
@@ -224,7 +276,8 @@ export const PageAnalyticsTab: React.FC = () => {
                     <XAxis dataKey="date" tick={{ fontSize: 12 }} />
                     <YAxis tick={{ fontSize: 12 }} />
                     <Tooltip />
-                    <Line type="monotone" dataKey="views" stroke="#f97316" strokeWidth={2} dot={{ fill: '#f97316', r: 4 }} />
+                    <Line type="monotone" dataKey="views" stroke="#f97316" strokeWidth={2} dot={{ fill: '#f97316', r: 4 }} name="Total Views" />
+                    <Line type="monotone" dataKey="organic" stroke="#10b981" strokeWidth={2} dot={{ fill: '#10b981', r: 4 }} name="Organic" />
                   </LineChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -298,6 +351,7 @@ export const PageAnalyticsTab: React.FC = () => {
                       <TableHead>Page</TableHead>
                       <TableHead className="text-right">Views</TableHead>
                       <TableHead className="text-right">Unique Visitors</TableHead>
+                      <TableHead className="text-right">Organic</TableHead>
                       <TableHead className="text-right">Google Ads</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -320,6 +374,15 @@ export const PageAnalyticsTab: React.FC = () => {
                         <TableCell className="text-right font-semibold">{page.views.toLocaleString()}</TableCell>
                         <TableCell className="text-right">{page.uniqueVisitors.toLocaleString()}</TableCell>
                         <TableCell className="text-right">
+                          {page.organic > 0 ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-700 rounded-full text-xs font-medium">
+                              {page.organic}
+                            </span>
+                          ) : (
+                            <span className="text-gray-300">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
                           {page.googleAds > 0 ? (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 text-purple-700 rounded-full text-xs font-medium">
                               {page.googleAds}
@@ -332,7 +395,7 @@ export const PageAnalyticsTab: React.FC = () => {
                     ))}
                     {filteredPages.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-center py-8 text-gray-400">
+                        <TableCell colSpan={5} className="text-center py-8 text-gray-400">
                           {searchQuery ? 'No pages match your search' : 'No page view data yet. Views will appear as visitors browse your site.'}
                         </TableCell>
                       </TableRow>
