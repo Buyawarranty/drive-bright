@@ -8,7 +8,7 @@ const corsHeaders = {
 
 // Response messages
 const MESSAGES = {
-  OPT_IN: (_name?: string) => `Thanks. A BuyaWarranty specialist will call shortly to help you secure the best price. Prefer now? 0330 229 5040.`,
+  OPT_IN: (_name?: string) => `We'll call you shortly with your best price. Prefer to speak now? Call 0330 229 5040.`,
   
   OPT_OUT: `You're opted out from BuyaWarranty. No further messages will be sent.`,
 
