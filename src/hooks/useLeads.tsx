@@ -637,27 +637,42 @@ export const useLeads = () => {
     }));
 
     try {
+      // Refresh session before DB write to prevent stale auth token
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData?.session) {
+        await supabase.auth.refreshSession();
+      }
       if (isAbandonedCart) {
         // Map status directly to contact_status for abandoned_carts table
-        // Store the exact status so it round-trips correctly on refetch
         const contactStatus = status;
         
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('abandoned_carts')
           .update({
-          contact_status: contactStatus,
-          updated_at: now
+            contact_status: contactStatus,
+            updated_at: now
           })
-          .eq('id', actualId);
+          .eq('id', actualId)
+          .select('id');
 
         if (error) throw error;
+        
+        if (!data || data.length === 0) {
+          throw new Error('Status update was blocked by permissions. Please refresh and try again.');
+        }
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('sales_leads')
           .update(updates)
-          .eq('id', actualId);
+          .eq('id', actualId)
+          .select('id');
 
         if (error) throw error;
+        
+        // Detect silent RLS failure: update succeeded but 0 rows affected
+        if (!data || data.length === 0) {
+          throw new Error('Status update was blocked by permissions. Please refresh and try again.');
+        }
 
         // Log activity in background (don't await)
         logActivity(leadId, 'status_change', `Status changed to ${status}`);
