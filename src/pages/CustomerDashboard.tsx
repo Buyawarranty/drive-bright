@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, FileText, User, Mail, Lock, MapPin, CreditCard, Eye, EyeOff, Phone, MessageSquare, Download, AlertCircle, CheckCircle, X, ArrowLeft, Search, Printer } from 'lucide-react';
+import { Calendar, FileText, User, Mail, Lock, MapPin, CreditCard, Eye, EyeOff, Phone, MessageSquare, Download, AlertCircle, CheckCircle, X, ArrowLeft, Search } from 'lucide-react';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { getWarrantyDurationDisplay, getPaymentTypeDisplay } from '@/lib/warrantyUtils';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -22,7 +22,7 @@ import { ReturnDiscountBanner } from '@/components/ReturnDiscountBanner';
 import { useImpersonation } from '@/hooks/useImpersonation';
 import { ImpersonationBanner } from '@/components/ImpersonationBanner';
 import { AddressAutocomplete, AddressData as AutocompleteAddressData } from '@/components/ui/address-autocomplete';
-import { PrintablePolicySummary } from '@/components/PrintablePolicySummary';
+
 
 interface CustomerPolicy {
   id: string;
@@ -142,7 +142,7 @@ const CustomerDashboard = () => {
   const [supportMessage, setSupportMessage] = useState('');
   const [supportSubject, setSupportSubject] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
-  const [showPrintSummary, setShowPrintSummary] = useState(false);
+  
   
   const [showRenewalBanner, setShowRenewalBanner] = useState(false);
   const [renewalDiscount, setRenewalDiscount] = useState<string | null>(null);
@@ -1560,14 +1560,6 @@ const CustomerDashboard = () => {
                                 <FileText className="mr-2 h-4 w-4" />
                                 View your warranty plan
                               </Button>
-                              <Button 
-                                size="sm"
-                                variant="outline"
-                                onClick={() => setShowPrintSummary(true)}
-                              >
-                                <Printer className="mr-2 h-4 w-4" />
-                                Print Policy Summary
-                              </Button>
                             </div>
                           </div>
 
@@ -2129,34 +2121,6 @@ const CustomerDashboard = () => {
         </div>
       )}
 
-      {/* Printable Policy Summary Dialog */}
-      {selectedPolicy && (
-        <PrintablePolicySummary
-          open={showPrintSummary}
-          onOpenChange={setShowPrintSummary}
-          policy={selectedPolicy}
-          customer={{
-            name: address.firstName && address.lastName ? `${address.firstName} ${address.lastName}` : (customerData?.name || ''),
-            email: user?.email || '',
-            phone: address.phone || '',
-            registration_plate: selectedPolicy?.customers?.registration_plate || customerData?.registration_plate || '',
-            vehicle_make: customerData?.vehicle_make || selectedPolicy?.customers?.vehicle_make || '',
-            vehicle_model: customerData?.vehicle_model || selectedPolicy?.customers?.vehicle_model || '',
-            vehicle_year: customerData?.vehicle_year || selectedPolicy?.customers?.vehicle_year || '',
-            vehicle_fuel_type: customerData?.vehicle_fuel_type || '',
-            vehicle_transmission: customerData?.vehicle_transmission || '',
-            mileage: customerData?.mileage || '',
-            flat_number: customerData?.flat_number || '',
-            building_name: customerData?.building_name || '',
-            building_number: customerData?.building_number || '',
-            street: customerData?.street || '',
-            town: customerData?.town || '',
-            county: customerData?.county || '',
-            postcode: customerData?.postcode || '',
-            country: customerData?.country || '',
-          }}
-        />
-      )}
     </div>
   );
 };
