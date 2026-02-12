@@ -16,6 +16,7 @@ import ScrollToTop from "@/components/ScrollToTop";
 import NotFound from "./pages/NotFound";
 import { CookieBanner } from "@/components/CookieBanner";
 import { PageViewTracker } from "@/components/PageViewTracker";
+import { PageViewLogger } from "@/components/PageViewLogger";
 import { SeasonalOfferBanner } from "@/components/SeasonalOfferBanner";
 import StickyNavigation from "@/components/StickyNavigation";
 
@@ -150,6 +151,7 @@ const App = () => {
           <BrowserRouter>
             <ScrollToTop />
             <PageViewTracker />
+            <PageViewLogger />
             <CookieBanner />
             <div className="min-h-screen flex flex-col w-full">
               <StickyNavigation />

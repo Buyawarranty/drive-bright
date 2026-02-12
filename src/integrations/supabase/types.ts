@@ -3502,6 +3502,66 @@ export type Database = {
         }
         Relationships: []
       }
+      page_views: {
+        Row: {
+          created_at: string
+          gclid: string | null
+          id: string
+          is_google_ads: boolean | null
+          page_path: string
+          page_title: string | null
+          referrer: string | null
+          screen_height: number | null
+          screen_width: number | null
+          session_id: string | null
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          gclid?: string | null
+          id?: string
+          is_google_ads?: boolean | null
+          page_path: string
+          page_title?: string | null
+          referrer?: string | null
+          screen_height?: number | null
+          screen_width?: number | null
+          session_id?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          gclid?: string | null
+          id?: string
+          is_google_ads?: boolean | null
+          page_path?: string
+          page_title?: string | null
+          referrer?: string | null
+          screen_height?: number | null
+          screen_width?: number | null
+          session_id?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
