@@ -638,11 +638,9 @@ export const useLeads = () => {
 
     try {
       if (isAbandonedCart) {
-        // Map status to contact_status for abandoned_carts table
-        const contactStatus = status === 'fake_lead' ? 'fake_lead' : 
-                              status === 'contacted' ? 'contacted' :
-                              status === 'converted' ? 'converted' :
-                              status === 'lost' ? 'lost' : 'pending';
+        // Map status directly to contact_status for abandoned_carts table
+        // Store the exact status so it round-trips correctly on refetch
+        const contactStatus = status;
         
         const { error } = await supabase
           .from('abandoned_carts')
