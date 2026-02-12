@@ -1043,21 +1043,38 @@ export const useLeads = () => {
   }, []);
 
   // OPTIMISTIC UPDATE: Update call count instantly
+  // Uses functional state update to avoid stale closure issues
   const updateCallCount = useCallback(async (leadId: string, increment: number = 1) => {
     const now = new Date().toISOString();
     const isAbandonedCart = leadId.startsWith('cart_');
     const actualId = isAbandonedCart ? leadId.replace('cart_', '') : leadId;
     
-    // Get current call count
-    const currentLead = leads.find(l => l.id === leadId);
-    const newCount = Math.max(0, (currentLead?.call_count || 0) + increment);
+    // Use a variable to capture the computed count from the functional update
+    let newCount = 0;
     
-    // Optimistic update
-    setLeads(prev => prev.map(lead => 
-      lead.id === leadId 
-        ? { ...lead, call_count: newCount, updated_at: now } 
-        : lead
-    ));
+    // Optimistic update using functional form to get the latest state
+    setLeads(prev => prev.map(lead => {
+      if (lead.id === leadId) {
+        newCount = Math.max(0, (lead.call_count || 0) + increment);
+        return { ...lead, call_count: newCount, updated_at: now };
+      }
+      return lead;
+    }));
+
+    // If newCount wasn't set (lead not found in state), fetch from DB
+    if (newCount === 0 && increment > 0) {
+      try {
+        const table = isAbandonedCart ? 'abandoned_carts' : 'sales_leads';
+        const { data } = await supabase
+          .from(table)
+          .select('call_count')
+          .eq('id', actualId)
+          .single();
+        newCount = Math.max(0, ((data?.call_count as number) || 0) + increment);
+      } catch {
+        newCount = increment;
+      }
+    }
 
     try {
       if (isAbandonedCart) {
@@ -1091,7 +1108,7 @@ export const useLeads = () => {
       toast.error('Failed to update call count');
       fetchLeads();
     }
-  }, [leads, logActivity, fetchLeads]);
+  }, [logActivity, fetchLeads]);
 
   const migrateFromAbandonedCarts = useCallback(async () => {
     try {
