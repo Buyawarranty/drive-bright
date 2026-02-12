@@ -505,7 +505,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   </>
                 ) : regNumber.replace(/\s/g, '').length >= 5 && !mileageSelection ? (
                   <p className="text-sm text-brand-orange font-semibold text-left animate-fade-in flex items-center gap-1.5">
-                    <span className="text-brand-orange font-black text-base">▼</span> Now select your mileage below
+                    <span className="text-brand-orange font-black text-base">▼</span> Select your mileage
                   </p>
                 ) : null}
 
