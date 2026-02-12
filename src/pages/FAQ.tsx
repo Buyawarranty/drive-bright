@@ -556,7 +556,7 @@ const FAQ = () => {
         - Warranty costs from £12/month
         - Plans available for 1, 2, or 3 years
         - Vehicles up to 15 years old and 150,000 miles eligible
-        - 30-day waiting period for new customers
+        - Cover begins immediately with no waiting period (pre-existing faults excluded)
         - Fast claim processing (within 90 minutes of approval)
         - Direct payment to garages or reimbursement
         - Claims team: 0330 229 5045 (Mon-Fri 09:00-17:30)
