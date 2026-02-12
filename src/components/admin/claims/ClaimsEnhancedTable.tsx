@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Eye, Edit, Send, Paperclip, AlertTriangle, ArrowUp, ArrowDown, Minus, User, Mail, Phone, FileSpreadsheet } from 'lucide-react';
 import { ClaimStatusDropdown } from './ClaimStatusDropdown';
+import { ClaimInlineNote } from './ClaimInlineNote';
 import { getReadinessState, readinessColor } from './ClaimsFilterBar';
 import { cn } from '@/lib/utils';
 
@@ -279,6 +280,7 @@ export const ClaimsEnhancedTable: React.FC<ClaimsEnhancedTableProps> = ({
                 {/* Actions */}
                 <TableCell>
                   <div className="flex items-center gap-0.5">
+                    <ClaimInlineNote claimId={claim.id} />
                     <Button variant="ghost" size="sm" onClick={() => onViewClaim(claim)} className="h-7 w-7 p-0">
                       <Eye className="h-4 w-4" />
                     </Button>

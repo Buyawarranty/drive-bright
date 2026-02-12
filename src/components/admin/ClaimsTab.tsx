@@ -167,21 +167,35 @@ export const ClaimsTab = () => {
 
   // Group claims
   const groupedFilteredClaims = useMemo(() => {
-    const grouped = new Map<string, ClaimSubmission[]>();
-    filteredClaims.forEach(claim => {
-      const reasonKey = claim.claim_reason?.toLowerCase().trim() || `unique_${claim.id}`;
-      const key = `${claim.email.toLowerCase()}_${reasonKey}`;
-      if (!grouped.has(key)) grouped.set(key, []);
-      grouped.get(key)!.push(claim);
-    });
+    // Sort by created_at descending first
+    const sorted = [...filteredClaims].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    
+    const groups: (ClaimSubmission & { relatedClaimsCount: number; relatedClaims: ClaimSubmission[] })[] = [];
+    const assigned = new Set<string>();
 
-    const result: (ClaimSubmission & { relatedClaimsCount: number; relatedClaims: ClaimSubmission[] })[] = [];
-    grouped.forEach((claimsInGroup) => {
-      claimsInGroup.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      result.push({ ...claimsInGroup[0], relatedClaimsCount: claimsInGroup.length, relatedClaims: claimsInGroup });
-    });
-    result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    return result;
+    for (const claim of sorted) {
+      if (assigned.has(claim.id)) continue;
+
+      const reg = claim.vehicle_registration?.toLowerCase().trim();
+      
+      // Find related claims: same reg plate, within 30 days of each other
+      const related = reg
+        ? sorted.filter(c => {
+            if (c.id === claim.id || assigned.has(c.id)) return false;
+            if (c.vehicle_registration?.toLowerCase().trim() !== reg) return false;
+            const daysDiff = Math.abs(new Date(claim.created_at).getTime() - new Date(c.created_at).getTime()) / (1000 * 60 * 60 * 24);
+            return daysDiff <= 30;
+          })
+        : [];
+
+      assigned.add(claim.id);
+      related.forEach(c => assigned.add(c.id));
+
+      const allInGroup = [claim, ...related];
+      groups.push({ ...claim, relatedClaimsCount: allInGroup.length, relatedClaims: allInGroup });
+    }
+
+    return groups;
   }, [filteredClaims]);
 
   const handleSelectAll = (checked: boolean) => {
