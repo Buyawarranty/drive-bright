@@ -97,7 +97,7 @@ const Terms = () => {
       content: (
         <div className="space-y-6">
           <p className="text-gray-600">
-            Covers vehicles up to 15 years old and 150,000 miles. 30-day waiting period applies.
+            Covers vehicles up to 15 years old and 150,000 miles. Cover begins immediately; pre-existing faults are excluded.
           </p>
         </div>
       )
