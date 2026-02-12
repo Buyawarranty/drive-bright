@@ -1440,6 +1440,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               onPaymentChange={setSelectedPayment}
               monthlyPrice={discountedMonthlyPrice}
               totalPrice={bumperTotalPrice}
+              fullPrice={discountedStripePrice}
+              savings={savings}
             />
           </section>
 

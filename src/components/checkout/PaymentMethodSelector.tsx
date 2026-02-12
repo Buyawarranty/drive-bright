@@ -6,6 +6,8 @@ interface PaymentMethodSelectorProps {
   onPaymentChange: (payment: 'monthly' | 'full') => void;
   monthlyPrice: number;
   totalPrice: number;
+  fullPrice?: number;
+  savings?: number;
 }
 
 const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
@@ -13,9 +15,13 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
   onPaymentChange,
   monthlyPrice,
   totalPrice,
+  fullPrice: fullPriceProp,
+  savings: savingsProp,
 }) => {
-  const discountedPrice = Math.round(totalPrice * 0.9);
-  const savings = totalPrice - discountedPrice;
+  // Use props from StreamlinedCheckout (source of truth) or fallback to Step 3's formula
+  const stripeSavings = savingsProp ?? Math.floor(totalPrice * 0.10);
+  const discountedPrice = fullPriceProp ?? (totalPrice - stripeSavings);
+  const savings = savingsProp ?? stripeSavings;
 
   return (
     <div className="bg-white border border-[#E5E5E5] rounded-xl p-5 sm:p-6">
