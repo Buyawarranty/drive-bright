@@ -122,12 +122,15 @@ export const useLeads = () => {
   const [salesUsers, setSalesUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const initialLoadDoneRef = useRef(false);
+  const initialLoadStartedRef = useRef(false);
   const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [filter, setFilter] = useState<LeadStatus | 'all' | 'high_priority' | 'fake' | 'quote_sent' | 'urgent_callback'>('all');
   
-  // Cache sales users for optimistic updates
+  // Cache sales users and leads for optimistic updates (avoid stale closures)
   const salesUsersRef = useRef<AdminUser[]>([]);
   salesUsersRef.current = salesUsers;
+  const leadsRef = useRef<Lead[]>([]);
+  leadsRef.current = leads;
 
   // Cache admin user ID to avoid repeated auth lookups
   const cachedAdminUserRef = useRef<{ id: string; firstName: string; email: string } | null>(null);
@@ -185,16 +188,16 @@ export const useLeads = () => {
 
   const fetchLeads = useCallback(async () => {
     try {
-      // Only show loading spinner on initial load, not on refreshes/realtime updates
-      if (!initialLoadDoneRef.current) {
+      // Only show loading spinner on the very first load attempt
+      if (!initialLoadDoneRef.current && !initialLoadStartedRef.current) {
+        initialLoadStartedRef.current = true;
         setLoading(true);
-        // Safety timeout: force loading off after 12s to prevent infinite loading
-        if (loadingTimeoutRef.current) clearTimeout(loadingTimeoutRef.current);
+        // Safety timeout: force loading off after 10s to prevent infinite loading
         loadingTimeoutRef.current = setTimeout(() => {
           setLoading(false);
           initialLoadDoneRef.current = true;
-          console.warn('[Leads] Loading safety timeout triggered after 12s');
-        }, 12000);
+          console.warn('[Leads] Loading safety timeout triggered after 10s');
+        }, 10000);
       }
       
       // Use Promise.all to fetch all data sources in parallel for better performance
@@ -661,7 +664,7 @@ export const useLeads = () => {
     
     // Mark this lead as recently updated to protect from realtime overwrites
     recentOptimisticUpdatesRef.current.add(leadId);
-    setTimeout(() => recentOptimisticUpdatesRef.current.delete(leadId), 5000);
+    setTimeout(() => recentOptimisticUpdatesRef.current.delete(leadId), 10000);
 
     // Optimistic update - instant UI response, capture previous state
     setLeads(prev => prev.map(lead => {
@@ -738,7 +741,7 @@ export const useLeads = () => {
     
     // Protect from realtime overwrites
     recentOptimisticUpdatesRef.current.add(leadId);
-    setTimeout(() => recentOptimisticUpdatesRef.current.delete(leadId), 5000);
+    setTimeout(() => recentOptimisticUpdatesRef.current.delete(leadId), 10000);
     
     // Optimistic update
     setLeads(prev => prev.map(lead => {
@@ -988,8 +991,8 @@ export const useLeads = () => {
       minute: '2-digit' 
     });
 
-    // Find current lead to get existing notes
-    const currentLead = leads.find(l => l.id === leadId);
+    // Use ref to avoid stale closure - always reads latest leads
+    const currentLead = leadsRef.current.find(l => l.id === leadId);
     const existingNotes = currentLead?.notes || '';
     
     // If replaceAll is true, just use newNoteText as-is (for full editor saves)
@@ -1009,6 +1012,12 @@ export const useLeads = () => {
       lead.id === leadId ? { ...lead, notes: finalNotes, updated_at: now } : lead
     ));
 
+    // Refresh session before DB write to prevent stale auth token
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData?.session) {
+      await supabase.auth.refreshSession();
+    }
+
     // Perform the actual database update
     if (isAbandonedCart) {
       // Update abandoned_carts table - use contact_notes field
@@ -1022,8 +1031,11 @@ export const useLeads = () => {
 
       if (error) {
         console.error('[useLeads] Error updating abandoned cart notes:', error);
-        // Revert optimistic update on error
-        fetchLeads();
+        // Revert optimistic update on error - restore from ref
+        const originalLead = leadsRef.current.find(l => l.id === leadId);
+        if (originalLead) {
+          setLeads(prev => prev.map(l => l.id === leadId ? originalLead : l));
+        }
         throw new Error(error.message);
       }
     } else {
@@ -1035,15 +1047,17 @@ export const useLeads = () => {
 
       if (error) {
         console.error('[useLeads] Error updating sales lead notes:', error);
-        // Revert optimistic update on error
-        fetchLeads();
+        const originalLead = leadsRef.current.find(l => l.id === leadId);
+        if (originalLead) {
+          setLeads(prev => prev.map(l => l.id === leadId ? originalLead : l));
+        }
         throw new Error(error.message);
       }
     }
     
     console.log(`[useLeads] Note saved successfully for ${leadId}`);
     // Note: Toast is handled by the caller (LeadDetailsPanel) to avoid duplicates
-  }, [leads, fetchLeads, getCachedAdminUser]);
+  }, [getCachedAdminUser]);
 
   // OPTIMISTIC UPDATE: Mark contacted instantly
   const markContactedAt = useCallback(async (leadId: string) => {
