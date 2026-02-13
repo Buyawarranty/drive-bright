@@ -65,7 +65,7 @@ const defaultCategories = [
 const WarrantyTypes: React.FC = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
   const [dynamicPages, setDynamicPages] = useState<DynamicLandingPage[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -133,69 +133,6 @@ const WarrantyTypes: React.FC = () => {
       </Helmet>
 
       <div className="min-h-screen bg-white">
-        {/* Header */}
-        <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex justify-between items-center">
-              <Link to="/" className="flex items-center">
-                <img 
-                  src="/lovable-uploads/4a0ed2f0-8030-4be3-9a3e-126452284495.png" 
-                  alt="Buy A Warranty Logo" 
-                  className="h-10 md:h-12 w-auto"
-                />
-              </Link>
-              
-              {/* Desktop Navigation */}
-              <nav className="hidden md:flex items-center gap-8">
-                <Link to="/" className="text-gray-700 hover:text-orange-500 transition-colors font-medium">
-                  Home
-                </Link>
-                <Link to="/car-extended-warranty" className="text-gray-700 hover:text-orange-500 transition-colors font-medium">
-                  Car Warranty
-                </Link>
-                <Link to="/warranty-types" className="text-orange-500 font-semibold">
-                  Warranty Types
-                </Link>
-                <Link to="/claims" className="text-gray-700 hover:text-orange-500 transition-colors font-medium">
-                  Claims
-                </Link>
-                <a href="tel:03302295040" className="flex items-center gap-2 text-orange-500 font-semibold">
-                  <Phone className="h-4 w-4" />
-                  0330 229 5040
-                </a>
-              </nav>
-              
-              {/* Mobile Menu */}
-              <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-                <SheetTrigger asChild className="md:hidden">
-                  <Button variant="ghost" size="icon">
-                    <Menu className="h-6 w-6" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-[300px] bg-white">
-                  <nav className="flex flex-col gap-4 mt-8">
-                    <Link to="/" className="text-lg font-medium text-gray-700 hover:text-orange-500 py-2">
-                      Home
-                    </Link>
-                    <Link to="/car-extended-warranty" className="text-lg font-medium text-gray-700 hover:text-orange-500 py-2">
-                      Car Warranty
-                    </Link>
-                    <Link to="/warranty-types" className="text-lg font-medium text-orange-500 py-2">
-                      Warranty Types
-                    </Link>
-                    <Link to="/claims" className="text-lg font-medium text-gray-700 hover:text-orange-500 py-2">
-                      Claims
-                    </Link>
-                    <a href="tel:03302295040" className="flex items-center gap-2 text-lg font-medium text-orange-500 py-2">
-                      <Phone className="h-5 w-5" />
-                      0330 229 5040
-                    </a>
-                  </nav>
-                </SheetContent>
-              </Sheet>
-            </div>
-          </div>
-        </header>
 
 
         {/* Hero Section - Matching CarExtendedWarranty style */}
