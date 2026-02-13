@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Zap, ArrowRight, Ban, BellOff, MessageCircle, Star, User, Car, Rocket } from 'lucide-react';
+import { ArrowLeft, Mail, Check, Lock, Phone, CheckCircle, Zap, ArrowRight, Ban, BellOff, MessageCircle, Star, User, Car, Rocket, PhoneCall } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
 import MobileNavigation from '@/components/MobileNavigation';
 import HelpFAB from '@/components/HelpFAB';
+import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
+import trustpilotStars from '@/assets/trustpilot-stars.png';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface QuoteDeliveryStepProps {
@@ -30,6 +32,7 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
   const [phone, setPhone] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [showCallbackModal, setShowCallbackModal] = useState(false);
   const [firstNameError, setFirstNameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [phoneError, setPhoneError] = useState('');
@@ -515,6 +518,13 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               <Phone className="w-5 h-5 text-brand-orange" />
               <span>0330 229 5040</span>
             </a>
+            <button 
+              onClick={() => setShowCallbackModal(true)}
+              className="flex items-center gap-2 text-gray-700 text-sm font-medium hover:text-brand-orange transition-colors"
+            >
+              <PhoneCall className="w-5 h-5 text-brand-orange" />
+              <span>Request Call-Back</span>
+            </button>
             <a 
               href="https://wa.me/message/SPQPJ6O3UBF5B1" 
               target="_blank"
@@ -530,12 +540,16 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-gray-700 text-sm font-medium hover:text-green-600 transition-colors"
             >
-              <Star className="w-5 h-5 text-green-600 fill-green-600" />
-              <span className="text-green-600 font-semibold">Trustpilot</span>
+              <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-6 w-auto" />
             </a>
           </div>
         </div>
       </div>
+
+      <RequestCallbackModal 
+        isOpen={showCallbackModal} 
+        onClose={() => setShowCallbackModal(false)} 
+      />
 
       {/* Success Popup */}
       <Dialog open={showSuccessPopup} onOpenChange={setShowSuccessPopup}>

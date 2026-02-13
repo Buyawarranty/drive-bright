@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Phone, MessageCircle, Star, X, HelpCircle } from 'lucide-react';
+import { Phone, MessageCircle, Star, X, HelpCircle, PhoneCall } from 'lucide-react';
+import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 
 const HelpFAB: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [showCallbackModal, setShowCallbackModal] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -49,6 +51,22 @@ const HelpFAB: React.FC = () => {
               </div>
             </a>
             
+            <button 
+              onClick={() => {
+                setIsExpanded(false);
+                setShowCallbackModal(true);
+              }}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors w-full text-left"
+            >
+              <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center">
+                <PhoneCall className="w-5 h-5 text-brand-orange" />
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900 text-sm">Request Call-Back</p>
+                <p className="text-xs text-gray-500">We'll call you back</p>
+              </div>
+            </button>
+
             <a 
               href="https://wa.me/message/SPQPJ6O3UBF5B1"
               target="_blank"
@@ -105,6 +123,11 @@ const HelpFAB: React.FC = () => {
       {!isExpanded && (
         <p className="text-xs text-gray-600 text-center mt-1 font-medium">Need help?</p>
       )}
+      
+      <RequestCallbackModal 
+        isOpen={showCallbackModal} 
+        onClose={() => setShowCallbackModal(false)} 
+      />
     </div>
   );
 };
