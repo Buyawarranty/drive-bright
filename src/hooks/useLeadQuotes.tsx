@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface SentQuote {
@@ -20,14 +20,26 @@ export interface SentQuote {
 export const useLeadQuotes = (leadEmails: string[]) => {
   const [quotesByEmail, setQuotesByEmail] = useState<Record<string, SentQuote[]>>({});
   const [loading, setLoading] = useState(false);
+  const lastFetchedKeyRef = useRef('');
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const fetchQuotes = useCallback(async () => {
-    if (leadEmails.length === 0) return;
+  // Create a stable key from sorted unique emails
+  const emailsKey = useMemo(() => {
+    const unique = [...new Set(leadEmails.filter(Boolean).map(e => e.toLowerCase()))];
+    unique.sort();
+    return unique.join(',');
+  }, [leadEmails]);
+
+  const fetchQuotes = useCallback(async (key: string) => {
+    if (!key) return;
+    
+    // Skip if we already fetched this exact set of emails
+    if (lastFetchedKeyRef.current === key) return;
+    lastFetchedKeyRef.current = key;
     
     setLoading(true);
     try {
-      // Get unique emails
-      const uniqueEmails = [...new Set(leadEmails.filter(Boolean))];
+      const uniqueEmails = key.split(',');
       
       const { data, error } = await supabase
         .from('admin_sent_quotes')
@@ -41,7 +53,6 @@ export const useLeadQuotes = (leadEmails: string[]) => {
 
       if (error) throw error;
 
-      // Group quotes by email
       const grouped: Record<string, SentQuote[]> = {};
       (data || []).forEach((quote: SentQuote) => {
         const email = quote.customer_email.toLowerCase();
@@ -57,11 +68,26 @@ export const useLeadQuotes = (leadEmails: string[]) => {
     } finally {
       setLoading(false);
     }
-  }, [leadEmails.join(',')]); // Use join to create stable dependency
+  }, []);
 
   useEffect(() => {
-    fetchQuotes();
-  }, [fetchQuotes]);
+    if (!emailsKey) return;
+    
+    // Debounce quote fetching to avoid rapid re-fetches when leads list updates
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      fetchQuotes(emailsKey);
+    }, 1000);
+    
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, [emailsKey, fetchQuotes]);
 
-  return { quotesByEmail, loading, refetch: fetchQuotes };
+  const refetch = useCallback(() => {
+    lastFetchedKeyRef.current = ''; // Force refetch
+    fetchQuotes(emailsKey);
+  }, [emailsKey, fetchQuotes]);
+
+  return { quotesByEmail, loading, refetch };
 };
