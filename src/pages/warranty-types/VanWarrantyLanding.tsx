@@ -24,7 +24,7 @@ import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaMascot from '@/assets/warranty-panda-mascot.png';
-import pandaThumbsUp from '@/assets/panda-thumbs-up.png';
+import pandaThumbsUp from '@/assets/extended-van-warranty-uk.png';
 import pandaMechanic from '@/assets/panda-mechanic.png';
 import vanHeroImage from '@/assets/used-van-reliable-warranty.webp';
 import fordTransitVan from '@/assets/uk-van-warranty-ford-transit.webp';
