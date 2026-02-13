@@ -570,7 +570,7 @@ export const useLeads = () => {
         pendingRealtimeRef.current = false;
         fetchLeadsRef.current();
       }
-    }, 1500);
+    }, 3000);
   }, []);
 
   // Initial fetch + fetch on filter change (no subscription teardown)
@@ -600,15 +600,15 @@ export const useLeads = () => {
       )
       .subscribe();
 
-    // Polling fallback: refresh every 30s in case realtime silently disconnects
+    // Polling fallback: refresh every 90s in case realtime silently disconnects
     const pollingInterval = setInterval(() => {
       fetchLeadsRef.current();
-    }, 30000);
+    }, 90000);
 
     // Debounced visibility/focus handler - prevents rapid-fire refetches
     const throttledRefetch = () => {
       const now = Date.now();
-      if (now - lastRefetchTimeRef.current < 3000) return;
+      if (now - lastRefetchTimeRef.current < 5000) return;
       lastRefetchTimeRef.current = now;
       fetchLeadsRef.current();
     };
@@ -1230,8 +1230,8 @@ export const useLeads = () => {
   const deleteLeads = useCallback(async (leadIds: string[]) => {
     if (leadIds.length === 0) return;
 
-    // Store previous state for potential rollback
-    const previousLeads = leads;
+    // Store previous state for potential rollback using ref to avoid stale closure
+    const previousLeads = leadsRef.current;
     
     // Optimistic update - remove from UI immediately
     setLeads(prev => prev.filter(lead => !leadIds.includes(lead.id)));
@@ -1258,7 +1258,7 @@ export const useLeads = () => {
       toast.error('Failed to delete leads');
       setLeads(previousLeads); // Rollback
     }
-  }, [leads]);
+  }, []);
 
   return {
     leads,

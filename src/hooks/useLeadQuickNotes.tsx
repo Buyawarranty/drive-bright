@@ -52,12 +52,15 @@ export const useLeadQuickNotes = (leadId: string) => {
   }, [leadId, updateNotes]);
 
   const ensureSession = async (): Promise<boolean> => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) return true;
-    
-    const { data: refreshData } = await supabase.auth.refreshSession();
-    if (refreshData.session) return true;
-    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) return true;
+      
+      const { data: refreshData } = await supabase.auth.refreshSession();
+      if (refreshData.session) return true;
+    } catch {
+      // Silently fail - let RLS handle auth
+    }
     return false;
   };
 
@@ -76,7 +79,7 @@ export const useLeadQuickNotes = (leadId: string) => {
     
     const timeoutId = setTimeout(() => {
       setLoading(false);
-    }, 8000);
+    }, 5000);
     
     try {
       // Try to ensure session, but don't block note fetching entirely if it fails
