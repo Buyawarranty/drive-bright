@@ -840,7 +840,7 @@ const VanWarrantyLanding: React.FC = () => {
                     </div>
                     <div className="flex items-center space-x-1.5">
                       <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">Chassis Cabs</span>
+                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base"><span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">Luton Vans</span></span>
                     </div>
                   </div>
                   
