@@ -7,9 +7,13 @@ const corsHeaders = {
 };
 
 // Welcome message for new leads
-const WELCOME_MESSAGE = `BuyaWarranty: Your Personalised Vehicle Warranty Quote is Ready. You could Save Hundreds on Unexpected Repair Costs.
+const WELCOME_MESSAGE = `BuyAWarranty: Unexpected car repairs can cost £800+.
 
-Reply YES for a quick call or STOP to opt out.`;
+Secure cover in 60 seconds.
+
+View your vehicle warranty price here: www.buyawarranty.co.uk
+
+Reply STOP to opt out.`;
 
 serve(async (req) => {
   // Handle CORS preflight requests
