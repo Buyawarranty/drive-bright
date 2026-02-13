@@ -4199,6 +4199,45 @@ export type Database = {
           },
         ]
       }
+      scheduled_sms: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          first_name: string | null
+          id: string
+          phone: string
+          send_after: string
+          sent_at: string | null
+          status: string
+          vehicle_make: string | null
+          vehicle_model: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          first_name?: string | null
+          id?: string
+          phone: string
+          send_after: string
+          sent_at?: string | null
+          status?: string
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          first_name?: string | null
+          id?: string
+          phone?: string
+          send_after?: string
+          sent_at?: string | null
+          status?: string
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+        }
+        Relationships: []
+      }
       selling_tips: {
         Row: {
           category: string
@@ -5352,6 +5391,7 @@ export type Database = {
         Returns: string
       }
       make_user_admin: { Args: { user_email: string }; Returns: undefined }
+      process_scheduled_sms: { Args: never; Returns: number }
       reset_agent_caps_daily: { Args: never; Returns: undefined }
       reset_daily_caps: { Args: never; Returns: undefined }
       restore_customer: { Args: { customer_uuid: string }; Returns: undefined }

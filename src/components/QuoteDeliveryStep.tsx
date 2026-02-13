@@ -224,25 +224,27 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           .eq('id', existingLead.id);
       }
 
-      // Send confirmation SMS via ClickSend
+      // Schedule SMS to be sent 10 minutes after quote submission
       try {
-        console.log('Sending confirmation SMS to:', phone);
-        const { error: smsError } = await supabase.functions.invoke('send-clicksend-sms', {
-          body: {
+        console.log('Scheduling delayed SMS for:', phone);
+        const sendAfter = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+        const { error: scheduleError } = await supabase
+          .from('scheduled_sms')
+          .insert({
             phone: phone.trim(),
-            firstName: firstName.trim() || 'there',
-            vehicleMake: vehicleData?.make,
-            vehicleModel: vehicleData?.model
-          }
-        });
+            first_name: firstName.trim() || 'there',
+            vehicle_make: vehicleData?.make || null,
+            vehicle_model: vehicleData?.model || null,
+            send_after: sendAfter,
+          });
         
-        if (smsError) {
-          console.error('Error sending confirmation SMS:', smsError);
+        if (scheduleError) {
+          console.error('Error scheduling SMS:', scheduleError);
         } else {
-          console.log('✅ Confirmation SMS sent successfully');
+          console.log('✅ SMS scheduled to send at:', sendAfter);
         }
       } catch (smsError) {
-        console.error('Failed to send confirmation SMS:', smsError);
+        console.error('Failed to schedule SMS:', smsError);
       }
     } catch (error) {
       console.error('Error in quote flow:', error);
