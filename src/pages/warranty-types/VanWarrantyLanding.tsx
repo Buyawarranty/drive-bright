@@ -26,7 +26,7 @@ import trustpilotExcellent from '@/assets/trustpilot-excellent-box.webp';
 import pandaMascot from '@/assets/warranty-panda-mascot.png';
 import pandaThumbsUp from '@/assets/extended-van-warranty-uk.png';
 import pandaMechanic from '@/assets/panda-mechanic.png';
-import vanHeroImage from '@/assets/used-van-reliable-warranty.webp';
+import vanHeroImage from '@/assets/uk-extended-used-van-warranty.png';
 import fordTransitVan from '@/assets/uk-van-warranty-ford-transit.webp';
 import vanIcon from '@/assets/van-icon.png';
 
@@ -662,7 +662,7 @@ const VanWarrantyLanding: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Van Extended Warranty UK | Commercial Van Cover | Buy A Warranty</title>
+        <title>Van Warranty UK | Instant Van Cover Quotes | Buy A Warranty</title>
         <meta name="description" content="Protect your commercial van with comprehensive extended warranty cover. Ford Transit, Mercedes Sprinter, VW Transporter, Renault Master, Vauxhall Vivaro & more. Engine, gearbox, electrics covered. Nationwide UK coverage, any garage. Prices from £32/month. Get your instant quote in 60 seconds." />
         <meta name="keywords" content="van extended warranty, commercial van warranty, van warranty UK, Ford Transit warranty, Ford Transit Custom warranty, Mercedes Sprinter warranty, VW Transporter warranty, VW Crafter warranty, Renault Master warranty, Renault Trafic warranty, Vauxhall Movano warranty, Vauxhall Vivaro warranty, Peugeot Boxer warranty, Citroen Relay warranty, Fiat Ducato warranty, Nissan NV400 warranty, Toyota Proace warranty, Iveco Daily warranty, MAN TGE warranty, used van warranty, second hand van warranty, van breakdown cover, commercial vehicle warranty, panel van warranty, transit van warranty, work van warranty, delivery van warranty UK" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/vans/" />
@@ -678,7 +678,7 @@ const VanWarrantyLanding: React.FC = () => {
         <meta httpEquiv="content-language" content="en-GB" />
         
         {/* Open Graph */}
-        <meta property="og:title" content="Van Extended Warranty UK | Commercial Van Cover from £32/month" />
+        <meta property="og:title" content="Van Warranty UK | Protect Your Commercial Van from £32/mo | Buy A Warranty" />
         <meta property="og:description" content="Comprehensive van warranty coverage. Engine, gearbox, electrics & more. Ford Transit, Mercedes Sprinter, VW Transporter, Renault Master & all major makes covered. Nationwide UK coverage with any garage. Get your instant quote now." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/vans/" />
         <meta property="og:type" content="website" />
@@ -797,11 +797,12 @@ const VanWarrantyLanding: React.FC = () => {
                 <div className="relative">
                   <OptimizedImage
                     src={vanHeroImage}
-                    alt="UK van extended warranty - Miles the Panda with Ford Transit and Vauxhall vans"
-                    className="w-full h-auto max-w-lg mx-auto object-contain"
+                    alt="UK extended used van warranty - Miles the Buy A Warranty panda mascot with Ford Transit Custom and Volkswagen Transporter commercial vans"
+                    className="w-full h-auto max-w-md mx-auto object-contain"
                     priority={true}
                     width={600}
                     height={450}
+                    style={{ border: 'none', boxShadow: 'none' }}
                   />
                   {/* Trustpilot Badge */}
                   <div className="absolute top-4 right-4">
