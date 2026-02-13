@@ -1380,8 +1380,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
           </div>
         </div>
 
-        {/* Price Help Trigger - Desktop */}
-        <div className="hidden md:block">
+        {/* Price Help Trigger - All devices */}
+        <div>
           <PriceHelpTrigger onClick={() => setShowPriceHelpPanel(true)} />
         </div>
 
