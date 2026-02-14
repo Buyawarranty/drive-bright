@@ -78,46 +78,46 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
 
               {/* Plan Details */}
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Plan:</span>
-                  <span className="font-semibold text-[#1a1a1a]">Comprehensive</span>
+                <div className="flex justify-between items-center gap-2">
+                  <span className="text-gray-600 flex-shrink-0">Plan:</span>
+                  <span className="font-semibold text-[#1a1a1a] text-right truncate">Comprehensive</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Duration:</span>
-                  <span className="font-semibold text-[#1a1a1a]">{duration}</span>
+                <div className="flex justify-between items-center gap-2">
+                  <span className="text-gray-600 flex-shrink-0">Duration:</span>
+                  <span className="font-semibold text-[#1a1a1a] text-right truncate">{duration}</span>
                 </div>
                 {duration.toLowerCase().includes('2 year') && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Payments:</span>
-                    <span className="font-semibold text-[#0BA360]">No payments in year 2</span>
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="text-gray-600 flex-shrink-0">Payments:</span>
+                    <span className="font-semibold text-[#0BA360] text-right truncate">No payments in year 2</span>
                   </div>
                 )}
                 {duration.toLowerCase().includes('3 year') && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Payments:</span>
-                    <span className="font-semibold text-[#0BA360]">No payments in years 2 and 3</span>
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="text-gray-600 flex-shrink-0">Payments:</span>
+                    <span className="font-semibold text-[#0BA360] text-right truncate">No payments in years 2 and 3</span>
                   </div>
                 )}
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Vehicle:</span>
+                <div className="flex justify-between items-center gap-2">
+                  <span className="text-gray-600 flex-shrink-0">Vehicle:</span>
                   <span 
-                    className="font-mono font-bold text-xs uppercase px-1.5 py-0.5 rounded border border-black"
+                    className="font-mono font-bold text-xs uppercase px-1.5 py-0.5 rounded border border-black flex-shrink-0"
                     style={{ backgroundColor: '#FCD34D' }}
                   >
                     {vehicleReg}
                   </span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Claim Limit:</span>
-                  <span className="font-semibold text-[#1a1a1a]">{displayClaimLimit()}</span>
+                <div className="flex justify-between items-center gap-2">
+                  <span className="text-gray-600 flex-shrink-0">Claim Limit:</span>
+                  <span className="font-semibold text-[#1a1a1a] text-right">{displayClaimLimit()}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Labour Rate:</span>
-                  <span className="font-semibold text-[#1a1a1a]">£{labourRate}/hour</span>
+                <div className="flex justify-between items-center gap-2">
+                  <span className="text-gray-600 flex-shrink-0">Labour Rate:</span>
+                  <span className="font-semibold text-[#1a1a1a] text-right">£{labourRate}/hour</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Excess:</span>
-                  <span className="font-semibold text-[#1a1a1a]">£{excess}</span>
+                <div className="flex justify-between items-center gap-2">
+                  <span className="text-gray-600 flex-shrink-0">Excess:</span>
+                  <span className="font-semibold text-[#1a1a1a] text-right">£{excess}</span>
                 </div>
               </div>
 

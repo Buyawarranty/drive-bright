@@ -1459,9 +1459,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   );
 
   return (
-    <div className="min-h-screen bg-background px-2 sm:px-0">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Desktop: Two-column layout with sticky sidebar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
         {/* Back Link - Full width */}
         <div className="flex items-center justify-between mb-4 sm:mb-6">
           <Button
@@ -1481,7 +1481,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
         <div className="flex gap-8 items-start">
           {/* Main Content Column */}
-          <div className="flex-1 max-w-2xl space-y-6 sm:space-y-8 pb-32 lg:pb-32 lg:space-y-0">
+          <div className="flex-1 max-w-2xl space-y-6 sm:space-y-8 pb-32 lg:pb-32 lg:space-y-0 min-w-0">
           {/* ==================== MOBILE: PLAN SUMMARY ACCORDION ==================== */}
           <section className="lg:hidden">
             <PlanSummaryCard
