@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Eye, Users, Globe, TrendingUp, ArrowUpRight, Search, Leaf } from 'lucide-react';
-import { format, subDays, startOfDay, endOfDay, startOfMonth, endOfMonth, subMonths, startOfYear } from 'date-fns';
+import { format, subDays, startOfDay, endOfDay, startOfWeek, startOfMonth, endOfMonth, subMonths, startOfYear } from 'date-fns';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, BarChart, Bar } from 'recharts';
 import { Input } from '@/components/ui/input';
 
@@ -23,7 +23,7 @@ const getPeriodDates = (period: Period) => {
     case 'yesterday':
       return { from: startOfDay(subDays(now, 1)), to: endOfDay(subDays(now, 1)) };
     case 'this_week':
-      return { from: startOfDay(subDays(now, 7)), to: endOfDay(now) };
+      return { from: startOfWeek(now, { weekStartsOn: 1 }), to: endOfDay(now) };
     case 'this_month':
       return { from: startOfMonth(now), to: endOfDay(now) };
     case 'last_month':
