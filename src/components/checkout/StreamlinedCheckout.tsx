@@ -511,27 +511,48 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Track if component has been mounted (for bfcache handling)
   const hasMountedRef = React.useRef(false);
   const [isPageRestored, setIsPageRestored] = useState(false);
-  
-  // Desktop sticky bar visibility based on scroll position
-  const [showDesktopStickyBar, setShowDesktopStickyBar] = useState(false);
-  const aboutYouRef = React.useRef<HTMLElement>(null);
-  
-  // Track scroll to show/hide desktop sticky bar
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!aboutYouRef.current) return;
-      
-      const aboutYouRect = aboutYouRef.current.getBoundingClientRect();
-      // Show sticky bar when "About you" section top is above viewport (scrolled past it)
-      const shouldShow = aboutYouRect.top < 0;
-      setShowDesktopStickyBar(shouldShow);
-    };
-    
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Check initial position
-    
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+   
+   // Desktop sticky bar visibility based on scroll position
+   const [showDesktopStickyBar, setShowDesktopStickyBar] = useState(false);
+   const aboutYouRef = React.useRef<HTMLElement>(null);
+   
+   // Track whether the bottom CTA (HowToPaySection / Stripe form) is fully visible
+   const [isBottomCtaFullyVisible, setIsBottomCtaFullyVisible] = useState(false);
+   const bottomCtaRef = React.useRef<HTMLDivElement>(null);
+   
+   // IntersectionObserver to detect when bottom CTA is fully in viewport
+   useEffect(() => {
+     const el = bottomCtaRef.current;
+     if (!el) return;
+     
+     const observer = new IntersectionObserver(
+       ([entry]) => {
+         // threshold 1.0 means fully visible
+         setIsBottomCtaFullyVisible(entry.isIntersecting);
+       },
+       { threshold: 1.0 }
+     );
+     
+     observer.observe(el);
+     return () => observer.disconnect();
+   }, []);
+   
+   // Track scroll to show/hide desktop sticky bar
+   useEffect(() => {
+     const handleScroll = () => {
+       if (!aboutYouRef.current) return;
+       
+       const aboutYouRect = aboutYouRef.current.getBoundingClientRect();
+       // Show sticky bar when "About you" section top is above viewport (scrolled past it)
+       const shouldShow = aboutYouRect.top < 0;
+       setShowDesktopStickyBar(shouldShow);
+     };
+     
+     window.addEventListener('scroll', handleScroll, { passive: true });
+     handleScroll(); // Check initial position
+     
+     return () => window.removeEventListener('scroll', handleScroll);
+   }, []);
 
   // Auto-collapse details section when BOTH personal details AND address are complete
   // CRITICAL: Do NOT close until address is fully completed - user must enter all required address fields
@@ -1995,7 +2016,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           </section>
 
           {/* ==================== HOW TO PAY SECTION (BOTTOM) ==================== */}
-          <div ref={howToPayRef} id="how-to-pay-section">
+          <div ref={(el) => { (howToPayRef as React.MutableRefObject<HTMLDivElement | null>).current = el; bottomCtaRef.current = el; }} id="how-to-pay-section">
             <HowToPaySection
               selectedPayment={selectedPayment}
               onPaymentChange={async (payment) => {
@@ -2143,27 +2164,29 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           
           processPayment(payment);
         }}
-        isVisible={showDesktopStickyBar}
+        isVisible={showDesktopStickyBar && !isBottomCtaFullyVisible}
       />
 
-      {/* Mobile Sticky Footer */}
-      <MobileStickyFooter
-        selectedPayment={selectedPayment}
-        monthlyPrice={discountedMonthlyPrice}
-        fullPrice={discountedStripePrice}
-        originalPrice={bumperTotalPrice}
-        isLoading={isLoading}
-        isFormValid={personalDetailsComplete && addressComplete}
-        onPayClick={() => {
-          const payment = selectedPayment || selectedPaymentRef.current || 'full';
-          if (!selectedPayment) {
-            setSelectedPayment(payment);
-            selectedPaymentRef.current = payment;
-          }
-          processPayment(payment);
-        }}
-        onPaymentChange={(p) => { setSelectedPayment(p); selectedPaymentRef.current = p; }}
-      />
+      {/* Mobile Sticky Footer - hidden when bottom CTA is fully visible */}
+      {!isBottomCtaFullyVisible && (
+        <MobileStickyFooter
+          selectedPayment={selectedPayment}
+          monthlyPrice={discountedMonthlyPrice}
+          fullPrice={discountedStripePrice}
+          originalPrice={bumperTotalPrice}
+          isLoading={isLoading}
+          isFormValid={personalDetailsComplete && addressComplete}
+          onPayClick={() => {
+            const payment = selectedPayment || selectedPaymentRef.current || 'full';
+            if (!selectedPayment) {
+              setSelectedPayment(payment);
+              selectedPaymentRef.current = payment;
+            }
+            processPayment(payment);
+          }}
+          onPaymentChange={(p) => { setSelectedPayment(p); selectedPaymentRef.current = p; }}
+        />
+      )}
     </div>
   );
 };
