@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { MessageCircle, Mail, Clock, Upload, Menu, X, ArrowRight } from 'lucide-react';
+import { MessageCircle, Mail, Clock, Upload, Menu, X, ArrowRight, Phone } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,7 +37,7 @@ const ContactUs = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-
+  const [showCallbackModal, setShowCallbackModal] = useState(false);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
@@ -327,6 +328,26 @@ const ContactUs = () => {
                     <p className="text-gray-600 text-sm sm:text-base">Monday – Saturday : 9am to 5pm</p>
                   </div>
                 </div>
+
+                {/* Quick Callback Card - Prominent */}
+                <div className="bg-brand-orange/5 border-2 border-brand-orange/20 rounded-xl p-5 sm:p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-full bg-brand-orange/10 flex items-center justify-center flex-shrink-0">
+                      <Phone className="w-6 h-6 text-brand-orange" />
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <h3 className="text-lg font-bold text-foreground">Want us to call you?</h3>
+                      <p className="text-sm text-muted-foreground">Leave your number and we'll call you right back — no waiting on hold.</p>
+                      <button
+                        onClick={() => setShowCallbackModal(true)}
+                        className="mt-2 inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-brand-orange/25 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 text-sm"
+                      >
+                        <Phone className="w-4 h-4" />
+                        Request a callback
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -556,6 +577,11 @@ const ContactUs = () => {
           </div>
         </section>
       </div>
+
+      <RequestCallbackModal
+        isOpen={showCallbackModal}
+        onClose={() => setShowCallbackModal(false)}
+      />
     </>
   );
 };
