@@ -179,16 +179,7 @@ const Protected = () => {
       {/* 2. Benefits Strip */}
       <BenefitsStrip />
 
-      {/* 3. Panda Reassurance */}
-      <PandaReassurance onSeeHowCoverWorks={scrollToCoverage} />
-
-      {/* 4. Typical Repair Costs */}
-      <RepairCostsSection onTalkToTechnician={openHelpModal} />
-
-      {/* 5. Claim Limit Selector */}
-      <ClaimLimitSelector onHelpMeChoose={openHelpModal} />
-
-      {/* 6. Coverage Details (scrolled to via "See how cover works") */}
+      {/* 3. Coverage Details (scrolled to via "See how cover works") */}
       <div ref={coverageRef}>
         {/* What Is Included */}
         <section id="coverage-list" className="py-16 md:py-20 bg-muted/30">
@@ -351,7 +342,16 @@ const Protected = () => {
         </section>
       </div>
 
-      {/* 7. Testimonial */}
+      {/* Panda Reassurance */}
+      <PandaReassurance onSeeHowCoverWorks={scrollToCoverage} />
+
+      {/* Typical Repair Costs */}
+      <RepairCostsSection onTalkToTechnician={openHelpModal} />
+
+      {/* Claim Limit Selector */}
+      <ClaimLimitSelector onHelpMeChoose={openHelpModal} />
+
+      {/* Testimonial */}
       <CoverTestimonial />
 
       {/* 8. Mini FAQ */}
