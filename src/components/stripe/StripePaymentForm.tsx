@@ -225,7 +225,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Payment Element - Primary methods only: Card and PayPal */}
         {/* Apple Pay / Google Pay handled by Express Checkout above */}
-        <div className="bg-white rounded-lg border border-[#DADADA]">
+        <div className="bg-white rounded-lg">
           <PaymentElement 
             onReady={() => setIsReady(true)}
             onChange={handlePaymentElementChange}
@@ -249,7 +249,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
             }}
           />
         </div>
-        {/* CSS to hide Revolut Pay from payment tabs */}
+        {/* CSS to hide Revolut Pay and darken Stripe input fields */}
         <style>{`
           /* Hide Revolut Pay tab in PaymentElement */
           [data-testid="revolut_pay-tab"],
@@ -259,6 +259,27 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
           [class*="revolut"],
           .TabButton:has([alt*="revolut" i]) {
             display: none !important;
+          }
+          /* Make Stripe input fields darker and more visible */
+          .StripeElement input,
+          .p-Input,
+          .p-Input--text,
+          .InputElement,
+          .p-Field-input,
+          .__PrivateStripeElement iframe {
+            color: #000000 !important;
+          }
+          .p-Input {
+            border-color: #999 !important;
+            background-color: #FAFAFA !important;
+          }
+          .p-Input:focus-within,
+          .p-Input--focused {
+            border-color: #333 !important;
+            box-shadow: 0 0 0 1px #333 !important;
+          }
+          .p-Input::placeholder {
+            color: #666 !important;
           }
         `}</style>
 
