@@ -15,7 +15,7 @@ import RepairCostsSection from '@/components/cover-page/RepairCostsSection';
 import ClaimLimitSelector from '@/components/cover-page/ClaimLimitSelector';
 import CoverTestimonial from '@/components/cover-page/CoverTestimonial';
 import CoverMiniFAQ from '@/components/cover-page/CoverMiniFAQ';
-import CoverFinalCTA from '@/components/cover-page/CoverFinalCTA';
+
 import PersistentCallback from '@/components/cover-page/PersistentCallback';
 import HelpMeChooseModal from '@/components/cover-page/HelpMeChooseModal';
 
@@ -357,8 +357,7 @@ const Protected = () => {
       {/* 8. Mini FAQ */}
       <CoverMiniFAQ onAskQuestion={openHelpModal} />
 
-      {/* 9. Final dark-blue CTA (only strong footer CTA) */}
-      <CoverFinalCTA />
+      {/* CoverFinalCTA removed — duplicate of section above */}
 
       {/* Persistent callback button */}
       <PersistentCallback />
