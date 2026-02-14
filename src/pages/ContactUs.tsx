@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MessageCircle, Mail, Clock, Upload, Menu, X, ArrowRight, Phone } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
+import PersistentCallback from '@/components/cover-page/PersistentCallback';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -536,47 +537,9 @@ const ContactUs = () => {
           </div>
         </section>
         
-        {/* Google Maps Location Section */}
-        <section className="py-8 sm:py-12 lg:py-16 px-4 bg-white" itemScope itemType="https://schema.org/LocalBusiness">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4" itemProp="name">
-                Visit Our <span className="text-primary">Location</span>
-              </h2>
-              <p className="text-gray-600 text-base sm:text-lg max-w-2xl mx-auto">
-                Find us on Google Maps. We're here to help with all your warranty needs.
-              </p>
-            </div>
-            
-            <div className="flex justify-center">
-              <div className="w-full max-w-5xl rounded-lg overflow-hidden shadow-lg" itemProp="hasMap" itemScope itemType="https://schema.org/Map">
-                <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d21980869.000782322!2d12.5088275!3d47.73855!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xf2bbc5bf1c415d3%3A0xbb186fb472c7fd48!2sBuyawarranty.co.uk!5e0!3m2!1sen!2s!4v1763390747051!5m2!1sen!2s" 
-                  width="100%" 
-                  height="450" 
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy" 
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="Buyawarranty.co.uk Location on Google Maps"
-                  aria-label="Google Maps showing Buyawarranty.co.uk business location"
-                  itemProp="url"
-                />
-              </div>
-            </div>
-            
-            {/* Hidden structured data for SEO */}
-            <div style={{ display: 'none' }}>
-              <span itemProp="address" itemScope itemType="https://schema.org/PostalAddress">
-                <meta itemProp="addressCountry" content="GB" />
-              </span>
-              <meta itemProp="telephone" content="0330 229 5040" />
-              <meta itemProp="email" content="info@buyawarranty.co.uk" />
-              <link itemProp="url" href="https://buyawarranty.co.uk" />
-            </div>
-          </div>
-        </section>
       </div>
+
+      <PersistentCallback />
 
       <RequestCallbackModal
         isOpen={showCallbackModal}
