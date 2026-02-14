@@ -139,7 +139,7 @@ export const useLeadDistribution = () => {
       const existing = agentCaps.find(cap => cap.admin_user_id === adminUserId);
 
       if (existing) {
-        const { error, count } = await supabase
+        const { data: updatedRows, error } = await supabase
           .from('agent_distribution_caps')
           .update(updates)
           .eq('admin_user_id', adminUserId)
@@ -147,7 +147,7 @@ export const useLeadDistribution = () => {
 
         if (error) throw error;
         // RLS may silently block the update — check if rows were actually affected
-        if (!count && count !== null) {
+        if (!updatedRows || updatedRows.length === 0) {
           throw new Error('Update blocked — you may not have permission to change distribution settings.');
         }
       } else {
