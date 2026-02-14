@@ -2080,13 +2080,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         paymentType={paymentType as '12months' | '24months' | '36months'}
         isLoading={isLoading}
         onPayClick={() => {
-          // Scroll to and highlight the payment section
-          const paymentSection = document.getElementById('how-to-pay-section');
-          if (paymentSection) {
-            paymentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            paymentSection.classList.add('ring-2', 'ring-[#0BA360]', 'ring-offset-2', 'rounded-xl');
+          // If Stripe checkout is already showing, highlight that section
+          const stripeSection = document.getElementById('inline-stripe-payment');
+          const targetSection = stripeSection || document.getElementById('how-to-pay-section');
+          if (targetSection) {
+            targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            targetSection.classList.add('ring-2', 'ring-[#0BA360]', 'ring-offset-2', 'rounded-xl');
             setTimeout(() => {
-              paymentSection.classList.remove('ring-2', 'ring-[#0BA360]', 'ring-offset-2', 'rounded-xl');
+              targetSection.classList.remove('ring-2', 'ring-[#0BA360]', 'ring-offset-2', 'rounded-xl');
             }, 2500);
           }
           processPayment(selectedPayment || undefined);
