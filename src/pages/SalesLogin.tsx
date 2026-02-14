@@ -82,6 +82,12 @@ const SalesLogin = () => {
         throw new Error('Access denied. This login is for sales team members only.');
       }
 
+      // Update last_login in admin_users
+      await supabase
+        .from('admin_users')
+        .update({ last_login: new Date().toISOString() })
+        .eq('user_id', authData.user.id);
+
       toast({
         title: "Welcome back!",
         description: "Redirecting to your dashboard...",

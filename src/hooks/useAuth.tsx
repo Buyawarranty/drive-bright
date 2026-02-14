@@ -51,6 +51,15 @@ export const useAuth = () => {
                   const primaryRole = rolePriority.find(role => userRoles.includes(role as any)) || userRoles[0] || null;
                   setUserRole(primaryRole);
                   console.log('User roles:', userRoles, 'Primary:', primaryRole);
+                  
+                  // Update last_login for admin users on sign in
+                  if (event === 'SIGNED_IN' && userRoles.some(r => adminRoles.includes(r as string))) {
+                    supabase
+                      .from('admin_users')
+                      .update({ last_login: new Date().toISOString() })
+                      .eq('user_id', session.user.id)
+                      .then(() => console.log('Updated admin last_login'));
+                  }
                 }
               } catch (error) {
                 console.error('Error fetching user role:', error);
