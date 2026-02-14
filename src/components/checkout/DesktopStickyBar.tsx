@@ -12,6 +12,7 @@ interface DesktopStickyBarProps {
   duration: string;
   paymentType: '12months' | '24months' | '36months';
   isLoading: boolean;
+  hasPromoDiscount?: boolean;
   onPayClick: () => void;
   isVisible?: boolean;
 }
@@ -25,6 +26,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
   duration,
   paymentType,
   isLoading,
+  hasPromoDiscount,
   onPayClick,
   isVisible = true,
 }) => {
@@ -68,7 +70,11 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
                 <div className="flex items-center gap-2 text-xs lg:text-sm mt-0.5 flex-wrap justify-center">
                   <span className="line-through text-red-500">£{totalPrice}</span>
                   <span className="font-bold text-green-600">Save £{savings}</span>
-                  <span className="text-gray-600 whitespace-nowrap">(10% off)</span>
+                  {hasPromoDiscount ? (
+                    <span className="text-gray-600 whitespace-nowrap">(inc. promo)</span>
+                  ) : (
+                    <span className="text-gray-600 whitespace-nowrap">(10% off)</span>
+                  )}
                 </div>
               </>
             )}

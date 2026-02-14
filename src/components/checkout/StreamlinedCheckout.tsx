@@ -2090,6 +2090,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         duration={getDurationText()}
         paymentType={paymentType as '12months' | '24months' | '36months'}
         isLoading={isLoading}
+        hasPromoDiscount={hasValidDiscountCodes}
         onPayClick={() => {
           // If Stripe checkout is already showing, highlight that section
           const stripeSection = document.getElementById('inline-stripe-payment');
