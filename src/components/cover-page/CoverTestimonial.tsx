@@ -3,7 +3,7 @@ import { Star } from 'lucide-react';
 
 const CoverTestimonial: React.FC = () => {
   return (
-    <section className="py-16 md:py-20 bg-muted/30">
+    <section className="py-16 md:py-20 bg-muted">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="bg-white rounded-2xl border border-border p-8 md:p-10 shadow-sm">
           <div className="flex justify-center mb-4">
