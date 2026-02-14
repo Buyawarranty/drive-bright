@@ -1446,7 +1446,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               totalPrice={bumperTotalPrice}
               isLoading={isLoading}
               onPaymentChange={setSelectedPayment}
-              onPayClick={processPayment}
+              onPayClick={() => processPayment(selectedPayment || undefined)}
               onChangePlan={onBack}
               isMobile={true}
             />
@@ -1955,7 +1955,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               originalPrice={bumperTotalPrice}
               savings={savings}
               isLoading={isLoading}
-              onPayClick={processPayment}
+              onPayClick={() => processPayment(selectedPayment || undefined)}
               planDurationMonths={paymentType === '12months' ? 12 : paymentType === '24months' ? 24 : 36}
               promoOpen={promoOpen}
               setPromoOpen={setPromoOpen}
@@ -2042,7 +2042,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             fullPrice={discountedStripePrice}
             savings={savings}
             isLoading={isLoading}
-            onPayClick={processPayment}
+            onPayClick={() => processPayment(selectedPayment || undefined)}
           />
         </div>
       </div>
@@ -2057,7 +2057,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         duration={getDurationText()}
         paymentType={paymentType as '12months' | '24months' | '36months'}
         isLoading={isLoading}
-        onPayClick={processPayment}
+        onPayClick={() => processPayment(selectedPayment || undefined)}
         isVisible={showDesktopStickyBar}
       />
     </div>
