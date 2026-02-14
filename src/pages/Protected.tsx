@@ -485,22 +485,22 @@ const Protected = () => {
             <p className="text-muted-foreground">Simple, fast and stress-free.</p>
           </div>
 
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {claimSteps.map((s) => (
-              <div key={s.step} className="bg-white rounded-xl border border-border p-6 text-center shadow-sm">
-                <div className="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
+              <div key={s.step} className="bg-white rounded-xl border border-border p-6 md:p-8 text-center shadow-sm">
+                <div className="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-5">
                   {s.step}
                 </div>
-                <h3 className="font-bold text-foreground mb-2">{s.title}</h3>
-                <p className="text-sm text-muted-foreground">{s.desc}</p>
+                <h3 className="font-bold text-foreground mb-3 text-lg">{s.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
               </div>
             ))}
           </div>
 
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center mt-8">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-5 text-center mt-10">
             <p className="text-sm font-medium text-green-700 flex items-center justify-center gap-2">
               <Clock className="w-4 h-4" />
-              Average decision time is under two hours.
+              Average decision time is under two hours upon receiving repair details from your garage.
             </p>
           </div>
         </div>
