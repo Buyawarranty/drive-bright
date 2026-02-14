@@ -144,8 +144,8 @@ body {
     --pricing-benefit: 134 61% 41%;
     --pricing-discount: 211 100% 50%;
 
-    /* Keep destructive for errors */
-    --destructive: 0 100% 50%;
+    /* Keep destructive for errors - softer red #D9534F */
+    --destructive: 2 65% 58%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 220 13% 91%;
