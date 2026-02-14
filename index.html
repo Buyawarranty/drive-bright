@@ -74,10 +74,24 @@
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
 
+      // Google Consent Mode v2 defaults - MUST be set BEFORE gtag config
+      // Without these, GTM silently blocks ad_storage and conversion events
+      gtag('consent', 'default', {
+        'ad_storage': 'granted',
+        'ad_user_data': 'granted',
+        'ad_personalization': 'granted',
+        'analytics_storage': 'granted',
+        'functionality_storage': 'granted',
+        'personalization_storage': 'granted',
+        'security_storage': 'granted'
+      });
+
+      gtag('js', new Date());
       gtag('config', 'G-T5P06P67GM');
-      gtag('config', 'AW-17325228149');
+      gtag('config', 'AW-17325228149', {
+        'allow_enhanced_conversions': true
+      });
     </script>
     
     <!-- Facebook & TikTok Pixels loaded via thirdPartyScripts.ts -->
