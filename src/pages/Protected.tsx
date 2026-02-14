@@ -9,7 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
 import bmwWarranty from '@/assets/bmw-warranty.webp';
-import pandaSavings from '@/assets/panda-savings.webp';
+import audiWarrantyPhone from '@/assets/audi-warranty-phone.png';
+import pandaSavingsVehicles from '@/assets/panda-savings-vehicles.png';
 import pandaVans from '@/assets/panda-vans.png';
 import HighPerformanceExclusionsList from '@/components/HighPerformanceExclusionsList';
 
@@ -464,7 +465,7 @@ const Protected = () => {
               ))}
             </div>
             <div className="flex justify-center">
-              <img src={pandaSavings} alt="Miles the panda with savings jar" className="w-64 md:w-72 h-auto object-contain" loading="lazy" />
+              <img src={audiWarrantyPhone} alt="Audi car with buyawarranty app on phone" className="w-64 md:w-80 h-auto object-contain" loading="lazy" />
             </div>
           </div>
 
@@ -589,6 +590,10 @@ const Protected = () => {
               <ArrowRight className="w-5 h-5" />
             </Button>
           </Link>
+
+          <div className="mt-10 flex justify-center">
+            <img src={pandaSavingsVehicles} alt="Miles the panda with vehicles and savings jar" className="w-72 md:w-96 h-auto object-contain" loading="lazy" />
+          </div>
         </div>
       </section>
 
