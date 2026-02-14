@@ -283,7 +283,7 @@ const Protected = () => {
 
           {/* Download Full Cover Guide */}
           <div className="flex flex-col items-center gap-3">
-            <h3 className="text-lg font-bold text-foreground">Download Your Full Cover Guide</h3>
+            <h3 className="text-lg font-bold text-foreground">Download your full cover guide</h3>
             {platinumDocUrl ? (
               <a href={platinumDocUrl} target="_blank" rel="noopener noreferrer">
                 <Button variant="outline" className="flex items-center gap-2 border-primary text-primary hover:bg-primary/5">
