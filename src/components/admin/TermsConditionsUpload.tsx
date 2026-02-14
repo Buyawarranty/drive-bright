@@ -27,6 +27,8 @@ const TermsConditionsUpload = () => {
 
   useEffect(() => {
     fetchTermsDocuments();
+    const timeout = setTimeout(() => setLoading(false), 8000);
+    return () => clearTimeout(timeout);
   }, []);
 
   const fetchTermsDocuments = async () => {
@@ -186,7 +188,7 @@ const TermsConditionsUpload = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-32">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }

@@ -51,6 +51,43 @@ const TabFallback = () => (
   </div>
 );
 
+// Error boundary for lazy-loaded tab chunks
+class TabErrorBoundary extends React.Component<
+  { children: React.ReactNode; onRetry: () => void },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: Error) {
+    console.error('[TabErrorBoundary] Chunk load error:', error);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center h-64 gap-4">
+          <p className="text-destructive font-medium">Failed to load this tab.</p>
+          <p className="text-sm text-muted-foreground">This can happen due to a network issue or a new deployment.</p>
+          <button
+            onClick={() => {
+              this.setState({ hasError: false, error: null });
+              this.props.onRetry();
+            }}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:opacity-90"
+          >
+            Reload Tab
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // Lead data type for passing to GetQuoteTab
 interface LeadForQuote {
   id: string;
@@ -550,9 +587,11 @@ const AdminDashboard = () => {
         
         <div className="flex-1 lg:ml-64 overflow-hidden">
           <main className="p-4 lg:p-6 overflow-y-auto h-[calc(100vh-104px)]">
-            <Suspense fallback={<TabFallback />}>
-              {renderContent()}
-            </Suspense>
+            <TabErrorBoundary onRetry={() => window.location.reload()}>
+              <Suspense fallback={<TabFallback />}>
+                {renderContent()}
+              </Suspense>
+            </TabErrorBoundary>
           </main>
         </div>
       </div>
