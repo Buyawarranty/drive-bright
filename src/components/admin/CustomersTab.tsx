@@ -1739,6 +1739,70 @@ export const CustomersTab = () => {
       setBulkDeleteLoading(false);
     }
   };
+  // Quick archive for test/fake leads - no dialog needed
+  const quickArchiveAsTestOrFake = async (customerIds: Set<string> | string[], action: 'test' | 'fake') => {
+    const ids = Array.from(customerIds);
+    if (ids.length === 0) return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const adminId = user?.id;
+      if (!adminId) { toast.error('Unable to identify admin user'); return; }
+
+      let successCount = 0;
+      const statusLabel = action === 'test' ? 'Test Purchase' : 'Fake Lead';
+      const reason = action === 'test' ? 'Test record cleanup' : 'Fake/Spam lead';
+
+      for (const id of ids) {
+        const { error } = await supabase.rpc('soft_delete_customer', {
+          customer_uuid: id,
+          admin_uuid: adminId
+        });
+
+        if (error) {
+          // Fallback to direct update
+          await supabase.from('customers').update({
+            is_deleted: true,
+            deleted_at: new Date().toISOString(),
+            deleted_by: adminId,
+            status: statusLabel
+          }).eq('id', id);
+        } else {
+          // Update status
+          await supabase.from('customers').update({ status: statusLabel }).eq('id', id);
+        }
+
+        // Archive related policies
+        const customer = filteredCustomers.find(c => c.id === id);
+        const policyId = customer?.customer_policies?.[0]?.id;
+        if (policyId) {
+          await supabase.from('customer_policies').update({
+            is_deleted: true,
+            deleted_at: new Date().toISOString(),
+            deleted_by: adminId,
+            status: action === 'test' ? 'test' : 'fake_lead'
+          }).eq('id', policyId);
+        }
+
+        // Log a note
+        await supabase.from('admin_notes').insert({
+          customer_id: id,
+          created_by: adminId,
+          note: `WARRANTY ${statusLabel.toUpperCase()} ARCHIVED\nReason: ${reason}`
+        });
+
+        successCount++;
+      }
+
+      toast.success(`${successCount} record(s) marked as ${statusLabel.toLowerCase()} and archived.`);
+      setSelectedCustomers(new Set());
+      fetchCustomers();
+      fetchDeletedCustomers();
+    } catch (error) {
+      console.error('Quick archive error:', error);
+      toast.error('An error occurred while archiving');
+    }
+  };
 
   const fetchEmailStatuses = async () => {
     try {
@@ -2546,38 +2610,14 @@ export const CustomersTab = () => {
                             Archive (Hide)
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            onClick={() => {
-                              const selected = filteredCustomers.filter(c => selectedCustomers.has(c.id));
-                              setArchiveCustomers(selected.map(c => ({
-                                id: c.id,
-                                name: c.name,
-                                email: c.email,
-                                policy_id: c.customer_policies?.[0]?.id,
-                                policy_number: c.customer_policies?.[0]?.policy_number,
-                                user_id: c.customer_policies?.[0]?.user_id,
-                                customer_id: c.id
-                              })));
-                              setArchiveDialogOpen(true);
-                            }}
+                            onClick={() => quickArchiveAsTestOrFake(selectedCustomers, 'test')}
                             className="text-purple-600"
                           >
                             <FlaskConical className="h-4 w-4 mr-2" />
                             Mark as Test
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            onClick={() => {
-                              const selected = filteredCustomers.filter(c => selectedCustomers.has(c.id));
-                              setArchiveCustomers(selected.map(c => ({
-                                id: c.id,
-                                name: c.name,
-                                email: c.email,
-                                policy_id: c.customer_policies?.[0]?.id,
-                                policy_number: c.customer_policies?.[0]?.policy_number,
-                                user_id: c.customer_policies?.[0]?.user_id,
-                                customer_id: c.id
-                              })));
-                              setArchiveDialogOpen(true);
-                            }}
+                            onClick={() => quickArchiveAsTestOrFake(selectedCustomers, 'fake')}
                             className="text-orange-600"
                           >
                             <UserMinus className="h-4 w-4 mr-2" />
@@ -4304,36 +4344,14 @@ Please log in and change your password after first login.`;
                                 Archive (Hide)
                               </DropdownMenuItem>
                               <DropdownMenuItem 
-                                onClick={() => {
-                                  setArchiveCustomers([{
-                                    id: customer.id,
-                                    name: customer.name,
-                                    email: customer.email,
-                                    policy_id: customer.customer_policies?.[0]?.id,
-                                    policy_number: customer.customer_policies?.[0]?.policy_number,
-                                    user_id: customer.customer_policies?.[0]?.user_id,
-                                    customer_id: customer.id
-                                  }]);
-                                  setArchiveDialogOpen(true);
-                                }}
+                                onClick={() => quickArchiveAsTestOrFake(new Set([customer.id]), 'test')}
                                 className="text-purple-600"
                               >
                                 <FlaskConical className="h-4 w-4 mr-2" />
                                 Mark as Test
                               </DropdownMenuItem>
                               <DropdownMenuItem 
-                                onClick={() => {
-                                  setArchiveCustomers([{
-                                    id: customer.id,
-                                    name: customer.name,
-                                    email: customer.email,
-                                    policy_id: customer.customer_policies?.[0]?.id,
-                                    policy_number: customer.customer_policies?.[0]?.policy_number,
-                                    user_id: customer.customer_policies?.[0]?.user_id,
-                                    customer_id: customer.id
-                                  }]);
-                                  setArchiveDialogOpen(true);
-                                }}
+                                onClick={() => quickArchiveAsTestOrFake(new Set([customer.id]), 'fake')}
                                 className="text-orange-600"
                               >
                                 <UserMinus className="h-4 w-4 mr-2" />
