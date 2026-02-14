@@ -44,6 +44,7 @@ export const VehicleStatsTab: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [showOthers, setShowOthers] = useState(false);
+  const [expandedMakes, setExpandedMakes] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -140,7 +141,25 @@ export const VehicleStatsTab: React.FC = () => {
       .sort((a, b) => b.count - a.count);
   }, [filtered, claimsByMake]);
 
-  // Stats by model
+  // Stats by model — grouped by make for drill-down
+  const modelsByMake = useMemo(() => {
+    const map = new Map<string, Map<string, { count: number; revenue: number }>>();
+    filtered.forEach(c => {
+      if (!c.vehicle_make) return;
+      const make = normaliseMake(c.vehicle_make);
+      const family = normaliseModelFamily(make, c.vehicle_model || '');
+      if (make === 'Unknown') return;
+      if (!map.has(make)) map.set(make, new Map());
+      const models = map.get(make)!;
+      if (!models.has(family)) models.set(family, { count: 0, revenue: 0 });
+      const e = models.get(family)!;
+      e.count++;
+      if (c.final_amount) e.revenue += c.final_amount;
+    });
+    return map;
+  }, [filtered]);
+
+  // Stats by model (flat, for chart)
   const modelStats = useMemo(() => {
     const map = new Map<string, { count: number; revenue: number }>();
     filtered.forEach(c => {
@@ -159,6 +178,15 @@ export const VehicleStatsTab: React.FC = () => {
       .sort((a, b) => b.count - a.count)
       .slice(0, 20);
   }, [filtered]);
+
+  const toggleMakeExpand = (make: string) => {
+    setExpandedMakes(prev => {
+      const next = new Set(prev);
+      if (next.has(make)) next.delete(make);
+      else next.add(make);
+      return next;
+    });
+  };
 
   // Fuel type stats
   const fuelStats = useMemo(() => {
@@ -488,18 +516,49 @@ export const VehicleStatsTab: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {makeStats.map((m, i) => (
-                  <tr key={m.make} className="border-b hover:bg-muted/50">
-                    <td className="py-2 px-3 text-muted-foreground">{i + 1}</td>
-                    <td className="py-2 px-3 font-medium">{m.make}</td>
-                    <td className="py-2 px-3 text-right">{m.count}</td>
-                    <td className="py-2 px-3 text-right">£{m.revenue.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
-                    <td className="py-2 px-3 text-right">£{m.count > 0 ? Math.round(m.revenue / m.count).toLocaleString() : 0}</td>
-                    <td className="py-2 px-3 text-right">{totalWarranties > 0 ? ((m.count / totalWarranties) * 100).toFixed(1) : 0}%</td>
-                    <td className="py-2 px-3 text-right">{m.claims > 0 ? <Badge variant="destructive" className="text-xs">{m.claims}</Badge> : <span className="text-muted-foreground">0</span>}</td>
-                    <td className="py-2 px-3 text-right">{m.count > 0 ? ((m.claims / m.count) * 100).toFixed(1) : 0}%</td>
-                  </tr>
-                ))}
+                {makeStats.map((m, i) => {
+                  const isExpanded = expandedMakes.has(m.make);
+                  const models = modelsByMake.get(m.make);
+                  const modelList = models
+                    ? Array.from(models.entries())
+                        .map(([model, d]) => ({ model, count: d.count, revenue: Math.round(d.revenue * 100) / 100 }))
+                        .sort((a, b) => b.count - a.count)
+                    : [];
+                  return (
+                    <React.Fragment key={m.make}>
+                      <tr 
+                        className="border-b hover:bg-muted/50 cursor-pointer" 
+                        onClick={() => toggleMakeExpand(m.make)}
+                      >
+                        <td className="py-2 px-3 text-muted-foreground">{i + 1}</td>
+                        <td className="py-2 px-3 font-medium flex items-center gap-1">
+                          {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                          {m.make}
+                          {modelList.length > 0 && (
+                            <Badge variant="outline" className="text-[10px] ml-1">{modelList.length} models</Badge>
+                          )}
+                        </td>
+                        <td className="py-2 px-3 text-right">{m.count}</td>
+                        <td className="py-2 px-3 text-right">£{m.revenue.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                        <td className="py-2 px-3 text-right">£{m.count > 0 ? Math.round(m.revenue / m.count).toLocaleString() : 0}</td>
+                        <td className="py-2 px-3 text-right">{totalWarranties > 0 ? ((m.count / totalWarranties) * 100).toFixed(1) : 0}%</td>
+                        <td className="py-2 px-3 text-right">{m.claims > 0 ? <Badge variant="destructive" className="text-xs">{m.claims}</Badge> : <span className="text-muted-foreground">0</span>}</td>
+                        <td className="py-2 px-3 text-right">{m.count > 0 ? ((m.claims / m.count) * 100).toFixed(1) : 0}%</td>
+                      </tr>
+                      {isExpanded && modelList.map((model) => (
+                        <tr key={`${m.make}-${model.model}`} className="border-b bg-muted/30">
+                          <td className="py-1.5 px-3"></td>
+                          <td className="py-1.5 px-3 pl-8 text-sm text-muted-foreground">↳ {model.model}</td>
+                          <td className="py-1.5 px-3 text-right text-sm">{model.count}</td>
+                          <td className="py-1.5 px-3 text-right text-sm">£{model.revenue.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                          <td className="py-1.5 px-3 text-right text-sm">£{model.count > 0 ? Math.round(model.revenue / model.count).toLocaleString() : 0}</td>
+                          <td className="py-1.5 px-3 text-right text-sm">{m.count > 0 ? ((model.count / m.count) * 100).toFixed(1) : 0}%</td>
+                          <td className="py-1.5 px-3" colSpan={2}></td>
+                        </tr>
+                      ))}
+                    </React.Fragment>
+                  );
+                })}
               </tbody>
             </table>
           </div>
