@@ -69,7 +69,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!reason) {
+    if (!reason && action !== 'test' && action !== 'fake') {
       toast.error('Please select a reason');
       return;
     }
@@ -391,55 +391,60 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
             </div>
           )}
 
-          {/* Reason Selector */}
-          <div className="space-y-2">
-            <Label htmlFor="reason">Reason *</Label>
-            <Select value={reason} onValueChange={setReason}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a reason..." />
-              </SelectTrigger>
-              <SelectContent>
-                {ARCHIVE_REASONS.map((r) => (
-                  <SelectItem key={r} value={r}>{r}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Additional Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="notes">Additional Notes (Optional)</Label>
-            <Textarea
-              id="notes"
-              value={additionalNotes}
-              onChange={(e) => setAdditionalNotes(e.target.value)}
-              placeholder="Enter any additional details..."
-              rows={2}
-            />
-          </div>
-
-          {/* Revoke Portal Access - only for cancel/refund (not for archive, test, fake) */}
-          {action !== 'archive' && action !== 'test' && action !== 'fake' && !isBulk && customers[0]?.user_id && (
-            <div className="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <Checkbox
-                id="revokeAccess"
-                checked={revokePortalAccess}
-                onCheckedChange={(checked) => setRevokePortalAccess(checked === true)}
-                className="mt-0.5"
-              />
-              <div className="space-y-1">
-                <Label 
-                  htmlFor="revokeAccess" 
-                  className="text-sm font-medium text-red-800 cursor-pointer flex items-center gap-2"
-                >
-                  <UserX className="h-4 w-4" />
-                  Also revoke portal access
-                </Label>
-                <p className="text-xs text-red-600">
-                  Prevent customer from logging into their dashboard.
-                </p>
+          {/* Reason & Notes - hide for test/fake since they just archive immediately */}
+          {action !== 'test' && action !== 'fake' && (
+            <>
+              {/* Reason Selector */}
+              <div className="space-y-2">
+                <Label htmlFor="reason">Reason *</Label>
+                <Select value={reason} onValueChange={setReason}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a reason..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ARCHIVE_REASONS.map((r) => (
+                      <SelectItem key={r} value={r}>{r}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
+
+              {/* Additional Notes */}
+              <div className="space-y-2">
+                <Label htmlFor="notes">Additional Notes (Optional)</Label>
+                <Textarea
+                  id="notes"
+                  value={additionalNotes}
+                  onChange={(e) => setAdditionalNotes(e.target.value)}
+                  placeholder="Enter any additional details..."
+                  rows={2}
+                />
+              </div>
+
+              {/* Revoke Portal Access - only for cancel/refund */}
+              {action !== 'archive' && !isBulk && customers[0]?.user_id && (
+                <div className="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <Checkbox
+                    id="revokeAccess"
+                    checked={revokePortalAccess}
+                    onCheckedChange={(checked) => setRevokePortalAccess(checked === true)}
+                    className="mt-0.5"
+                  />
+                  <div className="space-y-1">
+                    <Label 
+                      htmlFor="revokeAccess" 
+                      className="text-sm font-medium text-red-800 cursor-pointer flex items-center gap-2"
+                    >
+                      <UserX className="h-4 w-4" />
+                      Also revoke portal access
+                    </Label>
+                    <p className="text-xs text-red-600">
+                      Prevent customer from logging into their dashboard.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -450,7 +455,7 @@ export const ArchiveCustomerDialog: React.FC<ArchiveCustomerDialogProps> = ({
           <Button 
             variant={getButtonVariant() as any}
             onClick={handleSubmit}
-            disabled={isProcessing || !reason}
+            disabled={isProcessing || (action !== 'test' && action !== 'fake' && !reason)}
             className={action === 'refund' ? 'bg-amber-600 hover:bg-amber-700' : action === 'test' ? 'bg-purple-600 hover:bg-purple-700' : action === 'fake' ? 'bg-orange-600 hover:bg-orange-700' : ''}
           >
             {getButtonText()}
