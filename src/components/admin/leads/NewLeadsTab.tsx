@@ -76,10 +76,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Default behavior:
   // - all-leads: defaults to TRUE unless explicitly denied (false)
   // - my-dashboard: ALWAYS allowed (shows only user's own leads)
-  // - team-view: must be explicitly granted (true)
+  // - team-view: must be explicitly granted OR sales_lead/admin role gets it automatically
   const canSeeAllLeads = hasAllLeadsPerm !== false; // true if undefined or true
   const canSeeMyDashboard = true; // Always allow - shows only user's own leads
-  const canSeeTeamView = hasTeamViewPerm === true; // Must be explicitly granted
+  const canSeeTeamView = hasTeamViewPerm === true || isAdmin; // Sales leads & admins always get team view
   
   // Determine default view based on permissions
   const getDefaultView = () => {
