@@ -141,6 +141,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
   // Payment toggle state
   const [selectedPayment, setSelectedPayment] = useState<'monthly' | 'full' | null>('monthly');
+  const selectedPaymentRef = React.useRef<'monthly' | 'full' | null>('monthly');
   
   // Section states for collapsible accordion
   const [detailsOpen, setDetailsOpen] = useState(true);
@@ -670,7 +671,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             }
             // Restore payment type if available
             if (parsed.paymentType) {
-              setSelectedPayment(parsed.paymentType === 'monthly' ? 'monthly' : 'full');
+              const restoredPayment = parsed.paymentType === 'monthly' ? 'monthly' : 'full';
+              setSelectedPayment(restoredPayment);
+              selectedPaymentRef.current = restoredPayment;
             }
             // Restore discount codes if available
             if (parsed.appliedDiscountCodes && Array.isArray(parsed.appliedDiscountCodes)) {
@@ -1061,7 +1064,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   };
 
   const processPayment = async (paymentOverride?: 'monthly' | 'full') => {
-    const effectivePayment = paymentOverride || selectedPayment;
+    const effectivePayment = paymentOverride || selectedPayment || selectedPaymentRef.current;
+    console.log('💳 processPayment called:', { paymentOverride, selectedPayment, refValue: selectedPaymentRef.current, effectivePayment });
     setShowValidation(true);
     setPaymentError('');
     
@@ -1187,7 +1191,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         if (errorMessage.includes('is not available for Bumper') || errorMessage.includes('Monthly payments are not available')) {
           toast.error('Monthly payments unavailable. Please pay in full.', {
             duration: 8000,
-            action: { label: 'Pay in Full', onClick: () => setSelectedPayment('full') }
+            action: { label: 'Pay in Full', onClick: () => { setSelectedPayment('full'); selectedPaymentRef.current = 'full'; } }
           });
           setIsLoading(false);
           return;
@@ -1445,7 +1449,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               monthlyPrice={discountedMonthlyPrice}
               totalPrice={bumperTotalPrice}
               isLoading={isLoading}
-              onPaymentChange={setSelectedPayment}
+              onPaymentChange={(p) => { setSelectedPayment(p); selectedPaymentRef.current = p; }}
               onPayClick={() => processPayment(selectedPayment || undefined)}
               onChangePlan={onBack}
               isMobile={true}
@@ -1939,6 +1943,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               selectedPayment={selectedPayment}
               onPaymentChange={async (payment) => {
                 setSelectedPayment(payment);
+                selectedPaymentRef.current = payment;
                 setPaymentError('');
                 
                 // Auto-trigger Stripe checkout when "Pay in Full" is selected
