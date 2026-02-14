@@ -24,6 +24,12 @@ interface OrderSummaryProps {
   source?: string; // 'stripe' or 'bumper'
 }
 
+// Check if a string looks like a UUID
+const isUUID = (str: string | undefined | null): boolean => {
+  if (!str) return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+};
+
 export const OrderSummary: React.FC<OrderSummaryProps> = ({
   plan,
   paymentType,
@@ -156,10 +162,10 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
         </h2>
         
         <div className="space-y-4">
-          {/* Warranty Number - Prominent Display */}
+          {/* Warranty Reference Number - Prominent Display */}
           {warrantyNumber && (
             <div className="bg-green-50 rounded-lg p-4 border border-green-200 text-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Warranty Number</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Your Warranty Reference Number</p>
               <p className="text-xl font-bold text-foreground font-mono">{warrantyNumber}</p>
             </div>
           )}
@@ -168,7 +174,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
           <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
             <div>
               <p className="text-xs text-muted-foreground uppercase tracking-wide">Plan</p>
-              <p className="font-semibold text-foreground">{plan || 'Platinum'}</p>
+              <p className="font-semibold text-foreground">{isUUID(plan) ? 'Platinum' : (plan || 'Platinum')}</p>
             </div>
             {vehicle && (
               <div>
