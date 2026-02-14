@@ -835,13 +835,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setCustomerData((prev: typeof customerData) => ({ ...prev, [field]: value }));
-    if (fieldErrors[field]) {
-      setFieldErrors(prev => ({ ...prev, [field]: '' }));
-    }
     if (paymentError) setPaymentError('');
     
-    // Live validate on change (not just blur) for better UX
-    if (typeof value === 'string' && value.trim()) {
+    // Live validate on every change for immediate feedback
+    if (typeof value === 'string') {
       // Defer validation slightly so state is updated
       setTimeout(() => validateField(field), 0);
     }
