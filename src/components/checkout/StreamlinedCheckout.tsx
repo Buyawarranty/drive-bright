@@ -2056,13 +2056,24 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       <DesktopStickyBar
         selectedPayment={selectedPayment}
         monthlyPrice={discountedMonthlyPrice}
-        totalPrice={bumperTotalPrice}
+        totalPrice={hasValidDiscountCodes ? discountedBumperPrice : bumperTotalPrice}
         fullPrice={discountedStripePrice}
         savings={savings}
         duration={getDurationText()}
         paymentType={paymentType as '12months' | '24months' | '36months'}
         isLoading={isLoading}
-        onPayClick={() => processPayment(selectedPayment || undefined)}
+        onPayClick={() => {
+          // Scroll to and highlight the payment section
+          const paymentSection = document.getElementById('how-to-pay-section');
+          if (paymentSection) {
+            paymentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            paymentSection.classList.add('ring-2', 'ring-[#0BA360]', 'ring-offset-2', 'rounded-xl');
+            setTimeout(() => {
+              paymentSection.classList.remove('ring-2', 'ring-[#0BA360]', 'ring-offset-2', 'rounded-xl');
+            }, 2500);
+          }
+          processPayment(selectedPayment || undefined);
+        }}
         isVisible={showDesktopStickyBar}
       />
     </div>
