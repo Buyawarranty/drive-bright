@@ -36,7 +36,9 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
           style={{
             backgroundColor: !selectedPayment 
               ? '#CCCCCC' 
-              : '#0BA360',
+              : selectedPayment === 'monthly'
+                ? '#FF6B00'
+                : '#0BA360',
             color: '#FFFFFF',
           }}
         >

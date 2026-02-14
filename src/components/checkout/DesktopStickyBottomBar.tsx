@@ -81,8 +81,10 @@ const DesktopStickyBottomBar: React.FC<DesktopStickyBottomBarProps> = ({
             disabled={isLoading || !selectedPayment}
             className="px-8 py-5 text-base font-bold rounded-xl animate-breathing whitespace-nowrap"
             style={{
-              backgroundColor: !selectedPayment 
-                ? '#CCCCCC' 
+            backgroundColor: !selectedPayment 
+              ? '#CCCCCC' 
+              : selectedPayment === 'monthly'
+                ? '#FF6B00'
                 : '#0BA360',
               color: '#FFFFFF',
             }}
