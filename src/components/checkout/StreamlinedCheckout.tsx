@@ -28,6 +28,7 @@ import PaymentMethodSelector from '@/components/checkout/PaymentMethodSelector';
 import HowToPaySection from '@/components/checkout/HowToPaySection';
 import DesktopOrderSummary from '@/components/checkout/DesktopOrderSummary';
 import DesktopStickyBar from '@/components/checkout/DesktopStickyBar';
+import MobileStickyFooter from '@/components/checkout/MobileStickyFooter';
 import DesktopPlanHeader from '@/components/checkout/DesktopPlanHeader';
 // Import the props interface from main component
 export interface StreamlinedCheckoutProps {
@@ -2131,19 +2132,37 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         isLoading={isLoading}
         hasPromoDiscount={hasValidDiscountCodes}
         onPayClick={() => {
-          // If Stripe checkout is already showing, highlight that section
-          const stripeSection = document.getElementById('inline-stripe-payment');
-          const targetSection = stripeSection || document.getElementById('how-to-pay-section');
-          if (targetSection) {
-            targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            targetSection.classList.add('ring-2', 'ring-[#0BA360]', 'ring-offset-2', 'rounded-xl');
-            setTimeout(() => {
-              targetSection.classList.remove('ring-2', 'ring-[#0BA360]', 'ring-offset-2', 'rounded-xl');
-            }, 2500);
+          const payment = selectedPayment || selectedPaymentRef.current || 'full';
+          console.log('💳 DesktopStickyBar pay clicked:', { selectedPayment, refValue: selectedPaymentRef.current, using: payment });
+          
+          // Ensure selectedPayment state is set
+          if (!selectedPayment) {
+            setSelectedPayment(payment);
+            selectedPaymentRef.current = payment;
           }
-          processPayment(selectedPayment || undefined);
+          
+          processPayment(payment);
         }}
         isVisible={showDesktopStickyBar}
+      />
+
+      {/* Mobile Sticky Footer */}
+      <MobileStickyFooter
+        selectedPayment={selectedPayment}
+        monthlyPrice={discountedMonthlyPrice}
+        fullPrice={discountedStripePrice}
+        originalPrice={bumperTotalPrice}
+        isLoading={isLoading}
+        isFormValid={personalDetailsComplete && addressComplete}
+        onPayClick={() => {
+          const payment = selectedPayment || selectedPaymentRef.current || 'full';
+          if (!selectedPayment) {
+            setSelectedPayment(payment);
+            selectedPaymentRef.current = payment;
+          }
+          processPayment(payment);
+        }}
+        onPaymentChange={(p) => { setSelectedPayment(p); selectedPaymentRef.current = p; }}
       />
     </div>
   );
