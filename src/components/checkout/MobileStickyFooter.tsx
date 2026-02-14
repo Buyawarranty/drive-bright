@@ -41,8 +41,8 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
           </span>
           <span>·</span>
           <span className="flex items-center gap-1">
-            <Lock className="w-3 h-3 text-[#0BA360]" />
-            Secure payment
+            <Check className="w-3 h-3 text-[#0BA360]" />
+            Easy claims
           </span>
         </div>
       </div>
