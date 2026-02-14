@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Shield, Clock, ArrowRight, Fuel, Battery, Zap, Bike, X, FileText, Wrench, Phone, Star, ChevronRight } from 'lucide-react';
+import { CheckCircle, Shield, Clock, ArrowRight, Fuel, Battery, Zap, Bike, X, FileText, Wrench, Phone, Star, ChevronRight, ChevronDown } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Link } from 'react-router-dom';
 import { SEOHead } from '@/components/SEOHead';
@@ -17,6 +17,7 @@ import HighPerformanceExclusionsList from '@/components/HighPerformanceExclusion
 const Protected = () => {
   const [platinumDocUrl, setPlatinumDocUrl] = useState<string>('');
   const [termsDocUrl, setTermsDocUrl] = useState<string>('');
+  const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchDocuments = async () => {
@@ -551,18 +552,24 @@ const Protected = () => {
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Frequently Asked Questions</h2>
           </div>
-          <Accordion type="single" collapsible className="space-y-3">
+          <div className="space-y-4">
             {faqs.map((faq, i) => (
-              <AccordionItem key={i} value={`faq-${i}`} className="bg-gray-50 rounded-lg border border-border px-5">
-                <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-4">
-                  {faq.q}
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground text-sm pb-4">
-                  {faq.a}
-                </AccordionContent>
-              </AccordionItem>
+              <div key={i} className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg shadow-lg overflow-hidden">
+                <button
+                  onClick={() => setOpenFaqIdx(openFaqIdx === i ? null : i)}
+                  className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-orange-600/20 transition-colors"
+                >
+                  <span className="font-semibold text-lg text-white pr-4">{faq.q}</span>
+                  <ChevronDown className={`w-6 h-6 flex-shrink-0 text-white transition-transform duration-300 ${openFaqIdx === i ? 'rotate-180' : ''}`} />
+                </button>
+                <div className={`overflow-hidden transition-all duration-200 ease-out ${openFaqIdx === i ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}`}>
+                  <div className="px-6 pb-5 bg-white border-t border-orange-200">
+                    <p className="pt-4 text-foreground leading-relaxed">{faq.a}</p>
+                  </div>
+                </div>
+              </div>
             ))}
-          </Accordion>
+          </div>
         </div>
       </section>
 
