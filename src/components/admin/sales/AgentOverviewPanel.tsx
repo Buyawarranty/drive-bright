@@ -15,7 +15,15 @@ interface AgentPresence {
   status: string;
   last_seen_at: string;
   last_interaction_at: string | null;
+  last_activity_at: string | null;
   current_tab: string | null;
+}
+
+interface AgentOnlineTime {
+  admin_user_id: string;
+  total_online_seconds: number;
+  first_online_at: string | null;
+  session_count: number;
 }
 
 interface AgentLeadCounts {
@@ -28,18 +36,27 @@ interface AgentLeadCounts {
 
 export const AgentOverviewPanel: React.FC<AgentOverviewPanelProps> = ({ leads, salesUsers }) => {
   const [presenceData, setPresenceData] = useState<AgentPresence[]>([]);
+  const [onlineTimeData, setOnlineTimeData] = useState<AgentOnlineTime[]>([]);
   const [leadCounts, setLeadCounts] = useState<Record<string, { total: number; new: number; contacted: number; paid: number }>>({});
 
   useEffect(() => {
     const fetchPresence = async () => {
       const { data } = await supabase
         .from('user_presence')
-        .select('admin_user_id, status, last_seen_at, last_interaction_at, current_tab');
-      if (data) setPresenceData(data);
+        .select('admin_user_id, status, last_seen_at, last_interaction_at, last_activity_at, current_tab');
+      if (data) setPresenceData(data as AgentPresence[]);
+    };
+
+    const fetchOnlineTime = async () => {
+      const today = new Date().toISOString().split('T')[0];
+      const { data } = await supabase
+        .from('user_daily_online_time')
+        .select('admin_user_id, total_online_seconds, first_online_at, session_count')
+        .eq('date', today);
+      if (data) setOnlineTimeData(data as AgentOnlineTime[]);
     };
 
     const fetchLeadCounts = async () => {
-      // If leads are passed (non-empty), use them directly
       if (leads && leads.length > 0) {
         const counts: Record<string, { total: number; new: number; contacted: number; paid: number }> = {};
         leads.forEach((l: any) => {
@@ -54,7 +71,6 @@ export const AgentOverviewPanel: React.FC<AgentOverviewPanelProps> = ({ leads, s
         return;
       }
 
-      // Otherwise fetch lightweight counts from DB
       const { data } = await supabase
         .from('sales_leads')
         .select('assigned_to, status, is_paid')
@@ -74,13 +90,36 @@ export const AgentOverviewPanel: React.FC<AgentOverviewPanelProps> = ({ leads, s
     };
 
     fetchPresence();
+    fetchOnlineTime();
     fetchLeadCounts();
 
-    const interval = setInterval(fetchPresence, 30000);
+    const interval = setInterval(() => {
+      fetchPresence();
+      fetchOnlineTime();
+    }, 30000);
     return () => clearInterval(interval);
   }, [leads]);
 
   const agents = salesUsers.filter(u => u.role !== 'admin');
+
+  const formatOnlineTime = (agentId: string, presence?: AgentPresence) => {
+    const record = onlineTimeData.find(t => t.admin_user_id === agentId);
+    let totalSeconds = record?.total_online_seconds || 0;
+
+    // If agent is currently online, add live elapsed time since last_activity_at
+    if (presence?.status === 'online' && presence?.last_activity_at) {
+      const elapsed = Math.floor((Date.now() - new Date(presence.last_activity_at).getTime()) / 1000);
+      if (elapsed > 0 && elapsed < 86400) {
+        totalSeconds += elapsed;
+      }
+    }
+
+    if (totalSeconds <= 0) return '—';
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    return `${minutes}m`;
+  };
 
   const getStatusBadge = (status?: string) => {
     switch (status) {
@@ -111,6 +150,7 @@ export const AgentOverviewPanel: React.FC<AgentOverviewPanelProps> = ({ leads, s
               <tr className="border-b text-left">
                 <th className="pb-3 font-medium">Agent</th>
                 <th className="pb-3 font-medium">Status</th>
+                <th className="pb-3 font-medium text-center">Online Today</th>
                 <th className="pb-3 font-medium text-center">Assigned</th>
                 <th className="pb-3 font-medium text-center">New</th>
                 <th className="pb-3 font-medium text-center">Contacted</th>
@@ -133,6 +173,11 @@ export const AgentOverviewPanel: React.FC<AgentOverviewPanelProps> = ({ leads, s
                       </div>
                     </td>
                     <td className="py-3">{getStatusBadge(presence?.status)}</td>
+                    <td className="py-3 text-center">
+                      <span className={`text-xs font-medium ${presence?.status === 'online' ? 'text-green-600' : 'text-muted-foreground'}`}>
+                        {formatOnlineTime(agent.id, presence)}
+                      </span>
+                    </td>
                     <td className="py-3 text-center font-medium">{counts.total}</td>
                     <td className="py-3 text-center">
                       <Badge variant="outline">{counts.new}</Badge>
@@ -158,7 +203,7 @@ export const AgentOverviewPanel: React.FC<AgentOverviewPanelProps> = ({ leads, s
               })}
               {agents.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-muted-foreground">
+                  <td colSpan={9} className="py-8 text-center text-muted-foreground">
                     No sales agents found
                   </td>
                 </tr>
