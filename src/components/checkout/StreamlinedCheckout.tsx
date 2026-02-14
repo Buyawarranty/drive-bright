@@ -2016,7 +2016,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           </section>
 
           {/* ==================== HOW TO PAY SECTION (BOTTOM) ==================== */}
-          <div ref={(el) => { (howToPayRef as React.MutableRefObject<HTMLDivElement | null>).current = el; bottomCtaRef.current = el; }} id="how-to-pay-section">
+          <div ref={(el) => { (howToPayRef as React.MutableRefObject<HTMLDivElement | null>).current = el; }} id="how-to-pay-section">
+          {/* Separate ref for the payment cards area to track visibility for sticky bar hiding */}
+          <div ref={bottomCtaRef}>
             <HowToPaySection
               selectedPayment={selectedPayment}
               onPaymentChange={async (payment) => {
@@ -2066,6 +2068,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             return null;
           })()}
           
+          </div>{/* close bottomCtaRef wrapper */}
           {showEmbeddedCheckout && stripeClientSecret && selectedPayment === 'full' && (
             <section 
               id="inline-stripe-payment" 
@@ -2153,16 +2156,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         isLoading={isLoading}
         hasPromoDiscount={hasValidDiscountCodes}
         onPayClick={() => {
-          const payment = selectedPayment || selectedPaymentRef.current || 'full';
-          console.log('💳 DesktopStickyBar pay clicked:', { selectedPayment, refValue: selectedPaymentRef.current, using: payment });
-          
-          // Ensure selectedPayment state is set
-          if (!selectedPayment) {
-            setSelectedPayment(payment);
-            selectedPaymentRef.current = payment;
+          const section = document.getElementById('how-to-pay-section');
+          if (section) {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
-          
-          processPayment(payment);
         }}
         isVisible={showDesktopStickyBar && !isBottomCtaFullyVisible}
       />
@@ -2177,12 +2174,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           isLoading={isLoading}
           isFormValid={personalDetailsComplete && addressComplete}
           onPayClick={() => {
-            const payment = selectedPayment || selectedPaymentRef.current || 'full';
-            if (!selectedPayment) {
-              setSelectedPayment(payment);
-              selectedPaymentRef.current = payment;
+            const section = document.getElementById('how-to-pay-section');
+            if (section) {
+              section.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
-            processPayment(payment);
           }}
           onPaymentChange={(p) => { setSelectedPayment(p); selectedPaymentRef.current = p; }}
         />
