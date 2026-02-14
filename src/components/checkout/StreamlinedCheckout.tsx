@@ -2040,8 +2040,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 selectedPaymentRef.current = payment;
                 setPaymentError('');
                 
+                if (payment === 'monthly') {
+                  // Scroll down so the orange CTA is visible
+                  setTimeout(() => {
+                    const paySection = document.getElementById('how-to-pay-section');
+                    if (paySection) {
+                      paySection.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    }
+                  }, 150);
+                }
+                
                 // Auto-trigger Stripe checkout when "Pay in Full" is selected
-                // Pass payment directly to avoid stale closure reading old selectedPayment
                 if (payment === 'full') {
                   setTimeout(() => {
                     processPayment('full');
