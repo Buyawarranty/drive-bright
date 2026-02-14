@@ -401,9 +401,21 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0
       `}>
-        <div className="p-4 lg:p-6 border-b">
-          <h2 className="text-lg lg:text-xl font-bold text-gray-800">Admin Panel</h2>
-          <p className="text-sm text-gray-600">Manage your warranty business</p>
+        <div className="p-4 lg:p-6 border-b space-y-3">
+          <div>
+            <h2 className="text-lg lg:text-xl font-bold text-gray-800">Admin Panel</h2>
+            <p className="text-sm text-gray-600">Manage your warranty business</p>
+          </div>
+          {/* Quick jump dropdown */}
+          <select
+            value={activeTab}
+            onChange={(e) => handleTabClick(e.target.value)}
+            className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+          >
+            {tabs.map((tab) => (
+              <option key={tab.id} value={tab.id}>{tab.label}</option>
+            ))}
+          </select>
         </div>
         
         <DndContext
