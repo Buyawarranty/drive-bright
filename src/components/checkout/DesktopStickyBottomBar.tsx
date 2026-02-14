@@ -83,9 +83,7 @@ const DesktopStickyBottomBar: React.FC<DesktopStickyBottomBarProps> = ({
             style={{
               backgroundColor: !selectedPayment 
                 ? '#CCCCCC' 
-                : selectedPayment === 'monthly'
-                  ? '#FF6B00'
-                  : '#0BA360',
+                : '#0BA360',
               color: '#FFFFFF',
             }}
           >
