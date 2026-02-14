@@ -47,10 +47,10 @@ const CoverMiniFAQ: React.FC<CoverMiniFAQProps> = ({ onAskQuestion }) => {
 
         <div className="space-y-4">
           {faqs.map((faq, i) => (
-            <div key={i} className="bg-brand-orange rounded-lg overflow-hidden shadow-lg border border-orange-400">
+            <div key={i} className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg overflow-hidden shadow-lg">
               <button
                 onClick={() => setOpenIdx(openIdx === i ? null : i)}
-                className="w-full px-6 py-5 text-left flex items-center justify-between text-white hover:bg-orange-600 transition-colors"
+                className="w-full px-6 py-5 text-left flex items-center justify-between text-white hover:bg-orange-600/20 transition-colors"
                 aria-expanded={openIdx === i}
               >
                 <span className="font-bold text-lg pr-4">
@@ -67,8 +67,8 @@ const CoverMiniFAQ: React.FC<CoverMiniFAQProps> = ({ onAskQuestion }) => {
                   openIdx === i ? 'max-h-screen opacity-100 animate-accordion-down' : 'max-h-0 opacity-0'
                 }`}
               >
-                <div className="px-6 pb-5 text-gray-800 bg-white border-t border-orange-400">
-                  <p className="text-base leading-relaxed pt-4">
+                <div className="px-6 pb-5 bg-white border-t border-orange-200">
+                  <p className="text-base leading-relaxed pt-4 text-brand-dark-text">
                     {faq.a}
                   </p>
                 </div>
