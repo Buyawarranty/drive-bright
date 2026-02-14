@@ -294,7 +294,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
             disabled={!stripe || !elements || isProcessing || !isReady}
             className="w-full h-14 text-lg font-bold rounded-lg border-0 transition-opacity duration-200 hover:opacity-90 disabled:opacity-50"
             style={{
-              backgroundColor: '#FF6F00',
+              backgroundColor: '#0BA360',
               boxShadow: 'none',
             }}
           >
