@@ -380,6 +380,32 @@ const FAQ = () => {
           id: 'check-vehicle-qualifies',
           question: 'How do I check if my vehicle qualifies before buying?',
           answer: 'If you\'re unsure, please check our vehicle eligibility guide at: https://buyawarranty.co.uk/what-is-covered'
+        },
+        {
+          id: 'car-too-old',
+          question: 'Is my car too old or too many miles?',
+          answer: 'We cover many older and higher mileage vehicles up to 15 years old and 150,000 miles. Check your instant price to confirm.',
+          popular: true
+        },
+        {
+          id: 'modified-vehicles',
+          question: 'What about modified vehicles?',
+          answer: 'Most body modifications are accepted. Call us on 0330 229 5040 or request a call back using the Call us button in the top navigation bar.'
+        },
+        {
+          id: 'most-expensive-repair',
+          question: 'What is the most expensive repair you have covered?',
+          answer: 'We regularly cover repairs over £1,500 for engines, gearboxes and ECUs. Higher claim limits are available. Check your instant price by entering your registration.'
+        },
+        {
+          id: 'service-history-needed',
+          question: 'Do I need a full service history?',
+          answer: 'A reasonable service history is fine. Many vehicles are accepted even if servicing has been missed.'
+        },
+        {
+          id: 'diagnostics-covered',
+          question: 'Are diagnostics covered?',
+          answer: 'Diagnostics are usually covered when the fault is approved.'
         }
       ]
     },

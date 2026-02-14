@@ -40,9 +40,9 @@ const HomepageFAQ = () => {
   // Top 10 FAQs from the main FAQ page - most popular and important questions
   const leftColumnFAQs = [
     {
-      id: 'what-is-warranty',
-      question: 'What\'s a car warranty and why should I get one?',
-      answer: 'Think of a warranty as a backup plan for your car. If something goes wrong – like a mechanical or electrical fault – your warranty helps cover the cost of repairs. New cars usually come with a manufacturer\'s warranty for about 3 years. After that, you\'re on your own unless you get an extended warranty. That\'s where we come in – giving you peace of mind and helping you avoid surprise bills.'
+      id: 'old-high-mileage',
+      question: 'Is my car too old or too many miles?',
+      answer: 'We cover many older and higher mileage vehicles up to 15 years old and 150,000 miles. Check your instant price to confirm.'
     },
     {
       id: 'whats-covered-warranty',
@@ -55,18 +55,23 @@ const HomepageFAQ = () => {
       answer: 'If your car experiences a problem, please contact our Claims Team at 0330 229 5045. They are available Monday to Friday from 09:00 to 17:30 and can help start and process your warranty claim. If the issue arises outside of these hours, please fill out our online contact form.'
     },
     {
-      id: 'how-long-cover',
-      question: 'How long can I get cover for?',
-      answer: 'You can choose a plan that suits you – pay in full and save more money, spread it over 12 months interest free, or go for monthly Pay As You Go. We offer 1, 2, or 3-year warranty plans.'
+      id: 'modified-vehicles',
+      question: 'What about modified vehicles?',
+      answer: 'Most body modifications are accepted. Call us on 0330 229 5040 or request a call back using the Call us button in the top navigation bar.'
     },
     {
-      id: 'service-regularly',
-      question: 'Do I need to service my car regularly?',
-      answer: 'Yes please! Keeping up with your car\'s servicing schedule helps keep your warranty valid. Just follow the manufacturer\'s guidelines and keep your receipts.'
+      id: 'most-expensive-repair',
+      question: 'What is the most expensive repair you have covered?',
+      answer: 'We regularly cover repairs over £1,500 for engines, gearboxes and ECUs. Higher claim limits are available. Check your instant price by entering your registration.'
     }
   ];
 
   const rightColumnFAQs = [
+    {
+      id: 'own-garage-hp',
+      question: 'Can I use my own garage?',
+      answer: 'Yes. Any VAT registered garage is acceptable or we can recommend an approved garage.'
+    },
     {
       id: 'how-make-claim',
       question: 'How do I make a claim?',
@@ -78,19 +83,14 @@ const HomepageFAQ = () => {
       answer: 'Warranty costs start from just £12 per month, depending on your vehicle and the level of cover you choose. Get an instant quote by entering your registration number above.'
     },
     {
-      id: 'preferred-garage',
-      question: 'Can I use my preferred garage for repairs?',
-      answer: 'You can use your own garage, including main dealers or local independents, as long as they\'re VAT registered. If the repair cost goes over your claim limit, you may need to pay the difference (top up the extra amount).'
+      id: 'service-history',
+      question: 'Do I need a full service history?',
+      answer: 'A reasonable service history is fine. Many vehicles are accepted even if servicing has been missed.'
     },
     {
-      id: 'cancel-warranty',
-      question: 'Can I cancel my warranty?',
-      answer: 'You have 14 days to cancel your warranty for a full refund for FREE (if no repairs have been made). After this period, our standard easy to follow cancellation policy applies. Simply visit https://buyawarranty.co.uk/cancel-warranty/'
-    },
-    {
-      id: 'transferable',
-      question: 'Is the warranty transferable?',
-      answer: 'Yes, our warranties can be transferred to a new owner if you sell your car privately—this can help you sell your vehicle and may even increase its value. There\'s a £19.99 fee if you choose to transfer the warranty at the time of purchase. If you decide to transfer it later, the fee is £30, so it\'s worth sorting early for the best deal.'
+      id: 'diagnostics-covered',
+      question: 'Are diagnostics covered?',
+      answer: 'Diagnostics are usually covered when the fault is approved.'
     }
   ];
 
