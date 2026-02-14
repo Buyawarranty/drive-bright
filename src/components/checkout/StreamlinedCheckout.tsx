@@ -1162,7 +1162,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     if (!validateForm()) {
       if (!personalDetailsComplete) setDetailsOpen(true);
       // Also expand address section if address fields are incomplete
-      if (!addressComplete) setAddressExpanded(true);
+      if (!addressComplete) {
+        setAddressExpanded(true);
+        setShowAddressFields(true);
+      }
       
       // Determine which section to scroll to based on what's missing
       // Prioritize: personal details first, then address (starting with postcode)
