@@ -988,11 +988,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   };
 
   const getAddressInputValidationClass = (field: string) => {
-    if (showValidation && addressErrors[field]) {
-      return 'border-[#D9534F] ring-2 ring-[#D9534F]/20 bg-[#D9534F]/5 focus:ring-[#D9534F]/30 focus:border-[#D9534F]';
-    }
+    // Validated fields always show green, even if showValidation is true
     if (addressValidated[field]) {
       return 'border-green-500 bg-green-50/30 cursor-text focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white';
+    }
+    if (showValidation && addressErrors[field]) {
+      return 'border-[#D9534F] ring-2 ring-[#D9534F]/20 bg-[#D9534F]/5 focus:ring-[#D9534F]/30 focus:border-[#D9534F]';
     }
     return 'bg-[#F5F5F5] border-gray-200 focus:bg-white';
   };
