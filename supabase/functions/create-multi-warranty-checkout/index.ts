@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { items, customerData, discountCode, originalAmount, finalAmount } = await req.json();
+    const { items, customerData, discountCode, originalAmount, finalAmount, trackingData } = await req.json();
 
     // Validate vehicle age for all items (must be 15 years or newer)
     for (const item of items) {
@@ -169,6 +169,8 @@ serve(async (req) => {
         item_count: items.length.toString(),
         is_multi_warranty: "true",
         discount_code: discountCode || "",
+        gclid: trackingData?.gclid || "",
+        ga_client_id: trackingData?.clientId || "",
       },
       // Store essential data in session metadata (Stripe has 500 char limit per field)
       payment_intent_data: {

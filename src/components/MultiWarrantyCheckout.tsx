@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { CartItem } from '@/contexts/CartContext';
 import { trackFormSubmission, trackConversion, trackEvent } from '@/utils/analytics';
 import { getAddOnInfo, isAddOnAutoIncluded, normalizePaymentType } from '@/lib/addOnsUtils';
+import { getTrackingData } from '@/utils/gclidCapture';
 
 interface MultiWarrantyCheckoutProps {
   items: CartItem[];
@@ -609,7 +610,8 @@ const MultiWarrantyCheckout: React.FC<MultiWarrantyCheckoutProps> = ({ items, on
             customerData: customerData,
             discountCode: customerData.discount_code || null,
             originalAmount: totalPrice,
-            finalAmount: stripeDiscountedPrice
+            finalAmount: stripeDiscountedPrice,
+            trackingData: getTrackingData()
           }
         });
 

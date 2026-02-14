@@ -1881,6 +1881,8 @@ export type Database = {
           final_amount: number | null
           first_name: string | null
           flat_number: string | null
+          ga_client_id: string | null
+          gclid: string | null
           google_review_completed: boolean | null
           google_review_completed_at: string | null
           google_review_requested: boolean | null
@@ -1956,6 +1958,8 @@ export type Database = {
           final_amount?: number | null
           first_name?: string | null
           flat_number?: string | null
+          ga_client_id?: string | null
+          gclid?: string | null
           google_review_completed?: boolean | null
           google_review_completed_at?: string | null
           google_review_requested?: boolean | null
@@ -2031,6 +2035,8 @@ export type Database = {
           final_amount?: number | null
           first_name?: string | null
           flat_number?: string | null
+          ga_client_id?: string | null
+          gclid?: string | null
           google_review_completed?: boolean | null
           google_review_completed_at?: string | null
           google_review_requested?: boolean | null

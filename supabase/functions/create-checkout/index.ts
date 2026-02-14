@@ -33,8 +33,8 @@ serve(async (req) => {
     );
 
     const body = await req.json();
-    const { planName, paymentType, voluntaryExcess = 0, vehicleData, customerData, discountCode, finalAmount, addAnotherWarrantyRequested, protectionAddOns, claimLimit } = body;
-    logStep("Request data", { planName, paymentType, voluntaryExcess, discountCode, finalAmount, protectionAddOns });
+    const { planName, paymentType, voluntaryExcess = 0, vehicleData, customerData, discountCode, finalAmount, addAnotherWarrantyRequested, protectionAddOns, claimLimit, trackingData } = body;
+    logStep("Request data", { planName, paymentType, voluntaryExcess, discountCode, finalAmount, protectionAddOns, hasGclid: !!trackingData?.gclid });
 
     // Validate vehicle age (must be 15 years or newer)
     const vehicleYear = vehicleData?.year;
@@ -229,7 +229,10 @@ serve(async (req) => {
         addon_mot_fee: protectionAddOns?.motFee ? 'true' : 'false',
         addon_mot_repair: protectionAddOns?.motRepair ? 'true' : 'false',
         addon_lost_key: protectionAddOns?.lostKey ? 'true' : 'false',
-        addon_consequential: protectionAddOns?.consequential ? 'true' : 'false'
+        addon_consequential: protectionAddOns?.consequential ? 'true' : 'false',
+        // Google Ads tracking data
+        gclid: trackingData?.gclid || '',
+        ga_client_id: trackingData?.clientId || ''
       },
       automatic_tax: { enabled: false },
       billing_address_collection: 'required',
