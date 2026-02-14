@@ -1667,7 +1667,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   <div className="relative mt-1.5">
                     <Input
                       id="first_name"
-                      placeholder="John"
+                      placeholder="First name"
                       value={customerData.first_name}
                       onChange={(e) => handleInputChange('first_name', e.target.value)}
                       onBlur={() => handleFieldBlur('first_name')}
@@ -1692,7 +1692,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   <div className="relative mt-1.5">
                     <Input
                       id="last_name"
-                      placeholder="Smith"
+                      placeholder="Last name"
                       value={customerData.last_name}
                       onChange={(e) => handleInputChange('last_name', e.target.value)}
                       onBlur={() => handleFieldBlur('last_name')}
