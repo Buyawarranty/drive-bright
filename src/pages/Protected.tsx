@@ -182,7 +182,7 @@ const Protected = () => {
       {/* 3. Coverage Details (scrolled to via "See how cover works") */}
       <div ref={coverageRef}>
         {/* What Is Included */}
-        <section id="coverage-list" className="py-16 md:py-20 bg-muted/30">
+        <section id="coverage-list" className="py-16 md:py-20 bg-muted">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10">
               <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">What is included</h2>
@@ -292,7 +292,7 @@ const Protected = () => {
         </section>
 
         {/* Transparent Coverage - PDF Downloads */}
-        <section className="py-16 md:py-20 bg-muted/30">
+        <section className="py-16 md:py-20 bg-muted">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8">
               <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">

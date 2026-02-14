@@ -13,7 +13,7 @@ interface RepairCostsSectionProps {
 
 const RepairCostsSection: React.FC<RepairCostsSectionProps> = ({ onTalkToTechnician }) => {
   return (
-    <section className="py-16 md:py-20 bg-muted/30">
+    <section className="py-16 md:py-20 bg-muted">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
