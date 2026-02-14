@@ -197,9 +197,11 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
     setSaving(null);
   };
 
-  // Compute total percentage across all agents (using edited values where present)
+  // Compute total percentage across active (non-paused) agents only
   const totalPercentage = useMemo(() => {
     return agentCaps.reduce((sum, cap) => {
+      // Only count agents that are ON (not paused)
+      if (cap.paused) return sum;
       const value = editedPercentages[cap.admin_user_id] ?? cap.percentage ?? 0;
       return sum + value;
     }, 0);
