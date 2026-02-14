@@ -982,7 +982,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
   const getInputValidationClass = (field: string) => {
     if (showValidation && fieldErrors[field]) {
-      return 'border-red-500 ring-2 ring-red-200 bg-red-50/50 focus:ring-red-300 focus:border-red-500';
+      return 'border-[#D9534F] ring-2 ring-[#D9534F]/20 bg-[#D9534F]/5 focus:ring-[#D9534F]/30 focus:border-[#D9534F]';
     }
     if (validatedFields[field]) {
       return 'border-green-500 bg-green-50/30 cursor-text focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white';
@@ -992,7 +992,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
   const getAddressInputValidationClass = (field: string) => {
     if (showValidation && addressErrors[field]) {
-      return 'border-red-500 ring-2 ring-red-200 bg-red-50/50 focus:ring-red-300 focus:border-red-500';
+      return 'border-[#D9534F] ring-2 ring-[#D9534F]/20 bg-[#D9534F]/5 focus:ring-[#D9534F]/30 focus:border-[#D9534F]';
     }
     if (addressValidated[field]) {
       return 'border-green-500 bg-green-50/30 cursor-text focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white';
