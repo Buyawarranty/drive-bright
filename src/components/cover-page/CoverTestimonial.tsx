@@ -16,9 +16,6 @@ const CoverTestimonial: React.FC = () => {
             the repair and I paid nothing. It was fast and easy."
           </blockquote>
           <p className="font-semibold text-foreground">Matt, Leeds</p>
-          <p className="text-xs text-muted-foreground mt-3">
-            Outcomes vary by plan, claim limit and approval.
-          </p>
         </div>
       </div>
     </section>
