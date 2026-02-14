@@ -657,7 +657,7 @@ serve(async (req) => {
 
     // Update the customer_policies table with warranty registration status
     if (policy?.id) {
-      const updateData = {
+      const updateData: Record<string, any> = {
         warranties_2000_sent_at: new Date().toISOString(),
         warranties_2000_status: response.ok ? 'sent' : 'failed',
         warranties_2000_response: {
@@ -666,6 +666,16 @@ serve(async (req) => {
           timestamp: new Date().toISOString()
         }
       };
+
+      // Activate scheduled policies when W2000 submission succeeds
+      if (response.ok && policy.status === 'scheduled') {
+        const startDate = new Date(policy.policy_start_date);
+        const now = new Date();
+        if (startDate <= now) {
+          updateData.status = 'active';
+          console.log(`[WARRANTIES-2000] Activating scheduled policy ${policy.id} (start date ${policy.policy_start_date} has passed)`);
+        }
+      }
 
       const { error: updateError } = await supabase
         .from('customer_policies')

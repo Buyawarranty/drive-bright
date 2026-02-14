@@ -1391,21 +1391,29 @@ const CustomerDashboard = () => {
                               </div>
                               <div className="text-center sm:text-right">
                                 <Label className="text-xs font-medium text-blue-700 uppercase tracking-wide">Status</Label>
-                                <p className={`text-lg font-bold mt-1 flex items-center justify-center sm:justify-end gap-2 ${
-                                  selectedPolicy.status === 'active' ? 'text-green-600' : 
-                                  selectedPolicy.status === 'expired' ? 'text-red-600' : 
-                                  selectedPolicy.status === 'cancelled' ? 'text-gray-600' : 
-                                  selectedPolicy.status === 'refunded' ? 'text-amber-600' : 'text-yellow-600'
-                                }`}>
-                                  {selectedPolicy.status === 'active' && <CheckCircle className="h-5 w-5" />}
-                                  {selectedPolicy.status === 'expired' && <X className="h-5 w-5" />}
-                                  {selectedPolicy.status === 'cancelled' && <X className="h-5 w-5" />}
-                                  {selectedPolicy.status === 'refunded' && <X className="h-5 w-5" />}
-                                  {selectedPolicy.status === 'pending' && <AlertCircle className="h-5 w-5" />}
-                                  {selectedPolicy.status === 'cancelled' || selectedPolicy.status === 'refunded' 
-                                    ? (selectedPolicy.status === 'refunded' ? 'REFUNDED' : 'INACTIVE')
-                                    : selectedPolicy.status.toUpperCase()}
-                                </p>
+                                {(() => {
+                                  // Resolve display status: scheduled policies past their start date should show as active
+                                  const displayStatus = (selectedPolicy.status === 'scheduled' && new Date(selectedPolicy.policy_start_date) <= new Date()) 
+                                    ? 'active' 
+                                    : selectedPolicy.status;
+                                  return (
+                                    <p className={`text-lg font-bold mt-1 flex items-center justify-center sm:justify-end gap-2 ${
+                                      displayStatus === 'active' ? 'text-green-600' : 
+                                      displayStatus === 'expired' ? 'text-red-600' : 
+                                      displayStatus === 'cancelled' ? 'text-gray-600' : 
+                                      displayStatus === 'refunded' ? 'text-amber-600' : 'text-yellow-600'
+                                    }`}>
+                                      {displayStatus === 'active' && <CheckCircle className="h-5 w-5" />}
+                                      {displayStatus === 'expired' && <X className="h-5 w-5" />}
+                                      {displayStatus === 'cancelled' && <X className="h-5 w-5" />}
+                                      {displayStatus === 'refunded' && <X className="h-5 w-5" />}
+                                      {displayStatus === 'pending' && <AlertCircle className="h-5 w-5" />}
+                                      {displayStatus === 'cancelled' || displayStatus === 'refunded' 
+                                        ? (displayStatus === 'refunded' ? 'REFUNDED' : 'INACTIVE')
+                                        : displayStatus.toUpperCase()}
+                                    </p>
+                                  );
+                                })()}
                               </div>
                             </div>
                           </div>
