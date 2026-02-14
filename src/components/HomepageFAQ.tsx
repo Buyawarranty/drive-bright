@@ -95,10 +95,10 @@ const HomepageFAQ = () => {
   ];
 
   const FAQItem = ({ faq }: { faq: { id: string; question: string; answer: string } }) => (
-    <div className="bg-brand-orange rounded-lg overflow-hidden shadow-lg border border-orange-400">
+    <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg overflow-hidden shadow-lg">
       <button
         onClick={() => toggleItem(faq.id)}
-        className="w-full px-6 py-5 text-left flex items-center justify-between text-white hover:bg-orange-600 transition-colors"
+        className="w-full px-6 py-5 text-left flex items-center justify-between text-white hover:bg-orange-600/20 transition-colors"
       >
         <span className="font-bold text-lg pr-4">{faq.question}</span>
         <ChevronDown 
@@ -113,8 +113,8 @@ const HomepageFAQ = () => {
           ? 'max-h-screen opacity-100 animate-accordion-down' 
           : 'max-h-0 opacity-0'
       }`}>
-        <div className="px-6 pb-5 text-gray-800 bg-white border-t border-orange-400">
-          <p className="text-base leading-relaxed pt-4 transform translate-y-0 whitespace-pre-line">{renderAnswerWithLinks(faq.answer)}</p>
+        <div className="px-6 pb-5 bg-white border-t border-orange-200">
+          <p className="text-base leading-relaxed pt-4 transform translate-y-0 whitespace-pre-line text-brand-dark-text">{renderAnswerWithLinks(faq.answer)}</p>
         </div>
       </div>
     </div>
