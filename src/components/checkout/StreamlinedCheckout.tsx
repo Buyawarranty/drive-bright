@@ -979,7 +979,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       return 'border-red-500 ring-2 ring-red-200 bg-red-50/50 focus:ring-red-300 focus:border-red-500';
     }
     if (validatedFields[field]) {
-      return 'border-green-500 bg-green-50/30';
+      return 'border-green-500 bg-green-50/30 cursor-text focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white';
     }
     return '';
   };
@@ -989,7 +989,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       return 'border-red-500 ring-2 ring-red-200 bg-red-50/50 focus:ring-red-300 focus:border-red-500';
     }
     if (addressValidated[field]) {
-      return 'border-green-500 bg-green-50/30';
+      return 'border-green-500 bg-green-50/30 cursor-text focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white';
     }
     return 'bg-[#F5F5F5] border-gray-200 focus:bg-white';
   };
