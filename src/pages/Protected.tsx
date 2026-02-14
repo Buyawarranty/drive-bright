@@ -280,7 +280,7 @@ const Protected = () => {
                 <AccordionTrigger className="w-full px-5 py-4 text-left flex items-center justify-between bg-sky-100 hover:bg-sky-200 transition-all duration-300 hover:no-underline text-sky-700">
                   <div className="flex items-center gap-3">
                     <X className="w-5 h-5 flex-shrink-0" />
-                    <span className="font-bold text-base sm:text-lg">Exclusions: High-End & Performance Cars</span>
+                    <span className="font-bold text-base sm:text-lg">Exclusions: High-Performance Cars</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-5 py-5 bg-white">
