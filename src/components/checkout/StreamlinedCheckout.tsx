@@ -1087,15 +1087,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       // Determine which section to scroll to based on what's missing
       // Prioritize: personal details first, then address (starting with postcode)
       // Use requestAnimationFrame for smoother scroll after DOM updates
-      requestAnimationFrame(() => {
+      // Use setTimeout to allow React state to update before scrolling
+      setTimeout(() => {
         if (!personalDetailsComplete) {
-          // Find first invalid personal field and scroll to it prominently
           const personalFields = ['first_name', 'last_name', 'email', 'phone', 'mileage'];
           for (const field of personalFields) {
-            if (fieldErrors[field] || !customerData[field as keyof typeof customerData]) {
+            const val = customerData[field as keyof typeof customerData];
+            if (!val || (typeof val === 'string' && !val.trim())) {
               const element = document.getElementById(field);
               if (element) {
-                // Use 'center' to ensure error is prominently visible - better UX
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 element.focus();
                 break;
@@ -1103,13 +1103,16 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             }
           }
         } else if (!addressComplete) {
-          // Find first invalid address field and scroll to it prominently
-          const addressFields = ['postcode', 'address_line_1', 'town'];
-          for (const field of addressFields) {
-            if (addressErrors[field] || !addressData[field as keyof typeof addressData]) {
-              const element = document.getElementById(field === 'postcode' ? 'postcode-lookup' : field);
+          // Check address data directly instead of stale addressErrors state
+          const addressChecks = [
+            { field: 'postcode', id: 'postcode-lookup', value: addressData.postcode },
+            { field: 'address_line_1', id: 'address_line_1', value: addressData.address_line_1 },
+            { field: 'town', id: 'town', value: addressData.town },
+          ];
+          for (const check of addressChecks) {
+            if (!check.value?.trim()) {
+              const element = document.getElementById(check.id);
               if (element) {
-                // Use 'center' to ensure error is prominently visible
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 element.focus();
                 break;
@@ -1117,7 +1120,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             }
           }
         }
-      });
+      }, 100);
       
       toast.error('Please complete all required fields including your address.');
       return;
