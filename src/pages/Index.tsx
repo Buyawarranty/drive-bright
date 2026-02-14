@@ -18,6 +18,7 @@ import { batchLocalStorageWrite, safeLocalStorageRemove, parseLocalStorageJSON, 
 import PerformanceOptimizedSuspense from '@/components/PerformanceOptimizedSuspense';
 import { BackNavigationConfirmDialog } from '@/components/BackNavigationConfirmDialog';
 import QuoteDeliveryStep from '@/components/QuoteDeliveryStep';
+import PersistentCallback from '@/components/cover-page/PersistentCallback';
 import { captureGclid } from '@/utils/gclidCapture';
 import { CarDrivingLoader } from '@/components/ui/car-driving-loader';
 
@@ -1409,6 +1410,8 @@ const Index = () => {
       />
       
       {/* ScrollToTopButton removed */}
+      
+      {currentStep === 1 && <PersistentCallback />}
     </div>
   );
 };
