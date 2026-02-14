@@ -19,23 +19,28 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
   const [error, setError] = useState('');
   const [isFocused, setIsFocused] = useState(false);
 
-  // UK phone validation - supports various formats
-  const validateUKPhone = (phoneNumber: string): boolean => {
-    const cleaned = phoneNumber.replace(/[\s\-]/g, '');
-    const ukMobilePattern = /^(07\d{9}|(\+44|0044)7\d{9})$/;
-    const ukLandlinePattern = /^(0[1-9]\d{8,9}|(\+44|0044)[1-9]\d{8,9})$/;
-    return ukMobilePattern.test(cleaned) || ukLandlinePattern.test(cleaned);
+  // Comprehensive UK phone validation (mobile + landline)
+  const validateUKPhone = (phoneNumber: string): { isValid: boolean; type: 'mobile' | 'landline' | null } => {
+    const cleaned = phoneNumber.replace(/\D/g, '');
+    if (cleaned.startsWith('07') && cleaned.length === 11) {
+      return { isValid: true, type: 'mobile' };
+    }
+    if ((cleaned.startsWith('01') || cleaned.startsWith('02')) && cleaned.length >= 10 && cleaned.length <= 11) {
+      return { isValid: true, type: 'landline' };
+    }
+    if (cleaned.startsWith('03') && cleaned.length === 11) {
+      return { isValid: true, type: 'landline' };
+    }
+    return { isValid: false, type: null };
   };
 
-  const formatPhoneForDisplay = (value: string): string => {
-    const cleaned = value.replace(/[^\d+]/g, '');
-    return cleaned;
-  };
+  const phoneValidation = validateUKPhone(phone);
+  const isPhoneValid = phoneValidation.isValid;
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setPhone(formatPhoneForDisplay(value));
-    setError('');
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
+    setPhone(digits);
+    if (error && validateUKPhone(digits).isValid) setError('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,8 +51,8 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
       return;
     }
     
-    if (!validateUKPhone(phone)) {
-      setError('Please enter a valid UK phone number');
+    if (!isPhoneValid) {
+      setError('Please enter a valid UK phone number (e.g. 07123 456789 or 0121 234 5678)');
       return;
     }
     
@@ -67,7 +72,8 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
           cart_metadata: {
             source: 'homepage_callback',
             priority: 'urgent',
-            request_type: 'urgent_callback'
+            request_type: 'urgent_callback',
+            phone_type: phoneValidation.type
           }
         });
       
@@ -151,16 +157,25 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
                   placeholder="07xxx xxxxxx"
-                  className={`h-14 text-lg pl-4 pr-4 rounded-xl transition-all duration-200 ${
+              className={`h-14 text-lg pl-4 pr-10 rounded-xl transition-all duration-200 ${
                     error 
                       ? 'border-red-500 focus:ring-red-500' 
-                      : isFocused 
-                        ? 'border-brand-green ring-2 ring-brand-green/20' 
-                        : 'border-gray-200'
+                      : isPhoneValid
+                        ? 'border-green-500 ring-2 ring-green-500/20'
+                        : isFocused 
+                          ? 'border-brand-green ring-2 ring-brand-green/20' 
+                          : 'border-gray-200'
                   }`}
                   disabled={isSubmitting}
                   autoComplete="tel"
                 />
+                {isPhoneValid && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center animate-in fade-in-50 zoom-in-95 duration-200">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
+                  </div>
+                )}
               </div>
               {error && (
                 <p className="text-sm text-red-500 font-medium animate-in slide-in-from-top-1 duration-200">{error}</p>
