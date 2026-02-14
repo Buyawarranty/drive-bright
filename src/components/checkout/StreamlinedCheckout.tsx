@@ -97,6 +97,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const hasAutoScrolledToPaymentRef = useRef(false);
   // Ref for the How to Pay section
   const howToPayRef = useRef<HTMLDivElement>(null);
+  // Ref to track if we've already scrolled to the Stripe payment section
+  const hasScrolledToStripeRef = useRef(false);
   
   // Pre-populate from Step 2 data in localStorage
   const [customerData, setCustomerData] = useState(() => {
@@ -2008,7 +2010,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               id="inline-stripe-payment" 
               className="mt-6 sm:mt-8 lg:mt-8 bg-white rounded-xl border-2 border-green-400 p-5 sm:p-6 shadow-[0_0_16px_rgba(34,197,94,0.25)] animate-fade-in"
               ref={(el) => {
-                if (el) {
+                if (el && !hasScrolledToStripeRef.current) {
+                  hasScrolledToStripeRef.current = true;
                   setTimeout(() => {
                     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                   }, 200);
