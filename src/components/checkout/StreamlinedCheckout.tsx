@@ -2157,10 +2157,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         isLoading={isLoading}
         hasPromoDiscount={hasValidDiscountCodes}
         onPayClick={() => {
-          const section = document.getElementById('how-to-pay-section');
-          if (section) {
-            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
+          processPayment();
         }}
         isVisible={showDesktopStickyBar}
         minimised={isBottomCtaFullyVisible}
@@ -2175,10 +2172,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         isLoading={isLoading}
         isFormValid={personalDetailsComplete && addressComplete}
         onPayClick={() => {
-          const section = document.getElementById('how-to-pay-section');
-          if (section) {
-            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
+          processPayment();
         }}
         onPaymentChange={(p) => { setSelectedPayment(p); selectedPaymentRef.current = p; }}
         minimised={isBottomCtaFullyVisible}
