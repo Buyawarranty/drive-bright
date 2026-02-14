@@ -806,7 +806,9 @@ export const CustomersTab = () => {
           purchase_source: 'external' as const,
           // Sales agent attribution
           quote_sent_by: null,
-          payment_confirmed_by: null
+          payment_confirmed_by: null,
+          gclid: null,
+          ga_client_id: null
         }));
         
         directData = [...directData, ...orphanedAsCustomers];

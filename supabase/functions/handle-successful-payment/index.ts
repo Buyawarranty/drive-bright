@@ -68,8 +68,8 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { planId, paymentType, userEmail, userId, stripeSessionId, vehicleData, customerData, skipEmail, metadata, protectionAddOns, claimLimit, voluntaryExcess, seasonalBonusMonths = 0, labourRate, startDate, bumperOrderId } = await req.json();
-    logStep("Request data", { planId, paymentType, userEmail, userId, stripeSessionId, bumperOrderId, skipEmail, hasMetadata: !!metadata, hasProtectionAddOns: !!protectionAddOns, claimLimit, voluntaryExcess, seasonalBonusMonths, labourRate, startDate });
+    const { planId, paymentType, userEmail, userId, stripeSessionId, vehicleData, customerData, skipEmail, metadata, protectionAddOns, claimLimit, voluntaryExcess, seasonalBonusMonths = 0, labourRate, startDate, bumperOrderId, trackingData } = await req.json();
+    logStep("Request data", { planId, paymentType, userEmail, userId, stripeSessionId, bumperOrderId, skipEmail, hasMetadata: !!metadata, hasProtectionAddOns: !!protectionAddOns, claimLimit, voluntaryExcess, seasonalBonusMonths, labourRate, startDate, hasGclid: !!trackingData?.gclid });
 
     if (!planId || !paymentType || !userEmail) {
       throw new Error("Missing required parameters");
@@ -338,7 +338,11 @@ serve(async (req) => {
       is_manual_entry: false, // Automated payment flow
       payment_verified: isPaymentVerified,
       // Store final combined add-ons in customer record (user selections + auto-inclusions)
-      ...finalAddOnsForCustomer
+      ...finalAddOnsForCustomer,
+      // Google Ads attribution tracking
+      gclid: trackingData?.gclid || metadata?.gclid || null,
+      ga_client_id: trackingData?.clientId || metadata?.ga_client_id || null,
+      purchase_source: trackingData?.gclid ? 'google_ads' : (effectiveBumperOrderId ? 'bumper' : (stripeSessionId ? 'stripe' : null))
     };
 
     // Debug addon metadata parsing
