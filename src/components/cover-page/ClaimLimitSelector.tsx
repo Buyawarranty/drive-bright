@@ -47,14 +47,16 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({ onHelpMeChoose 
             <button
               key={l.value}
               onClick={() => setSelected(l.value)}
-              className={`relative rounded-xl border-2 py-4 px-3 text-center font-bold text-lg transition-all duration-200 ${
+              className={`relative rounded-xl border-2 text-center font-bold text-lg transition-all duration-200 ${
+                l.tag ? 'pt-7 pb-4 px-3' : 'py-4 px-3'
+              } ${
                 selected === l.value
                   ? 'border-primary bg-primary/5 text-primary shadow-md'
                   : 'border-border bg-white text-foreground hover:border-primary/40'
               }`}
             >
               {l.tag && (
-                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-green-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-green-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap">
                   {l.tag}
                 </span>
               )}
@@ -104,13 +106,13 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({ onHelpMeChoose 
           </p>
         </div>
 
-        {/* Help me choose */}
+        {/* Need more cover? */}
         <div className="text-center">
           <button
             onClick={onHelpMeChoose}
             className="text-primary hover:underline text-sm font-semibold"
           >
-            Help me choose →
+            Need more cover? Get in touch →
           </button>
         </div>
       </div>
