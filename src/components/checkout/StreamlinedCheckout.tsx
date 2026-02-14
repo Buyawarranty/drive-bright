@@ -854,10 +854,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     setCustomerData((prev: typeof customerData) => ({ ...prev, [field]: value }));
     if (paymentError) setPaymentError('');
     
-    // Live validate on every change for immediate feedback
+    // Live validate immediately with the NEW value (not stale state)
     if (typeof value === 'string') {
-      // Defer validation slightly so state is updated
-      setTimeout(() => validateField(field), 0);
+      validateField(field, value);
     }
   };
 
@@ -865,41 +864,57 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     validateField(field);
   };
 
-  const validateField = (field: string): boolean => {
+  // validateField accepts an optional currentValue to avoid stale state reads
+  // When called from handleInputChange, the state hasn't updated yet,
+  // so we pass the new value directly for instant real-time validation.
+  const validateField = (field: string, currentValue?: string): boolean => {
     let isValid = true;
     let error = '';
 
+    // Use provided value if available, otherwise fall back to state
+    const getValue = (f: string) => {
+      if (f === field && currentValue !== undefined) return currentValue;
+      return (customerData as any)[f] || '';
+    };
+
     switch (field) {
-      case 'first_name':
-        if (!customerData.first_name?.trim()) {
+      case 'first_name': {
+        const val = getValue('first_name');
+        if (!val?.trim()) {
           error = 'First name is required';
           isValid = false;
-        } else if (customerData.first_name.trim().length < 2) {
+        } else if (val.trim().length < 2) {
           error = 'First name must be at least 2 characters';
           isValid = false;
         }
         break;
-      case 'last_name':
-        if (!customerData.last_name?.trim()) {
+      }
+      case 'last_name': {
+        const val = getValue('last_name');
+        if (!val?.trim()) {
           error = 'Please enter your last name.';
           isValid = false;
-        } else if (customerData.last_name.trim().length < 2) {
+        } else if (val.trim().length < 2) {
           error = 'Last name must be at least 2 characters';
           isValid = false;
         }
         break;
-      case 'email':
+      }
+      case 'email': {
+        const val = getValue('email');
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!customerData.email?.trim()) {
+        if (!val?.trim()) {
           error = 'Email is required';
           isValid = false;
-        } else if (!emailRegex.test(customerData.email)) {
+        } else if (!emailRegex.test(val)) {
           error = 'Please enter a valid email';
           isValid = false;
         }
         break;
-      case 'phone':
-        const cleanedPhone = customerData.phone?.replace(/\s/g, '') || '';
+      }
+      case 'phone': {
+        const val = getValue('phone');
+        const cleanedPhone = val?.replace(/\s/g, '') || '';
         const ukPhoneRegex = /^(?:(?:\+44)|(?:0))(?:\d{10}|\d{9})$/;
         if (!cleanedPhone) {
           error = 'Phone number is required';
@@ -909,19 +924,26 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           isValid = false;
         }
         break;
-      case 'mileage':
-        const mileage = parseInt(customerData.mileage || '0');
-        if (!customerData.mileage) {
+      }
+      case 'mileage': {
+        const val = getValue('mileage');
+        const mileage = parseInt(val || '0');
+        if (!val) {
           error = 'Please enter your current mileage.';
           isValid = false;
         } else if (mileage < 1000) {
-          error = 'Minimum 1,000 miles';
+          // Don't show "minimum" error while user is still typing short values
+          // Only show if they've typed enough digits to be clearly invalid
+          if (val.length >= 4) {
+            error = 'Minimum 1,000 miles';
+          }
           isValid = false;
         } else if (mileage > 150000) {
           error = 'Maximum 150,000 miles';
           isValid = false;
         }
         break;
+      }
     }
 
     setFieldErrors(prev => ({ ...prev, [field]: error }));
@@ -995,7 +1017,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   };
 
   const getInputValidationClass = (field: string) => {
-    if (showValidation && fieldErrors[field]) {
+    // Show error styling if there's an error AND the field has been interacted with
+    // (either via showValidation flag from form submit, or if the field has a non-empty error from live typing)
+    if (fieldErrors[field] && (showValidation || validatedFields[field] === false)) {
       return 'border-[#D9534F] ring-2 ring-[#D9534F]/20 bg-[#D9534F]/5 focus:ring-[#D9534F]/30 focus:border-[#D9534F]';
     }
     if (validatedFields[field]) {
@@ -1564,7 +1588,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                   )}
                 </div>
-                {showValidation && fieldErrors.email && (
+                {fieldErrors.email && (
                   <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
                     {fieldErrors.email}
@@ -1590,7 +1614,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                     <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                   )}
                 </div>
-                {showValidation && fieldErrors.phone && (
+                {fieldErrors.phone && (
                   <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5" />
                     {fieldErrors.phone}
@@ -1617,7 +1641,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                     )}
                   </div>
-                  {showValidation && fieldErrors.first_name && (
+                  {fieldErrors.first_name && (
                     <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5" />
                       {fieldErrors.first_name}
@@ -1642,7 +1666,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                       <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[hsl(var(--success))]" />
                     )}
                   </div>
-                  {showValidation && fieldErrors.last_name && (
+                  {fieldErrors.last_name && (
                     <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5" />
                       {fieldErrors.last_name}
@@ -1940,7 +1964,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   </div>
                 </div>
               )}
-              {showValidation && fieldErrors.mileage && (
+              {fieldErrors.mileage && (
                 <p className="text-destructive text-sm mt-1.5 flex items-center gap-1">
                   <AlertCircle className="w-3.5 h-3.5" />
                   {fieldErrors.mileage}
