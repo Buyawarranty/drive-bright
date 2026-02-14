@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const faqs = [
   {
-    q: 'Is £1,000, £2,000 or £3,000 right for me?',
+    q: 'Is £1,000, £2,000 or £3,000 the right claim limit for me?',
     a: 'It depends on your vehicle and budget. Higher limits cover more of the repair cost and are ideal for newer or more complex vehicles. £1,000 is great for peace of mind on smaller repairs, while £3,000 covers most common faults in full.',
   },
   {
@@ -18,6 +18,10 @@ const faqs = [
   {
     q: 'Are diagnostics and labour included?',
     a: 'Yes. Diagnostics are usually covered when the fault is approved, and labour is included up to the rate selected on your plan.',
+  },
+  {
+    q: 'Can I use my own garage?',
+    a: 'Yes. Any VAT registered garage is acceptable or we can recommend an approved garage near you.',
   },
   {
     q: 'When does my cover start?',
@@ -41,30 +45,30 @@ const CoverMiniFAQ: React.FC<CoverMiniFAQProps> = ({ onAskQuestion }) => {
           </h2>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-4">
           {faqs.map((faq, i) => (
-            <div key={i} className="bg-white border border-border rounded-xl overflow-hidden shadow-sm">
+            <div key={i} className="bg-brand-orange rounded-lg overflow-hidden shadow-lg border border-orange-400">
               <button
                 onClick={() => setOpenIdx(openIdx === i ? null : i)}
-                className="w-full px-5 py-4 text-left flex items-center justify-between hover:bg-muted/30 transition-colors"
+                className="w-full px-6 py-5 text-left flex items-center justify-between text-white hover:bg-orange-600 transition-colors"
                 aria-expanded={openIdx === i}
               >
-                <span className="font-semibold text-foreground pr-4 text-sm md:text-base">
+                <span className="font-bold text-lg pr-4">
                   {faq.q}
                 </span>
                 <ChevronDown
-                  className={`w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform duration-200 ${
+                  className={`w-6 h-6 text-white flex-shrink-0 transition-transform duration-300 ${
                     openIdx === i ? 'rotate-180' : ''
                   }`}
                 />
               </button>
               <div
-                className={`overflow-hidden transition-all duration-200 ${
-                  openIdx === i ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
+                className={`overflow-hidden transition-all duration-200 ease-out ${
+                  openIdx === i ? 'max-h-screen opacity-100 animate-accordion-down' : 'max-h-0 opacity-0'
                 }`}
               >
-                <div className="px-5 pb-4 border-t border-border">
-                  <p className="pt-3 text-sm text-muted-foreground leading-relaxed">
+                <div className="px-6 pb-5 text-gray-800 bg-white border-t border-orange-400">
+                  <p className="text-base leading-relaxed pt-4">
                     {faq.a}
                   </p>
                 </div>
