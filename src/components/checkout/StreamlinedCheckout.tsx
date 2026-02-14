@@ -1060,11 +1060,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     }
   };
 
-  const processPayment = async () => {
+  const processPayment = async (paymentOverride?: 'monthly' | 'full') => {
+    const effectivePayment = paymentOverride || selectedPayment;
     setShowValidation(true);
     setPaymentError('');
     
-    if (!selectedPayment) {
+    if (!effectivePayment) {
       setPaymentError('Please choose a payment option to continue.');
       const paymentSection = document.getElementById('payment-section');
       paymentSection?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1116,9 +1117,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     }
     
     setIsLoading(true);
-    trackFormSubmission('customer_details', { payment_method: selectedPayment });
+    trackFormSubmission('customer_details', { payment_method: effectivePayment });
 
-    if (selectedPayment === 'monthly') {
+    if (effectivePayment === 'monthly') {
       trackBumperCheckoutClick();
       await processBumperCheckout();
     } else {
@@ -1941,10 +1942,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 setPaymentError('');
                 
                 // Auto-trigger Stripe checkout when "Pay in Full" is selected
+                // Pass payment directly to avoid stale closure reading old selectedPayment
                 if (payment === 'full') {
-                  // Small delay to allow state to update
                   setTimeout(() => {
-                    processPayment();
+                    processPayment('full');
                   }, 100);
                 }
               }}
