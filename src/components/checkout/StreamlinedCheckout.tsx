@@ -1169,38 +1169,48 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       // Use requestAnimationFrame for smoother scroll after DOM updates
       // Use setTimeout to allow React state to update before scrolling
       setTimeout(() => {
-        if (!personalDetailsComplete) {
-          const personalFields = ['first_name', 'last_name', 'email', 'phone', 'mileage'];
-          for (const field of personalFields) {
-            const val = customerData[field as keyof typeof customerData];
-            if (!val || (typeof val === 'string' && !val.trim())) {
-              const element = document.getElementById(field);
-              if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                element.focus();
-                break;
+        const scrollToFirstIncomplete = () => {
+          if (!personalDetailsComplete) {
+            const personalFields = ['first_name', 'last_name', 'email', 'phone', 'mileage'];
+            for (const field of personalFields) {
+              const val = customerData[field as keyof typeof customerData];
+              if (!val || (typeof val === 'string' && !val.trim())) {
+                const element = document.getElementById(field);
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  element.focus();
+                  return;
+                }
               }
             }
-          }
-        } else if (!addressComplete) {
-          // Check address data directly instead of stale addressErrors state
-          const addressChecks = [
-            { field: 'postcode', id: 'postcode-lookup', value: addressData.postcode },
-            { field: 'address_line_1', id: 'address_line_1', value: addressData.address_line_1 },
-            { field: 'town', id: 'town', value: addressData.town },
-          ];
-          for (const check of addressChecks) {
-            if (!check.value?.trim()) {
-              const element = document.getElementById(check.id);
-              if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                element.focus();
-                break;
+            // Fallback: scroll to about-you section
+            const aboutYou = document.getElementById('customer-form');
+            if (aboutYou) aboutYou.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } else if (!addressComplete) {
+            const addressChecks = [
+              { field: 'postcode', id: 'postcode-lookup', value: addressData.postcode },
+              { field: 'address_line_1', id: 'address_line_1', value: addressData.address_line_1 },
+              { field: 'town', id: 'town', value: addressData.town },
+            ];
+            for (const check of addressChecks) {
+              if (!check.value?.trim()) {
+                const element = document.getElementById(check.id);
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  element.focus();
+                  return;
+                }
               }
             }
+            // Fallback: scroll to address section
+            const addressSection = document.getElementById('address-section');
+            if (addressSection) addressSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
-        }
-      }, 100);
+        };
+        
+        // Try immediately, then retry after DOM updates from section expansion
+        scrollToFirstIncomplete();
+      }, 200);
       
       toast.error('Please complete all required fields including your address.');
       return;
