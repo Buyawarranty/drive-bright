@@ -157,11 +157,11 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
                   placeholder="07xxx xxxxxx"
-              className={`h-14 text-lg pl-4 pr-10 rounded-xl transition-all duration-200 ${
+                  className={`h-14 text-lg pl-4 pr-10 rounded-xl transition-all duration-200 ${
                     error 
                       ? 'border-red-500 focus:ring-red-500' 
                       : isPhoneValid
-                        ? 'border-green-500 ring-2 ring-green-500/20'
+                        ? 'border-green-500 ring-2 ring-green-500/20 bg-green-50/50'
                         : isFocused 
                           ? 'border-brand-green ring-2 ring-brand-green/20' 
                           : 'border-gray-200'
@@ -179,6 +179,12 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
               </div>
               {error && (
                 <p className="text-sm text-red-500 font-medium animate-in slide-in-from-top-1 duration-200">{error}</p>
+              )}
+              {isPhoneValid && !error && (
+                <p className="text-sm text-green-600 flex items-center gap-1 animate-in fade-in-50 duration-200">
+                  <CheckCircle className="h-3.5 w-3.5" />
+                  Valid UK {phoneValidation.type === 'mobile' ? 'mobile' : 'landline'} number
+                </p>
               )}
             </div>
             
