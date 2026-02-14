@@ -177,7 +177,22 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   
   // Address field errors
   const [addressErrors, setAddressErrors] = useState<{[key: string]: string}>({});
-  const [addressValidated, setAddressValidated] = useState<{[key: string]: boolean}>({});
+  const [addressValidated, setAddressValidated] = useState<{[key: string]: boolean}>(() => {
+    // Auto-validate pre-filled address fields from localStorage
+    try {
+      const savedAddress = localStorage.getItem('buyawarranty_addressData');
+      if (savedAddress) {
+        const parsed = JSON.parse(savedAddress);
+        const ukPcRegex = /^[A-Z]{1,2}[0-9R][0-9A-Z]?\s?[0-9][A-Z]{2}$/i;
+        return {
+          postcode: !!(parsed.postcode && ukPcRegex.test(parsed.postcode.replace(/\s/g, ''))),
+          address_line_1: !!parsed.address_line_1?.trim(),
+          town: !!parsed.town?.trim(),
+        };
+      }
+    } catch (e) {}
+    return {};
+  });
   
   // Track if address lookup failed (for showing manual entry)
   const [addressLookupFailed, setAddressLookupFailed] = useState(false);
@@ -1716,8 +1731,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   </p>
                 )}
                 
-                {/* Success message when address found */}
-                {showAddressFields && !addressLookupFailed && addressData.town && (
+                {/* Success message when address found but address line not yet entered */}
+                {showAddressFields && !addressLookupFailed && addressData.town && !addressData.address_line_1?.trim() && (
                   <p className="text-sm text-green-600 mt-2 flex items-center gap-1.5">
                     <Check className="w-3.5 h-3.5" />
                     Please enter address line
