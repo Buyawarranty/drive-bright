@@ -1476,7 +1476,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           <section className="mt-6 sm:mt-8 lg:mt-8">
             <PaymentMethodSelector
               selectedPayment={selectedPayment}
-              onPaymentChange={setSelectedPayment}
+              onPaymentChange={(p) => { setSelectedPayment(p); selectedPaymentRef.current = p; }}
               monthlyPrice={discountedMonthlyPrice}
               totalPrice={bumperTotalPrice}
               fullPrice={discountedStripePrice}
