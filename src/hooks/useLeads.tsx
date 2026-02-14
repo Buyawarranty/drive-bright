@@ -192,12 +192,12 @@ export const useLeads = () => {
       if (!initialLoadDoneRef.current && !initialLoadStartedRef.current) {
         initialLoadStartedRef.current = true;
         setLoading(true);
-        // Safety timeout: force loading off after 10s to prevent infinite loading
+        // Safety timeout: force loading off after 12s to prevent infinite loading
         loadingTimeoutRef.current = setTimeout(() => {
           setLoading(false);
           initialLoadDoneRef.current = true;
-          console.warn('[Leads] Loading safety timeout triggered after 10s');
-        }, 10000);
+          console.warn('[Leads] Loading safety timeout triggered after 12s');
+        }, 12000);
       }
       
       // Use Promise.all to fetch all data sources in parallel for better performance
