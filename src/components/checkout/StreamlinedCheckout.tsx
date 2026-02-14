@@ -1111,6 +1111,21 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   const processPayment = async (paymentOverride?: 'monthly' | 'full') => {
     const effectivePayment = paymentOverride || selectedPayment || selectedPaymentRef.current;
     console.log('💳 processPayment called:', { paymentOverride, selectedPayment, refValue: selectedPaymentRef.current, effectivePayment });
+    
+    // If Stripe form is already showing, just scroll to it instead of creating a new PaymentIntent
+    if (effectivePayment === 'full' && showEmbeddedCheckout && stripeClientSecret) {
+      console.log('💳 processPayment: Stripe form already visible, scrolling to it');
+      const stripeSection = document.getElementById('inline-stripe-payment');
+      if (stripeSection) {
+        stripeSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        stripeSection.classList.add('ring-2', 'ring-[#0BA360]', 'ring-offset-2');
+        setTimeout(() => {
+          stripeSection.classList.remove('ring-2', 'ring-[#0BA360]', 'ring-offset-2');
+        }, 2000);
+      }
+      return;
+    }
+    
     setShowValidation(true);
     setPaymentError('');
     
