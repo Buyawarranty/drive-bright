@@ -296,8 +296,7 @@ export const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
           <div className="flex items-start gap-3 p-4 bg-white border border-red-300 rounded-lg">
             <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-red-700">Payment failed</p>
-              <p className="text-sm text-red-600 mt-1">{errorMessage}</p>
+              <p className="text-sm font-medium text-red-700">Complete card details</p>
             </div>
           </div>
         )}
