@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 const faqs = [
   {
     q: 'Is £1,000, £2,000 or £3,000 the right claim limit for me?',
-    a: 'It depends on your vehicle and budget. Higher limits cover more of the repair cost and are ideal for newer or more complex vehicles. £1,000 is great for peace of mind on smaller repairs, while £3,000 covers most common faults in full.',
+    a: 'It depends on your vehicle and how much protection you want.\n\n£1,000 is ideal for smaller or lower‑cost repairs.\n£2,000 offers broader cover for most mid‑range repairs.\n£3,000 is our most popular option and covers the majority of common faults in full.\n\nEvery plan includes unlimited claims, and you\'re covered up to the value of your vehicle, whichever limit you choose.',
   },
   {
     q: 'What happens if a repair costs more than my limit?',

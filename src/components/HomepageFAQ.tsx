@@ -60,6 +60,11 @@ const HomepageFAQ = () => {
       answer: 'Most body modifications are accepted. Call us on 0330 229 5040 or request a call back using the Call us button in the top navigation bar.'
     },
     {
+      id: 'claim-limit-choice',
+      question: 'Is £1,000, £2,000 or £3,000 the right claim limit for me?',
+      answer: 'It depends on your vehicle and how much protection you want.\n\n£1,000 is ideal for smaller or lower‑cost repairs.\n£2,000 offers broader cover for most mid‑range repairs.\n£3,000 is our most popular option and covers the majority of common faults in full.\n\nEvery plan includes unlimited claims, and you\'re covered up to the value of your vehicle, whichever limit you choose.'
+    },
+    {
       id: 'most-expensive-repair',
       question: 'What is the most expensive repair you have covered?',
       answer: 'We regularly cover repairs over £1,500 for engines, gearboxes and ECUs. Higher claim limits are available. Check your instant price by entering your registration.'
