@@ -2056,7 +2056,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       <DesktopStickyBar
         selectedPayment={selectedPayment}
         monthlyPrice={discountedMonthlyPrice}
-        totalPrice={hasValidDiscountCodes ? discountedBumperPrice : bumperTotalPrice}
+        totalPrice={bumperTotalPrice}
         fullPrice={discountedStripePrice}
         savings={savings}
         duration={getDurationText()}
