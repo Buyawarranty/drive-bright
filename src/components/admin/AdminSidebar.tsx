@@ -194,6 +194,12 @@ const defaultTabs: Tab[] = [
     description: 'Track page visits, traffic sources & Google Ads'
   },
   {
+    id: 'vehicle-stats',
+    label: 'Vehicle Stats',
+    icon: Car,
+    description: 'Analyse which vehicles sell the most warranties'
+  },
+  {
     id: 'user-permissions',
     label: 'User Permissions',
     icon: Shield,

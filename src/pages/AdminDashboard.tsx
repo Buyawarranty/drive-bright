@@ -43,6 +43,7 @@ const SalesCustomerManagement = lazy(() => import('@/components/admin/sales/Sale
 const SalesLeadDashboard = lazy(() => import('@/components/admin/sales/SalesLeadDashboard').then(m => ({ default: m.SalesLeadDashboard })));
 const PolicyDocumentsTab = lazy(() => import('@/components/admin/PolicyDocumentsTab').then(m => ({ default: m.PolicyDocumentsTab })));
 const PageAnalyticsTab = lazy(() => import('@/components/admin/PageAnalyticsTab').then(m => ({ default: m.PageAnalyticsTab })));
+const VehicleStatsTab = lazy(() => import('@/components/admin/VehicleStatsTab').then(m => ({ default: m.VehicleStatsTab })));
 
 // Tab loading spinner
 const TabFallback = () => (
@@ -376,6 +377,8 @@ const AdminDashboard = () => {
         return <AnalyticsTab />;
       case 'page-analytics':
         return <PageAnalyticsTab />;
+      case 'vehicle-stats':
+        return <VehicleStatsTab />;
       case 'security':
         return <ClickFraudTab />;
       case 'user-permissions':
