@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Lock, ArrowRight, Shield, Clock } from 'lucide-react';
+import { Lock, ArrowRight, Shield, Clock, Check } from 'lucide-react';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 
 interface DesktopStickyBarProps {
@@ -57,8 +57,8 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
               14-day refund
             </span>
             <span className="flex items-center gap-1">
-              <Lock className="w-3.5 h-3.5 text-[#0BA360]" />
-              Secure payment
+              <Check className="w-3.5 h-3.5 text-[#0BA360]" />
+              Easy claims
             </span>
           </div>
         </div>
