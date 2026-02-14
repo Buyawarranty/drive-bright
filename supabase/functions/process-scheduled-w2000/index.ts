@@ -86,6 +86,17 @@ serve(async (req) => {
           throw w2kError;
         }
 
+        // Activate the policy now that W2000 submission succeeded and start date has passed
+        const startDate = new Date(policy.policy_start_date);
+        const now = new Date();
+        if (startDate <= now) {
+          await supabaseClient
+            .from('customer_policies')
+            .update({ status: 'active' })
+            .eq('id', policy.id);
+          logStep(`Activated scheduled policy ${policy.id}`);
+        }
+
         logStep(`Successfully sent policy ${policy.id} to W2000`, w2kResult);
         successCount++;
         results.push({ 
