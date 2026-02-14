@@ -2161,27 +2161,27 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             section.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
         }}
-        isVisible={showDesktopStickyBar && !isBottomCtaFullyVisible}
+        isVisible={showDesktopStickyBar}
+        minimised={isBottomCtaFullyVisible}
       />
 
-      {/* Mobile Sticky Footer - hidden when bottom CTA is fully visible */}
-      {!isBottomCtaFullyVisible && (
-        <MobileStickyFooter
-          selectedPayment={selectedPayment}
-          monthlyPrice={discountedMonthlyPrice}
-          fullPrice={discountedStripePrice}
-          originalPrice={bumperTotalPrice}
-          isLoading={isLoading}
-          isFormValid={personalDetailsComplete && addressComplete}
-          onPayClick={() => {
-            const section = document.getElementById('how-to-pay-section');
-            if (section) {
-              section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-          }}
-          onPaymentChange={(p) => { setSelectedPayment(p); selectedPaymentRef.current = p; }}
-        />
-      )}
+      {/* Mobile Sticky Footer - minimises to trust strip when bottom CTA is visible */}
+      <MobileStickyFooter
+        selectedPayment={selectedPayment}
+        monthlyPrice={discountedMonthlyPrice}
+        fullPrice={discountedStripePrice}
+        originalPrice={bumperTotalPrice}
+        isLoading={isLoading}
+        isFormValid={personalDetailsComplete && addressComplete}
+        onPayClick={() => {
+          const section = document.getElementById('how-to-pay-section');
+          if (section) {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }}
+        onPaymentChange={(p) => { setSelectedPayment(p); selectedPaymentRef.current = p; }}
+        minimised={isBottomCtaFullyVisible}
+      />
     </div>
   );
 };

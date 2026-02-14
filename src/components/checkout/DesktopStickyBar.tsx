@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Lock, ArrowRight } from 'lucide-react';
+import { Lock, ArrowRight, Shield, Clock } from 'lucide-react';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 
 interface DesktopStickyBarProps {
@@ -15,6 +15,7 @@ interface DesktopStickyBarProps {
   hasPromoDiscount?: boolean;
   onPayClick: () => void;
   isVisible?: boolean;
+  minimised?: boolean;
 }
 
 const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
@@ -29,9 +30,41 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
   hasPromoDiscount,
   onPayClick,
   isVisible = true,
+  minimised = false,
 }) => {
-  // Don't render if not visible
   if (!isVisible) return null;
+
+  // Minimised: slim trust/info strip instead of full CTA bar
+  if (minimised) {
+    return (
+      <div className="hidden lg:block fixed bottom-0 left-0 right-0 bg-gray-50 border-t border-gray-200 z-50 transition-all duration-300">
+        <div className="max-w-7xl mx-auto px-6 py-2.5">
+          <div className="flex items-center justify-center gap-6 text-xs text-gray-500">
+            <a 
+              href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:opacity-80 transition-opacity"
+            >
+              <TrustpilotHeader className="flex-shrink-0 scale-[0.5] origin-center" />
+            </a>
+            <span className="flex items-center gap-1">
+              <Shield className="w-3.5 h-3.5 text-[#0BA360]" />
+              Instant cover
+            </span>
+            <span className="flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-[#0BA360]" />
+              14-day refund
+            </span>
+            <span className="flex items-center gap-1">
+              <Lock className="w-3.5 h-3.5 text-[#0BA360]" />
+              Secure payment
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="hidden lg:block fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 animate-in slide-in-from-bottom-4 duration-300">
@@ -99,6 +132,11 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
               onClick={onPayClick}
               disabled={isLoading}
               size="lg"
+              aria-label={
+                selectedPayment === 'full'
+                  ? `Pay £${fullPrice} now`
+                  : `Pay £${monthlyPrice} today`
+              }
               className="text-base lg:text-lg font-semibold px-6 lg:px-8 py-3 lg:py-3.5 text-white rounded-xl whitespace-nowrap animate-breathing"
               style={{ backgroundColor: selectedPayment === 'monthly' ? '#FF6B00' : '#0BA360' }}
             >
