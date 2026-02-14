@@ -839,6 +839,12 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       setFieldErrors(prev => ({ ...prev, [field]: '' }));
     }
     if (paymentError) setPaymentError('');
+    
+    // Live validate on change (not just blur) for better UX
+    if (typeof value === 'string' && value.trim()) {
+      // Defer validation slightly so state is updated
+      setTimeout(() => validateField(field), 0);
+    }
   };
 
   const handleFieldBlur = (field: string) => {
@@ -1989,7 +1995,17 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           })()}
           
           {showEmbeddedCheckout && stripeClientSecret && selectedPayment === 'full' && (
-            <section id="inline-stripe-payment" className="mt-6 sm:mt-8 lg:mt-8 bg-white rounded-xl border border-[#E5E5E5] p-5 sm:p-6">
+            <section 
+              id="inline-stripe-payment" 
+              className="mt-6 sm:mt-8 lg:mt-8 bg-white rounded-xl border-2 border-green-400 p-5 sm:p-6 shadow-[0_0_16px_rgba(34,197,94,0.25)] animate-fade-in"
+              ref={(el) => {
+                if (el) {
+                  setTimeout(() => {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 200);
+                }
+              }}
+            >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <Lock className="w-6 h-6" style={{ color: '#0BA360' }} />
