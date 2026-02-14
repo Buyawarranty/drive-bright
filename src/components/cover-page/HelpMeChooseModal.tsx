@@ -18,12 +18,11 @@ const HelpMeChooseModal: React.FC<HelpMeChooseModalProps> = ({ isOpen, onClose }
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg">
               <HelpCircle className="w-5 h-5 text-primary" />
-              Help me choose
+              Need more cover?
             </DialogTitle>
             <DialogDescription className="text-muted-foreground text-sm leading-relaxed">
-              Your plan pays up to your selected claim limit per approved claim. Most common
-              repairs cost between £1,000 and £3,000. If a repair costs more than your limit,
-              you only pay the difference.
+              Not sure which limit is right for you? Our team can help you choose
+              the best option for your vehicle and budget.
             </DialogDescription>
           </DialogHeader>
 
