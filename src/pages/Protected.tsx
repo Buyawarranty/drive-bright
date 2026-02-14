@@ -8,6 +8,9 @@ import { OptimizedImage } from '@/components/OptimizedImage';
 import { supabase } from '@/integrations/supabase/client';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
+import bmwWarranty from '@/assets/bmw-warranty.webp';
+import pandaSavings from '@/assets/panda-savings.webp';
+import pandaVans from '@/assets/panda-vans.png';
 import HighPerformanceExclusionsList from '@/components/HighPerformanceExclusionsList';
 
 const Protected = () => {
@@ -233,7 +236,7 @@ const Protected = () => {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
             <Link to="/">
               <Button size="lg" className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-10 py-6 text-lg rounded-lg animate-breathing flex items-center gap-2">
                 Get My Instant Price
@@ -243,6 +246,10 @@ const Protected = () => {
             <a href="#coverage-list" className="text-primary hover:underline font-semibold flex items-center gap-1">
               View Covered Parts <ChevronRight className="w-4 h-4" />
             </a>
+          </div>
+
+          <div className="max-w-md mx-auto">
+            <img src={bmwWarranty} alt="BMW i3 with buyawarranty branding" className="w-full h-auto object-contain" loading="eager" />
           </div>
         </div>
       </section>
@@ -438,22 +445,27 @@ const Protected = () => {
 
       {/* ═══ REPAIR COST EXAMPLES ═══ */}
       <section className="py-14 md:py-16 bg-white">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Typical Repair Costs</h2>
             <p className="text-muted-foreground">See what you could be protected from.</p>
           </div>
 
-          <div className="space-y-3">
-            {repairCosts.map((item, i) => (
-              <div key={i} className="flex items-center justify-between bg-red-50 border border-red-100 rounded-lg px-5 py-4">
-                <div className="flex items-center gap-3">
-                  <Wrench className="w-5 h-5 text-red-500" />
-                  <span className="font-medium text-foreground">{item.name}</span>
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div className="space-y-3">
+              {repairCosts.map((item, i) => (
+                <div key={i} className="flex items-center justify-between bg-red-50 border border-red-100 rounded-lg px-5 py-4">
+                  <div className="flex items-center gap-3">
+                    <Wrench className="w-5 h-5 text-red-500" />
+                    <span className="font-medium text-foreground">{item.name}</span>
+                  </div>
+                  <span className="font-bold text-red-600">{item.cost}</span>
                 </div>
-                <span className="font-bold text-red-600">{item.cost}</span>
-              </div>
-            ))}
+              ))}
+            </div>
+            <div className="flex justify-center">
+              <img src={pandaSavings} alt="Miles the panda with savings jar" className="w-64 md:w-72 h-auto object-contain" loading="lazy" />
+            </div>
           </div>
 
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center mt-6">
@@ -495,17 +507,22 @@ const Protected = () => {
 
       {/* ═══ WHY DRIVERS CHOOSE US ═══ */}
       <section className="py-14 md:py-16 bg-white">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Why Drivers Choose Us</h2>
           </div>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {whyChooseUs.map((item, i) => (
-              <div key={i} className="flex items-center gap-3 bg-green-50 border border-green-100 rounded-lg px-4 py-3">
-                <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                <span className="text-sm font-medium text-foreground">{item}</span>
-              </div>
-            ))}
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div className="flex justify-center order-2 md:order-1">
+              <img src={pandaVans} alt="Miles the panda with buyawarranty vans" className="w-72 md:w-80 h-auto object-contain" loading="lazy" />
+            </div>
+            <div className="grid gap-3 order-1 md:order-2">
+              {whyChooseUs.map((item, i) => (
+                <div key={i} className="flex items-center gap-3 bg-green-50 border border-green-100 rounded-lg px-4 py-3">
+                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  <span className="text-sm font-medium text-foreground">{item}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
