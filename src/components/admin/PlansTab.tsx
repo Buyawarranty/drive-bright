@@ -124,6 +124,11 @@ export const PlansTab = () => {
 
   useEffect(() => {
     fetchPlans();
+    // Safety timeout: force stop loading after 8s
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 8000);
+    return () => clearTimeout(timeout);
   }, []);
 
   const fetchPlans = async () => {
