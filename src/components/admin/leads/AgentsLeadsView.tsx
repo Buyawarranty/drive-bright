@@ -173,12 +173,22 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
     }
   };
 
-  // Handle percentage change
+  // Handle percentage change - prevent entering values that would exceed 100% total
   const handlePercentageChange = (adminUserId: string, value: string) => {
     const numValue = parseInt(value, 10);
-    if (!isNaN(numValue) && numValue >= 0 && numValue <= 100) {
-      setEditedPercentages(prev => ({ ...prev, [adminUserId]: numValue }));
-    }
+    if (isNaN(numValue) || numValue < 0) return;
+    
+    // Calculate what the total would be with this new value
+    const otherActiveTotal = agentCaps.reduce((sum, cap) => {
+      if (cap.paused || cap.admin_user_id === adminUserId) return sum;
+      const val = editedPercentages[cap.admin_user_id] ?? cap.percentage ?? 0;
+      return sum + val;
+    }, 0);
+    
+    const maxAllowed = 100 - otherActiveTotal;
+    const clampedValue = Math.min(numValue, maxAllowed);
+    
+    setEditedPercentages(prev => ({ ...prev, [adminUserId]: clampedValue }));
   };
 
   // Handle save cap
