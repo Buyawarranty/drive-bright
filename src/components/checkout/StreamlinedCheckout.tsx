@@ -525,13 +525,14 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
      const el = bottomCtaRef.current;
      if (!el) return;
      
-     const observer = new IntersectionObserver(
-       ([entry]) => {
-         // threshold 1.0 means fully visible
-         setIsBottomCtaFullyVisible(entry.isIntersecting);
-       },
-       { threshold: 1.0 }
-     );
+      // Use lower threshold on mobile since the section may be taller than viewport
+      const isMobile = window.innerWidth < 1024;
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          setIsBottomCtaFullyVisible(entry.isIntersecting);
+        },
+        { threshold: isMobile ? 0.3 : 1.0 }
+      );
      
      observer.observe(el);
      return () => observer.disconnect();
