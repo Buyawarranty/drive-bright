@@ -161,11 +161,11 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
           <div className="flex flex-col items-center justify-center py-8 text-center animate-in fade-in-50 zoom-in-95 duration-300">
             {/* Celebration icon with animation */}
             <div className="relative mb-4">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center shadow-lg">
-                <PartyPopper className="h-10 w-10 text-green-600 animate-bounce" />
+               <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center shadow-lg">
+                <PartyPopper className="h-10 w-10 text-brand-green animate-bounce" />
               </div>
-              <Sparkles className="absolute -top-1 -right-1 h-6 w-6 text-yellow-500 animate-pulse" />
-              <Sparkles className="absolute -bottom-1 -left-1 h-5 w-5 text-yellow-400 animate-pulse delay-150" />
+              <Sparkles className="absolute -top-1 -right-1 h-6 w-6 text-brand-green animate-pulse" />
+              <Sparkles className="absolute -bottom-1 -left-1 h-5 w-5 text-brand-green animate-pulse delay-150" />
             </div>
             
             <h3 className="text-2xl font-bold text-foreground mb-2">

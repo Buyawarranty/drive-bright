@@ -133,7 +133,7 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
           <div className="py-10 text-center space-y-4 animate-in fade-in-0 zoom-in-95 duration-300">
             <div className="relative inline-block">
               <CheckCircle className="w-16 h-16 text-brand-green mx-auto" />
-              <Sparkles className="w-6 h-6 text-brand-orange absolute -top-1 -right-1 animate-bounce" />
+              <Sparkles className="w-6 h-6 text-brand-green absolute -top-1 -right-1 animate-bounce" />
             </div>
             <div className="space-y-2">
               <h3 className="text-lg font-bold text-gray-900">We've got your request!</h3>
