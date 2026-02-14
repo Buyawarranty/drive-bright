@@ -12,6 +12,41 @@ const AdminConversionFire = () => {
   // NOTE: Google Ads gtag doesn't support backdating - conversions are recorded at firing time
   // For true backdated conversions, use Google Ads Offline Conversion Import
   const missedConversions = [
+    // February 2026 missed conversions
+    {
+      id: 'BAW-2602-400927',
+      email: 'clive195847@gmail.com',
+      amount: 455,
+      phone: '',
+      firstName: 'Clive',
+      lastName: '',
+      address: '',
+      source: 'stripe',
+      purchaseDate: '2026-02-12'
+    },
+    {
+      id: 'BAW-2602-400928',
+      email: 'raynehe@gmail.com',
+      amount: 456,
+      phone: '07834418090',
+      firstName: 'Daxing',
+      lastName: 'He',
+      address: '33 Rimsdale Drive Manchester M40 0GN',
+      source: 'bumper',
+      purchaseDate: '2026-02-14'
+    },
+    {
+      id: 'BAW-2602-400930',
+      email: 'sonu.01haryanasonu@gmail.com',
+      amount: 411,
+      phone: '',
+      firstName: 'Sonu',
+      lastName: 'Sonu',
+      address: 'Flat 74 County Durham DH8 5HP',
+      source: 'stripe',
+      purchaseDate: '2026-02-14'
+    },
+    // Previous missed conversions
     {
       id: 'BAW-2512-400857',
       email: 'dave.illingworth@btinternet.com',
