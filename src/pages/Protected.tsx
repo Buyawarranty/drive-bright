@@ -504,6 +504,16 @@ const Protected = () => {
               Average decision time is under two hours upon receiving repair details from your garage.
             </p>
           </div>
+
+          <div className="text-center mt-10">
+            <p className="text-muted-foreground mb-4 text-sm">Don't wait for the breakdown — get covered before it costs you.</p>
+            <Link to="/">
+              <Button size="lg" className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-10 py-6 text-lg rounded-lg animate-breathing flex items-center gap-2 mx-auto">
+                Get My Instant Price
+                <ArrowRight className="w-5 h-5" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
