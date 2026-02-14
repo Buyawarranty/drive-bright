@@ -9,7 +9,7 @@ const benefits = [
 
 const BenefitsStrip: React.FC = () => {
   return (
-    <section className="bg-muted py-6 md:py-8 border-y border-border">
+    <section className="bg-muted py-4 md:py-5 border-y border-border">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
           {benefits.map((b, i) => {
