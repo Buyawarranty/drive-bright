@@ -50,7 +50,7 @@ const RepairCostsSection: React.FC<RepairCostsSectionProps> = ({ onTalkToTechnic
             onClick={onTalkToTechnician}
             className="text-primary hover:underline text-sm font-medium"
           >
-            Talk to a technician about my car →
+            Talk to an expert about my car →
           </button>
         </div>
       </div>
