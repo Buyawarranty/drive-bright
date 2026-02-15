@@ -96,7 +96,7 @@ const WebsiteFooter = () => {
                 <li><a href="/complaints/" className="hover:text-[#eb4b00] transition-colors">Complaints Procedure</a></li>
                 <li><a href="/thewarrantyhub/" className="hover:text-[#eb4b00] transition-colors">Warranty Hub</a></li>
                 <li><a href="/used-car-warranty-uk/" className="hover:text-[#eb4b00] transition-colors">Used Car Warranty UK</a></li>
-                <li><a href="/cancel-warranty" className="hover:text-gray-500 transition-colors text-gray-400 font-normal">Cancel your warranty</a></li>
+                <li><a href="/cancel-warranty" className="hover:text-[#eb4b00] transition-colors">Cancel your warranty</a></li>
               </ul>
             </div>
 
