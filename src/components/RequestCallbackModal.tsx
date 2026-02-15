@@ -145,14 +145,26 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
         {isSuccess ? (
           /* ── Success state ── */
           <div className="flex flex-col items-center justify-center px-8 py-12 text-center animate-in fade-in-50 zoom-in-95 duration-300">
-            <div className="w-14 h-14 rounded-full bg-[#2BB673] flex items-center justify-center mb-5 animate-in zoom-in-50 duration-300">
-              <Check className="h-7 w-7 text-white" strokeWidth={2.5} />
-            </div>
-            <h3 className="text-xl font-bold text-[#151515] mb-2">
-              Thanks — we'll prioritise your call
+            {/* Sparkle icon */}
+            <svg className="w-7 h-7 mb-5 text-[#FFA94D]" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2l1.09 3.26L16 6l-2.91.74L12 10l-1.09-3.26L8 6l2.91-.74L12 2zm6 8l.72 2.17L21 13l-2.28.83L18 16l-.72-2.17L15 13l2.28-.83L18 10zM7 14l.72 2.17L10 17l-2.28.83L7 20l-.72-2.17L4 17l2.28-.83L7 14z" />
+            </svg>
+
+            {/* Green tick + heading */}
+            <h3 className="text-xl font-bold text-[#151515] mb-4 flex items-start justify-center gap-2">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#2BB673] flex-shrink-0 mt-0.5 animate-in zoom-in-50 duration-300">
+                <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />
+              </span>
+              <span>Thank you — your call request is confirmed</span>
             </h3>
-            <p className="text-sm text-[#6B7280] leading-relaxed max-w-[280px]">
-              One of our UK‑based specialists will be in touch shortly.
+
+            <p className="text-sm text-[#6B7280] leading-relaxed max-w-[320px] mb-4">
+              We're already preparing your quote. We normally call the same day, and if we're ever busy, it will be within one working day.
+            </p>
+
+            <p className="text-sm font-bold text-[#151515] leading-relaxed max-w-[320px]">
+              To make the most of your call, have any competitor quotes ready —{' '}
+              <br />we'll beat them.
             </p>
           </div>
         ) : (
