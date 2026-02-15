@@ -36,8 +36,8 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
 }) => {
   if (!isVisible) return null;
 
-  // Hide completely when inline CTA is visible
-  if (minimised) {
+  // Hide completely when inline CTA is visible, UNLESS we're at the bottom (trustStripOnly)
+  if (minimised && !trustStripOnly) {
     return null;
   }
 
@@ -56,8 +56,8 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
               14-day refund
             </span>
             <span className="flex items-center gap-1">
-              <Lock className="w-3.5 h-3.5 text-[#0BA360]" />
-              Secure payment
+              <Shield className="w-3.5 h-3.5 text-[#0BA360]" />
+              Easy Claims
             </span>
           </div>
         </div>
