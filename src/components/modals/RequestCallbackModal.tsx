@@ -171,8 +171,9 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
                 <Sparkles className="w-4 h-4 text-brand-green absolute -bottom-0 -left-2 animate-bounce" style={{ animationDelay: '0.6s' }} />
               </div>
               <div className="space-y-2 animate-in fade-in-0 slide-in-from-bottom-2 duration-500" style={{ animationDelay: '0.2s' }}>
-                <h3 className="text-xl font-bold text-gray-900">We've got your request!</h3>
-                <p className="text-gray-600">A member of our team will call you back shortly.</p>
+                <h3 className="text-xl font-bold text-gray-900">✔️ Thank you — your quote request is confirmed</h3>
+                <p className="text-gray-600">We're already preparing your quote. We normally call the same day, and if we're ever busy, it will be within one working day.</p>
+                <p className="text-brand-green font-semibold">To make the most of your call, have any competitor quotes ready — we'll beat them.</p>
               </div>
               {/* Progress bar auto-close */}
               <div className="w-32 mx-auto h-1 bg-gray-100 rounded-full overflow-hidden">
@@ -209,8 +210,8 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
                       onChange={handlePhoneChange}
                       onFocus={() => setIsFocused(true)}
                       onBlur={() => setIsFocused(false)}
-                      placeholder="07xxx xxxxxx"
-                      className={`h-14 text-lg pl-4 pr-12 rounded-xl transition-all duration-300 ${
+                      placeholder="Enter phone number"
+                      className={`h-14 text-lg pl-4 pr-12 rounded-xl transition-all duration-300 placeholder:font-normal placeholder:text-gray-400 ${
                         error 
                           ? 'border-red-400 focus:ring-red-400/30 bg-red-50/30' 
                           : isPhoneValid
@@ -247,12 +248,6 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
                 {error && (
                   <p className="text-sm text-red-500 font-medium animate-in slide-in-from-top-1 fade-in-0 duration-200">
                     {error}
-                  </p>
-                )}
-                {isPhoneValid && !error && (
-                  <p className="text-sm text-brand-green flex items-center gap-1.5 font-medium animate-in fade-in-0 slide-in-from-bottom-1 duration-300">
-                    <CheckCircle className="h-4 w-4" />
-                    Valid UK {phoneValidation.type === 'mobile' ? 'mobile' : 'landline'} number
                   </p>
                 )}
               </div>
