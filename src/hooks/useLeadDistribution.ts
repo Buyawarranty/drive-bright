@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -41,6 +41,7 @@ export const useLeadDistribution = () => {
   const [agentPresences, setAgentPresences] = useState<AgentPresence[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentAgentCap, setCurrentAgentCap] = useState<AgentCap | null>(null);
+  const adminUserIdRef = useRef<string | null>(null);
 
   // Fetch distribution settings
   const fetchSettings = useCallback(async () => {
@@ -63,6 +64,22 @@ export const useLeadDistribution = () => {
     }
   }, []);
 
+  // Resolve admin user ID once and cache it
+  const resolveAdminUserId = useCallback(async () => {
+    if (adminUserIdRef.current) return adminUserIdRef.current;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return null;
+    const { data: adminUser } = await supabase
+      .from('admin_users')
+      .select('id')
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+    if (adminUser) {
+      adminUserIdRef.current = adminUser.id;
+    }
+    return adminUserIdRef.current;
+  }, []);
+
   // Fetch agent caps with admin user info
   const fetchAgentCaps = useCallback(async () => {
     try {
@@ -76,24 +93,16 @@ export const useLeadDistribution = () => {
       if (error) throw error;
       setAgentCaps(data || []);
 
-      // Get current user's cap
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: adminUser } = await supabase
-          .from('admin_users')
-          .select('id')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (adminUser) {
-          const currentCap = data?.find(cap => cap.admin_user_id === adminUser.id);
-          setCurrentAgentCap(currentCap || null);
-        }
+      // Use cached admin user ID instead of calling getUser() every time
+      const myAdminId = await resolveAdminUserId();
+      if (myAdminId) {
+        const currentCap = data?.find(cap => cap.admin_user_id === myAdminId);
+        setCurrentAgentCap(currentCap || null);
       }
     } catch (error) {
       console.error('Error fetching agent caps:', error);
     }
-  }, []);
+  }, [resolveAdminUserId]);
 
   // Fetch agent presences
   const fetchAgentPresences = useCallback(async () => {
@@ -203,16 +212,9 @@ export const useLeadDistribution = () => {
   const claimNextLead = useCallback(async () => {
     try {
       // Get current user's admin ID first
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const { data: adminUser } = await supabase
-        .from('admin_users')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (!adminUser) throw new Error('Admin user not found');
+      // Use cached admin user ID
+      const myAdminId = await resolveAdminUserId();
+      if (!myAdminId) throw new Error('Admin user not found');
 
       // CRITICAL: Force presence update BEFORE claiming to ensure database has latest interaction
       // This fixes the race condition where local state shows 'active' but database is stale
@@ -240,7 +242,7 @@ export const useLeadDistribution = () => {
       const { data: result, error: claimError } = await supabase
         .rpc('claim_lead_for_agent', {
           p_lead_id: unassignedLead.id,
-          p_agent_id: adminUser.id
+          p_agent_id: myAdminId
         });
 
       if (claimError) throw claimError;
@@ -265,8 +267,9 @@ export const useLeadDistribution = () => {
   // Toggle pause receiving for current user
   const togglePauseReceiving = useCallback(async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return false;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return false;
+      const user = session.user;
 
       const { data: presence } = await supabase
         .from('user_presence')
