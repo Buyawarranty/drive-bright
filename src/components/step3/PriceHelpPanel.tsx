@@ -194,6 +194,54 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
 
   if (!isOpen && !isAnimating) return null;
 
+  // Animated SVG Tick component
+  const AnimatedTick = ({ size = 64 }: { size?: number }) => (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 64 64"
+      fill="none"
+      className="animated-tick"
+    >
+      <circle
+        cx="32"
+        cy="32"
+        r="28"
+        stroke="hsl(var(--brand-orange))"
+        strokeWidth="3"
+        fill="none"
+        className="tick-circle"
+      />
+      <path
+        d="M20 33 L28 41 L44 25"
+        stroke="hsl(var(--brand-orange))"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+        className="tick-path"
+      />
+      <style>{`
+        .tick-circle {
+          stroke-dasharray: 176;
+          stroke-dashoffset: 176;
+          animation: drawCircle 300ms ease-out forwards;
+        }
+        .tick-path {
+          stroke-dasharray: 44;
+          stroke-dashoffset: 44;
+          animation: drawTick 250ms ease-out 150ms forwards;
+        }
+        @keyframes drawCircle {
+          to { stroke-dashoffset: 0; }
+        }
+        @keyframes drawTick {
+          to { stroke-dashoffset: 0; }
+        }
+      `}</style>
+    </svg>
+  );
+
   // Success State
   if (requestSuccess) {
     return (
@@ -213,17 +261,18 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             isOpen ? "md:translate-x-0" : "md:translate-x-full"
           )}
         >
-          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-            <div className="relative mb-6">
-              <div className="w-20 h-20 bg-brand-green/10 rounded-full flex items-center justify-center">
-                <Check className="w-10 h-10 text-brand-green" />
-              </div>
+          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-fade-in">
+            <div className="mb-6">
+              <AnimatedTick size={72} />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">
-              Thank you. We are preparing your quote.
+            <h3 className="text-xl font-bold text-foreground mb-3">
+              Thank you — your quote request is confirmed.
             </h3>
-            <p className="text-gray-600 mb-8 leading-relaxed">
-              We will call you within one working day. If you already have a quote from another provider, have it ready and we will beat it.
+            <p className="text-muted-foreground mb-2 leading-relaxed">
+              We usually call the same day. If we're busy, it'll be within one working day.
+            </p>
+            <p className="text-brand-green font-semibold mb-8 animate-[pulse_800ms_ease-in-out_400ms_1]">
+              Have any competitor quotes ready — we'll beat them.
             </p>
             <Button
               onClick={onClose}
@@ -241,17 +290,18 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             isOpen ? "translate-y-0" : "translate-y-full"
           )}
         >
-          <div className="flex flex-col items-center justify-center p-6 text-center">
-            <div className="relative mb-5">
-              <div className="w-16 h-16 bg-brand-green/10 rounded-full flex items-center justify-center">
-                <Check className="w-8 h-8 text-brand-green" />
-              </div>
+          <div className="flex flex-col items-center justify-center p-8 text-center animate-fade-in">
+            <div className="mb-5">
+              <AnimatedTick size={60} />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">
-              Thank you. We are preparing your quote.
+            <h3 className="text-lg font-bold text-foreground mb-2">
+              Thank you — your quote request is confirmed.
             </h3>
-            <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-              We will call you within one working day. Have any competitor quotes ready and we will beat them.
+            <p className="text-sm text-muted-foreground mb-2 leading-relaxed">
+              We usually call the same day. If we're busy, it'll be within one working day.
+            </p>
+            <p className="text-sm text-brand-green font-semibold mb-6 animate-[pulse_800ms_ease-in-out_400ms_1]">
+              Have any competitor quotes ready — we'll beat them.
             </p>
             <Button
               onClick={onClose}
