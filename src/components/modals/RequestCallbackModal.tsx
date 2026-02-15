@@ -227,8 +227,8 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
                     {/* Animated checkmark */}
                     {isPhoneValid && (
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 animate-in zoom-in-50 fade-in-0 duration-300">
-                        <div className="w-8 h-8 rounded-full bg-brand-green flex items-center justify-center shadow-md shadow-brand-green/30">
-                          <CheckCircle className="w-5 h-5 text-white" />
+                        <div className="w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
                         </div>
                       </div>
                     )}
