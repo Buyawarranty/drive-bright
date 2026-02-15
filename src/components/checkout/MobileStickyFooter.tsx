@@ -27,8 +27,8 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
   minimised = false,
   trustStripOnly = false,
 }) => {
-  // Hide completely when inline CTA is visible
-  if (minimised) {
+  // Hide completely when inline CTA is visible, UNLESS we're at the bottom (trustStripOnly)
+  if (minimised && !trustStripOnly) {
     return null;
   }
 
@@ -36,7 +36,7 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
   if (trustStripOnly) {
     return (
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#E5E5E5] lg:hidden transition-all duration-300">
-        <div className="px-4 py-2.5">
+        <div className="px-4 py-2.5 pb-[env(safe-area-inset-bottom,8px)]">
           <div className="flex items-center justify-center gap-2 text-xs text-gray-600">
             <span className="flex items-center gap-1">
               <Shield className="w-3 h-3 text-[#0BA360]" />
@@ -49,8 +49,8 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
             </span>
             <span>·</span>
             <span className="flex items-center gap-1">
-              <Lock className="w-3 h-3 text-[#0BA360]" />
-              Secure
+              <Shield className="w-3 h-3 text-[#0BA360]" />
+              Easy Claims
             </span>
           </div>
         </div>

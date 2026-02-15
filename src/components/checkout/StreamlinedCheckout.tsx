@@ -530,7 +530,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         ([entry]) => {
           if (entry.isIntersecting) {
             setIsBottomCtaFullyVisible(true);
-            setIsScrolledPastBottomCta(false);
+            // Check if we're near the bottom of the page
+            const atBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
+            setIsScrolledPastBottomCta(atBottom);
           } else {
             const rect = entry.boundingClientRect;
             const scrolledPast = rect.bottom < window.innerHeight;
@@ -1539,7 +1541,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
         <div className="flex gap-8 items-start">
           {/* Main Content Column */}
-          <div className="flex-1 max-w-2xl space-y-6 sm:space-y-8 pb-32 lg:pb-32 lg:space-y-0 min-w-0">
+          <div className="flex-1 max-w-2xl space-y-6 sm:space-y-8 pb-16 lg:pb-16 lg:space-y-0 min-w-0">
           {/* ==================== MOBILE: PLAN SUMMARY ACCORDION ==================== */}
           <section className="lg:hidden">
             <PlanSummaryCard
