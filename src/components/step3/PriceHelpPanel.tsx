@@ -256,61 +256,112 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
         {/* Desktop Success */}
         <div
           className={cn(
-            "fixed z-50 bg-white transition-transform duration-300 ease-out",
+            "fixed z-50 transition-transform duration-300 ease-out overflow-hidden",
             "hidden md:flex md:flex-col md:right-0 md:top-0 md:h-full md:w-[440px] md:shadow-2xl md:rounded-l-2xl",
             isOpen ? "md:translate-x-0" : "md:translate-x-full"
           )}
         >
-          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-fade-in">
-            <div className="mb-6">
-              <AnimatedTick size={72} />
-            </div>
-            <h3 className="text-xl font-bold text-foreground mb-3">
-              ✔️ Thank you — your quote request is confirmed
-            </h3>
-            <p className="text-muted-foreground mb-2 leading-relaxed">
-              We're already preparing your quote.<br />
-              We normally call the same day, and if we're ever busy, it will be within one working day.
-            </p>
-            <p className="text-brand-green font-semibold mb-8 animate-[pulse_800ms_ease-in-out_400ms_1]">
-              To make the most of your call, have any competitor quotes ready — we'll beat them.
-            </p>
-            <Button
+          {/* Gradient background */}
+          <div className="flex-1 flex flex-col bg-gradient-to-b from-green-50 via-white to-orange-50 relative">
+            {/* Close button */}
+            <button
               onClick={onClose}
-              className="px-8 h-12 bg-brand-green hover:bg-brand-green/90 text-white font-semibold rounded-xl"
+              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/80 hover:bg-white shadow-sm flex items-center justify-center transition-colors z-10"
+              aria-label="Close"
             >
-              Done
-            </Button>
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
+
+            {/* Content */}
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-fade-in">
+              {/* Celebration icon */}
+              <div className="mb-6 relative">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg shadow-green-200">
+                  <AnimatedTick size={48} />
+                </div>
+                <span className="absolute -top-2 -right-2 text-2xl animate-bounce">🎉</span>
+              </div>
+
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                You're all set!
+              </h3>
+
+              <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 mb-5 max-w-sm">
+                <p className="text-gray-700 leading-relaxed">
+                  Our team is already working on <span className="font-semibold text-gray-900">your personalised quote</span>. 
+                  Expect a call today — or within one working day if we're flat out.
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-r from-brand-orange/10 to-amber-50 rounded-xl p-4 mb-8 max-w-sm border border-brand-orange/20">
+                <p className="text-gray-800 font-medium flex items-center gap-2 justify-center">
+                  <Trophy className="w-5 h-5 text-brand-orange flex-shrink-0" />
+                  <span>Have any other quotes handy? <span className="text-brand-orange font-bold">We'll beat them.</span></span>
+                </p>
+              </div>
+
+              <Button
+                onClick={onClose}
+                className="px-10 h-12 bg-brand-green hover:bg-brand-green/90 text-white font-bold rounded-xl shadow-md shadow-green-200 transition-all hover:shadow-lg hover:scale-[1.02]"
+              >
+                Got it ✓
+              </Button>
+            </div>
           </div>
         </div>
+
         {/* Mobile Success */}
         <div
           className={cn(
-            "fixed z-50 md:hidden bg-white transition-transform duration-300 ease-out",
+            "fixed z-50 md:hidden transition-transform duration-300 ease-out overflow-hidden",
             "left-0 right-0 bottom-0 rounded-t-2xl shadow-2xl",
             isOpen ? "translate-y-0" : "translate-y-full"
           )}
         >
-          <div className="flex flex-col items-center justify-center p-8 text-center animate-fade-in">
-            <div className="mb-5">
-              <AnimatedTick size={60} />
-            </div>
-            <h3 className="text-lg font-bold text-foreground mb-2">
-              ✔️ Thank you — your quote request is confirmed
-            </h3>
-            <p className="text-sm text-muted-foreground mb-2 leading-relaxed">
-              We're already preparing your quote.<br />
-              We normally call the same day, and if we're ever busy, it will be within one working day.
-            </p>
-            <p className="text-sm text-brand-green font-semibold mb-6 animate-[pulse_800ms_ease-in-out_400ms_1]">
-              To make the most of your call, have any competitor quotes ready — we'll beat them.
-            </p>
-            <Button
+          <div className="bg-gradient-to-b from-green-50 via-white to-orange-50 relative">
+            {/* Close button */}
+            <button
               onClick={onClose}
-              className="w-full h-12 bg-brand-green hover:bg-brand-green/90 text-white font-semibold rounded-xl"
+              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 hover:bg-white shadow-sm flex items-center justify-center transition-colors z-10"
+              aria-label="Close"
             >
-              Done
-            </Button>
+              <X className="w-4 h-4 text-gray-600" />
+            </button>
+
+            <div className="flex flex-col items-center justify-center p-6 pt-8 text-center animate-fade-in">
+              {/* Celebration icon */}
+              <div className="mb-4 relative">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg shadow-green-200">
+                  <AnimatedTick size={40} />
+                </div>
+                <span className="absolute -top-1 -right-1 text-xl animate-bounce">🎉</span>
+              </div>
+
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                You're all set!
+              </h3>
+
+              <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-4">
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  Our team is already working on <span className="font-semibold text-gray-900">your personalised quote</span>. 
+                  Expect a call today — or within one working day if we're flat out.
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-r from-brand-orange/10 to-amber-50 rounded-xl p-3 mb-6 border border-brand-orange/20">
+                <p className="text-sm text-gray-800 font-medium flex items-center gap-2 justify-center">
+                  <Trophy className="w-4 h-4 text-brand-orange flex-shrink-0" />
+                  <span>Have other quotes? <span className="text-brand-orange font-bold">We'll beat them.</span></span>
+                </p>
+              </div>
+
+              <Button
+                onClick={onClose}
+                className="w-full h-12 bg-brand-green hover:bg-brand-green/90 text-white font-bold rounded-xl shadow-md shadow-green-200"
+              >
+                Got it ✓
+              </Button>
+            </div>
           </div>
         </div>
       </>
