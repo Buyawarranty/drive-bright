@@ -25,28 +25,9 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
   onPaymentChange,
   minimised = false,
 }) => {
-  // Minimised: show a slim trust/info strip instead of the CTA
+  // Minimised: hide completely when the inline CTA/Stripe form is visible
   if (minimised) {
-    return (
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-gray-50 border-t border-gray-200 lg:hidden transition-all duration-300">
-        <div className="flex items-center justify-center gap-3 px-4 py-2 text-xs text-gray-500">
-          <span className="flex items-center gap-1">
-            <Shield className="w-3 h-3 text-[#0BA360]" />
-            Instant cover
-          </span>
-          <span>·</span>
-          <span className="flex items-center gap-1">
-            <Clock className="w-3 h-3 text-[#0BA360]" />
-            14-day refund
-          </span>
-          <span>·</span>
-          <span className="flex items-center gap-1">
-            <Check className="w-3 h-3 text-[#0BA360]" />
-            Easy claims
-          </span>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (

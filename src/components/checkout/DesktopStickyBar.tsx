@@ -34,28 +34,9 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
 }) => {
   if (!isVisible) return null;
 
-  // Minimised: slim trust/info strip instead of full CTA bar
+  // Minimised: hide completely when the inline CTA/Stripe form is visible
   if (minimised) {
-    return (
-      <div className="hidden lg:block fixed bottom-0 left-0 right-0 bg-gray-50 border-t border-gray-200 z-50 transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-center gap-8 text-sm text-gray-500">
-            <span className="flex items-center gap-1">
-              <Shield className="w-3.5 h-3.5 text-[#0BA360]" />
-              Instant cover
-            </span>
-            <span className="flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-[#0BA360]" />
-              14-day refund
-            </span>
-            <span className="flex items-center gap-1">
-              <Check className="w-3.5 h-3.5 text-[#0BA360]" />
-              Easy claims
-            </span>
-          </div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (
