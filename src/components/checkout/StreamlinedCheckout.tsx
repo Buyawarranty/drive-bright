@@ -1541,7 +1541,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
         <div className="flex gap-8 items-start">
           {/* Main Content Column */}
-          <div className="flex-1 max-w-2xl space-y-6 sm:space-y-8 pb-16 lg:pb-16 lg:space-y-0 min-w-0">
+          <div className="flex-1 max-w-2xl space-y-6 sm:space-y-8 pb-4 lg:pb-4 lg:space-y-0 min-w-0">
           {/* ==================== MOBILE: PLAN SUMMARY ACCORDION ==================== */}
           <section className="lg:hidden">
             <PlanSummaryCard
