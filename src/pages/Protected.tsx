@@ -206,16 +206,6 @@ const Protected = () => {
               </p>
             </div>
 
-            {platinumDocUrl && (
-              <div className="flex justify-center">
-                <a href={platinumDocUrl} target="_blank" rel="noopener noreferrer">
-                  <Button variant="outline" className="flex items-center gap-2 border-primary text-primary hover:bg-primary/5">
-                    <FileText className="w-4 h-4" />
-                    Download full cover guide (PDF)
-                  </Button>
-                </a>
-              </div>
-            )}
           </div>
         </section>
 
