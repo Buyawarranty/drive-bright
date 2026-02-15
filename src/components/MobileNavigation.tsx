@@ -132,13 +132,6 @@ const MobileNavigation: React.FC = () => {
                 </button>
               </div>
               
-              <Link 
-                to="/customer-dashboard/" 
-                className="text-lg font-semibold text-gray-700 hover:text-gray-900 py-2 pt-4 border-t"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Login
-              </Link>
             </nav>
 
             {/* Bottom CTA */}
