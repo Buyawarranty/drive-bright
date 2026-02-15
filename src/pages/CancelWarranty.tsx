@@ -215,27 +215,26 @@ const CancelWarranty = () => {
             </div>
 
             <p className="text-[#333] leading-relaxed">
-              You have a 14 day cooling off period starting from your cover start date or the day you receive your documents, whichever is later.
+              Cancel within 14 days of your cover start date or document receipt, whichever is later.
             </p>
 
             <div className="space-y-4 pl-1">
               <div>
-                <p className="font-semibold text-[#000] mb-1">If your cover has not started</p>
-                <p className="text-[#333]">You will receive a full refund.</p>
+                <p className="font-semibold text-[#000] mb-1">If your cover has not yet started</p>
+                <p className="text-[#333]">This includes any future activation date.</p>
+                <p className="text-[#333] mt-1">You will receive a full refund, as no part of the service has been used or paid out.</p>
               </div>
               <div>
                 <p className="font-semibold text-[#000] mb-1">If your cover has started</p>
-                <p className="text-[#333]">You will receive a refund with only the days of cover already used deducted.</p>
-                <div className="mt-2 bg-[#f9f9f9] rounded-lg p-3 border border-[#E6E6E6]">
-                  <p className="text-sm text-[#333]">
-                    <strong>Example:</strong> If you used two days of cover, we deduct only the cost of those two days.
-                  </p>
-                </div>
+                <p className="text-[#333]">You will receive a refund minus the value of the days already covered.</p>
               </div>
               <div>
                 <p className="font-semibold text-[#000] mb-1">If a claim has been started</p>
                 <p className="text-[#333]">
-                  If we have already checked a claim, assessed it or carried out repairs, we deduct only the value of the work completed. If the value is more than what is left, no refund will be due.
+                  We deduct the value of any service already provided, such as a claim review or assessment.
+                </p>
+                <p className="text-[#333] mt-1">
+                  If the value of work already completed is higher than the remaining amount on your plan, no refund will be due.
                 </p>
               </div>
             </div>
