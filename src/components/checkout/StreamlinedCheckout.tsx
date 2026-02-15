@@ -2136,7 +2136,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                   }}
                   onError={(error) => {
                     console.error('Payment error:', error);
-                    toast.error('Payment failed. Please try again.');
+                    toast.error('Please complete your card details to continue.');
                   }}
                   isProcessing={isLoading}
                   setIsProcessing={setIsLoading}
