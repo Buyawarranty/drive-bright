@@ -536,8 +536,8 @@ const CancelWarranty = () => {
           {/* ── Cancel Form ── */}
           <section id="cancel-form" className="space-y-4" aria-labelledby="cancel-heading">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#f9f9f9] rounded-full flex items-center justify-center flex-shrink-0">
-                <XSquare className="w-5 h-5 text-[#666]" />
+              <div className="w-10 h-10 bg-[#fff7ed] rounded-full flex items-center justify-center flex-shrink-0">
+                <FileText className="w-5 h-5 text-[#FF7A00]" />
               </div>
               <h2 id="cancel-heading" className="text-2xl font-bold text-[#000]">Cancel my warranty</h2>
             </div>
@@ -549,15 +549,17 @@ const CancelWarranty = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label htmlFor="reg" className="block text-sm font-medium text-[#333] mb-1">Registration Number *</label>
-                <Input
-                  id="reg"
-                  type="text"
-                  placeholder="e.g. AB12 CDE"
-                  value={formData.registrationPlate}
-                  onChange={(e) => setFormData({ ...formData, registrationPlate: e.target.value.toUpperCase() })}
-                  className="h-12 bg-[#FFD700] border-2 border-[#000] text-[#000] font-bold text-lg text-center tracking-widest placeholder:text-[#000]/40 placeholder:font-normal placeholder:text-base placeholder:tracking-normal"
-                  aria-required="true"
-                />
+                <div className="max-w-[280px]">
+                  <Input
+                    id="reg"
+                    type="text"
+                    placeholder="ENTER REG"
+                    value={formData.registrationPlate}
+                    onChange={(e) => setFormData({ ...formData, registrationPlate: e.target.value.toUpperCase() })}
+                    className="h-12 bg-[#FFD700] border-2 border-[#000] text-[#000] font-bold text-lg text-center tracking-widest rounded-lg placeholder:text-[#000]/40 placeholder:font-normal placeholder:text-base placeholder:tracking-normal"
+                    aria-required="true"
+                  />
+                </div>
               </div>
               <div>
                 <label htmlFor="cancel-email" className="block text-sm font-medium text-[#333] mb-1">Email Address *</label>
