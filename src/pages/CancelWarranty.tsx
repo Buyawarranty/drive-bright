@@ -7,7 +7,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, Phone, Clock, Pause, ArrowRightLeft, TrendingDown, CheckCircle, AlertCircle, Gift, MessageCircle, Heart, Car, Wrench, ArrowDown } from 'lucide-react';
+import {
+  Mail, Phone, Clock, Pause, ArrowRightLeft, TrendingUp,
+  CheckCircle, Info, Gift, MessageCircle, Heart, Car, Wrench,
+  ShieldCheck, XSquare, Star
+} from 'lucide-react';
 
 const CancelWarranty = () => {
   const { toast } = useToast();
@@ -19,18 +23,9 @@ const CancelWarranty = () => {
   const [isStaying, setIsStaying] = useState(false);
   const [showStayForm, setShowStayForm] = useState(false);
 
-  // Stay form state (separate from cancellation form)
-  const [stayFormData, setStayFormData] = useState({
-    registrationPlate: '',
-    email: ''
-  });
-
-  // Cancellation form state
+  const [stayFormData, setStayFormData] = useState({ registrationPlate: '', email: '' });
   const [formData, setFormData] = useState({
-    registrationPlate: '',
-    email: '',
-    reason: '',
-    exceptionalCircumstances: ''
+    registrationPlate: '', email: '', reason: '', message: ''
   });
 
   const handleFormSuccess = (data: { registrationPlate: string }) => {
@@ -47,7 +42,6 @@ const CancelWarranty = () => {
   const handleKeepWarranty = async () => {
     if (!submittedData) return;
     setIsCancellingRequest(true);
-    
     try {
       await supabase.functions.invoke('submit-cancellation', {
         body: {
@@ -68,19 +62,15 @@ const CancelWarranty = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!formData.registrationPlate || !formData.email || !formData.reason) {
       toast({ title: "Missing Information", description: "Please fill in all required fields.", variant: "destructive" });
       return;
     }
-
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       toast({ title: "Invalid Email", description: "Please enter a valid email address.", variant: "destructive" });
       return;
     }
-
     setIsSubmitting(true);
-
     try {
       const response = await supabase.functions.invoke('submit-cancellation', {
         body: {
@@ -88,10 +78,9 @@ const CancelWarranty = () => {
           fullName: 'Customer',
           email: formData.email,
           reason: formData.reason,
-          feedback: formData.exceptionalCircumstances || ''
+          feedback: formData.message || ''
         }
       });
-
       if (response.error) throw new Error(response.error.message);
       handleFormSuccess({ registrationPlate: formData.registrationPlate });
     } catch (error) {
@@ -107,14 +96,11 @@ const CancelWarranty = () => {
       toast({ title: "Missing Information", description: "Please enter your email and registration plate.", variant: "destructive" });
       return;
     }
-
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(stayFormData.email)) {
       toast({ title: "Invalid Email", description: "Please enter a valid email address.", variant: "destructive" });
       return;
     }
-
     setIsStaying(true);
-
     try {
       await supabase.functions.invoke('submit-cancellation', {
         body: {
@@ -132,17 +118,25 @@ const CancelWarranty = () => {
     }
   };
 
+  const scrollToForm = () => {
+    document.getElementById('cancel-form')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   // Stay success screen
   if (isStaySuccess) {
     return (
       <>
         <SEOHead title="Welcome Back! - Buy a Warranty" description="Thank you for staying with us" />
-        <div className="min-h-screen bg-white py-16 px-4">
-          <div className="max-w-2xl mx-auto bg-green-50 border-2 border-green-500 rounded-xl p-8 text-center">
+        <div className="min-h-screen bg-white py-16 px-6">
+          <div className="max-w-[720px] mx-auto bg-[#f0faf4] border-2 border-[#009A44] rounded-lg p-8 text-center">
             <div className="text-6xl mb-4">🎉</div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Welcome Back!</h1>
-            <p className="text-lg text-gray-700 mb-6">Your warranty is <strong className="text-green-600">fully active</strong>. We'll add <strong className="text-green-600">3 months FREE cover</strong> within 2-3 working days.</p>
-            <Link to="/"><Button className="bg-green-600 hover:bg-green-700 text-white">Return to Homepage</Button></Link>
+            <h1 className="text-3xl font-bold text-[#000] mb-4">Welcome Back!</h1>
+            <p className="text-lg text-[#333] mb-6">
+              Your warranty is <strong className="text-[#009A44]">fully active</strong>. We'll add <strong className="text-[#009A44]">3 months FREE cover</strong> within 2 to 3 working days.
+            </p>
+            <Link to="/">
+              <Button className="bg-[#009A44] hover:bg-[#007a36] text-white font-bold rounded-lg">Return to Homepage</Button>
+            </Link>
           </div>
         </div>
       </>
@@ -154,27 +148,29 @@ const CancelWarranty = () => {
     return (
       <>
         <SEOHead title="Request Received - Buy a Warranty" description="Your cancellation request has been received" />
-        <div className="min-h-screen bg-white py-16 px-4">
-          <div className="max-w-2xl mx-auto space-y-6">
-            <div className="bg-green-50 border-2 border-green-500 rounded-xl p-8 text-center">
-              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-              <h1 className="text-2xl font-bold text-gray-900 mb-4">Your Request Has Been Received</h1>
-              <p className="text-gray-700">We'll confirm your cancellation within <strong>2 working days</strong>.</p>
-              <div className="mt-4 text-left bg-white rounded-lg p-4 border border-green-200">
-                <p className="text-sm text-gray-600 mb-2"><strong>Refund Timeline:</strong></p>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• 14 day Cooling-off refunds: within 5 working days</li>
-                  <li>• After 14 days refunds: within 14 working days</li>
+        <div className="min-h-screen bg-white py-16 px-6">
+          <div className="max-w-[720px] mx-auto space-y-6">
+            <div className="bg-[#f0faf4] border-2 border-[#009A44] rounded-lg p-8 text-center">
+              <CheckCircle className="w-16 h-16 text-[#009A44] mx-auto mb-4" />
+              <h1 className="text-2xl font-bold text-[#000] mb-4">Your Request Has Been Received</h1>
+              <p className="text-[#333]">We'll confirm your cancellation within <strong>2 working days</strong>.</p>
+              <div className="mt-4 text-left bg-white rounded-lg p-4 border border-[#009A44]/30">
+                <p className="text-sm text-[#333] mb-2 font-semibold">Refund Timeline:</p>
+                <ul className="text-sm text-[#333] space-y-1">
+                  <li>• Cooling off refunds: within seven working days</li>
+                  <li>• After 14 day refunds: within fourteen working days</li>
                 </ul>
               </div>
             </div>
-            <div className="bg-orange-50 border-2 border-orange-400 rounded-xl p-6 text-center">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Changed your mind?</h2>
-              <Button onClick={handleKeepWarranty} disabled={isCancellingRequest} className="bg-orange-500 hover:bg-orange-600 text-white">
+            <div className="bg-[#fff7ed] border-2 border-[#FF7A00] rounded-lg p-6 text-center">
+              <h2 className="text-xl font-bold text-[#000] mb-4">Changed your mind?</h2>
+              <Button onClick={handleKeepWarranty} disabled={isCancellingRequest} className="bg-[#FF7A00] hover:bg-[#e56e00] text-white font-bold rounded-lg">
                 {isCancellingRequest ? 'Processing...' : 'Keep My Warranty'}
               </Button>
             </div>
-            <div className="text-center"><Link to="/" className="text-gray-500 hover:underline">Return to Homepage</Link></div>
+            <div className="text-center">
+              <Link to="/" className="text-[#333] hover:underline">Return to Homepage</Link>
+            </div>
           </div>
         </div>
       </>
@@ -184,225 +180,277 @@ const CancelWarranty = () => {
   return (
     <>
       <SEOHead
-        title="Cancel Your Warranty - Buy a Warranty"
-        description="We understand plans change. Here's how to cancel your warranty easily with our simple, transparent process."
+        title="Cancel Your Warranty | BuyAWarranty"
+        description="Cancel your used car warranty easily. Understand your cooling off rights, refund process and alternative options."
         keywords="cancel warranty, warranty cancellation, cooling off period, refund policy"
       />
 
       <div className="min-h-screen bg-white">
         {/* Header */}
-        <section className="py-12 px-4 border-b border-gray-100">
-          <div className="max-w-2xl mx-auto text-center">
-            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Cancel Your Warranty
+        <header className="py-14 px-6 border-b border-[#E6E6E6]">
+          <div className="max-w-[720px] mx-auto text-center">
+            <h1 className="text-3xl lg:text-4xl font-bold text-[#000] mb-3">
+              Cancellation Rights
             </h1>
-            <p className="text-lg text-gray-600">
-              We understand plans change. Here's how to cancel easily.
+            <p className="text-lg text-[#333]">
+              We understand plans change. Here's everything you need to know.
             </p>
           </div>
-        </section>
+        </header>
 
-        <div className="max-w-2xl mx-auto px-4 py-8 space-y-8">
+        <main className="max-w-[720px] mx-auto px-6 py-12 space-y-12">
 
-          {/* Cancellation Rights */}
-          <section className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Cancellation Rights</h2>
-            
-            {/* 14-Day Cooling-Off */}
-            <div className="border-l-4 border-green-500 pl-4 py-2">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="w-5 h-5 text-green-600" />
-                <h3 className="text-lg font-bold text-gray-900">14-Day Cooling-Off Period</h3>
+          {/* ── 14 Day Cooling Off ── */}
+          <section className="space-y-4" aria-labelledby="cooling-off-heading">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-[#f0faf4] rounded-full flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-5 h-5 text-[#009A44]" />
               </div>
-              <ul className="text-gray-600 space-y-2 ml-7">
-                <li>• Cancel within 14 days of your start date or receiving documents (whichever is later)</li>
-                <li>• <strong className="text-green-600">Full refund</strong> if no claim has been submitted and no services used</li>
-                <li>• If a claim has been submitted (accepted, pending, or rejected), no refund applies</li>
-                <li>• £40 administration fee applies to cover processing costs</li>
-              </ul>
+              <h2 id="cooling-off-heading" className="text-2xl font-bold text-[#000]">14 Day Cooling Off Period</h2>
             </div>
 
-            {/* After 14 Days */}
-            <div className="border-l-4 border-orange-500 pl-4 py-2">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="w-5 h-5 text-orange-600" />
-                <h3 className="text-lg font-bold text-gray-900">After 14 Days</h3>
-              </div>
-              <p className="text-gray-600 mb-3 ml-7">You can cancel anytime after the initial cooling-off period.</p>
-              
-              <div className="ml-7 space-y-4">
-                <div>
-                  <p className="font-semibold text-gray-900 mb-1">Paid in Full:</p>
-                  <ul className="text-gray-600 space-y-1">
-                    <li>• If no claim submitted: pro-rata refund for unused full months, minus £40 fair usage fee</li>
-                    <li>• Minimum of 2 months' equivalent warranty payment retained</li>
-                    <li>• If a claim has been submitted (accepted, pending, or rejected), no refund applies</li>
-                  </ul>
-                </div>
-                
-                <div>
-                  <p className="font-semibold text-gray-900 mb-1">Paid Monthly (Finance):</p>
-                  <ul className="text-gray-600 space-y-1">
-                    <li>• Cancelling your warranty does not automatically cancel your finance agreement</li>
-                    <li>• Any refund will be routed via your finance provider</li>
-                    <li>• Minimum 2 months' equivalent payment + £40 fee applies</li>
-                    <li>• If no claim submitted: remaining balance refunded on a pro-rata basis</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Alternative Options */}
-          <section className="bg-gray-50 rounded-xl p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Alternative Options</h2>
-            <p className="text-gray-600 mb-4">Before cancelling, consider these options:</p>
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Pause className="w-4 h-4 text-orange-600" />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">Pause Your Cover</p>
-                  <p className="text-sm text-gray-600">Pause for up to 3 months</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <ArrowRightLeft className="w-4 h-4 text-orange-600" />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">Transfer Your Warranty</p>
-                  <p className="text-sm text-gray-600">Transfer to a new owner when selling your car</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <TrendingDown className="w-4 h-4 text-orange-600" />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">Downgrade Your Plan</p>
-                  <p className="text-sm text-gray-600">Switch to a lower-cost plan</p>
-                </div>
-              </div>
-            </div>
-            <p className="text-sm text-gray-600 mt-4">
-              Interested? <button onClick={() => document.getElementById('stay-section')?.scrollIntoView({ behavior: 'smooth' })} className="text-orange-600 hover:underline font-medium">Contact us</button> to discuss these options.
+            <p className="text-[#333] leading-relaxed">
+              You have a 14 day cooling off period starting from your cover start date or the day you receive your documents, whichever is later.
             </p>
-          </section>
 
-          {/* Refund Timeline */}
-          <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Refund Timeline</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                <p className="font-semibold text-gray-900">14 day Cooling-off refunds</p>
-                <p className="text-green-600 font-bold">Within 7 working days</p>
-              </div>
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-center">
-                <p className="font-semibold text-gray-900">After 14 days refunds</p>
-                <p className="text-orange-600 font-bold">Within 14 working days</p>
-              </div>
-            </div>
-          </section>
-
-          {/* What if a claim has been made */}
-          <section className="bg-gray-50 rounded-xl p-6">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-6 h-6 text-orange-500 flex-shrink-0 mt-1" />
+            <div className="space-y-4 pl-1">
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-2">What if a claim has been made?</h2>
-                <p className="text-gray-600 mb-3">
-                  If a claim has been submitted – whether accepted, rejected, or pending – your warranty remains valid and active for the rest of the term.
-                </p>
-                <p className="text-gray-600">
-                  Refunds do not apply once a claim has been made, as the service has already been accessed.
+                <p className="font-semibold text-[#000] mb-1">If your cover has not started</p>
+                <p className="text-[#333]">You will receive a full refund.</p>
+              </div>
+              <div>
+                <p className="font-semibold text-[#000] mb-1">If your cover has started</p>
+                <p className="text-[#333]">You will receive a refund with only the days of cover already used deducted.</p>
+                <div className="mt-2 bg-[#f9f9f9] rounded-lg p-3 border border-[#E6E6E6]">
+                  <p className="text-sm text-[#333]">
+                    <strong>Example:</strong> If you used two days of cover, we deduct only the cost of those two days.
+                  </p>
+                </div>
+              </div>
+              <div>
+                <p className="font-semibold text-[#000] mb-1">If a claim has been started</p>
+                <p className="text-[#333]">
+                  If we have already checked a claim, assessed it or carried out repairs, we deduct only the value of the work completed. If the value is more than what is left, no refund will be due.
                 </p>
               </div>
             </div>
           </section>
 
-          {/* Exceptional Circumstances */}
-          <section className="border border-gray-200 rounded-xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-2">Exceptional Circumstances</h2>
-            <p className="text-gray-600 text-sm">
-              We understand life can be unpredictable. While our refund policy is designed to be fair and consistent, we may exercise discretion in exceptional cases. If you believe your situation deserves special consideration, please let us know when submitting your request.
+          <hr className="border-[#E6E6E6]" />
+
+          {/* ── After 14 Days ── */}
+          <section className="space-y-4" aria-labelledby="after-14-heading">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-[#fff7ed] rounded-full flex items-center justify-center flex-shrink-0">
+                <ShieldCheck className="w-5 h-5 text-[#FF7A00]" />
+              </div>
+              <h2 id="after-14-heading" className="text-2xl font-bold text-[#000]">After 14 Days</h2>
+            </div>
+
+            <div className="space-y-5 pl-1">
+              <div>
+                <p className="font-bold text-[#000] text-lg mb-2">Paid in Full</p>
+                <div className="space-y-3">
+                  <div>
+                    <p className="font-semibold text-[#000] mb-1">If no claim work has been carried out</p>
+                    <p className="text-[#333]">We refund any unused full months on a pro rata basis.</p>
+                    <p className="text-[#333] mt-1">A reasonable administration charge may apply to cover our actual costs.</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[#000] mb-1">If claim work has been completed</p>
+                    <p className="text-[#333]">We deduct the value of the work already provided.</p>
+                    <p className="text-[#333] mt-1">If the claim work costs more than the remaining balance, no refund will be due.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <p className="font-bold text-[#000] text-lg mb-2">Paid Monthly Finance</p>
+                <p className="text-[#333] mb-1">Cancelling your warranty will not cancel your finance agreement.</p>
+                <p className="text-[#333] mb-1">Your finance provider will adjust your plan.</p>
+                <p className="text-[#333]">Any refund due will be processed by them.</p>
+              </div>
+            </div>
+          </section>
+
+          <hr className="border-[#E6E6E6]" />
+
+          {/* ── Alternative Options ── */}
+          <section className="space-y-4" aria-labelledby="alternatives-heading">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-[#f9f9f9] rounded-full flex items-center justify-center flex-shrink-0">
+                <Pause className="w-5 h-5 text-[#333]" />
+              </div>
+              <h2 id="alternatives-heading" className="text-2xl font-bold text-[#000]">Alternative Options</h2>
+            </div>
+
+            <p className="text-[#333]">Before cancelling, you may want to consider these options.</p>
+
+            <div className="space-y-4">
+              <div className="flex items-start gap-4 bg-[#f9f9f9] rounded-lg p-4 border border-[#E6E6E6]">
+                <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center flex-shrink-0 border border-[#E6E6E6]">
+                  <Pause className="w-4 h-4 text-[#FF7A00]" />
+                </div>
+                <div>
+                  <p className="font-semibold text-[#000]">Pause Your Cover</p>
+                  <p className="text-[#333] text-sm">Pause your cover for up to three months.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4 bg-[#f9f9f9] rounded-lg p-4 border border-[#E6E6E6]">
+                <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center flex-shrink-0 border border-[#E6E6E6]">
+                  <ArrowRightLeft className="w-4 h-4 text-[#FF7A00]" />
+                </div>
+                <div>
+                  <p className="font-semibold text-[#000]">Transfer Your Warranty</p>
+                  <p className="text-[#333] text-sm">If you are selling your car, you can transfer your warranty to the new owner.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4 bg-[#f9f9f9] rounded-lg p-4 border border-[#E6E6E6]">
+                <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center flex-shrink-0 border border-[#E6E6E6]">
+                  <Star className="w-4 h-4 text-[#FF7A00]" />
+                </div>
+                <div>
+                  <p className="font-semibold text-[#000]">Upgrade Your Plan</p>
+                  <p className="text-[#333] text-sm">You can upgrade to a more comprehensive plan.</p>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-[#333] text-sm">
+              If you would like to explore these options, <button onClick={() => document.getElementById('stay-section')?.scrollIntoView({ behavior: 'smooth' })} className="text-[#FF7A00] hover:underline font-semibold">contact us</button>.
             </p>
           </section>
 
-          {/* Stay Offer */}
-          <section id="stay-section" className="bg-green-50 border-2 border-green-500 rounded-xl p-6">
-            <div className="text-center mb-4">
-              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Heart className="w-6 h-6 text-white" />
+          <hr className="border-[#E6E6E6]" />
+
+          {/* ── Refund Timeline ── */}
+          <section className="space-y-4" aria-labelledby="timeline-heading">
+            <h2 id="timeline-heading" className="text-2xl font-bold text-[#000]">Refund Timeline</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-[#f0faf4] border border-[#009A44]/30 rounded-lg p-5 text-center">
+                <Clock className="w-6 h-6 text-[#009A44] mx-auto mb-2" />
+                <p className="font-semibold text-[#000] mb-1">Cooling off refunds</p>
+                <p className="text-[#009A44] font-bold">Processed within seven working days</p>
               </div>
-              <h2 className="text-xl font-bold text-gray-900 mb-3">We'd love to keep you as a valued customer!</h2>
-              <p className="text-gray-700">
-                If you decide to stay with us, we can offer great incentives such as three months of extended cover, vehicle rental benefits, and recovery assistance.
+              <div className="bg-[#fff7ed] border border-[#FF7A00]/30 rounded-lg p-5 text-center">
+                <Clock className="w-6 h-6 text-[#FF7A00] mx-auto mb-2" />
+                <p className="font-semibold text-[#000] mb-1">After 14 day refunds</p>
+                <p className="text-[#FF7A00] font-bold">Processed within fourteen working days</p>
+              </div>
+            </div>
+          </section>
+
+          <hr className="border-[#E6E6E6]" />
+
+          {/* ── What if a claim has been made ── */}
+          <section className="space-y-3" aria-labelledby="claim-heading">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-[#f9f9f9] rounded-full flex items-center justify-center flex-shrink-0">
+                <Info className="w-5 h-5 text-[#666]" />
+              </div>
+              <h2 id="claim-heading" className="text-2xl font-bold text-[#000]">What if a claim has been made</h2>
+            </div>
+            <p className="text-[#333] leading-relaxed">
+              If a claim has already been started or completed, your warranty remains active for the rest of the term.
+            </p>
+            <p className="text-[#333] leading-relaxed">
+              Refunds do not usually apply because the service has already been provided.
+            </p>
+          </section>
+
+          <hr className="border-[#E6E6E6]" />
+
+          {/* ── Exceptional Circumstances ── */}
+          <section className="space-y-3" aria-labelledby="exceptional-heading">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-[#fff7ed] rounded-full flex items-center justify-center flex-shrink-0">
+                <Heart className="w-5 h-5 text-[#FF7A00]" />
+              </div>
+              <h2 id="exceptional-heading" className="text-2xl font-bold text-[#000]">Exceptional Circumstances</h2>
+            </div>
+            <p className="text-[#333] leading-relaxed">
+              If your situation is unusual or unexpected, tell us.
+            </p>
+            <p className="text-[#333] leading-relaxed">
+              We review every request individually and always aim to be fair.
+            </p>
+          </section>
+
+          <hr className="border-[#E6E6E6]" />
+
+          {/* ── Stay Offer ── */}
+          <section id="stay-section" className="bg-[#f0faf4] border-2 border-[#009A44] rounded-lg p-6 sm:p-8" aria-labelledby="stay-heading">
+            <div className="text-center mb-5">
+              <div className="w-12 h-12 bg-[#009A44] rounded-full flex items-center justify-center mx-auto mb-3">
+                <ShieldCheck className="w-6 h-6 text-white" />
+              </div>
+              <h2 id="stay-heading" className="text-2xl font-bold text-[#000] mb-3">We would love to keep you as a valued customer</h2>
+              <p className="text-[#333]">
+                If you decide to stay with us, we can offer special incentives that may include
               </p>
             </div>
-            
-            <div className="bg-white rounded-lg p-4 mb-4 border border-green-200">
+
+            <div className="bg-white rounded-lg p-4 mb-5 border border-[#009A44]/20">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="flex items-center gap-2 text-gray-700">
-                  <Gift className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-sm font-medium">3 Months Extended Cover</span>
+                <div className="flex items-center gap-2 text-[#333]">
+                  <CheckCircle className="w-5 h-5 text-[#009A44] flex-shrink-0" />
+                  <span className="text-sm font-medium">Three months extended cover</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-700">
-                  <Car className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-sm font-medium">Vehicle Rental Benefits</span>
+                <div className="flex items-center gap-2 text-[#333]">
+                  <CheckCircle className="w-5 h-5 text-[#009A44] flex-shrink-0" />
+                  <span className="text-sm font-medium">Vehicle rental benefits</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-700">
-                  <Wrench className="w-5 h-5 text-green-600 flex-shrink-0" />
-                  <span className="text-sm font-medium">Recovery Assistance</span>
+                <div className="flex items-center gap-2 text-[#333]">
+                  <CheckCircle className="w-5 h-5 text-[#009A44] flex-shrink-0" />
+                  <span className="text-sm font-medium">Recovery assistance upgrades</span>
                 </div>
               </div>
             </div>
 
-            <p className="text-gray-700 text-center mb-4">
-              Please reach out via <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer" className="text-green-600 font-semibold hover:underline">WhatsApp</a>, call us on <a href="tel:03302295040" className="text-green-600 font-semibold hover:underline">0330 229 5040</a>, or click the button below to stay with us.
+            <p className="text-[#333] text-center mb-5">
+              Message us on <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer" className="text-[#009A44] font-semibold hover:underline">WhatsApp</a> or call <a href="tel:03302295040" className="text-[#009A44] font-semibold hover:underline">0330 229 5040</a> if you would like to continue your cover.
             </p>
-            
+
             {!showStayForm ? (
-              <Button 
+              <Button
                 onClick={() => setShowStayForm(true)}
-                className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-bold gap-2"
+                className="w-full h-12 bg-[#009A44] hover:bg-[#007a36] text-white font-bold rounded-lg text-lg"
               >
-                Keep My Cover
+                Keep my cover
               </Button>
             ) : (
-              <div className="space-y-3 bg-white border border-green-200 rounded-lg p-4">
+              <div className="space-y-3 bg-white border border-[#009A44]/20 rounded-lg p-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Registration Plate *</label>
+                  <label className="block text-sm font-medium text-[#333] mb-1">Registration Plate *</label>
                   <Input
                     type="text"
                     placeholder="e.g. AB12 CDE"
                     value={stayFormData.registrationPlate}
                     onChange={(e) => setStayFormData({ ...stayFormData, registrationPlate: e.target.value.toUpperCase() })}
-                    className="h-12 border-gray-300"
+                    className="h-12 border-[#E6E6E6] bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                  <label className="block text-sm font-medium text-[#333] mb-1">Email Address *</label>
                   <Input
                     type="email"
                     placeholder="your@email.com"
                     value={stayFormData.email}
                     onChange={(e) => setStayFormData({ ...stayFormData, email: e.target.value })}
-                    className="h-12 border-gray-300"
+                    className="h-12 border-[#E6E6E6] bg-white"
                   />
                 </div>
-                <Button 
+                <Button
                   onClick={handleStayWithUs}
                   disabled={isStaying || !stayFormData.email || !stayFormData.registrationPlate}
-                  className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-bold gap-2"
+                  className="w-full h-12 bg-[#009A44] hover:bg-[#007a36] text-white font-bold rounded-lg"
                 >
                   {isStaying ? 'Processing...' : 'Confirm & Keep My Cover'}
                 </Button>
-                <button 
+                <button
                   type="button"
                   onClick={() => setShowStayForm(false)}
-                  className="w-full text-sm text-gray-500 hover:text-gray-700"
+                  className="w-full text-sm text-[#666] hover:text-[#333]"
                 >
                   Cancel
                 </button>
@@ -410,35 +458,50 @@ const CancelWarranty = () => {
             )}
           </section>
 
-          {/* Cancellation Form */}
-          <section id="form-section" className="border-2 border-gray-200 rounded-xl p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Cancel my warranty</h2>
-            <p className="text-gray-600 mb-4">We're sorry to see you go. Please confirm your details to cancel your warranty.</p>
+          <hr className="border-[#E6E6E6]" />
+
+          {/* ── Cancel Form ── */}
+          <section id="cancel-form" className="space-y-4" aria-labelledby="cancel-heading">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-[#f9f9f9] rounded-full flex items-center justify-center flex-shrink-0">
+                <XSquare className="w-5 h-5 text-[#666]" />
+              </div>
+              <h2 id="cancel-heading" className="text-2xl font-bold text-[#000]">Cancel my warranty</h2>
+            </div>
+
+            <p className="text-[#333]">
+              We are sorry to see you go. Please confirm your details so we can process your cancellation.
+            </p>
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Registration Plate *</label>
+                <label htmlFor="reg" className="block text-sm font-medium text-[#333] mb-1">Registration Number *</label>
                 <Input
+                  id="reg"
                   type="text"
                   placeholder="e.g. AB12 CDE"
                   value={formData.registrationPlate}
                   onChange={(e) => setFormData({ ...formData, registrationPlate: e.target.value.toUpperCase() })}
-                  className="h-12 border-gray-300"
+                  className="h-12 border-[#E6E6E6] bg-white"
+                  aria-required="true"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                <label htmlFor="cancel-email" className="block text-sm font-medium text-[#333] mb-1">Email Address *</label>
                 <Input
+                  id="cancel-email"
                   type="email"
                   placeholder="your@email.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="h-12 border-gray-300"
+                  className="h-12 border-[#E6E6E6] bg-white"
+                  aria-required="true"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reason for Cancellation *</label>
-                <Select value={formData.reason} onValueChange={(value) => setFormData({ ...formData, reason: value, exceptionalCircumstances: '' })}>
-                  <SelectTrigger className="h-12 border-gray-300">
+                <label htmlFor="cancel-reason" className="block text-sm font-medium text-[#333] mb-1">Reason for Cancellation *</label>
+                <Select value={formData.reason} onValueChange={(value) => setFormData({ ...formData, reason: value })}>
+                  <SelectTrigger id="cancel-reason" className="h-12 border-[#E6E6E6] bg-white" aria-required="true">
                     <SelectValue placeholder="Select a reason" />
                   </SelectTrigger>
                   <SelectContent>
@@ -451,28 +514,20 @@ const CancelWarranty = () => {
                   </SelectContent>
                 </Select>
               </div>
-              {(formData.reason === 'other' || formData.reason === 'exceptional-circumstances') && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {formData.reason === 'exceptional-circumstances' 
-                      ? 'Please describe your exceptional circumstances *' 
-                      : 'Please tell us your reason *'}
-                  </label>
-                  <Textarea
-                    placeholder={formData.reason === 'exceptional-circumstances' 
-                      ? "Please describe your exceptional circumstances here..." 
-                      : "Please let us know your reason for cancelling..."}
-                    value={formData.exceptionalCircumstances}
-                    onChange={(e) => setFormData({ ...formData, exceptionalCircumstances: e.target.value })}
-                    className="border-gray-300 min-h-[100px]"
-                    required
-                  />
-                </div>
-              )}
-              <Button 
-                type="submit" 
+              <div>
+                <label htmlFor="cancel-msg" className="block text-sm font-medium text-[#333] mb-1">Message (optional)</label>
+                <Textarea
+                  id="cancel-msg"
+                  placeholder="Anything else you'd like us to know?"
+                  value={formData.message}
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  className="border-[#E6E6E6] bg-white min-h-[100px]"
+                />
+              </div>
+              <Button
+                type="submit"
                 disabled={isSubmitting}
-                className="w-full h-14 bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg"
+                className="w-full h-14 bg-[#FF7A00] hover:bg-[#e56e00] text-white font-bold text-lg rounded-lg"
               >
                 {isSubmitting ? 'Submitting...' : 'Cancel my warranty'}
               </Button>
@@ -480,28 +535,27 @@ const CancelWarranty = () => {
           </section>
 
           {/* Need Help */}
-          <section className="text-center py-6 border-t border-gray-200">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Need Help?</h3>
-            <p className="text-gray-600 mb-4">Our friendly team is here to assist.</p>
+          <section className="text-center py-8 border-t border-[#E6E6E6]" aria-label="Contact support">
+            <h3 className="text-lg font-bold text-[#000] mb-2">Need Help?</h3>
+            <p className="text-[#333] mb-4">Our friendly team is here to assist.</p>
             <div className="flex flex-wrap gap-4 justify-center">
-              <a href="mailto:support@buyawarranty.co.uk" className="flex items-center gap-2 text-orange-600 hover:underline font-medium">
+              <a href="mailto:support@buyawarranty.co.uk" className="flex items-center gap-2 text-[#FF7A00] hover:underline font-medium">
                 <Mail className="w-4 h-4" /> support@buyawarranty.co.uk
               </a>
-              <a href="tel:03302295045" className="flex items-center gap-2 text-gray-700 hover:underline font-medium">
+              <a href="tel:03302295045" className="flex items-center gap-2 text-[#333] hover:underline font-medium">
                 <Phone className="w-4 h-4" /> 0330 229 5045
               </a>
-              <a 
-                href="https://wa.me/443302295040?text=Hi%2C%20I%20have%20a%20question%20about%20cancelling%20my%20warranty" 
-                target="_blank" 
+              <a
+                href="https://wa.me/443302295040?text=Hi%2C%20I%20have%20a%20question%20about%20cancelling%20my%20warranty"
+                target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-green-600 hover:underline font-medium"
+                className="flex items-center gap-2 text-[#009A44] hover:underline font-medium"
               >
                 <MessageCircle className="w-4 h-4" /> WhatsApp Us
               </a>
             </div>
           </section>
-
-        </div>
+        </main>
       </div>
     </>
   );
