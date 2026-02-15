@@ -119,21 +119,11 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
     // Only validate phone number
     if (!requestPhone.trim()) {
       setPhoneError('Phone number is required');
-      toast({
-        title: "Please enter your phone number",
-        description: "We need your phone number to call you back.",
-        variant: "destructive",
-      });
       return;
     }
     
     if (!validatePhone(requestPhone)) {
       setPhoneError('Please enter a valid UK phone number (e.g., 07123 456789)');
-      toast({
-        title: "Invalid phone number",
-        description: "Please enter a valid UK phone number.",
-        variant: "destructive",
-      });
       return;
     }
 
@@ -276,7 +266,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-fade-in">
               {/* Celebration icon */}
               <div className="mb-6 relative">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg shadow-green-200">
+                <div className="w-20 h-20 rounded-full bg-white border-4 border-green-500 flex items-center justify-center shadow-lg shadow-green-200 animate-in zoom-in-50 duration-500">
                   <AnimatedTick size={48} />
                 </div>
                 <span className="absolute -top-2 -right-2 text-2xl animate-bounce">🎉</span>
@@ -302,7 +292,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
 
               <Button
                 onClick={onClose}
-                className="px-10 h-12 bg-brand-green hover:bg-brand-green/90 text-white font-bold rounded-xl shadow-md shadow-green-200 transition-all hover:shadow-lg hover:scale-[1.02]"
+                className="px-10 h-12 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold rounded-xl shadow-md shadow-orange-200 transition-all hover:shadow-lg hover:scale-[1.02]"
               >
                 Got it ✓
               </Button>
@@ -331,7 +321,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             <div className="flex flex-col items-center justify-center p-6 pt-8 text-center animate-fade-in">
               {/* Celebration icon */}
               <div className="mb-4 relative">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg shadow-green-200">
+                <div className="w-16 h-16 rounded-full bg-white border-4 border-green-500 flex items-center justify-center shadow-lg shadow-green-200 animate-in zoom-in-50 duration-500">
                   <AnimatedTick size={40} />
                 </div>
                 <span className="absolute -top-1 -right-1 text-xl animate-bounce">🎉</span>
@@ -357,7 +347,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
 
               <Button
                 onClick={onClose}
-                className="w-full h-12 bg-brand-green hover:bg-brand-green/90 text-white font-bold rounded-xl shadow-md shadow-green-200"
+                className="w-full h-12 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold rounded-xl shadow-md shadow-orange-200"
               >
                 Got it ✓
               </Button>
