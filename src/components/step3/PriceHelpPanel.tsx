@@ -443,8 +443,8 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 />
                 {isPhoneValid && !phoneError && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 animate-in fade-in-50 zoom-in-95 duration-200">
-                    <div className="w-6 h-6 rounded-full bg-brand-green flex items-center justify-center">
-                      <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                    <div className="w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
+                      <Check className="w-4 h-4 text-green-600" strokeWidth={3} />
                     </div>
                   </div>
                 )}
@@ -644,8 +644,8 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                 />
                 {isPhoneValid && !phoneError && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 animate-in fade-in-50 zoom-in-95 duration-200">
-                    <div className="w-6 h-6 rounded-full bg-brand-green flex items-center justify-center">
-                      <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                    <div className="w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
+                      <Check className="w-4 h-4 text-green-600" strokeWidth={3} />
                     </div>
                   </div>
                 )}
