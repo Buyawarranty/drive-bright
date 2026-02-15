@@ -266,13 +266,14 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               <AnimatedTick size={72} />
             </div>
             <h3 className="text-xl font-bold text-foreground mb-3">
-              Thank you — your quote request is confirmed.
+              ✔️ Thank you — your quote request is confirmed
             </h3>
             <p className="text-muted-foreground mb-2 leading-relaxed">
-              We usually call the same day. If we're busy, it'll be within one working day.
+              We're already preparing your quote.<br />
+              We normally call the same day, and if we're ever busy, it will be within one working day.
             </p>
             <p className="text-brand-green font-semibold mb-8 animate-[pulse_800ms_ease-in-out_400ms_1]">
-              Have any competitor quotes ready — we'll beat them.
+              To make the most of your call, have any competitor quotes ready — we'll beat them.
             </p>
             <Button
               onClick={onClose}
@@ -295,13 +296,14 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               <AnimatedTick size={60} />
             </div>
             <h3 className="text-lg font-bold text-foreground mb-2">
-              Thank you — your quote request is confirmed.
+              ✔️ Thank you — your quote request is confirmed
             </h3>
             <p className="text-sm text-muted-foreground mb-2 leading-relaxed">
-              We usually call the same day. If we're busy, it'll be within one working day.
+              We're already preparing your quote.<br />
+              We normally call the same day, and if we're ever busy, it will be within one working day.
             </p>
             <p className="text-sm text-brand-green font-semibold mb-6 animate-[pulse_800ms_ease-in-out_400ms_1]">
-              Have any competitor quotes ready — we'll beat them.
+              To make the most of your call, have any competitor quotes ready — we'll beat them.
             </p>
             <Button
               onClick={onClose}
@@ -427,9 +429,9 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                   value={requestPhone}
                   onChange={(e) => handlePhoneChange(e.target.value)}
                   onBlur={handlePhoneBlur}
-                  placeholder="07123 456789"
+                  placeholder="Enter phone number"
                   className={cn(
-                    "h-12 rounded-lg bg-white text-lg font-medium pr-12 transition-all duration-200",
+                    "h-12 rounded-lg bg-white text-lg pr-12 transition-all duration-200 placeholder:font-normal placeholder:text-gray-400",
                     phoneError 
                       ? "border-2 border-red-500 focus-visible:ring-red-500" 
                       : isPhoneValid 
@@ -449,11 +451,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               </div>
               {phoneError && (
                 <p className="text-sm text-red-500 mt-1">{phoneError}</p>
-              )}
-              {isPhoneValid && !phoneError && (
-                <p className="text-xs text-brand-green mt-1.5 flex items-center gap-1">
-                  <Check className="w-3 h-3" /> Valid UK phone number
-                </p>
               )}
             </div>
 
@@ -633,9 +630,9 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                   value={requestPhone}
                   onChange={(e) => handlePhoneChange(e.target.value)}
                   onBlur={handlePhoneBlur}
-                  placeholder="07123 456789"
+                  placeholder="Enter phone number"
                   className={cn(
-                    "h-12 rounded-lg bg-white text-base font-medium pr-12 transition-all duration-200",
+                    "h-12 rounded-lg bg-white text-base pr-12 transition-all duration-200 placeholder:font-normal placeholder:text-gray-400",
                     phoneError 
                       ? "border-2 border-red-500 focus-visible:ring-red-500" 
                       : isPhoneValid 
@@ -655,11 +652,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               </div>
               {phoneError && (
                 <p className="text-xs text-red-500 mt-1">{phoneError}</p>
-              )}
-              {isPhoneValid && !phoneError && (
-                <p className="text-xs text-brand-green mt-1.5 flex items-center gap-1">
-                  <Check className="w-3 h-3" /> Valid UK phone number
-                </p>
               )}
             </div>
 
