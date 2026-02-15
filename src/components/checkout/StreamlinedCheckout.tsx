@@ -520,23 +520,28 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
    const [isBottomCtaFullyVisible, setIsBottomCtaFullyVisible] = useState(false);
    const bottomCtaRef = React.useRef<HTMLDivElement>(null);
    
-   // IntersectionObserver to detect when bottom CTA is fully in viewport
-   useEffect(() => {
-     const el = bottomCtaRef.current;
-     if (!el) return;
-     
-      // Use lower threshold on mobile since the section may be taller than viewport
-      const isMobile = window.innerWidth < 1024;
+    // IntersectionObserver to detect when bottom CTA is visible in viewport
+    useEffect(() => {
+      const el = bottomCtaRef.current;
+      if (!el) return;
+      
       const observer = new IntersectionObserver(
         ([entry]) => {
-          setIsBottomCtaFullyVisible(entry.isIntersecting);
+          // On mobile, any visibility means the main CTA is on screen — hide sticky
+          // On desktop, require full visibility
+          const isMobile = window.innerWidth < 1024;
+          if (isMobile) {
+            setIsBottomCtaFullyVisible(entry.isIntersecting);
+          } else {
+            setIsBottomCtaFullyVisible(entry.isIntersecting);
+          }
         },
-        { threshold: isMobile ? 0.3 : 1.0 }
+        { threshold: 0.1 }
       );
-     
-     observer.observe(el);
-     return () => observer.disconnect();
-   }, []);
+      
+      observer.observe(el);
+      return () => observer.disconnect();
+    }, []);
    
    // Track scroll to show/hide desktop sticky bar
    useEffect(() => {
