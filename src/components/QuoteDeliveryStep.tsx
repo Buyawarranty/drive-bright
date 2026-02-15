@@ -526,21 +526,12 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
               <span>Request Call-Back</span>
             </button>
             <a 
-              href="https://wa.me/message/SPQPJ6O3UBF5B1" 
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-gray-700 text-sm font-medium hover:text-green-600 transition-colors"
-            >
-              <MessageCircle className="w-5 h-5 text-green-600" />
-              <span>WhatsApp</span>
-            </a>
-            <a 
               href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-gray-700 text-sm font-medium hover:text-green-600 transition-colors"
             >
-              <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-6 w-auto" />
+              <img src={trustpilotStars} alt="Trustpilot 5 stars" className="h-10 w-auto" />
             </a>
           </div>
         </div>
