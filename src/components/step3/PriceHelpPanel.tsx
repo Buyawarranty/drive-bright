@@ -56,6 +56,8 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
       setRequestMessage('');
       setRequestSuccess(false);
       setPhoneError('');
+      setIsPhoneValid(false);
+      setIsEmailValid(false);
       document.body.style.overflow = 'hidden';
       trackEvent('price_help_panel_opened');
     } else {
