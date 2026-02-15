@@ -383,12 +383,12 @@ const CancelWarranty = () => {
               <div className="bg-[#f0faf4] border border-[#009A44]/30 rounded-lg p-5 text-center">
                 <Clock className="w-6 h-6 text-[#009A44] mx-auto mb-2" />
                 <p className="font-semibold text-[#000] mb-1">Cooling off refunds</p>
-                <p className="text-[#009A44] font-bold">Processed within seven working days</p>
+                <p className="text-[#009A44] font-bold">Processed within 7 working days</p>
               </div>
               <div className="bg-[#fff7ed] border border-[#FF7A00]/30 rounded-lg p-5 text-center">
                 <Clock className="w-6 h-6 text-[#FF7A00] mx-auto mb-2" />
                 <p className="font-semibold text-[#000] mb-1">After 14 day refunds</p>
-                <p className="text-[#FF7A00] font-bold">Processed within fourteen working days</p>
+                <p className="text-[#FF7A00] font-bold">Processed within 14 working days</p>
               </div>
             </div>
           </section>
