@@ -10,7 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import {
   Mail, Phone, Clock, Pause, ArrowRightLeft, TrendingUp,
   CheckCircle, Info, Gift, MessageCircle, Heart, Car, Wrench,
-  ShieldCheck, XSquare, Star
+  ShieldCheck, XSquare, Star, RefreshCcw, FileText, Banknote,
+  CalendarCheck, AlertCircle, CreditCard, ArrowRight
 } from 'lucide-react';
 
 const CancelWarranty = () => {
@@ -219,23 +220,38 @@ const CancelWarranty = () => {
             </p>
 
             <div className="space-y-4 pl-1">
-              <div>
-                <p className="font-semibold text-[#000] mb-1">If your cover has not yet started</p>
-                <p className="text-[#333]">This includes any future activation date.</p>
-                <p className="text-[#333] mt-1">You will receive a full refund, as no part of the service has been used or paid out.</p>
+              <div className="flex items-start gap-3 bg-[#f0faf4] rounded-lg p-4 border border-[#009A44]/20">
+                <div className="w-8 h-8 bg-[#009A44]/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <CalendarCheck className="w-4 h-4 text-[#009A44]" />
+                </div>
+                <div>
+                  <p className="font-semibold text-[#000] mb-1">If your cover has not yet started</p>
+                  <p className="text-[#333] text-sm">This includes any future activation date.</p>
+                  <p className="text-[#009A44] font-medium text-sm mt-1">✓ Full refund – no part of the service has been used or paid out.</p>
+                </div>
               </div>
-              <div>
-                <p className="font-semibold text-[#000] mb-1">If your cover has started</p>
-                <p className="text-[#333]">You will receive a refund minus the value of the days already covered.</p>
+              <div className="flex items-start gap-3 bg-[#fff7ed] rounded-lg p-4 border border-[#FF7A00]/20">
+                <div className="w-8 h-8 bg-[#FF7A00]/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <RefreshCcw className="w-4 h-4 text-[#FF7A00]" />
+                </div>
+                <div>
+                  <p className="font-semibold text-[#000] mb-1">If your cover has started</p>
+                  <p className="text-[#333] text-sm">You will receive a refund minus the value of the days already covered.</p>
+                </div>
               </div>
-              <div>
-                <p className="font-semibold text-[#000] mb-1">If a claim has been started</p>
-                <p className="text-[#333]">
-                  We deduct the value of any service already provided, such as a claim review or assessment.
-                </p>
-                <p className="text-[#333] mt-1">
-                  If the value of work already completed is higher than the remaining amount on your plan, no refund will be due.
-                </p>
+              <div className="flex items-start gap-3 bg-[#fef2f2] rounded-lg p-4 border border-red-200">
+                <div className="w-8 h-8 bg-red-50 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <AlertCircle className="w-4 h-4 text-red-500" />
+                </div>
+                <div>
+                  <p className="font-semibold text-[#000] mb-1">If a claim has been started</p>
+                  <p className="text-[#333] text-sm">
+                    We deduct the value of any service already provided, such as a claim review or assessment.
+                  </p>
+                  <p className="text-[#333] text-sm mt-1">
+                    If the value of work already completed is higher than the remaining amount on your plan, no refund will be due.
+                  </p>
+                </div>
               </div>
             </div>
           </section>
@@ -252,27 +268,56 @@ const CancelWarranty = () => {
             </div>
 
             <div className="space-y-5 pl-1">
-              <div>
-                <p className="font-bold text-[#000] text-lg mb-2">Paid in Full</p>
+              {/* Paid in Full */}
+              <div className="bg-[#f9f9f9] rounded-xl p-5 border border-[#E6E6E6]">
+                <div className="flex items-center gap-2 mb-4">
+                  <Banknote className="w-5 h-5 text-[#FF7A00]" />
+                  <p className="font-bold text-[#000] text-lg">Paid in Full</p>
+                </div>
                 <div className="space-y-3">
-                  <div>
-                    <p className="font-semibold text-[#000] mb-1">If no claim work has been carried out</p>
-                    <p className="text-[#333]">We refund any unused full months on a pro rata basis.</p>
-                    <p className="text-[#333] mt-1">A reasonable administration charge may apply to cover our actual costs.</p>
+                  <div className="flex items-start gap-3 bg-white rounded-lg p-3 border border-[#E6E6E6]">
+                    <div className="w-7 h-7 bg-[#f0faf4] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <CheckCircle className="w-4 h-4 text-[#009A44]" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-[#000] mb-1">If no claim work has been carried out</p>
+                      <p className="text-[#333] text-sm">We refund any unused full months on a pro rata basis.</p>
+                      <p className="text-[#333] text-sm mt-1">A reasonable administration charge may apply to cover our actual costs.</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-[#000] mb-1">If claim work has been completed</p>
-                    <p className="text-[#333]">We deduct the value of the work already provided.</p>
-                    <p className="text-[#333] mt-1">If the claim work costs more than the remaining balance, no refund will be due.</p>
+                  <div className="flex items-start gap-3 bg-white rounded-lg p-3 border border-[#E6E6E6]">
+                    <div className="w-7 h-7 bg-[#fef2f2] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Wrench className="w-4 h-4 text-red-500" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-[#000] mb-1">If claim work has been completed</p>
+                      <p className="text-[#333] text-sm">We deduct the value of the work already provided.</p>
+                      <p className="text-[#333] text-sm mt-1">If the claim work costs more than the remaining balance, no refund will be due.</p>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div>
-                <p className="font-bold text-[#000] text-lg mb-2">Paid Monthly Finance</p>
-                <p className="text-[#333] mb-1">Cancelling your warranty will not cancel your finance agreement.</p>
-                <p className="text-[#333] mb-1">Your finance provider will adjust your plan.</p>
-                <p className="text-[#333]">Any refund due will be processed by them.</p>
+              {/* Paid Monthly Finance */}
+              <div className="bg-[#fff7ed] rounded-xl p-5 border-2 border-[#FF7A00]/30">
+                <div className="flex items-center gap-2 mb-4">
+                  <CreditCard className="w-5 h-5 text-[#FF7A00]" />
+                  <p className="font-bold text-[#000] text-lg">Paid Monthly Finance</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-[#FF7A00] flex-shrink-0 mt-0.5" />
+                    <p className="text-[#333] text-sm">Cancelling your warranty <strong>will not</strong> cancel your finance agreement.</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <ArrowRight className="w-4 h-4 text-[#FF7A00] flex-shrink-0 mt-0.5" />
+                    <p className="text-[#333] text-sm">Your finance provider will adjust your plan.</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-[#009A44] flex-shrink-0 mt-0.5" />
+                    <p className="text-[#333] text-sm">Any refund due will be processed by them.</p>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
@@ -431,7 +476,7 @@ const CancelWarranty = () => {
                     placeholder="e.g. AB12 CDE"
                     value={stayFormData.registrationPlate}
                     onChange={(e) => setStayFormData({ ...stayFormData, registrationPlate: e.target.value.toUpperCase() })}
-                    className="h-12 border-[#E6E6E6] bg-white"
+                    className="h-12 bg-[#FFD700] border-2 border-[#000] text-[#000] font-bold text-lg text-center tracking-widest placeholder:text-[#000]/40 placeholder:font-normal placeholder:text-base placeholder:tracking-normal"
                   />
                 </div>
                 <div>
@@ -441,7 +486,7 @@ const CancelWarranty = () => {
                     placeholder="your@email.com"
                     value={stayFormData.email}
                     onChange={(e) => setStayFormData({ ...stayFormData, email: e.target.value })}
-                    className="h-12 border-[#E6E6E6] bg-white"
+                    className={`h-12 border-[#E6E6E6] bg-white ${stayFormData.email ? 'text-[#000] font-semibold' : ''}`}
                   />
                 </div>
                 <Button
@@ -486,7 +531,7 @@ const CancelWarranty = () => {
                   placeholder="e.g. AB12 CDE"
                   value={formData.registrationPlate}
                   onChange={(e) => setFormData({ ...formData, registrationPlate: e.target.value.toUpperCase() })}
-                  className="h-12 border-[#E6E6E6] bg-white"
+                  className="h-12 bg-[#FFD700] border-2 border-[#000] text-[#000] font-bold text-lg text-center tracking-widest placeholder:text-[#000]/40 placeholder:font-normal placeholder:text-base placeholder:tracking-normal"
                   aria-required="true"
                 />
               </div>
@@ -498,14 +543,14 @@ const CancelWarranty = () => {
                   placeholder="your@email.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="h-12 border-[#E6E6E6] bg-white"
+                  className={`h-12 border-[#E6E6E6] bg-white ${formData.email ? 'text-[#000] font-semibold' : ''}`}
                   aria-required="true"
                 />
               </div>
               <div>
                 <label htmlFor="cancel-reason" className="block text-sm font-medium text-[#333] mb-1">Reason for Cancellation *</label>
                 <Select value={formData.reason} onValueChange={(value) => setFormData({ ...formData, reason: value, serviceIssue: '' })}>
-                  <SelectTrigger id="cancel-reason" className="h-12 border-[#E6E6E6] bg-white" aria-required="true">
+                  <SelectTrigger id="cancel-reason" className={`h-12 border-[#E6E6E6] bg-white ${formData.reason ? 'text-[#000] font-semibold' : ''}`} aria-required="true">
                     <SelectValue placeholder="Select a reason" />
                   </SelectTrigger>
                   <SelectContent>
