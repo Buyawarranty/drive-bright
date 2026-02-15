@@ -95,7 +95,7 @@ const RefundEligibility: React.FC = () => {
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                   <p className="text-foreground text-sm">
-                    <strong>Important:</strong> Cancelling your warranty does not cancel your finance agreement.
+                    <strong>Important:</strong> Cancelling your warranty doesn't automatically cancel your finance plan.
                   </p>
                 </div>
               </div>
