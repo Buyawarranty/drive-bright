@@ -307,15 +307,19 @@ const CancelWarranty = () => {
                 <div className="space-y-2">
                   <div className="flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 text-[#FF7A00] flex-shrink-0 mt-0.5" />
-                    <p className="text-[#333] text-sm">Cancelling your warranty <strong>will not</strong> cancel your finance agreement.</p>
+                    <p className="text-[#333] text-sm">Cancelling your warranty <strong>doesn't automatically cancel</strong> your finance plan.</p>
                   </div>
                   <div className="flex items-start gap-2">
                     <ArrowRight className="w-4 h-4 text-[#FF7A00] flex-shrink-0 mt-0.5" />
-                    <p className="text-[#333] text-sm">Your finance provider will adjust your plan.</p>
+                    <p className="text-[#333] text-sm">Your finance provider will then update or close your plan.</p>
                   </div>
                   <div className="flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 text-[#009A44] flex-shrink-0 mt-0.5" />
-                    <p className="text-[#333] text-sm">Any refund due will be processed by them.</p>
+                    <p className="text-[#333] text-sm">Any refund due will be handled directly by the finance provider.</p>
+                  </div>
+                  <div className="flex items-start gap-2 mt-2 bg-[#009A44]/10 rounded-lg p-2">
+                    <CheckCircle className="w-4 h-4 text-[#009A44] flex-shrink-0 mt-0.5" />
+                    <p className="text-[#009A44] text-sm font-semibold">But don't worry – we'll help you with the process 💪</p>
                   </div>
                 </div>
               </div>
