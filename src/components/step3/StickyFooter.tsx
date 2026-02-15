@@ -120,11 +120,13 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             )}
             
             {/* Pay in full with 10% discount savings */}
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className="text-sm text-gray-600">Pay in full:</span>
-              <span className="text-sm font-bold text-gray-900">£{payInFull - stripeSavings}</span>
-              <span className="text-sm text-gray-400">—</span>
-              <span className="text-sm font-bold text-green-600">Save £{stripeSavings} today</span>
+            <div className="flex flex-col items-center gap-0.5 mt-1">
+              <span className="text-base font-bold text-gray-900">Pay in Full: £{payInFull - stripeSavings}</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm text-red-500 line-through">£{payInFull}</span>
+                <span className="text-sm font-bold text-green-600">Save £{stripeSavings}</span>
+                <span className="text-sm text-gray-500">(10% off)</span>
+              </div>
             </div>
           </div>
 
@@ -204,11 +206,11 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
 
             {/* Pay in full with 10% discount savings */}
             <div className="text-center">
+              <p className="text-base font-bold text-gray-900">Pay in Full: £{payInFull - stripeSavings}</p>
               <div className="flex items-center justify-center gap-1.5">
-                <span className="text-sm text-gray-600">Pay in full:</span>
-                <span className="text-sm font-bold text-gray-900">£{payInFull - stripeSavings}</span>
-                <span className="text-sm text-gray-400">—</span>
-                <span className="text-sm font-bold text-green-600">Save £{stripeSavings} today</span>
+                <span className="text-sm text-red-500 line-through">£{payInFull}</span>
+                <span className="text-sm font-bold text-green-600">Save £{stripeSavings}</span>
+                <span className="text-sm text-gray-500">(10% off)</span>
               </div>
             </div>
 
