@@ -520,20 +520,22 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
    const [isBottomCtaFullyVisible, setIsBottomCtaFullyVisible] = useState(false);
    const bottomCtaRef = React.useRef<HTMLDivElement>(null);
    
-    // IntersectionObserver to detect when bottom CTA is visible in viewport
+    // IntersectionObserver to detect when bottom CTA is visible OR has been scrolled past
     useEffect(() => {
       const el = bottomCtaRef.current;
       if (!el) return;
       
       const observer = new IntersectionObserver(
         ([entry]) => {
-          // On mobile, any visibility means the main CTA is on screen — hide sticky
-          // On desktop, require full visibility
-          const isMobile = window.innerWidth < 1024;
-          if (isMobile) {
-            setIsBottomCtaFullyVisible(entry.isIntersecting);
+          if (entry.isIntersecting) {
+            // Element is on screen — hide sticky
+            setIsBottomCtaFullyVisible(true);
           } else {
-            setIsBottomCtaFullyVisible(entry.isIntersecting);
+            // Element is off screen — check if it's ABOVE the viewport (scrolled past)
+            // If boundingClientRect.bottom < window height, user scrolled past it
+            const rect = entry.boundingClientRect;
+            const scrolledPast = rect.bottom < window.innerHeight;
+            setIsBottomCtaFullyVisible(scrolledPast);
           }
         },
         { threshold: 0.1 }
