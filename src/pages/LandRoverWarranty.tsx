@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Check, Menu, X, ChevronDown, ChevronUp } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Link } from 'react-router-dom';
+import { Phone, Shield, Clock, CheckCircle2, FileText, Wrench, Zap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { SEOHead } from '@/components/SEOHead';
 import { OrganizationSchema } from '@/components/schema/OrganizationSchema';
 import { WebPageSchema } from '@/components/schema/WebPageSchema';
@@ -10,511 +9,568 @@ import { FAQSchema } from '@/components/schema/FAQSchema';
 import { ProductSchema } from '@/components/schema/ProductSchema';
 import { BreadcrumbSchema } from '@/components/schema/BreadcrumbSchema';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
+import { getResponsiveImageProps } from '@/utils/imageOptimizer';
+import QuoteFormInline from '@/components/QuoteFormInline';
 import WebsiteFooter from '@/components/WebsiteFooter';
-import { OptimizedImage } from '@/components/OptimizedImage';
-import rangeRoverImg from '@/assets/land-rover-range-rover.png';
-import defenderImg from '@/assets/land-rover-defender.png';
-import discoverySportImg from '@/assets/land-rover-discovery-sport.png';
+import heroImg from '@/assets/land-rover-range-rover-sport-warranty.png';
+import defenderImg from '@/assets/land-rover-defender-warranty.png';
+import discoveryImg from '@/assets/land-rover-discovery-sport-warranty.png';
 
 const LandRoverWarranty: React.FC = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
+  const [showRegForm, setShowRegForm] = useState(false);
 
-  const toggleFAQ = (index: number) => {
-    setExpandedFAQ(expandedFAQ === index ? null : index);
+  const scrollToQuote = () => {
+    window.location.href = '/#get-quote';
   };
 
   const faqItems = [
     {
-      question: "How much is the Land Rover extended warranty?",
-      answer: "Prices vary based on age, mileage and cover levels. Newer vehicles cost less, while older high-mileage models cost slightly more. Enter your registration to see your personalised quote instantly."
+      question: "How much does a Land Rover extended warranty cost?",
+      answer: "Prices depend on your vehicle's age, mileage, and chosen cover level. Newer models cost less while older high-mileage vehicles cost slightly more. Enter your registration above to see your personalised instant quote."
     },
     {
       question: "Are Land Rover extended warranties worth it?",
-      answer: "Yes, they are valuable for drivers who want protection from high repair costs. Land Rovers have complex mechanical and electrical systems so even a single repair can exceed the cost of a full year of cover."
+      answer: "Yes. Land Rovers feature complex 4x4 systems, air suspension, and advanced electronics. A single major repair can cost thousands. An extended warranty protects you from unexpected bills and keeps your vehicle on the road."
     },
     {
-      question: "Can I buy a Land Rover extended warranty later?",
-      answer: "Yes, you can buy cover at any time unless the vehicle already has an active pre-existing fault. Buying earlier usually gives a lower premium and wider cover options."
+      question: "Can I buy a Land Rover warranty after the manufacturer warranty expires?",
+      answer: "Yes, you can buy cover at any time provided the vehicle has no active pre-existing faults. Earlier purchases usually offer lower premiums and broader cover options."
     },
     {
-      question: "What is the extended warranty on a Land Rover?",
-      answer: "It is a protection plan that covers the cost of repairing mechanical and electrical failures once the original manufacturer's warranty has expired. It includes parts, labour and diagnostics."
+      question: "What Land Rover models do you cover?",
+      answer: "We cover all Land Rover and Range Rover models from 2012 to 2026 including the Defender, Discovery, Discovery Sport, Range Rover, Range Rover Sport, Range Rover Evoque, and Range Rover Velar."
+    },
+    {
+      question: "Can I use my own garage for repairs?",
+      answer: "Yes. You can use any VAT-registered garage or one from our approved UK-wide network."
+    },
+    {
+      question: "Is the warranty transferable if I sell my Land Rover?",
+      answer: "Yes. Your warranty can be transferred to the new owner as an optional add-on, increasing the resale value of your vehicle."
+    },
+    {
+      question: "What happens if my Land Rover breaks down?",
+      answer: "Contact our claims team and we'll authorise the repair. Our plans include optional roadside assistance and recovery to get you moving quickly."
+    },
+    {
+      question: "How fast can I get cover?",
+      answer: "You can get an instant online quote and start your cover immediately upon payment. No inspections or delays."
     }
   ];
 
+  const breadcrumbItems = [
+    { name: 'Home', url: 'https://buyawarranty.co.uk/' },
+    { name: 'Car Extended Warranty', url: 'https://buyawarranty.co.uk/car-extended-warranty/' },
+    { name: 'Land Rover Warranty', url: 'https://buyawarranty.co.uk/car-extended-warranty/land-rover/' }
+  ];
+
+  const landRoverModels = [
+    { model: 'Range Rover', years: '2012–2026', coverage: 'Full engine, gearbox, air suspension, and electrical systems' },
+    { model: 'Range Rover Sport', years: '2012–2026', coverage: 'Complete drivetrain, adaptive dynamics, and Terrain Response' },
+    { model: 'Range Rover Evoque', years: '2012–2026', coverage: 'Engine, transmission, cooling, and infotainment systems' },
+    { model: 'Range Rover Velar', years: '2017–2026', coverage: 'Mechanical, electrical, and advanced driver-assist components' },
+    { model: 'Defender 90', years: '2020–2026', coverage: 'Engine, 4x4 systems, suspension, and off-road electronics' },
+    { model: 'Defender 110', years: '2020–2026', coverage: 'Full mechanical and electrical cover including wading systems' },
+    { model: 'Defender 130', years: '2023–2026', coverage: 'Complete drivetrain, air suspension, and electronic systems' },
+    { model: 'Discovery', years: '2012–2026', coverage: 'Engine, gearbox, transfer case, and climate control' },
+    { model: 'Discovery Sport', years: '2015–2026', coverage: 'Powertrain, steering, brakes, and electrical components' },
+    { model: 'Freelander 2', years: '2012–2014', coverage: 'Engine, transmission, suspension, and cooling systems' },
+  ];
+
   return (
-    <div className="min-h-screen">
+    <>
       <SEOHead
-        title="Land Rover Extended Warranty | Affordable Cover for Used Models"
-        description="Protect your Land Rover with reliable extended warranty cover. Includes major mechanical and electrical faults with flexible plans and instant quotes."
-        keywords="Land Rover warranty, Range Rover warranty, Discovery warranty, Land Rover extended warranty, Defender warranty"
+        title="Land Rover Extended Warranty UK | Cover All Models 2012–2026"
+        description="Protect your Land Rover with an affordable extended warranty. Cover for Defender, Range Rover, Discovery & Evoque. Instant quotes, 150,000-mile limit, flexible UK plans from £20/month."
+        keywords="Land Rover warranty, Range Rover warranty, Defender warranty, Discovery warranty, Land Rover extended warranty UK, Range Rover Sport warranty, Evoque warranty, Velar warranty, used Land Rover warranty, Land Rover car warranty"
         canonical="https://buyawarranty.co.uk/car-extended-warranty/land-rover/"
-        ogTitle="Land Rover Extended Warranty | Affordable Cover for Used Models"
-        ogDescription="Protect your Land Rover with reliable extended warranty cover. Includes major mechanical and electrical faults with flexible plans and instant quotes."
+        ogTitle="Land Rover Extended Warranty UK | Defender, Range Rover & Discovery Cover"
+        ogDescription="Affordable extended warranty for all Land Rover models 2012–2026. Instant quotes, flexible plans, 150,000-mile limit. Protect your Defender, Range Rover, Discovery or Evoque today."
+        ogImage="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png"
+        geoRegion="GB"
+        geoPlacename="United Kingdom"
+        geoPosition="54.5;-4.5"
+        ICBM="54.5, -4.5"
       />
-      
       <OrganizationSchema type="InsuranceAgency" />
       <WebPageSchema
-        name="Land Rover Extended Warranty - Buy A Warranty"
-        description="Comprehensive extended warranty coverage for Land Rover vehicles in the UK. Protect your Range Rover, Defender, or Discovery from unexpected repair costs."
+        name="Land Rover Extended Warranty UK | All Models Covered"
+        description="Comprehensive extended warranty for Land Rover and Range Rover vehicles in the UK. Protect your Defender, Discovery, Evoque, Velar, or Range Rover Sport from unexpected repair costs with flexible plans."
         url="https://buyawarranty.co.uk/car-extended-warranty/land-rover/"
-        specialty="Land Rover Extended Warranty, Range Rover Warranty, Discovery Warranty"
+        specialty="Land Rover Extended Warranty, Range Rover Warranty, Defender Warranty, Discovery Warranty"
       />
       <FAQSchema faqs={faqItems} />
       <ProductSchema
-        name="Land Rover Extended Warranty Plans"
-        description="Comprehensive Land Rover warranty coverage protecting your vehicle from unexpected mechanical and electrical failures."
+        name="Land Rover Extended Warranty Plans UK"
+        description="Comprehensive Land Rover warranty covering mechanical and electrical failures for Defender, Range Rover, Discovery, Evoque and Velar models from 2012 to 2026."
         price="19.00"
         priceCurrency="GBP"
         brand="Buy A Warranty"
-        category="Extended Warranty"
+        category="Land Rover Extended Warranty & Vehicle Protection"
         image="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png"
+        availability="InStock"
+        areaServed="GB"
       />
-      <BreadcrumbSchema 
-        items={[
-          { name: "Home", url: "https://buyawarranty.co.uk/" },
-          { name: "Car Extended Warranty", url: "https://buyawarranty.co.uk/car-extended-warranty/" },
-          { name: "Land Rover Warranty", url: "https://buyawarranty.co.uk/car-extended-warranty/land-rover/" }
-        ]} 
-      />
+      <BreadcrumbSchema items={breadcrumbItems} />
 
-      {/* Sticky Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 sm:h-20">
-            <div className="flex items-center">
-              <Link to="/">
-                <img src="/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" alt="Buy a Warranty" className="h-6 sm:h-8 w-auto" />
-              </Link>
-            </div>
-            
-            <nav className="hidden lg:flex items-center space-x-4 xl:space-x-6">
-              <Link to="/#coverage" className="text-gray-700 hover:text-primary transition-colors">What's Covered</Link>
-              <Link to="/make-a-claim/" className="text-gray-700 hover:text-primary transition-colors">Make a Claim</Link>
-              <Link to="/faq/" className="text-gray-700 hover:text-primary transition-colors">FAQs</Link>
-              <Link to="/contact-us/" className="text-gray-700 hover:text-primary transition-colors">Contact Us</Link>
-              <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer" className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
-                WhatsApp Us
-              </a>
-              <Button onClick={() => window.location.href = '/?step=1'} className="bg-primary hover:bg-primary/90">
-                Get my quote
-              </Button>
-            </nav>
-
-            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-              <SheetTrigger asChild className="lg:hidden">
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <nav className="flex flex-col space-y-4 mt-8">
-                  <Link to="/#coverage" className="text-gray-700 hover:text-primary text-lg">What's Covered</Link>
-                  <Link to="/make-a-claim/" className="text-gray-700 hover:text-primary text-lg">Make a Claim</Link>
-                  <Link to="/faq/" className="text-gray-700 hover:text-primary text-lg">FAQs</Link>
-                  <Link to="/contact-us/" className="text-gray-700 hover:text-primary text-lg">Contact Us</Link>
-                  <a href="https://wa.me/message/SPQPJ6O3UBF5B1" target="_blank" rel="noopener noreferrer" className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg text-center">
-                    WhatsApp Us
-                  </a>
-                  <Button onClick={() => window.location.href = '/?step=1'} className="w-full">
-                    Get my quote
+      <div className="min-h-screen bg-background">
+        {/* Hero Section */}
+        <section className="relative bg-gradient-to-br from-primary/5 via-background to-primary/5 pt-24 pb-16 overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
+                  Land Rover Extended Warranty for Every Model
+                </h1>
+                <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+                  Protect your Land Rover from costly repairs with trusted UK warranty cover. Instant quotes, flexible plans, and protection for vehicles up to 150,000 miles.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Button
+                    size="lg"
+                    onClick={scrollToQuote}
+                    className="text-lg px-8 py-6"
+                  >
+                    Get Your Land Rover Quote
                   </Button>
-                </nav>
-              </SheetContent>
-            </Sheet>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={() => window.location.href = 'tel:03302295040'}
+                    className="text-lg px-8 py-6"
+                  >
+                    <Phone className="mr-2 h-5 w-5" />
+                    Call: 0330 229 5040
+                  </Button>
+                </div>
+              </div>
+              <div className="relative">
+                <img
+                  {...getResponsiveImageProps({
+                    src: heroImg,
+                    alt: "Range Rover Sport with extended warranty coverage from Buy A Warranty UK",
+                    width: 600,
+                    height: 408,
+                    loading: 'eager',
+                    priority: true
+                  })}
+                  className="w-3/5 h-auto drop-shadow-2xl mx-auto"
+                />
+              </div>
+            </div>
           </div>
-        </div>
-      </header>
+        </section>
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary via-primary/90 to-primary/80 text-white py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div className="space-y-6">
-              <h1 className="text-4xl md:text-5xl font-bold leading-tight text-white">
-                Land Rover Extended Warranty
-              </h1>
-              <p className="text-xl text-white">
-                Land Rover models offer strong capability and luxury, yet repairs for engines, gearboxes, and electrical systems remain among the highest in the UK market. A Land Rover extended warranty gives you financial protection, expert support and consistent reliability once your factory warranty ends.
+        {/* What is Section */}
+        <section className="py-16 bg-card">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-foreground mb-6">
+              What is a Land Rover Extended Warranty?
+            </h2>
+            <p className="text-lg text-muted-foreground text-center leading-relaxed">
+              A Land Rover extended warranty is a protection plan that covers the cost of repairing mechanical and electrical failures once the original manufacturer warranty expires. It includes parts, labour, and diagnostics for components like engines, gearboxes, air suspension, and advanced 4x4 systems. Cover is available for new and used Land Rover and Range Rover models from 2012 to 2026.
+            </p>
+          </div>
+        </section>
+
+        {/* Get Your Quote Section with QuoteFormInline */}
+        <section className="py-16 bg-background" id="get-quote">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Get Your Instant Land Rover Warranty Quote
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                From just 80p a day • Easy claims • Fast payouts<br />
+                Unlimited claims • Complete Cover • No excess
               </p>
-              <p className="text-lg text-white">
-                We provide cover for new and used Land Rover warranty plans, including the most popular models. These include the Land Rover Defender, Range Rover, Range Rover Evoque, Range Rover Sport, Discovery and Discovery Sport.
+            </div>
+
+            <div className="flex justify-center">
+              <QuoteFormInline vehicleType="car" />
+            </div>
+
+            <div className="mt-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                Protection for Land Rover vehicles up to 150,000 miles and 15 years old.
               </p>
-              <p className="text-lg text-white">
-                You can choose your preferred garage and activate cover online in minutes.
+            </div>
+          </div>
+        </section>
+
+        {/* Why Choose Us */}
+        <section className="py-16 bg-background">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Why Consider a Land Rover Extended Warranty?
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                Land Rover repair bills can escalate quickly due to complex 4x4 systems, luxury electronics, and premium components. A warranty shields you from unpredictable costs and keeps your vehicle reliably on the road.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+              <div className="bg-card p-6 rounded-lg shadow-sm border border-border hover:shadow-md transition-shadow">
+                <Shield className="h-12 w-12 text-primary mb-4" />
+                <h3 className="text-xl font-semibold mb-3 text-foreground">Comprehensive Protection</h3>
+                <p className="text-muted-foreground">Full cover for engine, gearbox, air suspension, Terrain Response, and electrical systems</p>
+              </div>
+              <div className="bg-card p-6 rounded-lg shadow-sm border border-border hover:shadow-md transition-shadow">
+                <FileText className="h-12 w-12 text-primary mb-4" />
+                <h3 className="text-xl font-semibold mb-3 text-foreground">Flexible Payment Options</h3>
+                <p className="text-muted-foreground">Monthly or annual payments with no hidden fees</p>
+              </div>
+              <div className="bg-card p-6 rounded-lg shadow-sm border border-border hover:shadow-md transition-shadow">
+                <Zap className="h-12 w-12 text-primary mb-4" />
+                <h3 className="text-xl font-semibold mb-3 text-foreground">High Mileage Cover</h3>
+                <p className="text-muted-foreground">Protection available for Land Rovers up to 150,000 miles</p>
+              </div>
+              <div className="bg-card p-6 rounded-lg shadow-sm border border-border hover:shadow-md transition-shadow">
+                <Clock className="h-12 w-12 text-primary mb-4" />
+                <h3 className="text-xl font-semibold mb-3 text-foreground">Fast Claims Process</h3>
+                <p className="text-muted-foreground">UK-wide repair network with quick authorisation</p>
+              </div>
+              <div className="bg-card p-6 rounded-lg shadow-sm border border-border hover:shadow-md transition-shadow">
+                <CheckCircle2 className="h-12 w-12 text-primary mb-4" />
+                <h3 className="text-xl font-semibold mb-3 text-foreground">No Hidden Fees</h3>
+                <p className="text-muted-foreground">Transparent pricing you can trust from day one</p>
+              </div>
+              <div className="bg-card p-6 rounded-lg shadow-sm border border-border hover:shadow-md transition-shadow">
+                <Wrench className="h-12 w-12 text-primary mb-4" />
+                <h3 className="text-xl font-semibold mb-3 text-foreground">Use Your Own Garage</h3>
+                <p className="text-muted-foreground">Any VAT-registered garage or our approved UK network</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Trustpilot Badge */}
+        <div className="py-8 flex justify-end container mx-auto px-4 sm:px-6 lg:px-8">
+          <TrustpilotHeader />
+        </div>
+
+        {/* Coverage Section */}
+        <section className="py-16 bg-card">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-foreground mb-12">
+              What Does Our Land Rover Warranty Cover?
+            </h2>
+
+            <div className="grid md:grid-cols-2 gap-12 items-center mb-12">
+              <div>
+                <p className="text-lg text-muted-foreground mb-8">
+                  Our plans protect all major components that keep your Land Rover performing at its best — from rugged off-road capability to luxury on-road comfort.
+                </p>
+
+                <div className="space-y-4">
+                  <h3 className="text-xl font-semibold text-foreground mb-4">Key components covered:</h3>
+                  {[
+                    'Engine, gearbox, and transfer case',
+                    'Air suspension and adaptive damping',
+                    'Terrain Response and 4x4 drivetrain',
+                    'Cooling, turbocharger, and fuel systems',
+                    'Electrical and electronic components',
+                    'Steering, brakes, and differential'
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <CheckCircle2 className="h-6 w-6 text-pricing-benefit flex-shrink-0 mt-1" />
+                      <span className="text-foreground">{item}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-8 space-y-4">
+                  <h3 className="text-xl font-semibold text-foreground mb-4">Additional benefits:</h3>
+                  {[
+                    '24/7 breakdown recovery reclaim (optional add-on)',
+                    'Fast claims authorisation usually 90 minutes after approval',
+                    'Direct payments to approved garages'
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <CheckCircle2 className="h-6 w-6 text-pricing-benefit flex-shrink-0 mt-1" />
+                      <span className="text-foreground">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-center">
+                <img
+                  {...getResponsiveImageProps({
+                    src: defenderImg,
+                    alt: "Land Rover Defender with comprehensive extended warranty protection UK",
+                    width: 500,
+                    height: 340,
+                    loading: 'lazy'
+                  })}
+                  className="w-full max-w-sm h-auto drop-shadow-2xl object-contain"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Models Table */}
+        <section className="py-16 bg-background">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-foreground mb-4">
+              Land Rover Models We Cover (2012–2026)
+            </h2>
+            <p className="text-lg text-muted-foreground text-center mb-12 max-w-3xl mx-auto">
+              We provide complete extended warranty protection for all Land Rover and Range Rover models available in the UK from 2012 to 2026.
+            </p>
+
+            <div className="overflow-x-auto">
+              <table className="w-full bg-card rounded-lg shadow-sm border border-border">
+                <thead className="bg-primary/5">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Model</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Years Available</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Coverage Highlights</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {landRoverModels.map((row, index) => (
+                    <tr key={index} className="hover:bg-muted/50 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-foreground">{row.model}</td>
+                      <td className="px-6 py-4 text-sm text-muted-foreground">{row.years}</td>
+                      <td className="px-6 py-4 text-sm text-muted-foreground">{row.coverage}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <p className="text-center text-muted-foreground mt-8 text-lg">
+              Hybrid and plug-in hybrid Land Rover models are also covered under our specialist <Link to="/warranty-types/electric-car-warranty/" className="text-primary hover:underline">EV and hybrid warranty plans</Link>.
+            </p>
+          </div>
+        </section>
+
+        {/* Repair Costs */}
+        <section className="py-16 bg-card">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-foreground mb-4">
+              Average Land Rover Repair Costs in the UK
+            </h2>
+            <p className="text-lg text-muted-foreground text-center mb-12 max-w-3xl mx-auto">
+              Premium vehicles come with premium repair bills. A warranty absorbs these costs so you don't have to.
+            </p>
+
+            <div className="overflow-x-auto">
+              <table className="w-full bg-background rounded-lg shadow-sm border border-border">
+                <thead className="bg-primary/5">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Component</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Average Repair Cost</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {[
+                    { component: 'Engine', cost: '£2,200 – £5,800' },
+                    { component: 'Automatic Gearbox', cost: '£1,800 – £4,000' },
+                    { component: 'Air Suspension', cost: '£700 – £2,200' },
+                    { component: 'Turbocharger', cost: '£900 – £2,100' },
+                    { component: 'Electrical System', cost: '£250 – £1,100' },
+                    { component: 'Cooling System', cost: '£350 – £900' },
+                    { component: 'Transfer Case / 4x4', cost: '£600 – £1,800' },
+                  ].map((row, i) => (
+                    <tr key={i} className="hover:bg-muted/50 transition-colors">
+                      <td className="px-6 py-4 text-sm font-medium text-foreground">{row.component}</td>
+                      <td className="px-6 py-4 text-sm font-semibold text-foreground">{row.cost}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        {/* Warranty Plans */}
+        <section className="py-16 bg-background">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-foreground mb-4">
+              Choosing the Right Land Rover Warranty Plan
+            </h2>
+            <p className="text-lg text-muted-foreground text-center mb-12 max-w-3xl mx-auto">
+              We offer flexible plans based on your Land Rover's age, mileage, and how you use it.
+            </p>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="bg-card p-8 rounded-lg border-2 border-border hover:border-primary transition-colors">
+                <h3 className="text-2xl font-bold text-foreground mb-3">12-Month Plan</h3>
+                <p className="text-lg text-muted-foreground mb-6">1 Year Land Rover Warranty</p>
+                <p className="text-muted-foreground mb-6">Ideal for short-term protection or if you plan to upgrade your vehicle soon.</p>
+                <Button onClick={scrollToQuote} className="w-full">Get 1 Year Cover</Button>
+              </div>
+
+              <div className="bg-primary/5 p-8 rounded-lg border-2 border-primary relative">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-semibold">
+                  Most Popular
+                </div>
+                <h3 className="text-2xl font-bold text-foreground mb-3">24-Month Plan</h3>
+                <p className="text-lg text-muted-foreground mb-6">2 Year Land Rover Warranty</p>
+                <p className="text-muted-foreground mb-6">Our most popular choice — two years of cover and excellent value for money.</p>
+                <Button onClick={scrollToQuote} className="w-full">Get 2 Year Cover</Button>
+              </div>
+
+              <div className="bg-card p-8 rounded-lg border-2 border-border hover:border-primary transition-colors">
+                <h3 className="text-2xl font-bold text-foreground mb-3">36-Month Plan</h3>
+                <p className="text-lg text-muted-foreground mb-6">3 Year Land Rover Warranty</p>
+                <p className="text-muted-foreground mb-6">Maximum protection for total peace of mind. Best value per year of cover.</p>
+                <Button onClick={scrollToQuote} className="w-full">Get 3 Year Cover</Button>
+              </div>
+            </div>
+
+            <p className="text-center text-muted-foreground mt-8 text-lg">
+              All plans include the option to add breakdown cover, hire car support, and onward travel protection.
+            </p>
+          </div>
+        </section>
+
+        {/* Trustpilot Badge */}
+        <div className="py-8 flex justify-end container mx-auto px-4 sm:px-6 lg:px-8">
+          <TrustpilotHeader />
+        </div>
+
+        {/* How to Get */}
+        <section className="py-16 bg-card">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-foreground mb-12">
+              How to Get a Land Rover Warranty Online
+            </h2>
+
+            {!showRegForm ? (
+              <div className="max-w-md mx-auto mb-12">
+                <Button
                   size="lg"
-                  onClick={() => window.location.href = '/?step=1'}
-                  className="bg-white text-primary hover:bg-gray-100 font-semibold text-lg px-8 py-6"
+                  onClick={() => setShowRegForm(true)}
+                  className="w-full text-lg px-8 py-6"
                 >
-                  Get My Land Rover Quote →
+                  Start Your Land Rover Quote Now
                 </Button>
               </div>
-            </div>
-            <div className="relative">
-              <OptimizedImage 
-                src={rangeRoverImg}
-                alt="Land Rover Range Rover extended warranty coverage"
-                className="w-full max-w-md mx-auto"
-                priority={true}
-                width={600}
-                height={400}
-              />
-            </div>
-          </div>
-        </div>
-      </section>
+            ) : (
+              <div className="flex justify-center mb-12">
+                <QuoteFormInline vehicleType="car" />
+              </div>
+            )}
 
-      {/* Trustpilot Section */}
-      <section className="bg-white py-8">
-        <div className="container mx-auto px-4">
-          <TrustpilotHeader className="justify-center" />
-        </div>
-      </section>
-
-      {/* Why Consider Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-            Why Consider a Land Rover Car Extended Warranty
-          </h2>
-          <div className="max-w-4xl mx-auto space-y-6">
-            <p className="text-lg text-gray-700">
-              Land Rover repair bills can rise quickly due to the complexity of advanced 4x4 systems, luxury electronics and premium components. A Land Rover car extended warranty gives you protection against:
-            </p>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Engine failures</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Gearbox and automatic transmission faults</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Suspension and air suspension issues</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Electrical system failures</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Cooling and overheating faults</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Drivetrain and differential issues</span>
-              </div>
-            </div>
-            <p className="text-lg text-gray-700 mt-6">
-              Modern Land Rover systems like Terrain Response, adaptive damping and advanced infotainment place additional load on sensitive components. A warranty shields you from unpredictable repair costs and maintains the value of your vehicle.
-            </p>
-          </div>
-          <div className="text-center mt-8">
-            <OptimizedImage 
-              src={defenderImg}
-              alt="Land Rover Defender warranty protection"
-              className="w-full max-w-md mx-auto"
-              priority={false}
-              width={600}
-              height={400}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* What's Included Section */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-            What Our Land Rover Extended Warranty Plans Include
-          </h2>
-          <p className="text-lg text-center text-gray-700 mb-12 max-w-3xl mx-auto">
-            Our Land Rover extended warranty plans offer comprehensive mechanical and electrical protection with clear terms and a fast claims process.
-          </p>
-          <div className="max-w-4xl mx-auto">
-            <h3 className="text-2xl font-bold mb-6">Key benefits</h3>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Cover for major mechanical and electrical components</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Diagnostics and labour included</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Instant online claims authorisation</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Nationwide garage network</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Flexible claim limits based on your vehicle value</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Monthly or annual payment options</span>
-              </div>
-            </div>
-            <p className="text-lg text-gray-700 mt-8">
-              We offer one of the most flexible mileage allowances in the UK. You can insure vehicles up to 150,000 miles, which is significantly higher than many traditional warranty providers. For full information on what your plan includes, please visit our <Link to="/#coverage" className="text-primary hover:underline">coverage page</Link>.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Repair Costs Table */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
-            Average Land Rover Repair Costs
-          </h2>
-          <p className="text-lg text-center text-gray-700 mb-12 max-w-3xl mx-auto">
-            Premium models can create premium repair bills. Here is a helpful data reference to give drivers an idea of real-world costs.
-          </p>
-          <div className="max-w-4xl mx-auto overflow-x-auto">
-            <table className="w-full border-collapse bg-white rounded-lg overflow-hidden shadow-md">
-              <thead>
-                <tr className="bg-primary text-white">
-                  <th className="p-4 text-left font-bold">Component</th>
-                  <th className="p-4 text-left font-bold">Average Repair Cost</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b">
-                  <td className="p-4">Engine</td>
-                  <td className="p-4 font-semibold">£2,200 to £5,800</td>
-                </tr>
-                <tr className="border-b bg-gray-50">
-                  <td className="p-4">Automatic Gearbox</td>
-                  <td className="p-4 font-semibold">£1,800 to £4,000</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="p-4">Air Suspension</td>
-                  <td className="p-4 font-semibold">£700 to £2,200</td>
-                </tr>
-                <tr className="border-b bg-gray-50">
-                  <td className="p-4">Electrical System</td>
-                  <td className="p-4 font-semibold">£250 to £1,100</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="p-4">Turbocharger</td>
-                  <td className="p-4 font-semibold">£900 to £2,100</td>
-                </tr>
-                <tr>
-                  <td className="p-4">Cooling System</td>
-                  <td className="p-4 font-semibold">£350 to £900</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <p className="text-lg text-center text-gray-700 mt-8 max-w-3xl mx-auto">
-            These are the types of bills a Land Rover warranty can absorb, protecting your budget.
-          </p>
-        </div>
-      </section>
-
-      {/* Models We Cover */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
-            Land Rover Models We Cover
-          </h2>
-          <p className="text-lg text-center text-gray-700 mb-12 max-w-3xl mx-auto">
-            We offer extended warranty plans for all major Land Rover models sold through UK dealerships, including Jaguar Land Rover. This includes:
-          </p>
-          <div className="max-w-4xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Land Rover Defender</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Range Rover</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Range Rover Sport</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Range Rover Evoque</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Range Rover Velar</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Range Rover Vogue</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Discovery</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Discovery Sport</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Freelander (used models)</span>
-              </div>
-            </div>
-            <p className="text-lg text-gray-700 mt-8">
-              All plans include wide support and access to approved repairers.
-            </p>
-          </div>
-          <div className="text-center mt-8">
-            <OptimizedImage 
-              src={discoverySportImg}
-              alt="Land Rover Discovery Sport extended warranty"
-              className="w-full max-w-md mx-auto"
-              priority={false}
-              width={600}
-              height={400}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Cost Information */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
-            How Much Does a Land Rover Warranty Cost
-          </h2>
-          <p className="text-lg text-center text-gray-700 mb-12 max-w-3xl mx-auto">
-            The Land Rover extended warranty cost depends on your vehicle age, mileage, cover level and chosen claim limit. Prices are usually lower than dealership warranties while offering broader cover across more components.
-          </p>
-          <p className="text-lg text-center text-gray-700 mb-8 max-w-3xl mx-auto">
-            Get an instant price by entering your registration and mileage. Your quote updates in real time based on your chosen options.
-          </p>
-          <div className="text-center">
-            <Button 
-              size="lg"
-              onClick={() => window.location.href = '/?step=1'}
-              className="bg-primary hover:bg-primary/90 font-semibold text-lg px-8 py-6"
-            >
-              Get My Instant Quote →
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Why Choose Us */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
-            Why Choose Our Extended Warranty for Land Rover Vehicles
-          </h2>
-          <p className="text-lg text-center text-gray-700 mb-12 max-w-3xl mx-auto">
-            You receive professional, transparent and customer-centred protection.
-          </p>
-          <div className="max-w-4xl mx-auto">
-            <h3 className="text-2xl font-bold mb-6">Our advantages</h3>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">High mileage covers up to 150,000 miles</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Flexible monthly or annual payments</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">UK-wide repair network</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Fast digital claims</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">No long call centre delays</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Simple online activation</span>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-gray-700">Cover that matches real-world Land Rover ownership needs</span>
-              </div>
-            </div>
-            <p className="text-lg text-gray-700 mt-8">
-              You remain in control of your costs with claim limits that suit your vehicle's market value.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQs */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-            Frequently Asked Questions
-          </h2>
-          <div className="max-w-3xl mx-auto space-y-4">
-            {faqItems.map((faq, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <button
-                  onClick={() => toggleFAQ(index)}
-                  className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
-                >
-                  <span className="font-semibold text-lg">{faq.question}</span>
-                  {expandedFAQ === index ? (
-                    <ChevronUp className="h-5 w-5 text-primary flex-shrink-0" />
-                  ) : (
-                    <ChevronDown className="h-5 w-5 text-primary flex-shrink-0" />
-                  )}
-                </button>
-                {expandedFAQ === index && (
-                  <div className="px-6 pb-4">
-                    <p className="text-gray-700">{faq.answer}</p>
+            <div className="grid md:grid-cols-4 gap-8 mb-12">
+              {[
+                { step: '1', title: 'Enter Registration', desc: "We'll identify your Land Rover and confirm eligibility" },
+                { step: '2', title: 'Choose Cover', desc: 'Pick a plan that fits your needs and budget' },
+                { step: '3', title: 'Select Payment', desc: 'Monthly interest free or annual payments available' },
+                { step: '4', title: 'Get Protected', desc: 'Cover starts from day one' },
+              ].map((s) => (
+                <div key={s.step} className="text-center">
+                  <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl font-bold text-primary">{s.step}</span>
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+                  <h3 className="font-semibold text-foreground mb-2">{s.title}</h3>
+                  <p className="text-sm text-muted-foreground">{s.desc}</p>
+                </div>
+              ))}
+            </div>
 
-      {/* Final CTA */}
-      <section className="bg-primary text-white py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center space-y-6">
-            <h2 className="text-3xl md:text-4xl font-bold text-white">
-              Ready To Secure Your Land Rover Today?
-            </h2>
-            <p className="text-xl text-white">
-              Activate your extended cover in minutes and prevent costly surprises later. Get a personalised price based on your model, age and mileage, and drive with confidence knowing your Land Rover is protected.
+            <p className="text-center text-lg text-muted-foreground">
+              No inspections, no delays — just simple Land Rover protection.
             </p>
-            <Button 
-              size="lg"
-              onClick={() => window.location.href = '/?step=1'}
-              className="bg-white text-primary hover:bg-gray-100 font-semibold text-lg px-8 py-6"
-            >
-              Get My Land Rover Warranty Quote →
-            </Button>
-            <p className="text-sm text-white">Takes less than 60 seconds. No phone calls, no pressure - just instant pricing.</p>
           </div>
+        </section>
+
+        {/* Trustpilot Badge */}
+        <div className="py-8 flex justify-end container mx-auto px-4 sm:px-6 lg:px-8">
+          <TrustpilotHeader />
         </div>
-      </section>
+
+        {/* Flexible Terms */}
+        <section className="py-16 bg-background">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
+                  Flexible Terms and Affordable Land Rover Cover
+                </h2>
+                <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
+                  Every Land Rover is different, which is why our warranty plans are designed around your specific model. Choose short-term or multi-year protection, add optional upgrades, and pay the way that suits you best.
+                </p>
+                <p className="text-xl font-semibold text-foreground mb-6">
+                  We are one of the only UK warranty providers offering cover for Land Rovers up to 150,000 miles at the start of the policy.
+                </p>
+                <p className="text-lg text-muted-foreground">
+                  That means even high-mileage Land Rovers can stay protected with the same confidence, reliability, and level of service.
+                </p>
+              </div>
+              <div className="flex justify-center lg:justify-end">
+                <img
+                  {...getResponsiveImageProps({
+                    src: discoveryImg,
+                    alt: "Land Rover Discovery Sport with affordable extended warranty UK",
+                    width: 500,
+                    height: 340,
+                    loading: 'lazy'
+                  })}
+                  className="w-full max-w-xs h-auto"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="py-16 bg-card">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-foreground mb-12">
+              Land Rover Warranty — Frequently Asked Questions
+            </h2>
+            <div className="space-y-6">
+              {faqItems.map((faq, index) => (
+                <div key={index} className="bg-primary p-6 rounded-lg shadow-sm">
+                  <h3 className="text-lg font-semibold text-primary-foreground mb-3">{faq.question}</h3>
+                  <p className="text-primary-foreground/90">{faq.answer}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Final CTA */}
+        <section className="py-20 bg-primary text-primary-foreground">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              Get Your Land Rover Warranty Quote Today
+            </h2>
+            <p className="text-xl mb-8 opacity-90">
+              Activate your extended cover in minutes and prevent costly surprises. Get a personalised price based on your model, age, and mileage — and drive with confidence knowing your Land Rover is protected.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button
+                size="lg"
+                variant="secondary"
+                onClick={scrollToQuote}
+                className="text-lg px-8 py-6"
+              >
+                Get Instant Quote
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => window.location.href = 'tel:03302295040'}
+                className="text-lg px-8 py-6 bg-white/10 hover:bg-white/20 border-white/30 text-white"
+              >
+                <Phone className="mr-2 h-5 w-5" />
+                0330 229 5040
+              </Button>
+            </div>
+            <p className="text-sm mt-4 opacity-80">Takes less than 60 seconds. No phone calls, no pressure — just instant pricing.</p>
+          </div>
+        </section>
+      </div>
 
       <WebsiteFooter />
-    </div>
+    </>
   );
 };
 
