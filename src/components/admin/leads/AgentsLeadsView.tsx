@@ -175,6 +175,12 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
 
   // Handle percentage change - prevent entering values that would exceed 100% total
   const handlePercentageChange = (adminUserId: string, value: string) => {
+    // Allow empty input so user can clear the field and type a new value
+    if (value === '' || value.trim() === '') {
+      setEditedPercentages(prev => ({ ...prev, [adminUserId]: 0 }));
+      return;
+    }
+    
     const numValue = parseInt(value, 10);
     if (isNaN(numValue) || numValue < 0) return;
     
