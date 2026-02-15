@@ -12,6 +12,7 @@ interface MobileStickyFooterProps {
   onPayClick: () => void;
   onPaymentChange?: (payment: 'monthly' | 'full') => void;
   minimised?: boolean;
+  trustStripOnly?: boolean;
 }
 
 const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
@@ -24,10 +25,37 @@ const MobileStickyFooter: React.FC<MobileStickyFooterProps> = ({
   onPayClick,
   onPaymentChange,
   minimised = false,
+  trustStripOnly = false,
 }) => {
-  // Minimised: hide completely when the inline CTA/Stripe form is visible
+  // Hide completely when inline CTA is visible
   if (minimised) {
     return null;
+  }
+
+  // Trust strip only mode — show just the trust messaging, no CTA
+  if (trustStripOnly) {
+    return (
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#E5E5E5] lg:hidden transition-all duration-300">
+        <div className="px-4 py-2.5">
+          <div className="flex items-center justify-center gap-2 text-xs text-gray-600">
+            <span className="flex items-center gap-1">
+              <Shield className="w-3 h-3 text-[#0BA360]" />
+              Instant cover
+            </span>
+            <span>·</span>
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3 text-[#0BA360]" />
+              14-day refund
+            </span>
+            <span>·</span>
+            <span className="flex items-center gap-1">
+              <Lock className="w-3 h-3 text-[#0BA360]" />
+              Secure
+            </span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

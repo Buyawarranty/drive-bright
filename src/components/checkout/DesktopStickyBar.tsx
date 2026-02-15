@@ -16,6 +16,7 @@ interface DesktopStickyBarProps {
   onPayClick: () => void;
   isVisible?: boolean;
   minimised?: boolean;
+  trustStripOnly?: boolean;
 }
 
 const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
@@ -31,12 +32,37 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
   onPayClick,
   isVisible = true,
   minimised = false,
+  trustStripOnly = false,
 }) => {
   if (!isVisible) return null;
 
-  // Minimised: hide completely when the inline CTA/Stripe form is visible
+  // Hide completely when inline CTA is visible
   if (minimised) {
     return null;
+  }
+
+  // Trust strip only mode — show just the trust messaging, no CTA
+  if (trustStripOnly) {
+    return (
+      <div className="hidden lg:block fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-sm z-50">
+        <div className="max-w-7xl mx-auto px-6 py-3">
+          <div className="flex items-center justify-center gap-4 text-xs text-gray-600">
+            <span className="flex items-center gap-1">
+              <Shield className="w-3.5 h-3.5 text-[#0BA360]" />
+              Instant cover
+            </span>
+            <span className="flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-[#0BA360]" />
+              14-day refund
+            </span>
+            <span className="flex items-center gap-1">
+              <Lock className="w-3.5 h-3.5 text-[#0BA360]" />
+              Secure payment
+            </span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

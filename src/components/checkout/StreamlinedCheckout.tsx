@@ -516,8 +516,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
    const [showDesktopStickyBar, setShowDesktopStickyBar] = useState(false);
    const aboutYouRef = React.useRef<HTMLElement>(null);
    
-   // Track whether the bottom CTA (HowToPaySection / Stripe form) is fully visible
+   // Track whether the bottom CTA (HowToPaySection / Stripe form) is visible or scrolled past
    const [isBottomCtaFullyVisible, setIsBottomCtaFullyVisible] = useState(false);
+   const [isScrolledPastBottomCta, setIsScrolledPastBottomCta] = useState(false);
    const bottomCtaRef = React.useRef<HTMLDivElement>(null);
    
     // IntersectionObserver to detect when bottom CTA is visible OR has been scrolled past
@@ -528,14 +529,13 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       const observer = new IntersectionObserver(
         ([entry]) => {
           if (entry.isIntersecting) {
-            // Element is on screen — hide sticky
             setIsBottomCtaFullyVisible(true);
+            setIsScrolledPastBottomCta(false);
           } else {
-            // Element is off screen — check if it's ABOVE the viewport (scrolled past)
-            // If boundingClientRect.bottom < window height, user scrolled past it
             const rect = entry.boundingClientRect;
             const scrolledPast = rect.bottom < window.innerHeight;
-            setIsBottomCtaFullyVisible(scrolledPast);
+            setIsBottomCtaFullyVisible(false);
+            setIsScrolledPastBottomCta(scrolledPast);
           }
         },
         { threshold: 0.1 }
@@ -2190,9 +2190,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         }}
         isVisible={showDesktopStickyBar}
         minimised={isBottomCtaFullyVisible}
+        trustStripOnly={isScrolledPastBottomCta}
       />
 
-      {/* Mobile Sticky Footer - minimises to trust strip when bottom CTA is visible */}
+      {/* Mobile Sticky Footer - trust strip only when scrolled past bottom CTA */}
       <MobileStickyFooter
         selectedPayment={selectedPayment}
         monthlyPrice={discountedMonthlyPrice}
@@ -2205,6 +2206,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
         }}
         onPaymentChange={(p) => { setSelectedPayment(p); selectedPaymentRef.current = p; }}
         minimised={isBottomCtaFullyVisible}
+        trustStripOnly={isScrolledPastBottomCta}
       />
     </div>
   );
