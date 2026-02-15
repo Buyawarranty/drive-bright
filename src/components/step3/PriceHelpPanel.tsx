@@ -266,8 +266,8 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center animate-fade-in">
               {/* Celebration icon */}
               <div className="mb-6 relative">
-                <div className="w-20 h-20 rounded-full bg-white border-4 border-green-500 flex items-center justify-center shadow-lg shadow-green-200 animate-in zoom-in-50 duration-500">
-                  <AnimatedTick size={48} />
+                <div className="w-20 h-20 flex items-center justify-center animate-in zoom-in-50 duration-500">
+                  <Check className="w-16 h-16 text-green-500" strokeWidth={3} />
                 </div>
                 <span className="absolute -top-2 -right-2 text-2xl animate-bounce">🎉</span>
               </div>
@@ -284,9 +284,10 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               </div>
 
               <div className="bg-gradient-to-r from-brand-orange/10 to-amber-50 rounded-xl p-4 mb-8 max-w-sm border border-brand-orange/20">
-                <p className="text-gray-800 font-medium flex items-center gap-2 justify-center">
-                  <Trophy className="w-5 h-5 text-brand-orange flex-shrink-0" />
-                  <span>Have any other quotes handy? <span className="text-brand-orange font-bold">We'll beat them.</span></span>
+                <p className="text-gray-800 font-medium text-center">
+                  <Trophy className="w-5 h-5 text-brand-orange inline-block mr-1.5 align-text-bottom" />
+                  Have any other quotes handy?<br />
+                  <span className="text-brand-orange font-bold">We'll beat them.</span>
                 </p>
               </div>
 
@@ -321,8 +322,8 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             <div className="flex flex-col items-center justify-center p-6 pt-8 text-center animate-fade-in">
               {/* Celebration icon */}
               <div className="mb-4 relative">
-                <div className="w-16 h-16 rounded-full bg-white border-4 border-green-500 flex items-center justify-center shadow-lg shadow-green-200 animate-in zoom-in-50 duration-500">
-                  <AnimatedTick size={40} />
+                <div className="w-16 h-16 flex items-center justify-center animate-in zoom-in-50 duration-500">
+                  <Check className="w-14 h-14 text-green-500" strokeWidth={3} />
                 </div>
                 <span className="absolute -top-1 -right-1 text-xl animate-bounce">🎉</span>
               </div>
@@ -339,9 +340,10 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
               </div>
 
               <div className="bg-gradient-to-r from-brand-orange/10 to-amber-50 rounded-xl p-3 mb-6 border border-brand-orange/20">
-                <p className="text-sm text-gray-800 font-medium flex items-center gap-2 justify-center">
-                  <Trophy className="w-4 h-4 text-brand-orange flex-shrink-0" />
-                  <span>Have other quotes? <span className="text-brand-orange font-bold">We'll beat them.</span></span>
+                <p className="text-sm text-gray-800 font-medium text-center">
+                  <Trophy className="w-4 h-4 text-brand-orange inline-block mr-1 align-text-bottom" />
+                  Have other quotes?<br />
+                  <span className="text-brand-orange font-bold">We'll beat them.</span>
                 </p>
               </div>
 
