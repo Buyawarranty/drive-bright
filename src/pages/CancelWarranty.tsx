@@ -25,7 +25,7 @@ const CancelWarranty = () => {
 
   const [stayFormData, setStayFormData] = useState({ registrationPlate: '', email: '' });
   const [formData, setFormData] = useState({
-    registrationPlate: '', email: '', reason: '', message: ''
+    registrationPlate: '', email: '', reason: '', message: '', serviceIssue: '', serviceDetail: ''
   });
 
   const handleFormSuccess = (data: { registrationPlate: string }) => {
@@ -72,13 +72,18 @@ const CancelWarranty = () => {
     }
     setIsSubmitting(true);
     try {
+      const feedbackParts = [formData.message];
+      if (formData.reason === 'unhappy-with-service' && formData.serviceIssue) {
+        feedbackParts.unshift(`Service issue: ${formData.serviceIssue}`);
+        if (formData.serviceDetail) feedbackParts.push(`Details: ${formData.serviceDetail}`);
+      }
       const response = await supabase.functions.invoke('submit-cancellation', {
         body: {
           registrationPlate: formData.registrationPlate,
           fullName: 'Customer',
           email: formData.email,
           reason: formData.reason,
-          feedback: formData.message || ''
+          feedback: feedbackParts.filter(Boolean).join('\n') || ''
         }
       });
       if (response.error) throw new Error(response.error.message);
@@ -500,20 +505,55 @@ const CancelWarranty = () => {
               </div>
               <div>
                 <label htmlFor="cancel-reason" className="block text-sm font-medium text-[#333] mb-1">Reason for Cancellation *</label>
-                <Select value={formData.reason} onValueChange={(value) => setFormData({ ...formData, reason: value })}>
+                <Select value={formData.reason} onValueChange={(value) => setFormData({ ...formData, reason: value, serviceIssue: '' })}>
                   <SelectTrigger id="cancel-reason" className="h-12 border-[#E6E6E6] bg-white" aria-required="true">
                     <SelectValue placeholder="Select a reason" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="sold-vehicle">Sold my vehicle</SelectItem>
-                    <SelectItem value="financial-reasons">Financial reasons</SelectItem>
-                    <SelectItem value="found-alternative">Found alternative cover</SelectItem>
-                    <SelectItem value="no-longer-needed">No longer need cover</SelectItem>
-                    <SelectItem value="exceptional-circumstances">Exceptional circumstances</SelectItem>
+                    <SelectItem value="sold-my-car">Sold my car</SelectItem>
+                    <SelectItem value="getting-a-new-car">Getting a new car</SelectItem>
+                    <SelectItem value="car-written-off">Car written off</SelectItem>
+                    <SelectItem value="too-expensive">Too expensive</SelectItem>
+                    <SelectItem value="found-cheaper-cover">Found cheaper cover</SelectItem>
+                    <SelectItem value="want-different-features">Want different features</SelectItem>
+                    <SelectItem value="not-needed-anymore">Not needed anymore</SelectItem>
+                    <SelectItem value="change-in-circumstances">Change in circumstances</SelectItem>
+                    <SelectItem value="unhappy-with-service">Unhappy with service</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+              {formData.reason === 'unhappy-with-service' && (
+                <div className="space-y-3 bg-[#fff7ed] border border-[#FF7A00]/30 rounded-lg p-4">
+                  <p className="text-sm font-semibold text-[#000]">We're sorry to hear that. Could you tell us more?</p>
+                  <div>
+                    <label htmlFor="service-issue" className="block text-sm font-medium text-[#333] mb-1">What went wrong? *</label>
+                    <Select value={formData.serviceIssue || ''} onValueChange={(value) => setFormData({ ...formData, serviceIssue: value })}>
+                      <SelectTrigger id="service-issue" className="h-12 border-[#E6E6E6] bg-white">
+                        <SelectValue placeholder="Select an issue" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="slow-response">Slow response times</SelectItem>
+                        <SelectItem value="claim-denied">Claim was denied</SelectItem>
+                        <SelectItem value="poor-communication">Poor communication</SelectItem>
+                        <SelectItem value="cover-not-as-expected">Cover not as expected</SelectItem>
+                        <SelectItem value="difficult-claims-process">Difficult claims process</SelectItem>
+                        <SelectItem value="other-service-issue">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label htmlFor="service-detail" className="block text-sm font-medium text-[#333] mb-1">Please describe the issue (optional)</label>
+                    <Textarea
+                      id="service-detail"
+                      placeholder="Tell us what happened so we can improve..."
+                      value={formData.serviceDetail || ''}
+                      onChange={(e) => setFormData({ ...formData, serviceDetail: e.target.value })}
+                      className="border-[#E6E6E6] bg-white min-h-[80px]"
+                    />
+                  </div>
+                </div>
+              )}
               <div>
                 <label htmlFor="cancel-msg" className="block text-sm font-medium text-[#333] mb-1">Message (optional)</label>
                 <Textarea
