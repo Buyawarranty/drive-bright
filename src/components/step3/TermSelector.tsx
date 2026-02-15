@@ -150,14 +150,14 @@ const TermSelector: React.FC<TermSelectorProps> = ({
                     </div>
                   )}
                   
-                  {/* Pay in full */}
+                  {/* Pay in full with 10% discount */}
                   <div className="text-sm mt-2">
-                    <span className="font-bold text-foreground">Pay in full £{payInFullPrice}</span>
+                    <span className="font-bold text-foreground">Pay in Full: £{payInFullPrice - stripeSavings}</span>
                   </div>
-                  
-                  {/* 10% Stripe discount savings line */}
-                  <div className="flex items-center gap-1 mt-1">
-                    <span className="text-sm font-bold text-success">You save £{stripeSavings} today</span>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="text-sm text-red-500 line-through">£{payInFullPrice}</span>
+                    <span className="text-sm font-bold text-green-600">Save £{stripeSavings}</span>
+                    <span className="text-sm text-gray-500">(10% off)</span>
                   </div>
                 </div>
                 
