@@ -156,22 +156,42 @@ const CancelWarranty = () => {
         <SEOHead title="Request Received - Buy a Warranty" description="Your cancellation request has been received" />
         <div className="min-h-screen bg-white py-16 px-6">
           <div className="max-w-[720px] mx-auto space-y-6">
-            <div className="bg-[#f0faf4] border-2 border-[#009A44] rounded-lg p-8 text-center">
-              <CheckCircle className="w-16 h-16 text-[#009A44] mx-auto mb-4" />
-              <h1 className="text-2xl font-bold text-[#000] mb-4">Your Request Has Been Received</h1>
-              <p className="text-[#333]">We'll confirm your cancellation within <strong>2 working days</strong>.</p>
-              <div className="mt-4 text-left bg-white rounded-lg p-4 border border-[#009A44]/30">
-                <p className="text-sm text-[#333] mb-2 font-semibold">Refund Timeline:</p>
-                <ul className="text-sm text-[#333] space-y-1">
-                  <li>• Cooling off refunds: within seven working days</li>
-                  <li>• After 14 day refunds: within fourteen working days</li>
-                </ul>
+            <div className="bg-[#f0faf4] border-2 border-[#009A44] rounded-xl p-8">
+              <CheckCircle className="w-14 h-14 text-[#009A44] mx-auto mb-4" />
+              <h1 className="text-2xl font-bold text-[#000] text-center mb-3">Your cancellation request has been received</h1>
+              <div className="space-y-3 text-[#333] text-[15px]">
+                <p>Thanks – we've received your request and it's now being processed.</p>
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-[#009A44] flex-shrink-0 mt-0.5" />
+                  <p>This is your confirmation, and you don't need to wait for another message.</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-[#009A44] flex-shrink-0 mt-0.5" />
+                  <p>You can close this page whenever you're ready.</p>
+                </div>
               </div>
+
+              <div className="mt-6 bg-white rounded-lg p-5 border border-[#009A44]/20">
+                <p className="font-bold text-[#000] mb-3">Refund timeline</p>
+                <div className="space-y-2 text-[#333] text-sm">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-[#009A44] flex-shrink-0 mt-0.5" />
+                    <p>If you cancel within 14 days: refunds are processed within <strong>7 working days</strong></p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-[#009A44] flex-shrink-0 mt-0.5" />
+                    <p>If you cancel after 14 days: refunds are processed within <strong>14 working days</strong></p>
+                  </div>
+                </div>
+              </div>
+
+              <p className="mt-4 text-[#333] text-sm">If we need anything else from you, we'll get in touch — otherwise, we'll update you once everything is complete.</p>
             </div>
-            <div className="bg-[#fff7ed] border-2 border-[#FF7A00] rounded-lg p-6 text-center">
+
+            <div className="bg-[#fff7ed] border-2 border-[#FF7A00] rounded-xl p-6 text-center">
               <h2 className="text-xl font-bold text-[#000] mb-4">Changed your mind?</h2>
               <Button onClick={handleKeepWarranty} disabled={isCancellingRequest} className="bg-[#FF7A00] hover:bg-[#e56e00] text-white font-bold rounded-lg">
-                {isCancellingRequest ? 'Processing...' : 'Keep My Warranty'}
+                {isCancellingRequest ? 'Processing...' : 'Keep my warranty'}
               </Button>
             </div>
             <div className="text-center">
