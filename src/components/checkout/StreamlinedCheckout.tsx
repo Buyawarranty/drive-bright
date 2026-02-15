@@ -2096,7 +2096,6 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             return null;
           })()}
           
-          </div>{/* close bottomCtaRef wrapper */}
           {showEmbeddedCheckout && stripeClientSecret && selectedPayment === 'full' && (
             <section 
               id="inline-stripe-payment" 
@@ -2149,6 +2148,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               </StripeProvider>
             </section>
           )}
+          </div>{/* close bottomCtaRef wrapper */}
           </div>
           
           {/* Desktop: Right side Order Summary Sidebar */}
