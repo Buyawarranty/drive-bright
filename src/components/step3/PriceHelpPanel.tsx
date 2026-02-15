@@ -430,9 +430,19 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                   setCompetitorPrice(value);
                 }}
                 placeholder="Enter the price you were quoted"
-                className="h-12 pl-8 rounded-lg border-gray-300 bg-white text-lg focus:border-brand-orange focus:ring-brand-orange"
+                className={cn(
+                  "h-12 pl-8 pr-12 rounded-lg bg-white text-lg focus:border-brand-orange focus:ring-brand-orange",
+                  competitorPrice ? "border-2 border-green-600" : "border-gray-300"
+                )}
                 disabled={isSubmitting}
               />
+              {competitorPrice && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 animate-in fade-in-50 zoom-in-95 duration-200">
+                  <div className="w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
+                    <Check className="w-4 h-4 text-green-600" strokeWidth={3} />
+                  </div>
+                </div>
+              )}
             </div>
             <p className="text-xs text-gray-500 mt-1.5">We'll beat any like-for-like quote</p>
           </div>
@@ -453,25 +463,20 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             />
           </div>
 
-          {/* Info Card - White background */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6 shadow-sm">
-            <p className="text-sm text-gray-700 leading-relaxed">
-              ✨ We personalise every quote. Request a call back and we'll prepare the best price for you.
-            </p>
-          </div>
+          {/* Contact Form */}
 
           {/* Contact Form */}
           <div className="space-y-4">
-            {/* Phone - Essential field with prominent styling */}
+            {/* Phone */}
             <div className={cn(
               "p-4 rounded-xl border-2 transition-all duration-200",
               isPhoneValid && !phoneError 
-                ? "bg-brand-green/5 border-brand-green" 
-                : "bg-brand-green/5 border-brand-green/30"
+                ? "bg-green-50/50 border-green-600" 
+                : "bg-gray-50/50 border-gray-200"
             )}>
-              <Label htmlFor="request-phone" className="text-sm font-semibold text-gray-800 mb-1.5 flex items-center gap-1.5">
-                📞 Phone number <span className="text-red-500">*</span>
-                <span className="text-xs font-normal text-brand-green ml-auto">Required for callback</span>
+              <Label htmlFor="request-phone" className="text-sm font-semibold text-gray-800 mb-1.5 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">📞 Phone number <span className="text-red-500">*</span></span>
+                <span className="text-xs font-normal text-gray-500">Required for callback</span>
               </Label>
               <div className="relative">
                 <Input
@@ -486,8 +491,8 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                     phoneError 
                       ? "border-2 border-red-500 focus-visible:ring-red-500" 
                       : isPhoneValid 
-                        ? "border-2 border-brand-green focus:border-brand-green focus:ring-brand-green bg-brand-green/5" 
-                        : "border border-gray-300 focus:border-brand-green focus:ring-brand-green"
+                        ? "border-2 border-green-600 focus:border-green-600 focus:ring-green-600" 
+                        : "border border-gray-300 focus:border-gray-400"
                   )}
                   disabled={isSubmitting}
                   autoComplete="tel"
@@ -506,9 +511,15 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             </div>
 
             {/* Email */}
-            <div>
-              <Label htmlFor="request-email" className="text-sm font-semibold text-gray-800 mb-1.5 block">
-                Email <span className="text-gray-500 font-normal">(optional)</span>
+            <div className={cn(
+              "p-4 rounded-xl border-2 transition-all duration-200",
+              isEmailValid 
+                ? "bg-green-50/50 border-green-600" 
+                : "bg-gray-50/50 border-gray-200"
+            )}>
+              <Label htmlFor="request-email" className="text-sm font-semibold text-gray-800 mb-1.5 flex items-center justify-between">
+                <span>✉️ Email</span>
+                <span className="text-xs font-normal text-gray-500">(optional)</span>
               </Label>
               <div className="relative">
                 <Input
@@ -518,27 +529,22 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                   onChange={(e) => handleEmailChange(e.target.value)}
                   placeholder="your@email.com"
                   className={cn(
-                    "h-12 rounded-lg focus:bg-white pr-12 transition-all duration-200",
+                    "h-12 rounded-lg bg-white pr-12 transition-all duration-200 placeholder:font-normal placeholder:text-gray-400",
                     isEmailValid 
-                      ? "border-2 border-brand-green focus:border-brand-green bg-brand-green/5" 
-                      : "border border-gray-300 bg-gray-50"
+                      ? "border-2 border-green-600 focus:border-green-600" 
+                      : "border border-gray-300 focus:border-gray-400"
                   )}
                   disabled={isSubmitting}
                   autoComplete="email"
                 />
                 {isEmailValid && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 animate-in fade-in-50 zoom-in-95 duration-200">
-                    <div className="w-6 h-6 rounded-full bg-brand-green flex items-center justify-center">
-                      <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                    <div className="w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
+                      <Check className="w-4 h-4 text-green-600" strokeWidth={3} />
                     </div>
                   </div>
                 )}
               </div>
-              {isEmailValid && (
-                <p className="text-xs text-brand-green mt-1.5 flex items-center gap-1">
-                  <Check className="w-3 h-3" /> Valid email address
-                </p>
-              )}
             </div>
           </div>
 
@@ -631,9 +637,19 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                   setCompetitorPrice(value);
                 }}
                 placeholder="Enter the price you were quoted"
-                className="h-11 pl-8 rounded-lg border-gray-300 bg-white text-base focus:border-brand-orange"
+                className={cn(
+                  "h-11 pl-8 pr-12 rounded-lg bg-white text-base focus:border-brand-orange",
+                  competitorPrice ? "border-2 border-green-600" : "border-gray-300"
+                )}
                 disabled={isSubmitting}
               />
+              {competitorPrice && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 animate-in fade-in-50 zoom-in-95 duration-200">
+                  <div className="w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
+                    <Check className="w-4 h-4 text-green-600" strokeWidth={3} />
+                  </div>
+                </div>
+              )}
             </div>
             <p className="text-xs text-gray-500 mt-1">We'll beat any like-for-like quote</p>
           </div>
@@ -654,25 +670,18 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             />
           </div>
 
-          {/* Info Card - White background */}
-          <div className="bg-white border border-gray-200 rounded-lg p-3 mb-5 shadow-sm">
-            <p className="text-xs text-gray-700 leading-relaxed">
-              ✨ We personalise every quote. Request a call back and we'll prepare the best price for you.
-            </p>
-          </div>
-
           {/* Contact Form */}
           <div className="space-y-3">
-            {/* Phone - Essential field with prominent styling */}
+            {/* Phone */}
             <div className={cn(
               "p-3 rounded-xl border-2 transition-all duration-200",
               isPhoneValid && !phoneError 
-                ? "bg-brand-green/5 border-brand-green" 
-                : "bg-brand-green/5 border-brand-green/30"
+                ? "bg-green-50/50 border-green-600" 
+                : "bg-gray-50/50 border-gray-200"
             )}>
-              <Label htmlFor="mobile-phone" className="text-sm font-semibold text-gray-800 mb-1.5 flex items-center gap-1.5">
-                📞 Phone number <span className="text-red-500">*</span>
-                <span className="text-xs font-normal text-brand-green ml-auto">Required</span>
+              <Label htmlFor="mobile-phone" className="text-sm font-semibold text-gray-800 mb-1.5 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">📞 Phone number <span className="text-red-500">*</span></span>
+                <span className="text-xs font-normal text-gray-500">Required for callback</span>
               </Label>
               <div className="relative">
                 <Input
@@ -687,8 +696,8 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                     phoneError 
                       ? "border-2 border-red-500 focus-visible:ring-red-500" 
                       : isPhoneValid 
-                        ? "border-2 border-brand-green focus:border-brand-green bg-brand-green/5" 
-                        : "border border-gray-300 focus:border-brand-green"
+                        ? "border-2 border-green-600 focus:border-green-600" 
+                        : "border border-gray-300 focus:border-gray-400"
                   )}
                   disabled={isSubmitting}
                   autoComplete="tel"
@@ -707,9 +716,15 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             </div>
 
             {/* Email */}
-            <div>
-              <Label htmlFor="mobile-email" className="text-sm font-semibold text-gray-800 mb-1.5 block">
-                Email <span className="text-gray-500 font-normal">(optional)</span>
+            <div className={cn(
+              "p-3 rounded-xl border-2 transition-all duration-200",
+              isEmailValid 
+                ? "bg-green-50/50 border-green-600" 
+                : "bg-gray-50/50 border-gray-200"
+            )}>
+              <Label htmlFor="mobile-email" className="text-sm font-semibold text-gray-800 mb-1.5 flex items-center justify-between">
+                <span>✉️ Email</span>
+                <span className="text-xs font-normal text-gray-500">(optional)</span>
               </Label>
               <div className="relative">
                 <Input
@@ -719,27 +734,22 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
                   onChange={(e) => handleEmailChange(e.target.value)}
                   placeholder="your@email.com"
                   className={cn(
-                    "h-12 rounded-lg focus:bg-white pr-12 transition-all duration-200",
+                    "h-12 rounded-lg bg-white pr-12 transition-all duration-200 placeholder:font-normal placeholder:text-gray-400",
                     isEmailValid 
-                      ? "border-2 border-brand-green focus:border-brand-green bg-brand-green/5" 
-                      : "border border-gray-300 bg-gray-50"
+                      ? "border-2 border-green-600 focus:border-green-600" 
+                      : "border border-gray-300 focus:border-gray-400"
                   )}
                   disabled={isSubmitting}
                   autoComplete="email"
                 />
                 {isEmailValid && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 animate-in fade-in-50 zoom-in-95 duration-200">
-                    <div className="w-6 h-6 rounded-full bg-brand-green flex items-center justify-center">
-                      <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                    <div className="w-6 h-6 rounded-full border-2 border-green-600 flex items-center justify-center">
+                      <Check className="w-4 h-4 text-green-600" strokeWidth={3} />
                     </div>
                   </div>
                 )}
               </div>
-              {isEmailValid && (
-                <p className="text-xs text-brand-green mt-1.5 flex items-center gap-1">
-                  <Check className="w-3 h-3" /> Valid email address
-                </p>
-              )}
             </div>
           </div>
 
