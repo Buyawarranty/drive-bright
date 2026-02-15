@@ -525,9 +525,9 @@ const CancelWarranty = () => {
               </div>
               {formData.reason === 'unhappy-with-service' && (
                 <div className="space-y-3 bg-[#fff7ed] border border-[#FF7A00]/30 rounded-lg p-4">
-                  <p className="text-sm font-semibold text-[#000]">We're sorry to hear that. Could you tell us more?</p>
+                  <p className="text-sm font-semibold text-[#000]">We'd really like to put things right. Help us understand what happened.</p>
                   <div>
-                    <label htmlFor="service-issue" className="block text-sm font-medium text-[#333] mb-1">What went wrong? *</label>
+                    <label htmlFor="service-issue" className="block text-sm font-medium text-[#333] mb-1">How can we do things better? *</label>
                     <Select value={formData.serviceIssue || ''} onValueChange={(value) => setFormData({ ...formData, serviceIssue: value })}>
                       <SelectTrigger id="service-issue" className="h-12 border-[#E6E6E6] bg-white">
                         <SelectValue placeholder="Select an issue" />
@@ -543,10 +543,10 @@ const CancelWarranty = () => {
                     </Select>
                   </div>
                   <div>
-                    <label htmlFor="service-detail" className="block text-sm font-medium text-[#333] mb-1">Please describe the issue (optional)</label>
+                    <label htmlFor="service-detail" className="block text-sm font-medium text-[#333] mb-1">Tell us a little more (optional)</label>
                     <Textarea
                       id="service-detail"
-                      placeholder="Tell us what happened so we can improve..."
+                      placeholder="Your feedback helps us improve for everyone..."
                       value={formData.serviceDetail || ''}
                       onChange={(e) => setFormData({ ...formData, serviceDetail: e.target.value })}
                       className="border-[#E6E6E6] bg-white min-h-[80px]"
