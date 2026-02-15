@@ -113,6 +113,10 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                     <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
                     <span>12 payments only</span>
                   </div>
+                  <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+                    <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                    <span>0% APR</span>
+                  </div>
                 </div>
 
                 {/* Bumper Logo */}
@@ -184,6 +188,10 @@ const HowToPaySection: React.FC<HowToPaySectionProps> = ({
                   <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                     <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
                     <span>One simple payment</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+                    <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                    <span>No ongoing payments</span>
                   </div>
                 </div>
 
