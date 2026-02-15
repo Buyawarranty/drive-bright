@@ -111,21 +111,20 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
             
             {/* Approx cost per month for multi-year plans */}
             {paymentPeriod === '12months' && (
-              <span className="text-sm text-gray-600">12 easy payments</span>
+              <span className="text-sm text-gray-600">Only 12 payments • Total £{payInFull}</span>
             )}
             {paymentPeriod === '24months' && (
-              <span className="text-sm text-gray-600">Approx. £{Math.floor(monthlyPrice / 2)}/month over 2 years</span>
+              <span className="text-sm text-gray-600">Approx. £{Math.floor(monthlyPrice / 2)}/month over 2 years • Total £{payInFull}</span>
             )}
             {paymentPeriod === '36months' && (
-              <span className="text-sm text-gray-600">Approx. £{Math.floor(monthlyPrice / 3)}/month over 3 years</span>
+              <span className="text-sm text-gray-600">Approx. £{Math.floor(monthlyPrice / 3)}/month over 3 years • Total £{payInFull}</span>
             )}
             
             {/* Pay in full with 10% discount savings */}
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-sm font-semibold text-gray-800">Pay in full £{payInFull}</span>
-              <span className="text-sm text-gray-600">–</span>
+              <span className="text-sm font-semibold text-gray-800">Pay in full: £{payInFull - stripeSavings}</span>
+              <span className="text-sm text-gray-600">—</span>
               <span className="text-sm font-medium text-green-600">You save £{stripeSavings} today</span>
-              <span className="text-sm text-gray-600">– One-time payment</span>
             </div>
           </div>
 
@@ -193,22 +192,22 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
                 <span className="text-sm text-gray-600">– 0% APR</span>
               </div>
               {paymentPeriod === '12months' && (
-                <p className="text-sm text-gray-900 mt-1">12 easy payments</p>
+                <p className="text-sm text-gray-900 mt-1">Only 12 payments • Total £{payInFull}</p>
               )}
               {paymentPeriod === '24months' && (
-                <p className="text-sm text-gray-900 mt-1">Approx. £{Math.floor(monthlyPrice / 2)}/month over 2 years</p>
+                <p className="text-sm text-gray-900 mt-1">Approx. £{Math.floor(monthlyPrice / 2)}/month over 2 years • Total £{payInFull}</p>
               )}
               {paymentPeriod === '36months' && (
-                <p className="text-sm text-gray-900 mt-1">Approx. £{Math.floor(monthlyPrice / 3)}/month over 3 years</p>
+                <p className="text-sm text-gray-900 mt-1">Approx. £{Math.floor(monthlyPrice / 3)}/month over 3 years • Total £{payInFull}</p>
               )}
             </div>
 
             {/* Pay in full with 10% discount savings */}
             <div className="text-center">
               <div className="flex items-center justify-center gap-2">
-                <span className="text-sm font-semibold text-gray-800">Pay in full £{payInFull}</span>
+                <span className="text-sm font-semibold text-gray-800">Pay in full: £{payInFull - stripeSavings}</span>
               </div>
-              <p className="text-sm font-medium text-green-600 mt-0.5">You save £{stripeSavings} today - One-time payment</p>
+              <p className="text-sm font-medium text-green-600 mt-0.5">You save £{stripeSavings} today</p>
             </div>
 
             {/* Year 2 FREE Badge */}
@@ -261,13 +260,13 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
                 <span className="text-xl font-bold text-gray-900">£{monthlyPrice}/mo</span>
               </div>
               {paymentPeriod === '12months' && (
-                <p className="text-xs text-gray-900">12 easy payments</p>
+                <p className="text-xs text-gray-900">Only 12 payments • Total £{payInFull}</p>
               )}
               {paymentPeriod === '24months' && (
-                <p className="text-xs text-gray-900">Approx. £{Math.floor(monthlyPrice / 2)}/month over 2 years</p>
+                <p className="text-xs text-gray-900">Approx. £{Math.floor(monthlyPrice / 2)}/mo over 2 yrs</p>
               )}
               {paymentPeriod === '36months' && (
-                <p className="text-xs text-gray-900">Approx. £{Math.floor(monthlyPrice / 3)}/month over 3 years</p>
+                <p className="text-xs text-gray-900">Approx. £{Math.floor(monthlyPrice / 3)}/mo over 3 yrs</p>
               )}
             </div>
 
