@@ -193,7 +193,16 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
                     type="tel"
                     placeholder="e.g. 07960 123 456"
                     value={phoneNumber}
-                    onChange={handlePhoneChange}
+                    onChange={(e) => {
+                      handlePhoneChange(e);
+                      const val = formatPhoneNumber(e.target.value);
+                      if (validatePhone(val).isValid && !isSubmitting) {
+                        setTimeout(() => {
+                          const form = e.target.closest('form');
+                          if (form) form.requestSubmit();
+                        }, 400);
+                      }
+                    }}
                     onBlur={handlePhoneBlur}
                     autoComplete="tel"
                     disabled={isSubmitting}
@@ -211,11 +220,19 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
                     `}
                     style={{ borderRadius: '10px' }}
                   />
-                  {isPhoneValid && (
+                  {isPhoneValid && !isSubmitting && (
                     <div className="absolute right-3.5 top-1/2 -translate-y-1/2 animate-in fade-in-50 zoom-in-95 duration-200">
                       <div className="w-6 h-6 rounded-full bg-[#2BB673] flex items-center justify-center">
                         <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />
                       </div>
+                    </div>
+                  )}
+                  {isSubmitting && (
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2">
+                      <svg className="animate-spin h-5 w-5 text-[#FFA94D]" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
                     </div>
                   )}
                 </div>
@@ -225,33 +242,6 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
                   </p>
                 )}
               </div>
-
-              {/* Submit button */}
-              <button
-                type="submit"
-                disabled={isSubmitting || !phoneNumber}
-                className="w-full h-12 font-semibold text-base text-[#0B0B0B] transition-all duration-200
-                  disabled:opacity-40 disabled:cursor-not-allowed
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2BB673] focus-visible:ring-offset-2"
-                style={{
-                  borderRadius: '10px',
-                  backgroundColor: isSubmitting ? '#FFB966' : '#FFA94D',
-                }}
-                onMouseEnter={(e) => { if (!isSubmitting) (e.target as HTMLButtonElement).style.backgroundColor = '#FF9724'; }}
-                onMouseLeave={(e) => { if (!isSubmitting) (e.target as HTMLButtonElement).style.backgroundColor = '#FFA94D'; }}
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    Submitting…
-                  </span>
-                ) : (
-                  'Call me'
-                )}
-              </button>
             </form>
 
             {/* Divider */}
