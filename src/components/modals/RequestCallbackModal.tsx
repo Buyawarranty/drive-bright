@@ -185,11 +185,17 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
                 Have competitor quotes ready — we'll beat them 💪
               </p>
 
-              {/* Auto-close progress */}
-              <div className="w-32 mx-auto h-1 bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-brand-orange rounded-full animate-[shrink_3.5s_linear_forwards]" />
+              {/* Car icon */}
+              <div className="pt-1">
+                <svg className="w-10 h-10 mx-auto text-brand-orange opacity-60" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 17.5h20" />
+                  <path d="M5.5 17.5l1.5-6h14l1.5 6" />
+                  <rect x="3" y="17.5" width="22" height="5" rx="2" />
+                  <circle cx="8" cy="22.5" r="1.5" />
+                  <circle cx="20" cy="22.5" r="1.5" />
+                  <path d="M7 11.5l1-3.5h12l1 3.5" />
+                </svg>
               </div>
-              <style>{`@keyframes shrink { from { width: 100% } to { width: 0% } }`}</style>
             </div>
           ) : (
             <form
