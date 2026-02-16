@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Phone, Clock, PhoneCall } from 'lucide-react';
+import { Phone, Clock, PhoneCall, LogIn } from 'lucide-react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
@@ -107,6 +107,15 @@ const StickyNavigation: React.FC = () => {
                 className="inline-flex items-center px-3 xl:px-4 py-2 bg-[#eb4b00] text-white text-sm xl:text-base font-semibold rounded-lg hover:bg-[#d63f00] transition-colors whitespace-nowrap"
               >
                 Get my quote
+              </Link>
+
+              {/* Login Button */}
+              <Link 
+                to="/sales-login/"
+                className="inline-flex items-center gap-1 px-3 xl:px-4 py-2 text-gray-600 hover:text-gray-900 text-sm xl:text-base font-medium transition-colors"
+              >
+                <LogIn className="h-4 w-4" />
+                Login
               </Link>
             </nav>
 

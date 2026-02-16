@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, Phone, Clock, PhoneCall } from 'lucide-react';
+import { Menu, Phone, Clock, PhoneCall, LogIn } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Link, useNavigate } from 'react-router-dom';
 import { OptimizedImage } from '@/components/OptimizedImage';
@@ -88,6 +88,14 @@ const MobileNavigation: React.FC = () => {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Contact Us
+              </Link>
+              <Link 
+                to="/sales-login/" 
+                className="text-lg font-medium text-gray-700 hover:text-gray-900 py-2 flex items-center gap-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <LogIn className="h-5 w-5" />
+                Login
               </Link>
               
               {/* Call Us Section */}

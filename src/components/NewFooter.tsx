@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Phone, Mail, BookOpen, X } from 'lucide-react';
+import { Phone, Mail, BookOpen, X, LogIn } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const NewFooter = () => {
@@ -45,6 +45,14 @@ const NewFooter = () => {
             >
               <X size={18} className="text-white" />
               <span className="text-white">Cancel your warranty</span>
+            </Link>
+
+            <Link 
+              to="/sales-login/" 
+              className="flex items-center gap-2 text-white hover:text-white/80 transition-colors font-medium"
+            >
+              <LogIn size={18} className="text-white" />
+              <span className="text-white">Login</span>
             </Link>
           </div>
         </div>
