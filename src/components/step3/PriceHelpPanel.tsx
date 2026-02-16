@@ -339,14 +339,14 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
     <>
       {/* Backdrop */}
       <div
-        className={cn("fixed inset-0 bg-black/50 z-50 transition-opacity duration-300", isOpen ? "opacity-100" : "opacity-0 pointer-events-none")}
+        className={cn("fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300", isOpen ? "opacity-100" : "opacity-0 pointer-events-none")}
         onClick={onClose}
         onTransitionEnd={() => !isOpen && setIsAnimating(false)}
       />
 
       {/* Desktop panel */}
       <div className={cn(
-        "fixed z-50 bg-white transition-transform duration-300 ease-out",
+        "fixed z-[70] bg-white transition-transform duration-300 ease-out",
         "hidden md:flex md:flex-col md:right-0 md:top-0 md:h-full md:w-[460px] md:shadow-2xl md:rounded-l-2xl",
         isOpen ? "md:translate-x-0" : "md:translate-x-full"
       )}>
@@ -360,7 +360,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
 
       {/* Mobile bottom sheet */}
       <div className={cn(
-        "fixed z-50 md:hidden bg-white transition-transform duration-300 ease-out",
+        "fixed z-[70] md:hidden bg-white transition-transform duration-300 ease-out",
         "left-0 right-0 bottom-0 rounded-t-2xl shadow-2xl max-h-[92vh] overflow-hidden",
         isOpen ? "translate-y-0" : "translate-y-full"
       )}>
