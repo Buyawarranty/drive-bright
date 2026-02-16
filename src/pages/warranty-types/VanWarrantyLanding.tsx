@@ -233,7 +233,7 @@ const vanFAQs = [
 const testimonials = [
   {
     name: "Mike T.",
-    location: "Birmingham",
+    location: "Swindon",
     model: "Ford Transit Custom",
     boldLine: "Saved me over £2,500.",
     text: "My Transit is essential for my plumbing business. When the gearbox went at 95,000 miles, they sorted it in 3 days. Brilliant service all round.",
@@ -241,7 +241,7 @@ const testimonials = [
   },
   {
     name: "Steve R.",
-    location: "Glasgow",
+    location: "Falkirk",
     model: "Mercedes Sprinter",
     boldLine: "Claim was approved same day.",
     text: "Our Sprinter needed a new turbo. The garage was paid directly and we were back on the road within the week.",
@@ -249,7 +249,7 @@ const testimonials = [
   },
   {
     name: "Karen L.",
-    location: "Leeds",
+    location: "Wakefield",
     model: "VW Transporter",
     boldLine: "Fuel pump failed and they covered the lot.",
     text: "I was worried about getting warranty for a high-mileage van but they covered my T6 no problem.",
@@ -257,7 +257,7 @@ const testimonials = [
   },
   {
     name: "Paul D.",
-    location: "London",
+    location: "Basildon",
     model: "Renault Trafic",
     boldLine: "No excess to pay either.",
     text: "Professional service from start to finish. The injector failed on my Trafic and they handled everything.",
@@ -265,10 +265,18 @@ const testimonials = [
   },
   {
     name: "Chris M.",
-    location: "Cardiff",
+    location: "Bridgend",
     model: "Ford Transit",
     boldLine: "Buy A Warranty approved the £2,100 claim same day.",
     text: "Turbo went on my Transit at 87,000 miles. Absolutely fantastic service.",
+    rating: 5
+  },
+  {
+    name: "Dave H.",
+    location: "Tamworth",
+    model: "Citroën Relay",
+    boldLine: "Covered the full £1,800 repair without question.",
+    text: "DPF went on my Relay at 102,000 miles. I expected a fight but the whole claim was sorted within a week. Highly recommend.",
     rating: 5
   }
 ];
