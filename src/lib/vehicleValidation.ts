@@ -467,18 +467,18 @@ export function calculateVehiclePriceAdjustment(
   });
   
   // Surcharge tiers by warranty duration
-  // Age-only surcharge (lower): +£100/£200/£300
+  // Both age and mileage use the same rates: +£100/£150/£200
+  // Non-stacking: if both qualify, only one surcharge is applied
   const getAgeSurcharge = (years: number): number => {
     if (years === 1) return 100;
-    if (years === 2) return 200;
-    if (years === 3) return 300;
+    if (years === 2) return 150;
+    if (years === 3) return 200;
     return 0;
   };
-  // Mileage surcharge (higher): +£200/£400/£600
   const getMileageSurcharge = (years: number): number => {
-    if (years === 1) return 200;
-    if (years === 2) return 400;
-    if (years === 3) return 600;
+    if (years === 1) return 100;
+    if (years === 2) return 150;
+    if (years === 3) return 200;
     return 0;
   };
 
