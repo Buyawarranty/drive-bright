@@ -382,8 +382,8 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
               <AlertCircle className="h-4 w-4 text-primary" />
               <AlertDescription className="text-sm">
                 {vehicleAge >= 14 
-                  ? `Based on your vehicle's age (${vehicleAge} years), warranty duration options are limited.`
-                  : `Based on your vehicle's mileage (${vehicleMileage.toLocaleString()} miles), warranty duration options are limited.`
+                  ? `As your vehicle is ${vehicleAge} years old, you're eligible for up to ${availableDurations.length === 1 ? '1 year' : '2 years'} of warranty cover.`
+                  : `As your vehicle has ${vehicleMileage.toLocaleString()} miles, you're eligible for up to ${availableDurations.length === 1 ? '1 year' : '2 years'} of warranty cover.`
                 }
               </AlertDescription>
             </Alert>
