@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { FileSpreadsheet, FileDown, Plus, Trash2, Car } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ClaimsAnalyticsPanel } from './claims/ClaimsAnalyticsPanel';
+import { ClaimsAgeMileageAnalytics } from './claims/ClaimsAgeMileageAnalytics';
 import { ClaimDetailDialog } from './claims/ClaimDetailDialog';
 import { ClaimAmountEditDialog } from './claims/ClaimAmountEditDialog';
 import { ClaimEmailDialog } from './claims/ClaimEmailDialog';
@@ -400,8 +401,9 @@ export const ClaimsTab = () => {
           </Card>
 
           {/* Analytics */}
-          <div id="claims-analytics-section" className="scroll-mt-4">
+          <div id="claims-analytics-section" className="scroll-mt-4 space-y-6">
             <ClaimsAnalyticsPanel claims={claims.filter(c => c.status !== 'fake_test')} />
+            <ClaimsAgeMileageAnalytics claims={claims.filter(c => c.status !== 'fake_test')} />
           </div>
         </>
       )}
