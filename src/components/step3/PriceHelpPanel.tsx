@@ -150,10 +150,9 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
 
   if (!isOpen && !isAnimating) return null;
 
-  // ── Shared form content ──
-  const FormContent = ({ mobile = false }: { mobile?: boolean }) => (
+  // ── Helpers to render form / success as plain JSX (NOT components) ──
+  const renderForm = (mobile: boolean) => (
     <form onSubmit={handleSubmit} className={cn("space-y-5", mobile ? "p-5 pb-8" : "p-6 pb-8")}>
-      {/* Heading */}
       <div>
         <h2 className={cn("font-bold text-gray-900 leading-tight", mobile ? "text-xl" : "text-2xl")}>
           Not the right price? We'll beat any like‑for‑like quote.
@@ -161,7 +160,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
         <p className="text-sm text-gray-500 mt-1.5">Share the price you were quoted.</p>
       </div>
 
-      {/* Price field */}
       <div>
         <Label className="text-sm font-bold text-gray-900 mb-1.5 block">What price were you quoted?</Label>
         <div className="relative">
@@ -171,7 +169,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
             inputMode="numeric"
             value={competitorPrice}
             onChange={(e) => setCompetitorPrice(e.target.value.replace(/[^0-9.]/g, ''))}
-            placeholder="Enter quoted price you quoted"
+            placeholder="Enter quoted price"
             className={cn(
               "h-13 pl-9 pr-12 rounded-xl bg-gray-50 text-base border-2 focus:bg-white focus:border-brand-orange focus:ring-0",
               competitorPrice ? "border-emerald-500" : "border-gray-200"
@@ -189,11 +187,9 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
         <p className="text-xs text-gray-500 mt-1">We'll beat any like‑for‑like quote</p>
       </div>
 
-      {/* Contact section */}
       <div>
         <Label className="text-sm font-bold text-gray-900 mb-3 block">Your contact details</Label>
         <div className="space-y-3">
-          {/* Phone */}
           <div className="relative">
             <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
@@ -221,7 +217,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
           </div>
           {phoneError && <p className="text-xs text-red-500 -mt-1.5">{phoneError}</p>}
 
-          {/* Email */}
           <div className="relative">
             <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
@@ -247,7 +242,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
         </div>
       </div>
 
-      {/* Expandable details */}
       <button
         type="button"
         onClick={() => setShowDetails(!showDetails)}
@@ -267,7 +261,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
         />
       )}
 
-      {/* CTA */}
       <Button
         type="submit"
         disabled={isSubmitting}
@@ -282,7 +275,6 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
 
       <p className="text-xs text-gray-400 text-center">Your request will be prioritised.</p>
 
-      {/* Divider + Call us directly */}
       <div className="border-t border-gray-100 pt-4">
         <p className="text-sm text-gray-600 text-center mb-2">Don't want to wait? Ring us now</p>
         <a
@@ -294,17 +286,14 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
         </a>
       </div>
 
-      {/* Panda */}
       <div className="flex justify-center pt-2">
         <img src={pandaSavingsMascot} alt="Panda savings mascot" width={140} height={140} loading="lazy" className="object-contain" />
       </div>
     </form>
   );
 
-  // ── Success state ──
-  const SuccessContent = ({ mobile = false }: { mobile?: boolean }) => (
+  const renderSuccess = (mobile: boolean) => (
     <div className={cn("flex flex-col items-center justify-center text-center animate-fade-in", mobile ? "px-5 py-8" : "px-8 py-10 flex-1")}>
-      {/* Clean tick — no emoji */}
       <div className="mb-5">
         <div className={cn("rounded-full bg-emerald-50 flex items-center justify-center animate-in zoom-in-50 duration-500", mobile ? "w-16 h-16" : "w-20 h-20")}>
           <Check className={cn("text-emerald-500", mobile ? "w-10 h-10" : "w-12 h-12")} strokeWidth={2.5} />
@@ -354,7 +343,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
           <X className="w-6 h-6 text-gray-700" />
         </button>
         <div className="flex-1 overflow-y-auto">
-          {requestSuccess ? <SuccessContent /> : <FormContent />}
+          {requestSuccess ? renderSuccess(false) : renderForm(false)}
         </div>
       </div>
 
@@ -371,7 +360,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
           <X className="w-5 h-5 text-gray-700" />
         </button>
         <div className="overflow-y-auto max-h-[calc(92vh-40px)]">
-          {requestSuccess ? <SuccessContent mobile /> : <FormContent mobile />}
+          {requestSuccess ? renderSuccess(true) : renderForm(true)}
         </div>
       </div>
     </>
