@@ -1289,8 +1289,6 @@ export default function LiveQuotePage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <Footer />
     </div>
   );
 }
