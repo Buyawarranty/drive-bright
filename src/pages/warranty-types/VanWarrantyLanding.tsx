@@ -1148,16 +1148,16 @@ const VanWarrantyLanding: React.FC = () => {
 
             {/* Bottom CTA */}
             <div className="mt-8 md:mt-12 text-center">
-              <div className="bg-slate-900 rounded-2xl p-6 md:p-10 max-w-3xl mx-auto">
+              <div className="bg-[#1a2e5a] rounded-2xl p-8 md:p-12 max-w-3xl mx-auto">
                 <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
                   Warranty cover from just £32/month
                 </h3>
-                <p className="text-slate-300 text-sm md:text-base mb-6">
+                <p className="text-white/70 text-sm md:text-base mb-6">
                   That's less than a single diagnostic fee — and it covers all of the above.
                 </p>
                 <Button
                   onClick={scrollToQuoteForm}
-                  className="bg-[#FF6B00] hover:bg-orange-600 text-white font-bold px-8 md:px-10 py-4 md:py-5 text-base md:text-lg rounded-xl animate-breathing shadow-lg shadow-orange-500/25"
+                  className="bg-brand-orange text-white font-bold px-10 py-6 text-lg rounded-xl animate-breathing shadow-lg shadow-brand-orange/30"
                 >
                   Get Your Instant Quote
                   <ArrowRight className="ml-2 w-5 h-5" />
