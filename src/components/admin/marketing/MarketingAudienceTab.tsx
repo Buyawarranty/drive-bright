@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -67,6 +68,8 @@ interface SyncLog {
 
 export const MarketingAudienceTab: React.FC = () => {
   const queryClient = useQueryClient();
+  const { userRole } = useAuth();
+  const isAdmin = userRole === 'admin';
   const [searchTerm, setSearchTerm] = useState('');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [subscriptionFilter, setSubscriptionFilter] = useState<string>('all');
@@ -248,14 +251,16 @@ export const MarketingAudienceTab: React.FC = () => {
           <p className="text-gray-600">Unified mailing list for email marketing & remarketing calls</p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={exportToCSV}
-            disabled={!audience?.length}
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export CSV
-          </Button>
+          {isAdmin && (
+            <Button
+              variant="outline"
+              onClick={exportToCSV}
+              disabled={!audience?.length}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
+          )}
           <Button
             onClick={() => syncMutation.mutate()}
             disabled={syncMutation.isPending}
