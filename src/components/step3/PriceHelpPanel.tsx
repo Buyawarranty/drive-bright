@@ -152,7 +152,7 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
 
   // ── Helpers to render form / success as plain JSX (NOT components) ──
   const renderForm = (mobile: boolean) => (
-    <form onSubmit={handleSubmit} className={cn("space-y-5", mobile ? "p-5 pb-8" : "p-6 pb-8")}>
+    <form onSubmit={handleSubmit} className={cn("space-y-5", mobile ? "p-5 pt-10 pb-8" : "p-6 pt-12 pb-8")}>
       <div>
         <h2 className={cn("font-bold text-gray-900 leading-tight", mobile ? "text-xl" : "text-2xl")}>
           Not the right price? We'll beat any like‑for‑like quote.
