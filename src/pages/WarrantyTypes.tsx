@@ -656,7 +656,7 @@ const WarrantyTypes: React.FC = () => {
               Ready to Protect Your Vehicle?
             </h2>
             <p className="text-lg text-white mb-8">
-              Get an instant quote in under 60 seconds and find the perfect warranty for your vehicle.
+              Get an instant quote and find the perfect warranty for your vehicle today.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
@@ -664,7 +664,7 @@ const WarrantyTypes: React.FC = () => {
                 size="lg"
                 className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all animate-cta-enhanced"
               >
-                Get Your Free Quote <ArrowRight className="ml-2 h-5 w-5" />
+                Get your free quote <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <a 
                 href="tel:03302295040"
@@ -687,13 +687,10 @@ const WarrantyTypes: React.FC = () => {
                 rel="noopener noreferrer"
                 className="flex items-center gap-4 hover:opacity-80 transition-opacity"
               >
-                <OptimizedImage
+                <img
                   src={trustpilotLogo}
                   alt="Trustpilot Reviews"
-                  className="h-10 md:h-12 w-auto"
-                  priority={false}
-                  width={200}
-                  height={50}
+                  className="h-8 md:h-10 w-auto object-contain"
                 />
                 <div className="flex items-center gap-1">
                   {[...Array(5)].map((_, i) => (
