@@ -15,39 +15,42 @@ const PriceHelpTrigger: React.FC<PriceHelpTriggerProps> = ({ onClick, className 
         className
       )}
     >
-      {/* Icon + Text */}
-      <div className="flex items-start gap-3 mb-3 md:mb-4">
-        <div className="flex-shrink-0 mt-0.5">
-          <Shield className="w-6 h-6 md:w-7 md:h-7 text-brand-orange" strokeWidth={2} />
+      {/* Desktop: single row with text left, CTA right */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
+        {/* Icon + Text */}
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 mt-0.5">
+            <Shield className="w-6 h-6 md:w-7 md:h-7 text-brand-orange" strokeWidth={2} />
+          </div>
+          <div>
+            <h3 className="text-base md:text-lg font-bold text-gray-900 leading-tight">
+              Price Beat Guarantee
+            </h3>
+            <p className="text-sm md:text-base text-gray-700 mt-0.5">
+              Got a cheaper quote? We'll beat it — <span className="font-semibold">guaranteed.</span>
+            </p>
+          </div>
         </div>
-        <div>
-          <h3 className="text-base md:text-lg font-bold text-gray-900 leading-tight">
-            Price Beat Guarantee
-          </h3>
-          <p className="text-sm md:text-base text-gray-700 mt-0.5">
-            Got a cheaper quote? We'll beat it — <span className="font-semibold">guaranteed.</span>
-          </p>
-        </div>
-      </div>
 
-      {/* CTA row */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pl-0 md:pl-9">
-        <button
-          onClick={onClick}
-          className="h-11 md:h-12 px-6 md:px-8 rounded-xl bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-sm md:text-base transition-colors shadow-sm"
-        >
-          Beat My Quote
-        </button>
-        <span className="text-sm md:text-base text-gray-700 text-center sm:text-left">
-          or call{' '}
-          <a
-            href="tel:03302295040"
-            className="font-bold text-gray-900 hover:text-brand-orange underline underline-offset-2 decoration-1 transition-colors"
-            onClick={(e) => e.stopPropagation()}
+        {/* CTA row */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pl-9 md:pl-0 flex-shrink-0">
+          <button
+            onClick={onClick}
+            className="h-11 md:h-12 px-6 md:px-8 rounded-xl bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-sm md:text-base transition-colors shadow-sm whitespace-nowrap"
           >
-            0330 229 5040
-          </a>
-        </span>
+            Beat My Quote
+          </button>
+          <span className="text-sm md:text-base text-gray-700 text-center sm:text-left whitespace-nowrap">
+            or call{' '}
+            <a
+              href="tel:03302295040"
+              className="font-bold text-gray-900 hover:text-brand-orange underline underline-offset-2 decoration-1 transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              0330 229 5040
+            </a>
+          </span>
+        </div>
       </div>
     </div>
   );
