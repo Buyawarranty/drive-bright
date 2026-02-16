@@ -535,15 +535,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                   </p>
                   
                   {/* Compact Support Line with CTA */}
-                  <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-1.5 gap-y-1 text-xs sm:text-sm">
-                    <button
-                      onClick={() => setShowPricingModal(true)}
-                      className="text-brand-green hover:text-brand-green/80 font-semibold inline-flex items-center gap-1 transition-colors underline underline-offset-2"
-                    >
-                      See how pricing works
-                      <ArrowRight className="w-3 h-3" />
-                    </button>
-                    <span className="text-gray-400">|</span>
+                   <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-1.5 gap-y-1 text-xs sm:text-sm">
                     <span className="text-gray-600">Speak to an expert:</span>
                     <a 
                       href="tel:03302295040" 
