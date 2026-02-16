@@ -512,7 +512,7 @@ const WarrantyTypes: React.FC = () => {
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
                   <img 
-                    src="https://upload.wikimedia.org/wikipedia/en/thumb/f/f4/MG_Motor_logo.svg/800px-MG_Motor_logo.svg.png" 
+                    src="/logos/mg-logo.png" 
                     alt="MG logo"
                     className="max-h-12 max-w-12 object-contain"
                     loading="lazy"
@@ -531,7 +531,7 @@ const WarrantyTypes: React.FC = () => {
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
                   <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Skoda_Auto_logo_%282022%29.svg/800px-Skoda_Auto_logo_%282022%29.svg.png" 
+                    src="/logos/skoda-logo.png" 
                     alt="Škoda logo"
                     className="max-h-12 max-w-12 object-contain"
                     loading="lazy"
