@@ -283,10 +283,20 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
             </span>
             Only 3 quick details for your best price
           </h1>
-          <p className="text-gray-700 mt-1 flex items-center justify-center gap-2">
-            <Zap className="w-4 h-4 text-brand-orange" />
-            See your quote in a few seconds
-          </p>
+          <div className="flex items-center justify-center gap-3 mt-1">
+            <button 
+              type="button" 
+              onClick={onBack}
+              className="flex items-center gap-1 text-sm font-medium py-1 px-2.5 rounded-lg transition-all bg-gray-100 hover:bg-gray-200 text-gray-700"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Back
+            </button>
+            <p className="text-gray-700 flex items-center gap-2">
+              <Zap className="w-4 h-4 text-brand-orange" />
+              See your quote in a few seconds
+            </p>
+          </div>
         </div>
 
         {/* Vehicle Card */}
@@ -485,17 +495,6 @@ const QuoteDeliveryStep: React.FC<QuoteDeliveryStepProps> = ({ vehicleData, onNe
           </p>
         </div>
 
-        {/* Back Button - At Bottom */}
-        <div className="flex justify-start mt-10">
-          <button 
-            type="button" 
-            onClick={onBack}
-            className="flex items-center gap-1.5 text-sm font-medium py-2 px-3 rounded-lg transition-all bg-gray-100 hover:bg-gray-200 text-gray-700"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </button>
-        </div>
 
         {/* Spacer for sticky footer on desktop */}
         <div className="hidden md:block h-20"></div>
