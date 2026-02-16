@@ -310,7 +310,15 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
 
   // Sync updatedPricingData when pricingData prop changes
   useEffect(() => {
-    console.log('📊 Step 4: Syncing pricing from Step 3:', pricingData);
+    const step3Monthly = pricingData.monthlyPrice ?? Math.floor(pricingData.totalPrice / 12);
+    const step3Total = step3Monthly * 12;
+    console.log('📊 Step 4: Syncing pricing from Step 3:', {
+      receivedTotal: pricingData.totalPrice,
+      receivedMonthly: pricingData.monthlyPrice,
+      computedMonthly: step3Monthly,
+      computedTotal: step3Total,
+      match: pricingData.totalPrice === step3Total
+    });
     setUpdatedPricingData(pricingData);
     localStorage.setItem('buyawarranty_originalPricingData', JSON.stringify(pricingData));
   }, [pricingData.totalPrice, pricingData.monthlyPrice]);
