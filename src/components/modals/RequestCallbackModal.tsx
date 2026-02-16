@@ -129,47 +129,63 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
         {/* Close button */}
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 z-10 p-1.5 rounded-full bg-white/80 hover:bg-gray-100 transition-colors"
+          className="absolute top-3 right-3 z-20 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
         >
-          <X className="h-4 w-4 text-gray-600" />
+          <X className="h-6 w-6 text-gray-700" />
         </button>
 
-        {/* Vibrant gradient header */}
-        <div className="bg-gradient-to-br from-brand-orange via-orange-500 to-amber-500 px-6 pt-8 pb-6 text-center relative overflow-hidden">
-          {/* Decorative circles */}
-          <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-8 translate-x-8" />
-          <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full translate-y-6 -translate-x-4" />
-          
-          <div className={`relative z-10 transition-all duration-500 ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            <div className="flex justify-center space-x-2 mb-3">
-              <Phone className="h-8 w-8 text-white animate-bounce" />
-              <Sparkles className="h-6 w-6 text-yellow-200 animate-bounce" style={{ animationDelay: '0.15s' }} />
+        {/* Vibrant gradient header - only show when NOT success */}
+        {!isSuccess && (
+          <div className="bg-gradient-to-br from-brand-orange via-orange-500 to-amber-500 px-6 pt-8 pb-6 text-center relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-8 translate-x-8" />
+            <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full translate-y-6 -translate-x-4" />
+            <div className={`relative z-10 transition-all duration-500 ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+              <div className="flex justify-center space-x-2 mb-3">
+                <Phone className="h-8 w-8 text-white animate-bounce" />
+                <Sparkles className="h-6 w-6 text-yellow-200 animate-bounce" style={{ animationDelay: '0.15s' }} />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-1">We'll call you back!</h2>
+              <p className="text-white/90 text-sm">Free, no-pressure chat about your warranty options</p>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-1">
-              We'll call you back!
-            </h2>
-            <p className="text-white/90 text-sm">
-              Free, no-pressure chat about your warranty options
-            </p>
           </div>
-        </div>
+        )}
 
         <div className="p-6 sm:p-8">
           {isSuccess ? (
-            <div className="py-8 text-center space-y-5">
+            <div className="py-6 text-center space-y-5">
+              {/* Green success icon */}
               <div className="relative inline-block">
                 <div className="absolute inset-0 w-20 h-20 mx-auto rounded-full bg-emerald-500/20 animate-ping" style={{ animationDuration: '1.5s' }} />
-                <div className="absolute inset-0 w-20 h-20 mx-auto rounded-full bg-emerald-500/10 animate-pulse" />
                 <div className="relative w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center animate-in zoom-in-50 duration-500">
                   <CheckCircle className="w-10 h-10 text-white" />
                 </div>
                 <Sparkles className="w-5 h-5 text-amber-400 absolute -top-1 -right-1 animate-bounce" style={{ animationDelay: '0.3s' }} />
               </div>
-              <div className="space-y-2 animate-in fade-in-0 slide-in-from-bottom-2 duration-500" style={{ animationDelay: '0.2s' }}>
-                <h3 className="text-xl font-bold text-gray-900">✔️ You're all set!</h3>
-                <p className="text-gray-600">We're already preparing your quote. We normally call the same day.</p>
-                <p className="text-brand-orange font-semibold">Have any competitor quotes ready —<br/>we'll beat them. 💪</p>
+
+              {/* Confirmation text */}
+              <div className="space-y-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-500" style={{ animationDelay: '0.2s' }}>
+                <h3 className="text-xl font-bold text-gray-900">You're all set! 🎉</h3>
+                <p className="text-gray-600 text-sm">We normally call the same day, or within one working day.</p>
               </div>
+
+              {/* Colourful info cards */}
+              <div className="grid grid-cols-2 gap-3 pt-2 animate-in fade-in-0 duration-500" style={{ animationDelay: '0.4s' }}>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
+                  <Clock className="w-6 h-6 text-amber-500 mx-auto mb-1" />
+                  <p className="text-xs font-semibold text-amber-700">Same-day callback</p>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
+                  <HeadphonesIcon className="w-6 h-6 text-blue-500 mx-auto mb-1" />
+                  <p className="text-xs font-semibold text-blue-700">UK-based team</p>
+                </div>
+              </div>
+
+              {/* Beat them message */}
+              <p className="text-brand-orange font-bold text-sm pt-1">
+                Have competitor quotes ready — we'll beat them 💪
+              </p>
+
+              {/* Auto-close progress */}
               <div className="w-32 mx-auto h-1 bg-gray-100 rounded-full overflow-hidden">
                 <div className="h-full bg-brand-orange rounded-full animate-[shrink_3.5s_linear_forwards]" />
               </div>
