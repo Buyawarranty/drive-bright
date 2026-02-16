@@ -409,7 +409,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Step 3 displays: monthlyPrice = Math.floor(totalPrice / 12), and Total = monthlyPrice * 12
   // So Step 4 MUST use the same formula to match exactly
   const baseTotalPrice = updatedPricingData.totalPrice;
-  const monthlyPrice = updatedPricingData.monthlyPrice ?? Math.floor(baseTotalPrice / 12);
+  // CRITICAL: Always floor monthlyPrice to ensure it's a whole number
+  // Step 3 uses Math.floor(totalPrice / 12), so Step 4 must match exactly
+  // This prevents Bumper from showing fractional amounts (e.g., £46.75 instead of £46)
+  const monthlyPrice = Math.floor(updatedPricingData.monthlyPrice ?? Math.floor(baseTotalPrice / 12));
   
   // CRITICAL: For monthly payments, the displayed total MUST be monthlyPrice * 12
   // This matches Step 3's "Total: £X" which is calculated as monthlyPrice * 12
