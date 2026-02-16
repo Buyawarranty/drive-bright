@@ -607,11 +607,6 @@ export default function LiveQuotePage() {
 
             {/* Pay in Full Card */}
             <div className="relative">
-              <div className="absolute -top-3 left-4 z-10">
-                <span className="bg-[#0BA360] text-white text-xs font-bold px-2.5 py-1 rounded-md whitespace-nowrap">
-                  Save 10%
-                </span>
-              </div>
               <button
                 type="button"
                 onClick={() => setPaymentMethod('stripe')}
@@ -628,16 +623,10 @@ export default function LiveQuotePage() {
                       </span>
                     </div>
                     <p className="text-base font-bold text-[#1a1a1a]">Pay in Full</p>
-                    <p className="text-sm text-gray-500 line-through mt-1">Was £{bumperMonthlyTotal}</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-[#1a1a1a]">
+                    <p className="text-2xl sm:text-3xl font-bold text-[#1a1a1a] mt-1">
                       £{quote.pricing.upfrontPrice}
                     </p>
-                    <p className="text-sm text-[#0BA360] font-medium">You save £{bumperMonthlyTotal - quote.pricing.upfrontPrice}!</p>
                     <div className="mt-3 space-y-1.5">
-                      <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
-                        <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
-                        <span>Instant 10% off</span>
-                      </div>
                       <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                         <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
                         <span>One simple payment</span>
@@ -862,7 +851,6 @@ export default function LiveQuotePage() {
                       <span className="text-gray-600 text-sm">Pay in full</span>
                       <div className="text-right">
                         <span className="font-bold text-green-700 text-lg">£{quote.pricing.upfrontPrice}</span>
-                        <Badge className="ml-2 bg-green-100 text-green-800 text-xs">Save 10%</Badge>
                       </div>
                     </div>
                   </div>
@@ -1262,7 +1250,6 @@ export default function LiveQuotePage() {
                       <span className="text-gray-600 text-sm">Pay in full</span>
                       <div className="text-right">
                         <span className="font-bold text-green-700 text-lg">£{quote.pricing.upfrontPrice}</span>
-                        <Badge className="ml-2 bg-green-100 text-green-800 text-xs">Save 10%</Badge>
                       </div>
                     </div>
                   </div>
@@ -1307,8 +1294,6 @@ export default function LiveQuotePage() {
               <p className="text-sm text-gray-600">Pay in Full</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-xl font-bold text-[#1a1a1a]">£{quote.pricing.upfrontPrice}</span>
-                <span className="text-sm text-red-500 line-through">£{bumperMonthlyTotal}</span>
-                <span className="text-sm font-bold text-green-600">Save £{bumperMonthlyTotal - quote.pricing.upfrontPrice}</span>
               </div>
             </div>
           </div>
