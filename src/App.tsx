@@ -40,11 +40,14 @@ const ConditionalFooter = () => {
   // Hide footer on admin routes
   const isAdminRoute = location.pathname.startsWith('/admin');
   
+  // Hide footer on brand landing pages (Google Ads pages)
+  const isBrandLanding = location.pathname.startsWith('/warranty-types/') && location.pathname !== '/warranty-types/';
+  
   // Check if step starts with 2, 3, 4, 5, or 6 (handles cases like "3.", "3", "4" etc.)
   // Also check for any step that begins with these numbers
   const isCheckoutStep = step && /^[2-6]/.test(step);
   
-  if (isCheckoutStep || isAdminRoute) return null;
+  if (isCheckoutStep || isAdminRoute || isBrandLanding) return null;
   return <WebsiteFooter />;
 };
 

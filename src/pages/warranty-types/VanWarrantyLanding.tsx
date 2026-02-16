@@ -14,6 +14,7 @@ import { saveWithTimestamp } from '@/utils/localStorage';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 import BrandPageFAQ from '@/components/brand-pages/BrandPageFAQ';
 import BluePersistentCallback from '@/components/brand-pages/BluePersistentCallback';
+import MinimalLandingFooter from '@/components/brand-pages/MinimalLandingFooter';
 
 // Lazy load heavy components
 const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
@@ -1454,6 +1455,7 @@ const VanWarrantyLanding: React.FC = () => {
           </div>
         </section>
       </main>
+      <MinimalLandingFooter />
       <BluePersistentCallback />
     </>
   );

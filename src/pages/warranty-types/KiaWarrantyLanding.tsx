@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import BrandPageFAQ from '@/components/brand-pages/BrandPageFAQ';
 import BluePersistentCallback from '@/components/brand-pages/BluePersistentCallback';
+import MinimalLandingFooter from '@/components/brand-pages/MinimalLandingFooter';
 import BrandRepairCosts from '@/components/brand-pages/BrandRepairCosts';
 
 // Lazy load heavy components
@@ -1247,6 +1248,7 @@ const KiaWarrantyLanding: React.FC = () => {
 
         <BrandPageFAQ />
       </main>
+      <MinimalLandingFooter />
       <BluePersistentCallback />
     </>
   );
