@@ -529,10 +529,6 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                     Your price. Your choice. No hidden fees.
                   </h2>
                   
-                  {/* Short Sub-line - Emotional Reassurance */}
-                  <p className="text-xs sm:text-sm text-gray-600">
-                    We calculate your quote based on your car and how you drive. Adjust cover, excess and claim limits to suit your budget.
-                  </p>
                   
                   {/* Compact Support Line with CTA */}
                    <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-1.5 gap-y-1 text-xs sm:text-sm">
