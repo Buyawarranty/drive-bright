@@ -1,11 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Phone, Loader2, CheckCircle, Sparkles, Shield, Clock, HeadphonesIcon, X } from 'lucide-react';
+import { Phone, Loader2, CheckCircle, Sparkles, Shield, Clock, HeadphonesIcon, X, Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import confetti from 'canvas-confetti';
+import pandaMascot from '@/assets/panda-mascot.png';
+
+const CarIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 17.5h20" />
+    <path d="M5.5 17.5l1.5-6h14l1.5 6" />
+    <rect x="3" y="17.5" width="22" height="5" rx="2" />
+    <circle cx="8" cy="22.5" r="1.5" />
+    <circle cx="20" cy="22.5" r="1.5" />
+    <path d="M7 11.5l1-3.5h12l1 3.5" />
+  </svg>
+);
 
 interface RequestCallbackModalProps {
   isOpen: boolean;
@@ -18,20 +30,11 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
   const [showContent, setShowContent] = useState(false);
 
-  // Entrance animation + confetti
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => setShowContent(true), 150);
-      confetti({
-        particleCount: 6,
-        spread: 45,
-        origin: { y: 0.6 },
-        shapes: ['square'],
-        colors: ['#FF6A00', '#fbbf24', '#10b981']
-      });
       return () => clearTimeout(timer);
     } else {
       setShowContent(false);
@@ -53,6 +56,14 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
     const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
     setPhone(digits);
     if (error && validateUKPhone(digits).isValid) setError('');
+
+    // Auto-submit on valid number
+    if (validateUKPhone(digits).isValid && !isSubmitting) {
+      setTimeout(() => {
+        const form = e.target.closest('form');
+        if (form) form.requestSubmit();
+      }, 400);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -121,39 +132,25 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
     }
   };
 
-  const inputProgress = Math.min((phone.length / 11) * 100, 100);
-
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="w-[90vw] max-w-md mx-auto bg-white rounded-2xl p-0 overflow-hidden border-0 shadow-2xl">
+      <DialogContent
+        className="w-[90vw] max-w-md mx-auto bg-white rounded-2xl p-0 overflow-hidden border-0 shadow-2xl"
+        hideCloseButton
+      >
         {/* Close button */}
         <button
           onClick={handleClose}
           className="absolute top-3 right-3 z-20 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+          style={{ minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
           <X className="h-6 w-6 text-gray-700" />
         </button>
 
-        {/* Vibrant gradient header - only show when NOT success */}
-        {!isSuccess && (
-          <div className="bg-gradient-to-br from-brand-orange via-orange-500 to-amber-500 px-6 pt-8 pb-6 text-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-8 translate-x-8" />
-            <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full translate-y-6 -translate-x-4" />
-            <div className={`relative z-10 transition-all duration-500 ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-              <div className="flex justify-center space-x-2 mb-3">
-                <Phone className="h-8 w-8 text-white animate-bounce" />
-                <Sparkles className="h-6 w-6 text-yellow-200 animate-bounce" style={{ animationDelay: '0.15s' }} />
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-1">We'll call you back!</h2>
-              <p className="text-white/90 text-sm">Free, no-pressure chat about your warranty options</p>
-            </div>
-          </div>
-        )}
-
-        <div className="p-6 sm:p-8">
+        <div className="px-6 pt-7 pb-6 sm:px-8">
           {isSuccess ? (
-            <div className="py-6 text-center space-y-5">
-              {/* Green success icon */}
+            /* ── Success state ── */
+            <div className="py-4 text-center space-y-5 animate-in fade-in-50 duration-300">
               <div className="relative inline-block">
                 <div className="absolute inset-0 w-20 h-20 mx-auto rounded-full bg-emerald-500/20 animate-ping" style={{ animationDuration: '1.5s' }} />
                 <div className="relative w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center animate-in zoom-in-50 duration-500">
@@ -162,14 +159,12 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
                 <Sparkles className="w-5 h-5 text-amber-400 absolute -top-1 -right-1 animate-bounce" style={{ animationDelay: '0.3s' }} />
               </div>
 
-              {/* Confirmation text */}
-              <div className="space-y-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-500" style={{ animationDelay: '0.2s' }}>
+              <div className="space-y-3">
                 <h3 className="text-xl font-bold text-gray-900">You're all set! 🎉</h3>
                 <p className="text-gray-600 text-sm">We normally call the same day, or within one working day.</p>
               </div>
 
-              {/* Colourful info cards */}
-              <div className="grid grid-cols-2 gap-3 pt-2 animate-in fade-in-0 duration-500" style={{ animationDelay: '0.4s' }}>
+              <div className="grid grid-cols-2 gap-3 pt-2">
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
                   <Clock className="w-6 h-6 text-amber-500 mx-auto mb-1" />
                   <p className="text-xs font-semibold text-amber-700">Same-day callback</p>
@@ -180,125 +175,123 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
                 </div>
               </div>
 
-              {/* Beat them message */}
               <p className="text-brand-orange font-bold text-sm pt-1">
                 Have competitor quotes ready — we'll beat them 💪
               </p>
-
-              {/* Car icon */}
-              <div className="pt-1">
-                <svg className="w-10 h-10 mx-auto text-brand-orange opacity-60" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 17.5h20" />
-                  <path d="M5.5 17.5l1.5-6h14l1.5 6" />
-                  <rect x="3" y="17.5" width="22" height="5" rx="2" />
-                  <circle cx="8" cy="22.5" r="1.5" />
-                  <circle cx="20" cy="22.5" r="1.5" />
-                  <path d="M7 11.5l1-3.5h12l1 3.5" />
-                </svg>
-              </div>
             </div>
           ) : (
-            <form
-              onSubmit={handleSubmit}
-              className={`space-y-5 transition-all duration-500 delay-300 ${
-                showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-              }`}
-            >
-              <div className="space-y-2">
-                <label htmlFor="callback-phone" className="text-sm font-semibold text-gray-700 flex items-center justify-between">
-                  <span>Your phone number</span>
-                  {phone.length > 0 && !isPhoneValid && (
-                    <span className="text-xs text-gray-400 font-normal">{phone.length}/11 digits</span>
-                  )}
-                </label>
-                <div className="relative">
-                  <div className={`relative transition-all duration-300 ${isFocused ? 'transform scale-[1.01]' : ''}`}>
+            /* ── Form state ── */
+            <div className={`transition-all duration-500 ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+              {/* Header */}
+              <div className="flex items-center gap-2.5 mb-2">
+                <CarIcon className="h-6 w-6 text-gray-900 flex-shrink-0" />
+                <h2 className="text-xl font-bold text-gray-900 tracking-tight">
+                  Request a call back
+                </h2>
+              </div>
+              <p className="text-sm text-gray-500 leading-relaxed mb-6 pl-[34px]">
+                One of our UK‑based specialists will call you to help compare your options and find the right cover for your vehicle.
+              </p>
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Phone field */}
+                <div className="space-y-1.5">
+                  <label htmlFor="callback-phone-modal" className="block text-sm font-semibold text-gray-900">
+                    Your phone number
+                  </label>
+                  <div className="relative">
                     <Input
-                      id="callback-phone"
+                      id="callback-phone-modal"
                       type="tel"
                       value={phone}
                       onChange={handlePhoneChange}
-                      onFocus={() => setIsFocused(true)}
-                      onBlur={() => setIsFocused(false)}
                       placeholder="e.g. 07123 456789"
                       className={`h-14 text-lg pl-4 pr-12 rounded-xl transition-all duration-300 placeholder:text-gray-400 ${
                         error
                           ? 'border-red-400 focus:ring-red-400/30 bg-red-50/30'
                           : isPhoneValid
                             ? 'border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50/40'
-                            : isFocused
-                              ? 'border-brand-orange/60 ring-2 ring-brand-orange/10 bg-white'
-                              : 'border-gray-200 bg-gray-50/50'
+                            : 'border-gray-200 bg-gray-50/50 focus:border-brand-orange/60 focus:ring-2 focus:ring-brand-orange/10'
                       }`}
                       disabled={isSubmitting}
                       autoComplete="tel"
                     />
-                    {isPhoneValid && (
+                    {isPhoneValid && !isSubmitting && (
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 animate-in zoom-in-50 fade-in-0 duration-300">
-                        <div className="w-6 h-6 rounded-full border-2 border-emerald-600 flex items-center justify-center">
-                          <CheckCircle className="w-4 h-4 text-emerald-600" />
+                        <div className="w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center">
+                          <Check className="w-4 h-4 text-white" strokeWidth={3} />
                         </div>
                       </div>
                     )}
+                    {isSubmitting && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <Loader2 className="w-5 h-5 text-brand-orange animate-spin" />
+                      </div>
+                    )}
                   </div>
-                  {phone.length > 0 && !isPhoneValid && (
-                    <div className="absolute -bottom-0.5 left-2 right-2 h-0.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-brand-orange/60 rounded-full transition-all duration-300 ease-out"
-                        style={{ width: `${inputProgress}%` }}
-                      />
-                    </div>
+                  {error && (
+                    <p className="text-sm text-red-500 font-medium animate-in slide-in-from-top-1 fade-in-0 duration-200">{error}</p>
                   )}
                 </div>
-                {error && (
-                  <p className="text-sm text-red-500 font-medium animate-in slide-in-from-top-1 fade-in-0 duration-200">{error}</p>
-                )}
-              </div>
 
-              <Button
-                type="submit"
-                disabled={isSubmitting || !phone.trim()}
-                className={`w-full h-14 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-base rounded-xl transition-all duration-300 ${
-                  isPhoneValid
-                    ? 'shadow-lg shadow-brand-orange/30 hover:shadow-xl hover:shadow-brand-orange/40 hover:-translate-y-0.5 active:translate-y-0'
-                    : 'shadow-none opacity-80'
-                } disabled:shadow-none disabled:translate-y-0 disabled:opacity-60`}
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Submitting...
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    <Phone className="w-5 h-5" />
-                    Call me back
-                  </span>
-                )}
-              </Button>
-
-              {/* Trust indicators */}
-              <div className="text-center space-y-2 pt-2">
-                <p className="text-sm text-gray-600">We'll get back to you shortly.</p>
-                <p className="text-sm text-brand-orange font-bold flex items-center justify-center gap-1.5">
-                  <Clock className="w-4 h-4" />
-                  Your request will be prioritised
-                </p>
-              </div>
-
-              {/* Trust badges */}
-              <div className="flex items-center justify-center gap-4 pt-3 border-t border-gray-100">
-                <div className="flex items-center gap-1 text-xs text-gray-400">
-                  <Shield className="w-3.5 h-3.5" />
-                  <span>Privacy protected</span>
+                {/* Trust card with panda */}
+                <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 relative overflow-hidden">
+                  <div className="flex items-start gap-3">
+                    <div className="space-y-2.5 flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                          <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                        </div>
+                        <span className="text-sm font-bold text-gray-900">Privacy protected</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                          <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                        </div>
+                        <span className="text-sm font-bold text-gray-900">UK‑based team</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                          <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                        </div>
+                        <span className="text-sm font-bold text-gray-900">No pressure, no sales tactics</span>
+                      </div>
+                    </div>
+                    {/* Panda mascot */}
+                    <img
+                      src={pandaMascot}
+                      alt="Friendly panda mascot"
+                      className="w-24 h-24 object-contain flex-shrink-0 -mr-2 -mb-2"
+                    />
+                  </div>
                 </div>
-                <div className="w-px h-3 bg-gray-200" />
-                <div className="flex items-center gap-1 text-xs text-gray-400">
-                  <HeadphonesIcon className="w-3.5 h-3.5" />
-                  <span>UK-based team</span>
-                </div>
-              </div>
-            </form>
+
+                {/* CTA Button */}
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || !phone.trim()}
+                  className={`w-full h-14 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-lg rounded-xl transition-all duration-300 ${
+                    isPhoneValid
+                      ? 'shadow-lg shadow-brand-orange/30 hover:shadow-xl hover:shadow-brand-orange/40 hover:-translate-y-0.5 active:translate-y-0'
+                      : 'shadow-none opacity-80'
+                  } disabled:shadow-none disabled:translate-y-0 disabled:opacity-60`}
+                >
+                  {isSubmitting ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Submitting...
+                    </span>
+                  ) : (
+                    'Request My Call'
+                  )}
+                </Button>
+              </form>
+
+              {/* Footer text */}
+              <p className="text-xs text-gray-400 text-center mt-4">
+                We'll call you shortly. Your request will be prioritised.
+              </p>
+            </div>
           )}
         </div>
       </DialogContent>
