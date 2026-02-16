@@ -712,10 +712,13 @@ export default function LiveQuotePage() {
           </div>
           <div className="flex items-center gap-3">
             <TrustpilotHeader className="h-6" />
-            <Badge variant="secondary" className="text-xs">
-              <Lock className="h-3 w-3 mr-1" />
-              Secure
-            </Badge>
+            <a
+              href="tel:03302295045"
+              className="inline-flex items-center gap-1.5 bg-[#FF6B00] hover:bg-[#e56000] text-white font-bold text-sm px-3 py-2 rounded-lg transition-colors"
+            >
+              <Phone className="h-4 w-4" />
+              0330 229 5045
+            </a>
           </div>
         </div>
       </header>
@@ -1160,7 +1163,9 @@ export default function LiveQuotePage() {
             </Card>
 
             {/* Payment Options - Below form on all screen sizes */}
-            <PaymentOptionsSection />
+            <div id="payment-options">
+              <PaymentOptionsSection />
+            </div>
           </div>
 
           {/* Right Column - Cover Summary (Desktop Only) */}
@@ -1289,6 +1294,35 @@ export default function LiveQuotePage() {
         </div>
       </main>
 
+      {/* Desktop Sticky Bottom Bar */}
+      <div className="hidden lg:block fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <div>
+              <p className="text-sm text-gray-600">Monthly</p>
+              <p className="text-xl font-bold text-[#1a1a1a]">£{quote.pricing.monthlyPrice}/mo <span className="text-sm font-normal text-gray-500">0% APR</span></p>
+            </div>
+            <div className="h-10 w-px bg-gray-200" />
+            <div>
+              <p className="text-sm text-gray-600">Pay in Full</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-xl font-bold text-[#1a1a1a]">£{quote.pricing.upfrontPrice}</span>
+                <span className="text-sm text-red-500 line-through">£{bumperMonthlyTotal}</span>
+                <span className="text-sm font-bold text-green-600">Save £{bumperMonthlyTotal - quote.pricing.upfrontPrice}</span>
+              </div>
+            </div>
+          </div>
+          <Button
+            onClick={() => document.getElementById('payment-options')?.scrollIntoView({ behavior: 'smooth' })}
+            className="bg-[#FF6B00] hover:bg-[#e56000] text-white font-bold px-8 py-3 text-base rounded-xl"
+          >
+            <CreditCard className="w-5 h-5 mr-2" />
+            Choose Payment Option
+          </Button>
+        </div>
+      </div>
+      {/* Spacer for sticky bar on desktop */}
+      <div className="hidden lg:block h-20" />
     </div>
   );
 }
