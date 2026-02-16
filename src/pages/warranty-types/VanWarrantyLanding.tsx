@@ -1,4 +1,4 @@
-import React, { useState, lazy, Suspense, useMemo } from 'react';
+import React, { useState, useEffect, lazy, Suspense, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Check, ArrowRight, Shield, Phone, ChevronDown, ChevronUp, MapPin, Clock, Users, Car, Wrench, Zap, Star, Award, ThumbsUp, FileCheck, MessageCircle, Truck, Search } from 'lucide-react';
@@ -11,6 +11,7 @@ import MileageQuickSelect from '@/components/MileageQuickSelect';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
+import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 
 // Lazy load heavy components
 const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
@@ -267,6 +268,14 @@ const VanWarrantyLanding: React.FC = () => {
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [vehicleAgeError, setVehicleAgeError] = useState('');
   const [openFaqId, setOpenFaqId] = useState<number | null>(null);
+  const [showCallbackModal, setShowCallbackModal] = useState(false);
+  const [callbackVisible, setCallbackVisible] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setCallbackVisible(window.scrollY > 300);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
   const [expandedCoverage, setExpandedCoverage] = useState(false);
   const [activeManufacturer, setActiveManufacturer] = useState<ManufacturerCategory | 'All'>('All');
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
@@ -1465,6 +1474,38 @@ const VanWarrantyLanding: React.FC = () => {
           </div>
         </section>
       </main>
+
+      {/* Blue Persistent Callback */}
+      {callbackVisible && (
+        <>
+          {isMobile ? (
+            <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-border shadow-[0_-4px_12px_rgba(0,0,0,0.08)] p-3 animate-in slide-in-from-bottom-4 duration-300">
+              <button
+                onClick={() => setShowCallbackModal(true)}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg"
+                aria-label="Request a callback"
+              >
+                <Phone className="w-4 h-4" />
+                Request a callback
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowCallbackModal(true)}
+              className="fixed bottom-8 right-8 z-40 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-3.5 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2 text-sm animate-in fade-in-50 duration-300"
+              aria-label="Request a callback"
+            >
+              <Phone className="w-4 h-4" />
+              Request a callback
+            </button>
+          )}
+        </>
+      )}
+
+      <RequestCallbackModal
+        isOpen={showCallbackModal}
+        onClose={() => setShowCallbackModal(false)}
+      />
     </>
   );
 };
