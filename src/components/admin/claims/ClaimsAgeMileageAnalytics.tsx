@@ -1,8 +1,8 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
-import { Calendar, Gauge, TrendingUp } from 'lucide-react';
+import { Calendar, Gauge, TrendingUp, TrendingDown, Target } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface ClaimData {
@@ -46,6 +46,9 @@ const MILEAGE_BANDS = [
 
 const currentYear = new Date().getFullYear();
 
+const COLORS_AGE = ['#10b981', '#22c55e', '#f59e0b', '#f97316', '#ef4444', '#dc2626'];
+const COLORS_MILEAGE = ['#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#f97316', '#ef4444', '#dc2626', '#991b1b'];
+
 export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps> = ({ claims }) => {
   const [vehicleMap, setVehicleMap] = useState<Map<string, CustomerVehicle>>(new Map());
 
@@ -82,7 +85,7 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
       const yearStr = info?.vehicle_year;
       if (!yearStr) return;
       const year = parseInt(yearStr, 10);
-      if (isNaN(year)) return;
+      if (isNaN(year) || year < 1950) return;
       const age = currentYear - year;
 
       const band = bands.find(b => age >= b.min && age <= b.max);
@@ -100,6 +103,7 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
       claims: b.claims,
       totalCost: Math.round(b.totalCost),
       avgCost: b.paidCount > 0 ? Math.round(b.totalCost / b.paidCount) : 0,
+      paidCount: b.paidCount,
     }));
   }, [claims, vehicleMap]);
 
@@ -108,7 +112,6 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
     const bands = MILEAGE_BANDS.map(b => ({ ...b, claims: 0, totalCost: 0, paidCount: 0 }));
 
     claims.forEach(c => {
-      // Prefer mileage_at_claim from the claim, fall back to customer mileage
       const reg = c.vehicle_registration?.toUpperCase();
       const info = reg ? vehicleMap.get(reg) : null;
       const miles = c.mileage_at_claim || (info?.mileage ? parseInt(info.mileage.replace(/\D/g, ''), 10) : null);
@@ -129,6 +132,7 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
       claims: b.claims,
       totalCost: Math.round(b.totalCost),
       avgCost: b.paidCount > 0 ? Math.round(b.totalCost / b.paidCount) : 0,
+      paidCount: b.paidCount,
     }));
   }, [claims, vehicleMap]);
 
@@ -146,78 +150,116 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
     );
   }
 
-  // Find the peak bands for insight callouts
-  const peakAgeBand = [...ageData].sort((a, b) => b.claims - a.claims)[0];
-  const costliestAgeBand = [...ageData].filter(d => d.avgCost > 0).sort((a, b) => b.avgCost - a.avgCost)[0];
-  const peakMileageBand = [...mileageData].sort((a, b) => b.claims - a.claims)[0];
-  const costliestMileageBand = [...mileageData].filter(d => d.avgCost > 0).sort((a, b) => b.avgCost - a.avgCost)[0];
+  // Find insights
+  const mostClaimsAge = [...ageData].sort((a, b) => b.claims - a.claims)[0];
+  const leastClaimsAge = [...ageData].filter(d => d.claims > 0).sort((a, b) => a.claims - b.claims)[0];
+  const costliestAge = [...ageData].filter(d => d.avgCost > 0).sort((a, b) => b.avgCost - a.avgCost)[0];
+  const mostClaimsMileage = [...mileageData].sort((a, b) => b.claims - a.claims)[0];
+  const leastClaimsMileage = [...mileageData].filter(d => d.claims > 0).sort((a, b) => a.claims - b.claims)[0];
+  const costliestMileage = [...mileageData].filter(d => d.avgCost > 0).sort((a, b) => b.avgCost - a.avgCost)[0];
 
   return (
-    <div className="space-y-4">
-      {/* Insight cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {peakAgeBand && peakAgeBand.claims > 0 && (
-          <Card>
+    <div className="space-y-6">
+      <div className="flex items-center gap-2">
+        <Target className="h-5 w-5 text-orange-500" />
+        <h3 className="text-lg font-semibold">Claims by Vehicle Age & Mileage</h3>
+        <Badge variant="secondary" className="text-xs">Marketing Insights</Badge>
+      </div>
+
+      {/* Insight Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {mostClaimsAge && mostClaimsAge.claims > 0 && (
+          <Card className="border-l-4 border-l-red-500">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-orange-500" />
+                <TrendingUp className="h-4 w-4 text-red-500" />
                 Most Claims by Age
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{peakAgeBand.band}</p>
-              <p className="text-xs text-muted-foreground">{peakAgeBand.claims} claims</p>
+              <p className="text-2xl font-bold">{mostClaimsAge.band}</p>
+              <p className="text-xs text-muted-foreground">{mostClaimsAge.claims} claims · £{mostClaimsAge.totalCost.toLocaleString()} total cost</p>
             </CardContent>
           </Card>
         )}
 
-        {costliestAgeBand && costliestAgeBand.avgCost > 0 && (
-          <Card>
+        {leastClaimsAge && leastClaimsAge.claims > 0 && leastClaimsAge.band !== mostClaimsAge?.band && (
+          <Card className="border-l-4 border-l-green-500">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-red-500" />
+                <TrendingDown className="h-4 w-4 text-green-500" />
+                Fewest Claims by Age
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{leastClaimsAge.band}</p>
+              <p className="text-xs text-muted-foreground">{leastClaimsAge.claims} claims · lower risk segment</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {costliestAge && costliestAge.avgCost > 0 && (
+          <Card className="border-l-4 border-l-amber-500">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-amber-500" />
                 Costliest Age Band
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{costliestAgeBand.band}</p>
-              <p className="text-xs text-muted-foreground">£{costliestAgeBand.avgCost.toLocaleString()} avg cost</p>
+              <p className="text-2xl font-bold">{costliestAge.band}</p>
+              <p className="text-xs text-muted-foreground">£{costliestAge.avgCost.toLocaleString()} avg cost · higher repair risk</p>
             </CardContent>
           </Card>
         )}
 
-        {peakMileageBand && peakMileageBand.claims > 0 && (
-          <Card>
+        {mostClaimsMileage && mostClaimsMileage.claims > 0 && (
+          <Card className="border-l-4 border-l-purple-500">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Gauge className="h-4 w-4 text-blue-500" />
+                <TrendingUp className="h-4 w-4 text-purple-500" />
                 Most Claims by Mileage
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{peakMileageBand.band}</p>
-              <p className="text-xs text-muted-foreground">{peakMileageBand.claims} claims</p>
+              <p className="text-2xl font-bold">{mostClaimsMileage.band}</p>
+              <p className="text-xs text-muted-foreground">{mostClaimsMileage.claims} claims · £{mostClaimsMileage.totalCost.toLocaleString()} total cost</p>
             </CardContent>
           </Card>
         )}
 
-        {costliestMileageBand && costliestMileageBand.avgCost > 0 && (
-          <Card>
+        {leastClaimsMileage && leastClaimsMileage.claims > 0 && leastClaimsMileage.band !== mostClaimsMileage?.band && (
+          <Card className="border-l-4 border-l-blue-500">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-purple-500" />
+                <TrendingDown className="h-4 w-4 text-blue-500" />
+                Fewest Claims by Mileage
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{leastClaimsMileage.band}</p>
+              <p className="text-xs text-muted-foreground">{leastClaimsMileage.claims} claims · lower risk segment</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {costliestMileage && costliestMileage.avgCost > 0 && (
+          <Card className="border-l-4 border-l-orange-500">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-orange-500" />
                 Costliest Mileage Band
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{costliestMileageBand.band}</p>
-              <p className="text-xs text-muted-foreground">£{costliestMileageBand.avgCost.toLocaleString()} avg cost</p>
+              <p className="text-2xl font-bold">{costliestMileage.band}</p>
+              <p className="text-xs text-muted-foreground">£{costliestMileage.avgCost.toLocaleString()} avg cost · higher repair risk</p>
             </CardContent>
           </Card>
         )}
       </div>
 
-      {/* Age chart */}
+      {/* Age Chart */}
       {hasAgeData && (
         <Card>
           <CardHeader>
@@ -226,7 +268,7 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
               Claims by Vehicle Age
             </CardTitle>
             <CardDescription>
-              How vehicle age correlates with claim frequency and cost — older vehicles typically generate more and costlier claims
+              Which age bands generate the most claims and cost — older vehicles typically have more and costlier repairs
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -238,19 +280,23 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
                 <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} tickFormatter={(v) => `£${v}`} />
                 <Tooltip
                   formatter={(value: number, name: string) =>
-                    name.includes('£') ? `£${value.toLocaleString()}` : value
+                    name.includes('£') || name.includes('Cost') ? `£${value.toLocaleString()}` : value
                   }
                 />
                 <Legend />
-                <Bar yAxisId="left" dataKey="claims" fill="#f97316" name="Claims" radius={[4, 4, 0, 0]} />
-                <Bar yAxisId="right" dataKey="avgCost" fill="#3b82f6" name="Avg Cost (£)" radius={[4, 4, 0, 0]} />
+                <Bar yAxisId="left" dataKey="claims" name="Total Claims" radius={[4, 4, 0, 0]}>
+                  {ageData.map((_, i) => (
+                    <Cell key={i} fill={COLORS_AGE[i % COLORS_AGE.length]} />
+                  ))}
+                </Bar>
+                <Bar yAxisId="right" dataKey="totalCost" fill="#3b82f6" name="Total Cost (£)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
       )}
 
-      {/* Mileage chart */}
+      {/* Mileage Chart */}
       {hasMileageData && (
         <Card>
           <CardHeader>
@@ -259,7 +305,7 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
               Claims by Mileage Band
             </CardTitle>
             <CardDescription>
-              How mileage at time of claim correlates with frequency and repair cost — higher mileage vehicles may show different patterns
+              How mileage correlates with claim frequency and repair cost — identify high-risk mileage segments
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -271,24 +317,29 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
                 <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} tickFormatter={(v) => `£${v}`} />
                 <Tooltip
                   formatter={(value: number, name: string) =>
-                    name.includes('£') ? `£${value.toLocaleString()}` : value
+                    name.includes('£') || name.includes('Cost') ? `£${value.toLocaleString()}` : value
                   }
                 />
                 <Legend />
-                <Bar yAxisId="left" dataKey="claims" fill="#8b5cf6" name="Claims" radius={[4, 4, 0, 0]} />
-                <Bar yAxisId="right" dataKey="avgCost" fill="#ef4444" name="Avg Cost (£)" radius={[4, 4, 0, 0]} />
+                <Bar yAxisId="left" dataKey="claims" name="Total Claims" radius={[4, 4, 0, 0]}>
+                  {mileageData.map((_, i) => (
+                    <Cell key={i} fill={COLORS_MILEAGE[i % COLORS_MILEAGE.length]} />
+                  ))}
+                </Bar>
+                <Bar yAxisId="right" dataKey="totalCost" fill="#f97316" name="Total Cost (£)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
       )}
 
-      {/* Summary table */}
+      {/* Breakdown Tables */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {hasAgeData && (
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Age Band Breakdown</CardTitle>
+              <CardDescription className="text-xs">Claims, total cost, and average cost per age band</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-1.5">
@@ -300,7 +351,7 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
                     <span className="font-medium">{d.band}</span>
                     <span className="text-right">{d.claims}</span>
                     <span className="text-right">£{d.totalCost.toLocaleString()}</span>
-                    <span className="text-right">£{d.avgCost.toLocaleString()}</span>
+                    <span className={`text-right ${d.avgCost > 500 ? 'text-red-600 font-medium' : ''}`}>£{d.avgCost.toLocaleString()}</span>
                   </div>
                 ))}
               </div>
@@ -312,6 +363,7 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Mileage Band Breakdown</CardTitle>
+              <CardDescription className="text-xs">Claims, total cost, and average cost per mileage band</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-1.5">
@@ -323,7 +375,7 @@ export const ClaimsAgeMileageAnalytics: React.FC<ClaimsAgeMileageAnalyticsProps>
                     <span className="font-medium">{d.band}</span>
                     <span className="text-right">{d.claims}</span>
                     <span className="text-right">£{d.totalCost.toLocaleString()}</span>
-                    <span className="text-right">£{d.avgCost.toLocaleString()}</span>
+                    <span className={`text-right ${d.avgCost > 500 ? 'text-red-600 font-medium' : ''}`}>£{d.avgCost.toLocaleString()}</span>
                   </div>
                 ))}
               </div>
