@@ -2323,7 +2323,7 @@ Questions? Call 0330 229 5040`;
 
                 {/* Additional Notes */}
                 <div className="space-y-2">
-                  <Label className="text-base font-semibold">Additional Notes (for Warranties 2000)</Label>
+                  <Label className="text-base font-semibold">Additional Notes for Warranties Register</Label>
                   <Textarea
                     value={additionalNotes}
                     onChange={(e) => setAdditionalNotes(e.target.value)}
