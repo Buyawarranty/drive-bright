@@ -303,28 +303,32 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
 
   // ── Success state ──
   const SuccessContent = ({ mobile = false }: { mobile?: boolean }) => (
-    <div className={cn("flex flex-col items-center justify-center text-center animate-fade-in", mobile ? "p-6 pt-8" : "p-8 flex-1")}>
-      <div className="mb-6 relative">
-        <div className="w-20 h-20 flex items-center justify-center animate-in zoom-in-50 duration-500">
-          <Check className="w-16 h-16 text-emerald-500" strokeWidth={3} />
+    <div className={cn("flex flex-col items-center justify-center text-center animate-fade-in", mobile ? "px-5 py-8" : "px-8 py-10 flex-1")}>
+      {/* Clean tick — no emoji */}
+      <div className="mb-5">
+        <div className={cn("rounded-full bg-emerald-50 flex items-center justify-center animate-in zoom-in-50 duration-500", mobile ? "w-16 h-16" : "w-20 h-20")}>
+          <Check className={cn("text-emerald-500", mobile ? "w-10 h-10" : "w-12 h-12")} strokeWidth={2.5} />
         </div>
-        <span className="absolute -top-2 -right-2 text-2xl animate-bounce">🎉</span>
       </div>
-      <h3 className={cn("font-bold text-gray-900 mb-4", mobile ? "text-xl" : "text-2xl")}>You're all set!</h3>
-      <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 mb-5 max-w-sm">
-        <p className="text-gray-700 leading-relaxed">
+
+      <h3 className={cn("font-bold text-gray-900 mb-3", mobile ? "text-lg" : "text-2xl")}>You're all set!</h3>
+
+      <div className="bg-gray-50 rounded-xl p-4 mb-4 max-w-sm w-full border border-gray-100">
+        <p className={cn("text-gray-700 leading-relaxed", mobile ? "text-sm" : "text-base")}>
           Our team is already working on <span className="font-semibold text-gray-900">your personalised quote</span>.
           Expect a call today — or within one working day if we're flat out.
         </p>
       </div>
-      <div className="bg-gradient-to-r from-brand-orange/10 to-amber-50 rounded-xl p-4 mb-6 max-w-sm border border-brand-orange/20">
-        <p className="text-gray-800 font-medium">
-          <Trophy className="w-5 h-5 text-brand-orange inline-block mr-1.5 align-text-bottom" />
-          Have any other quotes handy?<br />
-          <span className="text-brand-orange font-bold">We'll beat them.</span>
+
+      <div className="bg-gradient-to-r from-brand-orange/10 to-amber-50 rounded-xl p-3.5 mb-5 max-w-sm w-full border border-brand-orange/20">
+        <p className={cn("text-gray-800 font-medium", mobile ? "text-sm" : "text-base")}>
+          <Trophy className="w-4 h-4 text-brand-orange inline-block mr-1.5 align-text-bottom" />
+          Have any other quotes handy?
+          <span className="text-brand-orange font-bold"> We'll beat them.</span>
         </p>
       </div>
-      <Button onClick={onClose} className="px-10 h-12 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold rounded-xl shadow-md shadow-orange-200">
+
+      <Button onClick={onClose} className={cn("bg-brand-orange hover:bg-brand-orange/90 text-white font-bold rounded-xl shadow-md shadow-orange-200", mobile ? "w-full h-12 text-base" : "px-12 h-12")}>
         Got it ✓
       </Button>
     </div>
@@ -346,8 +350,8 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
         "hidden md:flex md:flex-col md:right-0 md:top-0 md:h-full md:w-[460px] md:shadow-2xl md:rounded-l-2xl",
         isOpen ? "md:translate-x-0" : "md:translate-x-full"
       )}>
-        <button onClick={onClose} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center z-10">
-          <X className="w-5 h-5 text-gray-600" />
+        <button onClick={onClose} className="absolute top-4 right-4 w-11 h-11 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center z-10 transition-colors" aria-label="Close">
+          <X className="w-6 h-6 text-gray-700" />
         </button>
         <div className="flex-1 overflow-y-auto">
           {requestSuccess ? <SuccessContent /> : <FormContent />}
@@ -363,8 +367,8 @@ const PriceHelpPanel: React.FC<PriceHelpPanelProps> = ({
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 bg-gray-300 rounded-full" />
         </div>
-        <button onClick={onClose} className="absolute top-3 right-3 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center z-10">
-          <X className="w-4 h-4 text-gray-600" />
+        <button onClick={onClose} className="absolute top-3 right-3 w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center z-10 transition-colors" aria-label="Close">
+          <X className="w-5 h-5 text-gray-700" />
         </button>
         <div className="overflow-y-auto max-h-[calc(92vh-40px)]">
           {requestSuccess ? <SuccessContent mobile /> : <FormContent mobile />}
