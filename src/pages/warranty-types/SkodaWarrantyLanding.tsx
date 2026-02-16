@@ -10,6 +10,8 @@ import MileageQuickSelect from '@/components/MileageQuickSelect';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
+import BrandPageFAQ from '@/components/brand-pages/BrandPageFAQ';
+import BluePersistentCallback from '@/components/brand-pages/BluePersistentCallback';
 
 // Lazy load heavy components
 const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
@@ -941,65 +943,9 @@ const SkodaWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* FAQ Section */}
-        <section className="py-12 md:py-16 bg-white">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                Škoda Warranty FAQs
-              </h2>
-              <p className="text-gray-600">Everything you need to know about Škoda extended warranties</p>
-            </div>
-
-            <div className="space-y-3">
-              {skodaFAQs.map((faq, i) => (
-                <div key={i} className="border border-gray-200 rounded-xl overflow-hidden">
-                  <button
-                    onClick={() => setOpenFaqId(openFaqId === i ? null : i)}
-                    className="w-full flex items-center justify-between p-5 text-left hover:bg-gray-50 transition-colors"
-                  >
-                    <span className="font-semibold text-gray-900 pr-4">{faq.question}</span>
-                    {openFaqId === i ? (
-                      <ChevronUp className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                    ) : (
-                      <ChevronDown className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                    )}
-                  </button>
-                  {openFaqId === i && (
-                    <div className="px-5 pb-5 text-gray-600 text-sm leading-relaxed">
-                      {faq.answer}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Final CTA */}
-        <section className="py-12 md:py-16 bg-gradient-to-r from-gray-900 to-gray-800">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              Get Your Škoda Warranty Quote in 60 Seconds
-            </h2>
-            <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
-              Join thousands of Škoda owners who trust Buy A Warranty for their extended vehicle protection. From just £22/month with no hidden fees.
-            </p>
-            <Button
-              onClick={scrollToQuoteForm}
-              className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-10 py-4 text-lg rounded-xl shadow-lg"
-              size="lg"
-            >
-              Get My Free Škoda Quote <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <div className="flex items-center justify-center gap-6 mt-6 text-gray-400 text-sm">
-              <span className="flex items-center gap-1"><Check className="h-4 w-4 text-green-400" /> No obligation</span>
-              <span className="flex items-center gap-1"><Check className="h-4 w-4 text-green-400" /> Cancel anytime</span>
-              <span className="flex items-center gap-1"><Check className="h-4 w-4 text-green-400" /> UK-based team</span>
-            </div>
-          </div>
-        </section>
+        <BrandPageFAQ />
       </main>
+      <BluePersistentCallback />
     </>
   );
 };

@@ -11,6 +11,8 @@ import MileageQuickSelect from '@/components/MileageQuickSelect';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
+import BrandPageFAQ from '@/components/brand-pages/BrandPageFAQ';
+import BluePersistentCallback from '@/components/brand-pages/BluePersistentCallback';
 
 // Lazy load heavy components
 const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));

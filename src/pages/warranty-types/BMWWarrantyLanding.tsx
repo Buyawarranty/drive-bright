@@ -12,6 +12,8 @@ import MileageQuickSelect from '@/components/MileageQuickSelect';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
+import BrandPageFAQ from '@/components/brand-pages/BrandPageFAQ';
+import BluePersistentCallback from '@/components/brand-pages/BluePersistentCallback';
 
 // Lazy load heavy components
 const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
@@ -1385,109 +1387,9 @@ const BMWWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* FAQ Section - Homepage Style */}
-        <section className="py-10 md:py-16 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8 md:mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-brand-dark-text mb-4 md:mb-6">
-                <span className="text-brand-orange">FAQ's</span>
-              </h2>
-              <p className="text-base md:text-lg text-brand-dark-text max-w-3xl mx-auto">
-                Find answers to the most common questions about our BMW warranty services.
-              </p>
-            </div>
-
-            <div className="grid lg:grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto">
-              {/* Left Column */}
-              <div className="space-y-4 md:space-y-6">
-                {[
-                  { id: 'bmw-old-high-mileage', question: 'Is my BMW too old or too many miles?', answer: 'We cover many older and higher mileage BMWs up to 15 years old and 150,000 miles. Check your instant price to confirm.' },
-                  { id: 'bmw-whats-covered', question: "What's covered in my BMW warranty?", answer: "At Buy-a-Warranty, we like to keep things simple. One solid plan that covers your BMW's engine, gearbox, electrical systems, and more — whether you're driving petrol, diesel, hybrid, or electric. No confusing packages, no unexpected rejections, and straightforward cover without the hassle." },
-                  { id: 'bmw-car-issue', question: 'What should I do if my BMW has an issue?', answer: 'If your BMW experiences a problem, please contact our Claims Team at 0330 229 5045. They are available Monday to Friday from 09:00 to 17:30 and can help start and process your warranty claim. If the issue arises outside of these hours, please fill out our online contact form.' },
-                  { id: 'bmw-modified', question: 'What about modified BMWs?', answer: 'Most body modifications are accepted. Call us on 0330 229 5040 or request a call back using the Call us button in the top navigation bar.' },
-                  { id: 'bmw-claim-limit', question: 'Is £1,000, £2,000 or £3,000 the right claim limit for me?', answer: "It depends on your BMW and how much protection you want.\n\n£1,000 is ideal for smaller or lower-cost repairs.\n£2,000 offers broader cover for most mid-range repairs.\n£3,000 is our most popular option and covers the majority of common BMW faults in full.\n\nEvery plan includes unlimited claims, and you're covered up to the value of your vehicle, whichever limit you choose." },
-                  { id: 'bmw-expensive-repair', question: 'What is the most expensive repair you have covered?', answer: 'We regularly cover repairs over £1,500 for BMW engines, gearboxes and ECUs. Higher claim limits are available. Check your instant price by entering your registration.' },
-                ].map((faq) => (
-                  <div key={faq.id} className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg overflow-hidden shadow-lg">
-                    <button
-                      onClick={() => setOpenFaqId(openFaqId === faq.id as any ? null : faq.id as any)}
-                      className="w-full px-6 py-5 text-left flex items-center justify-between text-white hover:bg-orange-600/20 transition-colors"
-                    >
-                      <span className="font-bold text-lg pr-4">{faq.question}</span>
-                      <ChevronDown className={`w-6 h-6 flex-shrink-0 transition-transform duration-300 text-white ${openFaqId === faq.id as any ? 'rotate-180' : ''}`} />
-                    </button>
-                    <div className={`overflow-hidden transition-all duration-200 ease-out ${openFaqId === faq.id as any ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}`}>
-                      <div className="px-6 pb-5 bg-white border-t border-orange-200">
-                        <p className="text-base leading-relaxed pt-4 whitespace-pre-line text-brand-dark-text">{faq.answer}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Right Column */}
-              <div className="space-y-4 md:space-y-6">
-                {[
-                  { id: 'bmw-own-garage', question: 'Can I use my own garage for my BMW?', answer: 'Yes. Any VAT registered garage is acceptable or we can recommend an approved garage.' },
-                  { id: 'bmw-make-claim', question: 'How do I make a claim on my BMW warranty?', answer: "Arrange for your BMW to be inspected by a local independent repair garage to diagnose any issues. Once diagnosed, before any repairs are conducted, the repairer must directly contact our Claims Team at 0330 229 5045. It's important to note that failure to do so will not allow us to process your claim." },
-                  { id: 'bmw-cost', question: 'How much does a BMW warranty cost?', answer: 'BMW warranty costs start from just £29 per month, depending on your model and the level of cover you choose. Get an instant quote by entering your registration number above.' },
-                  { id: 'bmw-service-history', question: 'Do I need a full BMW service history?', answer: 'A reasonable service history is fine. Many BMWs are accepted even if servicing has been missed.' },
-                  { id: 'bmw-diagnostics', question: 'Are BMW diagnostics covered?', answer: 'Diagnostics are usually covered when the fault is approved.' },
-                ].map((faq) => (
-                  <div key={faq.id} className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg overflow-hidden shadow-lg">
-                    <button
-                      onClick={() => setOpenFaqId(openFaqId === faq.id as any ? null : faq.id as any)}
-                      className="w-full px-6 py-5 text-left flex items-center justify-between text-white hover:bg-orange-600/20 transition-colors"
-                    >
-                      <span className="font-bold text-lg pr-4">{faq.question}</span>
-                      <ChevronDown className={`w-6 h-6 flex-shrink-0 transition-transform duration-300 text-white ${openFaqId === faq.id as any ? 'rotate-180' : ''}`} />
-                    </button>
-                    <div className={`overflow-hidden transition-all duration-200 ease-out ${openFaqId === faq.id as any ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}`}>
-                      <div className="px-6 pb-5 bg-white border-t border-orange-200">
-                        <p className="text-base leading-relaxed pt-4 whitespace-pre-line text-brand-dark-text">{faq.answer}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* View All FAQs Button */}
-            <div className="text-center mt-8 md:mt-12">
-              <Link to="/faq/">
-                <Button className="bg-brand-orange hover:bg-brand-orange/90 text-white px-8 py-3 text-lg font-semibold">
-                  View All FAQs
-                </Button>
-              </Link>
-              <p className="text-sm text-gray-600 mt-3">
-                Have more questions? Check out our comprehensive FAQ page for detailed answers.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Footer CTA is handled by WebsiteFooter component */}
-
-        {/* Mobile Floating Actions */}
-        {isMobile && (
-          <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-3">
-            <a
-              href="https://wa.me/447700161515"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center shadow-lg hover:bg-green-600 transition-colors"
-            >
-              <img src={whatsappIconNew} alt="WhatsApp" className="w-7 h-7" />
-            </a>
-            <a
-              href="tel:08009179270"
-              className="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-700 transition-colors"
-            >
-              <Phone className="w-7 h-7 text-white" />
-            </a>
-          </div>
-        )}
+        <BrandPageFAQ />
       </main>
+      <BluePersistentCallback />
     </>
   );
 };
