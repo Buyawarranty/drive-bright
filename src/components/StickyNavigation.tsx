@@ -109,9 +109,9 @@ const StickyNavigation: React.FC = () => {
                 Get my quote
               </Link>
 
-              {/* Login Button */}
+              {/* Customer Login Button */}
               <Link 
-                to="/sales-login/"
+                to="/customer-dashboard/"
                 className="inline-flex items-center gap-1 px-3 xl:px-4 py-2 text-gray-600 hover:text-gray-900 text-sm xl:text-base font-medium transition-colors"
               >
                 <LogIn className="h-4 w-4" />
