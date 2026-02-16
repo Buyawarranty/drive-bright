@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car } from 'lucide-react';
+import { ArrowRight, Mail, MessageCircle, Loader2, History, RefreshCw, Eye, Zap, CreditCard, Calendar, Link as LinkIcon, UserCheck, CheckCircle2, Send, AlertCircle, Save, Pencil, ChevronDown, Gift, BookOpen, Trash2, CalendarIcon, Info, Users, KeyRound, FileText, Car, Copy } from 'lucide-react';
 import { PaidOrdersTab } from './PaidOrdersTab';
 import CustomerLoginsTab from './CustomerLoginsTab';
 import CustomerPolicyUpdateTab from './CustomerPolicyUpdateTab';
@@ -122,6 +122,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [historySubTab, setHistorySubTab] = useState<'sent' | 'saved'>('sent');
   const [paidOrdersCount, setPaidOrdersCount] = useState(0);
   const [adminEmail, setAdminEmail] = useState<string | null>(null);
+  const [adminName, setAdminName] = useState<string | null>(null);
   const [additionalEmails, setAdditionalEmails] = useState<string[]>([]);
   const [newEmailInput, setNewEmailInput] = useState('');
   
@@ -229,10 +230,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       if (user) {
         const { data: adminUser } = await supabase
           .from('admin_users')
-          .select('email')
+          .select('email, first_name, last_name')
           .eq('user_id', user.id)
           .single();
         setAdminEmail(adminUser?.email || user.email || null);
+        const fullName = [adminUser?.first_name, adminUser?.last_name].filter(Boolean).join(' ');
+        setAdminName(fullName || null);
       }
     };
     getAdminEmail();
@@ -2717,16 +2720,22 @@ Questions? Call 0330 229 5040`;
                   </div>
                 </div>
 
-                {/* CC Recipients */}
-                <div className="space-y-2">
-                  <Label>CC Recipients</Label>
+                {/* Agent Copy Notice */}
+                {adminEmail && adminEmail !== customerEmail && (
                   <div className="space-y-2">
-                    {adminEmail && adminEmail !== customerEmail && (
-                      <div className="flex items-center gap-2 p-2 bg-muted rounded text-sm">
-                        <span>{adminEmail}</span>
-                        <span className="text-xs text-muted-foreground">(your copy - logged in agent)</span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <Copy className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                      <p className="text-sm text-blue-800">
+                        <span className="font-bold">A copy will also be sent to you: {adminName ? `${adminName} (${adminEmail})` : adminEmail}</span>
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Additional CC Recipients (Optional) */}
+                <div className="space-y-2">
+                  <Label>CC Recipients <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                  <div className="space-y-2">
                     {additionalEmails.map((email, index) => (
                       <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded text-sm">
                         <span className="flex-1">{email}</span>
@@ -2741,34 +2750,31 @@ Questions? Call 0330 229 5040`;
                         </Button>
                       </div>
                     ))}
-                    <div className="flex gap-2">
-                      <Input
-                        type="email"
-                        placeholder="Add another email address..."
-                        value={newEmailInput}
-                        onChange={(e) => {
-                          setNewEmailInput(e.target.value);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
-                            e.preventDefault();
-                            const email = newEmailInput.trim().replace(/,+$/, '');
-                            if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !additionalEmails.includes(email)) {
-                              setAdditionalEmails(prev => [...prev, email]);
-                              setNewEmailInput('');
-                            }
-                          }
-                        }}
-                        onBlur={() => {
+                    <Input
+                      type="email"
+                      placeholder="Add another email address (optional)..."
+                      value={newEmailInput}
+                      onChange={(e) => {
+                        setNewEmailInput(e.target.value);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
+                          e.preventDefault();
                           const email = newEmailInput.trim().replace(/,+$/, '');
                           if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !additionalEmails.includes(email)) {
                             setAdditionalEmails(prev => [...prev, email]);
                             setNewEmailInput('');
                           }
-                        }}
-                        className="flex-1"
-                      />
-                    </div>
+                        }
+                      }}
+                      onBlur={() => {
+                        const email = newEmailInput.trim().replace(/,+$/, '');
+                        if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !additionalEmails.includes(email)) {
+                          setAdditionalEmails(prev => [...prev, email]);
+                          setNewEmailInput('');
+                        }
+                      }}
+                    />
                   </div>
                 </div>
 
