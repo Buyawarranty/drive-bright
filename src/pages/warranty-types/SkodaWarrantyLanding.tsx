@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import BrandPageFAQ from '@/components/brand-pages/BrandPageFAQ';
 import BluePersistentCallback from '@/components/brand-pages/BluePersistentCallback';
+import BrandRepairCosts from '@/components/brand-pages/BrandRepairCosts';
 
 // Lazy load heavy components
 const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
@@ -785,6 +786,22 @@ const SkodaWarrantyLanding: React.FC = () => {
             </div>
           </div>
         </section>
+        <BrandRepairCosts
+          brandName="Škoda"
+          monthlyPrice="£22"
+          onGetQuote={scrollToQuoteForm}
+          repairs={[
+            { name: 'DSG Gearbox & Mechatronics', cost: '£1,500 – £3,000', icon: 'Wrench', severity: 'critical' },
+            { name: 'Turbocharger (TSI/TDI)', cost: '£1,200 – £2,800', icon: 'Zap', severity: 'high' },
+            { name: 'Engine Rebuild', cost: '£2,500 – £5,000', icon: 'Car', severity: 'critical' },
+            { name: 'DPF Filter Replacement', cost: '£1,000 – £2,500', icon: 'Shield', severity: 'high' },
+            { name: 'Fuel Injector Set', cost: '£700 – £1,800', icon: 'Zap', severity: 'medium' },
+            { name: 'ECU Replacement', cost: '£700 – £1,500', icon: 'Zap', severity: 'medium' },
+            { name: 'EV Drive Motor (Enyaq iV)', cost: '£2,000 – £4,000', icon: 'Zap', severity: 'high' },
+            { name: 'Timing Chain Kit', cost: '£800 – £2,000', icon: 'Wrench', severity: 'high' },
+            { name: 'Power Steering Rack', cost: '£600 – £1,400', icon: 'Wrench', severity: 'medium' },
+          ]}
+        />
 
         {/* Models Covered Section - Apple-style compact grid */}
         <section className="py-12 md:py-16 bg-gradient-to-br from-gray-50 to-white">
