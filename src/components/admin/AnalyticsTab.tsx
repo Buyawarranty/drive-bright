@@ -6,6 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Users, CreditCard, PoundSterling, Globe, Phone, X, Calendar, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { toast } from 'sonner';
 import { ApiConnectivityTest } from './ApiConnectivityTest';
+import { SalesAgeMileageAnalytics } from './SalesAgeMileageAnalytics';
 import { DateRangeFilter } from './DateRangeFilter';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
@@ -26,6 +27,8 @@ interface Customer {
   warranty_reference_number: string | null;
   purchase_source: string | null;
   vehicle_fuel_type: string | null;
+  vehicle_year: string | null;
+  mileage: string | null;
 }
 
 // Test names to exclude from analytics (matching CustomersTab filtering)
@@ -76,7 +79,7 @@ export const AnalyticsTab = () => {
       // Match CustomersTab filtering exactly
       const { data, error } = await supabase
         .from('customers')
-        .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, vehicle_fuel_type')
+        .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, vehicle_fuel_type, vehicle_year, mileage')
         .not('email', 'ilike', '%@test.com%')
         .not('email', 'ilike', '%testuser%')
         .not('email', 'ilike', '%guest@%')
@@ -840,7 +843,10 @@ export const AnalyticsTab = () => {
           )}
         </CardContent>
       </Card>
-      
+
+      {/* Sales by Vehicle Age & Mileage */}
+      <SalesAgeMileageAnalytics customers={filteredCustomers} />
+
       {/* API Connectivity Test Section */}
       <div className="mt-8">
         <ApiConnectivityTest />
