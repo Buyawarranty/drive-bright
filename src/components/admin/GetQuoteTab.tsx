@@ -2724,7 +2724,7 @@ Questions? Call 0330 229 5040`;
                     {adminEmail && adminEmail !== customerEmail && (
                       <div className="flex items-center gap-2 p-2 bg-muted rounded text-sm">
                         <span>{adminEmail}</span>
-                        <span className="text-xs text-muted-foreground">(admin copy)</span>
+                        <span className="text-xs text-muted-foreground">(your copy - logged in agent)</span>
                       </div>
                     )}
                     {additionalEmails.map((email, index) => (
