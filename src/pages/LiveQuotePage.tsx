@@ -547,167 +547,191 @@ export default function LiveQuotePage() {
       </CardHeader>
       <CardContent className="space-y-4">
         <RadioGroup value={paymentMethod} onValueChange={(value: 'bumper' | 'stripe') => setPaymentMethod(value)}>
-          <div className="space-y-4">
-            {/* Pay Monthly - Bumper */}
-            <div 
-              onClick={() => setPaymentMethod('bumper')}
-              className={`relative rounded-xl cursor-pointer transition-all duration-300 flex flex-col ${
-                paymentMethod === 'bumper' 
-                  ? 'shadow-[0_0_15px_rgba(243,156,18,0.4)] border-2 border-orange-500' 
-                  : 'border-2 border-gray-200 hover:border-orange-300'
-              }`}
-              style={{ padding: '20px' }}
-            >
-              <div className="absolute -top-3 left-4 bg-orange-500 text-white text-xs font-bold rounded-full px-3 py-1">
-                0% APR
-              </div>
-
-              <div className="flex items-start justify-between mb-3 mt-2">
-                <RadioGroupItem value="bumper" id="bumper-option" className="border-2 border-gray-400 w-6 h-6" />
-              </div>
-
-              <Label htmlFor="bumper-option" className="block cursor-pointer mb-3">
-                <h4 className="text-lg font-bold text-gray-900">Pay Monthly</h4>
-              </Label>
-
-              {/* Plan Duration Display */}
-              <div className="flex items-center gap-2 mb-3">
-                <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                <span className="text-sm font-semibold text-gray-900">
-                  Platinum {Math.round(quote.cover.durationMonths / 12)} Year
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Monthly Card */}
+            <div className="relative">
+              {/* 0% APR Badge */}
+              <div className="absolute -top-3 left-4 z-10">
+                <span className="bg-[#FF6B00] text-white text-xs font-bold px-2.5 py-1 rounded-md whitespace-nowrap">
+                  0% APR
                 </span>
               </div>
 
-              <div className="mb-4">
-                <div className="text-sm text-gray-600 font-bold">Total: £{bumperMonthlyTotal}</div>
-                <div className="text-2xl font-bold text-gray-900">£{quote.pricing.monthlyPrice}/month</div>
-                <div className="text-sm text-gray-600 font-bold">12 easy payments</div>
-              </div>
-
-              <div className="space-y-2 mb-4 flex-grow">
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  <span>No credit impact</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  <span>12 payments only</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  <span>0% APR</span>
-                </div>
-              </div>
-
-              <Button
+              <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setPaymentMethod('bumper');
-                  handlePayment('bumper');
-                }}
-                disabled={!!processingPayment}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3"
+                onClick={() => setPaymentMethod('bumper')}
+                className={`w-full h-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all ${
+                  paymentMethod === 'bumper'
+                    ? 'border-[#FF6B00] bg-white'
+                    : 'border-[#E5E5E5] bg-white hover:border-gray-300'
+                }`}
               >
-                {processingPayment === 'bumper' ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  'Complete checkout'
-                )}
-              </Button>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    {/* Platinum Plan Label */}
+                    <div className="flex items-center gap-2 mb-2">
+                      <Shield className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                      <span className="text-sm font-semibold text-[#1a1a1a]">
+                        Platinum {Math.round(quote.cover.durationMonths / 12)}-Year Cover
+                      </span>
+                    </div>
+                    <p className="text-base font-bold text-[#1a1a1a]">Monthly</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-[#1a1a1a] mt-1">
+                      £{quote.pricing.monthlyPrice}<span className="text-base font-normal text-gray-600">/mo</span>
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">Total £{bumperMonthlyTotal}</p>
 
-              <div className="text-center pt-3 border-t mt-4">
-                <span className="text-xs text-gray-500 block mb-1">Powered by</span>
-                <img src={bumperLogo} alt="Bumper" className="h-5 mx-auto" />
-              </div>
+                    {/* Benefits */}
+                    <div className="mt-3 space-y-1.5">
+                      <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+                        <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                        <span>No credit impact</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+                        <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                        <span>12 payments only</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+                        <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                        <span>0% APR</span>
+                      </div>
+                    </div>
+
+                    {/* Bumper Logo */}
+                    <div className="mt-4">
+                      <img src={bumperLogo} alt="Bumper" className="h-6 object-contain" />
+                    </div>
+                  </div>
+
+                  {/* Radio indicator */}
+                  <div
+                    className={`w-6 h-6 mt-0.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                      paymentMethod === 'bumper'
+                        ? 'bg-[#FF6B00] border-[#FF6B00]'
+                        : 'border-gray-300 bg-white'
+                    }`}
+                  >
+                    {paymentMethod === 'bumper' && (
+                      <Check className="w-4 h-4 text-white" />
+                    )}
+                  </div>
+                </div>
+              </button>
             </div>
 
-            {/* Pay in Full - Stripe */}
-            <div 
-              onClick={() => setPaymentMethod('stripe')}
-              className={`relative rounded-xl cursor-pointer transition-all duration-300 flex flex-col ${
-                paymentMethod === 'stripe' 
-                  ? 'shadow-[0_0_15px_rgba(39,174,96,0.4)] border-2 border-green-500' 
-                  : 'border-2 border-gray-200 hover:border-green-300'
-              }`}
-              style={{ padding: '20px' }}
-            >
-              <div className="absolute -top-3 left-4 bg-green-500 text-white text-xs font-bold rounded-full px-3 py-1">
-                BEST VALUE
-              </div>
-
-              <div className="flex items-start justify-between mb-3 mt-2">
-                <RadioGroupItem value="stripe" id="stripe-option" className="border-2 border-gray-400 w-6 h-6" />
-              </div>
-
-              <Label htmlFor="stripe-option" className="block cursor-pointer mb-3">
-                <h4 className="text-lg font-bold text-gray-900">Pay in Full</h4>
-              </Label>
-
-              {/* Plan Duration Display */}
-              <div className="flex items-center gap-2 mb-3">
-                <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                <span className="text-sm font-semibold text-gray-900">
-                  Platinum {Math.round(quote.cover.durationMonths / 12)} Year
+            {/* Pay in Full Card */}
+            <div className="relative">
+              {/* Save 10% Badge */}
+              <div className="absolute -top-3 left-4 z-10">
+                <span className="bg-[#0BA360] text-white text-xs font-bold px-2.5 py-1 rounded-md whitespace-nowrap">
+                  Save 10%
                 </span>
               </div>
 
-              <div className="mb-4">
-                <div className="text-sm text-gray-600 font-bold line-through">Was: £{bumperMonthlyTotal}</div>
-                <div className="text-2xl font-bold text-green-700">£{quote.pricing.upfrontPrice}</div>
-                <Badge className="bg-green-100 text-green-800 text-xs mt-1">Save 10%</Badge>
-              </div>
-
-              <div className="space-y-2 mb-4 flex-grow">
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  <span>Instant 10% off</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  <span>One simple payment</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  <span>No ongoing payments</span>
-                </div>
-              </div>
-
-              <Button
+              <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setPaymentMethod('stripe');
-                  handlePayment('stripe');
-                }}
-                disabled={!!processingPayment}
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3"
+                onClick={() => setPaymentMethod('stripe')}
+                className={`w-full h-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all ${
+                  paymentMethod === 'stripe'
+                    ? 'border-[#0BA360] bg-white'
+                    : 'border-[#E5E5E5] bg-white hover:border-gray-300'
+                }`}
               >
-                {processingPayment === 'stripe' ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  'Complete checkout'
-                )}
-              </Button>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    {/* Platinum Plan Label */}
+                    <div className="flex items-center gap-2 mb-2">
+                      <Shield className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                      <span className="text-sm font-semibold text-[#1a1a1a]">
+                        Platinum {Math.round(quote.cover.durationMonths / 12)}-Year Cover
+                      </span>
+                    </div>
+                    <p className="text-base font-bold text-[#1a1a1a]">Pay in Full</p>
+                    <p className="text-sm text-gray-500 line-through mt-1">Was £{bumperMonthlyTotal}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-[#1a1a1a]">
+                      £{quote.pricing.upfrontPrice}
+                    </p>
+                    <p className="text-sm text-[#0BA360] font-medium">You save £{bumperMonthlyTotal - quote.pricing.upfrontPrice}!</p>
 
-              <div className="text-center pt-3 border-t mt-4">
-                <span className="text-xs text-gray-500 block mb-1">Secure payment via</span>
-                <img src={stripeLogo} alt="Stripe" className="h-5 mx-auto" />
-              </div>
+                    {/* Benefits */}
+                    <div className="mt-3 space-y-1.5">
+                      <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+                        <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                        <span>Instant 10% off</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+                        <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                        <span>One simple payment</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
+                        <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
+                        <span>No ongoing payments</span>
+                      </div>
+                    </div>
+
+                    {/* Stripe Text */}
+                    <div className="mt-4">
+                      <span className="text-[#635BFF] font-semibold text-sm">stripe</span>
+                    </div>
+                  </div>
+
+                  {/* Radio indicator */}
+                  <div
+                    className={`w-6 h-6 mt-0.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                      paymentMethod === 'stripe'
+                        ? 'bg-[#0BA360] border-[#0BA360]'
+                        : 'border-gray-300 bg-white'
+                    }`}
+                  >
+                    {paymentMethod === 'stripe' && (
+                      <Check className="w-4 h-4 text-white" />
+                    )}
+                  </div>
+                </div>
+              </button>
             </div>
           </div>
         </RadioGroup>
 
-        <p className="text-xs text-center text-gray-500 mt-4">
-          <Lock className="w-3 h-3 inline mr-1" />
-          Your payment is secured with 256-bit SSL encryption
-        </p>
+        {/* CTA Button */}
+        <div className="mt-6">
+          <Button
+            type="button"
+            onClick={() => {
+              if (paymentMethod) handlePayment(paymentMethod);
+            }}
+            disabled={!!processingPayment || !paymentMethod}
+            className={`w-full py-6 text-lg font-bold rounded-xl hover:opacity-90 ${
+              !paymentMethod 
+                ? 'bg-gray-400' 
+                : paymentMethod === 'stripe'
+                ? 'bg-[#0BA360] hover:bg-[#099355]'
+                : 'bg-[#FF6B00] hover:bg-[#e56000]'
+            }`}
+            style={{ color: '#FFFFFF' }}
+          >
+            {processingPayment ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Processing...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <Lock className="w-5 h-5" />
+                {paymentMethod === 'bumper' 
+                  ? `Pay £${quote.pricing.monthlyPrice} today` 
+                  : paymentMethod === 'stripe'
+                  ? `Pay £${quote.pricing.upfrontPrice} now`
+                  : 'Select payment option'}
+              </span>
+            )}
+          </Button>
+        </div>
+
+        <div className="flex items-center justify-center gap-2 mt-4 text-sm text-gray-600">
+          <Lock className="w-4 h-4 text-gray-400" />
+          <span>Secure checkout processing</span>
+        </div>
       </CardContent>
     </Card>
   );
