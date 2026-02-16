@@ -547,7 +547,7 @@ export default function LiveQuotePage() {
       </CardHeader>
       <CardContent className="space-y-4">
         <RadioGroup value={paymentMethod} onValueChange={(value: 'bumper' | 'stripe') => setPaymentMethod(value)}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Monthly Card */}
             <div className="relative">
               {/* 0% APR Badge */}
