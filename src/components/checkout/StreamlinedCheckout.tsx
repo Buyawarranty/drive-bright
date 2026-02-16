@@ -345,9 +345,9 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
   // Calculate high mileage surcharge based on warranty duration
   const getHighMileageSurcharge = (enteredMileage: number): number => {
     if (enteredMileage > 120000 && enteredMileage <= 150000) {
-      if (paymentType === '12months') return 200;
-      if (paymentType === '24months') return 400;
-      if (paymentType === '36months') return 600;
+      if (paymentType === '12months') return 100;
+      if (paymentType === '24months') return 150;
+      if (paymentType === '36months') return 200;
     }
     return 0;
   };
