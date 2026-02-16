@@ -736,13 +736,6 @@ const VanWarrantyLanding: React.FC = () => {
             <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center">
               {/* Left Column - Content */}
               <div className="text-center lg:text-left">
-                {/* Van Icon */}
-                <div className="flex items-center justify-center lg:justify-start gap-4 mb-4 md:mb-6">
-                  <div className="w-16 h-16 bg-brand-orange/10 rounded-full flex items-center justify-center">
-                    <Truck className="w-8 h-8 text-brand-orange" />
-                  </div>
-                </div>
-
                 {/* H1 Headline */}
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4">
                   <span className="text-gray-900">Van Extended Warranty </span>
@@ -1248,46 +1241,6 @@ const VanWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* UK Coverage Section */}
-        <section className="py-10 md:py-16 bg-gradient-to-br from-blue-900 to-gray-900 text-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-              <div className="text-center md:text-left">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 md:mb-6 text-white">
-                  Nationwide UK Coverage
-                </h2>
-                <p className="text-base md:text-lg text-white mb-4 md:mb-6">
-                  Your van is covered wherever you drive in the United Kingdom. Our network of approved garages spans England, Scotland, Wales, and Northern Ireland.
-                </p>
-                <ul className="space-y-2 md:space-y-3 text-left max-w-md mx-auto md:mx-0">
-                  {[
-                    'Use any VAT-registered garage',
-                    'Manufacturer or independent specialist',
-                    'Recovery to nearest garage',
-                    'Claims handled by our UK team',
-                  ].map((item, index) => (
-                    <li key={index} className="flex items-center gap-2 md:gap-3">
-                      <Check className="w-4 h-4 md:w-5 md:h-5 text-green-400 flex-shrink-0" />
-                      <span className="text-sm md:text-base">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="flex flex-col items-center order-first md:order-last">
-                <OptimizedImage 
-                  src={pandaThumbsUp}
-                  alt="Miles the Panda giving thumbs up for UK-wide coverage"
-                  className="w-36 sm:w-48 md:w-64 h-auto object-contain mb-3 md:mb-4"
-                  width={256}
-                  height={256}
-                />
-                <div className="inline-block bg-white/10 rounded-xl md:rounded-2xl px-4 md:px-8 py-2 md:py-4 backdrop-blur-sm">
-                  <p className="text-sm md:text-xl font-bold text-white">England • Scotland • Wales • N. Ireland</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* Testimonials Section */}
         <section className="py-10 md:py-16 bg-white">
@@ -1408,13 +1361,22 @@ const VanWarrantyLanding: React.FC = () => {
             <p className="text-lg md:text-xl text-white/90 mb-6 md:mb-8 max-w-2xl mx-auto">
               Get an instant quote in 60 seconds. Comprehensive cover from just £32/month.
             </p>
-            <Button
-              onClick={scrollToQuoteForm}
-              className="bg-white text-brand-orange hover:bg-gray-100 font-bold px-8 md:px-12 py-4 md:py-6 text-base md:text-xl rounded-xl shadow-lg"
-            >
-              Get Your Free Quote Now
-              <ArrowRight className="ml-2 w-5 h-5 md:w-6 md:h-6" />
-            </Button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button
+                onClick={scrollToQuoteForm}
+                className="bg-white text-brand-orange hover:bg-gray-100 font-bold px-8 md:px-12 py-4 md:py-6 text-base md:text-xl rounded-xl shadow-lg"
+              >
+                Get Your Free Quote Now
+                <ArrowRight className="ml-2 w-5 h-5 md:w-6 md:h-6" />
+              </Button>
+              <a
+                href="tel:03302295040"
+                className="inline-flex items-center gap-2 text-white font-bold text-base md:text-xl hover:text-white/80 transition-colors"
+              >
+                <Phone className="w-5 h-5 md:w-6 md:h-6" />
+                0330 229 5040
+              </a>
+            </div>
           </div>
         </section>
       </main>
