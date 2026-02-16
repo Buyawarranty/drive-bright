@@ -615,7 +615,7 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
 
                 {/* W2K Notes */}
                 <div>
-                  <Label htmlFor="additionalNotes">Additional Notes (for Warranties 2000)</Label>
+                  <Label htmlFor="additionalNotes">Additional Notes for Warranties Register</Label>
                   <Textarea
                     id="additionalNotes"
                     value={additionalNotes}
