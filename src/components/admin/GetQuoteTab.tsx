@@ -2746,33 +2746,28 @@ Questions? Call 0330 229 5040`;
                         type="email"
                         placeholder="Add another email address..."
                         value={newEmailInput}
-                        onChange={(e) => setNewEmailInput(e.target.value)}
+                        onChange={(e) => {
+                          setNewEmailInput(e.target.value);
+                        }}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
+                          if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
                             e.preventDefault();
-                            const email = newEmailInput.trim();
+                            const email = newEmailInput.trim().replace(/,+$/, '');
                             if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !additionalEmails.includes(email)) {
                               setAdditionalEmails(prev => [...prev, email]);
                               setNewEmailInput('');
                             }
                           }
                         }}
-                        className="flex-1"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const email = newEmailInput.trim();
+                        onBlur={() => {
+                          const email = newEmailInput.trim().replace(/,+$/, '');
                           if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !additionalEmails.includes(email)) {
                             setAdditionalEmails(prev => [...prev, email]);
                             setNewEmailInput('');
                           }
                         }}
-                      >
-                        Add
-                      </Button>
+                        className="flex-1"
+                      />
                     </div>
                   </div>
                 </div>
