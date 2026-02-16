@@ -587,15 +587,15 @@ export default function LiveQuotePage() {
               <div className="space-y-2 mb-4 flex-grow">
                 <div className="flex items-center gap-2 text-sm text-gray-700">
                   <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  <span>Soft search only</span>
+                  <span>No credit impact</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-700">
                   <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  <span>No impact on credit score</span>
+                  <span>12 payments only</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-700">
                   <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  <span>No hidden fees</span>
+                  <span>0% APR</span>
                 </div>
               </div>
 
@@ -664,7 +664,7 @@ export default function LiveQuotePage() {
               <div className="space-y-2 mb-4 flex-grow">
                 <div className="flex items-center gap-2 text-sm text-gray-700">
                   <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  <span>Instant activation</span>
+                  <span>Instant 10% off</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-700">
                   <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
@@ -672,7 +672,7 @@ export default function LiveQuotePage() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-700">
                   <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  <span>Best value option</span>
+                  <span>No ongoing payments</span>
                 </div>
               </div>
 
