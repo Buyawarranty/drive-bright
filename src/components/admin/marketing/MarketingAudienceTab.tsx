@@ -70,18 +70,26 @@ export const MarketingAudienceTab: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [subscriptionFilter, setSubscriptionFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('exclude_junk');
+  const [sortOrder, setSortOrder] = useState<string>('newest');
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState('audience');
 
   // Fetch marketing audience
   const { data: audience, isLoading: audienceLoading, refetch: refetchAudience } = useQuery({
-    queryKey: ['marketing-audience', searchTerm, sourceFilter, subscriptionFilter],
+    queryKey: ['marketing-audience', searchTerm, sourceFilter, subscriptionFilter, statusFilter, sortOrder],
     queryFn: async () => {
       let query = supabase
         .from('marketing_audience')
         .select('*')
-        .order('created_at', { ascending: false })
         .limit(2000);
+
+      // Sort order
+      if (sortOrder === 'newest') {
+        query = query.order('created_at', { ascending: false });
+      } else if (sortOrder === 'oldest') {
+        query = query.order('created_at', { ascending: true });
+      }
 
       if (searchTerm) {
         query = query.or(`email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%,full_name.ilike.%${searchTerm}%,reg_plate.ilike.%${searchTerm}%`);
@@ -95,6 +103,17 @@ export const MarketingAudienceTab: React.FC = () => {
         query = query.eq('is_subscribed', true);
       } else if (subscriptionFilter === 'unsubscribed') {
         query = query.eq('is_subscribed', false);
+      }
+
+      // Status filter - exclude junk by default
+      if (statusFilter === 'exclude_junk') {
+        query = query.not('lead_status', 'in', '("fake_lead","not_interested","lost")');
+      } else if (statusFilter === 'purchased') {
+        query = query.in('lead_status', ['purchased', 'converted', 'paid']);
+      } else if (statusFilter === 'abandoned_cart') {
+        query = query.eq('source_type', 'abandoned_cart');
+      } else if (statusFilter !== 'all') {
+        query = query.eq('lead_status', statusFilter);
       }
 
       const { data, error } = await query;
@@ -338,6 +357,29 @@ export const MarketingAudienceTab: React.FC = () => {
                     <SelectItem value="all">All</SelectItem>
                     <SelectItem value="subscribed">Subscribed</SelectItem>
                     <SelectItem value="unsubscribed">Unsubscribed</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Lead Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="exclude_junk">Exclude Fake/Not Interested</SelectItem>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="purchased">Purchased / Paid</SelectItem>
+                    <SelectItem value="abandoned_cart">Abandoned Carts Only</SelectItem>
+                    <SelectItem value="new">New</SelectItem>
+                    <SelectItem value="contacted">Contacted</SelectItem>
+                    <SelectItem value="qualified">Qualified</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={sortOrder} onValueChange={setSortOrder}>
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="Sort" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Newest First</SelectItem>
+                    <SelectItem value="oldest">Oldest First</SelectItem>
                   </SelectContent>
                 </Select>
                 {selectedMembers.size > 0 && (
