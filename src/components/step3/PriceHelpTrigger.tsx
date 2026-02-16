@@ -33,14 +33,14 @@ const PriceHelpTrigger: React.FC<PriceHelpTriggerProps> = ({ onClick, className 
         </div>
 
         {/* CTA row */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pl-9 md:pl-0 flex-shrink-0">
+        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 pl-9 md:pl-0 flex-shrink-0 text-sm md:text-base">
           <button
             onClick={onClick}
-            className="h-11 md:h-12 px-6 md:px-8 rounded-xl bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-sm md:text-base transition-colors shadow-sm whitespace-nowrap"
+            className="font-bold text-brand-orange hover:text-brand-orange/80 underline underline-offset-2 decoration-1 transition-colors whitespace-nowrap bg-transparent border-none cursor-pointer p-0"
           >
             Beat My Quote
           </button>
-          <span className="text-sm md:text-base text-gray-700 text-center sm:text-left whitespace-nowrap">
+          <span className="text-gray-700 whitespace-nowrap">
             or call{' '}
             <a
               href="tel:03302295040"
