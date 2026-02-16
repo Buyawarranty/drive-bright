@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import BrandPageFAQ from '@/components/brand-pages/BrandPageFAQ';
 import BluePersistentCallback from '@/components/brand-pages/BluePersistentCallback';
+import BrandRepairCosts from '@/components/brand-pages/BrandRepairCosts';
 
 // Lazy load heavy components
 const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
@@ -801,6 +802,22 @@ const HyundaiWarrantyLanding: React.FC = () => {
             </div>
           </div>
         </section>
+        <BrandRepairCosts
+          brandName="Hyundai"
+          monthlyPrice="£24"
+          onGetQuote={scrollToQuoteForm}
+          repairs={[
+            { name: 'DCT Gearbox Rebuild', cost: '£1,800 – £3,500', icon: 'Wrench', severity: 'critical' },
+            { name: 'Turbocharger (T-GDi)', cost: '£1,500 – £3,000', icon: 'Zap', severity: 'high' },
+            { name: 'Engine Rebuild', cost: '£3,000 – £5,500', icon: 'Car', severity: 'critical' },
+            { name: 'EV Drive Motor (IONIQ 5)', cost: '£2,500 – £5,000', icon: 'Zap', severity: 'high' },
+            { name: 'Fuel Injector Set', cost: '£700 – £1,800', icon: 'Zap', severity: 'medium' },
+            { name: 'ECU Replacement', cost: '£800 – £1,800', icon: 'Zap', severity: 'medium' },
+            { name: 'Power Steering Rack', cost: '£600 – £1,400', icon: 'Wrench', severity: 'medium' },
+            { name: 'Timing Chain Kit', cost: '£800 – £2,000', icon: 'Wrench', severity: 'high' },
+            { name: 'DPF Filter Replacement', cost: '£1,000 – £2,200', icon: 'Shield', severity: 'high' },
+          ]}
+        />
 
         {/* Models Covered Section - Apple-style compact grid */}
         <section className="py-12 md:py-16 bg-gradient-to-br from-gray-50 to-white">

@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import BrandPageFAQ from '@/components/brand-pages/BrandPageFAQ';
 import BluePersistentCallback from '@/components/brand-pages/BluePersistentCallback';
+import BrandRepairCosts from '@/components/brand-pages/BrandRepairCosts';
 
 // Lazy load heavy components
 const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
@@ -776,6 +777,22 @@ const FordWarrantyLanding: React.FC = () => {
         <Suspense fallback={<div className="py-12 md:py-20 bg-brand-gray-bg min-h-[400px]" />}>
           <VideoSection scrollToQuoteForm={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
         </Suspense>
+        <BrandRepairCosts
+          brandName="Ford"
+          monthlyPrice="£24"
+          onGetQuote={scrollToQuoteForm}
+          repairs={[
+            { name: 'EcoBoost Turbocharger', cost: '£1,500 – £3,000', icon: 'Zap', severity: 'high' },
+            { name: 'PowerShift Gearbox Rebuild', cost: '£2,000 – £4,500', icon: 'Wrench', severity: 'critical' },
+            { name: 'Engine Rebuild', cost: '£3,000 – £6,000', icon: 'Car', severity: 'critical' },
+            { name: 'DPF Filter Replacement', cost: '£1,000 – £2,500', icon: 'Shield', severity: 'high' },
+            { name: 'Fuel Injector Set', cost: '£700 – £1,800', icon: 'Zap', severity: 'medium' },
+            { name: 'ECU Replacement', cost: '£800 – £1,800', icon: 'Zap', severity: 'medium' },
+            { name: 'SYNC Infotainment Module', cost: '£600 – £1,500', icon: 'Zap', severity: 'medium' },
+            { name: 'Timing Chain Kit', cost: '£900 – £2,200', icon: 'Wrench', severity: 'high' },
+            { name: 'Power Steering Rack', cost: '£600 – £1,400', icon: 'Wrench', severity: 'medium' },
+          ]}
+        />
 
         {/* Ford Models Section */}
         <section className="py-12 md:py-20 bg-gradient-to-b from-slate-50 to-white relative">

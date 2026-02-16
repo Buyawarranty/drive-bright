@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import BrandPageFAQ from '@/components/brand-pages/BrandPageFAQ';
 import BluePersistentCallback from '@/components/brand-pages/BluePersistentCallback';
+import BrandRepairCosts from '@/components/brand-pages/BrandRepairCosts';
 
 // Lazy load heavy components
 const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
@@ -848,6 +849,22 @@ const MotorbikeWarrantyLanding: React.FC = () => {
         <Suspense fallback={<div className="py-12 md:py-20 bg-brand-gray-bg min-h-[400px]" />}>
           <VideoSection scrollToQuoteForm={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
         </Suspense>
+        <BrandRepairCosts
+          brandName="motorcycle"
+          monthlyPrice="£18"
+          onGetQuote={scrollToQuoteForm}
+          repairs={[
+            { name: 'Engine Rebuild', cost: '£1,500 – £3,500', icon: 'Car', severity: 'critical' },
+            { name: 'Gearbox Internals', cost: '£800 – £2,500', icon: 'Wrench', severity: 'high' },
+            { name: 'Clutch Basket & Pressure Plate', cost: '£400 – £1,200', icon: 'Wrench', severity: 'medium' },
+            { name: 'ECU & Electronics', cost: '£600 – £1,800', icon: 'Zap', severity: 'high' },
+            { name: 'Fork Cartridge Rebuild', cost: '£400 – £1,000', icon: 'Wrench', severity: 'medium' },
+            { name: 'ABS Modulator Unit', cost: '£500 – £1,500', icon: 'Shield', severity: 'high' },
+            { name: 'Fuel Pump & Injectors', cost: '£300 – £900', icon: 'Zap', severity: 'medium' },
+            { name: 'Starter Motor & Alternator', cost: '£250 – £800', icon: 'Zap', severity: 'medium' },
+            { name: 'Radiator & Cooling System', cost: '£300 – £900', icon: 'Shield', severity: 'medium' },
+          ]}
+        />
 
         {/* Motorcycle Models Section */}
         <section className="py-12 md:py-20 bg-gradient-to-b from-slate-50 to-white relative">

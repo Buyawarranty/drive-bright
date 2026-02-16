@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import BrandPageFAQ from '@/components/brand-pages/BrandPageFAQ';
 import BluePersistentCallback from '@/components/brand-pages/BluePersistentCallback';
+import BrandRepairCosts from '@/components/brand-pages/BrandRepairCosts';
 
 // Lazy load heavy components
 const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
@@ -772,6 +773,22 @@ const HondaWarrantyLanding: React.FC = () => {
         <Suspense fallback={<div className="py-12 md:py-20 bg-brand-gray-bg min-h-[400px]" />}>
           <VideoSection scrollToQuoteForm={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
         </Suspense>
+        <BrandRepairCosts
+          brandName="Honda"
+          monthlyPrice="£24"
+          onGetQuote={scrollToQuoteForm}
+          repairs={[
+            { name: 'CVT Transmission Rebuild', cost: '£2,000 – £4,500', icon: 'Wrench', severity: 'critical' },
+            { name: 'Turbocharger (1.5T VTEC)', cost: '£1,500 – £3,000', icon: 'Zap', severity: 'high' },
+            { name: 'Engine Rebuild', cost: '£3,000 – £6,000', icon: 'Car', severity: 'critical' },
+            { name: 'Fuel Injector Set', cost: '£700 – £1,800', icon: 'Zap', severity: 'medium' },
+            { name: 'ECU Replacement', cost: '£800 – £1,800', icon: 'Zap', severity: 'medium' },
+            { name: 'e:HEV Hybrid Motor', cost: '£2,000 – £4,000', icon: 'Car', severity: 'high' },
+            { name: 'Power Steering Rack', cost: '£600 – £1,400', icon: 'Wrench', severity: 'medium' },
+            { name: 'Timing Chain Kit', cost: '£800 – £2,000', icon: 'Wrench', severity: 'high' },
+            { name: 'DPF Filter Replacement', cost: '£1,000 – £2,200', icon: 'Shield', severity: 'high' },
+          ]}
+        />
 
         {/* Honda Models Section */}
         <section className="py-12 md:py-20 bg-gradient-to-b from-slate-50 to-white relative">
