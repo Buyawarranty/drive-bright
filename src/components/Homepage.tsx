@@ -523,15 +523,15 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 </div>
                 
                 {/* Pricing Reassurance Section - Conversion Optimised */}
-                <div className="mt-5 sm:mt-7 space-y-3 text-center lg:text-left">
-                  {/* Bold Headline - Trust & Clarity */}
-                  <h2 className="text-sm sm:text-base font-bold text-gray-900">
-                    Your price. Your choice. No hidden fees.
-                  </h2>
-                  
-                  
-                  {/* Compact Support Line with CTA */}
-                   <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-1.5 gap-y-1 text-xs sm:text-sm">
+                <div className="mt-5 sm:mt-7 space-y-3 text-center">
+                   {/* Bold Headline - Trust & Clarity */}
+                   <h2 className="text-sm sm:text-base font-bold text-gray-900">
+                     Your price. Your choice. No hidden fees.
+                   </h2>
+                   
+                   
+                   {/* Compact Support Line with CTA */}
+                    <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-xs sm:text-sm">
                     <span className="text-gray-600">Speak to an expert:</span>
                     <a 
                       href="tel:03302295040" 
