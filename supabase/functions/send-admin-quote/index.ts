@@ -293,7 +293,7 @@ const handler = async (req: Request): Promise<Response> => {
                   
                   <!-- What Happens Next -->
                   <tr>
-                    <td style="padding: 0 24px 24px 24px;">
+                    <td style="padding: 0 24px 32px 24px;">
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #fefce8; border-radius: 10px; border: 1px solid #fef08a;">
                         <tr>
                           <td style="padding: 20px;">
@@ -331,7 +331,7 @@ const handler = async (req: Request): Promise<Response> => {
                   
                   <!-- Primary CTA Button -->
                   <tr>
-                    <td align="center" style="padding: 0 24px 24px 24px;">
+                    <td align="center" style="padding: 0 24px 32px 24px;">
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                         <tr>
                           <td align="center">
@@ -346,10 +346,10 @@ const handler = async (req: Request): Promise<Response> => {
                   
                   <!-- Trust Section with Trustpilot -->
                   <tr>
-                    <td style="padding: 0 24px 24px 24px; border-top: 1px solid #e5e7eb;">
+                    <td style="padding: 0 24px 32px 24px; border-top: 1px solid #e5e7eb;">
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                         <tr>
-                          <td align="center" style="padding-top: 24px;">
+                          <td align="center" style="padding-top: 28px;">
                             <p style="font-size: 14px; font-weight: 700; color: #1a1a1a; margin: 0 0 8px 0;">
                               Trusted by UK drivers
                             </p>
@@ -367,7 +367,7 @@ const handler = async (req: Request): Promise<Response> => {
                   
                   <!-- Footer -->
                   <tr>
-                    <td style="background-color: #f8fafc; padding: 24px; border-top: 1px solid #e2e8f0;">
+                    <td style="background-color: #f8fafc; padding: 32px 24px; border-top: 1px solid #e2e8f0;">
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                         <tr>
                           <td align="center">
