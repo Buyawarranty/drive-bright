@@ -90,7 +90,7 @@ const MobileNavigation: React.FC = () => {
                 Contact Us
               </Link>
               <Link 
-                to="/sales-login/" 
+                to="/customer-dashboard/" 
                 className="text-lg font-medium text-gray-700 hover:text-gray-900 py-2 flex items-center gap-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >

@@ -48,7 +48,7 @@ const NewFooter = () => {
             </Link>
 
             <Link 
-              to="/sales-login/" 
+              to="/customer-dashboard/" 
               className="flex items-center gap-2 text-white hover:text-white/80 transition-colors font-medium"
             >
               <LogIn size={18} className="text-white" />
