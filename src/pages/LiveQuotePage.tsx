@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { startOfDay, format, isToday } from 'date-fns';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
+import Footer from '@/components/Footer';
 
 interface QuoteData {
   id: string;
@@ -536,7 +537,7 @@ export default function LiveQuotePage() {
   const firstName = quote.customerName.split(' ')[0];
   const bumperMonthlyTotal = quote.pricing.monthlyPrice * 12;
 
-  // Payment Options Component (reusable for both mobile and desktop)
+  // Payment Options Component
   const PaymentOptionsSection = () => (
     <Card className="border-2 border-gray-200">
       <CardHeader className="pb-2">
@@ -547,16 +548,14 @@ export default function LiveQuotePage() {
       </CardHeader>
       <CardContent className="space-y-4">
         <RadioGroup value={paymentMethod} onValueChange={(value: 'bumper' | 'stripe') => setPaymentMethod(value)}>
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Monthly Card */}
             <div className="relative">
-              {/* 0% APR Badge */}
               <div className="absolute -top-3 left-4 z-10">
                 <span className="bg-[#FF6B00] text-white text-xs font-bold px-2.5 py-1 rounded-md whitespace-nowrap">
                   0% APR
                 </span>
               </div>
-
               <button
                 type="button"
                 onClick={() => setPaymentMethod('bumper')}
@@ -568,7 +567,6 @@ export default function LiveQuotePage() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
-                    {/* Platinum Plan Label */}
                     <div className="flex items-center gap-2 mb-2">
                       <Shield className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
                       <span className="text-sm font-semibold text-[#1a1a1a]">
@@ -580,8 +578,6 @@ export default function LiveQuotePage() {
                       £{quote.pricing.monthlyPrice}<span className="text-base font-normal text-gray-600">/mo</span>
                     </p>
                     <p className="text-sm text-gray-600 mt-1">Total £{bumperMonthlyTotal}</p>
-
-                    {/* Benefits */}
                     <div className="mt-3 space-y-1.5">
                       <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                         <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
@@ -596,24 +592,14 @@ export default function LiveQuotePage() {
                         <span>0% APR</span>
                       </div>
                     </div>
-
-                    {/* Bumper Logo */}
                     <div className="mt-4">
                       <img src={bumperLogo} alt="Bumper" className="h-6 object-contain" />
                     </div>
                   </div>
-
-                  {/* Radio indicator */}
-                  <div
-                    className={`w-6 h-6 mt-0.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                      paymentMethod === 'bumper'
-                        ? 'bg-[#FF6B00] border-[#FF6B00]'
-                        : 'border-gray-300 bg-white'
-                    }`}
-                  >
-                    {paymentMethod === 'bumper' && (
-                      <Check className="w-4 h-4 text-white" />
-                    )}
+                  <div className={`w-6 h-6 mt-0.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                    paymentMethod === 'bumper' ? 'bg-[#FF6B00] border-[#FF6B00]' : 'border-gray-300 bg-white'
+                  }`}>
+                    {paymentMethod === 'bumper' && <Check className="w-4 h-4 text-white" />}
                   </div>
                 </div>
               </button>
@@ -621,25 +607,20 @@ export default function LiveQuotePage() {
 
             {/* Pay in Full Card */}
             <div className="relative">
-              {/* Save 10% Badge */}
               <div className="absolute -top-3 left-4 z-10">
                 <span className="bg-[#0BA360] text-white text-xs font-bold px-2.5 py-1 rounded-md whitespace-nowrap">
                   Save 10%
                 </span>
               </div>
-
               <button
                 type="button"
                 onClick={() => setPaymentMethod('stripe')}
                 className={`w-full h-full text-left rounded-xl p-4 sm:p-5 border-2 transition-all ${
-                  paymentMethod === 'stripe'
-                    ? 'border-[#0BA360] bg-white'
-                    : 'border-[#E5E5E5] bg-white hover:border-gray-300'
+                  paymentMethod === 'stripe' ? 'border-[#0BA360] bg-white' : 'border-[#E5E5E5] bg-white hover:border-gray-300'
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
-                    {/* Platinum Plan Label */}
                     <div className="flex items-center gap-2 mb-2">
                       <Shield className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
                       <span className="text-sm font-semibold text-[#1a1a1a]">
@@ -652,8 +633,6 @@ export default function LiveQuotePage() {
                       £{quote.pricing.upfrontPrice}
                     </p>
                     <p className="text-sm text-[#0BA360] font-medium">You save £{bumperMonthlyTotal - quote.pricing.upfrontPrice}!</p>
-
-                    {/* Benefits */}
                     <div className="mt-3 space-y-1.5">
                       <div className="flex items-center gap-2 text-sm text-[#1a1a1a]">
                         <Check className="w-4 h-4 text-[#0BA360] flex-shrink-0" />
@@ -668,24 +647,14 @@ export default function LiveQuotePage() {
                         <span>No ongoing payments</span>
                       </div>
                     </div>
-
-                    {/* Stripe Text */}
                     <div className="mt-4">
                       <span className="text-[#635BFF] font-semibold text-sm">stripe</span>
                     </div>
                   </div>
-
-                  {/* Radio indicator */}
-                  <div
-                    className={`w-6 h-6 mt-0.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                      paymentMethod === 'stripe'
-                        ? 'bg-[#0BA360] border-[#0BA360]'
-                        : 'border-gray-300 bg-white'
-                    }`}
-                  >
-                    {paymentMethod === 'stripe' && (
-                      <Check className="w-4 h-4 text-white" />
-                    )}
+                  <div className={`w-6 h-6 mt-0.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                    paymentMethod === 'stripe' ? 'bg-[#0BA360] border-[#0BA360]' : 'border-gray-300 bg-white'
+                  }`}>
+                    {paymentMethod === 'stripe' && <Check className="w-4 h-4 text-white" />}
                   </div>
                 </div>
               </button>
@@ -697,15 +666,11 @@ export default function LiveQuotePage() {
         <div className="mt-6">
           <Button
             type="button"
-            onClick={() => {
-              if (paymentMethod) handlePayment(paymentMethod);
-            }}
+            onClick={() => { if (paymentMethod) handlePayment(paymentMethod); }}
             disabled={!!processingPayment || !paymentMethod}
             className={`w-full py-6 text-lg font-bold rounded-xl hover:opacity-90 ${
-              !paymentMethod 
-                ? 'bg-gray-400' 
-                : paymentMethod === 'stripe'
-                ? 'bg-[#0BA360] hover:bg-[#099355]'
+              !paymentMethod ? 'bg-gray-400'
+                : paymentMethod === 'stripe' ? 'bg-[#0BA360] hover:bg-[#099355]'
                 : 'bg-[#FF6B00] hover:bg-[#e56000]'
             }`}
             style={{ color: '#FFFFFF' }}
@@ -718,8 +683,8 @@ export default function LiveQuotePage() {
             ) : (
               <span className="flex items-center gap-2">
                 <Lock className="w-5 h-5" />
-                {paymentMethod === 'bumper' 
-                  ? `Pay £${quote.pricing.monthlyPrice} today` 
+                {paymentMethod === 'bumper'
+                  ? `Pay £${quote.pricing.monthlyPrice} today`
                   : paymentMethod === 'stripe'
                   ? `Pay £${quote.pricing.upfrontPrice} now`
                   : 'Select payment option'}
@@ -1194,22 +1159,18 @@ export default function LiveQuotePage() {
               </CardContent>
             </Card>
 
-            {/* Payment Options - Mobile Only (shows in flow) */}
-            <div className="lg:hidden">
-              <PaymentOptionsSection />
-            </div>
+            {/* Payment Options - Below form on all screen sizes */}
+            <PaymentOptionsSection />
           </div>
 
-          {/* Right Column - Order Summary + Payment Options on Desktop Only */}
+          {/* Right Column - Cover Summary (Desktop Only) */}
           <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-24 space-y-6">
-              {/* Cover Summary */}
               <Card className="border-2 border-orange-200">
                 <CardHeader className="pb-2 bg-orange-50">
                   <CardTitle className="text-lg">Your Cover Summary</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-4">
-                  {/* Cover Details */}
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Plan</span>
@@ -1247,7 +1208,6 @@ export default function LiveQuotePage() {
 
                   <Separator />
 
-                  {/* Included Features */}
                   <div className="space-y-2">
                     <p className="font-semibold text-sm">What's Included:</p>
                     <div className="space-y-1.5">
@@ -1288,7 +1248,6 @@ export default function LiveQuotePage() {
 
                   <Separator />
 
-                  {/* Price Summary */}
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Monthly option</span>
@@ -1303,7 +1262,6 @@ export default function LiveQuotePage() {
                     </div>
                   </div>
 
-                  {/* Additional Notes */}
                   {quote.additionalNotes && (
                     <>
                       <Separator />
@@ -1314,7 +1272,6 @@ export default function LiveQuotePage() {
                     </>
                   )}
 
-                  {/* Trust indicators */}
                   <div className="pt-4 border-t space-y-2">
                     <div className="flex items-center gap-2 text-xs text-gray-600">
                       <Lock className="w-3 h-3" />
@@ -1327,15 +1284,13 @@ export default function LiveQuotePage() {
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Payment Options - Desktop Only (below cover summary) */}
-              <div className="hidden lg:block">
-                <PaymentOptionsSection />
-              </div>
             </div>
           </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
