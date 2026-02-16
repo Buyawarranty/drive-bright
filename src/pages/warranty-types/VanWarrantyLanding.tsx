@@ -180,36 +180,48 @@ const coverageCategories = [
 // FAQs for schema
 const vanFAQs = [
   {
-    question: "Is a van extended warranty worth it in the UK?",
-    answer: "Yes, commercial vans work hard and accumulate high mileage, making repairs more likely. Our extended warranty protects key components like the engine, gearbox, fuel injectors, and turbocharger, preventing expensive repair bills and keeping your business moving."
+    question: "Is my van too old or too many miles?",
+    answer: "We cover many older and higher mileage vehicles up to 15 years old and 150,000 miles. Check your instant price to confirm."
   },
   {
-    question: "How much does a van extended warranty cost in the UK?",
-    answer: "Van warranty prices typically start from £32 a month, depending on your van model, mileage, and chosen claim limit. We offer flexible monthly or annual payment options with no long-term contracts."
+    question: "Can I use my own garage?",
+    answer: "Yes. Any VAT registered garage is acceptable or we can recommend an approved garage."
   },
   {
-    question: "Can I buy a van warranty after my manufacturer warranty has expired?",
-    answer: "Yes, you can buy cover even if your van is outside its original manufacturer warranty, or if you purchased it used. We cover vehicles up to 150,000 miles and 15 years old."
+    question: "What's covered in my warranty?",
+    answer: "At Buy-a-Warranty, we like to keep things simple. One solid plan that works for cars, vans, and motorbikes, whether you're driving electric, hybrid, petrol, or diesel. We keep things simple with no confusing packages, you won't encounter any unexpected rejections, and we offer straightforward cover without the hassle."
   },
   {
-    question: "Can I use my own garage for van warranty repairs?",
-    answer: "Yes, absolutely. You can choose any VAT-registered garage across the UK. This is especially useful for commercial operators who need flexible repair options to minimise downtime."
+    question: "How do I make a claim?",
+    answer: "Arrange for your vehicle to be inspected by a local independent repair garage to diagnose any issues. Once diagnosed, before any repairs are conducted, the repairer must directly contact our Claims Team at 0330 229 5045. It's important to note that failure to do so will not allow us to process your claim."
   },
   {
-    question: "Does the warranty cover high-mileage commercial vans?",
-    answer: "Yes, we understand commercial vans cover significant miles. We cover vans up to 150,000 miles with no mileage restrictions during the cover period. Keep driving, stay protected."
+    question: "What should I do if my van has an issue?",
+    answer: "If your van experiences a problem, please contact our Claims Team at 0330 229 5045. They are available Monday to Friday from 09:00 to 17:30 and can help start and process your warranty claim. If the issue arises outside of these hours, please fill out our online contact form."
   },
   {
-    question: "Is roadside assistance included for vans?",
-    answer: "Yes, our comprehensive plan includes 24/7 roadside assistance and recovery anywhere in the UK. If your van breaks down, we'll send help to get you back on the road or recover your vehicle."
+    question: "How much does it cost?",
+    answer: "Warranty costs start from just £32 per month for vans, depending on your vehicle and the level of cover you choose. Get an instant quote by entering your registration number above."
   },
   {
-    question: "How do I make a claim on my van warranty?",
-    answer: "Simply call our UK-based claims team or submit a claim online. We aim to authorise repairs quickly to minimise your downtime. Your chosen garage contacts us directly, and we settle the bill with them."
+    question: "What about modified vehicles?",
+    answer: "Most body modifications are accepted. Call us on 0330 229 5040 or request a call back using the Call us button in the top navigation bar."
   },
   {
-    question: "What's not covered by the van warranty?",
-    answer: "Routine maintenance, wear and tear items (brake pads, tyres, clutch friction plates), pre-existing faults, and cosmetic damage are not covered. Our policy documents clearly outline all exclusions."
+    question: "Do I need a full service history?",
+    answer: "A reasonable service history is fine. Many vehicles are accepted even if servicing has been missed."
+  },
+  {
+    question: "Is £1,000, £2,000 or £3,000 the right claim limit for me?",
+    answer: "It depends on your vehicle and how much protection you want.\n\n£1,000 is ideal for smaller or lower‑cost repairs.\n£2,000 offers broader cover for most mid‑range repairs.\n£3,000 is our most popular option and covers the majority of common faults in full.\n\nEvery plan includes unlimited claims, and you're covered up to the value of your vehicle, whichever limit you choose."
+  },
+  {
+    question: "Are diagnostics covered?",
+    answer: "Diagnostics are usually covered when the fault is approved."
+  },
+  {
+    question: "What is the most expensive repair you have covered?",
+    answer: "We regularly cover repairs over £1,500 for engines, gearboxes and ECUs. Higher claim limits are available. Check your instant price by entering your registration."
   }
 ];
 
@@ -1308,39 +1320,81 @@ const VanWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* FAQ Section */}
-        <section className="py-10 md:py-16 bg-gray-50">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8 md:mb-12">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
-                Van Warranty FAQs
+        {/* FAQ Section - matching homepage design */}
+        <section className="pt-16 sm:pt-20 pb-8 bg-white">
+          <div className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-brand-dark-text mb-6 leading-tight">
+                <span className="text-brand-orange">Van Warranty FAQ's</span>
               </h2>
-              <p className="text-base md:text-lg text-gray-600">
-                Common questions about our van extended warranty
+              <p className="text-lg text-brand-dark-text max-w-3xl mx-auto leading-relaxed">
+                Find answers to the most common questions about our van warranty services.
               </p>
             </div>
 
-            <div className="space-y-3 md:space-y-4">
-              {vanFAQs.map((faq, index) => (
-                <div key={index} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                  <button
-                    onClick={() => setOpenFaqId(openFaqId === index ? null : index)}
-                    className="w-full flex items-center justify-between p-4 md:p-6 text-left hover:bg-gray-50 transition-colors"
-                  >
-                    <h3 className="font-bold text-gray-900 text-sm md:text-base pr-4">{faq.question}</h3>
-                    {openFaqId === index ? (
-                      <ChevronUp className="w-5 h-5 text-gray-500 flex-shrink-0" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0" />
+            <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+              {/* Left Column */}
+              <div className="space-y-6">
+                {vanFAQs.filter((_, i) => i % 2 === 0).map((faq, index) => (
+                  <div key={index} className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg overflow-hidden shadow-lg">
+                    <button
+                      onClick={() => setOpenFaqId(openFaqId === index * 2 ? null : index * 2)}
+                      className="w-full px-6 py-5 text-left flex items-center justify-between text-white hover:bg-orange-600/20 transition-colors"
+                    >
+                      <span className="font-bold text-lg pr-4">{faq.question}</span>
+                      <ChevronDown 
+                        className={`w-6 h-6 flex-shrink-0 transition-transform duration-300 text-white ${
+                          openFaqId === index * 2 ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+                    {openFaqId === index * 2 && (
+                      <div className="px-6 pb-5 bg-white border-t border-orange-200">
+                        <p className="text-base leading-relaxed pt-4 whitespace-pre-line text-brand-dark-text">{faq.answer}</p>
+                      </div>
                     )}
-                  </button>
-                  {openFaqId === index && (
-                    <div className="px-4 md:px-6 pb-4 md:pb-6">
-                      <p className="text-gray-600 text-sm md:text-base">{faq.answer}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
+                  </div>
+                ))}
+              </div>
+
+              {/* Right Column */}
+              <div className="space-y-6">
+                {vanFAQs.filter((_, i) => i % 2 === 1).map((faq, index) => (
+                  <div key={index} className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg overflow-hidden shadow-lg">
+                    <button
+                      onClick={() => setOpenFaqId(openFaqId === index * 2 + 1 ? null : index * 2 + 1)}
+                      className="w-full px-6 py-5 text-left flex items-center justify-between text-white hover:bg-orange-600/20 transition-colors"
+                    >
+                      <span className="font-bold text-lg pr-4">{faq.question}</span>
+                      <ChevronDown 
+                        className={`w-6 h-6 flex-shrink-0 transition-transform duration-300 text-white ${
+                          openFaqId === index * 2 + 1 ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+                    {openFaqId === index * 2 + 1 && (
+                      <div className="px-6 pb-5 bg-white border-t border-orange-200">
+                        <p className="text-base leading-relaxed pt-4 whitespace-pre-line text-brand-dark-text">{faq.answer}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* View All FAQs Button */}
+            <div className="text-center mt-12">
+              <Link to="/faq/">
+                <Button 
+                  size="lg"
+                  className="bg-brand-orange hover:bg-brand-orange/90 text-white px-8 py-3 text-lg font-semibold"
+                >
+                  View All FAQs
+                </Button>
+              </Link>
+              <p className="text-sm text-gray-600 mt-3">
+                Have more questions? Check out our comprehensive FAQ page for detailed answers.
+              </p>
             </div>
           </div>
         </section>
