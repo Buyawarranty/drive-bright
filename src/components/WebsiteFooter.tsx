@@ -1,13 +1,20 @@
 import React from 'react';
 import { Star, Phone, Mail, MessageCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 
+// Pages that have their own final CTA section
+const pagesWithOwnCTA = ['/warranty-types/vans', '/warranty-types/vans/'];
+
 const WebsiteFooter = () => {
+  const location = useLocation();
+  const hideCtaSection = pagesWithOwnCTA.includes(location.pathname);
+
   return (
     <div className="relative">
       {/* CTA Section */}
+      {!hideCtaSection && (
       <section className="bg-[#1e3a5f] py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
@@ -33,6 +40,7 @@ const WebsiteFooter = () => {
           </div>
         </div>
       </section>
+      )}
 
       {/* Main Footer */}
       <footer className="bg-white pt-0 pb-16">
