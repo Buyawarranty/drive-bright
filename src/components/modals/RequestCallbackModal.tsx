@@ -254,7 +254,7 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
                         <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
                           <Check className="w-3 h-3 text-white" strokeWidth={3} />
                         </div>
-                        <span className="text-sm font-bold text-gray-900">No pressure, no sales tactics</span>
+                        <span className="text-sm font-bold text-gray-900">No pressure</span>
                       </div>
                     </div>
                     {/* Panda mascot */}
@@ -282,7 +282,7 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
                       Submitting...
                     </span>
                   ) : (
-                    'Request My Call'
+                    'Call me back'
                   )}
                 </Button>
               </form>
