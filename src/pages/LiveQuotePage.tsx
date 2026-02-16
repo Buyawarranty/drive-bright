@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 import { startOfDay, format, isToday } from 'date-fns';
 import bumperLogo from '@/assets/bumper-logo-transparent.png';
 import stripeLogo from '@/assets/stripe-logo.png';
-import Footer from '@/components/Footer';
+import MinimalLandingFooter from '@/components/brand-pages/MinimalLandingFooter';
 
 interface QuoteData {
   id: string;
@@ -1323,6 +1323,7 @@ export default function LiveQuotePage() {
       </div>
       {/* Spacer for sticky bar on desktop */}
       <div className="hidden lg:block h-20" />
+      <MinimalLandingFooter />
     </div>
   );
 }
