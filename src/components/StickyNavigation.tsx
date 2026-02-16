@@ -6,7 +6,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 import { OptimizedImage } from '@/components/OptimizedImage';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import MobileNavigation from '@/components/MobileNavigation';
-import RequestCallbackModal from './RequestCallbackModal';
+import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 
 const StickyNavigation: React.FC = () => {
   const navigate = useNavigate();
