@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone, ChevronRight } from 'lucide-react';
+import { Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PriceHelpTriggerProps {
@@ -8,79 +8,48 @@ interface PriceHelpTriggerProps {
 }
 
 const PriceHelpTrigger: React.FC<PriceHelpTriggerProps> = ({ onClick, className }) => {
-  const handlePhoneClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-  };
-
   return (
-    <button
-      onClick={onClick}
+    <div
       className={cn(
-        // Layout - slimmer height with tighter padding
-        "w-full group flex items-center justify-between gap-2 py-2.5 px-4",
-        // Background - pale cream/white with thin yellow border
-        "bg-amber-50/30 border border-amber-300/60 rounded-xl",
-        // Subtle hover state (desktop only)
-        "hover:bg-amber-50/50 hover:border-amber-400/70",
-        "cursor-pointer",
+        "w-full rounded-xl border border-amber-300/60 bg-amber-50/50 p-4 md:p-5",
         className
       )}
-      aria-label="Looking for a better price? Call us or request a callback"
     >
-      {/* Left side - Smaller phone icon + Message */}
-      <div className="flex items-center gap-2.5 min-w-0 flex-1">
-        {/* Smaller, subtle phone icon */}
-        <div className="flex-shrink-0 w-7 h-7 rounded-full bg-brand-green/5 flex items-center justify-center">
-          <Phone className="w-4 h-4 text-brand-green/70" strokeWidth={1.5} />
+      {/* Icon + Text */}
+      <div className="flex items-start gap-3 mb-3 md:mb-4">
+        <div className="flex-shrink-0 mt-0.5">
+          <Shield className="w-6 h-6 md:w-7 md:h-7 text-brand-orange" strokeWidth={2} />
         </div>
-        
-        {/* Desktop: Single line with price beat message on right */}
-        {/* Mobile: Two-line layout */}
-        <div className="text-left leading-tight flex-1">
-          {/* Main line */}
-          <span className="block text-sm">
-            <span className="font-semibold text-gray-800">
-              Looking for a better price?
-            </span>
-            <span className="text-gray-600">
-              {' '}Call{' '}
-              <a
-                href="tel:03302295040"
-                onClick={handlePhoneClick}
-                className="font-medium text-brand-green hover:text-brand-orange underline underline-offset-2 decoration-1"
-              >
-                0330 229 5040
-              </a>
-              {' '}or{' '}
-              <span className="font-medium text-brand-green group-hover:text-brand-orange underline underline-offset-2 decoration-1">
-                request a call back
-              </span>
-              {' '}💬
-            </span>
-          </span>
-          
-          {/* Mobile only: Secondary line below */}
-          <span className="flex md:hidden items-center gap-1 text-xs text-gray-900 mt-1">
-            <span>We will beat any price you already have 🏆</span>
-          </span>
+        <div>
+          <h3 className="text-base md:text-lg font-bold text-gray-900 leading-tight">
+            Price Beat Guarantee
+          </h3>
+          <p className="text-sm md:text-base text-gray-700 mt-0.5">
+            Got a cheaper quote? We'll beat it — <span className="font-semibold">guaranteed.</span>
+          </p>
         </div>
       </div>
-      
-      {/* Desktop: Price beat message on right side */}
-      <div className="hidden md:flex items-center gap-2 flex-shrink-0 mr-2">
-        <span className="text-sm font-medium text-gray-800">
-          We will beat any price you already have 🏆
+
+      {/* CTA row */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 pl-0 md:pl-9">
+        <button
+          onClick={onClick}
+          className="h-11 md:h-12 px-6 md:px-8 rounded-xl bg-brand-orange hover:bg-brand-orange/90 text-white font-bold text-sm md:text-base transition-colors shadow-sm"
+        >
+          Beat My Quote
+        </button>
+        <span className="text-sm md:text-base text-gray-700 text-center sm:text-left">
+          or call{' '}
+          <a
+            href="tel:03302295040"
+            className="font-bold text-gray-900 hover:text-brand-orange underline underline-offset-2 decoration-1 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            0330 229 5040
+          </a>
         </span>
       </div>
-      
-      {/* Right side - Subtle arrow, highlights on hover */}
-      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-brand-orange/10">
-        <ChevronRight 
-          className="w-4 h-4 text-gray-400 group-hover:text-brand-orange" 
-          strokeWidth={2}
-        />
-      </div>
-    </button>
+    </div>
   );
 };
 
