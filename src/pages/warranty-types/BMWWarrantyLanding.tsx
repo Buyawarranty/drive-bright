@@ -226,7 +226,7 @@ const BMWWarrantyLanding: React.FC = () => {
   const [mileageSelection, setMileageSelection] = useState('');
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [vehicleAgeError, setVehicleAgeError] = useState('');
-  const [openFaqId, setOpenFaqId] = useState<number | null>(null);
+  const [openFaqId, setOpenFaqId] = useState<string | number | null>(null);
   const [expandedCoverage, setExpandedCoverage] = useState(false);
   const [activeModelFilter, setActiveModelFilter] = useState<ModelCategory | 'All'>('All');
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
@@ -1313,39 +1313,155 @@ const BMWWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* FAQ Section */}
-        <section className="py-10 md:py-16 bg-gray-50">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* What BMW Repairs Actually Cost */}
+        <section className="py-10 md:py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12">
+              <div className="inline-flex items-center gap-2 bg-red-50 px-3 md:px-4 py-1.5 md:py-2 rounded-full mb-3 md:mb-4">
+                <Wrench className="w-4 h-4 md:w-5 md:h-5 text-red-600" />
+                <span className="text-xs md:text-sm font-semibold text-red-700">Without warranty, you pay the full bill</span>
+              </div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
-                BMW Warranty FAQs
+                What BMW repairs actually cost
               </h2>
-              <p className="text-base md:text-lg text-gray-600">
-                Everything you need to know about BMW extended warranty
+              <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
+                One breakdown could cost more than years of warranty cover. Here's what BMW owners pay without protection.
               </p>
             </div>
 
-            <div className="space-y-3 md:space-y-4">
-              {bmwFAQs.map((faq, index) => (
-                <div key={index} className="rounded-xl overflow-hidden shadow-sm">
-                  <button
-                    className="w-full flex items-center justify-between p-4 md:p-6 text-left bg-brand-orange hover:bg-brand-orange/90 transition-colors"
-                    onClick={() => setOpenFaqId(openFaqId === index ? null : index)}
-                  >
-                    <h3 className="text-sm md:text-lg font-semibold text-white pr-3 md:pr-4">{faq.question}</h3>
-                    {openFaqId === index ? (
-                      <ChevronUp className="w-4 h-4 md:w-5 md:h-5 text-white flex-shrink-0" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 md:w-5 md:h-5 text-white/80 flex-shrink-0" />
-                    )}
-                  </button>
-                  {openFaqId === index && (
-                    <div className="px-4 md:px-6 py-4 md:py-5 bg-white text-gray-700">
-                      <p className="text-sm md:text-base">{faq.answer}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {[
+                { name: 'Timing Chain Kit', cost: '£1,200 – £3,000', icon: Wrench, severity: 'high' },
+                { name: 'Turbocharger Replacement', cost: '£1,800 – £3,500', icon: Zap, severity: 'high' },
+                { name: 'Gearbox Rebuild', cost: '£2,500 – £5,000', icon: Wrench, severity: 'critical' },
+                { name: 'Engine Rebuild', cost: '£3,500 – £7,000', icon: Car, severity: 'critical' },
+                { name: 'Fuel Injector Set', cost: '£800 – £2,200', icon: Zap, severity: 'medium' },
+                { name: 'ECU Replacement', cost: '£900 – £2,000', icon: Zap, severity: 'medium' },
+                { name: 'Air Suspension Compressor', cost: '£1,200 – £2,500', icon: Car, severity: 'high' },
+                { name: 'Power Steering Rack', cost: '£800 – £1,800', icon: Wrench, severity: 'medium' },
+                { name: 'DPF Filter Replacement', cost: '£1,000 – £2,500', icon: Shield, severity: 'high' },
+              ].map((repair, index) => {
+                const Icon = repair.icon;
+                const severityColors = {
+                  medium: { bg: 'bg-white', border: 'border-gray-200', text: 'text-gray-900' },
+                  high: { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-brand-orange' },
+                  critical: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-600' },
+                };
+                const colors = severityColors[repair.severity as keyof typeof severityColors];
+                return (
+                  <div key={index} className={`${colors.bg} rounded-xl p-4 md:p-5 border ${colors.border} flex items-start gap-3`}>
+                    <div className={`w-10 h-10 rounded-lg ${colors.bg} flex items-center justify-center flex-shrink-0`}>
+                      <Icon className={`w-5 h-5 ${colors.text}`} />
                     </div>
-                  )}
-                </div>
-              ))}
+                    <div>
+                      <h3 className="font-bold text-gray-900 text-sm md:text-base">{repair.name}</h3>
+                      <p className={`font-bold text-base md:text-lg ${colors.text}`}>{repair.cost}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Bottom CTA */}
+            <div className="mt-8 md:mt-12 text-center">
+              <div className="bg-brand-deep-blue rounded-2xl p-8 md:p-12 max-w-3xl mx-auto">
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
+                  Warranty cover from just £29/month
+                </h3>
+                <p className="text-white/80 mb-6 text-sm md:text-base">
+                  That's less than a single diagnostic fee — and it covers all of the above.
+                </p>
+                <Button
+                  onClick={scrollToQuoteForm}
+                  className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-4 md:py-5 px-6 md:px-8 text-base md:text-lg rounded-xl shadow-lg animate-breathing"
+                >
+                  <span className="flex items-center gap-2">
+                    Get Your Instant Quote
+                    <ArrowRight className="w-5 h-5" />
+                  </span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section - Homepage Style */}
+        <section className="py-10 md:py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8 md:mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-brand-dark-text mb-4 md:mb-6">
+                <span className="text-brand-orange">FAQ's</span>
+              </h2>
+              <p className="text-base md:text-lg text-brand-dark-text max-w-3xl mx-auto">
+                Find answers to the most common questions about our BMW warranty services.
+              </p>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-6 md:gap-8 max-w-6xl mx-auto">
+              {/* Left Column */}
+              <div className="space-y-4 md:space-y-6">
+                {[
+                  { id: 'bmw-old-high-mileage', question: 'Is my BMW too old or too many miles?', answer: 'We cover many older and higher mileage BMWs up to 15 years old and 150,000 miles. Check your instant price to confirm.' },
+                  { id: 'bmw-whats-covered', question: "What's covered in my BMW warranty?", answer: "At Buy-a-Warranty, we like to keep things simple. One solid plan that covers your BMW's engine, gearbox, electrical systems, and more — whether you're driving petrol, diesel, hybrid, or electric. No confusing packages, no unexpected rejections, and straightforward cover without the hassle." },
+                  { id: 'bmw-car-issue', question: 'What should I do if my BMW has an issue?', answer: 'If your BMW experiences a problem, please contact our Claims Team at 0330 229 5045. They are available Monday to Friday from 09:00 to 17:30 and can help start and process your warranty claim. If the issue arises outside of these hours, please fill out our online contact form.' },
+                  { id: 'bmw-modified', question: 'What about modified BMWs?', answer: 'Most body modifications are accepted. Call us on 0330 229 5040 or request a call back using the Call us button in the top navigation bar.' },
+                  { id: 'bmw-claim-limit', question: 'Is £1,000, £2,000 or £3,000 the right claim limit for me?', answer: "It depends on your BMW and how much protection you want.\n\n£1,000 is ideal for smaller or lower-cost repairs.\n£2,000 offers broader cover for most mid-range repairs.\n£3,000 is our most popular option and covers the majority of common BMW faults in full.\n\nEvery plan includes unlimited claims, and you're covered up to the value of your vehicle, whichever limit you choose." },
+                  { id: 'bmw-expensive-repair', question: 'What is the most expensive repair you have covered?', answer: 'We regularly cover repairs over £1,500 for BMW engines, gearboxes and ECUs. Higher claim limits are available. Check your instant price by entering your registration.' },
+                ].map((faq) => (
+                  <div key={faq.id} className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg overflow-hidden shadow-lg">
+                    <button
+                      onClick={() => setOpenFaqId(openFaqId === faq.id as any ? null : faq.id as any)}
+                      className="w-full px-6 py-5 text-left flex items-center justify-between text-white hover:bg-orange-600/20 transition-colors"
+                    >
+                      <span className="font-bold text-lg pr-4">{faq.question}</span>
+                      <ChevronDown className={`w-6 h-6 flex-shrink-0 transition-transform duration-300 text-white ${openFaqId === faq.id as any ? 'rotate-180' : ''}`} />
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-200 ease-out ${openFaqId === faq.id as any ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}`}>
+                      <div className="px-6 pb-5 bg-white border-t border-orange-200">
+                        <p className="text-base leading-relaxed pt-4 whitespace-pre-line text-brand-dark-text">{faq.answer}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Right Column */}
+              <div className="space-y-4 md:space-y-6">
+                {[
+                  { id: 'bmw-own-garage', question: 'Can I use my own garage for my BMW?', answer: 'Yes. Any VAT registered garage is acceptable or we can recommend an approved garage.' },
+                  { id: 'bmw-make-claim', question: 'How do I make a claim on my BMW warranty?', answer: "Arrange for your BMW to be inspected by a local independent repair garage to diagnose any issues. Once diagnosed, before any repairs are conducted, the repairer must directly contact our Claims Team at 0330 229 5045. It's important to note that failure to do so will not allow us to process your claim." },
+                  { id: 'bmw-cost', question: 'How much does a BMW warranty cost?', answer: 'BMW warranty costs start from just £29 per month, depending on your model and the level of cover you choose. Get an instant quote by entering your registration number above.' },
+                  { id: 'bmw-service-history', question: 'Do I need a full BMW service history?', answer: 'A reasonable service history is fine. Many BMWs are accepted even if servicing has been missed.' },
+                  { id: 'bmw-diagnostics', question: 'Are BMW diagnostics covered?', answer: 'Diagnostics are usually covered when the fault is approved.' },
+                ].map((faq) => (
+                  <div key={faq.id} className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg overflow-hidden shadow-lg">
+                    <button
+                      onClick={() => setOpenFaqId(openFaqId === faq.id as any ? null : faq.id as any)}
+                      className="w-full px-6 py-5 text-left flex items-center justify-between text-white hover:bg-orange-600/20 transition-colors"
+                    >
+                      <span className="font-bold text-lg pr-4">{faq.question}</span>
+                      <ChevronDown className={`w-6 h-6 flex-shrink-0 transition-transform duration-300 text-white ${openFaqId === faq.id as any ? 'rotate-180' : ''}`} />
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-200 ease-out ${openFaqId === faq.id as any ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}`}>
+                      <div className="px-6 pb-5 bg-white border-t border-orange-200">
+                        <p className="text-base leading-relaxed pt-4 whitespace-pre-line text-brand-dark-text">{faq.answer}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* View All FAQs Button */}
+            <div className="text-center mt-8 md:mt-12">
+              <Link to="/faq/">
+                <Button className="bg-brand-orange hover:bg-brand-orange/90 text-white px-8 py-3 text-lg font-semibold">
+                  View All FAQs
+                </Button>
+              </Link>
+              <p className="text-sm text-gray-600 mt-3">
+                Have more questions? Check out our comprehensive FAQ page for detailed answers.
+              </p>
             </div>
           </div>
         </section>
@@ -1365,7 +1481,7 @@ const BMWWarrantyLanding: React.FC = () => {
             </a>
             <a
               href="tel:08009179270"
-              className="w-14 h-14 bg-brand-orange rounded-full flex items-center justify-center shadow-lg hover:bg-brand-orange/90 transition-colors"
+              className="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-700 transition-colors"
             >
               <Phone className="w-7 h-7 text-white" />
             </a>
