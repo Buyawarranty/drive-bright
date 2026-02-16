@@ -11,6 +11,8 @@ import MileageQuickSelect from '@/components/MileageQuickSelect';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
+import BrandPageFAQ from '@/components/brand-pages/BrandPageFAQ';
+import BluePersistentCallback from '@/components/brand-pages/BluePersistentCallback';
 
 // Lazy load heavy components
 const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
@@ -1268,63 +1270,9 @@ const MotorbikeWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* FAQ Section */}
-        <section className="py-10 md:py-16 bg-gray-50">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8 md:mb-12">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
-                Motorcycle Warranty FAQs
-              </h2>
-              <p className="text-base md:text-lg text-gray-600">
-                Everything you need to know about motorcycle extended warranty
-              </p>
-            </div>
-
-            <div className="space-y-3 md:space-y-4">
-              {motorbikeFAQs.map((faq, index) => (
-                <div key={index} className="rounded-xl overflow-hidden shadow-sm">
-                  <button
-                    className="w-full flex items-center justify-between p-4 md:p-6 text-left bg-brand-orange hover:bg-brand-orange/90 transition-colors"
-                    onClick={() => setOpenFaqId(openFaqId === index ? null : index)}
-                  >
-                    <h3 className="text-sm md:text-lg font-semibold text-white pr-3 md:pr-4">{faq.question}</h3>
-                    {openFaqId === index ? (
-                      <ChevronUp className="w-4 h-4 md:w-5 md:h-5 text-white flex-shrink-0" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 md:w-5 md:h-5 text-white/80 flex-shrink-0" />
-                    )}
-                  </button>
-                  {openFaqId === index && (
-                    <div className="px-4 md:px-6 py-4 md:py-5 bg-white text-gray-700">
-                      <p className="text-sm md:text-base">{faq.answer}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Mobile Floating Actions */}
-        {isMobile && (
-          <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-3">
-            <a
-              href="https://wa.me/447700161515"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center shadow-lg hover:bg-green-600 transition-colors"
-            >
-              <img src={whatsappIconNew} alt="WhatsApp" className="w-7 h-7" />
-            </a>
-            <a
-              href="tel:08009179270"
-              className="w-14 h-14 bg-brand-orange rounded-full flex items-center justify-center shadow-lg hover:bg-brand-orange/90 transition-colors"
-            >
-              <Phone className="w-7 h-7 text-white" />
-            </a>
-          </div>
-        )}
+        <BrandPageFAQ />
       </main>
+      <BluePersistentCallback />
     </>
   );
 };

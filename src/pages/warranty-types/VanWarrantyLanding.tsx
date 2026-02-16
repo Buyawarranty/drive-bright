@@ -12,6 +12,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
+import BrandPageFAQ from '@/components/brand-pages/BrandPageFAQ';
+import BluePersistentCallback from '@/components/brand-pages/BluePersistentCallback';
 
 // Lazy load heavy components
 const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
@@ -1367,84 +1369,7 @@ const VanWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* FAQ Section - matching homepage design */}
-        <section className="pt-16 sm:pt-20 pb-8 bg-white">
-          <div className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-brand-dark-text mb-6 leading-tight">
-                <span className="text-brand-orange">Van Warranty FAQ's</span>
-              </h2>
-              <p className="text-lg text-brand-dark-text max-w-3xl mx-auto leading-relaxed">
-                Find answers to the most common questions about our van warranty services.
-              </p>
-            </div>
-
-            <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-              {/* Left Column */}
-              <div className="space-y-6">
-                {vanFAQs.filter((_, i) => i % 2 === 0).map((faq, index) => (
-                  <div key={index} className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg overflow-hidden shadow-lg">
-                    <button
-                      onClick={() => setOpenFaqId(openFaqId === index * 2 ? null : index * 2)}
-                      className="w-full px-6 py-5 text-left flex items-center justify-between text-white hover:bg-orange-600/20 transition-colors"
-                    >
-                      <span className="font-bold text-lg pr-4">{faq.question}</span>
-                      <ChevronDown 
-                        className={`w-6 h-6 flex-shrink-0 transition-transform duration-300 text-white ${
-                          openFaqId === index * 2 ? 'rotate-180' : ''
-                        }`}
-                      />
-                    </button>
-                    {openFaqId === index * 2 && (
-                      <div className="px-6 pb-5 bg-white border-t border-orange-200">
-                        <p className="text-base leading-relaxed pt-4 whitespace-pre-line text-brand-dark-text">{faq.answer}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Right Column */}
-              <div className="space-y-6">
-                {vanFAQs.filter((_, i) => i % 2 === 1).map((faq, index) => (
-                  <div key={index} className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg overflow-hidden shadow-lg">
-                    <button
-                      onClick={() => setOpenFaqId(openFaqId === index * 2 + 1 ? null : index * 2 + 1)}
-                      className="w-full px-6 py-5 text-left flex items-center justify-between text-white hover:bg-orange-600/20 transition-colors"
-                    >
-                      <span className="font-bold text-lg pr-4">{faq.question}</span>
-                      <ChevronDown 
-                        className={`w-6 h-6 flex-shrink-0 transition-transform duration-300 text-white ${
-                          openFaqId === index * 2 + 1 ? 'rotate-180' : ''
-                        }`}
-                      />
-                    </button>
-                    {openFaqId === index * 2 + 1 && (
-                      <div className="px-6 pb-5 bg-white border-t border-orange-200">
-                        <p className="text-base leading-relaxed pt-4 whitespace-pre-line text-brand-dark-text">{faq.answer}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* View All FAQs Button */}
-            <div className="text-center mt-12">
-              <Link to="/faq/">
-                <Button 
-                  size="lg"
-                  className="bg-brand-orange hover:bg-brand-orange/90 text-white px-8 py-3 text-lg font-semibold"
-                >
-                  View All FAQs
-                </Button>
-              </Link>
-              <p className="text-sm text-gray-600 mt-3">
-                Have more questions? Check out our comprehensive FAQ page for detailed answers.
-              </p>
-            </div>
-          </div>
-        </section>
+        <BrandPageFAQ />
 
         {/* Final CTA Section */}
         <section className="py-12 md:py-20 bg-brand-orange">
@@ -1474,38 +1399,7 @@ const VanWarrantyLanding: React.FC = () => {
           </div>
         </section>
       </main>
-
-      {/* Blue Persistent Callback */}
-      {callbackVisible && (
-        <>
-          {isMobile ? (
-            <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-border shadow-[0_-4px_12px_rgba(0,0,0,0.08)] p-3 animate-in slide-in-from-bottom-4 duration-300">
-              <button
-                onClick={() => setShowCallbackModal(true)}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg"
-                aria-label="Request a callback"
-              >
-                <Phone className="w-4 h-4" />
-                Request a callback
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowCallbackModal(true)}
-              className="fixed bottom-8 right-8 z-40 bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-3.5 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2 text-sm animate-in fade-in-50 duration-300"
-              aria-label="Request a callback"
-            >
-              <Phone className="w-4 h-4" />
-              Request a callback
-            </button>
-          )}
-        </>
-      )}
-
-      <RequestCallbackModal
-        isOpen={showCallbackModal}
-        onClose={() => setShowCallbackModal(false)}
-      />
+      <BluePersistentCallback />
     </>
   );
 };

@@ -11,6 +11,8 @@ import MileageQuickSelect from '@/components/MileageQuickSelect';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
+import BrandPageFAQ from '@/components/brand-pages/BrandPageFAQ';
+import BluePersistentCallback from '@/components/brand-pages/BluePersistentCallback';
 
 // Lazy load heavy components
 const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
@@ -957,82 +959,9 @@ const HyundaiWarrantyLanding: React.FC = () => {
           </div>
         </section>
 
-        {/* FAQ Section */}
-        <section className="py-12 md:py-16 bg-white">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                Hyundai Warranty FAQs
-              </h2>
-              <p className="text-gray-600">Common questions about Hyundai extended warranties</p>
-            </div>
-
-            <div className="space-y-3">
-              {hyundaiFAQs.map((faq, i) => (
-                <div key={i} className="border border-gray-200 rounded-xl overflow-hidden">
-                  <button
-                    onClick={() => setOpenFaqId(openFaqId === i ? null : i)}
-                    className="w-full flex items-center justify-between p-5 text-left hover:bg-gray-50 transition-colors"
-                    aria-expanded={openFaqId === i}
-                  >
-                    <span className="font-semibold text-gray-900 pr-4 faq-question">{faq.question}</span>
-                    {openFaqId === i ? (
-                      <ChevronUp className="h-5 w-5 text-gray-500 flex-shrink-0" />
-                    ) : (
-                      <ChevronDown className="h-5 w-5 text-gray-500 flex-shrink-0" />
-                    )}
-                  </button>
-                  {openFaqId === i && (
-                    <div className="px-5 pb-5 text-gray-600 text-sm leading-relaxed border-t border-gray-100 pt-4">
-                      {faq.answer}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Final CTA */}
-        <section className="py-12 md:py-16 bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-2xl md:text-3xl font-bold mb-4 text-white">
-              Protect Your Hyundai Today
-            </h2>
-            <p className="text-lg text-gray-300 mb-8">
-              Get an instant quote in under 60 seconds. Plans from just £24/month.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                onClick={scrollToQuoteForm}
-                size="lg"
-                className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold px-8 py-6 text-lg rounded-xl shadow-lg"
-              >
-                Get Your Free Quote <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              <Button 
-                size="lg"
-                variant="outline"
-                onClick={() => window.location.href = 'tel:03302295040'}
-                className="border-white text-white hover:bg-white hover:text-gray-900 font-semibold px-8 py-6 text-lg"
-              >
-                <Phone className="mr-2 h-5 w-5" /> 0330 229 5040
-              </Button>
-            </div>
-          </div>
-        </section>
-
-        {/* WhatsApp Floating Button */}
-        <a
-          href="https://wa.me/447960088777"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="fixed bottom-6 right-6 z-50 bg-green-500 hover:bg-green-600 rounded-full p-3 shadow-xl transition-transform hover:scale-110"
-          aria-label="Chat with us on WhatsApp"
-        >
-          <OptimizedImage src={whatsappIconNew} alt="WhatsApp" className="h-8 w-8" width={32} height={32} />
-        </a>
+        <BrandPageFAQ />
       </main>
+      <BluePersistentCallback />
     </>
   );
 };
