@@ -41,7 +41,7 @@ export const ClaimStatusDropdown: React.FC<ClaimStatusDropdownProps> = ({
       .from('claim_tags')
       .select('*')
       .eq('is_active', true)
-      .order('sort_order');
+      .order('name');
 
     if (error) {
       console.error('Error fetching tags:', error);
