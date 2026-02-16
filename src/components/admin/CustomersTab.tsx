@@ -53,6 +53,7 @@ import { InlineFutureActivationEdit } from './InlineFutureActivationEdit';
 import { InlineUpgradeCell } from './InlineUpgradeCell';
 import { TrustpilotReviewDialog } from './TrustpilotReviewDialog';
 import { PurchaseSourceBadge } from './PurchaseSourceBadge';
+import { PaymentDueDatePicker } from './PaymentDueDatePicker';
 import { DateRangeFilter } from './DateRangeFilter';
 import { QuickCustomerSignupButton } from './QuickCustomerSignupButton';
 import { format } from 'date-fns';
@@ -189,6 +190,8 @@ interface Customer {
   // Payment verification fields
   is_manual_entry?: boolean;
   payment_verified?: boolean;
+  // Payment collection tracking
+  payment_due_date?: string | null;
   // Purchase source tracking
   purchase_source?: string | null;
   admin_users?: {
@@ -808,7 +811,8 @@ export const CustomersTab = () => {
           quote_sent_by: null,
           payment_confirmed_by: null,
           gclid: null,
-          ga_client_id: null
+          ga_client_id: null,
+          payment_due_date: null
         }));
         
         directData = [...directData, ...orphanedAsCustomers];
@@ -3801,7 +3805,14 @@ Please log in and change your password after first login.`;
                         </DialogContent>
                       </Dialog>
                       <div className="flex items-center justify-between gap-2 w-full">
-                        <span className="font-medium">{customer.name}</span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-medium">{customer.name}</span>
+                          <PaymentDueDatePicker
+                            customerId={customer.id}
+                            paymentDueDate={(customer as any).payment_due_date}
+                            onUpdate={fetchCustomers}
+                          />
+                        </div>
                         <InlineCustomerTags 
                           customerId={customer.id} 
                           onTagsUpdate={fetchCustomers}
