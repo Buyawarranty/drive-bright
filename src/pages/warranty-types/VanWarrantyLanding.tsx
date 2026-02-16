@@ -257,6 +257,34 @@ const testimonials = [
     model: "Renault Trafic",
     text: "Professional service from start to finish. The injector failed on my Trafic and they handled everything. No excess to pay either.",
     rating: 5
+  },
+  {
+    name: "James H.",
+    location: "Manchester",
+    model: "Vauxhall Vivaro",
+    text: "I run a delivery fleet and we've had three claims across two vans. Every single one was handled quickly and professionally. Can't recommend enough.",
+    rating: 5
+  },
+  {
+    name: "Sarah P.",
+    location: "Bristol",
+    model: "Citroën Relay",
+    text: "The ECU failed on my Relay at 110,000 miles. £1,400 repair covered in full. The claims team were brilliant and kept me updated throughout.",
+    rating: 5
+  },
+  {
+    name: "Dan W.",
+    location: "Edinburgh",
+    model: "Peugeot Expert",
+    text: "As a self-employed electrician, my van is my livelihood. Peace of mind knowing I'm covered if something goes wrong. Great value too.",
+    rating: 5
+  },
+  {
+    name: "Chris M.",
+    location: "Cardiff",
+    model: "Ford Transit",
+    text: "Turbo went on my Transit at 87,000 miles. Buy A Warranty approved the claim same day, £2,100 bill covered. Absolutely fantastic.",
+    rating: 5
   }
 ];
 
@@ -1049,13 +1077,26 @@ const VanWarrantyLanding: React.FC = () => {
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
                 Why commercial van owners choose us
               </h2>
-              <button
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="inline-flex items-center gap-2 bg-brand-orange text-white font-bold px-6 md:px-10 py-4 md:py-5 rounded-xl text-base md:text-lg animate-breathing mt-4"
+              {/* Trustpilot Badge */}
+              <a
+                href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 bg-white border-2 border-gray-200 rounded-xl px-5 py-3 hover:border-green-400 transition-colors shadow-sm mt-4 mb-4"
               >
-                Get Van Warranty
-                <ArrowRight className="w-5 h-5 md:w-6 md:h-6" />
-              </button>
+                <img src={trustpilotLogo} alt="Trustpilot" className="h-7 object-contain" />
+                <img src={trustpilotExcellent} alt="Rated Excellent" className="h-7 object-contain" />
+                <span className="text-sm font-semibold text-gray-700">See our reviews</span>
+              </a>
+              <div className="mt-4">
+                <button
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                  className="inline-flex items-center gap-2 bg-brand-orange text-white font-bold px-6 md:px-10 py-4 md:py-5 rounded-xl text-base md:text-lg animate-breathing"
+                >
+                  Get Van Warranty
+                  <ArrowRight className="w-5 h-5 md:w-6 md:h-6" />
+                </button>
+              </div>
             </div>
 
             <div className="grid lg:grid-cols-3 gap-6 md:gap-8 items-start">
@@ -1339,8 +1380,8 @@ const VanWarrantyLanding: React.FC = () => {
 
 
         {/* Testimonials Section */}
-        <section className="py-10 md:py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="py-10 md:py-16 bg-gray-50">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8 md:mb-12">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
                 What Van Owners Say
@@ -1350,21 +1391,35 @@ const VanWarrantyLanding: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="space-y-4 md:space-y-6">
               {testimonials.map((testimonial, index) => (
-                <div key={index} className="bg-white rounded-xl p-4 md:p-6 shadow-md border border-gray-100">
-                  <div className="flex gap-0.5 md:gap-1 mb-2 md:mb-3">
+                <div key={index} className="bg-white rounded-xl p-5 md:p-6 shadow-sm border border-gray-100">
+                  <div className="flex gap-0.5 mb-3">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 md:w-5 md:h-5 text-yellow-400 fill-yellow-400" />
+                      <Star key={i} className="w-5 h-5 text-[#00b67a] fill-[#00b67a]" />
                     ))}
                   </div>
-                  <p className="text-gray-700 text-sm md:text-base mb-3 md:mb-4">"{testimonial.text}"</p>
+                  <p className="text-gray-800 text-base md:text-lg mb-4 leading-relaxed">"{testimonial.text}"</p>
+                  <hr className="border-gray-100 mb-3" />
                   <div>
-                    <p className="font-bold text-gray-900 text-sm md:text-base">{testimonial.name}</p>
-                    <p className="text-gray-500 text-xs md:text-sm">{testimonial.model} • {testimonial.location}</p>
+                    <p className="font-bold text-gray-900">{testimonial.name}</p>
+                    <p className="text-gray-500 text-sm">{testimonial.model} • {testimonial.location}</p>
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Trustpilot link at bottom */}
+            <div className="text-center mt-8">
+              <a
+                href="https://uk.trustpilot.com/review/buyawarranty.co.uk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 bg-white border-2 border-gray-200 rounded-xl px-6 py-3 hover:border-green-400 transition-colors shadow-sm"
+              >
+                <img src={trustpilotLogo} alt="Trustpilot" className="h-7 object-contain" />
+                <span className="text-sm font-semibold text-gray-700">Read all reviews on Trustpilot</span>
+              </a>
             </div>
           </div>
         </section>
