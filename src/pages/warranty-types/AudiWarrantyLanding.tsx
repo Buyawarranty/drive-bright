@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
-import { Check, ArrowRight, Shield, Phone, ChevronDown, Car, Wrench, Zap, Star, Search } from 'lucide-react';
+import { Check, ArrowRight, Shield, Phone, ChevronDown, Car, Wrench, Zap, Star, Search, Truck, Battery } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trackButtonClick } from '@/utils/analytics';
@@ -384,57 +385,141 @@ const AudiWarrantyLanding: React.FC = () => {
 
       <main itemScope itemType="https://schema.org/WebPage">
         {/* Hero Section */}
-        <section id="hero-section" className="relative bg-gradient-to-br from-gray-50 via-white to-slate-50 pt-6 pb-10 md:pt-10 md:pb-16 overflow-hidden">
+        <section id="hero-section" className="bg-gradient-to-br from-gray-50 via-white to-orange-50/30 pt-6 pb-12 md:pt-12 md:pb-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-              <div className="space-y-5">
-                <div className="inline-flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-sm font-medium">
-                  <Shield className="h-4 w-4" /> Official Audi Extended Warranty Partner
+            <div className="grid lg:grid-cols-2 gap-6 lg:gap-12 items-center">
+              {/* Left Column - Content */}
+              <div className="text-center lg:text-left">
+                {/* Brand Logo */}
+                <div className="flex items-center justify-center lg:justify-start gap-4 mb-4 md:mb-6">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Audi-Logo_2016.svg/800px-Audi-Logo_2016.svg.png" 
+                    alt="Audi Logo" 
+                    className="h-10 md:h-14 w-auto object-contain"
+                    width={112}
+                    height={56}
+                  />
                 </div>
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 leading-tight">
-                  Audi Extended <span className="text-brand-orange">Warranty</span> UK
+
+                {/* H1 Headline */}
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4">
+                  <span className="text-gray-900">Audi Extended Warranty </span>
+                  <span className="text-brand-orange">in 60 Seconds!</span>
                 </h1>
-                <p className="text-base md:text-lg text-gray-600 max-w-xl">
-                  Protect your Audi with comprehensive cover from just <strong>£25/month</strong>. All models from 2012 to 2026 including A3, A4, A6, Q5, Q7, e-tron & TT. S tronic & quattro covered. Use any UK garage.
+
+                {/* Subheadline */}
+                <p className="text-base sm:text-lg md:text-xl text-gray-700 mb-4 md:mb-6 hero-description">
+                  Protect your Audi with dealer-level repairs, UK-wide cover and no-surprise costs. Get a fixed-price with instant cover.
                 </p>
 
-                <div className="bg-white rounded-2xl shadow-xl p-5 md:p-6 border border-gray-100">
-                  <div className="space-y-4">
-                    <div>
-                      <label htmlFor="reg-input" className="block text-sm font-semibold text-gray-700 mb-1.5">Enter Your Registration</label>
-                      <div className="relative">
-                        <div className="absolute left-0 top-0 bottom-0 w-12 bg-blue-600 rounded-l-lg flex items-center justify-center"><span className="text-white text-xs font-bold">GB</span></div>
-                        <input id="reg-input" type="text" value={regNumber} onChange={handleRegChange} placeholder="AB12 CDE" className="w-full pl-16 pr-4 py-3.5 text-xl font-bold uppercase tracking-wider bg-yellow-50 border-2 border-yellow-400 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 text-center" maxLength={8} aria-label="Vehicle registration number" />
-                      </div>
-                    </div>
-                    <MileageQuickSelect value={mileageSelection} onChange={handleMileageSelection} />
-                    {vehicleAgeError && <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{vehicleAgeError}</div>}
-                    <Button onClick={handleGetQuote} disabled={isLookingUp} className="w-full bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-4 text-lg rounded-xl shadow-lg animate-cta-enhanced" size="lg">
-                      {isLookingUp ? <span className="flex items-center gap-2"><div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>Looking up vehicle...</span> : <span className="flex items-center gap-2">Get My Free Quote <ArrowRight className="h-5 w-5" /></span>}
-                    </Button>
-                    <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
-                      <span className="flex items-center gap-1"><Check className="h-3 w-3 text-green-500" /> No obligation</span>
-                      <span className="flex items-center gap-1"><Check className="h-3 w-3 text-green-500" /> Instant quote</span>
-                      <span className="flex items-center gap-1"><Check className="h-3 w-3 text-green-500" /> Cancel anytime</span>
-                    </div>
+                {/* Benefits */}
+                <div className="mb-4 md:mb-6 text-gray-700 text-xs sm:text-sm md:text-base space-y-1.5 md:space-y-2">
+                  <div className="flex items-center justify-center lg:justify-start">
+                    <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
+                    <span className="font-medium">From just 80p a day . Easy claims . Fast payouts</span>
+                  </div>
+                  <div className="flex items-center justify-center lg:justify-start">
+                    <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
+                    <span className="font-medium">Unlimited claims . Parts and Labour . No excess</span>
                   </div>
                 </div>
-                <TrustCallbackPanel />
-                <div className="flex items-center gap-3">
-                  <OptimizedImage src={trustpilotExcellent} alt="Trustpilot Excellent Rating" className="h-10" width={120} height={40} />
-                  <span className="text-sm text-gray-600">Rated <strong>Excellent</strong> by Audi owners</span>
+
+                {/* Quote Form */}
+                <div className="max-w-md mx-auto lg:mx-0 space-y-4">
+                  <div className="flex items-stretch rounded-lg overflow-hidden shadow-lg border-2 border-black">
+                    <div className="bg-blue-600 text-white font-bold px-3 sm:px-4 py-3 flex items-center justify-center min-w-[60px] sm:min-w-[80px]">
+                      <div className="flex flex-col items-center">
+                        <div className="text-base sm:text-lg leading-tight mb-0.5">🇬🇧</div>
+                        <div className="text-xs sm:text-sm font-bold leading-none">UK</div>
+                      </div>
+                    </div>
+                    <input
+                      type="text"
+                      value={regNumber}
+                      onChange={handleRegChange}
+                      placeholder="ENTER REG"
+                      className="bg-yellow-400 border-none outline-none text-xl sm:text-2xl md:text-3xl text-black flex-1 font-black placeholder:text-black/60 px-3 sm:px-4 py-3 uppercase tracking-wider min-w-0"
+                      maxLength={8}
+                    />
+                  </div>
+
+                  <MileageQuickSelect
+                    value={mileageSelection}
+                    onChange={handleMileageSelection}
+                    onAutoSubmit={handleGetQuote}
+                    error={vehicleAgeError}
+                    isLoading={isLookingUp}
+                    isRegValid={regNumber.replace(/\s/g, '').length >= 5}
+                  />
+
+                  <p className="text-xs text-gray-500 mt-3 text-center lg:text-left">
+                    Audi is a registered trademark of AUDI AG. We are an independent warranty provider.
+                  </p>
+                  <TrustCallbackPanel />
                 </div>
               </div>
 
-              <div className="relative hidden lg:flex flex-col items-center justify-center">
-                <div className="relative flex items-end justify-center gap-4">
-                  <OptimizedImage src={audiA4Hero} alt="Audi A4 extended warranty UK" className="max-w-[35%] h-auto drop-shadow-2xl" priority width={269} height={179} />
-                  <OptimizedImage src={pandaThumbsUp} alt="Buy A Warranty mascot" className="max-w-[25%] h-auto" priority width={192} height={192} />
-                  <OptimizedImage src={audiQ5Warranty} alt="Audi Q5 used car warranty UK" className="max-w-[35%] h-auto drop-shadow-2xl" priority width={269} height={179} />
+              {/* Right Column - Hero Image */}
+              <div className="relative">
+                <div className="relative">
+                  <OptimizedImage
+                    src={audiA4Hero}
+                    alt="Audi A4 front view - Audi extended warranty UK coverage for all models"
+                    className="w-full max-w-[35%] mx-auto h-auto"
+                    priority={true}
+                    width={269}
+                    height={179}
+                  />
+                  <div className="absolute top-4 right-4">
+                    <a 
+                      href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="hover:opacity-80 transition-opacity"
+                    >
+                      <OptimizedImage 
+                        src={trustpilotExcellent} 
+                        alt="Trustpilot Excellent Rating" 
+                        className="h-auto w-28 sm:w-36 object-contain"
+                        width={144}
+                        height={61}
+                      />
+                    </a>
+                  </div>
                 </div>
-                <div className="mt-6 flex items-center gap-2">
-                  <div className="flex -space-x-1">{[...Array(5)].map((_, i) => <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />)}</div>
-                  <span className="text-sm font-medium text-gray-700">Trusted by thousands of Audi owners</span>
+
+                <div className="flex flex-col items-center gap-4 mt-6">
+                  <div className="flex items-center justify-center gap-3 sm:gap-4 lg:gap-6 flex-wrap">
+                    <div className="flex items-center space-x-1.5">
+                      <Car className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">Saloons</span>
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">SUVs</span>
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">Hybrid</span>
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <Battery className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">EV</span>
+                    </div>
+                  </div>
+                  
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="inline-flex items-center gap-2 bg-green-50 border border-green-300 rounded-md px-3 py-1.5 sm:px-3.5 sm:py-2 cursor-pointer">
+                          <span className="text-sm font-semibold text-green-700">⚡ Instant cover</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>⚡ Cover starts immediately after purchase</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
             </div>
