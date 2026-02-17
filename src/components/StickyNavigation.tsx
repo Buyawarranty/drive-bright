@@ -1,16 +1,30 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Phone, Clock, PhoneCall, LogIn } from 'lucide-react';
+import { Phone, Clock, PhoneCall, LogIn, ArrowRight } from 'lucide-react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import MobileNavigation from '@/components/MobileNavigation';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const StickyNavigation: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isMobile = useIsMobile();
   const [isCallbackModalOpen, setIsCallbackModalOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 300);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Hide mobile sticky bar on admin/checkout/auth pages
+  const hiddenPaths = ['/admin', '/sales-login', '/checkout', '/auth', '/widget'];
+  const showMobileStickyBar = isMobile && isScrolled && !hiddenPaths.some(p => location.pathname.startsWith(p));
 
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -121,24 +135,6 @@ const StickyNavigation: React.FC = () => {
 
             {/* Mobile Menu Button */}
             <div className="lg:hidden flex items-center gap-2">
-              {/* Mobile WhatsApp Button */}
-              <a 
-                href="https://wa.me/message/SPQPJ6O3UBF5B1" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-2 sm:px-3 py-1.5 sm:py-2 bg-[#25D366] text-white text-xs sm:text-sm font-semibold rounded-lg hover:bg-[#20BA5A] transition-colors whitespace-nowrap"
-              >
-                WhatsApp
-              </a>
-              
-              {/* Mobile Get Quote Button */}
-              <Link 
-                to="/?step=1"
-                className="inline-flex items-center px-2 sm:px-3 py-1.5 sm:py-2 bg-[#eb4b00] text-white text-xs sm:text-sm font-semibold rounded-lg hover:bg-[#d63f00] transition-colors whitespace-nowrap"
-              >
-                Get Quote
-              </Link>
-
               <MobileNavigation />
             </div>
           </div>
@@ -150,6 +146,30 @@ const StickyNavigation: React.FC = () => {
         isOpen={isCallbackModalOpen} 
         onClose={() => setIsCallbackModalOpen(false)} 
       />
+
+      {/* Global Mobile Sticky CTA Bar */}
+      {showMobileStickyBar && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-border shadow-[0_-4px_12px_rgba(0,0,0,0.08)] p-2.5 pb-[env(safe-area-inset-bottom,10px)] lg:hidden animate-in slide-in-from-bottom-4 duration-300">
+          <div className="flex gap-2">
+            <button
+              onClick={() => navigate('/?step=1')}
+              className="flex-1 bg-[#1B2A4A] hover:bg-[#152238] text-white font-bold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-md transition-colors"
+              aria-label="Get instant quote"
+            >
+              Get Instant Quote
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <a
+              href="tel:03302295040"
+              className="flex-1 bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-md transition-colors"
+              aria-label="Call now"
+            >
+              <Phone className="w-4 h-4" />
+              Call Now
+            </a>
+          </div>
+        </div>
+      )}
     </>
   );
 };

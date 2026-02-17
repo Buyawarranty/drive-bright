@@ -144,18 +144,16 @@ const MobileNavigation: React.FC = () => {
 
             {/* Bottom CTA */}
             <div className="flex-shrink-0 pt-4 border-t space-y-2">
-              <a 
-                href="https://wa.me/message/SPQPJ6O3UBF5B1" 
-                target="_blank" 
-                rel="noopener noreferrer"
+              <Link
+                to="/?step=1"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <Button 
-                  className="w-full bg-[#00B67A] text-white hover:bg-[#008C5A]"
+                  className="w-full bg-[#eb4b00] text-white hover:bg-[#d63f00]"
                 >
-                  WhatsApp Us
+                  Get a Quote
                 </Button>
-              </a>
+              </Link>
             </div>
           </div>
         </SheetContent>
