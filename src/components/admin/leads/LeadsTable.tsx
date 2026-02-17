@@ -28,6 +28,7 @@ interface LeadsTableProps {
   onUpdateCallCount: (leadId: string, increment: number) => void;
   onSendQuote?: (lead: Lead) => void;
   onRefresh?: () => void;
+  hideAssignedColumn?: boolean;
 }
 
 export const LeadsTable: React.FC<LeadsTableProps> = memo(({
@@ -49,7 +50,8 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
   onLogActivity,
   onUpdateCallCount,
   onSendQuote,
-  onRefresh
+  onRefresh,
+  hideAssignedColumn
 }) => {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
 
@@ -71,7 +73,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
               <TableHead className="w-[40px]">
                 {/* Checkbox moved to control bar */}
               </TableHead>
-              <TableHead className="sticky left-0 bg-muted/30 z-10 w-[120px] min-w-[120px]">Assigned To</TableHead>
+              {!hideAssignedColumn && <TableHead className="sticky left-0 bg-muted/30 z-10 w-[120px] min-w-[120px]">Assigned To</TableHead>}
               <TableHead className="w-[100px]">Status</TableHead>
               <TableHead className="w-[70px] text-center">Calls</TableHead>
               <TableHead className="w-[120px]">Actions</TableHead>
@@ -114,6 +116,7 @@ export const LeadsTable: React.FC<LeadsTableProps> = memo(({
                   onLogActivity={(type, desc) => onLogActivity(lead.id, type, desc)}
                   onUpdateCallCount={(increment) => onUpdateCallCount(lead.id, increment)}
                   onSendQuote={onSendQuote ? () => onSendQuote(lead) : undefined}
+                  hideAssignedColumn={hideAssignedColumn}
                 />
                 
                 {/* Expanded row with LeadDetailsPanel */}

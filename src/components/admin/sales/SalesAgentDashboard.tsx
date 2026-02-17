@@ -22,6 +22,7 @@ interface SalesAgentDashboardProps {
   tags?: LeadTag[];
   salesUsers?: AdminUser[];
   handlers?: any;
+  hideAssignedColumn?: boolean;
 }
 
 export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
@@ -29,7 +30,8 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
   leads: propLeads,
   tags: propTags,
   salesUsers: propSalesUsers,
-  handlers: propHandlers
+  handlers: propHandlers,
+  hideAssignedColumn
 }) => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
@@ -301,6 +303,7 @@ export const SalesAgentDashboard: React.FC<SalesAgentDashboardProps> = ({
               plan_interest: lead.plan_interest,
             })}
             onRefresh={fetchLeads}
+            hideAssignedColumn={hideAssignedColumn}
           />
         </TabsContent>
 
