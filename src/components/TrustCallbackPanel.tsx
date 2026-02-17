@@ -8,7 +8,7 @@ const TrustCallbackPanel: React.FC = () => {
     <>
       <div className="mt-5 sm:mt-7 bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-5 py-4 text-center">
         <p className="text-sm sm:text-[17px] font-bold text-[#1B2A4A]">
-          Complete car warranty cover with no surprises.
+          Honest car warranty cover at a fair price.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-xs sm:text-[15px] mt-1.5">
           <span className="text-gray-600">Speak to an expert:</span>
