@@ -79,6 +79,9 @@ const buildTemplateHtml = (greeting: string, content: string, recipientEmail: st
     .body-content p { margin: 12px 0; }
     .body-content ul, .body-content ol { padding-left: 20px; margin: 12px 0; }
     .contact-section { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #1a365d; }
+    .trustpilot-section { text-align: center; padding: 20px; margin: 20px 0; background: white; border-radius: 8px; }
+    .trustpilot-section img { max-width: 140px; height: auto; }
+    .trustpilot-stars { color: #00b67a; font-size: 24px; letter-spacing: 2px; }
     .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; background: #f1f1f1; }
   </style>
 </head>
@@ -97,6 +100,12 @@ const buildTemplateHtml = (greeting: string, content: string, recipientEmail: st
         <p style="margin: 4px 0;"><strong>Sales & Support:</strong> support@buyawarranty.co.uk | 0330 229 5040</p>
         <p style="margin: 4px 0;"><strong>Claims:</strong> claims@buyawarranty.co.uk | 0330 229 5045</p>
         <p style="margin: 4px 0; color: #666;">Monday to Friday, 9am – 5:30pm</p>
+      </div>
+      <div class="trustpilot-section">
+        <p style="margin: 0 0 8px; font-weight: bold; color: #1a365d;">Trusted by thousands of drivers</p>
+        <div class="trustpilot-stars">★★★★★</div>
+        <p style="margin: 8px 0 4px; font-size: 14px; color: #333;"><strong>Excellent</strong> on Trustpilot</p>
+        <p style="margin: 0; font-size: 12px; color: #666;">See our reviews at <a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" style="color: #00b67a;">trustpilot.com</a></p>
       </div>
     </div>
     <div class="footer">
@@ -350,6 +359,31 @@ serve(async (req) => {
     }
 
     logStep("Email sent successfully", { messageId: data?.id });
+
+    // Log the email to email_logs table for delivery tracking
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const logClient = createClient(supabaseUrl, supabaseKey);
+      
+      await logClient.from('email_logs').insert({
+        recipient_email: recipientEmail,
+        recipient_name: variables?.customerName || variables?.firstName || null,
+        subject: subject,
+        status: 'sent',
+        delivery_status: 'sent',
+        sent_at: new Date().toISOString(),
+        metadata: {
+          template_id: templateId || 'custom',
+          resend_message_id: data?.id,
+          has_attachments: (attachments?.length || 0) > 0
+        }
+      });
+      logStep("Email logged to email_logs table");
+    } catch (logError) {
+      logStep("WARNING: Failed to log email", { error: logError });
+      // Don't fail the response if logging fails
+    }
 
     return new Response(
       JSON.stringify({ success: true, messageId: data?.id, message: "Email sent successfully" }),
