@@ -22,6 +22,7 @@ import { useDataExport } from '@/hooks/useDataExport';
 import { useDebounce } from '@/hooks/useDebounce';
 import { usePagination } from '@/hooks/usePagination';
 import { useEnhancedPresence } from '@/hooks/useEnhancedPresence';
+import { useAdminConfig } from '@/hooks/useAdminConfig';
 
 // Lead data for quote navigation
 interface LeadForQuote {
@@ -61,6 +62,10 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   // Role-based restrictions
   const isAdmin = userRole === 'admin' || userRole === 'sales_lead';
   const isSalesAgent = userRole === 'sales';
+  
+  // Admin-controlled toggle: whether sales agents can see the "Assigned To" column
+  const { value: showAssignmentsToAgents } = useAdminConfig('show_assignments_to_agents');
+  const hideAssignedColumnForAgents = isSalesAgent && showAssignmentsToAgents === false;
   
   // Delete permission - admin role OR explicit delete permission
   const canDelete = isAdmin || hasGranularPermission('new-leads', 'delete');
@@ -403,6 +408,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
         salesUsers={salesUsers}
         handlers={leadHandlers}
         onNavigateToTab={onNavigateToTab}
+        hideAssignedColumn={hideAssignedColumnForAgents}
       />
     );
   }

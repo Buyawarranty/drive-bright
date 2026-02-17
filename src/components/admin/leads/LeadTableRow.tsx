@@ -42,6 +42,7 @@ interface LeadTableRowProps {
   onLogActivity: (type: string, description: string) => void;
   onUpdateCallCount: (increment: number) => void;
   onSendQuote?: () => void;
+  hideAssignedColumn?: boolean;
 }
 
 const statusColors: Record<LeadStatus, string> = {
@@ -209,7 +210,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
   onRemoveTag,
   onLogActivity,
   onUpdateCallCount,
-  onSendQuote
+  onSendQuote,
+  hideAssignedColumn
 }) => {
   const [followUpDate, setFollowUpDate] = useState<Date | undefined>();
   const [followUpType, setFollowUpType] = useState('call');
@@ -253,7 +255,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
       </TableCell>
 
       {/* Assigned To - Shows "Assign now" for unassigned leads */}
-      <TableCell className="sticky left-0 bg-inherit z-10" onClick={(e) => e.stopPropagation()}>
+      {!hideAssignedColumn && <TableCell className="sticky left-0 bg-inherit z-10" onClick={(e) => e.stopPropagation()}>
         <Select
           value={lead.assigned_to || 'unassigned'}
           onValueChange={(value) => {
@@ -356,7 +358,7 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
               })}
             </SelectContent>
           </Select>
-      </TableCell>
+      </TableCell>}
 
       {/* Status */}
       <TableCell onClick={(e) => e.stopPropagation()}>
@@ -798,7 +800,8 @@ export const LeadTableRow = memo<LeadTableRowProps>(({
     prevProps.lead.call_count === nextProps.lead.call_count &&
     prevProps.lead.tags?.length === nextProps.lead.tags?.length &&
     prevProps.isSelected === nextProps.isSelected &&
-    prevProps.isExpanded === nextProps.isExpanded
+    prevProps.isExpanded === nextProps.isExpanded &&
+    prevProps.hideAssignedColumn === nextProps.hideAssignedColumn
   );
 });
 

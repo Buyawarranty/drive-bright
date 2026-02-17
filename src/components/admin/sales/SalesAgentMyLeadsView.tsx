@@ -38,6 +38,7 @@ interface SalesAgentMyLeadsViewProps {
   };
   onSendQuote: (lead: Lead) => void;
   onRefresh?: () => void;
+  hideAssignedColumn?: boolean;
 }
 
 export const SalesAgentMyLeadsView: React.FC<SalesAgentMyLeadsViewProps> = ({
@@ -46,7 +47,8 @@ export const SalesAgentMyLeadsView: React.FC<SalesAgentMyLeadsViewProps> = ({
   currentUserId,
   handlers,
   onSendQuote,
-  onRefresh
+  onRefresh,
+  hideAssignedColumn
 }) => {
   // Default to 'new' instead of 'all' since we removed the All tab
   const [filter, setFilter] = useState<LeadStatus | 'all' | 'high_priority' | 'paid'>('new');
@@ -405,6 +407,7 @@ export const SalesAgentMyLeadsView: React.FC<SalesAgentMyLeadsViewProps> = ({
             onUpdateCallCount={handlers.updateCallCount || (async () => {})}
             onRefresh={onRefresh || (() => {})}
             onSendQuote={onSendQuote}
+            hideAssignedColumn={hideAssignedColumn}
           />
           
           {/* Footer Pagination */}

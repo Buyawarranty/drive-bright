@@ -22,7 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { 
   Users, ChevronDown, ChevronRight, Phone, Mail, Car, 
   Calendar, UserCircle, Hourglass, Info, Trash2, Save, Zap, UserPlus,
-  RotateCcw, Percent, ArrowRight, AlertCircle, CalendarIcon, X, ShieldCheck, UserCheck
+  RotateCcw, Percent, ArrowRight, AlertCircle, CalendarIcon, X, ShieldCheck, UserCheck, Eye, EyeOff
 } from 'lucide-react';
 import { format, formatDistanceToNow, startOfWeek, startOfMonth, startOfYear, endOfDay, isWithinInterval, subWeeks, subMonths, endOfWeek, endOfMonth } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
@@ -72,6 +72,9 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   
   // Check if sales leads have distribution access (admin-controlled toggle)
   const { value: salesLeadDistributionAccess, loading: configLoading, updateConfig: updateDistributionAccess } = useAdminConfig('sales_lead_distribution_access');
+  
+  // Admin-controlled toggle: whether sales agents can see the "Assigned To" column
+  const { value: showAssignmentsToAgents, updateConfig: updateShowAssignments } = useAdminConfig('show_assignments_to_agents');
   
   // Sales leads can see distribution settings only if admin has granted access
   // Default to true if config not set (backwards compatible)
@@ -908,6 +911,35 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
           />
           <span className="text-xs text-muted-foreground">
             {salesLeadDistributionAccess !== false ? 'Sales Leads can manage distribution' : 'Distribution restricted to admins only'}
+          </span>
+        </div>
+      )}
+
+      {/* Admin/Sales Lead toggle: Show assignments to agents */}
+      {(isFullAdmin || isSalesLead) && (
+        <div className="flex items-center gap-3 p-3 bg-muted/30 border rounded-lg">
+          {showAssignmentsToAgents !== false ? (
+            <Eye className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <EyeOff className="h-4 w-4 text-muted-foreground" />
+          )}
+          <span className="text-sm font-medium">Agent Assignment Visibility</span>
+          <Switch
+            checked={showAssignmentsToAgents !== false}
+            onCheckedChange={async (checked) => {
+              const success = await updateShowAssignments(checked);
+              if (success) {
+                toast({
+                  title: checked ? 'Assignments visible' : 'Assignments hidden',
+                  description: checked
+                    ? 'Sales agents can now see who is assigned to each lead.'
+                    : 'Sales agents can no longer see lead assignments.',
+                });
+              }
+            }}
+          />
+          <span className="text-xs text-muted-foreground">
+            {showAssignmentsToAgents !== false ? 'Agents can see lead assignments' : 'Assignments hidden from agents'}
           </span>
         </div>
       )}
