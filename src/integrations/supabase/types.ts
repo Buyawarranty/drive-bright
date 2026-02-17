@@ -3279,6 +3279,7 @@ export type Database = {
           reg_plate: string | null
           source: string | null
           source_type: string | null
+          step_abandoned: number | null
           synced_at: string
           tags: string[] | null
           unsubscribed_at: string | null
@@ -3300,6 +3301,7 @@ export type Database = {
           reg_plate?: string | null
           source?: string | null
           source_type?: string | null
+          step_abandoned?: number | null
           synced_at?: string
           tags?: string[] | null
           unsubscribed_at?: string | null
@@ -3321,6 +3323,7 @@ export type Database = {
           reg_plate?: string | null
           source?: string | null
           source_type?: string | null
+          step_abandoned?: number | null
           synced_at?: string
           tags?: string[] | null
           unsubscribed_at?: string | null
