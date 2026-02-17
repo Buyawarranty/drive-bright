@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -173,28 +174,54 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
     }
   };
 
-  // Handle percentage change - prevent entering values that would exceed 100% total
-  const handlePercentageChange = (adminUserId: string, value: string) => {
-    // Allow empty input so user can clear the field and type a new value
-    if (value === '' || value.trim() === '') {
-      setEditedPercentages(prev => ({ ...prev, [adminUserId]: 0 }));
-      return;
+  // Auto-save debounce refs
+  const autoSaveTimers = React.useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  // Handle percentage change - allow free typing, auto-save after debounce
+  const handlePercentageChange = (adminUserId: string, value: number) => {
+    const clampedValue = Math.max(0, Math.min(100, value));
+    setEditedPercentages(prev => ({ ...prev, [adminUserId]: clampedValue }));
+
+    // Clear previous auto-save timer
+    if (autoSaveTimers.current[adminUserId]) {
+      clearTimeout(autoSaveTimers.current[adminUserId]);
     }
-    
-    const numValue = parseInt(value, 10);
-    if (isNaN(numValue) || numValue < 0) return;
-    
-    // Calculate what the total would be with this new value
+
+    // Auto-save after 800ms of inactivity
+    autoSaveTimers.current[adminUserId] = setTimeout(() => {
+      autoSavePercentage(adminUserId, clampedValue);
+    }, 800);
+  };
+
+  // Auto-save a percentage value
+  const autoSavePercentage = async (adminUserId: string, value: number) => {
+    // Calculate what total would be
     const otherActiveTotal = agentCaps.reduce((sum, cap) => {
       if (cap.paused || cap.admin_user_id === adminUserId) return sum;
       const val = editedPercentages[cap.admin_user_id] ?? cap.percentage ?? 0;
       return sum + val;
     }, 0);
-    
-    const maxAllowed = 100 - otherActiveTotal;
-    const clampedValue = Math.min(numValue, maxAllowed);
-    
-    setEditedPercentages(prev => ({ ...prev, [adminUserId]: clampedValue }));
+    const newTotal = otherActiveTotal + value;
+
+    if (newTotal > 100) {
+      toast({
+        title: 'Cannot save — exceeds 100%',
+        description: `Total would be ${newTotal}%. Reduce by ${newTotal - 100}% to save.`,
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setSaving(adminUserId);
+    const success = await updateAgentCap(adminUserId, { percentage: value });
+    if (success) {
+      setEditedPercentages(prev => {
+        const { [adminUserId]: _, ...rest } = prev;
+        return rest;
+      });
+      toast({ title: 'Saved', description: `${value}% allocation saved.` });
+    }
+    setSaving(null);
   };
 
   // Handle save cap
@@ -223,36 +250,13 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
     }, 0);
   }, [agentCaps, editedPercentages]);
 
-  // Check if saving a specific agent's percentage would exceed 100%
-  const wouldExceed100 = (adminUserId: string) => {
-    return totalPercentage > 100;
-  };
 
-  // Handle save percentage
-  const handleSavePercentage = async (adminUserId: string) => {
-    const newPercent = editedPercentages[adminUserId];
-    if (newPercent === undefined) return;
-
-    // Safety net: validate total doesn't exceed 100%
-    if (totalPercentage > 100) {
-      toast({
-        title: 'Total percentage exceeds 100%',
-        description: `Total percentage cannot exceed 100%. Currently at ${totalPercentage}%.`,
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    setSaving(adminUserId);
-    const success = await updateAgentCap(adminUserId, { percentage: newPercent });
-    if (success) {
-      setEditedPercentages(prev => {
-        const { [adminUserId]: _, ...rest } = prev;
-        return rest;
-      });
-    }
-    setSaving(null);
-  };
+  // Cleanup auto-save timers on unmount
+  React.useEffect(() => {
+    return () => {
+      Object.values(autoSaveTimers.current).forEach(clearTimeout);
+    };
+  }, []);
 
   // Handle toggle pause
   const handleTogglePause = async (adminUserId: string) => {
@@ -1143,40 +1147,38 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                                 )}
                               </>
                             ) : (
-                              <>
-                                <div className="flex items-center gap-1">
-                                  <Input
-                                    type="number"
-                                    min={0}
+                            <>
+                                <div className="flex items-center gap-3 w-full min-w-[200px]">
+                                  <Slider
+                                    value={[editedPercent ?? cap.percentage ?? 0]}
+                                    onValueChange={([val]) => handlePercentageChange(cap.admin_user_id, val)}
                                     max={100}
-                                    value={editedPercent ?? cap.percentage ?? 0}
-                                    onChange={(e) => handlePercentageChange(cap.admin_user_id, e.target.value)}
-                                    className="w-16 h-8 text-sm"
+                                    min={0}
+                                    step={1}
+                                    className="flex-1"
+                                    disabled={cap.paused}
                                   />
-                                  <span className="text-muted-foreground">%</span>
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    <Input
+                                      type="number"
+                                      min={0}
+                                      max={100}
+                                      step={1}
+                                      value={editedPercent ?? cap.percentage ?? 0}
+                                      onChange={(e) => {
+                                        const val = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
+                                        if (!isNaN(val)) handlePercentageChange(cap.admin_user_id, val);
+                                      }}
+                                      onFocus={(e) => e.target.select()}
+                                      className="w-16 h-8 text-sm text-center"
+                                      disabled={cap.paused}
+                                    />
+                                    <span className="text-muted-foreground text-sm">%</span>
+                                  </div>
+                                  {saving === cap.admin_user_id && (
+                                    <span className="text-xs text-muted-foreground animate-pulse">Saving…</span>
+                                  )}
                                 </div>
-                {editedPercent !== undefined && editedPercent !== (cap.percentage ?? 0) && (
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <span>
-                                        <Button
-                                          size="sm"
-                                          variant="default"
-                                          className="h-8 w-8 p-0"
-                                          onClick={() => handleSavePercentage(cap.admin_user_id)}
-                                          disabled={saving === cap.admin_user_id || totalPercentage > 100}
-                                        >
-                                          <Save className="h-3.5 w-3.5" />
-                                        </Button>
-                                      </span>
-                                    </TooltipTrigger>
-                                    {totalPercentage > 100 && (
-                                      <TooltipContent side="top" className="text-xs bg-red-600 text-white">
-                                        Total is {totalPercentage}% — must be ≤ 100% to save
-                                      </TooltipContent>
-                                    )}
-                                  </Tooltip>
-                                )}
                               </>
                             )}
                           </div>
