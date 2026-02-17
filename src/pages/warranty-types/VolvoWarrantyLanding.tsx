@@ -98,7 +98,9 @@ const VolvoWarrantyLanding: React.FC = () => {
   };
 
   const scrollToQuoteForm = () => { document.getElementById('hero-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
-  const productSchema = { "@context": "https://schema.org", "@type": "Product", "name": "Volvo Extended Warranty UK", "description": "Comprehensive extended warranty for Volvo models including XC40, XC60, XC90, S60, V60, V90, S90, XC40 Recharge, C40 Recharge, EX30, EX90. T8 hybrid, AWD, air suspension, EV components covered.", "brand": { "@type": "Brand", "name": "Buy A Warranty" }, "offers": { "@type": "Offer", "priceCurrency": "GBP", "price": "25", "availability": "https://schema.org/InStock", "url": "https://buyawarranty.co.uk/warranty-types/volvo/" }, "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5" } };
+  const productSchema = { "@context": "https://schema.org", "@type": "Product", "name": "Volvo Extended Warranty UK", "description": "Comprehensive extended warranty for Volvo models including XC40, XC60, XC90, S60, V60, V90, S90, XC40 Recharge, C40 Recharge, EX30, EX90. T8 hybrid, AWD, air suspension, EV components covered.", "brand": { "@type": "Brand", "name": "Buy A Warranty" }, "offers": { "@type": "Offer", "priceCurrency": "GBP", "price": "25", "availability": "https://schema.org/InStock", "url": "https://buyawarranty.co.uk/warranty-types/volvo/", "priceValidUntil": new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0] }, "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5" }, "category": "Vehicle Extended Warranty" };
+  const webPageSchema = { "@context": "https://schema.org", "@type": "WebPage", "name": "Volvo Extended Warranty UK | Buy A Warranty", "description": "Comprehensive Volvo extended warranty from £25/month covering XC40, XC60, XC90 and all models. AWD, T8 hybrid & air suspension covered.", "url": "https://buyawarranty.co.uk/warranty-types/volvo/", "lastReviewed": new Date().toISOString().split('T')[0], "reviewedBy": { "@type": "Organization", "name": "Buy A Warranty" }, "speakable": { "@type": "SpeakableSpecification", "cssSelector": ["h1", "h2", ".faq-question"] }, "publisher": { "@type": "Organization", "name": "Buy A Warranty", "legalName": "BUY A WARRANTY LIMITED", "url": "https://buyawarranty.co.uk" } };
+  const localBusinessSchema = { "@context": "https://schema.org", "@type": "LocalBusiness", "name": "Buy A Warranty", "description": "UK's trusted Volvo extended warranty provider since 2016.", "url": "https://buyawarranty.co.uk", "telephone": "03302295040", "foundingDate": "2016", "areaServed": { "@type": "Country", "name": "United Kingdom" }, "priceRange": "£18-£60/month", "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5" } };
   const faqSchema = { "@context": "https://schema.org", "@type": "FAQPage", "mainEntity": volvoFAQs.map(f => ({ "@type": "Question", "name": f.question, "acceptedAnswer": { "@type": "Answer", "text": f.answer } })) };
   const breadcrumbSchema = { "@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{ "@type": "ListItem", "position": 1, "name": "Home", "item": "https://buyawarranty.co.uk/" }, { "@type": "ListItem", "position": 2, "name": "Warranty Types", "item": "https://buyawarranty.co.uk/warranty-types/" }, { "@type": "ListItem", "position": 3, "name": "Volvo Warranty", "item": "https://buyawarranty.co.uk/warranty-types/volvo/" }] };
   const renderTestimonialText = (text: string) => { const parts = text.split(/\*\*(.*?)\*\*/); return parts.map((part, i) => i % 2 === 1 ? <strong key={i}>{part}</strong> : part); };
@@ -117,9 +119,16 @@ const VolvoWarrantyLanding: React.FC = () => {
         <meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" />
         <meta property="og:site_name" content="Buy A Warranty" /><meta property="og:locale" content="en_GB" />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Volvo Extended Warranty UK | From £25/month" />
+        <meta name="twitter:description" content="UK's top-rated Volvo warranty. XC40, XC60, XC90 & all models. AWD & T8 hybrid covered. 8,000+ components. Any garage." />
+        <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
+        <meta name="twitter:image:alt" content="Volvo Extended Warranty UK - Buy A Warranty" />
         <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
         <meta name="geo.region" content="GB" />
+        <meta name="geo.placename" content="United Kingdom" />
         <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(webPageSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(localBusinessSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
       </Helmet>

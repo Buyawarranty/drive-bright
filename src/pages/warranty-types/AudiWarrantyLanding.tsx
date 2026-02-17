@@ -320,6 +320,29 @@ const AudiWarrantyLanding: React.FC = () => {
     "category": "Vehicle Extended Warranty"
   };
 
+  const webPageSchema = {
+    "@context": "https://schema.org", "@type": "WebPage",
+    "name": "Audi Extended Warranty UK | Buy A Warranty",
+    "description": "Comprehensive Audi extended warranty from £25/month covering A3, A4, Q5, e-tron and all models. S tronic, quattro and 8,000+ components covered. Any UK garage.",
+    "url": "https://buyawarranty.co.uk/warranty-types/audi/",
+    "lastReviewed": new Date().toISOString().split('T')[0],
+    "reviewedBy": { "@type": "Organization", "name": "Buy A Warranty" },
+    "speakable": { "@type": "SpeakableSpecification", "cssSelector": ["h1", "h2", ".faq-question"] },
+    "publisher": { "@type": "Organization", "name": "Buy A Warranty", "legalName": "BUY A WARRANTY LIMITED", "url": "https://buyawarranty.co.uk" }
+  };
+
+  const localBusinessSchema = {
+    "@context": "https://schema.org", "@type": "LocalBusiness",
+    "name": "Buy A Warranty",
+    "description": "UK's trusted Audi extended warranty provider since 2016. Comprehensive cover for all Audi models.",
+    "url": "https://buyawarranty.co.uk",
+    "telephone": "03302295040",
+    "foundingDate": "2016",
+    "areaServed": { "@type": "Country", "name": "United Kingdom" },
+    "priceRange": "£18-£60/month",
+    "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.8", "reviewCount": "2847", "bestRating": "5" }
+  };
+
   const faqSchema = { "@context": "https://schema.org", "@type": "FAQPage", "mainEntity": audiFAQs.map(faq => ({ "@type": "Question", "name": faq.question, "acceptedAnswer": { "@type": "Answer", "text": faq.answer } })) };
   const breadcrumbSchema = { "@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{ "@type": "ListItem", "position": 1, "name": "Home", "item": "https://buyawarranty.co.uk/" }, { "@type": "ListItem", "position": 2, "name": "Warranty Types", "item": "https://buyawarranty.co.uk/warranty-types/" }, { "@type": "ListItem", "position": 3, "name": "Audi Warranty", "item": "https://buyawarranty.co.uk/warranty-types/audi/" }] };
 
@@ -353,6 +376,8 @@ const AudiWarrantyLanding: React.FC = () => {
         <meta name="geo.region" content="GB" />
         <meta name="geo.placename" content="United Kingdom" />
         <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(webPageSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(localBusinessSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
       </Helmet>
