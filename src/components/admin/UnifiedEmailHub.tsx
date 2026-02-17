@@ -654,7 +654,11 @@ const UnifiedEmailHub = () => {
           <h2 className="text-2xl font-bold">Email Templates</h2>
           <p className="text-muted-foreground">Create and manage reusable email templates</p>
         </div>
-        <Button>
+        <Button onClick={() => {
+          setSelectedTemplate(null);
+          setFormData({ name: '', subject: '', template_type: '', from_email: 'support@buyawarranty.co.uk', greeting: '', content: '', is_active: true });
+          setIsEditing(true);
+        }}>
           <Plus className="w-4 h-4 mr-2" />
           New Template
         </Button>
