@@ -860,6 +860,78 @@ const BMWWarrantyLanding: React.FC = () => {
           <VideoSection scrollToQuoteForm={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
         </Suspense>
 
+        {/* What BMW Repairs Actually Cost */}
+        <section className="py-10 md:py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8 md:mb-12">
+              <div className="inline-flex items-center gap-2 bg-red-50 px-3 md:px-4 py-1.5 md:py-2 rounded-full mb-3 md:mb-4">
+                <Wrench className="w-4 h-4 md:w-5 md:h-5 text-red-600" />
+                <span className="text-xs md:text-sm font-semibold text-red-700">Without warranty, you pay the full bill</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
+                What BMW repairs actually cost
+              </h2>
+              <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
+                One breakdown could cost more than years of warranty cover. Here's what BMW owners pay without protection.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {[
+                { name: 'Timing Chain Kit', cost: '£1,200 – £3,000', icon: Wrench, severity: 'high' },
+                { name: 'Turbocharger Replacement', cost: '£1,800 – £3,500', icon: Zap, severity: 'high' },
+                { name: 'Gearbox Rebuild', cost: '£2,500 – £5,000', icon: Wrench, severity: 'critical' },
+                { name: 'Engine Rebuild', cost: '£3,500 – £7,000', icon: Car, severity: 'critical' },
+                { name: 'Fuel Injector Set', cost: '£800 – £2,200', icon: Zap, severity: 'medium' },
+                { name: 'ECU Replacement', cost: '£900 – £2,000', icon: Zap, severity: 'medium' },
+                { name: 'Air Suspension Compressor', cost: '£1,200 – £2,500', icon: Car, severity: 'high' },
+                { name: 'Power Steering Rack', cost: '£800 – £1,800', icon: Wrench, severity: 'medium' },
+                { name: 'DPF Filter Replacement', cost: '£1,000 – £2,500', icon: Shield, severity: 'high' },
+              ].map((repair, index) => {
+                const Icon = repair.icon;
+                const severityColors = {
+                  medium: { bg: 'bg-white', border: 'border-gray-200', text: 'text-gray-900' },
+                  high: { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-brand-orange' },
+                  critical: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-600' },
+                };
+                const colors = severityColors[repair.severity as keyof typeof severityColors];
+                return (
+                  <div key={index} className={`${colors.bg} rounded-xl p-4 md:p-5 border ${colors.border} flex items-start gap-3`}>
+                    <div className={`w-10 h-10 rounded-lg ${colors.bg} flex items-center justify-center flex-shrink-0`}>
+                      <Icon className={`w-5 h-5 ${colors.text}`} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-gray-900 text-sm md:text-base">{repair.name}</h3>
+                      <p className={`font-bold text-base md:text-lg ${colors.text}`}>{repair.cost}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Bottom CTA */}
+            <div className="mt-8 md:mt-12 text-center">
+              <div className="bg-brand-deep-blue rounded-2xl p-8 md:p-12 max-w-3xl mx-auto">
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
+                  Warranty cover from just £29/month
+                </h3>
+                <p className="text-white/80 mb-6 text-sm md:text-base">
+                  That's less than a single diagnostic fee — and it covers all of the above.
+                </p>
+                <Button
+                  onClick={scrollToQuoteForm}
+                  className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-4 md:py-5 px-6 md:px-8 text-base md:text-lg rounded-xl shadow-lg animate-breathing"
+                >
+                  <span className="flex items-center gap-2">
+                    Get Your Instant Quote
+                    <ArrowRight className="w-5 h-5" />
+                  </span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* BMW Models Section - Premium Design */}
         <section className="py-12 md:py-20 bg-gradient-to-b from-slate-50 to-white relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1314,78 +1386,6 @@ const BMWWarrantyLanding: React.FC = () => {
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* What BMW Repairs Actually Cost */}
-        <section className="py-10 md:py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8 md:mb-12">
-              <div className="inline-flex items-center gap-2 bg-red-50 px-3 md:px-4 py-1.5 md:py-2 rounded-full mb-3 md:mb-4">
-                <Wrench className="w-4 h-4 md:w-5 md:h-5 text-red-600" />
-                <span className="text-xs md:text-sm font-semibold text-red-700">Without warranty, you pay the full bill</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 md:mb-4">
-                What BMW repairs actually cost
-              </h2>
-              <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
-                One breakdown could cost more than years of warranty cover. Here's what BMW owners pay without protection.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {[
-                { name: 'Timing Chain Kit', cost: '£1,200 – £3,000', icon: Wrench, severity: 'high' },
-                { name: 'Turbocharger Replacement', cost: '£1,800 – £3,500', icon: Zap, severity: 'high' },
-                { name: 'Gearbox Rebuild', cost: '£2,500 – £5,000', icon: Wrench, severity: 'critical' },
-                { name: 'Engine Rebuild', cost: '£3,500 – £7,000', icon: Car, severity: 'critical' },
-                { name: 'Fuel Injector Set', cost: '£800 – £2,200', icon: Zap, severity: 'medium' },
-                { name: 'ECU Replacement', cost: '£900 – £2,000', icon: Zap, severity: 'medium' },
-                { name: 'Air Suspension Compressor', cost: '£1,200 – £2,500', icon: Car, severity: 'high' },
-                { name: 'Power Steering Rack', cost: '£800 – £1,800', icon: Wrench, severity: 'medium' },
-                { name: 'DPF Filter Replacement', cost: '£1,000 – £2,500', icon: Shield, severity: 'high' },
-              ].map((repair, index) => {
-                const Icon = repair.icon;
-                const severityColors = {
-                  medium: { bg: 'bg-white', border: 'border-gray-200', text: 'text-gray-900' },
-                  high: { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-brand-orange' },
-                  critical: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-600' },
-                };
-                const colors = severityColors[repair.severity as keyof typeof severityColors];
-                return (
-                  <div key={index} className={`${colors.bg} rounded-xl p-4 md:p-5 border ${colors.border} flex items-start gap-3`}>
-                    <div className={`w-10 h-10 rounded-lg ${colors.bg} flex items-center justify-center flex-shrink-0`}>
-                      <Icon className={`w-5 h-5 ${colors.text}`} />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-gray-900 text-sm md:text-base">{repair.name}</h3>
-                      <p className={`font-bold text-base md:text-lg ${colors.text}`}>{repair.cost}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Bottom CTA */}
-            <div className="mt-8 md:mt-12 text-center">
-              <div className="bg-brand-deep-blue rounded-2xl p-8 md:p-12 max-w-3xl mx-auto">
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
-                  Warranty cover from just £29/month
-                </h3>
-                <p className="text-white/80 mb-6 text-sm md:text-base">
-                  That's less than a single diagnostic fee — and it covers all of the above.
-                </p>
-                <Button
-                  onClick={scrollToQuoteForm}
-                  className="bg-brand-orange hover:bg-brand-orange/90 text-white font-bold py-4 md:py-5 px-6 md:px-8 text-base md:text-lg rounded-xl shadow-lg animate-breathing"
-                >
-                  <span className="flex items-center gap-2">
-                    Get Your Instant Quote
-                    <ArrowRight className="w-5 h-5" />
-                  </span>
-                </Button>
-              </div>
             </div>
           </div>
         </section>

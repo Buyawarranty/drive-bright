@@ -935,6 +935,91 @@ const VanWarrantyLanding: React.FC = () => {
           <VideoSection scrollToQuoteForm={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
         </Suspense>
 
+        {/* Average Van Repair Costs Section */}
+        <section className="py-12 md:py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8 md:mb-12">
+              <div className="inline-flex items-center gap-2 bg-red-50 text-red-700 font-semibold text-sm px-4 py-2 rounded-full mb-4">
+                <Wrench className="w-4 h-4" />
+                Without warranty, you pay the full bill
+              </div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 md:mb-4">
+                What van repairs actually cost
+              </h2>
+              <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto">
+                One breakdown could cost more than years of warranty cover. Here's what van owners pay without protection.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+              {[
+                { part: 'Turbocharger Replacement', cost: '£1,800 – £3,500', icon: Zap, severity: 'high' },
+                { part: 'DPF Filter Replacement', cost: '£1,200 – £2,800', icon: Shield, severity: 'high' },
+                { part: 'Gearbox Rebuild', cost: '£2,000 – £4,500', icon: Wrench, severity: 'critical' },
+                { part: 'Engine Rebuild', cost: '£3,000 – £5,000', icon: Truck, severity: 'critical' },
+                { part: 'Fuel Injector Set', cost: '£800 – £2,200', icon: Zap, severity: 'medium' },
+                { part: 'Clutch & Flywheel', cost: '£900 – £1,800', icon: Wrench, severity: 'medium' },
+                { part: 'ECU Replacement', cost: '£700 – £1,500', icon: Zap, severity: 'medium' },
+                { part: 'Power Steering Rack', cost: '£600 – £1,400', icon: Wrench, severity: 'medium' },
+                { part: 'Timing Chain Kit', cost: '£800 – £2,000', icon: Clock, severity: 'high' },
+              ].map((repair, index) => {
+                const severityColor = repair.severity === 'critical' 
+                  ? 'border-red-200 bg-red-50/50' 
+                  : repair.severity === 'high' 
+                  ? 'border-orange-200 bg-orange-50/30' 
+                  : 'border-slate-200 bg-white';
+                const costColor = repair.severity === 'critical' 
+                  ? 'text-red-600' 
+                  : repair.severity === 'high' 
+                  ? 'text-orange-600' 
+                  : 'text-slate-900';
+                
+                return (
+                  <div 
+                    key={index} 
+                    className={`relative rounded-xl border-2 ${severityColor} p-4 md:p-5 transition-all hover:shadow-md`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                          repair.severity === 'critical' ? 'bg-red-100' : repair.severity === 'high' ? 'bg-orange-100' : 'bg-slate-100'
+                        }`}>
+                          <repair.icon className={`w-5 h-5 ${
+                            repair.severity === 'critical' ? 'text-red-600' : repair.severity === 'high' ? 'text-orange-600' : 'text-slate-600'
+                          }`} />
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-slate-900 text-sm md:text-base">{repair.part}</h3>
+                          <p className={`text-lg md:text-xl font-bold ${costColor} mt-0.5`}>{repair.cost}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Bottom CTA */}
+            <div className="mt-8 md:mt-12 text-center">
+              <div className="bg-brand-deep-blue rounded-2xl p-8 md:p-12 max-w-3xl mx-auto">
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
+                  Warranty cover from just £32/month
+                </h3>
+                <p className="text-white/70 text-sm md:text-base mb-6">
+                  That's less than a single diagnostic fee — and it covers all of the above.
+                </p>
+                <Button
+                  onClick={scrollToQuoteForm}
+                  className="bg-brand-orange text-white font-bold px-10 py-6 text-lg rounded-xl animate-breathing shadow-lg shadow-brand-orange/30"
+                >
+                  Get Your Instant Quote
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Van Models Section */}
         <section className="py-12 md:py-20 bg-gradient-to-b from-slate-50 to-white relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1137,91 +1222,6 @@ const VanWarrantyLanding: React.FC = () => {
                   width={400}
                   height={300}
                 />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Average Van Repair Costs Section */}
-        <section className="py-12 md:py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8 md:mb-12">
-              <div className="inline-flex items-center gap-2 bg-red-50 text-red-700 font-semibold text-sm px-4 py-2 rounded-full mb-4">
-                <Wrench className="w-4 h-4" />
-                Without warranty, you pay the full bill
-              </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 md:mb-4">
-                What van repairs actually cost
-              </h2>
-              <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto">
-                One breakdown could cost more than years of warranty cover. Here's what van owners pay without protection.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
-              {[
-                { part: 'Turbocharger Replacement', cost: '£1,800 – £3,500', icon: Zap, severity: 'high' },
-                { part: 'DPF Filter Replacement', cost: '£1,200 – £2,800', icon: Shield, severity: 'high' },
-                { part: 'Gearbox Rebuild', cost: '£2,000 – £4,500', icon: Wrench, severity: 'critical' },
-                { part: 'Engine Rebuild', cost: '£3,000 – £5,000', icon: Truck, severity: 'critical' },
-                { part: 'Fuel Injector Set', cost: '£800 – £2,200', icon: Zap, severity: 'medium' },
-                { part: 'Clutch & Flywheel', cost: '£900 – £1,800', icon: Wrench, severity: 'medium' },
-                { part: 'ECU Replacement', cost: '£700 – £1,500', icon: Zap, severity: 'medium' },
-                { part: 'Power Steering Rack', cost: '£600 – £1,400', icon: Wrench, severity: 'medium' },
-                { part: 'Timing Chain Kit', cost: '£800 – £2,000', icon: Clock, severity: 'high' },
-              ].map((repair, index) => {
-                const severityColor = repair.severity === 'critical' 
-                  ? 'border-red-200 bg-red-50/50' 
-                  : repair.severity === 'high' 
-                  ? 'border-orange-200 bg-orange-50/30' 
-                  : 'border-slate-200 bg-white';
-                const costColor = repair.severity === 'critical' 
-                  ? 'text-red-600' 
-                  : repair.severity === 'high' 
-                  ? 'text-orange-600' 
-                  : 'text-slate-900';
-                
-                return (
-                  <div 
-                    key={index} 
-                    className={`relative rounded-xl border-2 ${severityColor} p-4 md:p-5 transition-all hover:shadow-md`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                          repair.severity === 'critical' ? 'bg-red-100' : repair.severity === 'high' ? 'bg-orange-100' : 'bg-slate-100'
-                        }`}>
-                          <repair.icon className={`w-5 h-5 ${
-                            repair.severity === 'critical' ? 'text-red-600' : repair.severity === 'high' ? 'text-orange-600' : 'text-slate-600'
-                          }`} />
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-slate-900 text-sm md:text-base">{repair.part}</h3>
-                          <p className={`text-lg md:text-xl font-bold ${costColor} mt-0.5`}>{repair.cost}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Bottom CTA */}
-            <div className="mt-8 md:mt-12 text-center">
-              <div className="bg-brand-deep-blue rounded-2xl p-8 md:p-12 max-w-3xl mx-auto">
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
-                  Warranty cover from just £32/month
-                </h3>
-                <p className="text-white/70 text-sm md:text-base mb-6">
-                  That's less than a single diagnostic fee — and it covers all of the above.
-                </p>
-                <Button
-                  onClick={scrollToQuoteForm}
-                  className="bg-brand-orange text-white font-bold px-10 py-6 text-lg rounded-xl animate-breathing shadow-lg shadow-brand-orange/30"
-                >
-                  Get Your Instant Quote
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
               </div>
             </div>
           </div>
