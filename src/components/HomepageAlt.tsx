@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
 import { Check, Phone, Mail, Shield, Award, Clock, Wrench, BadgeCheck, Car, Sliders, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,6 +30,7 @@ const HomepageAlt: React.FC<HomepageAltProps> = ({ onRegistrationSubmit }) => {
   const [mileage, setMileage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [mileageError, setMileageError] = useState('');
+  const [showCallbackModal, setShowCallbackModal] = useState(false);
 
   const formatRegNumber = (value: string) => {
     const cleaned = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
@@ -263,6 +265,29 @@ const HomepageAlt: React.FC<HomepageAltProps> = ({ onRegistrationSubmit }) => {
         </div>
       </section>
 
+      {/* Trust Contact Panel — desktop only, above the fold */}
+      <div className="hidden lg:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 mb-10">
+        <div className="bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-8 py-5 text-center">
+          <p className="text-[17px] font-bold text-[#1B2A4A]">
+            Your price. Your choice. No hidden fees.
+          </p>
+          <p className="text-[15px] text-gray-600 mt-1">
+            <Phone className="inline w-4 h-4 mr-1 text-gray-500 -mt-0.5" />
+            Speak to an expert:{' '}
+            <a href="tel:03302295040" className="font-semibold text-gray-900 hover:underline">
+              0330 229 5040
+            </a>
+            <span className="mx-2 text-gray-400">or</span>
+            <button
+              onClick={() => setShowCallbackModal(true)}
+              className="text-brand-orange hover:underline font-medium"
+            >
+              Request a callback
+            </button>
+          </p>
+        </div>
+      </div>
+
       {/* Features Section */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -444,6 +469,10 @@ const HomepageAlt: React.FC<HomepageAltProps> = ({ onRegistrationSubmit }) => {
           </div>
         </div>
       </section>
+      <RequestCallbackModal 
+        isOpen={showCallbackModal} 
+        onClose={() => setShowCallbackModal(false)} 
+      />
     </div>
   );
 };
