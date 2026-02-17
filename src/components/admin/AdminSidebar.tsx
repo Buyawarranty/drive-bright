@@ -255,8 +255,21 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeTab, onTabChan
 
   // Filter tabs based on user role and permissions
   const getVisibleTabs = () => {
-    // Admins and dev_testers see all tabs
-    if (userRole === 'admin' || userRole === 'dev_tester') {
+    // Super admins, admins and dev_testers see all tabs (admins filtered by permissions)
+    if (userRole === 'super_admin' || userRole === 'dev_tester') {
+      return defaultTabs;
+    }
+    
+    // Administrators: full access except tabs explicitly denied in permissions
+    if (userRole === 'admin') {
+      if (userPermissions && Object.keys(userPermissions).length > 0) {
+        return defaultTabs.filter(tab => {
+          const permKey = `tab_${tab.id}`;
+          // If explicitly set to false, hide it
+          if (permKey in userPermissions && userPermissions[permKey] === false) return false;
+          return true;
+        });
+      }
       return defaultTabs;
     }
     

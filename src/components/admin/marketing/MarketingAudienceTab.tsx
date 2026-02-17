@@ -69,7 +69,7 @@ interface SyncLog {
 export const MarketingAudienceTab: React.FC = () => {
   const queryClient = useQueryClient();
   const { userRole } = useAuth();
-  const isAdmin = userRole === 'admin';
+  const isAdmin = userRole === 'admin' || userRole === 'super_admin';
   const [searchTerm, setSearchTerm] = useState('');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [subscriptionFilter, setSubscriptionFilter] = useState<string>('all');

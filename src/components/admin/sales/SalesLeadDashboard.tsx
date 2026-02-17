@@ -60,7 +60,7 @@ const useDashboardStats = () => {
       setStats({ totalLeads, unassignedLeads, paidLeads: paidLeads.length, monthlyPaid: monthlyPaid.length, totalRevenue, conversionRate });
 
       // Agent stats for KPI tab
-      const agents = users.filter((u: any) => u.role !== 'admin');
+      const agents = users.filter((u: any) => u.role !== 'admin' && u.role !== 'super_admin');
       const agentData = agents.map((agent: any) => {
         const agentLeads = leads.filter((l: any) => l.assigned_to === agent.id);
         const agentSales = agentLeads.filter((l: any) => l.is_paid === true).length;
@@ -74,7 +74,7 @@ const useDashboardStats = () => {
     fetchAll();
   }, []);
 
-  const activeAgentCount = useMemo(() => salesUsers.filter((u: any) => u.role !== 'admin').length, [salesUsers]);
+  const activeAgentCount = useMemo(() => salesUsers.filter((u: any) => u.role !== 'admin' && u.role !== 'super_admin').length, [salesUsers]);
 
   return { stats, salesUsers, agentStats, activeAgentCount, currentUserId, loading };
 };
