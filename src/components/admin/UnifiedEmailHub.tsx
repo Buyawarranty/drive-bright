@@ -50,6 +50,7 @@ interface EmailLog {
   campaign_id: string | null;
   delivery_status: string | null;
   resend_count: number;
+  metadata: any;
 }
 
 interface Campaign {
@@ -1368,6 +1369,8 @@ const UnifiedEmailHub = () => {
 
   // Email Logs View
   const LogsView = () => {
+    const [templateFilter, setTemplateFilter] = useState('all');
+    
     const filteredLogs = emailLogs.filter(log => {
       const matchesSearch = searchQuery === '' || 
         log.recipient_email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -1376,15 +1379,30 @@ const UnifiedEmailHub = () => {
       const matchesStatus = statusFilter === 'all' || 
         (log.delivery_status || log.status || '').toLowerCase() === statusFilter.toLowerCase();
       
-      return matchesSearch && matchesStatus;
+      const logTemplateId = (log.metadata as any)?.template_id || '';
+      const matchesTemplate = templateFilter === 'all' || logTemplateId === templateFilter;
+      
+      return matchesSearch && matchesStatus && matchesTemplate;
     });
+
+    // Compute delivery stats
+    const stats = {
+      total: filteredLogs.length,
+      sent: filteredLogs.filter(l => ['sent', 'delivered', 'opened', 'clicked'].includes((l.delivery_status || l.status || '').toLowerCase())).length,
+      delivered: filteredLogs.filter(l => ['delivered', 'opened', 'clicked'].includes((l.delivery_status || l.status || '').toLowerCase())).length,
+      opened: filteredLogs.filter(l => ['opened', 'clicked'].includes((l.delivery_status || l.status || '').toLowerCase())).length,
+      failed: filteredLogs.filter(l => ['failed', 'bounced'].includes((l.delivery_status || l.status || '').toLowerCase())).length,
+    };
+
+    // Extract unique template types from logs
+    const templateTypes = Array.from(new Set(emailLogs.map(l => (l.metadata as any)?.template_id).filter(Boolean)));
 
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold">Email Delivery Logs</h2>
-            <p className="text-muted-foreground">Complete history of all sent emails</p>
+            <p className="text-muted-foreground">Complete history of all sent emails with delivery confirmation</p>
           </div>
           <Button variant="outline" onClick={loadEmailLogs}>
             <RefreshCw className="w-4 h-4 mr-2" />
@@ -1392,10 +1410,44 @@ const UnifiedEmailHub = () => {
           </Button>
         </div>
 
+        {/* Delivery Stats Summary */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <Card>
+            <CardContent className="pt-4 pb-4 text-center">
+              <p className="text-2xl font-bold">{stats.total}</p>
+              <p className="text-xs text-muted-foreground">Total</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4 pb-4 text-center">
+              <p className="text-2xl font-bold text-green-600">{stats.sent}</p>
+              <p className="text-xs text-muted-foreground">Sent</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4 pb-4 text-center">
+              <p className="text-2xl font-bold text-blue-600">{stats.delivered}</p>
+              <p className="text-xs text-muted-foreground">Delivered</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4 pb-4 text-center">
+              <p className="text-2xl font-bold text-purple-600">{stats.opened}</p>
+              <p className="text-xs text-muted-foreground">Opened</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4 pb-4 text-center">
+              <p className="text-2xl font-bold text-red-600">{stats.failed}</p>
+              <p className="text-xs text-muted-foreground">Failed</p>
+            </CardContent>
+          </Card>
+        </div>
+
         <Card>
           <CardContent className="pt-6">
-            <div className="flex gap-4 mb-6">
-              <div className="flex-1">
+            <div className="flex flex-wrap gap-4 mb-6">
+              <div className="flex-1 min-w-[200px]">
                 <Input
                   placeholder="Search by email or subject..."
                   value={searchQuery}
@@ -1404,8 +1456,8 @@ const UnifiedEmailHub = () => {
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by status" />
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
@@ -1418,22 +1470,43 @@ const UnifiedEmailHub = () => {
                   <SelectItem value="pending">Pending</SelectItem>
                 </SelectContent>
               </Select>
+              <Select value={templateFilter} onValueChange={setTemplateFilter}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Template Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Templates</SelectItem>
+                  {templateTypes.map(t => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <ScrollArea className="h-[600px]">
               <div className="space-y-3">
                 {filteredLogs.map((log) => (
-                  <div key={log.id} className="flex items-center justify-between p-4 rounded-lg border hover:bg-gray-50 transition-colors">
+                  <div key={log.id} className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{log.subject}</p>
                       <p className="text-sm text-muted-foreground">{log.recipient_email}</p>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <span className="text-xs text-muted-foreground">
                           {new Date(log.created_at).toLocaleString()}
                         </span>
+                        {(log.metadata as any)?.template_id && (
+                          <Badge variant="outline" className="text-xs">
+                            {(log.metadata as any).template_id}
+                          </Badge>
+                        )}
                         {log.resend_count > 0 && (
                           <Badge variant="secondary" className="text-xs">
                             Resent {log.resend_count}x
+                          </Badge>
+                        )}
+                        {(log.metadata as any)?.resend_message_id && (
+                          <Badge variant="outline" className="text-xs font-mono">
+                            ID: {((log.metadata as any).resend_message_id as string).slice(0, 8)}…
                           </Badge>
                         )}
                       </div>
@@ -1452,6 +1525,12 @@ const UnifiedEmailHub = () => {
                     </div>
                   </div>
                 ))}
+                {filteredLogs.length === 0 && (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Mail className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                    <p>No emails match your filters</p>
+                  </div>
+                )}
               </div>
             </ScrollArea>
 
