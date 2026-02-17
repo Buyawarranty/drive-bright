@@ -450,18 +450,24 @@ export const useLeads = () => {
       let tagsByLeadId: Record<string, any[]> = {};
       
       if (salesLeadIds.length > 0) {
-        // Batch the .in() query to avoid URL-too-long errors with many IDs
+        // Batch the .in() query to avoid URL-too-long errors — run batches in PARALLEL
         const BATCH_SIZE = 300;
         const allTagData: any[] = [];
         
+        const batchPromises = [];
         for (let i = 0; i < salesLeadIds.length; i += BATCH_SIZE) {
           const batch = salesLeadIds.slice(i, i + BATCH_SIZE);
-          const { data: batchData } = await supabase
-            .from('lead_tag_assignments')
-            .select('lead_id, tag_id, lead_tags(id, name, color, description)')
-            .in('lead_id', batch);
-          if (batchData) allTagData.push(...batchData);
+          batchPromises.push(
+            supabase
+              .from('lead_tag_assignments')
+              .select('lead_id, tag_id, lead_tags(id, name, color, description)')
+              .in('lead_id', batch)
+          );
         }
+        const batchResults = await Promise.all(batchPromises);
+        batchResults.forEach(({ data: batchData }) => {
+          if (batchData) allTagData.push(...batchData);
+        });
 
         // Group tags by lead_id
         allTagData.forEach((assignment: any) => {
@@ -674,11 +680,6 @@ export const useLeads = () => {
     }));
 
     try {
-      // Refresh session before DB write to prevent stale auth token
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData?.session) {
-        await supabase.auth.refreshSession();
-      }
       if (isAbandonedCart) {
         const contactStatus = status;
         
