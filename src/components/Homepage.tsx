@@ -525,7 +525,7 @@ const Homepage: React.FC<HomepageProps> = ({ onRegistrationSubmit }) => {
                 {/* Pricing Reassurance Panel - Premium Trust Block */}
                 <div className="mt-5 sm:mt-7 bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-5 py-4 text-center">
                    <h2 className="text-sm sm:text-[17px] font-bold text-[#1B2A4A]">
-                     Your price. Your choice. No hidden fees.
+                     Fair price. Fast quote. No surprises.
                    </h2>
                    
                    <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-xs sm:text-[15px] mt-1.5">
