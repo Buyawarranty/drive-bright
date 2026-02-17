@@ -11,6 +11,7 @@ import { BreadcrumbSchema } from '@/components/schema/BreadcrumbSchema';
 import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { getResponsiveImageProps } from '@/utils/imageOptimizer';
 import QuoteFormInline from '@/components/QuoteFormInline';
+import TrustCallbackPanel from '@/components/TrustCallbackPanel';
 import WebsiteFooter from '@/components/WebsiteFooter';
 import heroImg from '@/assets/land-rover-range-rover-sport-warranty.png';
 import defenderImg from '@/assets/land-rover-defender-warranty.png';
@@ -189,6 +190,7 @@ const LandRoverWarranty: React.FC = () => {
             <div className="flex justify-center">
               <QuoteFormInline vehicleType="car" />
             </div>
+            <TrustCallbackPanel />
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">

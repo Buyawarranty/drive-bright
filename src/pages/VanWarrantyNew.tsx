@@ -12,6 +12,7 @@ import TrustpilotHeader from '@/components/TrustpilotHeader';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import { getResponsiveImageProps } from '@/utils/imageOptimizer';
 import QuoteFormInline from '@/components/QuoteFormInline';
+import TrustCallbackPanel from '@/components/TrustCallbackPanel';
 import vanHero from '@/assets/van-warranty-hero.png';
 import vanFast from '@/assets/van-warranty-fast.png';
 import vanCoverage from '@/assets/van-warranty-coverage.png';
@@ -178,6 +179,7 @@ const VanWarrantyNew = () => {
             <div className="flex justify-center">
               <QuoteFormInline vehicleType="van" />
             </div>
+            <TrustCallbackPanel />
             
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">

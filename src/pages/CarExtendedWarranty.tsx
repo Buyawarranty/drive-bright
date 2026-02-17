@@ -30,6 +30,7 @@ import { saveWithTimestamp } from '@/utils/localStorage';
 import { toast } from 'sonner';
 import MileageSlider from '@/components/MileageSlider';
 import QuoteFormInline from '@/components/QuoteFormInline';
+import TrustCallbackPanel from '@/components/TrustCallbackPanel';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 
@@ -438,6 +439,7 @@ const CarExtendedWarranty: React.FC = () => {
 
                     {/* Quote Form - Same as Homepage */}
                     <QuoteFormInline vehicleType="car" />
+                    <TrustCallbackPanel />
                   </div>
 
                   {/* Right Content - Hero Image */}

@@ -12,6 +12,7 @@ import { EmailCapturePopup } from './EmailCapturePopup';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import LazySection from './homepage/LazySection';
+import TrustCallbackPanel from './TrustCallbackPanel';
 import buyawarrantyLogo from '@/assets/buyawarranty-logo.webp';
 import trustpilotLogo from '@/assets/trustpilot-logo.webp';
 
@@ -576,6 +577,7 @@ const BrandLandingPage: React.FC<BrandLandingPageProps> = ({
                     isLoading={isLookingUp}
                     isRegValid={regNumber.replace(/\s/g, '').length >= 5}
                   />
+                  <TrustCallbackPanel />
                 </div>
               </div>
 
