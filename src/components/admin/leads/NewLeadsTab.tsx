@@ -60,7 +60,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
   const { exportToCSV, exportToExcel } = useDataExport();
   
   // Role-based restrictions
-  const isAdmin = userRole === 'admin' || userRole === 'sales_lead';
+  const isAdmin = userRole === 'admin' || userRole === 'super_admin' || userRole === 'sales_lead';
   const isSalesAgent = userRole === 'sales';
   
   // Admin-controlled toggle: whether sales agents can see the "Assigned To" column
@@ -259,7 +259,7 @@ export const NewLeadsTab: React.FC<NewLeadsTabProps> = ({
 
   const handleExport = useCallback((format: 'csv' | 'xlsx') => {
     // Non-admin roles can only export the last 7 days of leads
-    const isFullExportAllowed = userRole === 'admin';
+    const isFullExportAllowed = userRole === 'admin' || userRole === 'super_admin';
     
     let baseLeads = selectedLeads.size > 0 
       ? filteredLeads.filter(lead => selectedLeads.has(lead.id))

@@ -34,7 +34,7 @@ export const SetTargetsPanel: React.FC<SetTargetsPanelProps> = ({ salesUsers, cu
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
-  const agents = salesUsers.filter(u => u.role !== 'admin');
+  const agents = salesUsers.filter(u => u.role !== 'admin' && u.role !== 'super_admin');
 
   useEffect(() => {
     fetchTargets();

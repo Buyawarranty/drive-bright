@@ -1567,7 +1567,7 @@ export const CustomersTab = () => {
   // Check if current user can delete (admin role OR has delete permission)
   const canDeleteCustomers = () => {
     const isMasterAdmin = localStorage.getItem('masterAdmin') === 'true';
-    const hasAdminRole = currentAdminUser?.role === 'admin';
+    const hasAdminRole = currentAdminUser?.role === 'admin' || currentAdminUser?.role === 'super_admin';
     
     // Admin role OR granular delete permission
     return isMasterAdmin || hasAdminRole || canDelete;

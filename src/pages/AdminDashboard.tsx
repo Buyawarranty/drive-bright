@@ -265,7 +265,7 @@ const AdminDashboard = () => {
       const { data, error } = rolesResult;
       const adminUserData = permissionsResult.data;
 
-      const adminRoles = ['admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead'];
+      const adminRoles = ['super_admin', 'admin', 'member', 'viewer', 'guest', 'blog_writer', 'sales', 'sales_lead'];
       const userAdminRoles = data?.filter(r => adminRoles.includes(r.role)) || [];
       
       if (error || userAdminRoles.length === 0) {
@@ -275,7 +275,7 @@ const AdminDashboard = () => {
         return;
       }
 
-      const rolePriority = ['admin', 'member', 'sales_lead', 'viewer', 'guest', 'sales', 'blog_writer'];
+      const rolePriority = ['super_admin', 'admin', 'member', 'sales_lead', 'viewer', 'guest', 'sales', 'blog_writer'];
       const primaryRole = rolePriority.find(role => userAdminRoles.some(r => r.role === role)) || userAdminRoles[0].role;
       
       setUserRole(primaryRole);
@@ -297,7 +297,7 @@ const AdminDashboard = () => {
           defaultTab = 'new-leads';
         } else if (primaryRole === 'sales_lead') {
           defaultTab = 'new-leads';
-        } else if (!['admin'].includes(primaryRole) && adminUserData?.permissions) {
+        } else if (!['super_admin', 'admin'].includes(primaryRole) && adminUserData?.permissions) {
           const perms = adminUserData.permissions as Record<string, boolean>;
           const firstAllowedTab = Object.keys(perms).find(key => key.startsWith('tab_') && perms[key]);
           if (firstAllowedTab) {
@@ -337,7 +337,7 @@ const AdminDashboard = () => {
         // Check if user has "own customers only" permission explicitly set
         const hasOwnOnlyPermission = userPermissions && userPermissions['tab_customers_own-only'] === true;
         const hasFullAccessPermission = userPermissions && userPermissions['tab_customers_own-only'] === false;
-        const isNonAdminRole = userRole !== 'admin';
+        const isNonAdminRole = userRole !== 'admin' && userRole !== 'super_admin';
         
         // Priority: explicit permission setting > role-based default
         // If user explicitly has own-only = false, they get full access regardless of role

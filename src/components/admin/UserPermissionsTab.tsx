@@ -80,6 +80,7 @@ const GRANULAR_PERMISSIONS = {
 
 // Default tab permissions per role - auto-applied when role is selected
 const ROLE_DEFAULT_PERMISSIONS: Record<string, Record<string, boolean>> = {
+  super_admin: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
   admin: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
   dev_tester: ADMIN_TABS.reduce((acc, tab) => { acc[`tab_${tab.id}`] = true; return acc; }, {} as Record<string, boolean>),
   sales_lead: {
@@ -129,7 +130,7 @@ export const UserPermissionsTab = () => {
     lastName: '',
     username: '',
     password: '',
-    role: 'member' as 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales' | 'dev_tester',
+    role: 'member' as 'super_admin' | 'admin' | 'member' | 'viewer' | 'guest' | 'blog_writer' | 'sales' | 'sales_lead' | 'dev_tester',
     permissions: {} as Record<string, boolean>
   });
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
@@ -265,6 +266,21 @@ export const UserPermissionsTab = () => {
   };
 
   const handleDeleteUser = async (userId: string) => {
+    // Find the user being deleted
+    const targetUser = users.find(u => u.id === userId);
+    
+    // Administrators cannot delete super_admin or other admin users
+    if (currentAdminUser?.role === 'admin') {
+      if (targetUser?.role === 'super_admin') {
+        toast.error('Administrators cannot remove Super Administrators');
+        return;
+      }
+      if (targetUser?.role === 'admin') {
+        toast.error('Administrators cannot remove other Administrators');
+        return;
+      }
+    }
+    
     if (!confirm('Are you sure you want to permanently remove this user and clean up all their references? This cannot be undone.')) return;
 
     try {
@@ -472,6 +488,7 @@ export const UserPermissionsTab = () => {
 
   const getRoleIcon = (role: string) => {
     switch (role) {
+      case 'super_admin': return <ShieldCheck className="h-4 w-4" />;
       case 'admin': return <Shield className="h-4 w-4" />;
       case 'member': return <Users className="h-4 w-4" />;
       case 'viewer': return <Eye className="h-4 w-4" />;
@@ -484,6 +501,7 @@ export const UserPermissionsTab = () => {
 
   const getRoleBadgeVariant = (role: string): "destructive" | "default" | "secondary" | "outline" => {
     switch (role) {
+      case 'super_admin': return 'destructive';
       case 'admin': return 'destructive';
       case 'sales_lead': return 'destructive';
       case 'dev_tester': return 'default';
@@ -496,6 +514,7 @@ export const UserPermissionsTab = () => {
   };
 
   const getRoleBadgeClassName = (role: string) => {
+    if (role === 'super_admin') return 'bg-amber-600 hover:bg-amber-700 text-white border-amber-600';
     if (role === 'sales_lead') return 'bg-violet-600 hover:bg-violet-700 text-white border-violet-600';
     if (role === 'sales') return 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600';
     if (role === 'dev_tester') return 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600';
@@ -653,7 +672,7 @@ export const UserPermissionsTab = () => {
                   : user?.email || 'Unknown'}
               </p>
               <p className="text-xs text-muted-foreground">
-                {currentAdminUser?.email || user?.email} • <Badge variant="destructive" className="text-xs py-0 px-1.5">{currentAdminUser?.role || 'admin'}</Badge>
+                {currentAdminUser?.email || user?.email} • <Badge variant="destructive" className="text-xs py-0 px-1.5">{currentAdminUser?.role === 'super_admin' ? 'Super Administrator' : currentAdminUser?.role === 'admin' ? 'Administrator' : currentAdminUser?.role || 'admin'}</Badge>
               </p>
             </div>
           </div>
@@ -749,7 +768,8 @@ export const UserPermissionsTab = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">Admin - Full access to all tabs</SelectItem>
+                    <SelectItem value="super_admin">Super Administrator - Full unrestricted access</SelectItem>
+                    <SelectItem value="admin">Administrator - Full access (can be restricted by Super Admin)</SelectItem>
                     <SelectItem value="member">Member - Custom tab access</SelectItem>
                     <SelectItem value="viewer">Viewer - Read-only access</SelectItem>
                     <SelectItem value="guest">Guest - Minimal access</SelectItem>
@@ -760,18 +780,18 @@ export const UserPermissionsTab = () => {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {inviteData.role === 'admin' && 'Admins have access to all tabs automatically'}
-                  {inviteData.role !== 'admin' && 'Select which tabs this user can access below'}
+                  {(inviteData.role === 'admin' || inviteData.role === 'super_admin') && 'Full access to all tabs (Super Admin can restrict Administrator access)'}
+                  {!['admin', 'super_admin'].includes(inviteData.role) && 'Select which tabs this user can access below'}
                 </p>
               </div>
 
               {/* Show tab permissions for all non-admin roles */}
-              {inviteData.role !== 'admin' && inviteData.role !== 'dev_tester' && (
+              {!['super_admin', 'admin', 'dev_tester'].includes(inviteData.role) && (
                 renderTabPermissionsSection(inviteData.permissions, false)
               )}
 
               {/* Legacy permissions section */}
-              {inviteData.role !== 'admin' && inviteData.role !== 'dev_tester' && Object.keys(groupedPermissions).length > 0 && (
+              {!['super_admin', 'admin', 'dev_tester'].includes(inviteData.role) && Object.keys(groupedPermissions).length > 0 && (
                 <div className="space-y-4">
                   <Label className="text-base font-semibold">Additional Permissions</Label>
                   {Object.entries(groupedPermissions).map(([category, categoryPermissions]) => (
@@ -1037,13 +1057,13 @@ export const UserPermissionsTab = () => {
                   <TableCell>
                     <Badge variant={getRoleBadgeVariant(user.role)} className={`flex items-center gap-1 w-fit ${getRoleBadgeClassName(user.role)}`}>
                       {getRoleIcon(user.role)}
-                      {user.role === 'dev_tester' ? 'Dev/Tester' : user.role}
+                      {user.role === 'super_admin' ? 'Super Administrator' : user.role === 'dev_tester' ? 'Dev/Tester' : user.role === 'admin' ? 'Administrator' : user.role}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {(user.role === 'admin' || user.role === 'dev_tester') ? (
+                    {(user.role === 'super_admin' || user.role === 'admin' || user.role === 'dev_tester') ? (
                       <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                        All Tabs
+                        {user.role === 'admin' ? 'Filtered' : 'All Tabs'}
                       </Badge>
                     ) : user.role === 'blog_writer' ? (
                       <Badge variant="outline">2 tabs</Badge>
@@ -1069,7 +1089,7 @@ export const UserPermissionsTab = () => {
                       >
                         <Settings className="h-4 w-4" />
                       </Button>
-                      {currentAdminUser?.role !== 'dev_tester' && (
+                      {currentAdminUser?.role !== 'dev_tester' && !(currentAdminUser?.role === 'admin' && (user.role === 'super_admin' || user.role === 'admin')) && (
                       <Button
                         size="sm"
                         variant={user.is_active ? "outline" : "default"}
@@ -1103,7 +1123,7 @@ export const UserPermissionsTab = () => {
                       >
                         <Key className="h-4 w-4" />
                       </Button>
-                      {currentAdminUser?.role !== 'dev_tester' && (
+                      {currentAdminUser?.role !== 'dev_tester' && !(currentAdminUser?.role === 'admin' && (user.role === 'super_admin' || user.role === 'admin')) && (
                       <Button
                         size="sm"
                         variant="destructive"
