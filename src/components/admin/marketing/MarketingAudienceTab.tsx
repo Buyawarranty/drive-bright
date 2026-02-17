@@ -75,12 +75,13 @@ export const MarketingAudienceTab: React.FC = () => {
   const [subscriptionFilter, setSubscriptionFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('exclude_junk');
   const [sortOrder, setSortOrder] = useState<string>('newest');
+  const [stepFilter, setStepFilter] = useState<string>('all');
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState('audience');
 
   // Fetch marketing audience
   const { data: audience, isLoading: audienceLoading, refetch: refetchAudience } = useQuery({
-    queryKey: ['marketing-audience', searchTerm, sourceFilter, subscriptionFilter, statusFilter, sortOrder],
+    queryKey: ['marketing-audience', searchTerm, sourceFilter, subscriptionFilter, statusFilter, sortOrder, stepFilter],
     queryFn: async () => {
       let query = supabase
         .from('marketing_audience')
@@ -117,6 +118,16 @@ export const MarketingAudienceTab: React.FC = () => {
         query = query.eq('source_type', 'abandoned_cart');
       } else if (statusFilter !== 'all') {
         query = query.eq('lead_status', statusFilter);
+      }
+
+      // Step abandoned filter
+      if (stepFilter !== 'all') {
+        query = query.eq('source_type', 'abandoned_cart');
+        if (stepFilter === '4plus') {
+          query = query.gte('step_abandoned', 4);
+        } else {
+          query = query.eq('step_abandoned', parseInt(stepFilter));
+        }
       }
 
       const { data, error } = await query;
@@ -385,6 +396,18 @@ export const MarketingAudienceTab: React.FC = () => {
                   <SelectContent>
                     <SelectItem value="newest">Newest First</SelectItem>
                     <SelectItem value="oldest">Oldest First</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={stepFilter} onValueChange={setStepFilter}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Cart Step" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Steps</SelectItem>
+                    <SelectItem value="1">Step 1 – Reg entered</SelectItem>
+                    <SelectItem value="2">Step 2 – Vehicle info</SelectItem>
+                    <SelectItem value="3">Step 3 – Plan select</SelectItem>
+                    <SelectItem value="4plus">Step 4+ – Checkout</SelectItem>
                   </SelectContent>
                 </Select>
                 {selectedMembers.size > 0 && (
