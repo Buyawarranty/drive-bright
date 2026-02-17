@@ -8,6 +8,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { trackButtonClick } from '@/utils/analytics';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import MileageQuickSelect from '@/components/MileageQuickSelect';
+import TrustCallbackPanel from '@/components/TrustCallbackPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
@@ -685,6 +686,7 @@ const FordWarrantyLanding: React.FC = () => {
                   <p className="text-xs text-gray-500 mt-3 text-center lg:text-left">
                     Ford is a registered trademark of Ford Motor Company. We are an independent warranty provider.
                   </p>
+                  <TrustCallbackPanel />
                 </div>
               </div>
 
