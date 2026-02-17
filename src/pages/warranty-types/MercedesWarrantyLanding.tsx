@@ -15,6 +15,7 @@ import { saveWithTimestamp } from '@/utils/localStorage';
 import BrandPageFAQ from '@/components/brand-pages/BrandPageFAQ';
 import BluePersistentCallback from '@/components/brand-pages/BluePersistentCallback';
 import MinimalLandingFooter from '@/components/brand-pages/MinimalLandingFooter';
+import TrustCallbackPanel from '@/components/TrustCallbackPanel';
 import BrandRepairCosts from '@/components/brand-pages/BrandRepairCosts';
 
 // Lazy load heavy components
@@ -759,6 +760,7 @@ const MercedesWarrantyLanding: React.FC = () => {
                   <p className="text-xs text-gray-500 mt-3 text-center lg:text-left">
                     Mercedes-Benz is a registered trademark of Daimler AG. We are an independent warranty provider.
                   </p>
+                  <TrustCallbackPanel />
                 </div>
               </div>
 

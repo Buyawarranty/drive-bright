@@ -15,6 +15,7 @@ import { saveWithTimestamp } from '@/utils/localStorage';
 import BrandPageFAQ from '@/components/brand-pages/BrandPageFAQ';
 import BluePersistentCallback from '@/components/brand-pages/BluePersistentCallback';
 import MinimalLandingFooter from '@/components/brand-pages/MinimalLandingFooter';
+import TrustCallbackPanel from '@/components/TrustCallbackPanel';
 
 // Lazy load heavy components
 const HomepageFAQ = lazy(() => import('@/components/HomepageFAQ'));
@@ -759,6 +760,7 @@ const BMWWarrantyLanding: React.FC = () => {
                   <p className="text-xs text-gray-500 mt-3 text-center lg:text-left">
                     BMW is a registered trademark of BMW AG. We are an independent warranty provider.
                   </p>
+                  <TrustCallbackPanel />
                 </div>
               </div>
 

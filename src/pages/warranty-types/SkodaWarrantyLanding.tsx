@@ -7,6 +7,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { trackButtonClick } from '@/utils/analytics';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import MileageQuickSelect from '@/components/MileageQuickSelect';
+import TrustCallbackPanel from '@/components/TrustCallbackPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { saveWithTimestamp } from '@/utils/localStorage';
@@ -683,6 +684,8 @@ const SkodaWarrantyLanding: React.FC = () => {
                     </div>
                   </div>
                 </div>
+
+                <TrustCallbackPanel />
 
                 {/* Trustpilot */}
                 <div className="flex items-center gap-3">
