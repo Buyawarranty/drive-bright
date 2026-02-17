@@ -821,10 +821,25 @@ const VanWarrantyLanding: React.FC = () => {
                     isRegValid={regNumber.replace(/\s/g, '').length >= 5}
                   />
 
-                  {/* Info Text */}
-                  <p className="text-xs text-gray-500 mt-3 text-center lg:text-left">
-                    We cover all major van manufacturers including Ford, Mercedes, VW, Renault, Peugeot, Citroën, and more.
-                  </p>
+                  {/* Trust Contact Panel */}
+                  <div className="mt-5 bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-5 py-4 text-center">
+                    <p className="text-sm sm:text-[17px] font-bold text-[#1B2A4A]">
+                      Your price. Your choice. No hidden fees.
+                    </p>
+                    <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-xs sm:text-[15px] mt-1.5">
+                      <span className="text-gray-600">Speak to an expert:</span>
+                      <a href="tel:03302295040" className="font-semibold text-gray-900 hover:underline">
+                        0330 229 5040
+                      </a>
+                      <span className="text-gray-400">or</span>
+                      <button
+                        onClick={() => setShowCallbackModal(true)}
+                        className="text-brand-orange hover:underline font-medium"
+                      >
+                        Request a callback
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
