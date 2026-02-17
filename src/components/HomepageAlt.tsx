@@ -269,7 +269,7 @@ const HomepageAlt: React.FC<HomepageAltProps> = ({ onRegistrationSubmit }) => {
       <div className="hidden lg:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 mb-10">
         <div className="bg-gray-50 border border-gray-200 rounded-xl shadow-sm px-8 py-5 text-center">
           <p className="text-[17px] font-bold text-[#1B2A4A]">
-            Your price. Your choice. No hidden fees.
+            Fair price. Fast quote. No surprises.
           </p>
           <p className="text-[15px] text-gray-600 mt-1">
             <Phone className="inline w-4 h-4 mr-1 text-gray-500 -mt-0.5" />
