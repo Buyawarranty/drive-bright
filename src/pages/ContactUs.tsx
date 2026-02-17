@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { MessageCircle, Mail, Clock, Upload, Menu, X, ArrowRight, Phone } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import RequestCallbackModal from '@/components/modals/RequestCallbackModal';
-import PersistentCallback from '@/components/cover-page/PersistentCallback';
+
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -539,7 +539,7 @@ const ContactUs = () => {
         
       </div>
 
-      <PersistentCallback />
+      
 
       <RequestCallbackModal
         isOpen={showCallbackModal}

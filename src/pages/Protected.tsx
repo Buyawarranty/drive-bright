@@ -16,7 +16,7 @@ import ClaimLimitSelector from '@/components/cover-page/ClaimLimitSelector';
 import CoverTestimonial from '@/components/cover-page/CoverTestimonial';
 import CoverMiniFAQ from '@/components/cover-page/CoverMiniFAQ';
 
-import PersistentCallback from '@/components/cover-page/PersistentCallback';
+
 import HelpMeChooseModal from '@/components/cover-page/HelpMeChooseModal';
 
 const Protected = () => {
@@ -441,8 +441,6 @@ const Protected = () => {
 
       {/* CoverFinalCTA removed — duplicate of section above */}
 
-      {/* Persistent callback button */}
-      <PersistentCallback />
 
       {/* Help Me Choose modal */}
       <HelpMeChooseModal isOpen={showHelpModal} onClose={() => setShowHelpModal(false)} />
