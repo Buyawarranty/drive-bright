@@ -22,9 +22,12 @@ const StickyNavigation: React.FC = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Hide mobile sticky bar on admin/checkout/auth pages
+  // Hide mobile sticky bar on admin/checkout/auth pages and checkout steps 2-4
   const hiddenPaths = ['/admin', '/sales-login', '/checkout', '/auth', '/widget'];
-  const showMobileStickyBar = isMobile && isScrolled && !hiddenPaths.some(p => location.pathname.startsWith(p));
+  const searchParams = new URLSearchParams(location.search);
+  const currentStep = searchParams.get('step');
+  const isCheckoutStep = currentStep && ['2', '3', '4'].includes(currentStep);
+  const showMobileStickyBar = isMobile && isScrolled && !hiddenPaths.some(p => location.pathname.startsWith(p)) && !isCheckoutStep;
 
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
