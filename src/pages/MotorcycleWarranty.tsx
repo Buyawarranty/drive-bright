@@ -14,6 +14,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { trackButtonClick } from '@/utils/analytics';
 import { saveWithTimestamp } from '@/utils/localStorage';
 import QuoteFormInline from '@/components/QuoteFormInline';
+import TrustCallbackPanel from '@/components/TrustCallbackPanel';
 import motorcycleHero from '@/assets/motorcycle-hero.png';
 import motorcycleCoverage from '@/assets/motorcycle-coverage.png';
 import motorcyclePanda from '@/assets/motorcycle-panda.png';
@@ -259,6 +260,7 @@ const MotorcycleWarranty = () => {
             <div className="flex justify-center">
               <QuoteFormInline vehicleType="motorcycle" />
             </div>
+            <TrustCallbackPanel />
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
                 Protection for motorcycles up to 150,000 miles and 15 years.

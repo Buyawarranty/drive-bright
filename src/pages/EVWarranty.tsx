@@ -12,6 +12,7 @@ import { saveWithTimestamp } from '@/utils/localStorage';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import { BreadcrumbSchema } from '@/components/schema/BreadcrumbSchema';
 import QuoteFormInline from '@/components/QuoteFormInline';
+import TrustCallbackPanel from '@/components/TrustCallbackPanel';
 import evHeroImage from '@/assets/ev-hero-car.png';
 import evActiveImage from '@/assets/ev-warranty-active.png';
 import trustpilotLogo from '@/assets/trustpilot-excellent-box.webp';
@@ -334,6 +335,7 @@ const EVWarranty = () => {
             <div className="flex justify-center">
               <QuoteFormInline vehicleType="car" />
             </div>
+            <TrustCallbackPanel />
             
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
