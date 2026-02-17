@@ -177,8 +177,9 @@ export const MarketingAudienceTab: React.FC = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data: any) => {
-      toast.success(`Sync complete: ${data.added} added, ${data.updated} updated`);
+    onSuccess: (rawData: any) => {
+      const data = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
+      toast.success(`Sync complete: ${data?.added ?? 0} added, ${data?.updated ?? 0} updated`);
       queryClient.invalidateQueries({ queryKey: ['marketing-audience'] });
       queryClient.invalidateQueries({ queryKey: ['marketing-sync-logs'] });
       queryClient.invalidateQueries({ queryKey: ['marketing-audience-stats'] });
