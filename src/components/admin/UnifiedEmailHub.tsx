@@ -20,6 +20,7 @@ import {
   Trash2, Copy, LayoutTemplate, Megaphone, UserCheck, Activity, ShoppingCart
 } from 'lucide-react';
 import { AIEmailSuggestions } from './email/AIEmailSuggestions';
+import { RichTextEmailEditor } from './email/RichTextEmailEditor';
 import { TestEmailFunctionDirect } from "./TestEmailFunctionDirect";
 import { TestAutomatedEmail } from "./TestAutomatedEmail";
 import { EmailFunctionDiagnostics } from "./EmailFunctionDiagnostics";
@@ -1548,12 +1549,10 @@ const UnifiedEmailHub = () => {
             </div>
             <div>
               <Label htmlFor="content">Email Content</Label>
-              <Textarea
-                id="content"
+              <p className="text-xs text-muted-foreground mb-2">Use the toolbar for bold, italic, headings, links, emojis, and template variables.</p>
+              <RichTextEmailEditor
                 value={formData.content}
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                placeholder="Email body content..."
-                rows={10}
+                onChange={(val) => setFormData({ ...formData, content: val })}
               />
             </div>
             <div className="flex items-center gap-2">
