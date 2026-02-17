@@ -305,7 +305,8 @@ export const useLeadDistribution = () => {
       const { data: adminUsers, error } = await supabase
         .from('admin_users')
         .select('id')
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .in('role', ['sales', 'sales_lead']);
 
       if (error) throw error;
 
