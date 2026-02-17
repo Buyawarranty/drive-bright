@@ -543,6 +543,101 @@ const WarrantyTypes: React.FC = () => {
                 </span>
               </Link>
 
+              {/* Audi Brand Card */}
+              <Link 
+                to="/warranty-types/audi"
+                className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
+              >
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Audi-Logo_2016.svg/800px-Audi-Logo_2016.svg.png" 
+                    alt="Audi logo"
+                    className="max-h-12 max-w-12 object-contain"
+                    loading="lazy"
+                  />
+                </div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Audi</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">
+                  View <ChevronRight className="h-3 w-3 ml-0.5" />
+                </span>
+              </Link>
+
+              {/* Nissan Brand Card */}
+              <Link 
+                to="/warranty-types/nissan"
+                className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
+              >
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Nissan_logo_2020.svg/800px-Nissan_logo_2020.svg.png" 
+                    alt="Nissan logo"
+                    className="max-h-12 max-w-12 object-contain"
+                    loading="lazy"
+                  />
+                </div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Nissan</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">
+                  View <ChevronRight className="h-3 w-3 ml-0.5" />
+                </span>
+              </Link>
+
+              {/* Peugeot Brand Card */}
+              <Link 
+                to="/warranty-types/peugeot"
+                className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
+              >
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Peugeot_2010_logo.svg/800px-Peugeot_2010_logo.svg.png" 
+                    alt="Peugeot logo"
+                    className="max-h-12 max-w-12 object-contain"
+                    loading="lazy"
+                  />
+                </div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Peugeot</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">
+                  View <ChevronRight className="h-3 w-3 ml-0.5" />
+                </span>
+              </Link>
+
+              {/* Vauxhall Brand Card */}
+              <Link 
+                to="/warranty-types/vauxhall"
+                className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
+              >
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Vauxhall_Motors_2020.svg/800px-Vauxhall_Motors_2020.svg.png" 
+                    alt="Vauxhall logo"
+                    className="max-h-12 max-w-12 object-contain"
+                    loading="lazy"
+                  />
+                </div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Vauxhall</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">
+                  View <ChevronRight className="h-3 w-3 ml-0.5" />
+                </span>
+              </Link>
+
+              {/* Volvo Brand Card */}
+              <Link 
+                to="/warranty-types/volvo"
+                className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
+              >
+                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
+                  <img 
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Volvo_Cars_logo.svg/800px-Volvo_Cars_logo.svg.png" 
+                    alt="Volvo logo"
+                    className="max-h-12 max-w-12 object-contain"
+                    loading="lazy"
+                  />
+                </div>
+                <h3 className="text-sm md:text-base font-bold text-gray-900 mb-1">Volvo</h3>
+                <span className="inline-flex items-center text-orange-500 font-medium text-xs md:text-sm group-hover:gap-1 transition-all">
+                  View <ChevronRight className="h-3 w-3 ml-0.5" />
+                </span>
+              </Link>
+
               <Link 
                 to="/warranty-types/motorbike-motorcycle-warranty"
                 className="group p-4 md:p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200 flex flex-col items-center text-center"
@@ -558,7 +653,7 @@ const WarrantyTypes: React.FC = () => {
 
               {/* Dynamic Pages from Database - exclude hardcoded brands */}
               {dynamicPages
-                .filter((page) => page.brand_name.toLowerCase() !== 'bmw' && page.brand_name.toLowerCase() !== 'mercedes-benz' && page.brand_name.toLowerCase() !== 'mercedes' && page.brand_name.toLowerCase() !== 'honda' && page.brand_name.toLowerCase() !== 'toyota' && page.brand_name.toLowerCase() !== 'ford' && page.brand_name.toLowerCase() !== 'kia' && page.brand_name.toLowerCase() !== 'hyundai' && page.brand_name.toLowerCase() !== 'mg' && page.brand_name.toLowerCase() !== 'skoda' && page.brand_name.toLowerCase() !== 'škoda')
+                .filter((page) => !['bmw', 'mercedes-benz', 'mercedes', 'honda', 'toyota', 'ford', 'kia', 'hyundai', 'mg', 'skoda', 'škoda', 'audi', 'nissan', 'peugeot', 'vauxhall', 'volvo'].includes(page.brand_name.toLowerCase()))
                 .map((page) => {
                 const IconComponent = getIconForPageType(page.page_type, page.brand_name);
                 return (
