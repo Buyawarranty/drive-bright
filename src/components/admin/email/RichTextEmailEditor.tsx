@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Bold, Italic, Heading1, Heading2, Heading3, List, ListOrdered,
-  Link, Smile, Type, Code, Minus
+  Link, Smile, Type, Code, Minus, Image
 } from 'lucide-react';
 
 const EMOJI_CATEGORIES = [
@@ -39,9 +39,12 @@ export const RichTextEmailEditor: React.FC<RichTextEmailEditorProps> = ({ value,
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [linkUrl, setLinkUrl] = useState('');
   const [linkText, setLinkText] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [imageAlt, setImageAlt] = useState('');
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [varsOpen, setVarsOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
+  const [imageOpen, setImageOpen] = useState(false);
 
   const insertAtCursor = (text: string) => {
     const ta = textareaRef.current;
@@ -70,6 +73,15 @@ export const RichTextEmailEditor: React.FC<RichTextEmailEditorProps> = ({ value,
       setLinkUrl('');
       setLinkText('');
       setLinkOpen(false);
+    }
+  };
+
+  const insertImage = () => {
+    if (imageUrl) {
+      insertAtCursor(`![${imageAlt || 'image'}](${imageUrl})`);
+      setImageUrl('');
+      setImageAlt('');
+      setImageOpen(false);
     }
   };
 
@@ -120,6 +132,22 @@ export const RichTextEmailEditor: React.FC<RichTextEmailEditorProps> = ({ value,
             <Label className="text-xs">URL</Label>
             <Input value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder="https://..." className="h-8 text-sm" />
             <Button type="button" size="sm" className="w-full" onClick={insertLink} disabled={!linkUrl || !linkText}>Insert Link</Button>
+          </PopoverContent>
+        </Popover>
+
+        {/* Image */}
+        <Popover open={imageOpen} onOpenChange={setImageOpen}>
+          <PopoverTrigger asChild>
+            <Button type="button" variant="ghost" size="sm" className={btnClass} title="Insert Image">
+              <Image className="w-4 h-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-72 space-y-2" align="start">
+            <Label className="text-xs">Image URL</Label>
+            <Input value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://example.com/image.png" className="h-8 text-sm" />
+            <Label className="text-xs">Alt Text (optional)</Label>
+            <Input value={imageAlt} onChange={e => setImageAlt(e.target.value)} placeholder="Describe the image" className="h-8 text-sm" />
+            <Button type="button" size="sm" className="w-full" onClick={insertImage} disabled={!imageUrl}>Insert Image</Button>
           </PopoverContent>
         </Popover>
 
