@@ -100,22 +100,22 @@ serve(async (req) => {
     const attachments = [];
     
     try {
-      const termsResponse = await fetch('https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/Terms-and-Conditions-v2.3.pdf');
+      const termsResponse = await fetch('https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/terms/terms-and-conditions-v3.1-2026-02.pdf');
       if (termsResponse.ok) {
         const termsBuffer = await termsResponse.arrayBuffer();
         attachments.push({
-          filename: 'Terms-and-Conditions-v2.3.pdf',
+          filename: 'Terms-and-Conditions-v3.1.pdf',
           content: arrayBufferToBase64(termsBuffer),
           type: 'application/pdf',
           disposition: 'attachment'
         });
       }
 
-      const platinumResponse = await fetch('https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/Platinum-Warranty-Plan-v2.3.pdf');
+      const platinumResponse = await fetch('https://mzlpuxzwyrcyrgrongeb.supabase.co/storage/v1/object/public/policy-documents/platinum/platinum-warranty-plan-v3.1-2026-02.pdf');
       if (platinumResponse.ok) {
         const platinumBuffer = await platinumResponse.arrayBuffer();
         attachments.push({
-          filename: 'Platinum-Warranty-Plan-v2.3.pdf',
+          filename: 'Platinum-Warranty-Plan-v3.1.pdf',
           content: arrayBufferToBase64(platinumBuffer),
           type: 'application/pdf',
           disposition: 'attachment'
