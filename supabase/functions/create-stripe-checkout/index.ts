@@ -251,12 +251,21 @@ serve(async (req) => {
 
     // Apply discount code if provided
     let coupon = null;
+    let discountAmount = 0;
+    let finalAmountAfterDiscount = totalAmount;
     if (discountCode) {
       try {
         const coupons = await stripe.coupons.list({ limit: 100 });
         coupon = coupons.data.find((c: any) => c.name === discountCode && c.valid);
         if (coupon) {
-          logStep("Applied discount code", { discountCode, couponId: coupon.id });
+          // Calculate the actual discount amount
+          if (coupon.percent_off) {
+            discountAmount = totalAmount * (coupon.percent_off / 100);
+          } else if (coupon.amount_off) {
+            discountAmount = coupon.amount_off / 100; // amount_off is in pence
+          }
+          finalAmountAfterDiscount = Math.max(1, totalAmount - discountAmount);
+          logStep("Applied discount code", { discountCode, couponId: coupon.id, discountAmount, finalAmountAfterDiscount });
         }
       } catch (couponError) {
         logStep("Failed to apply discount code", { discountCode, error: couponError });
@@ -336,7 +345,8 @@ serve(async (req) => {
         voluntary_excess: voluntaryExcess.toString(),
         customer_email: customerEmail,
         original_amount: totalAmount.toString(),
-        final_amount: totalAmount.toString(),
+        final_amount: finalAmountAfterDiscount.toString(),
+        discount_amount: discountAmount.toString(),
         discount_code: discountCode || '',
         claim_limit: claimLimit?.toString() || getMaxClaimAmount(planName, paymentType),
         seasonal_bonus_months: seasonalBonusMonths.toString(),

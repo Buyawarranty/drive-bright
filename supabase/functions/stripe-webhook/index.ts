@@ -235,6 +235,9 @@ serve(async (req) => {
             building_number: fullSession.metadata?.customer_building_number || '',
             vehicle_reg: fullSession.metadata?.vehicle_reg || '',
             discount_code: fullSession.metadata?.discount_code || '',
+            discount_amount: (actualStripeAmount > 0 && metadataAmount > actualStripeAmount) 
+              ? (metadataAmount - actualStripeAmount) 
+              : parseFloat(fullSession.metadata?.discount_amount || '0'),
             // Use ACTUAL Stripe payment amount - this is what the customer actually paid
             final_amount: actualStripeAmount > 0 ? actualStripeAmount : metadataAmount,
             original_amount: metadataAmount, // Store metadata amount as original (pre-discount)

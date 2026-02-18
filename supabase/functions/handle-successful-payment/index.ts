@@ -325,10 +325,10 @@ serve(async (req) => {
       vehicle_transmission: vehicleData?.transmission || metadata?.vehicle_transmission || '',
       mileage: vehicleData?.mileage || '', // Only use Step 4 mileage (passed via vehicleData)
       status: 'Active',
-      discount_code: customerData?.discount_code || null,
-      discount_amount: customerData?.discount_amount || 0,
-      original_amount: customerData?.original_amount || null,
-      final_amount: customerData?.final_amount || null,
+      discount_code: customerData?.discount_code || metadata?.discount_code || null,
+      discount_amount: customerData?.discount_amount || parseFloat(metadata?.discount_amount) || 0,
+      original_amount: customerData?.original_amount || parseFloat(metadata?.original_amount) || null,
+      final_amount: customerData?.final_amount || parseFloat(metadata?.final_amount) || null,
       voluntary_excess: getStandardizedVoluntaryExcess(metadata, customerData, vehicleData, voluntaryExcess),
       claim_limit: parseInt(metadata?.claim_limit || customerData?.claimLimit || claimLimit || protectionAddOns?.claimLimit || '1250'), // User-selected claim limit
       warranty_reference_number: warrantyReference,
