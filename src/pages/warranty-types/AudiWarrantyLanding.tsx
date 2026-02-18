@@ -656,7 +656,7 @@ const AudiWarrantyLanding: React.FC = () => {
               ))}
             </div>
             <div className="text-center mt-6">
-              <a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer" className="text-brand-orange hover:underline text-sm font-medium">Read all reviews on Trustpilot →</a>
+              <a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer" className="text-brand-orange hover:underline text-sm font-medium">Read more reviews on Trustpilot →</a>
             </div>
           </div>
         </section>

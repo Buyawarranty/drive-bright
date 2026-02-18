@@ -1434,7 +1434,7 @@ const VanWarrantyLanding: React.FC = () => {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-3 text-sm font-semibold text-gray-700 hover:text-[#00b67a] transition-colors"
               >
-                Read all reviews on Trustpilot →
+                Read more reviews on Trustpilot →
               </a>
             </div>
           </div>
