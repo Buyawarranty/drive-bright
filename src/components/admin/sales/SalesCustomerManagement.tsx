@@ -39,6 +39,13 @@ interface CustomerTag {
   category: string;
 }
 
+interface AdminUserBasic {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
+}
+
 interface Customer {
   id: string;
   name: string;
@@ -66,6 +73,7 @@ interface Customer {
   town: string | null;
   county: string | null;
   postcode: string | null;
+  assigned_to: string | null;
   // Purchase source tracking
   purchase_source?: string | null;
   bumper_order_id?: string | null;
@@ -105,6 +113,7 @@ interface SalesCustomerManagementProps {
 const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ currentUserId: propUserId }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [availableTags, setAvailableTags] = useState<CustomerTag[]>([]);
+  const [salesUsers, setSalesUsers] = useState<AdminUserBasic[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest');
@@ -266,12 +275,42 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
     }
   };
 
+  const fetchSalesUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('id, first_name, last_name, email')
+        .eq('is_active', true)
+        .order('first_name', { ascending: true });
+      if (error) throw error;
+      setSalesUsers(data || []);
+    } catch (error) {
+      console.error('Error fetching sales users:', error);
+    }
+  };
+
+  const handleAssignCustomer = async (customerId: string, assignedTo: string | null) => {
+    try {
+      const { error } = await supabase
+        .from('customers')
+        .update({ assigned_to: assignedTo })
+        .eq('id', customerId);
+      if (error) throw error;
+      setCustomers(prev => prev.map(c => c.id === customerId ? { ...c, assigned_to: assignedTo } : c));
+      toast.success('Customer assigned successfully');
+    } catch (error: any) {
+      console.error('Error assigning customer:', error);
+      toast.error('Failed to assign customer');
+    }
+  };
+
   // Effect to fetch data when user IDs are available
   useEffect(() => {
     if (currentUserId && currentAuthUserId) {
       console.log('[SalesCustomerManagement] Fetching data for userId:', currentUserId, 'authUserId:', currentAuthUserId);
       fetchCustomers(currentUserId, currentAuthUserId);
       fetchTags();
+      fetchSalesUsers();
     }
   }, [currentUserId, currentAuthUserId]);
 
@@ -648,6 +687,7 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
               <TableRow>
                 <TableHead className="bg-amber-50/50">Upgrade</TableHead>
                 <TableHead>Name</TableHead>
+                <TableHead>Assigned To</TableHead>
                 <TableHead>Purchase Date</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
@@ -729,16 +769,27 @@ const SalesCustomerManagement: React.FC<SalesCustomerManagementProps> = ({ curre
                           <Edit className="h-3 w-3" />
                         </Button>
                         <span className="whitespace-nowrap">{customer.name}</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setEditDetailsDialog({ open: true, customer })}
-                          title="Add/Update Details"
-                          className="h-6 w-6 p-0 text-primary"
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
                       </div>
+                    </TableCell>
+
+                    {/* Assigned To */}
+                    <TableCell>
+                      <Select
+                        value={customer.assigned_to || 'unassigned'}
+                        onValueChange={(val) => handleAssignCustomer(customer.id, val === 'unassigned' ? null : val)}
+                      >
+                        <SelectTrigger className="h-7 text-xs w-[130px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="unassigned">Unassigned</SelectItem>
+                          {salesUsers.map(u => (
+                            <SelectItem key={u.id} value={u.id}>
+                              {u.first_name || ''} {u.last_name || u.email}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     
                     {/* Purchase Date */}
