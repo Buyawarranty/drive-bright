@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Users, X, Search, Loader2, UserPlus, Download } from 'lucide-react';
+import { Users, X, Search, Loader2, UserPlus, Download, ArrowUpDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -30,6 +30,15 @@ const AUDIENCE_FILTERS = [
   { value: 'status_lost', label: 'Lost' },
 ];
 
+const BATCH_SIZES = [
+  { value: '50', label: '50' },
+  { value: '100', label: '100' },
+  { value: '250', label: '250' },
+  { value: '500', label: '500' },
+  { value: '1000', label: '1,000' },
+  { value: 'all', label: 'All' },
+];
+
 export const RecipientSelector: React.FC<RecipientSelectorProps> = ({ recipients, onChange }) => {
   const [manualEmail, setManualEmail] = useState('');
   const [importFilter, setImportFilter] = useState('');
@@ -37,6 +46,8 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({ recipients
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<Recipient[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [batchSize, setBatchSize] = useState('100');
 
   // Search marketing_audience for autocomplete
   useEffect(() => {
@@ -92,17 +103,22 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({ recipients
   const importFromAudience = async (filter: string) => {
     setImporting(true);
     try {
+      const limit = batchSize === 'all' ? null : parseInt(batchSize);
       let allContacts: any[] = [];
       const PAGE_SIZE = 1000;
       let from = 0;
       let hasMore = true;
 
       while (hasMore) {
+        const fetchSize = limit ? Math.min(PAGE_SIZE, limit - allContacts.length) : PAGE_SIZE;
+        if (limit && allContacts.length >= limit) break;
+
         let query = supabase
           .from('marketing_audience')
-          .select('email, full_name')
+          .select('email, full_name, created_at')
           .not('email', 'is', null)
-          .range(from, from + PAGE_SIZE - 1);
+          .order('created_at', { ascending: sortOrder === 'oldest' })
+          .range(from, from + fetchSize - 1);
 
         if (filter === 'unpaid_visitors') {
           query = query.eq('source_type', 'sales_lead')
@@ -117,8 +133,8 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({ recipients
         const { data, error } = await query;
         if (error) throw error;
         allContacts = allContacts.concat(data || []);
-        hasMore = (data?.length || 0) === PAGE_SIZE;
-        from += PAGE_SIZE;
+        hasMore = (data?.length || 0) === fetchSize && (!limit || allContacts.length < limit);
+        from += fetchSize;
       }
 
       // Deduplicate and merge with existing
@@ -219,30 +235,58 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({ recipients
       </div>
 
       {/* Import from audience segment */}
-      <div className="flex gap-2 items-end">
-        <div className="flex-1">
-          <Label className="text-xs text-muted-foreground">Import from Marketing Audience</Label>
-          <Select value={importFilter} onValueChange={setImportFilter}>
-            <SelectTrigger className="h-9">
-              <SelectValue placeholder="Select segment..." />
-            </SelectTrigger>
-            <SelectContent>
-              {AUDIENCE_FILTERS.map(f => (
-                <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <div className="space-y-2 rounded-lg border p-3 bg-muted/30">
+        <Label className="text-xs font-medium text-muted-foreground">Import from Marketing Audience</Label>
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <Select value={importFilter} onValueChange={setImportFilter}>
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="Select segment..." />
+              </SelectTrigger>
+              <SelectContent>
+                {AUDIENCE_FILTERS.map(f => (
+                  <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-9"
-          disabled={!importFilter || importing}
-          onClick={() => importFromAudience(importFilter)}
-        >
-          {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-          <span className="ml-1">Import</span>
-        </Button>
+        <div className="flex gap-2 items-center">
+          <div className="flex-1">
+            <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as 'newest' | 'oldest')}>
+              <SelectTrigger className="h-8 text-xs">
+                <ArrowUpDown className="w-3 h-3 mr-1 text-muted-foreground" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest first</SelectItem>
+                <SelectItem value="oldest">Oldest first</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex-1">
+            <Select value={batchSize} onValueChange={setBatchSize}>
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {BATCH_SIZES.map(b => (
+                  <SelectItem key={b.value} value={b.value}>{b.label} contacts</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
+            variant="default"
+            size="sm"
+            className="h-8"
+            disabled={!importFilter || importing}
+            onClick={() => importFromAudience(importFilter)}
+          >
+            {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            <span className="ml-1">Import</span>
+          </Button>
+        </div>
       </div>
 
       {recipients.length > 5 && (
