@@ -33,7 +33,7 @@ const PandaReassurance: React.FC<PandaReassuranceProps> = ({ onSeeHowCoverWorks 
               onClick={onSeeHowCoverWorks}
               className="text-primary font-semibold hover:underline text-sm"
             >
-              See how cover works →
+              I want to avoid costly repairs →
             </button>
           </div>
           <div className="flex justify-center">
