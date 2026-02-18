@@ -92,6 +92,9 @@ const UnifiedEmailHub = () => {
   const [isResending, setIsResending] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [showCreateCampaign, setShowCreateCampaign] = useState(false);
+  const [newCampaign, setNewCampaign] = useState({ name: '', subject: '', content: '', campaign_type: 'marketing', scheduled_for: '' });
+  const [creatingCampaign, setCreatingCampaign] = useState(false);
 
   // Form state for template editing
   const [formData, setFormData] = useState({
@@ -735,7 +738,34 @@ const UnifiedEmailHub = () => {
     </div>
   );
 
-  // Campaigns View - TODO: Implement full campaign management
+   // Campaigns View
+  const createCampaign = async () => {
+    if (!newCampaign.name || !newCampaign.subject) {
+      toast.error('Campaign name and subject are required');
+      return;
+    }
+    setCreatingCampaign(true);
+    try {
+      const { error } = await supabase.from('email_campaigns').insert({
+        name: newCampaign.name,
+        subject: newCampaign.subject,
+        content: newCampaign.content,
+        campaign_type: newCampaign.campaign_type,
+        scheduled_for: newCampaign.scheduled_for || null,
+        status: 'draft',
+      });
+      if (error) throw error;
+      toast.success('Campaign created!');
+      setShowCreateCampaign(false);
+      setNewCampaign({ name: '', subject: '', content: '', campaign_type: 'marketing', scheduled_for: '' });
+      loadCampaigns();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to create campaign');
+    } finally {
+      setCreatingCampaign(false);
+    }
+  };
+
   const CampaignsView = () => (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -743,10 +773,55 @@ const UnifiedEmailHub = () => {
           <h2 className="text-2xl font-bold">Email Campaigns</h2>
           <p className="text-muted-foreground">Create and track marketing campaigns</p>
         </div>
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          New Campaign
-        </Button>
+        <Dialog open={showCreateCampaign} onOpenChange={setShowCreateCampaign}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              New Campaign
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Create New Campaign</DialogTitle>
+              <DialogDescription>Set up a new email campaign</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label>Campaign Name</Label>
+                <Input value={newCampaign.name} onChange={e => setNewCampaign({ ...newCampaign, name: e.target.value })} placeholder="e.g., Summer Sale 2025" />
+              </div>
+              <div>
+                <Label>Email Subject</Label>
+                <Input value={newCampaign.subject} onChange={e => setNewCampaign({ ...newCampaign, subject: e.target.value })} placeholder="e.g., Get 20% off extended warranties" />
+              </div>
+              <div>
+                <Label>Email Content</Label>
+                <RichTextEmailEditor value={newCampaign.content} onChange={val => setNewCampaign({ ...newCampaign, content: val })} placeholder="Write your campaign email content..." />
+              </div>
+              <div>
+                <Label>Campaign Type</Label>
+                <Select value={newCampaign.campaign_type} onValueChange={val => setNewCampaign({ ...newCampaign, campaign_type: val })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="marketing">Marketing</SelectItem>
+                    <SelectItem value="transactional">Transactional</SelectItem>
+                    <SelectItem value="automated">Automated</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Schedule For (Optional)</Label>
+                <Input type="datetime-local" value={newCampaign.scheduled_for} onChange={e => setNewCampaign({ ...newCampaign, scheduled_for: e.target.value })} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowCreateCampaign(false)}>Cancel</Button>
+              <Button onClick={createCampaign} disabled={creatingCampaign}>
+                {creatingCampaign ? 'Creating...' : 'Create Campaign'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="space-y-4">
