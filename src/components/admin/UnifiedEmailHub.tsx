@@ -25,6 +25,7 @@ import { TestEmailFunctionDirect } from "./TestEmailFunctionDirect";
 import { TestAutomatedEmail } from "./TestAutomatedEmail";
 import { EmailFunctionDiagnostics } from "./EmailFunctionDiagnostics";
 import { ResendWelcomeEmailTool } from "./ResendWelcomeEmailTool";
+import { AudienceBulkSend } from "./email/AudienceBulkSend";
 
 interface EmailTemplate {
   id: string;
@@ -1809,43 +1810,53 @@ const UnifiedEmailHub = () => {
 
       {/* Use Template Dialog */}
       <Dialog open={useTemplateDialogOpen} onOpenChange={setUseTemplateDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Send Email</DialogTitle>
             <DialogDescription>
               Send an email using the "{selectedTemplate?.name}" template.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label htmlFor="recipient-name">Recipient Name</Label>
-              <Input
-                id="recipient-name"
-                value={recipientName}
-                onChange={(e) => setRecipientName(e.target.value)}
-                placeholder="John Smith"
+          <Tabs defaultValue="single" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="single">Single Recipient</TabsTrigger>
+              <TabsTrigger value="audience">Send to Audience</TabsTrigger>
+            </TabsList>
+            <TabsContent value="single" className="space-y-4 pt-4">
+              <div>
+                <Label htmlFor="recipient-name">Recipient Name</Label>
+                <Input
+                  id="recipient-name"
+                  value={recipientName}
+                  onChange={(e) => setRecipientName(e.target.value)}
+                  placeholder="John Smith"
+                />
+              </div>
+              <div>
+                <Label htmlFor="recipient-email">Recipient Email</Label>
+                <Input
+                  id="recipient-email"
+                  type="email"
+                  value={recipientEmail}
+                  onChange={(e) => setRecipientEmail(e.target.value)}
+                  placeholder="customer@email.com"
+                />
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setUseTemplateDialogOpen(false)}>Cancel</Button>
+                <Button onClick={sendEmailWithTemplate} disabled={!recipientEmail || sendingTest}>
+                  <Send className="w-4 h-4 mr-2" />
+                  {sendingTest ? 'Sending...' : 'Send Email'}
+                </Button>
+              </DialogFooter>
+            </TabsContent>
+            <TabsContent value="audience" className="space-y-4 pt-4">
+              <AudienceBulkSend 
+                selectedTemplate={selectedTemplate}
+                onClose={() => setUseTemplateDialogOpen(false)}
               />
-            </div>
-            <div>
-              <Label htmlFor="recipient-email">Recipient Email</Label>
-              <Input
-                id="recipient-email"
-                type="email"
-                value={recipientEmail}
-                onChange={(e) => setRecipientEmail(e.target.value)}
-                placeholder="customer@email.com"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setUseTemplateDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={sendEmailWithTemplate} disabled={!recipientEmail || sendingTest}>
-              <Send className="w-4 h-4 mr-2" />
-              {sendingTest ? 'Sending...' : 'Send Email'}
-            </Button>
-          </DialogFooter>
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
 
