@@ -52,10 +52,10 @@ const isTestOrder = (name: string, email: string): boolean => {
 export const AnalyticsTab = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) });
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const [comparisonPeriod, setComparisonPeriod] = useState<'week' | 'month' | 'last_month' | 'year' | null>(null);
+  const [comparisonPeriod, setComparisonPeriod] = useState<'week' | 'last_week' | 'month' | 'last_month' | 'last_30' | 'year' | null>('month');
 
 
   // Refetch data whenever the component mounts or becomes visible
@@ -126,7 +126,7 @@ export const AnalyticsTab = () => {
   }, []);
 
   // Handle period comparison selection
-  const handlePeriodComparison = useCallback((period: 'week' | 'month' | 'last_month' | 'year' | null) => {
+  const handlePeriodComparison = useCallback((period: 'week' | 'last_week' | 'month' | 'last_month' | 'last_30' | 'year' | null) => {
     if (comparisonPeriod === period) {
       setComparisonPeriod(null);
       setDateRange(undefined);
@@ -142,6 +142,12 @@ export const AnalyticsTab = () => {
           from = startOfWeek(now, { weekStartsOn: 1 });
           to = endOfWeek(now, { weekStartsOn: 1 });
           break;
+        case 'last_week':
+          const lastWeekDate = new Date(now);
+          lastWeekDate.setDate(lastWeekDate.getDate() - 7);
+          from = startOfWeek(lastWeekDate, { weekStartsOn: 1 });
+          to = endOfWeek(lastWeekDate, { weekStartsOn: 1 });
+          break;
         case 'month':
           from = startOfMonth(now);
           to = endOfMonth(now);
@@ -150,6 +156,11 @@ export const AnalyticsTab = () => {
           const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
           from = startOfMonth(lastMonth);
           to = endOfMonth(lastMonth);
+          break;
+        case 'last_30':
+          from = new Date(now);
+          from.setDate(from.getDate() - 30);
+          to = now;
           break;
         case 'year':
           from = startOfYear(now);
@@ -453,15 +464,21 @@ export const AnalyticsTab = () => {
           {/* Period Comparison Toggle */}
           <div className="space-y-1">
             <Label className="text-sm font-medium">Quick Period</Label>
-            <ToggleGroup type="single" value={comparisonPeriod || ''} onValueChange={(val) => handlePeriodComparison(val as 'week' | 'month' | 'last_month' | 'year' | null)}>
+            <ToggleGroup type="single" value={comparisonPeriod || ''} onValueChange={(val) => handlePeriodComparison(val as 'week' | 'last_week' | 'month' | 'last_month' | 'last_30' | 'year' | null)}>
               <ToggleGroupItem value="week" aria-label="This Week" className="px-3">
                 This Week
+              </ToggleGroupItem>
+              <ToggleGroupItem value="last_week" aria-label="Last Week" className="px-3">
+                Last Week
               </ToggleGroupItem>
               <ToggleGroupItem value="month" aria-label="This Month" className="px-3">
                 This Month
               </ToggleGroupItem>
               <ToggleGroupItem value="last_month" aria-label="Last Month" className="px-3">
                 Last Month
+              </ToggleGroupItem>
+              <ToggleGroupItem value="last_30" aria-label="Last 30 Days" className="px-3">
+                Last 30 Days
               </ToggleGroupItem>
               <ToggleGroupItem value="year" aria-label="This Year" className="px-3">
                 This Year
