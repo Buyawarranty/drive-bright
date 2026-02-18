@@ -21,7 +21,7 @@ interface RecipientSelectorProps {
 
 const AUDIENCE_FILTERS = [
   { value: 'all', label: 'All Contacts' },
-  { value: 'sales_lead', label: 'Sales Leads' },
+  { value: 'unpaid_visitors', label: 'Unpaid Visitors' },
   { value: 'abandoned_cart', label: 'Abandoned Cart' },
   { value: 'status_converted', label: 'Customers (Paid)' },
   { value: 'status_cancelled', label: 'Cancelled' },
@@ -104,7 +104,11 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({ recipients
           .not('email', 'is', null)
           .range(from, from + PAGE_SIZE - 1);
 
-        if (filter.startsWith('status_')) {
+        if (filter === 'unpaid_visitors') {
+          query = query.eq('source_type', 'sales_lead')
+            .not('lead_status', 'in', '(converted,cancelled,refunded,fake_lead,lost)')
+            .or('lead_status.is.null');
+        } else if (filter.startsWith('status_')) {
           query = query.eq('lead_status', filter.replace('status_', ''));
         } else if (filter !== 'all') {
           query = query.eq('source_type', filter);
