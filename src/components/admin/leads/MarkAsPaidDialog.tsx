@@ -378,7 +378,7 @@ export const MarkAsPaidDialog: React.FC<MarkAsPaidDialogProps> = ({
           }
         } catch (w2kErr) {
           console.error('W2K Exception:', w2kErr);
-          toast.warning('Order created but Warranties 2000 submission failed');
+          toast.warning('Order created but Warranties Register submission failed');
         }
       }
 

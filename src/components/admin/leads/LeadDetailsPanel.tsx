@@ -7,7 +7,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { 
   Phone, Mail, MessageSquare, Car, User, 
   ChevronDown, ChevronUp, 
-  Plus, CreditCard
+  Plus, CreditCard, Printer
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -16,6 +16,7 @@ import { ManualOrderEntry } from '../ManualOrderEntry';
 import { RemindMePopover } from './RemindMePopover';
 import { MarkAsPaidDialog } from './MarkAsPaidDialog';
 import { UnifiedNotesPanel } from './notes/UnifiedNotesPanel';
+import { PrintableWarrantyLetter } from '../PrintableWarrantyLetter';
 
 interface LeadDetailsPanelProps {
   lead: Lead;
@@ -35,6 +36,7 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
   const [notesOpen, setNotesOpen] = useState(true);
   const [isOrderDialogOpen, setIsOrderDialogOpen] = useState(false);
   const [isMarkPaidDialogOpen, setIsMarkPaidDialogOpen] = useState(false);
+  const [isPrintLetterOpen, setIsPrintLetterOpen] = useState(false);
   
   const previousLeadIdRef = useRef<string | null>(null);
 
@@ -186,6 +188,20 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
                 Mark as Paid
               </Button>
               
+              {/* Print Confirmation Letter */}
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 text-orange-600 border-orange-200 hover:bg-orange-50 hover:border-orange-300"
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  setIsPrintLetterOpen(true); 
+                }}
+              >
+                <Printer className="h-4 w-4 mr-1.5" />
+                Print Letter
+              </Button>
+
               {/* Remind Me Button */}
               <div onClick={(e) => e.stopPropagation()}>
                 <RemindMePopover leadId={lead.id} />
@@ -348,6 +364,30 @@ export const LeadDetailsPanel: React.FC<LeadDetailsPanelProps> = ({
         onOpenChange={setIsMarkPaidDialogOpen}
         onSuccess={onRefresh}
         onNavigateToQuote={onNavigateToQuote ? () => onNavigateToQuote(lead) : undefined}
+      />
+
+      {/* Print Warranty Letter Dialog */}
+      <PrintableWarrantyLetter
+        open={isPrintLetterOpen}
+        onOpenChange={setIsPrintLetterOpen}
+        policy={{
+          customerName: lead.first_name && lead.last_name 
+            ? `${lead.first_name} ${lead.last_name}` 
+            : lead.full_name || lead.email,
+          customerEmail: lead.email,
+          vehicleReg: lead.vehicle_reg || '',
+          vehicleMake: lead.vehicle_make || undefined,
+          vehicleModel: lead.vehicle_model || undefined,
+          vehicleYear: lead.vehicle_year || undefined,
+          mileage: lead.mileage || undefined,
+          warrantyNumber: '',
+          policyNumber: '',
+          planType: lead.plan_name || lead.plan_interest || 'N/A',
+          policyStartDate: new Date().toISOString(),
+          policyEndDate: new Date().toISOString(),
+          claimLimit: lead.cart_metadata?.claim_limit,
+          voluntaryExcess: lead.cart_metadata?.voluntary_excess,
+        }}
       />
     </div>
   );

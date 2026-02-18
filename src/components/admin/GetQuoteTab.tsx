@@ -2333,7 +2333,7 @@ Questions? Call 0330 229 5040`;
                     placeholder="Any special notes for this warranty (e.g., specific conditions, customer requests)..."
                     rows={3}
                   />
-                  <p className="text-xs text-muted-foreground">These notes will be sent to Warranties 2000 when the customer completes their purchase</p>
+                  <p className="text-xs text-muted-foreground">These notes will be sent to Warranties Register when the customer completes their purchase</p>
                   
                   {/* Warning if admin types about free months without selecting the toggle */}
                   {freeExtendedCover === 'none' && 
