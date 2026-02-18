@@ -153,8 +153,8 @@ const generateEmailHTML = (request: SendEmailRequest, continueUrl: string): { ht
       <!-- Promo Section -->
       <div style="background-color: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center;">
         <p style="color: #856404; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">${promoText}</p>
-        <a href="javascript:void(0);" onclick="navigator.clipboard.writeText('${promoCode}'); this.innerHTML='✓ Copied!'; setTimeout(() => this.innerHTML='${promoCode}', 2000); return false;" style="background-color: #ffc107; color: #000; font-size: 24px; font-weight: bold; padding: 12px 24px; border-radius: 4px; display: inline-block; letter-spacing: 2px; cursor: pointer; text-decoration: none; transition: all 0.2s ease; border: 2px solid transparent;" onmouseover="this.style.backgroundColor='#ffca2c'; this.style.borderColor='#856404';" onmouseout="this.style.backgroundColor='#ffc107'; this.style.borderColor='transparent';">${promoCode}</a>
-        <p style="color: #856404; font-size: 12px; margin: 8px 0 0 0;">👆 Tap to copy code</p>
+        <div style="background-color: #ffc107; color: #000; font-size: 24px; font-weight: 800; padding: 12px 24px; border-radius: 6px; display: inline-block; letter-spacing: 2px; font-family: monospace;">${promoCode}</div>
+        <p style="color: #856404; font-size: 12px; margin: 10px 0 0 0;">Apply at checkout &bull; <strong>Valid for 24 hours only</strong></p>
       </div>
       ` : ''}
 
