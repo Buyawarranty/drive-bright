@@ -725,10 +725,10 @@ const UnifiedEmailHub = () => {
                 <Button 
                   size="sm"
                   className="flex-1"
-                  onClick={() => handleUseTemplate(template)}
+                  onClick={() => handleEditTemplate(template)}
                 >
                   <Mail className="w-3 h-3 mr-1" />
-                  Use Template
+                  Edit & Send
                 </Button>
               </div>
             </CardContent>
@@ -1655,57 +1655,7 @@ const UnifiedEmailHub = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Use Template Dialog */}
-      <Dialog open={useTemplateDialogOpen} onOpenChange={setUseTemplateDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Send Email</DialogTitle>
-            <DialogDescription>
-              Send an email using the "{selectedTemplate?.name}" template.
-            </DialogDescription>
-          </DialogHeader>
-          <Tabs defaultValue="single" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="single">Single Recipient</TabsTrigger>
-              <TabsTrigger value="audience">Send to Audience</TabsTrigger>
-            </TabsList>
-            <TabsContent value="single" className="space-y-4 pt-4">
-              <div>
-                <Label htmlFor="recipient-name">Recipient Name</Label>
-                <Input
-                  id="recipient-name"
-                  value={recipientName}
-                  onChange={(e) => setRecipientName(e.target.value)}
-                  placeholder="John Smith"
-                />
-              </div>
-              <div>
-                <Label htmlFor="recipient-email">Recipient Email</Label>
-                <Input
-                  id="recipient-email"
-                  type="email"
-                  value={recipientEmail}
-                  onChange={(e) => setRecipientEmail(e.target.value)}
-                  placeholder="customer@email.com"
-                />
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setUseTemplateDialogOpen(false)}>Cancel</Button>
-                <Button onClick={sendEmailWithTemplate} disabled={!recipientEmail || sendingTest}>
-                  <Send className="w-4 h-4 mr-2" />
-                  {sendingTest ? 'Sending...' : 'Send Email'}
-                </Button>
-              </DialogFooter>
-            </TabsContent>
-            <TabsContent value="audience" className="space-y-4 pt-4">
-              <AudienceBulkSend 
-                selectedTemplate={selectedTemplate}
-                onClose={() => setUseTemplateDialogOpen(false)}
-              />
-            </TabsContent>
-          </Tabs>
-        </DialogContent>
-      </Dialog>
+      {/* Single email send is now inside the Edit Template dialog via AudienceBulkSend */}
 
       {/* Navigation Bar */}
       <div className="bg-white border rounded-lg p-2">
