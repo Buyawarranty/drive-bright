@@ -15,7 +15,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, Copy, FileText, User, Sparkles, FileSpreadsheet, Star, Ban, PoundSterling, FlaskConical, UserMinus } from 'lucide-react';
+import { Edit, Download, Search, RefreshCw, AlertCircle, CalendarIcon, Save, Key, Send, Clock, CheckCircle, Trash2, UserX, Phone, Mail, RotateCcw, Archive, ChevronDown, ChevronUp, Eye, Copy, FileText, User, Sparkles, FileSpreadsheet, Star, Ban, PoundSterling, FlaskConical, UserMinus, Printer } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -53,6 +53,7 @@ import { InlineFutureActivationEdit } from './InlineFutureActivationEdit';
 import { InlineUpgradeCell } from './InlineUpgradeCell';
 import { TrustpilotReviewDialog } from './TrustpilotReviewDialog';
 import { PurchaseSourceBadge } from './PurchaseSourceBadge';
+import { PrintableWarrantyLetter } from './PrintableWarrantyLetter';
 import { PaymentDueDatePicker } from './PaymentDueDatePicker';
 import { DateRangeFilter } from './DateRangeFilter';
 import { QuickCustomerSignupButton } from './QuickCustomerSignupButton';
@@ -339,6 +340,7 @@ export const CustomersTab = () => {
   const [credentialsLoading, setCredentialsLoading] = useState(false);
   const [sendingCredentials, setSendingCredentials] = useState(false);
   const [credentialsExpanded, setCredentialsExpanded] = useState(false);
+  const [isPrintLetterOpen, setIsPrintLetterOpen] = useState(false);
   const [cancelWarrantyDialog, setCancelWarrantyDialog] = useState<{
     isOpen: boolean;
     policy: {
@@ -2749,11 +2751,21 @@ export const CustomersTab = () => {
                             <div className="flex items-center justify-between">
                               <DialogTitle>Manage Customer: {selectedCustomer?.name}</DialogTitle>
                               {selectedCustomer && (
-                                <SendNotificationDialog 
-                                  customerId={selectedCustomer.id}
-                                  customerName={selectedCustomer.name}
-                                  customerEmail={selectedCustomer.email}
-                                />
+                                <div className="flex items-center gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setIsPrintLetterOpen(true)}
+                                  >
+                                    <Printer className="h-4 w-4 mr-1" />
+                                    Print Letter
+                                  </Button>
+                                  <SendNotificationDialog 
+                                    customerId={selectedCustomer.id}
+                                    customerName={selectedCustomer.name}
+                                    customerEmail={selectedCustomer.email}
+                                  />
+                                </div>
                               )}
                             </div>
                           </DialogHeader>
@@ -4601,6 +4613,39 @@ Please log in and change your password after first login.`;
           customerFirstName={trustpilotReviewCustomer.first_name}
           alreadyRequested={trustpilotReviewCustomer.trustpilot_review_requested}
           requestedAt={trustpilotReviewCustomer.trustpilot_review_requested_at}
+        />
+      )}
+
+      {/* Print Warranty Letter Dialog */}
+      {editingCustomer && (
+        <PrintableWarrantyLetter
+          open={isPrintLetterOpen}
+          onOpenChange={setIsPrintLetterOpen}
+          policy={{
+            customerName: editingCustomer.name || '',
+            customerEmail: editingCustomer.email,
+            customerAddress: {
+              flatNumber: editingCustomer.flat_number || undefined,
+              buildingName: editingCustomer.building_name || undefined,
+              buildingNumber: editingCustomer.building_number || undefined,
+              street: editingCustomer.street || undefined,
+              town: editingCustomer.town || undefined,
+              county: editingCustomer.county || undefined,
+              postcode: editingCustomer.postcode || undefined,
+            },
+            vehicleReg: editingCustomer.registration_plate || '',
+            vehicleMake: editingCustomer.vehicle_make || undefined,
+            vehicleModel: editingCustomer.vehicle_model || undefined,
+            vehicleYear: editingCustomer.vehicle_year || undefined,
+            mileage: editingCustomer.mileage || undefined,
+            warrantyNumber: editingCustomer.warranty_number || '',
+            policyNumber: editingCustomer.customer_policies?.[0]?.policy_number || '',
+            planType: editingCustomer.plan_type || '',
+            policyStartDate: editingCustomer.customer_policies?.[0]?.policy_start_date || editingCustomer.signup_date || '',
+            policyEndDate: editingCustomer.customer_policies?.[0]?.policy_end_date || '',
+            claimLimit: editingCustomer.claim_limit || undefined,
+            voluntaryExcess: editingCustomer.voluntary_excess || undefined,
+          }}
         />
       )}
     </div>
