@@ -122,8 +122,7 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({ recipients
 
         if (filter === 'unpaid_visitors') {
           query = query.eq('source_type', 'sales_lead')
-            .not('lead_status', 'in', '(converted,cancelled,refunded,fake_lead,lost)')
-            .or('lead_status.is.null');
+            .or('lead_status.is.null,lead_status.not.in.(converted,cancelled,refunded,fake_lead,lost)');
         } else if (filter.startsWith('status_')) {
           query = query.eq('lead_status', filter.replace('status_', ''));
         } else if (filter !== 'all') {
