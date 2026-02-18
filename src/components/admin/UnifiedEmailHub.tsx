@@ -935,9 +935,12 @@ const UnifiedEmailHub = () => {
       while (hasMore) {
         let query = supabase.from('marketing_audience').select('*').order('synced_at', { ascending: false }).range(from, from + PAGE_SIZE - 1);
         
-        if (marketingFilter !== 'all') {
-          query = query.eq('source_type', marketingFilter);
-        }
+      if (marketingFilter.startsWith('status_')) {
+        const status = marketingFilter.replace('status_', '');
+        query = query.eq('lead_status', status);
+      } else if (marketingFilter !== 'all') {
+        query = query.eq('source_type', marketingFilter);
+      }
         
         const { data, error } = await query;
         if (error) throw error;
@@ -1157,8 +1160,13 @@ const UnifiedEmailHub = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Contacts</SelectItem>
-                <SelectItem value="abandoned_cart">Abandoned Cart</SelectItem>
                 <SelectItem value="sales_lead">Sales Leads</SelectItem>
+                <SelectItem value="abandoned_cart">Abandoned Cart</SelectItem>
+                <SelectItem value="status_converted">Customers (Paid)</SelectItem>
+                <SelectItem value="status_cancelled">Cancelled</SelectItem>
+                <SelectItem value="status_refunded">Refunded</SelectItem>
+                <SelectItem value="status_fake_lead">Fake Lead</SelectItem>
+                <SelectItem value="status_lost">Lost</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" onClick={loadMarketingContacts} disabled={importingMarketing}>
