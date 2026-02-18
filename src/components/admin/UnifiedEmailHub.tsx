@@ -1530,6 +1530,15 @@ const UnifiedEmailHub = () => {
                 placeholder="Email subject line"
               />
             </div>
+
+            {/* To: Recipients Section - moved up for visibility */}
+            <Separator />
+            <RecipientSelector
+              recipients={templateRecipients}
+              onChange={setTemplateRecipients}
+            />
+            <Separator />
+
             <div>
               <Label htmlFor="from_email">From Email</Label>
               <Input
@@ -1556,13 +1565,6 @@ const UnifiedEmailHub = () => {
                 onChange={(val) => setFormData({ ...formData, content: val })}
               />
             </div>
-            
-            {/* To: Recipients Section */}
-            <Separator />
-            <RecipientSelector
-              recipients={templateRecipients}
-              onChange={setTemplateRecipients}
-            />
 
             {/* Send button */}
             {templateRecipients.length > 0 && (
