@@ -17,7 +17,7 @@ import {
   Mail, Users, TrendingUp, Calendar, Brain, History, Shield, Zap, 
   Plus, Edit, Eye, Send, Download, Search, RefreshCw, CheckCircle, 
   XCircle, Clock, BarChart3, Tag, Filter, Settings, Play, Pause,
-  Trash2, Copy, LayoutTemplate, Megaphone, UserCheck, Activity, ShoppingCart
+  Trash2, Copy, LayoutTemplate, Megaphone, UserCheck, Activity, ShoppingCart, Loader2
 } from 'lucide-react';
 import { AIEmailSuggestions } from './email/AIEmailSuggestions';
 import { RichTextEmailEditor } from './email/RichTextEmailEditor';
@@ -25,7 +25,7 @@ import { TestEmailFunctionDirect } from "./TestEmailFunctionDirect";
 import { TestAutomatedEmail } from "./TestAutomatedEmail";
 import { EmailFunctionDiagnostics } from "./EmailFunctionDiagnostics";
 import { ResendWelcomeEmailTool } from "./ResendWelcomeEmailTool";
-import { AudienceBulkSend } from "./email/AudienceBulkSend";
+import { RecipientSelector } from "./email/RecipientSelector";
 
 interface EmailTemplate {
   id: string;
@@ -307,6 +307,9 @@ const UnifiedEmailHub = () => {
   const [sendingTest, setSendingTest] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState('');
   const [recipientName, setRecipientName] = useState('');
+  const [templateRecipients, setTemplateRecipients] = useState<{email: string; name: string}[]>([]);
+  const [sendingBulk, setSendingBulk] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState(0);
 
   const handleSendTestEmail = (template: EmailTemplate) => {
     setSelectedTemplate(template);
@@ -1562,19 +1565,62 @@ const UnifiedEmailHub = () => {
               />
             </div>
             
-            {/* Audience / Send To Section */}
+            {/* To: Recipients Section */}
             <Separator />
-            <div className="space-y-3">
-              <Label className="text-base font-semibold flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Send To Audience
-              </Label>
-              <p className="text-xs text-muted-foreground">Select a segment from your Marketing Audience to send this template to.</p>
-              <AudienceBulkSend 
-                selectedTemplate={selectedTemplate ? { id: selectedTemplate.id, name: selectedTemplate.name, template_type: selectedTemplate.template_type } : null}
-                onClose={() => setIsEditing(false)}
-              />
-            </div>
+            <RecipientSelector
+              recipients={templateRecipients}
+              onChange={setTemplateRecipients}
+            />
+
+            {/* Send button */}
+            {templateRecipients.length > 0 && (
+              <div className="space-y-2">
+                {sendingBulk && (
+                  <div className="p-3 rounded-lg border bg-muted/50">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Sending... {bulkProgress} / {templateRecipients.length}
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2 mt-2">
+                      <div className="bg-primary h-2 rounded-full transition-all" style={{ width: `${(bulkProgress / templateRecipients.length) * 100}%` }} />
+                    </div>
+                  </div>
+                )}
+                <Button
+                  className="w-full"
+                  disabled={sendingBulk}
+                  onClick={async () => {
+                    if (!selectedTemplate) return;
+                    setSendingBulk(true);
+                    setBulkProgress(0);
+                    let sent = 0, failed = 0;
+                    for (const r of templateRecipients) {
+                      try {
+                        const { error } = await supabase.functions.invoke('send-email', {
+                          body: {
+                            templateId: selectedTemplate.template_type,
+                            recipientEmail: r.email,
+                            variables: {
+                              firstName: r.name ? r.name.split(' ')[0] : 'Customer',
+                              customerName: r.name || 'Customer',
+                              policyNumber: '', planType: '', vehicleReg: ''
+                            }
+                          }
+                        });
+                        if (error) failed++; else sent++;
+                      } catch { failed++; }
+                      setBulkProgress(sent + failed);
+                    }
+                    toast.success(`Sent ${sent} emails${failed > 0 ? `, ${failed} failed` : ''}`);
+                    setSendingBulk(false);
+                    loadEmailLogs();
+                  }}
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  {sendingBulk ? `Sending (${bulkProgress}/${templateRecipients.length})...` : `Send to ${templateRecipients.length} Recipients`}
+                </Button>
+              </div>
+            )}
 
             <Separator />
             <div className="flex items-center gap-2">
