@@ -3217,14 +3217,16 @@ Please log in and change your password after first login.`;
                                         />
                                       </div>
                                       <div>
-                                        <Label htmlFor="edit-final-amount">Final Amount (£)</Label>
+                                        <Label htmlFor="edit-final-amount">Total Amount Paid (£)</Label>
                                         <Input
                                           id="edit-final-amount"
                                           type="number"
                                           step="0.01"
+                                          placeholder="e.g. 396 (full amount, not monthly)"
                                           value={editingCustomer.final_amount || ''}
                                           onChange={(e) => setEditingCustomer({ ...editingCustomer, final_amount: Number(e.target.value) })}
                                         />
+                                        <p className="text-xs text-muted-foreground mt-1">Enter the total amount paid, not the monthly price</p>
                                       </div>
                                       <div>
                                         <Label htmlFor="edit-discount-code">Discount Code</Label>
