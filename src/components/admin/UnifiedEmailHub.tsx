@@ -379,17 +379,27 @@ const UnifiedEmailHub = () => {
     
     setSendingTest(true);
     try {
+      const sendVars = {
+        firstName: recipientName.split(' ')[0] || recipientName || 'Customer',
+        customerName: recipientName || 'Customer',
+        customerFirstName: recipientName.split(' ')[0] || recipientName || 'Customer',
+        policyNumber: '',
+        planType: '',
+        vehicleReg: ''
+      };
+      
+      let processedSubject = selectedTemplate.subject || 'Message from Buy A Warranty';
+      for (const [key, value] of Object.entries(sendVars)) {
+        processedSubject = processedSubject.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+      }
+
       const { error } = await supabase.functions.invoke('send-email', {
         body: {
-          templateId: selectedTemplate.template_type,
+          templateId: selectedTemplate.template_type || undefined,
+          templateDbId: selectedTemplate.id,
           recipientEmail: recipientEmail,
-          variables: {
-            firstName: recipientName.split(' ')[0] || recipientName,
-            customerName: recipientName || 'Customer',
-            policyNumber: '',
-            planType: '',
-            vehicleReg: ''
-          }
+          customSubject: processedSubject,
+          variables: sendVars
         }
       });
       
@@ -1609,15 +1619,25 @@ const UnifiedEmailHub = () => {
                     let sent = 0, failed = 0;
                     for (const r of templateRecipients) {
                       try {
+                        const bulkVars = {
+                          firstName: r.name ? r.name.split(' ')[0] : 'Customer',
+                          customerName: r.name || 'Customer',
+                          customerFirstName: r.name ? r.name.split(' ')[0] : 'Customer',
+                          policyNumber: '', planType: '', vehicleReg: ''
+                        };
+                        
+                        let bulkSubject = selectedTemplate.subject || 'Message from Buy A Warranty';
+                        for (const [key, value] of Object.entries(bulkVars)) {
+                          bulkSubject = bulkSubject.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+                        }
+
                         const { error } = await supabase.functions.invoke('send-email', {
                           body: {
-                            templateId: selectedTemplate.template_type,
+                            templateId: selectedTemplate.template_type || undefined,
+                            templateDbId: selectedTemplate.id,
                             recipientEmail: r.email,
-                            variables: {
-                              firstName: r.name ? r.name.split(' ')[0] : 'Customer',
-                              customerName: r.name || 'Customer',
-                              policyNumber: '', planType: '', vehicleReg: ''
-                            }
+                            customSubject: bulkSubject,
+                            variables: bulkVars
                           }
                         });
                         if (error) failed++; else sent++;
