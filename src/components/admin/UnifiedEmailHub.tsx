@@ -75,7 +75,7 @@ const UnifiedEmailHub = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
   const [analytics, setAnalytics] = useState<any[]>([]);
-  const [consents, setConsents] = useState<any[]>([]);
+  const [consents] = useState<any[]>([]);
   const [scheduledEmails, setScheduledEmails] = useState<any[]>([]);
   const [segments, setSegments] = useState<any[]>([]);
   
@@ -185,14 +185,13 @@ const UnifiedEmailHub = () => {
   };
 
   const loadConsents = async () => {
-    const { data, error } = await supabase
-      .from('email_consents')
-      .select('*')
-      .order('consent_date', { ascending: false });
+    // Load audience count from marketing_audience
+    const { count, error } = await supabase
+      .from('marketing_audience')
+      .select('*', { count: 'exact', head: true });
     
-    if (!error && data) {
-      setConsents(data);
-      setTotalSubscribers(data.filter(c => c.consent_given && !c.unsubscribed_at).length);
+    if (!error) {
+      setTotalSubscribers(count || 0);
     }
   };
 
@@ -865,68 +864,21 @@ const UnifiedEmailHub = () => {
     </div>
   );
 
-  // Audience View with bulk upload & marketing import
-  const [csvUploading, setCsvUploading] = useState(false);
-  const [importingMarketing, setImportingMarketing] = useState(false);
-  const [marketingFilter, setMarketingFilter] = useState<string>('all');
-  const [marketingContacts, setMarketingContacts] = useState<any[]>([]);
-  const [showImportDialog, setShowImportDialog] = useState(false);
-  const [selectedMarketingContacts, setSelectedMarketingContacts] = useState<Set<string>>(new Set());
-  const [importedCount, setImportedCount] = useState(0);
+  // Audience View - directly from marketing_audience
+  const [audienceFilter, setAudienceFilter] = useState<string>('all');
+  const [audienceContacts, setAudienceContacts] = useState<any[]>([]);
+  const [audienceLoading, setAudienceLoading] = useState(false);
+  const [audienceSearch, setAudienceSearch] = useState('');
+  const [audienceStats, setAudienceStats] = useState({ total: 0, salesLeads: 0, abandonedCarts: 0, withEmail: 0 });
 
-  const handleCsvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    setCsvUploading(true);
-    try {
-      const text = await file.text();
-      const lines = text.split('\n').filter(l => l.trim());
-      const headers = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g, ''));
-      
-      const emailIdx = headers.findIndex(h => h === 'email' || h === 'email address' || h === 'e-mail');
-      if (emailIdx === -1) {
-        toast.error('CSV must contain an "email" column');
-        return;
-      }
-      
-      let added = 0;
-      const errors: string[] = [];
-      
-      for (let i = 1; i < lines.length; i++) {
-        const cols = lines[i].split(',').map(c => c.trim().replace(/"/g, ''));
-        const email = cols[emailIdx]?.toLowerCase().trim();
-        
-        if (!email || !email.includes('@')) continue;
-        
-        const { error } = await supabase.from('email_consents').upsert({
-          email,
-          consent_given: true,
-          source: `csv_upload_${file.name}`,
-          consent_date: new Date().toISOString(),
-        }, { onConflict: 'email' });
-        
-        if (error) {
-          errors.push(email);
-        } else {
-          added++;
-        }
-      }
-      
-      toast.success(`Imported ${added} email addresses${errors.length > 0 ? ` (${errors.length} failed)` : ''}`);
-      setImportedCount(added);
-      loadConsents();
-    } catch (err) {
-      console.error('CSV upload error:', err);
-      toast.error('Failed to process CSV file');
-    } finally {
-      setCsvUploading(false);
-      e.target.value = '';
+  useEffect(() => {
+    if (activeView === 'audience') {
+      loadAudienceContacts();
     }
-  };
+  }, [activeView, audienceFilter]);
 
-  const loadMarketingContacts = async () => {
-    setImportingMarketing(true);
+  const loadAudienceContacts = async () => {
+    setAudienceLoading(true);
     try {
       let allData: any[] = [];
       const PAGE_SIZE = 1000;
@@ -936,12 +888,12 @@ const UnifiedEmailHub = () => {
       while (hasMore) {
         let query = supabase.from('marketing_audience').select('*').order('synced_at', { ascending: false }).range(from, from + PAGE_SIZE - 1);
         
-      if (marketingFilter.startsWith('status_')) {
-        const status = marketingFilter.replace('status_', '');
-        query = query.eq('lead_status', status);
-      } else if (marketingFilter !== 'all') {
-        query = query.eq('source_type', marketingFilter);
-      }
+        if (audienceFilter.startsWith('status_')) {
+          const status = audienceFilter.replace('status_', '');
+          query = query.eq('lead_status', status);
+        } else if (audienceFilter !== 'all') {
+          query = query.eq('source_type', audienceFilter);
+        }
         
         const { data, error } = await query;
         if (error) throw error;
@@ -951,261 +903,147 @@ const UnifiedEmailHub = () => {
         from += PAGE_SIZE;
       }
 
-      setMarketingContacts(allData);
-    } catch (err) {
-      console.error('Error loading marketing contacts:', err);
-      toast.error('Failed to load marketing contacts');
-    } finally {
-      setImportingMarketing(false);
-    }
-  };
-
-  const handleImportSelected = async () => {
-    if (selectedMarketingContacts.size === 0) {
-      toast.error('Select at least one contact to import');
-      return;
-    }
-    
-    setImportingMarketing(true);
-    let added = 0;
-    
-    try {
-      for (const contactId of selectedMarketingContacts) {
-        const contact = marketingContacts.find(c => c.lead_id === contactId);
-        if (!contact?.email) continue;
-        
-        const { error } = await supabase.from('email_consents').upsert({
-          email: contact.email.toLowerCase().trim(),
-          consent_given: true,
-          source: `marketing_import_${contact.source_type || 'unknown'}`,
-          consent_date: new Date().toISOString(),
-        }, { onConflict: 'email' });
-        
-        if (!error) added++;
-      }
+      setAudienceContacts(allData);
       
-      toast.success(`Imported ${added} contacts to email audience`);
-      setShowImportDialog(false);
-      setSelectedMarketingContacts(new Set());
-      loadConsents();
+      // Calculate stats
+      const total = allData.length;
+      const salesLeads = allData.filter(c => c.source_type === 'sales_lead').length;
+      const abandonedCarts = allData.filter(c => c.source_type === 'abandoned_cart').length;
+      const withEmail = allData.filter(c => c.email).length;
+      setAudienceStats({ total, salesLeads, abandonedCarts, withEmail });
     } catch (err) {
-      toast.error('Failed to import contacts');
+      console.error('Error loading audience:', err);
+      toast.error('Failed to load audience contacts');
     } finally {
-      setImportingMarketing(false);
+      setAudienceLoading(false);
     }
   };
 
-  const handleImportAll = async () => {
-    setImportingMarketing(true);
-    let added = 0;
-    
+  const handleSyncAudience = async () => {
+    setAudienceLoading(true);
     try {
-      for (const contact of marketingContacts) {
-        if (!contact?.email) continue;
-        
-        const { error } = await supabase.from('email_consents').upsert({
-          email: contact.email.toLowerCase().trim(),
-          consent_given: true,
-          source: `marketing_import_${contact.source_type || 'unknown'}`,
-          consent_date: new Date().toISOString(),
-        }, { onConflict: 'email' });
-        
-        if (!error) added++;
-      }
-      
-      toast.success(`Imported ${added} contacts to email audience`);
-      setShowImportDialog(false);
-      loadConsents();
+      const { data, error } = await supabase.rpc('sync_leads_to_marketing_audience');
+      if (error) throw error;
+      toast.success('Audience synced successfully');
+      loadAudienceContacts();
+      loadConsents(); // refresh subscriber count
     } catch (err) {
-      toast.error('Failed to import contacts');
+      toast.error('Failed to sync audience');
     } finally {
-      setImportingMarketing(false);
+      setAudienceLoading(false);
     }
   };
 
-  const toggleSelectContact = (id: string) => {
-    setSelectedMarketingContacts(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedMarketingContacts.size === marketingContacts.length) {
-      setSelectedMarketingContacts(new Set());
-    } else {
-      setSelectedMarketingContacts(new Set(marketingContacts.map(c => c.lead_id)));
-    }
-  };
+  const filteredAudienceContacts = audienceContacts.filter(c => {
+    if (!audienceSearch) return true;
+    const search = audienceSearch.toLowerCase();
+    return (c.email?.toLowerCase().includes(search) || 
+            c.full_name?.toLowerCase().includes(search) || 
+            c.reg_plate?.toLowerCase().includes(search) ||
+            c.phone?.toLowerCase().includes(search));
+  });
 
   const AudienceView = () => (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Audience Management</h2>
-          <p className="text-muted-foreground">Manage subscribers, upload contacts, and import from marketing</p>
+          <p className="text-muted-foreground">All contacts from your Marketing Audience — unified mailing list</p>
         </div>
         <div className="flex items-center gap-2">
-          <label className="cursor-pointer">
-            <input type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={handleCsvUpload} disabled={csvUploading} />
-            <Button variant="outline" asChild disabled={csvUploading}>
-              <span>
-                <Download className="w-4 h-4 mr-2" />
-                {csvUploading ? 'Uploading...' : 'Upload CSV/Excel'}
-              </span>
-            </Button>
-          </label>
-          <Button onClick={() => { setShowImportDialog(true); loadMarketingContacts(); }}>
-            <UserCheck className="w-4 h-4 mr-2" />
-            Import from Marketing
+          <Button variant="outline" onClick={handleSyncAudience} disabled={audienceLoading}>
+            <RefreshCw className={`w-4 h-4 mr-2 ${audienceLoading ? 'animate-spin' : ''}`} />
+            Sync Now
           </Button>
         </div>
       </div>
 
-      <Tabs defaultValue="subscribers" className="w-full">
-        <TabsList>
-          <TabsTrigger value="subscribers">Subscribers ({totalSubscribers})</TabsTrigger>
-          <TabsTrigger value="segments">Segments ({segments.length})</TabsTrigger>
-          <TabsTrigger value="consents">Consents</TabsTrigger>
-        </TabsList>
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground">Total Audience</p>
+            <p className="text-2xl font-bold">{audienceStats.total.toLocaleString()}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground">With Email</p>
+            <p className="text-2xl font-bold text-green-600">{audienceStats.withEmail.toLocaleString()}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground">Sales Leads</p>
+            <p className="text-2xl font-bold text-blue-600">{audienceStats.salesLeads.toLocaleString()}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground">Abandoned Carts</p>
+            <p className="text-2xl font-bold text-orange-600">{audienceStats.abandonedCarts.toLocaleString()}</p>
+          </CardContent>
+        </Card>
+      </div>
 
-        <TabsContent value="subscribers" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Active Subscribers</CardTitle>
-              <CardDescription>Manage your email subscriber list — upload CSV or import from Marketing Contacts</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {consents.filter(c => c.consent_given && !c.unsubscribed_at).slice(0, 50).map((consent) => (
-                  <div key={consent.id} className="flex items-center justify-between p-3 rounded-lg border">
-                    <div>
-                      <p className="font-medium">{consent.email}</p>
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs text-muted-foreground">
-                          Subscribed: {new Date(consent.consent_date).toLocaleDateString()}
-                        </p>
-                        {consent.source && (
-                          <Badge variant="secondary" className="text-xs">{consent.source}</Badge>
-                        )}
-                      </div>
-                    </div>
-                    {getStatusBadge('Active')}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+      {/* Filters & Search */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input 
+            placeholder="Search by email, name, phone, reg..." 
+            value={audienceSearch} 
+            onChange={e => setAudienceSearch(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Select value={audienceFilter} onValueChange={(v) => { setAudienceFilter(v); }}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Contacts</SelectItem>
+            <SelectItem value="sales_lead">Sales Leads</SelectItem>
+            <SelectItem value="abandoned_cart">Abandoned Cart</SelectItem>
+            <SelectItem value="status_converted">Customers (Paid)</SelectItem>
+            <SelectItem value="status_cancelled">Cancelled</SelectItem>
+            <SelectItem value="status_refunded">Refunded</SelectItem>
+            <SelectItem value="status_fake_lead">Fake Lead</SelectItem>
+            <SelectItem value="status_lost">Lost</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button variant="outline" size="sm" onClick={loadAudienceContacts} disabled={audienceLoading}>
+          <RefreshCw className={`w-4 h-4 mr-2 ${audienceLoading ? 'animate-spin' : ''}`} />
+          Load
+        </Button>
+      </div>
 
-        <TabsContent value="segments">
-          <Card>
-            <CardHeader>
-              <CardTitle>Subscriber Segments</CardTitle>
-              <CardDescription>Organize subscribers into targeted groups</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Segment management coming soon...</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="consents">
-          <Card>
-            <CardHeader>
-              <CardTitle>GDPR & Consent Management</CardTitle>
-              <CardDescription>Track opt-ins, unsubscribes, and compliance</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="p-4 rounded-lg border bg-green-50">
-                  <p className="text-2xl font-bold text-green-700">
-                    {consents.filter(c => c.consent_given && !c.unsubscribed_at).length}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Active Consents</p>
-                </div>
-                <div className="p-4 rounded-lg border bg-red-50">
-                  <p className="text-2xl font-bold text-red-700">
-                    {consents.filter(c => c.unsubscribed_at).length}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Unsubscribed</p>
-                </div>
-                <div className="p-4 rounded-lg border bg-blue-50">
-                  <p className="text-2xl font-bold text-blue-700">
-                    {consents.filter(c => c.double_opt_in).length}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Double Opt-In</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      {/* Import from Marketing Dialog */}
-      <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
-        <DialogContent className="max-w-2xl max-h-[80vh]">
-          <DialogHeader>
-            <DialogTitle>Import from Marketing Contacts</DialogTitle>
-            <DialogDescription>
-              Select contacts from your Marketing Audience to add to the email subscriber list
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="flex items-center gap-3 mb-4">
-            <Label>Filter by:</Label>
-            <Select value={marketingFilter} onValueChange={(v) => { setMarketingFilter(v); }}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Contacts</SelectItem>
-                <SelectItem value="sales_lead">Sales Leads</SelectItem>
-                <SelectItem value="abandoned_cart">Abandoned Cart</SelectItem>
-                <SelectItem value="status_converted">Customers (Paid)</SelectItem>
-                <SelectItem value="status_cancelled">Cancelled</SelectItem>
-                <SelectItem value="status_refunded">Refunded</SelectItem>
-                <SelectItem value="status_fake_lead">Fake Lead</SelectItem>
-                <SelectItem value="status_lost">Lost</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline" size="sm" onClick={loadMarketingContacts} disabled={importingMarketing}>
-              <RefreshCw className={`w-4 h-4 mr-2 ${importingMarketing ? 'animate-spin' : ''}`} />
-              Load
-            </Button>
-          </div>
-
-          <ScrollArea className="h-[400px] border rounded-lg">
-            {marketingContacts.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-muted-foreground p-8">
-                {importingMarketing ? 'Loading contacts...' : 'No contacts found. Click "Load" to fetch marketing contacts.'}
-              </div>
-            ) : (
-              <div className="p-2">
-                <div className="flex items-center gap-2 p-2 border-b mb-2 sticky top-0 bg-background z-10">
-                  <input 
-                    type="checkbox" 
-                    checked={selectedMarketingContacts.size === marketingContacts.length && marketingContacts.length > 0}
-                    onChange={toggleSelectAll}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm font-medium">
-                    Select All ({marketingContacts.length} contacts) — {selectedMarketingContacts.size} selected
-                  </span>
-                </div>
-                {marketingContacts.map((contact) => (
-                  <div key={contact.lead_id} className="flex items-center gap-3 p-2 hover:bg-muted/50 rounded">
-                    <input 
-                      type="checkbox" 
-                      checked={selectedMarketingContacts.has(contact.lead_id)}
-                      onChange={() => toggleSelectContact(contact.lead_id)}
-                      className="w-4 h-4"
-                    />
+      {/* Contact List */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Contacts ({filteredAudienceContacts.length.toLocaleString()})</CardTitle>
+          <CardDescription>Showing contacts from the Marketing Audience table</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {audienceLoading ? (
+            <div className="flex items-center justify-center py-12 text-muted-foreground">
+              <RefreshCw className="w-5 h-5 animate-spin mr-2" /> Loading contacts...
+            </div>
+          ) : audienceContacts.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p>No contacts loaded yet. Click "Load" to fetch from Marketing Audience.</p>
+            </div>
+          ) : (
+            <ScrollArea className="h-[500px]">
+              <div className="space-y-1">
+                {filteredAudienceContacts.slice(0, 200).map((contact) => (
+                  <div key={contact.id || contact.lead_id} className="flex items-center gap-3 p-3 hover:bg-muted/50 rounded-lg border">
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{contact.email || 'No email'}</p>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">{contact.full_name || '—'}</span>
+                        {contact.phone && <span className="text-xs text-muted-foreground">• {contact.phone}</span>}
                         {contact.reg_plate && <span className="text-xs text-muted-foreground">• {contact.reg_plate}</span>}
                       </div>
                     </div>
@@ -1217,23 +1055,16 @@ const UnifiedEmailHub = () => {
                     )}
                   </div>
                 ))}
+                {filteredAudienceContacts.length > 200 && (
+                  <p className="text-center text-sm text-muted-foreground py-4">
+                    Showing 200 of {filteredAudienceContacts.length.toLocaleString()} contacts. Use search to find specific contacts.
+                  </p>
+                )}
               </div>
-            )}
-          </ScrollArea>
-
-          <DialogFooter className="flex justify-between">
-            <Button variant="outline" onClick={() => setShowImportDialog(false)}>Cancel</Button>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleImportAll} disabled={importingMarketing || marketingContacts.length === 0}>
-                Import All ({marketingContacts.length})
-              </Button>
-              <Button onClick={handleImportSelected} disabled={importingMarketing || selectedMarketingContacts.size === 0}>
-                {importingMarketing ? 'Importing...' : `Import Selected (${selectedMarketingContacts.size})`}
-              </Button>
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </ScrollArea>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 
