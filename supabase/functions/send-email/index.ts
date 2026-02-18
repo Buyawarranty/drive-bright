@@ -129,7 +129,7 @@ serve(async (req) => {
     const requestBody = await req.json();
     logStep("Request body received", requestBody);
     
-    const { templateId, recipientEmail, variables, attachments, customSubject, customHtml } = requestBody;
+    const { templateId, templateDbId, recipientEmail, variables, attachments, customSubject, customHtml } = requestBody;
     
     logStep("Request received", { 
       templateId, 
@@ -256,21 +256,39 @@ serve(async (req) => {
           </div>
         </body>
         </html>`;
-    } else if (!customHtml && templateId) {
+    } else if (!customHtml && (templateId || templateDbId)) {
       // Fetch template from database and render it
-      logStep("Fetching template from database", { templateId });
+      logStep("Fetching template from database", { templateId, templateDbId });
       
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
       const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
       const supabaseClient = createClient(supabaseUrl, supabaseKey);
       
-      const { data: template, error: templateError } = await supabaseClient
-        .from('email_templates')
-        .select('*')
-        .eq('template_type', templateId)
-        .eq('is_active', true)
-        .limit(1)
-        .maybeSingle();
+      let template = null;
+      let templateError = null;
+
+      // Try lookup by DB id first, then by template_type
+      if (templateDbId) {
+        const result = await supabaseClient
+          .from('email_templates')
+          .select('*')
+          .eq('id', templateDbId)
+          .maybeSingle();
+        template = result.data;
+        templateError = result.error;
+      }
+      
+      if (!template && templateId) {
+        const result = await supabaseClient
+          .from('email_templates')
+          .select('*')
+          .eq('template_type', templateId)
+          .eq('is_active', true)
+          .limit(1)
+          .maybeSingle();
+        template = result.data;
+        templateError = result.error;
+      }
       
       if (templateError) {
         logStep("Template fetch error", templateError);

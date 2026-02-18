@@ -329,17 +329,36 @@ const UnifiedEmailHub = () => {
     
     setSendingTest(true);
     try {
+      // Parse template content to get greeting and body
+      const templateContent = typeof selectedTemplate.content === 'string' 
+        ? JSON.parse(selectedTemplate.content) 
+        : selectedTemplate.content;
+      
+      const greeting = (templateContent as any)?.greeting || 'Hi there,';
+      const bodyContent = (templateContent as any)?.content || '';
+      
+      // Replace variables in subject
+      const testVariables = {
+        firstName: 'Test',
+        customerName: 'Test Customer',
+        customerFirstName: 'Test',
+        policyNumber: 'TEST-123456',
+        planType: 'Gold Plan',
+        vehicleReg: 'AB12 CDE'
+      };
+      
+      let processedSubject = selectedTemplate.subject || 'Test Email';
+      for (const [key, value] of Object.entries(testVariables)) {
+        processedSubject = processedSubject.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+      }
+
       const { error } = await supabase.functions.invoke('send-email', {
         body: {
-          templateId: selectedTemplate.template_type,
+          templateId: selectedTemplate.template_type || undefined,
+          templateDbId: selectedTemplate.id,
           recipientEmail: testEmailAddress,
-          variables: {
-            firstName: 'Test',
-            customerName: 'Test Customer',
-            policyNumber: 'TEST-123456',
-            planType: 'Gold Plan',
-            vehicleReg: 'AB12 CDE'
-          }
+          customSubject: processedSubject,
+          variables: testVariables
         }
       });
       
