@@ -101,6 +101,14 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
   const [agentToDelete, setAgentToDelete] = useState<{ id: string; name: string; leadCount: number } | null>(null);
   const [reassignTargetAgent, setReassignTargetAgent] = useState<string>('');
 
+  // Bulk reassign dialog state (for absent agents)
+  const [bulkReassignOpen, setBulkReassignOpen] = useState(false);
+  const [bulkSourceAgent, setBulkSourceAgent] = useState<string>('');
+  const [bulkTargetAgent, setBulkTargetAgent] = useState<string>('');
+  const [bulkDateRange, setBulkDateRange] = useState<DateRange | undefined>(undefined);
+  const [bulkReassigning, setBulkReassigning] = useState(false);
+  const [bulkCalendarOpen, setBulkCalendarOpen] = useState(false);
+
   // Lead distribution hook for agent caps
   const {
     settings,
@@ -333,6 +341,66 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
       return `${agent.first_name} ${agent.last_name || ''}`.trim();
     }
     return agent.email;
+  };
+
+  // Bulk reassign leads from one agent to another
+  const bulkSourceLeadCount = useMemo(() => {
+    if (!bulkSourceAgent) return 0;
+    let sourceLeads = leads.filter(l => l.assigned_to === bulkSourceAgent);
+    if (bulkDateRange?.from) {
+      sourceLeads = sourceLeads.filter(lead => {
+        const leadDate = new Date(lead.created_at);
+        const from = bulkDateRange.from!;
+        const to = bulkDateRange.to || endOfDay(new Date());
+        return isWithinInterval(leadDate, { start: from, end: to });
+      });
+    }
+    return sourceLeads.length;
+  }, [bulkSourceAgent, leads, bulkDateRange]);
+
+  const handleBulkReassign = async () => {
+    if (!bulkSourceAgent || !bulkTargetAgent || bulkSourceAgent === bulkTargetAgent) return;
+    
+    setBulkReassigning(true);
+    try {
+      let query = supabase
+        .from('sales_leads')
+        .update({ assigned_to: bulkTargetAgent, updated_at: new Date().toISOString() })
+        .eq('assigned_to', bulkSourceAgent);
+      
+      // Apply date filter if set
+      if (bulkDateRange?.from) {
+        query = query.gte('created_at', bulkDateRange.from.toISOString());
+        if (bulkDateRange.to) {
+          query = query.lte('created_at', endOfDay(bulkDateRange.to).toISOString());
+        }
+      }
+
+      const { error, count } = await query;
+      if (error) throw error;
+
+      const sourceAgent = salesUsers.find(u => u.id === bulkSourceAgent);
+      const targetAgent = salesUsers.find(u => u.id === bulkTargetAgent);
+      
+      toast({
+        title: 'Leads reassigned',
+        description: `${bulkSourceLeadCount} leads from ${getAgentName(sourceAgent)} reassigned to ${getAgentName(targetAgent)}.`,
+      });
+
+      setBulkReassignOpen(false);
+      setBulkSourceAgent('');
+      setBulkTargetAgent('');
+      setBulkDateRange(undefined);
+    } catch (error) {
+      console.error('Bulk reassign error:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to reassign leads. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setBulkReassigning(false);
+    }
   };
 
   // Find unconfigured agents
@@ -686,6 +754,136 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
         </DialogContent>
       </Dialog>
 
+      {/* Bulk Reassign Dialog */}
+      <Dialog open={bulkReassignOpen} onOpenChange={setBulkReassignOpen}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ArrowRight className="h-5 w-5 text-primary" />
+              Reassign Agent's Leads
+            </DialogTitle>
+            <DialogDescription>
+              Transfer all leads from one agent to another. Use this when an agent is off sick or absent.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {/* Source Agent */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">From (absent agent)</Label>
+              <Select value={bulkSourceAgent} onValueChange={(v) => { setBulkSourceAgent(v); setBulkTargetAgent(''); }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select agent to reassign from" />
+                </SelectTrigger>
+                <SelectContent>
+                  {salesUsers.map(user => {
+                    const agentLeadCount = leads.filter(l => l.assigned_to === user.id).length;
+                    return (
+                      <SelectItem key={user.id} value={user.id}>
+                        <div className="flex items-center gap-2">
+                          <PresenceBadge status={getAgentPresenceStatus(user.id)} size="sm" />
+                          <span>{getAgentName(user)}</span>
+                          <Badge variant="secondary" className="text-[10px] ml-1">{agentLeadCount} leads</Badge>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Date Range (optional) */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Date range <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <div className="flex items-center gap-2">
+                <Popover open={bulkCalendarOpen} onOpenChange={setBulkCalendarOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="w-full justify-start text-left font-normal">
+                      <CalendarIcon className="h-4 w-4 mr-2" />
+                      {bulkDateRange?.from ? (
+                        bulkDateRange.to ? (
+                          `${format(bulkDateRange.from, 'dd MMM yyyy')} - ${format(bulkDateRange.to, 'dd MMM yyyy')}`
+                        ) : (
+                          format(bulkDateRange.from, 'dd MMM yyyy')
+                        )
+                      ) : (
+                        <span className="text-muted-foreground">All time (no filter)</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="range"
+                      selected={bulkDateRange}
+                      onSelect={(range) => { setBulkDateRange(range); if (range?.to) setBulkCalendarOpen(false); }}
+                      numberOfMonths={2}
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+                {bulkDateRange?.from && (
+                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setBulkDateRange(undefined)}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Target Agent */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">To (covering agent)</Label>
+              <Select value={bulkTargetAgent} onValueChange={setBulkTargetAgent} disabled={!bulkSourceAgent}>
+                <SelectTrigger>
+                  <SelectValue placeholder={bulkSourceAgent ? "Select agent to reassign to" : "Select source agent first"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {salesUsers
+                    .filter(u => u.id !== bulkSourceAgent)
+                    .map(user => (
+                      <SelectItem key={user.id} value={user.id}>
+                        <div className="flex items-center gap-2">
+                          <PresenceBadge status={getAgentPresenceStatus(user.id)} size="sm" />
+                          <span>{getAgentName(user)}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Preview */}
+            {bulkSourceAgent && bulkTargetAgent && (
+              <div className="flex items-center gap-2 text-sm bg-primary/5 border border-primary/20 p-3 rounded-lg">
+                <ArrowRight className="h-4 w-4 text-primary shrink-0" />
+                <span>
+                  <strong>{bulkSourceLeadCount}</strong> lead{bulkSourceLeadCount !== 1 ? 's' : ''} from{' '}
+                  <strong>{getAgentName(salesUsers.find(u => u.id === bulkSourceAgent))}</strong> will be reassigned to{' '}
+                  <strong>{getAgentName(salesUsers.find(u => u.id === bulkTargetAgent))}</strong>
+                  {bulkDateRange?.from && (
+                    <span className="text-muted-foreground">
+                      {' '}(created {format(bulkDateRange.from, 'dd MMM')}
+                      {bulkDateRange.to ? ` – ${format(bulkDateRange.to, 'dd MMM')}` : ' onwards'})
+                    </span>
+                  )}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setBulkReassignOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleBulkReassign}
+              disabled={!bulkSourceAgent || !bulkTargetAgent || bulkSourceLeadCount === 0 || bulkReassigning}
+            >
+              {bulkReassigning ? 'Reassigning...' : `Reassign ${bulkSourceLeadCount} Lead${bulkSourceLeadCount !== 1 ? 's' : ''}`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
@@ -960,12 +1158,18 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
               </CardTitle>
               <CardDescription>Configure how leads are distributed to agents</CardDescription>
             </div>
-            {unconfiguredAgents.length > 0 && (
-              <Button variant="outline" size="sm" onClick={initializeAgentCaps} className="gap-2">
-                <UserPlus className="h-4 w-4" />
-                Add {unconfiguredAgents.length} new agent(s)
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setBulkReassignOpen(true)} className="gap-2">
+                <ArrowRight className="h-4 w-4" />
+                Reassign Agent's Leads
               </Button>
-            )}
+              {unconfiguredAgents.length > 0 && (
+                <Button variant="outline" size="sm" onClick={initializeAgentCaps} className="gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  Add {unconfiguredAgents.length} new agent(s)
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
