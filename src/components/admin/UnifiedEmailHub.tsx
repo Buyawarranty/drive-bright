@@ -690,14 +690,6 @@ const UnifiedEmailHub = () => {
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => handleEditTemplate(template)}
-                >
-                  <Edit className="w-3 h-3 mr-1" />
-                  Edit
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
                   onClick={() => handlePreviewTemplate(template)}
                 >
                   <Eye className="w-3 h-3 mr-1" />
@@ -727,11 +719,11 @@ const UnifiedEmailHub = () => {
                 </Button>
                 <Button 
                   size="sm"
-                  className="flex-1"
+                  className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
                   onClick={() => handleEditTemplate(template)}
                 >
                   <Mail className="w-3 h-3 mr-1" />
-                  Edit & Send
+                  Use Template
                 </Button>
               </div>
             </CardContent>
