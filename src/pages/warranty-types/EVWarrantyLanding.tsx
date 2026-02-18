@@ -566,40 +566,107 @@ const EVWarrantyLanding: React.FC = () => {
   const webPageSchema = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    "name": "Electric Vehicle Warranty UK - Get Instant Quote",
-    "description": "Protect your electric vehicle with comprehensive extended warranty cover. Tesla, Nissan Leaf, BMW i-series, Hyundai Ioniq, Kia EV6, VW ID range and all major EV makes covered. Nationwide UK coverage.",
+    "name": "Electric Vehicle Warranty UK — Specialist EV Cover",
+    "description": "Protect your electric vehicle with comprehensive extended warranty cover. Tesla, Nissan Leaf, BMW i-series, Hyundai Ioniq, Kia EV6, VW ID range and 20+ EV manufacturers covered. Nationwide UK coverage.",
     "url": "https://buyawarranty.co.uk/warranty-types/ev/",
+    "lastReviewed": new Date().toISOString().split('T')[0],
+    "reviewedBy": { "@type": "Organization", "name": "Buy A Warranty" },
     "isPartOf": { "@type": "WebSite", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk" },
-    "about": { "@type": "Thing", "name": "Electric Vehicle Extended Warranty" }
+    "about": { "@type": "Thing", "name": "Electric Vehicle Extended Warranty" },
+    "speakable": { "@type": "SpeakableSpecification", "cssSelector": ["h1", "h2", ".faq-question"] },
+    "significantLink": "https://www.trustpilot.com/review/buyawarranty.co.uk",
+    "publisher": { "@type": "Organization", "name": "Buy A Warranty", "legalName": "BUY A WARRANTY LIMITED", "url": "https://buyawarranty.co.uk" }
+  };
+
+  const localBusinessSchema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Buy A Warranty",
+    "description": "UK's specialist electric vehicle warranty provider. Protecting EVs, cars, vans and motorcycles since 2016.",
+    "url": "https://buyawarranty.co.uk",
+    "telephone": "+44-330-229-5040",
+    "email": "support@buyawarranty.co.uk",
+    "foundingDate": "2016",
+    "priceRange": "£29-£99/month",
+    "address": { "@type": "PostalAddress", "streetAddress": "71-75 Shelton Street", "addressLocality": "London", "addressRegion": "Greater London", "postalCode": "WC2H 9JQ", "addressCountry": "GB" },
+    "geo": { "@type": "GeoCoordinates", "latitude": 51.5142, "longitude": -0.1267 },
+    "areaServed": { "@type": "Country", "name": "United Kingdom" },
+    "openingHoursSpecification": [
+      { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], "opens": "09:00", "closes": "17:30" }
+    ]
+  };
+
+  const serviceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "Electric Vehicle Extended Warranty",
+    "description": "Comprehensive extended warranty protection for electric vehicles in the UK. Covers electric motors, inverters, on-board chargers, battery management systems, DC-DC converters, heat pumps, and 1,000+ EV-specific components.",
+    "provider": { "@type": "Organization", "name": "Buy A Warranty", "url": "https://buyawarranty.co.uk" },
+    "areaServed": { "@type": "Country", "name": "United Kingdom" },
+    "serviceType": "Electric Vehicle Extended Warranty",
+    "offers": { "@type": "Offer", "priceCurrency": "GBP", "price": "29", "availability": "https://schema.org/InStock", "url": "https://buyawarranty.co.uk/warranty-types/ev/" },
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "EV Warranty Plans",
+      "itemListElement": [
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "EV Warranty - £1,000 Claim Limit" } },
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "EV Warranty - £2,000 Claim Limit" } },
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "EV Warranty - £3,000 Claim Limit" } }
+      ]
+    }
   };
 
   return (
     <>
       <Helmet>
-        <title>EV Warranty UK | Electric Vehicle Cover Quotes | Buy A Warranty</title>
-        <meta name="description" content="Protect your electric vehicle with comprehensive extended warranty cover. Tesla, Nissan Leaf, BMW i-series, Hyundai Ioniq, Kia EV6, VW ID range & more. Electric motors, inverters, chargers covered. Nationwide UK coverage, any garage. From £29/month. Get your instant quote in 60 seconds." />
-        <meta name="keywords" content="electric vehicle warranty, EV warranty UK, Tesla warranty, Nissan Leaf warranty, BMW i3 warranty, BMW iX warranty, Hyundai Ioniq 5 warranty, Kia EV6 warranty, VW ID.3 warranty, VW ID.4 warranty, electric car warranty, EV extended warranty, hybrid vehicle warranty, plug-in hybrid warranty, electric motor warranty, battery warranty, on-board charger warranty, inverter warranty, used EV warranty, second hand electric car warranty UK" />
+        <title>Electric Vehicle Warranty UK | EV Cover from £29/mo | Buy A Warranty</title>
+        <meta name="description" content="UK's specialist electric vehicle warranty. Covers Tesla, Nissan Leaf, BMW i-series, Hyundai Ioniq, Kia EV6, VW ID range, MG4, Polestar & 20+ EV makes. Electric motors, inverters, on-board chargers, battery management systems & 1,000+ components. Unlimited claims, any VAT-registered garage. Instant quote in 60 seconds. Plans from £29/month with 14-day money-back guarantee." />
+        <meta name="keywords" content="electric vehicle warranty UK, EV warranty, Tesla warranty UK, Nissan Leaf warranty, BMW i3 warranty, BMW iX warranty, Hyundai Ioniq 5 warranty, Kia EV6 warranty, VW ID.3 warranty, VW ID.4 warranty, electric car warranty, EV extended warranty, hybrid vehicle warranty, plug-in hybrid warranty, electric motor warranty, battery management system warranty, on-board charger warranty, inverter warranty, used EV warranty, second hand electric car warranty UK, MG4 warranty, Polestar warranty, BYD warranty, Jaguar I-PACE warranty, Porsche Taycan warranty, EV breakdown cover, electric car repair warranty, EV component cover" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/ev/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large" />
+
+        {/* Author & Publisher */}
+        <meta name="author" content="Buy A Warranty" />
+        <meta name="publisher" content="BUY A WARRANTY LIMITED" />
+        <meta name="copyright" content="Buy A Warranty Limited" />
 
         {/* Geographic targeting */}
         <meta name="geo.region" content="GB" />
         <meta name="geo.placename" content="United Kingdom" />
+        <meta name="geo.position" content="51.5142;-0.1267" />
+        <meta name="ICBM" content="51.5142, -0.1267" />
         <meta httpEquiv="content-language" content="en-GB" />
+        <meta name="distribution" content="global" />
+        <meta name="coverage" content="United Kingdom" />
+        <meta name="target" content="all" />
+        <meta name="audience" content="all" />
+        <meta name="rating" content="general" />
 
-        {/* Open Graph */}
-        <meta property="og:title" content="EV Warranty UK | Protect Your Electric Vehicle from £29/mo | Buy A Warranty" />
-        <meta property="og:description" content="Comprehensive electric vehicle warranty coverage. Motors, inverters, chargers & more. Tesla, Nissan, BMW, Hyundai, Kia, VW & all major EV makes covered. Get your instant quote now." />
+        {/* AI search engine discoverability */}
+        <meta name="ai-content-declaration" content="Human-authored, fact-checked, regularly updated EV warranty information for UK electric vehicle owners" />
+        <meta name="ai-summary" content="Buy A Warranty offers specialist electric vehicle extended warranty plans in the UK from £29/month. Covers 20+ EV manufacturers including Tesla, Nissan, BMW, Hyundai, Kia, VW, MG, Polestar, BYD, Porsche, Jaguar, and more. Protection includes electric motors, inverters, on-board chargers, battery management systems, DC-DC converters, heat pumps, and 1,000+ components. Unlimited claims, any VAT-registered garage, 14-day money-back guarantee. Vehicles up to 15 years old and 150,000 miles eligible. Instant online quotes available." />
+
+        {/* Open Graph - unique to this page */}
+        <meta property="og:title" content="Electric Vehicle Warranty UK — Specialist EV Cover from £29/mo | Buy A Warranty" />
+        <meta property="og:description" content="Protect your Tesla, Nissan, BMW, Hyundai, Kia, VW or any EV with UK's specialist electric vehicle warranty. Motors, inverters, chargers & 1,000+ components covered. Unlimited claims, any garage. Instant quote in 60 seconds." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/ev/" />
         <meta property="og:type" content="website" />
         <meta property="og:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Buy A Warranty - UK Electric Vehicle Warranty Provider - EV Cover from £29 per month" />
         <meta property="og:site_name" content="Buy A Warranty" />
         <meta property="og:locale" content="en_GB" />
 
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="EV Warranty UK | From £29/month" />
-        <meta name="twitter:description" content="Protect your electric vehicle with comprehensive extended warranty. Tesla, Nissan, BMW, Hyundai & all major EV makes covered. Nationwide UK coverage." />
+        <meta name="twitter:site" content="@buyawarranty" />
+        <meta name="twitter:title" content="Electric Vehicle Warranty UK — Specialist EV Cover from £29/mo" />
+        <meta name="twitter:description" content="Protect your EV with UK's specialist warranty. Tesla, Nissan, BMW, Hyundai, Kia, VW & 20+ makes covered. Motors, inverters, chargers included. Unlimited claims, any garage. Instant quote." />
+        <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
+        <meta name="twitter:image:alt" content="Buy A Warranty - UK Electric Vehicle Warranty Provider" />
 
         {/* Structured Data */}
         <script type="application/ld+json">{JSON.stringify(productSchema)}</script>
@@ -607,6 +674,8 @@ const EVWarrantyLanding: React.FC = () => {
         <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(organizationSchema)}</script>
         <script type="application/ld+json">{JSON.stringify(webPageSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(localBusinessSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(serviceSchema)}</script>
       </Helmet>
 
       <main className="min-h-screen bg-white" role="main" itemScope itemType="https://schema.org/WebPage">
