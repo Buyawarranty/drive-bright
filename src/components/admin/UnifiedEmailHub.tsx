@@ -1561,6 +1561,22 @@ const UnifiedEmailHub = () => {
                 onChange={(val) => setFormData({ ...formData, content: val })}
               />
             </div>
+            
+            {/* Audience / Send To Section */}
+            <Separator />
+            <div className="space-y-3">
+              <Label className="text-base font-semibold flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                Send To Audience
+              </Label>
+              <p className="text-xs text-muted-foreground">Select a segment from your Marketing Audience to send this template to.</p>
+              <AudienceBulkSend 
+                selectedTemplate={selectedTemplate ? { id: selectedTemplate.id, name: selectedTemplate.name, template_type: selectedTemplate.template_type } : null}
+                onClose={() => setIsEditing(false)}
+              />
+            </div>
+
+            <Separator />
             <div className="flex items-center gap-2">
               <Switch
                 id="is_active"
