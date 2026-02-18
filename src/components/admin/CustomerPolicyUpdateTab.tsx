@@ -327,7 +327,7 @@ const CustomerPolicyUpdateTab = () => {
         <FileText className="w-4 h-4 text-blue-600" />
         <AlertDescription className="text-blue-800">
           Changes made here will update the customer's dashboard immediately. 
-          <strong> This does NOT send data to Warranties 2000</strong> - it only updates internal records.
+          <strong> This does NOT send data to Warranties Register</strong> - it only updates internal records.
         </AlertDescription>
       </Alert>
 

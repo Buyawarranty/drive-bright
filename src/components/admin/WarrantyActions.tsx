@@ -220,7 +220,7 @@ export const WarrantyActions: React.FC<WarrantyActionsProps> = ({
           {getStatusBadge(emailStatus, 'email')}
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Warranties 2000:</span>
+          <span className="text-sm font-medium">Warranties Register:</span>
           {getStatusBadge(warranties2000Status, 'warranties2000')}
         </div>
       </div>

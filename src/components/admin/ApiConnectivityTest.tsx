@@ -178,7 +178,7 @@ export const ApiConnectivityTest = () => {
             </CardContent>
           </Card>
 
-          {/* Warranties 2000 API */}
+          {/* Warranties Register API */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between text-sm">

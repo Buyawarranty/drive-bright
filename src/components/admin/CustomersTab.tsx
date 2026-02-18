@@ -2695,7 +2695,7 @@ export const CustomersTab = () => {
               <TableHead>Tags</TableHead>
               <TableHead>Ref</TableHead>
               <TableHead>Email Status</TableHead>
-              <TableHead>Warranties2000</TableHead>
+              <TableHead>Warranties Register</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Assigned To</TableHead>
               <TableHead>Actions</TableHead>
@@ -2907,7 +2907,7 @@ Please log in and change your password after first login.`;
                                   <TabsTrigger value="notes">Notes</TabsTrigger>
                                   <TabsTrigger value="actions">Warranty Actions</TabsTrigger>
                                   <TabsTrigger value="mot">MOT History</TabsTrigger>
-                                  <TabsTrigger value="w2000">Warranties 2000</TabsTrigger>
+                                  <TabsTrigger value="w2000">Warranties Register</TabsTrigger>
                                 </TabsList>
 
                                 <TabsContent value="details" className="space-y-4">
@@ -3517,7 +3517,7 @@ Please log in and change your password after first login.`;
                                           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                                             <div className="flex items-center gap-2 text-sm">
                                               <Clock className="h-4 w-4 text-blue-600" />
-                                              <span className="font-medium text-blue-900">Last sent to Warranties 2000:</span>
+                                              <span className="font-medium text-blue-900">Last sent to Warranties Register:</span>
                                               <span className="text-blue-700">
                                                 {new Date(editingCustomer.customer_policies[0].warranties_2000_sent_at).toLocaleString('en-GB', {
                                                   day: '2-digit',
@@ -3535,7 +3535,7 @@ Please log in and change your password after first login.`;
                                           <Button 
                                             onClick={() => {
                                               if (editingCustomer.customer_policies[0]?.id) {
-                                                if (confirm('⚠️ WARNING: Warranties 2000 should only receive ONE submission per warranty.\n\nOnly resend if you have updated critical information that must be corrected in their system.\n\nContinue with manual resend?')) {
+                                                if (confirm('⚠️ WARNING: Warranties Register should only receive ONE submission per warranty.\n\nOnly resend if you have updated critical information that must be corrected in their system.\n\nContinue with manual resend?')) {
                                                   handleSendToWarranties2000(
                                                     editingCustomer.customer_policies[0].id,
                                                     editingCustomer.id,
@@ -3714,7 +3714,7 @@ Please log in and change your password after first login.`;
                                         </Card>
                                       ))}
                                       
-                                      {/* Warranties 2000 Submission History */}
+                                      {/* Warranties Register Submission History */}
                                       {editingCustomer.customer_policies[0]?.id && (
                                         <W2KAuditLog policyId={editingCustomer.customer_policies[0].id} />
                                       )}
