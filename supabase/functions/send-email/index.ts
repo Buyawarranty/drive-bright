@@ -129,7 +129,10 @@ serve(async (req) => {
     const requestBody = await req.json();
     logStep("Request body received", requestBody);
     
-    const { templateId, templateDbId, recipientEmail, variables, attachments, customSubject, customHtml } = requestBody;
+    // Normalize empty strings to undefined so falsy checks work correctly
+    const templateId = requestBody.templateId || undefined;
+    const templateDbId = requestBody.templateDbId || undefined;
+    const { recipientEmail, variables, attachments, customSubject, customHtml } = requestBody;
     
     logStep("Request received", { 
       templateId, 
