@@ -781,7 +781,7 @@ const UnifiedEmailHub = () => {
               New Campaign
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Campaign</DialogTitle>
               <DialogDescription>Set up a new email campaign</DialogDescription>
@@ -1145,7 +1145,7 @@ const UnifiedEmailHub = () => {
 
       {/* Import from Marketing Dialog */}
       <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
-        <DialogContent className="max-w-3xl max-h-[80vh]">
+        <DialogContent className="max-w-2xl max-h-[80vh]">
           <DialogHeader>
             <DialogTitle>Import from Marketing Contacts</DialogTitle>
             <DialogDescription>
@@ -1660,7 +1660,7 @@ const UnifiedEmailHub = () => {
     <div className="space-y-6">
       {/* Edit Template Dialog */}
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {selectedTemplate ? 'Edit Email Template' : 'Create New Email Template'}
