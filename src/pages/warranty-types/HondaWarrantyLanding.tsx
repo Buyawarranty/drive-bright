@@ -690,7 +690,7 @@ const HondaWarrantyLanding: React.FC = () => {
                   <OptimizedImage
                     src={hondaCivicHero}
                     alt="Honda Civic Type R front view - Honda extended warranty UK coverage for all Civic models"
-                    className="w-full max-w-[35%] mx-auto h-auto"
+                    className="w-full max-w-md mx-auto h-auto object-contain"
                     priority={true}
                     width={651}
                     height={500}

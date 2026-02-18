@@ -697,7 +697,7 @@ const KiaWarrantyLanding: React.FC = () => {
                   <OptimizedImage
                     src={kiaSportageHero}
                     alt="Kia Sportage front view - Kia extended warranty UK coverage for all Sportage models"
-                    className="w-full max-w-[35%] mx-auto h-auto"
+                    className="w-full max-w-md mx-auto h-auto object-contain"
                     priority={true}
                     width={651}
                     height={500}

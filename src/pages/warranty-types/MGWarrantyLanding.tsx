@@ -2,6 +2,7 @@ import React, { useState, lazy, Suspense, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Check, ArrowRight, Shield, Phone, ChevronDown, ChevronUp, MapPin, Clock, Users, Car, Wrench, Zap, Star, Award, ThumbsUp, FileCheck, MessageCircle, Truck, Battery, Bike, Search } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Link, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trackButtonClick } from '@/utils/analytics';
@@ -700,41 +701,60 @@ const MGWarrantyLanding: React.FC = () => {
                 </div>
               </div>
 
-              {/* Right Content - Hero Images */}
-              <div className="relative hidden lg:flex flex-col items-center justify-center">
-                <div className="relative flex items-end justify-center gap-4">
+              {/* Right Column - Hero Image */}
+              <div className="relative">
+                <div className="relative">
                   <OptimizedImage 
                     src={mgZsHero}
                     alt="MG ZS extended warranty UK - front view"
-                    className="max-w-[35%] h-auto drop-shadow-2xl"
+                    className="w-full max-w-md mx-auto h-auto object-contain"
                     priority={true}
-                    width={269}
-                    height={179}
+                    width={651}
+                    height={500}
                   />
-                  <OptimizedImage 
-                    src={pandaThumbsUp}
-                    alt="Buy A Warranty mascot - trusted MG warranty provider"
-                    className="max-w-[25%] h-auto"
-                    priority={true}
-                    width={192}
-                    height={192}
-                  />
-                  <OptimizedImage 
-                    src={mgHsWarranty}
-                    alt="MG HS used car warranty UK - front view"
-                    className="max-w-[35%] h-auto drop-shadow-2xl"
-                    priority={true}
-                    width={269}
-                    height={179}
-                  />
-                </div>
-                <div className="mt-6 flex items-center gap-2">
-                  <div className="flex -space-x-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                    ))}
+                  <div className="absolute top-4 right-4">
+                    <a 
+                      href="https://uk.trustpilot.com/review/buyawarranty.co.uk" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="hover:opacity-80 transition-opacity"
+                    >
+                      <OptimizedImage 
+                        src={trustpilotExcellent} 
+                        alt="Trustpilot Excellent Rating" 
+                        className="h-auto w-28 sm:w-36 object-contain"
+                        width={144}
+                        height={61}
+                      />
+                    </a>
                   </div>
-                  <span className="text-sm font-medium text-gray-700">Trusted by thousands of MG owners</span>
+                </div>
+
+                <div className="flex flex-col items-center gap-4 mt-6">
+                  <div className="flex items-center justify-center gap-3 sm:gap-4 lg:gap-6 flex-wrap">
+                    <div className="flex items-center space-x-1.5">
+                      <Car className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">Hatchbacks</span>
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">SUVs</span>
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <Battery className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                      <span className="font-medium text-gray-700 text-xs sm:text-sm lg:text-base">Electric</span>
+                    </div>
+                  </div>
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="inline-flex items-center gap-2 bg-green-50 border border-green-300 rounded-md px-3 py-1.5 sm:px-3.5 sm:py-2 cursor-pointer">
+                          <span className="text-sm font-semibold text-green-700">⚡ Instant cover</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent><p>⚡ Cover starts immediately after purchase</p></TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
             </div>

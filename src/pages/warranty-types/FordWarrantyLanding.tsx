@@ -696,7 +696,7 @@ const FordWarrantyLanding: React.FC = () => {
                   <OptimizedImage
                     src={fordFocusHero}
                     alt="Ford Focus ST front view - Ford extended warranty UK coverage for all Focus models"
-                    className="w-full max-w-[35%] mx-auto h-auto"
+                    className="w-full max-w-md mx-auto h-auto object-contain"
                     priority={true}
                     width={651}
                     height={500}

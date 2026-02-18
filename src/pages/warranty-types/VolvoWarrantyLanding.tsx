@@ -178,7 +178,7 @@ const VolvoWarrantyLanding: React.FC = () => {
               </div>
               <div className="relative">
                 <div className="relative">
-                  <OptimizedImage src={volvoXC60Hero} alt="Volvo XC60 front view - Volvo extended warranty UK coverage" className="w-full max-w-[35%] mx-auto h-auto" priority width={651} height={500} />
+                  <OptimizedImage src={volvoXC60Hero} alt="Volvo XC60 front view - Volvo extended warranty UK coverage" className="w-full max-w-md mx-auto h-auto object-contain" priority width={651} height={500} />
                   <div className="absolute top-4 right-4">
                     <a href="https://uk.trustpilot.com/review/buyawarranty.co.uk" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
                       <OptimizedImage src={trustpilotExcellent} alt="Trustpilot Excellent Rating" className="h-auto w-28 sm:w-36 object-contain" width={144} height={61} />

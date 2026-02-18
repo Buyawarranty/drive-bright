@@ -465,9 +465,9 @@ const AudiWarrantyLanding: React.FC = () => {
                   <OptimizedImage
                     src={audiA4Hero}
                     alt="Audi A4 front view - Audi extended warranty UK coverage for all models"
-                    className="w-full max-w-[35%] mx-auto h-auto"
+                    className="w-full max-w-md mx-auto h-auto object-contain"
                     priority={true}
-                    width={269}
+                    width={651}
                     height={179}
                   />
                   <div className="absolute top-4 right-4">

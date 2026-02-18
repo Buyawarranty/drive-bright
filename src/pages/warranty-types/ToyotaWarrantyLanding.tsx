@@ -698,7 +698,7 @@ const ToyotaWarrantyLanding: React.FC = () => {
                   <OptimizedImage
                     src={toyotaYarisHero}
                     alt="Toyota Yaris front view - Toyota extended warranty UK coverage for all Yaris models"
-                    className="w-full max-w-[35%] mx-auto h-auto"
+                    className="w-full max-w-md mx-auto h-auto object-contain"
                     priority={true}
                     width={651}
                     height={500}
