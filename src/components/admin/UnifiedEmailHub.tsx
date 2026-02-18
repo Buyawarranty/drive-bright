@@ -927,15 +927,27 @@ const UnifiedEmailHub = () => {
   const loadMarketingContacts = async () => {
     setImportingMarketing(true);
     try {
-      let query = supabase.from('marketing_audience').select('*').order('synced_at', { ascending: false });
-      
-      if (marketingFilter !== 'all') {
-        query = query.eq('source_type', marketingFilter);
+      let allData: any[] = [];
+      const PAGE_SIZE = 1000;
+      let from = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        let query = supabase.from('marketing_audience').select('*').order('synced_at', { ascending: false }).range(from, from + PAGE_SIZE - 1);
+        
+        if (marketingFilter !== 'all') {
+          query = query.eq('source_type', marketingFilter);
+        }
+        
+        const { data, error } = await query;
+        if (error) throw error;
+        
+        allData = allData.concat(data || []);
+        hasMore = (data?.length || 0) === PAGE_SIZE;
+        from += PAGE_SIZE;
       }
-      
-      const { data, error } = await query.limit(500);
-      if (error) throw error;
-      setMarketingContacts(data || []);
+
+      setMarketingContacts(allData);
     } catch (err) {
       console.error('Error loading marketing contacts:', err);
       toast.error('Failed to load marketing contacts');
