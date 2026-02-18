@@ -171,6 +171,10 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
 
   // Handle cap change
   const handleCapChange = (adminUserId: string, value: string) => {
+    if (value === '' || value.trim() === '') {
+      setEditedCaps(prev => ({ ...prev, [adminUserId]: null as any }));
+      return;
+    }
     const numValue = parseInt(value, 10);
     if (!isNaN(numValue) && numValue >= 0) {
       setEditedCaps(prev => ({ ...prev, [adminUserId]: numValue }));
@@ -1079,9 +1083,10 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                 <TableRow className="bg-muted/50">
                   <TableHead className="w-[250px]">Agent</TableHead>
                   <TableHead className="w-[100px]">Status</TableHead>
-                  <TableHead className="w-[140px]">
-                    {displayMode === 'round_robin' ? 'Leads per day' : 'Percentage (%)'}
-                  </TableHead>
+                  {displayMode === 'percentage' && (
+                    <TableHead className="w-[140px]">Percentage (%)</TableHead>
+                  )}
+                  <TableHead className="w-[140px]">Daily Cap</TableHead>
                   <TableHead className="w-[100px]">Today</TableHead>
                   <TableHead className="w-[120px]">ON/OFF</TableHead>
                   {isFullAdmin && <TableHead className="w-[80px] text-center">Delete</TableHead>}
@@ -1154,65 +1159,67 @@ export const AgentsLeadsView: React.FC<AgentsLeadsViewProps> = ({
                           </div>
                         </TableCell>
 
-                        {/* Leads per day / Percentage */}
+                        {/* Percentage column (only in percentage mode) */}
+                        {displayMode === 'percentage' && (
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            {displayMode === 'round_robin' ? (
-                              <>
-                                <Input
-                                  type="number"
+                              <div className="flex items-center gap-3 w-full min-w-[200px]">
+                                <Slider
+                                  value={[editedPercent ?? cap.percentage ?? 0]}
+                                  onValueChange={([val]) => handlePercentageChange(cap.admin_user_id, val)}
+                                  max={100}
                                   min={0}
-                                  value={editedCap ?? cap.daily_cap}
-                                  onChange={(e) => handleCapChange(cap.admin_user_id, e.target.value)}
-                                  className="w-20 h-8 text-sm"
+                                  step={1}
+                                  className="flex-1"
+                                  disabled={cap.paused}
                                 />
-                                {hasCapChanges && (
-                                  <Button
-                                    size="sm"
-                                    variant="default"
-                                    className="h-8 w-8 p-0"
-                                    onClick={() => handleSaveCap(cap.admin_user_id)}
-                                    disabled={saving === cap.admin_user_id}
-                                  >
-                                    <Save className="h-3.5 w-3.5" />
-                                  </Button>
-                                )}
-                              </>
-                            ) : (
-                            <>
-                                <div className="flex items-center gap-3 w-full min-w-[200px]">
-                                  <Slider
-                                    value={[editedPercent ?? cap.percentage ?? 0]}
-                                    onValueChange={([val]) => handlePercentageChange(cap.admin_user_id, val)}
-                                    max={100}
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <Input
+                                    type="number"
                                     min={0}
+                                    max={100}
                                     step={1}
-                                    className="flex-1"
+                                    value={editedPercent ?? cap.percentage ?? 0}
+                                    onChange={(e) => {
+                                      const val = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
+                                      if (!isNaN(val)) handlePercentageChange(cap.admin_user_id, val);
+                                    }}
+                                    onFocus={(e) => e.target.select()}
+                                    className="w-16 h-8 text-sm text-center"
                                     disabled={cap.paused}
                                   />
-                                  <div className="flex items-center gap-1 shrink-0">
-                                    <Input
-                                      type="number"
-                                      min={0}
-                                      max={100}
-                                      step={1}
-                                      value={editedPercent ?? cap.percentage ?? 0}
-                                      onChange={(e) => {
-                                        const val = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
-                                        if (!isNaN(val)) handlePercentageChange(cap.admin_user_id, val);
-                                      }}
-                                      onFocus={(e) => e.target.select()}
-                                      className="w-16 h-8 text-sm text-center"
-                                      disabled={cap.paused}
-                                    />
-                                    <span className="text-muted-foreground text-sm">%</span>
-                                  </div>
-                                  {saving === cap.admin_user_id && (
-                                    <span className="text-xs text-muted-foreground animate-pulse">Saving…</span>
-                                  )}
+                                  <span className="text-muted-foreground text-sm">%</span>
                                 </div>
-                              </>
-                            )}
+                                {saving === cap.admin_user_id && (
+                                  <span className="text-xs text-muted-foreground animate-pulse">Saving…</span>
+                                )}
+                              </div>
+                          </div>
+                        </TableCell>
+                        )}
+
+                        {/* Daily Cap (always visible, always editable) */}
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                              <Input
+                                type="number"
+                                min={0}
+                                placeholder="∞"
+                                value={editedCap ?? (cap.daily_cap === null ? '' : cap.daily_cap)}
+                                onChange={(e) => handleCapChange(cap.admin_user_id, e.target.value)}
+                                className="w-20 h-8 text-sm"
+                              />
+                              {hasCapChanges && (
+                                <Button
+                                  size="sm"
+                                  variant="default"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => handleSaveCap(cap.admin_user_id)}
+                                  disabled={saving === cap.admin_user_id}
+                                >
+                                  <Save className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
                           </div>
                         </TableCell>
 
