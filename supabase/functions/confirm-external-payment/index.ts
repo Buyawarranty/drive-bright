@@ -11,12 +11,11 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CONFIRM-EXTERNAL-PAYMENT] ${step}${detailsStr}`);
 };
 
-// Generate warranty reference - ADM prefix for admin/external payments
+// Generate warranty reference using the same BAW format as online payments
 const generateWarrantyReference = async (supabase: any): Promise<string> => {
-  const { data, error } = await supabase.rpc('get_next_warranty_serial');
+  const { data, error } = await supabase.rpc('generate_warranty_number');
   if (error) throw error;
-  const datePart = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' }).replace('/', '');
-  return `ADM-${datePart}-${String(data).padStart(6, '0')}`;
+  return data;
 };
 
 // Calculate policy end date
@@ -93,14 +92,6 @@ serve(async (req) => {
       throw new Error("Sales agent assignment is required before confirming payment");
     }
 
-    // Generate references
-    const warrantyReference = await generateWarrantyReference(supabase);
-    const policyNumber = generatePolicyNumber();
-    const startDate = warrantyStartDate ? new Date(warrantyStartDate) : new Date();
-    const endDate = calculatePolicyEndDate(startDate, durationMonths, bonusMonths);
-
-    logStep("Generated references", { warrantyReference, policyNumber, startDate, endDate });
-
     // Check for existing customer by email
     const { data: existingCustomer } = await supabase
       .from('customers')
@@ -119,6 +110,41 @@ serve(async (req) => {
       : paymentType === '24months' ? '2-Year'
       : paymentType === '36months' ? '3-Year'
       : paymentType;
+
+    // Check for existing policy for same customer + same vehicle reg
+    let existingPolicy: any = null;
+    if (existingCustomer) {
+      const { data: policies } = await supabase
+        .from('customer_policies')
+        .select('id, warranty_number, policy_number')
+        .eq('customer_id', existingCustomer.id)
+        .not('is_deleted', 'eq', true)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (policies && policies.length > 0) {
+        // Use the most recent policy for this customer
+        existingPolicy = policies[0];
+        logStep("Found existing policy for customer", { 
+          policyId: existingPolicy.id, 
+          existingWarrantyNumber: existingPolicy.warranty_number 
+        });
+      }
+    }
+
+    // Only generate new references if no existing policy found
+    const warrantyReference = existingPolicy?.warranty_number || await generateWarrantyReference(supabase);
+    const policyNumber = existingPolicy?.policy_number || generatePolicyNumber();
+    const startDate = warrantyStartDate ? new Date(warrantyStartDate) : new Date();
+    const endDate = calculatePolicyEndDate(startDate, durationMonths, bonusMonths);
+
+    logStep("Using references", { 
+      warrantyReference, 
+      policyNumber, 
+      startDate, 
+      endDate, 
+      reusedExisting: !!existingPolicy 
+    });
 
     // Create or update customer record
     if (existingCustomer) {
@@ -147,8 +173,8 @@ serve(async (req) => {
           status: 'active',
           payment_verified: true,
           is_manual_entry: true,
-          assigned_to: assigneeId,                    // admin_users.id for FK
-          payment_confirmed_by: assigneeId,           // Track who confirmed
+          assigned_to: assigneeId,
+          payment_confirmed_by: assigneeId,
           warranty_reference_number: warrantyReference,
           ...(address && !skipAddressDetails && {
             building_number: address.buildingNumber,
@@ -190,8 +216,8 @@ serve(async (req) => {
           status: 'active',
           payment_verified: true,
           is_manual_entry: true,
-          assigned_to: assigneeId,                    // admin_users.id for FK
-          payment_confirmed_by: assigneeId,           // Track who confirmed
+          assigned_to: assigneeId,
+          payment_confirmed_by: assigneeId,
           warranty_reference_number: warrantyReference,
           signup_date: startDate.toISOString(),
           purchase_source: 'admin_external',
@@ -213,40 +239,83 @@ serve(async (req) => {
 
     logStep("Customer record processed", { customerId, created: customerCreated });
 
-    // Create policy record
-    const { data: policyData, error: policyError } = await supabase
-      .from('customer_policies')
-      .insert({
-        customer_id: customerId,
-        email: customerEmail,
-        customer_full_name: customerName,
-        plan_type: 'Platinum',
-        payment_type: paymentTypeLabel,
-        policy_number: policyNumber,
-        warranty_number: warrantyReference,
-        policy_start_date: startDate.toISOString(),
-        policy_end_date: endDate.toISOString(),
-        claim_limit: effectiveClaimLimit,
-        voluntary_excess: excessAmount,
-        payment_amount: finalAmount,
-        payment_verified: true,
-        is_manual_entry: true,
-        status: 'active',
-        ...(address && !skipAddressDetails && {
-          address: {
-            building_number: address.buildingNumber,
-            street: address.street,
-            town: address.town,
-            county: address.county,
-            postcode: address.postcode,
-          }
-        }),
-      })
-      .select('id')
-      .single();
+    // Create or update policy record
+    let policyId: string;
+    let policyCreated = false;
 
-    if (policyError) throw policyError;
-    logStep("Policy record created", { policyId: policyData.id });
+    if (existingPolicy) {
+      // Update existing policy instead of creating a duplicate
+      logStep("Updating existing policy", { policyId: existingPolicy.id });
+      
+      const { error: policyUpdateError } = await supabase
+        .from('customer_policies')
+        .update({
+          customer_id: customerId,
+          email: customerEmail,
+          customer_full_name: customerName,
+          plan_type: 'Platinum',
+          payment_type: paymentTypeLabel,
+          policy_start_date: startDate.toISOString(),
+          policy_end_date: endDate.toISOString(),
+          claim_limit: effectiveClaimLimit,
+          voluntary_excess: excessAmount,
+          payment_amount: finalAmount,
+          payment_verified: true,
+          status: 'active',
+          ...(address && !skipAddressDetails && {
+            address: {
+              building_number: address.buildingNumber,
+              street: address.street,
+              town: address.town,
+              county: address.county,
+              postcode: address.postcode,
+            }
+          }),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingPolicy.id);
+
+      if (policyUpdateError) throw policyUpdateError;
+      policyId = existingPolicy.id;
+      logStep("Existing policy updated", { policyId });
+    } else {
+      // Create new policy
+      const { data: policyData, error: policyError } = await supabase
+        .from('customer_policies')
+        .insert({
+          customer_id: customerId,
+          email: customerEmail,
+          customer_full_name: customerName,
+          plan_type: 'Platinum',
+          payment_type: paymentTypeLabel,
+          policy_number: policyNumber,
+          warranty_number: warrantyReference,
+          policy_start_date: startDate.toISOString(),
+          policy_end_date: endDate.toISOString(),
+          claim_limit: effectiveClaimLimit,
+          voluntary_excess: excessAmount,
+          payment_amount: finalAmount,
+          payment_verified: true,
+          is_manual_entry: true,
+          status: 'active',
+          ...(address && !skipAddressDetails && {
+            address: {
+              building_number: address.buildingNumber,
+              street: address.street,
+              town: address.town,
+              county: address.county,
+              postcode: address.postcode,
+            }
+          }),
+        })
+        .select('id')
+        .single();
+
+      if (policyError) throw policyError;
+      policyId = policyData.id;
+      policyCreated = true;
+      logStep("New policy created", { policyId });
+    }
 
     // Create live_quotes record for tracking
     const { error: quoteError } = await supabase
@@ -288,17 +357,17 @@ serve(async (req) => {
         const { data: freshPolicy } = await supabase
           .from('customer_policies')
           .select('warranties_2000_status')
-          .eq('id', policyData.id)
+          .eq('id', policyId)
           .single();
         
         if (freshPolicy?.warranties_2000_status === 'sent') {
-          logStep("DUPLICATE PREVENTED: Policy already sent to W2000", { policyId: policyData.id });
+          logStep("DUPLICATE PREVENTED: Policy already sent to W2000", { policyId });
           w2kSent = true; // Already sent, treat as success
         } else {
           // Pass policyId to enable duplicate prevention in send-to-warranties-2000
           const { error: w2kError } = await supabase.functions.invoke('send-to-warranties-2000', {
             body: {
-              policyId: policyData.id,
+              policyId,
               customerId,
               customerName,
               customerFirstName,
@@ -355,7 +424,7 @@ serve(async (req) => {
         await supabase
           .from('customer_policies')
           .update({ email_sent_status: 'sent' })
-          .eq('id', policyData.id);
+          .eq('id', policyId);
         logStep("Welcome email sent successfully");
       } else {
         logStep("Warning: Welcome email failed", emailError);
@@ -369,11 +438,12 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       success: true,
       customerId,
-      policyId: policyData.id,
+      policyId,
       policyNumber,
       warrantyReference,
       customerCreated,
-      policyCreated: true,
+      policyCreated,
+      policyUpdated: !!existingPolicy,
       w2kSent,
       emailSent,
     }), {
