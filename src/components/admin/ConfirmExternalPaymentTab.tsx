@@ -55,7 +55,7 @@ const termOptions = [
 const excessOptions = [0, 50, 100, 150];
 
 const claimLimitOptions = [
-  { value: 750, label: '£750', description: 'AutoCare Basic' },
+  { value: 750, label: '£1,000', description: 'AutoCare Basic' },
   { value: 2000, label: '£2,000', description: 'AutoCare Essential' },
   { value: 3000, label: '£3,000', description: 'AutoCare Elite' },
   { value: 5000, label: '£5,000', description: 'AutoCare Premium' },
