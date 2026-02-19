@@ -35,11 +35,8 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
   onPayClick,
   onPaymentChange,
 }) => {
-  // Map claim limit display values
+  // Display claim limit as-is
   const displayClaimLimit = () => {
-    if (claimLimit === 750) return '£1,000';
-    if (claimLimit === 1250) return '£2,000';
-    if (claimLimit === 2000) return '£3,000';
     return `£${claimLimit.toLocaleString()}`;
   };
 

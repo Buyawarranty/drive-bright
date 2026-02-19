@@ -11,6 +11,7 @@ import {
   getMarketingSavings,
   type PaymentPeriod
 } from '@/lib/pricingMatrix';
+import { getBaseClaimLimit, getPremiumClaimSurcharge } from '@/lib/claimLimitTiers';
 import { trackStepCompletion, trackBeginCheckout } from '@/utils/analytics';
 import { AlertCircle, ArrowLeft } from 'lucide-react';
 import PriceHelpPanel from './PriceHelpPanel';
@@ -84,7 +85,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     previousVoluntaryExcess !== undefined ? previousVoluntaryExcess : 100
   );
   const [selectedClaimLimit, setSelectedClaimLimit] = useState<number | null>(
-    previousClaimLimit || 1250
+    previousClaimLimit || 2000
   );
   const [selectedLabourRate, setSelectedLabourRate] = useState<number>(
     previousLabourRate ?? 70
@@ -198,7 +199,9 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
 
   // Get base price from centralized pricing matrix (uses promo logic for 2yr/3yr £2000 limit)
   const getBasePrice = useCallback((term: string, excess: number, claimLimit: number) => {
-    return getCentralizedBasePrice(term as PaymentPeriod, excess, claimLimit);
+    // Map £5000 to £2000 for base price lookup (surcharge added separately)
+    const effectiveLimit = getBaseClaimLimit(claimLimit);
+    return getCentralizedBasePrice(term as PaymentPeriod, excess, effectiveLimit);
   }, []);
 
   // Calculate vehicle price adjustment
@@ -217,8 +220,8 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     // For non-selected terms: use the appropriate default for that duration
     const isSelectedTerm = term === paymentType;
     const termClaimLimit = isSelectedTerm 
-      ? (selectedClaimLimit || 1250) 
-      : (term === '24months' || term === '36months') ? 2000 : 1250;
+      ? (selectedClaimLimit || 2000) 
+      : 2000;
     
     const basePrice = getBasePrice(term, voluntaryExcess || 100, termClaimLimit);
     
@@ -235,7 +238,10 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     const boostCost = calculateBoostAdjustment(boostAddon, term as PaymentPeriod);
     const labourAdjust = calculateLabourRateAdjustment(selectedLabourRate, term as PaymentPeriod);
     
-    return adjustedPrice + addOnPrice + boostCost + labourAdjust;
+    // £5000 claim limit flat surcharge
+    const premiumSurcharge = termClaimLimit === 5000 ? getPremiumClaimSurcharge(term) : 0;
+    
+    return adjustedPrice + addOnPrice + boostCost + labourAdjust + premiumSurcharge;
   }, [paymentType, voluntaryExcess, selectedClaimLimit, vehicleData, selectedProtectionAddOns, boostAddon, selectedLabourRate, getBasePrice]);
 
   // Calculate monthly price (total / 12, ALWAYS rounded DOWN)
@@ -418,6 +424,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
           onBoostChange={setBoostAddon}
           boostPrice={5}
           paymentType={paymentType}
+          vehicleMake={vehicleData?.make}
         />
 
         <LabourRateSelector

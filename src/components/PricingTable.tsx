@@ -31,6 +31,7 @@ import {
   getMarketingSavings,
   type PaymentPeriod
 } from '@/lib/pricingMatrix';
+import { CLAIM_LIMIT_TIERS, PREMIUM_CLAIM_MONTHLY, isPremiumVehicle, getBaseClaimLimit, getPremiumClaimSurcharge } from '@/lib/claimLimitTiers';
 import pandaCarWarranty from "@/assets/panda-car-warranty-transparent.png";
 import pandaSavingsMascot from "@/assets/panda-savings-mascot.webp";
 import trustpilotLogo from "@/assets/trustpilot-excellent-box.webp";
@@ -188,10 +189,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isFloatingBarVisible, setIsFloatingBarVisible] = useState(false);
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
-  // Validate previousClaimLimit is a valid option (750, 1250, 2000), otherwise default based on duration
+  // Validate previousClaimLimit is a valid option, otherwise default based on duration
   // Account for boost addon which adds 1000 to the claim limit value
-  // PROMO: 2yr/3yr plans default to £2000 claim limit (at £1250 price), 1yr defaults to £1250
-  const validClaimLimits = [750, 1250, 2000];
+  const validClaimLimits = [750, 1250, 2000, 5000];
   const getValidatedClaimLimit = (): number => {
     if (previousClaimLimit) {
       // Check if it's a valid base claim limit
@@ -200,9 +200,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
       const possibleBaseLimit = previousClaimLimit - 1000;
       if (validClaimLimits.includes(possibleBaseLimit)) return possibleBaseLimit;
     }
-    // PROMO: Default to £2000 for 2yr/3yr, £1250 for 1yr
-    const effectivePaymentType = previousPaymentType || '24months';
-    return (effectivePaymentType === '24months' || effectivePaymentType === '36months') ? 2000 : 1250;
+    // Default to £2000 for all durations (£1250 removed from UI)
+    return 2000;
   };
   const [selectedClaimLimit, setSelectedClaimLimit] = useState<number | null>(getValidatedClaimLimit());
   const [summaryDismissed, setSummaryDismissed] = useState(false);
@@ -529,7 +528,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
           if (settings.paymentType && ['12months', '24months', '36months'].includes(settings.paymentType)) {
             setPaymentType(settings.paymentType);
           }
-          if (settings.claimLimit && [750, 1250, 2000].includes(settings.claimLimit)) {
+          if (settings.claimLimit && [750, 2000, 5000].includes(settings.claimLimit)) {
             setSelectedClaimLimit(settings.claimLimit);
           }
           if (settings.labourRate && [50, 70, 100, 200].includes(settings.labourRate)) {
@@ -597,17 +596,13 @@ const PricingTable: React.FC<PricingTableProps> = ({
     setSummaryDismissed(false);
   }, [selectedClaimLimit, paymentType, voluntaryExcess, selectedProtectionAddOns]);
 
-  // PROMO: Update claim limit default when payment type changes
-  // 2yr/3yr default to £2000, 1yr defaults to £1250
+  // Update claim limit default when payment type changes
+  // Default to £2000 for all durations
   useEffect(() => {
-    // Only update if the user hasn't explicitly selected a claim limit different from the promo default
-    // and only on user-initiated payment type changes
     if (!isRestoringFromPrevious.current && isUserPaymentTypeChange.current) {
-      const isMultiYear = paymentType === '24months' || paymentType === '36months';
-      const promoDefault = isMultiYear ? 2000 : 1250;
-      // Only auto-update if current selection matches the opposite default (user hasn't manually changed it)
-      if ((isMultiYear && selectedClaimLimit === 1250) || (!isMultiYear && selectedClaimLimit === 2000)) {
-        setSelectedClaimLimit(promoDefault);
+      // Only auto-update if current selection is the old default (£1250)
+      if (selectedClaimLimit === 1250) {
+        setSelectedClaimLimit(2000);
       }
     }
   }, [paymentType]);
@@ -797,7 +792,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
 
   // Get pricing data using centralized pricing matrix (includes promo logic)
   const getPricingData = useCallback((excess: number, claimLimit: number, paymentPeriod: string) => {
-    return getCentralizedBasePrice(paymentPeriod as PaymentPeriod, excess, claimLimit);
+    // Map £5000 to £2000 for base price lookup (surcharge added separately)
+    const effectiveLimit = getBaseClaimLimit(claimLimit);
+    return getCentralizedBasePrice(paymentPeriod as PaymentPeriod, excess, effectiveLimit);
   }, []);
 
   // Memoized price calculation to prevent pricing fluctuations
@@ -862,10 +859,15 @@ const PricingTable: React.FC<PricingTableProps> = ({
     return calculateLabourRateAdjustment(selectedLabourRate, paymentType as PaymentPeriod);
   }, [selectedLabourRate, paymentType]);
 
+  // £5000 claim limit surcharge
+  const premiumClaimSurcharge = useMemo(() => {
+    return selectedClaimLimit === 5000 ? getPremiumClaimSurcharge(paymentType as string) : 0;
+  }, [selectedClaimLimit, paymentType]);
+
   // Memoized total price calculation - EXACT Excel price + adjustments (no marketing discount applied)
   const totalPrice = useMemo(() => {
-    return basePlanPrice + labourRateTotalAdjustment + boostAddonCost + addOnPrice;
-  }, [basePlanPrice, labourRateTotalAdjustment, boostAddonCost, addOnPrice]);
+    return basePlanPrice + labourRateTotalAdjustment + boostAddonCost + addOnPrice + premiumClaimSurcharge;
+  }, [basePlanPrice, labourRateTotalAdjustment, boostAddonCost, addOnPrice, premiumClaimSurcharge]);
 
   // Marketing savings (display only - NOT applied to actual price)
   const marketingSavings = useMemo(() => {
@@ -1527,12 +1529,12 @@ const PricingTable: React.FC<PricingTableProps> = ({
               
               // CRITICAL: Each card uses its OWN appropriate claim limit, not the globally selected one
               // For the currently selected plan, use the user's selection
-              // For non-selected plans, use the appropriate default for that duration
-              // 1-year: default £1250, 2-year/3-year: promotional default £2000
+              // For non-selected plans, default to £2000
               const cardClaimLimit = durationId === paymentType 
                 ? selectedClaimLimit 
-                : (durationId === '24months' || durationId === '36months') ? 2000 : 1250;
+                : 2000;
               
+              // Map £5000 to £2000 for base price lookup (already handled in getPricingData)
               const basePrice = getPricingData(voluntaryExcess, cardClaimLimit, durationId);
               const adjustedBasePrice = applyPriceAdjustment(basePrice, vehicleAdjustment);
               
@@ -1571,8 +1573,11 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // Calculate add-on price for this duration using card-specific add-ons
               const durationAddOnPrice = calculateAddOnPrice(cardAddOns, durationId, durationMonths);
               
+              // Add £5000 claim limit surcharge if applicable for this card
+              const cardPremiumSurcharge = cardClaimLimit === 5000 ? getPremiumClaimSurcharge(durationId) : 0;
+              
               // Calculate total price with all adjustments including add-ons
-              const totalPriceWithAdjustments = finalBasePrice + labourTotalAdjust + boostTotalAdjust + durationAddOnPrice;
+              const totalPriceWithAdjustments = finalBasePrice + labourTotalAdjust + boostTotalAdjust + durationAddOnPrice + cardPremiumSurcharge;
               
               // Calculate display monthly price (always divide by 12, round DOWN)
               const displayedMonthlyPrice = Math.floor(totalPriceWithAdjustments / 12);
@@ -2415,254 +2420,82 @@ const PricingTable: React.FC<PricingTableProps> = ({
             <Wrench className="w-5 h-5 flex-shrink-0" /> Set your claim limit - cover up to your car's <span className="font-bold">full value</span> 🚗
           </p>
 
-          {/* Multi-year upgrade message */}
-          {(paymentType === '24months' || paymentType === '36months') && (
-            <div className="mb-4 p-4 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                <Gift className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-base font-semibold text-green-800">
-                  Free upgrade on multi-year plans!
-                </p>
-                <p className="text-sm text-green-700 mt-0.5">
-                  Your cover is upgraded to £2,000 per claim at no extra cost.
-                </p>
-              </div>
-            </div>
-          )}
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Essential - £750 */}
-            <div 
-              className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
-                selectedClaimLimit === 750
-                  ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'border-2 border-gray-200 hover:border-orange-300 hover:shadow-md'
-              }`}
-              onClick={() => {
-                setSelectedClaimLimit(750);
-                setValidationErrors(prev => ({ ...prev, claimLimit: false }));
-              }}
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <h4 className="text-xl font-bold text-black mb-1">AutoCare Essential</h4>
-                  <div className="text-3xl font-bold text-black">
-                    £{selectedClaimLimit === 750 && boostAddon ? '1,750' : '750'} <span className="text-base">per claim</span>
-                  </div>
-                </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                  selectedClaimLimit === 750 ? 'bg-green-500 border-green-500' : 'border-gray-300'
-                }`}>
-                  {selectedClaimLimit === 750 && <Check className="w-4 h-4 text-white" />}
-                </div>
-              </div>
-            </div>
+          {/* Claim Limit Tier Cards */}
+          {(() => {
+            const isPremium = isPremiumVehicle(vehicleData?.make);
+            const visibleTiers = isPremium 
+              ? CLAIM_LIMIT_TIERS.filter(t => t.value !== 5000)
+              : [...CLAIM_LIMIT_TIERS];
             
-            {/* Advanced - £1,250 (hidden for multi-year plans) */}
-            {paymentType === '12months' && (
-              <div 
-                className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
-                  selectedClaimLimit === 1250
-                    ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30'
-                    : 'border-2 border-gray-200 hover:border-orange-300 hover:shadow-md'
-                }`}
-                onClick={() => {
-                  setSelectedClaimLimit(1250);
-                  setValidationErrors(prev => ({ ...prev, claimLimit: false }));
-                }}
-              >
-                <div className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                  MOST POPULAR
-                </div>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h4 className="text-xl font-bold text-black mb-1">AutoCare Advantage</h4>
-                    <div className="text-3xl font-bold text-black">
-                      £{selectedClaimLimit === 1250 && boostAddon ? '2,250' : '1,250'} <span className="text-base">per claim</span>
-                    </div>
-                  </div>
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                    selectedClaimLimit === 1250 ? 'bg-green-500 border-green-500' : 'border-gray-300'
-                  }`}>
-                    {selectedClaimLimit === 1250 && <Check className="w-4 h-4 text-white" />}
-                  </div>
-                </div>
-              </div>
-            )}
+            // Determine displayed selection
+            const displayedLimit = (boostAddon && selectedClaimLimit === 2000) ? 3000 : selectedClaimLimit;
             
-            {/* Elite - £2,000 */}
-            <div 
-              className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
-                selectedClaimLimit === 2000 && !boostAddon
-                  ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30'
-                  : 'border-2 border-gray-200 hover:border-orange-300 hover:shadow-md'
-              }`}
-              onClick={() => {
-                setSelectedClaimLimit(2000);
-                setBoostAddon(false);
-                setValidationErrors(prev => ({ ...prev, claimLimit: false }));
-              }}
-            >
-              {/* Show MOST POPULAR badge for multi-year plans */}
-              {(paymentType === '24months' || paymentType === '36months') && (
-                <div className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                  MOST POPULAR
-                </div>
-              )}
-              <div className="flex items-start justify-between">
-                <div>
-                  <h4 className="text-xl font-bold text-black mb-1">AutoCare Elite</h4>
-                  <div className="text-3xl font-bold text-black">
-                    £2,000 <span className="text-base">per claim</span>
-                  </div>
-                </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                  selectedClaimLimit === 2000 && !boostAddon ? 'bg-green-500 border-green-500' : 'border-gray-300'
-                }`}>
-                  {selectedClaimLimit === 2000 && !boostAddon && <Check className="w-4 h-4 text-white" />}
-                </div>
-              </div>
-            </div>
-            
-            {/* £3,000 option - shown for multi-year plans as direct selection */}
-            {(paymentType === '24months' || paymentType === '36months') && (
-              <div 
-                className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
-                  selectedClaimLimit === 2000 && boostAddon
-                    ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30'
-                    : 'border-2 border-gray-200 hover:border-orange-300 hover:shadow-md'
-                }`}
-                onClick={() => {
-                  setSelectedClaimLimit(2000);
-                  setBoostAddon(true);
-                  setValidationErrors(prev => ({ ...prev, claimLimit: false }));
-                }}
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h4 className="text-xl font-bold text-black mb-1">AutoCare Premium</h4>
-                    <div className="text-3xl font-bold text-black">
-                      £3,000 <span className="text-base">per claim</span>
-                    </div>
-                  </div>
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                    selectedClaimLimit === 2000 && boostAddon ? 'bg-green-500 border-green-500' : 'border-gray-300'
-                  }`}>
-                    {selectedClaimLimit === 2000 && boostAddon && <Check className="w-4 h-4 text-white" />}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-          
-          {/* Optional Add-ons Section - Only show for 1-year plans */}
-          {paymentType === '12months' && (
-            <div className="mt-4">
-              <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Optional add-on</h4>
-              
-              {/* Add Extra Cover Card - Fully Tappable with Improved Toggle */}
-              <div 
-                onClick={() => setBoostAddon(!boostAddon)}
-                className={cn(
-                  "relative p-4 rounded-xl cursor-pointer border-2 overflow-hidden",
-                  "transition-all duration-300 ease-out transform",
-                  boostAddon
-                    ? "bg-gradient-to-br from-green-50 to-green-100 border-green-500 shadow-[0_0_16px_rgba(34,197,94,0.35)] scale-[1.01]"
-                    : "bg-gradient-to-br from-orange-50 to-orange-100/50 border-orange-200 hover:border-orange-400 hover:shadow-lg hover:scale-[1.005]"
-                )}
-              >
-                {/* Animated background pulse when active */}
-                {boostAddon && (
-                  <div className="absolute inset-0 bg-green-400/10 animate-pulse pointer-events-none" />
-                )}
-                
-                <div className="relative flex items-center gap-4">
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    {boostAddon ? (
-                      <>
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                            <Check className="w-4 h-4 text-white" strokeWidth={3} />
-                          </div>
-                          <h4 className="text-lg font-bold text-green-700">
-                            Upgrade Added!
-                          </h4>
-                        </div>
-                        <div className="text-base font-semibold text-green-800">
-                          Your cover is now £{(selectedClaimLimit + 1000).toLocaleString()} per claim 🚀
-                        </div>
-                        <div className="text-xs text-green-600 mt-1">
-                          Just £5/month × 12 payments
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <h4 className="text-lg font-bold text-foreground mb-0.5">
-                          🚀 Boost your cover by £1,000
-                        </h4>
-                        <div className="text-base font-semibold text-foreground">
-                          Upgrade to £{(selectedClaimLimit + 1000).toLocaleString()} per claim
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          Just £5/month × 12 payments
-                        </div>
-                      </>
-                    )}
-                  </div>
+            return (
+              <div className={cn(
+                "grid gap-4",
+                visibleTiers.length <= 3 ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+              )}>
+                {visibleTiers.map((tier) => {
+                  const isSelected = displayedLimit === tier.value;
+                  const isPopular = tier.popular;
                   
-                  {/* Improved Toggle Switch */}
-                  <div className="flex-shrink-0">
-                    <div
-                      className={cn(
-                        "relative inline-flex items-center justify-between rounded-full transition-all duration-300 ease-out",
-                        "w-[68px] h-[36px] px-1",
-                        boostAddon 
-                          ? "bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.5)]" 
-                          : "bg-gray-300"
-                      )}
+                  return (
+                    <div 
+                      key={tier.value}
+                      className={`p-6 rounded-lg transition-all duration-200 text-left relative cursor-pointer bg-white ${
+                        isSelected
+                          ? 'border-2 border-orange-500 shadow-lg shadow-orange-500/30'
+                          : 'border-2 border-gray-200 hover:border-orange-300 hover:shadow-md'
+                      }`}
+                      onClick={() => {
+                        if (tier.value === 3000) {
+                          setSelectedClaimLimit(2000);
+                          setBoostAddon(true);
+                        } else if (tier.value === 5000) {
+                          setSelectedClaimLimit(5000);
+                          setBoostAddon(false);
+                        } else {
+                          setSelectedClaimLimit(tier.value);
+                          setBoostAddon(false);
+                        }
+                        setValidationErrors(prev => ({ ...prev, claimLimit: false }));
+                      }}
                     >
-                      {/* ON/OFF Labels */}
-                      <span className={cn(
-                        "text-[11px] font-bold uppercase pl-1.5 transition-all duration-200",
-                        boostAddon ? "text-white" : "text-transparent"
-                      )}>
-                        ON
-                      </span>
-                      <span className={cn(
-                        "text-[11px] font-bold uppercase pr-1.5 transition-all duration-200",
-                        boostAddon ? "text-transparent" : "text-gray-500"
-                      )}>
-                        OFF
-                      </span>
-                      
-                      {/* Toggle Knob */}
-                      <span
-                        className={cn(
-                          "absolute inline-flex items-center justify-center rounded-full bg-white shadow-md",
-                          "w-[28px] h-[28px] top-1",
-                          "transition-all duration-300 ease-out",
-                          boostAddon 
-                            ? "left-[36px] shadow-lg" 
-                            : "left-1"
-                        )}
-                      >
-                        {boostAddon ? (
-                          <Check className="w-4 h-4 text-green-500" strokeWidth={3} />
-                        ) : (
-                          <Plus className="w-4 h-4 text-gray-400" strokeWidth={2} />
-                        )}
-                      </span>
+                      {isPopular && (
+                        <div className="absolute -top-3 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                          MOST POPULAR
+                        </div>
+                      )}
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h4 className="text-base font-semibold text-gray-500 mb-1">{tier.name}</h4>
+                          <div className="text-3xl font-bold text-black">
+                            £{tier.value.toLocaleString()} <span className="text-base">per claim</span>
+                          </div>
+                          {tier.value === 5000 && (
+                            <div className="text-sm text-primary font-medium mt-1">
+                              +£{PREMIUM_CLAIM_MONTHLY[paymentType as string]}/mo
+                            </div>
+                          )}
+                          {tier.value === 3000 && (
+                            <div className="text-sm text-primary font-medium mt-1">
+                              +£5/mo
+                            </div>
+                          )}
+                        </div>
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                          isSelected ? 'bg-green-500 border-green-500' : 'border-gray-300'
+                        }`}>
+                          {isSelected && <Check className="w-4 h-4 text-white" />}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
-        {/* Add-ons section removed - auto-included add-ons for 24/36 month plans are handled by getAutoIncludedAddOns in addOnsUtils.ts */}
 
         {/* Conversion-Optimized Trust & Action Section */}
         <div id="your-cover-details" className="pt-2 pb-6 md:pt-4 md:pb-10 space-y-4">
