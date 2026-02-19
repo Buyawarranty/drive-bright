@@ -51,7 +51,7 @@ const allExtras: ExtraWithBadge[] = [
     title: 'Tyre Cover',
     shortDescription: 'Accidental and malicious tyre damage',
     details: ['Up to £150 per tyre replacement', 'Covers accidental damage and vandalism', 'Includes puncture repairs'],
-    price: 8,
+    price: 7,
     priceType: 'monthly',
     icon: '🛞',
     badge: { text: 'POPULAR', color: 'green' }
