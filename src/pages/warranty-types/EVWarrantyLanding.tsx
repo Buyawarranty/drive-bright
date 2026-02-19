@@ -910,7 +910,7 @@ const EVWarrantyLanding: React.FC = () => {
 
             {/* Bottom CTA */}
             <div className="mt-8 md:mt-12 text-center">
-              <div className="bg-brand-deep-blue rounded-2xl p-8 md:p-12 max-w-3xl mx-auto">
+              <div className="bg-[#1a2e5a] rounded-2xl p-8 md:p-12 max-w-3xl mx-auto">
                 <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
                   EV warranty cover from just £29/month
                 </h3>
