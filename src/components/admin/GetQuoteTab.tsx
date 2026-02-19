@@ -2204,7 +2204,12 @@ Questions? Call 0330 229 5040`;
                       </button>
                     ))}
                   </div>
-                  <p className="text-xs text-amber-600 font-medium mt-1">
+                  <p className={cn(
+                    "text-xs font-medium mt-1 rounded-md px-2.5 py-1.5 transition-all",
+                    claimLimit === 5000
+                      ? "bg-[#FF385C]/10 text-[#FF385C] border border-[#FF385C]/20"
+                      : "text-amber-600"
+                  )}>
                     ⚠️ £5,000 AutoCare Premium is not available for Porsche, Range Rover, Jaguar, and Tesla vehicles.
                   </p>
                 </div>
