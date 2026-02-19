@@ -196,30 +196,31 @@ const RequestCallbackModal: React.FC<RequestCallbackModalProps> = ({ isOpen, onC
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Phone field */}
                 <div className="space-y-1.5">
-                  <label htmlFor="callback-phone-modal" className="block text-sm font-semibold text-gray-900">
-                    Your phone number
+                  <label htmlFor="callback-phone-modal" className="block text-sm font-bold text-gray-900">
+                    Your mobile number
                   </label>
                   <div className="relative">
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-black/40" />
                     <Input
                       id="callback-phone-modal"
                       type="tel"
                       value={phone}
                       onChange={handlePhoneChange}
-                      placeholder="e.g. 07123 456789"
-                      className={`h-14 text-lg pl-4 pr-12 rounded-xl transition-all duration-300 placeholder:text-gray-400 ${
+                      placeholder="07900 000000"
+                      className={`h-14 text-base font-semibold pl-11 pr-12 rounded-xl transition-all duration-300 placeholder:text-gray-400 ${
                         error
-                          ? 'border-red-400 focus:ring-red-400/30 bg-red-50/30'
+                          ? 'border-2 border-red-500 bg-white focus:border-red-500 focus:ring-0'
                           : isPhoneValid
-                            ? 'border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50/40'
-                            : 'border-gray-200 bg-gray-50/50 focus:border-brand-orange/60 focus:ring-2 focus:ring-brand-orange/10'
+                            ? 'border-2 border-emerald-500 bg-white focus:border-emerald-500 focus:ring-0'
+                            : 'border-2 border-black/80 bg-[#F5F5F5] focus:bg-white focus:border-brand-orange focus:ring-0'
                       }`}
                       disabled={isSubmitting}
                       autoComplete="tel"
                     />
                     {isPhoneValid && !isSubmitting && (
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 animate-in zoom-in-50 fade-in-0 duration-300">
-                        <div className="w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center">
-                          <Check className="w-4 h-4 text-white" strokeWidth={3} />
+                        <div className="w-6 h-6 rounded-full border-2 border-emerald-500 flex items-center justify-center">
+                          <Check className="w-4 h-4 text-emerald-500" strokeWidth={3} />
                         </div>
                       </div>
                     )}
