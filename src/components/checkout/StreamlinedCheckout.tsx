@@ -1271,7 +1271,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           vehicleData: vehicleDataWithActualMileage,
           paymentType,
           voluntaryExcess: updatedPricingData.voluntaryExcess,
-          claimLimit: updatedPricingData.claimLimit || 1250,
+          claimLimit: updatedPricingData.claimLimit || 2000,
           labourRate: pricingData.labourRate || 50,
           customerData: { 
             ...customerData, 
@@ -1391,7 +1391,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
           vehicleData: vehicleDataWithActualMileage,
           paymentType,
           voluntaryExcess: updatedPricingData.voluntaryExcess,
-          claimLimit: updatedPricingData.claimLimit || 1250,
+          claimLimit: updatedPricingData.claimLimit || 2000,
           labourRate: pricingData.labourRate || 50,
           customerData: { 
             ...customerData, 
@@ -1561,7 +1561,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               vehicleMake={vehicleData.make}
               vehicleModel={vehicleData.model}
               duration={getDurationText()}
-              claimLimit={updatedPricingData.claimLimit || 1250}
+               claimLimit={updatedPricingData.claimLimit || 2000}
               labourRate={pricingData.labourRate || 50}
               excess={updatedPricingData.voluntaryExcess || 100}
               selectedPayment={selectedPayment}
@@ -2173,7 +2173,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             vehicleMake={vehicleData.make}
             vehicleModel={vehicleData.model}
             duration={getDurationText()}
-            claimLimit={updatedPricingData.claimLimit || 1250}
+            claimLimit={updatedPricingData.claimLimit || 2000}
             labourRate={pricingData.labourRate || 70}
             excess={updatedPricingData.voluntaryExcess || 100}
             selectedPayment={selectedPayment}
