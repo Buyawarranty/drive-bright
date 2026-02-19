@@ -32,6 +32,7 @@ import {
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
 import { calculateVehiclePriceAdjustment } from '@/lib/vehicleValidation';
 import { useMotMileage } from '@/hooks/useMotMileage';
+import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getPremiumClaimSurcharge } from '@/lib/claimLimitTiers';
 
 interface VehicleData {
   regNumber: string;
@@ -53,18 +54,19 @@ const termOptions = [
 
 const excessOptions = [0, 50, 100, 150];
 
-const claimLimitOptionsBase = [
-  { value: 750, label: '£750', description: 'Minor repairs' },
-  { value: 1250, label: '£1,250', description: 'Most popular' },
-  { value: 2000, label: '£2,000', description: 'Comprehensive' }
+const claimLimitOptions = [
+  { value: 750, label: '£750', description: 'AutoCare Basic' },
+  { value: 2000, label: '£2,000', description: 'AutoCare Essential', popular: true },
+  { value: 3000, label: '£3,000', description: 'AutoCare Elite' },
+  { value: 5000, label: '£5,000', description: 'AutoCare Premium' },
 ];
 
-// Helper to get visible claim limits based on payment type
-const getVisibleClaimLimits = (paymentType: string) => {
-  const isMultiYear = paymentType === '24months' || paymentType === '36months';
-  return isMultiYear 
-    ? claimLimitOptionsBase.filter(opt => opt.value !== 1250)
-    : claimLimitOptionsBase;
+// Helper to get visible claim limits based on vehicle make
+const getVisibleClaimLimits = (vehicleMake?: string) => {
+  if (isPremiumVehicle(vehicleMake)) {
+    return claimLimitOptions.filter(opt => opt.value !== 5000);
+  }
+  return claimLimitOptions;
 };
 
 const labourRateOptions = [
@@ -95,7 +97,6 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
   const [excessAmount, setExcessAmount] = useState(100);
-  // PROMO: Default to £2000 for 2yr/3yr plans (priced at £1250 rate)
   const [claimLimit, setClaimLimit] = useState(2000);
   const [labourRate, setLabourRate] = useState(70);
   const [boostAddon, setBoostAddon] = useState(false);
@@ -283,9 +284,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     const loadedPaymentType = savedQuote.paymentType || '24months';
     setPaymentType(loadedPaymentType);
     setExcessAmount(savedQuote.excessAmount || 100);
-    // PROMO: Use saved claim limit or default based on payment type
-    const isMultiYear = loadedPaymentType === '24months' || loadedPaymentType === '36months';
-    setClaimLimit(savedQuote.claimLimit || (isMultiYear ? 2000 : 1250));
+    setClaimLimit(savedQuote.claimLimit || 2000);
     setLabourRate(savedQuote.labourRate || 70);
     setBoostAddon(savedQuote.boostAddon || false);
     setSelectedAddOns(savedQuote.selectedAddOns || {});
@@ -353,14 +352,17 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       adjustmentType: vehicleAdjustmentResult.adjustmentType
     });
     
+    const effectiveClaimLimit = getBaseClaimLimit(claimLimit);
+    const premiumSurcharge = claimLimit === 5000 ? getPremiumClaimSurcharge(paymentType) : 0;
+    
     const result = calculateTotalWarrantyPrice({
       paymentPeriod: paymentType,
       voluntaryExcess: excessAmount,
-      claimLimit: claimLimit,
+      claimLimit: effectiveClaimLimit,
       labourRate: labourRate,
       boostEnabled: boostAddon,
       vehicleAdjustment: vehicleAdjustmentResult.adjustmentAmount,
-      addOnPrice: addOnPrice
+      addOnPrice: addOnPrice + premiumSurcharge
     });
     
     // Calculate pay-in-full - only apply 10% discount if toggle is ON
@@ -415,16 +417,12 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     setIsPriceOverridden(false);
   }, [paymentType, excessAmount, claimLimit, labourRate, boostAddon, selectedAddOns]);
 
-  // PROMO: Update claim limit default when payment type changes
-  // 2yr/3yr default to £2000 (at £1250 price), 1yr defaults to £1250
+  // Reset claim limit if premium vehicle selected and £5000 was chosen
   useEffect(() => {
-    const isMultiYear = paymentType === '24months' || paymentType === '36months';
-    const promoDefault = isMultiYear ? 2000 : 1250;
-    // Only auto-update if current selection matches the opposite default
-    if ((isMultiYear && claimLimit === 1250) || (!isMultiYear && claimLimit === 2000)) {
-      setClaimLimit(promoDefault);
+    if (claimLimit === 5000 && isPremiumVehicle(vehicleData?.make)) {
+      setClaimLimit(2000);
     }
-  }, [paymentType]);
+  }, [vehicleData?.make]);
 
   // Auto-populate custom price fields when selections change (if not manually overridden)
   useEffect(() => {
@@ -976,7 +974,6 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       setCustomerName('');
       setPaymentType('24months');
       setExcessAmount(100);
-      // PROMO: 2yr/3yr defaults to £2000 claim limit
       setClaimLimit(2000);
       setLabourRate(70);
       setBoostAddon(false);
@@ -1757,7 +1754,6 @@ Questions? Call 0330 229 5040`;
     setCustomerPhone('');
     setPaymentType('24months');
     setExcessAmount(100);
-    // PROMO: 2yr/3yr defaults to £2000 claim limit
     setClaimLimit(2000);
     setLabourRate(70);
     setBoostAddon(false);
@@ -2172,21 +2168,21 @@ Questions? Call 0330 229 5040`;
                 {/* Claim Limit - Quick Select Chips */}
                 <div className="space-y-3">
                   <Label className="text-base font-semibold">Claim Limit 🚗</Label>
-                  {(paymentType === '24months' || paymentType === '36months') && (
-                    <p className="text-xs text-green-600 font-medium bg-green-50 p-2 rounded-lg">✨ Free upgrade to £2,000 on multi-year plans!</p>
-                  )}
-                  <div className="grid grid-cols-3 gap-2">
-                    {getVisibleClaimLimits(paymentType).map((option) => (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    {getVisibleClaimLimits(vehicleData?.make).map((option) => (
                       <button
                         key={option.value}
                         onClick={() => setClaimLimit(option.value)}
                         className={cn(
-                          "py-3 px-2 rounded-lg border-2 text-center transition-all",
+                          "py-3 px-2 rounded-lg border-2 text-center transition-all relative",
                           claimLimit === option.value
                             ? "border-primary bg-primary/10"
                             : "border-border hover:border-primary/50"
                         )}
                       >
+                        {option.popular && (
+                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full">POPULAR</span>
+                        )}
                         <div className="font-semibold">{option.label}</div>
                         <div className="text-xs text-muted-foreground">{option.description}</div>
                       </button>
@@ -3405,8 +3401,8 @@ Questions? Call 0330 229 5040`;
                               onChange={(e) => setClaimLimit(parseInt(e.target.value))}
                               className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors text-sm"
                             >
-                              {getVisibleClaimLimits(paymentType).map(opt => (
-                                <option key={opt.value} value={opt.value}>£{opt.value.toLocaleString()}</option>
+                              {getVisibleClaimLimits(vehicleData?.make).map(opt => (
+                                <option key={opt.value} value={opt.value}>£{opt.value.toLocaleString()} - {opt.description}</option>
                               ))}
                             </select>
                           </div>

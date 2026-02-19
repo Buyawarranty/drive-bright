@@ -25,6 +25,7 @@ import {
   type PaymentPeriod 
 } from '@/lib/pricingMatrix';
 import { getAutoIncludedAddOns } from '@/lib/addOnsUtils';
+import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getPremiumClaimSurcharge } from '@/lib/claimLimitTiers';
 
 interface VehicleData {
   regNumber: string;
@@ -53,18 +54,18 @@ const termOptions = [
 
 const excessOptions = [0, 50, 100, 150];
 
-const claimLimitOptionsBase = [
-  { value: 750, label: '£750', description: 'Minor repairs' },
-  { value: 1250, label: '£1,250', description: 'Most popular' },
-  { value: 2000, label: '£2,000', description: 'Comprehensive' }
+const claimLimitOptions = [
+  { value: 750, label: '£750', description: 'AutoCare Basic' },
+  { value: 2000, label: '£2,000', description: 'AutoCare Essential' },
+  { value: 3000, label: '£3,000', description: 'AutoCare Elite' },
+  { value: 5000, label: '£5,000', description: 'AutoCare Premium' },
 ];
 
-// Helper to get visible claim limits based on payment type
-const getVisibleClaimLimits = (paymentType: string) => {
-  const isMultiYear = paymentType === '24months' || paymentType === '36months';
-  return isMultiYear 
-    ? claimLimitOptionsBase.filter(opt => opt.value !== 1250)
-    : claimLimitOptionsBase;
+const getVisibleClaimLimits = (vehicleMake?: string) => {
+  if (isPremiumVehicle(vehicleMake)) {
+    return claimLimitOptions.filter(opt => opt.value !== 5000);
+  }
+  return claimLimitOptions;
 };
 
 const labourRateOptions = [
@@ -104,7 +105,6 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
   const [currentAdminUserId, setCurrentAdminUserId] = useState<string>('');
   
   // Policy configuration
-  // PROMO: Default to £2000 for 2yr/3yr plans (priced at £1250 rate)
   const [paymentType, setPaymentType] = useState<PaymentPeriod>('24months');
   const [excessAmount, setExcessAmount] = useState(100);
   const [claimLimit, setClaimLimit] = useState(2000);
@@ -179,25 +179,23 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     };
     fetchAdminUsers();
   }, []);
-
-  // PROMO: Update claim limit default when payment type changes
-  // 2yr/3yr default to £2000 (at £1250 price), 1yr defaults to £1250
+  // Reset claim limit if premium vehicle selected and £5000 was chosen
   useEffect(() => {
-    const isMultiYear = paymentType === '24months' || paymentType === '36months';
-    const promoDefault = isMultiYear ? 2000 : 1250;
-    // Only auto-update if current selection matches the opposite default
-    if ((isMultiYear && claimLimit === 1250) || (!isMultiYear && claimLimit === 2000)) {
-      setClaimLimit(promoDefault);
+    if (claimLimit === 5000 && isPremiumVehicle(vehicleData?.make)) {
+      setClaimLimit(2000);
     }
-  }, [paymentType]);
+  }, [vehicleData?.make]);
 
   // Calculate price
+  const effectiveClaimLimit = getBaseClaimLimit(claimLimit);
+  const premiumSurcharge = claimLimit === 5000 ? getPremiumClaimSurcharge(paymentType) : 0;
   const currentPrice = vehicleData ? calculateTotalWarrantyPrice({
     paymentPeriod: paymentType,
     voluntaryExcess: excessAmount,
-    claimLimit: claimLimit,
+    claimLimit: effectiveClaimLimit,
     labourRate: labourRate,
     boostEnabled: boostAddon,
+    addOnPrice: premiumSurcharge,
   }) : { totalPrice: 0, monthlyPrice: 0 };
 
   const formatRegNumber = (value: string): string => {
@@ -485,7 +483,6 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
     setSelectedLeadId(null);
     setPaymentType('24months');
     setExcessAmount(100);
-    // PROMO: 2yr/3yr defaults to £2000 claim limit
     setClaimLimit(2000);
     setLabourRate(70);
     setBoostAddon(false);
@@ -726,9 +723,9 @@ export const ConfirmExternalPaymentTab: React.FC<ConfirmExternalPaymentTabProps>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {getVisibleClaimLimits(paymentType).map((opt) => (
+                          {getVisibleClaimLimits(vehicleData?.make).map((opt) => (
                             <SelectItem key={opt.value} value={opt.value.toString()}>
-                              {opt.label}
+                              {opt.label} - {opt.description}
                             </SelectItem>
                           ))}
                         </SelectContent>
