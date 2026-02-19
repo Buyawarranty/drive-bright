@@ -365,7 +365,7 @@ const WarrantyTypes: React.FC = () => {
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
                   <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/BMW.svg/800px-BMW.svg.png" 
+                    src="/logos/bmw-logo.png" 
                     alt="BMW logo"
                     className="max-h-12 max-w-12 object-contain"
                     loading="lazy"
@@ -384,7 +384,7 @@ const WarrantyTypes: React.FC = () => {
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
                   <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Mercedes-Logo.svg/800px-Mercedes-Logo.svg.png" 
+                    src="/logos/mercedes-logo.png" 
                     alt="Mercedes-Benz logo"
                     className="max-h-12 max-w-12 object-contain"
                     loading="lazy"
@@ -417,7 +417,7 @@ const WarrantyTypes: React.FC = () => {
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
                   <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Honda.svg/800px-Honda.svg.png" 
+                    src="/logos/honda-logo.png" 
                     alt="Honda logo"
                     className="max-h-12 max-w-12 object-contain"
                     loading="lazy"
@@ -436,7 +436,7 @@ const WarrantyTypes: React.FC = () => {
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
                   <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Toyota.svg/800px-Toyota.svg.png" 
+                    src="/logos/toyota-logo.png" 
                     alt="Toyota logo"
                     className="max-h-12 max-w-12 object-contain"
                     loading="lazy"
@@ -455,7 +455,7 @@ const WarrantyTypes: React.FC = () => {
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
                   <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Ford_Motor_Company_Logo.svg/800px-Ford_Motor_Company_Logo.svg.png" 
+                    src="/logos/ford-logo.png" 
                     alt="Ford logo"
                     className="max-h-12 max-w-12 object-contain"
                     loading="lazy"
@@ -474,7 +474,7 @@ const WarrantyTypes: React.FC = () => {
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
                   <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/KIA_logo2.svg/800px-KIA_logo2.svg.png" 
+                    src="/logos/kia-logo.png" 
                     alt="Kia logo"
                     className="max-h-12 max-w-12 object-contain"
                     loading="lazy"
@@ -493,7 +493,7 @@ const WarrantyTypes: React.FC = () => {
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
                   <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Hyundai_Motor_Company_logo.svg/800px-Hyundai_Motor_Company_logo.svg.png" 
+                    src="/logos/hyundai-logo.png" 
                     alt="Hyundai logo"
                     className="max-h-12 max-w-12 object-contain"
                     loading="lazy"
@@ -550,7 +550,7 @@ const WarrantyTypes: React.FC = () => {
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
                   <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Audi-Logo_2016.svg/800px-Audi-Logo_2016.svg.png" 
+                    src="/logos/audi-logo.png" 
                     alt="Audi logo"
                     className="max-h-12 max-w-12 object-contain"
                     loading="lazy"
@@ -569,7 +569,7 @@ const WarrantyTypes: React.FC = () => {
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
                   <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Nissan_logo_2020.svg/800px-Nissan_logo_2020.svg.png" 
+                    src="/logos/nissan-logo.png" 
                     alt="Nissan logo"
                     className="max-h-12 max-w-12 object-contain"
                     loading="lazy"
@@ -588,7 +588,7 @@ const WarrantyTypes: React.FC = () => {
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
                   <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Peugeot_2010_logo.svg/800px-Peugeot_2010_logo.svg.png" 
+                    src="/logos/peugeot-logo.png" 
                     alt="Peugeot logo"
                     className="max-h-12 max-w-12 object-contain"
                     loading="lazy"
@@ -607,7 +607,7 @@ const WarrantyTypes: React.FC = () => {
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
                   <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Vauxhall_Motors_2020.svg/800px-Vauxhall_Motors_2020.svg.png" 
+                    src="/logos/vauxhall-logo.png" 
                     alt="Vauxhall logo"
                     className="max-h-12 max-w-12 object-contain"
                     loading="lazy"
@@ -626,7 +626,7 @@ const WarrantyTypes: React.FC = () => {
               >
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-3 p-2 group-hover:scale-110 transition-transform border-2 border-gray-100">
                   <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Volvo_Cars_logo.svg/800px-Volvo_Cars_logo.svg.png" 
+                    src="/logos/volvo-logo.png" 
                     alt="Volvo logo"
                     className="max-h-12 max-w-12 object-contain"
                     loading="lazy"
