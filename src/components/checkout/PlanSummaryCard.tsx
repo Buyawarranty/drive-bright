@@ -1,6 +1,7 @@
 import React from 'react';
 import { Shield, Check, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { getDisplayClaimLimit } from '@/lib/claimLimitTiers';
 
 interface PlanSummaryCardProps {
   planName: string;
@@ -41,9 +42,8 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
 }) => {
   const [isOpen, setIsOpen] = React.useState(true);
 
-  // Display claim limit as-is
-  const displayClaimLimit = () => {
-    return `£${claimLimit.toLocaleString()}`;
+  const displayClaimLimitText = () => {
+    return getDisplayClaimLimit(claimLimit);
   };
 
   const vehicleDisplay = [vehicleMake, vehicleModel].filter(Boolean).join(' ') || vehicleReg;
@@ -106,7 +106,7 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
                 </div>
                 <div className="flex justify-between items-center gap-2">
                   <span className="text-gray-600 flex-shrink-0">Claim Limit:</span>
-                  <span className="font-semibold text-[#1a1a1a] text-right">{displayClaimLimit()}</span>
+                  <span className="font-semibold text-[#1a1a1a] text-right">{displayClaimLimitText()}</span>
                 </div>
                 <div className="flex justify-between items-center gap-2">
                   <span className="text-gray-600 flex-shrink-0">Labour Rate:</span>
@@ -185,7 +185,7 @@ const PlanSummaryCard: React.FC<PlanSummaryCardProps> = ({
           </div>
           <div className="flex justify-between items-center py-1">
             <span className="text-gray-600">Claim Limit:</span>
-            <span className="font-semibold text-[#1a1a1a]">{displayClaimLimit()}</span>
+            <span className="font-semibold text-[#1a1a1a]">{displayClaimLimitText()}</span>
           </div>
           <div className="flex justify-between items-center py-1">
             <span className="text-gray-600">Labour Rate:</span>

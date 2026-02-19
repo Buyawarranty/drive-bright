@@ -107,7 +107,7 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
                       "font-bold text-foreground",
                       visibleTiers.length > 3 ? "text-lg" : "text-xl"
                     )}>
-                      £{tier.value.toLocaleString()}
+                      £{(tier.displayValue ?? tier.value).toLocaleString()}
                     </div>
                     <div className="text-xs text-muted-foreground">per claim</div>
                     {/* Show monthly cost indicator for premium tiers */}

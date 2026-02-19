@@ -32,7 +32,7 @@ import {
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
 import { calculateVehiclePriceAdjustment } from '@/lib/vehicleValidation';
 import { useMotMileage } from '@/hooks/useMotMileage';
-import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getPremiumClaimSurcharge, PREMIUM_CLAIM_MONTHLY } from '@/lib/claimLimitTiers';
+import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getPremiumClaimSurcharge, PREMIUM_CLAIM_MONTHLY, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 
 interface VehicleData {
   regNumber: string;
@@ -55,7 +55,7 @@ const termOptions = [
 const excessOptions = [0, 50, 100, 150];
 
 const claimLimitOptions = [
-  { value: 750, label: '£750', description: 'AutoCare Basic' },
+  { value: 750, label: '£1,000', description: 'AutoCare Basic' },
   { value: 2000, label: '£2,000', description: 'AutoCare Essential', popular: true },
   { value: 3000, label: '£3,000', description: 'AutoCare Elite' },
   { value: 5000, label: '£5,000', description: 'AutoCare Premium' },
@@ -768,7 +768,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
       
       // Generate unique quote ID for restoration
       const quoteId = `ADMIN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
+      const displayClaimLimit = boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit);
       const termOption = termOptions.find(t => t.id === paymentType);
       const coverMonths = termOption?.months || 12;
       // Map freeExtendedCover to bonusMonths - only show bonus if explicitly selected
@@ -1116,7 +1116,7 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
     const termOption = termOptions.find(t => t.id === paymentType);
     const months = termOption?.months || 12;
     const bonus = termOption?.bonus || 3;
-    const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
+    const displayClaimLimit = boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit);
     
     const content = `Hi ${customerName.split(' ')[0]},
 
@@ -1155,7 +1155,7 @@ Questions? Call 0330 229 5040`;
     setIsGeneratingQuoteLink(true);
     setQuoteLink(null);
     
-    const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
+    const displayClaimLimit = boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit);
     const contractTotal = currentPrice.monthlyPrice * 12; // Use monthly × 12 for consistency
     const payInFullPrice = currentPrice.payInFullPrice || Math.floor(contractTotal * 0.90);
     
@@ -1312,7 +1312,7 @@ Questions? Call 0330 229 5040`;
   const getExternalPaymentPreviewData = () => {
     const termOption = termOptions.find(t => t.id === paymentType);
     const durationMonths = termOption?.months || 12;
-    const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
+    const displayClaimLimit = boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit);
     const startDate = startOfDay(warrantyStartDate);
     const endDate = new Date(startDate);
     endDate.setMonth(endDate.getMonth() + durationMonths);
@@ -1401,7 +1401,7 @@ Questions? Call 0330 229 5040`;
 
     setIsConfirmingPaid(true);
     const warrantyReference = await generateWarrantyReference();
-    const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
+    const displayClaimLimit = boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit);
     const termOption = termOptions.find(t => t.id === paymentType);
     const durationMonths = termOption?.months || 12;
     

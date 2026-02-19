@@ -1,5 +1,6 @@
 import React from 'react';
 import { Check, Lock, Star, Shield, Clock, Wrench, Users } from 'lucide-react';
+import { getDisplayClaimLimit } from '@/lib/claimLimitTiers';
 import { Button } from '@/components/ui/button';
 
 interface DesktopStickyPriceSidebarProps {
@@ -35,9 +36,8 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
   onPayClick,
   onPaymentChange,
 }) => {
-  // Display claim limit as-is
-  const displayClaimLimit = () => {
-    return `£${claimLimit.toLocaleString()}`;
+  const displayClaimLimitText = () => {
+    return getDisplayClaimLimit(claimLimit);
   };
 
   const savings = originalPrice - fullPrice;
@@ -78,7 +78,7 @@ const DesktopStickyPriceSidebar: React.FC<DesktopStickyPriceSidebarProps> = ({
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">Claim limit</span>
-              <span className="font-medium text-[#1a1a1a]">{displayClaimLimit()}</span>
+              <span className="font-medium text-[#1a1a1a]">{displayClaimLimitText()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Labour rate</span>
