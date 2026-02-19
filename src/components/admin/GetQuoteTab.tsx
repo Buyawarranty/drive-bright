@@ -32,7 +32,7 @@ import {
 import { calculateAddOnPrice, getAutoIncludedAddOns, getAddOnInfo } from '@/lib/addOnsUtils';
 import { calculateVehiclePriceAdjustment } from '@/lib/vehicleValidation';
 import { useMotMileage } from '@/hooks/useMotMileage';
-import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getPremiumClaimSurcharge } from '@/lib/claimLimitTiers';
+import { CLAIM_LIMIT_TIERS, isPremiumVehicle, getBaseClaimLimit, getPremiumClaimSurcharge, PREMIUM_CLAIM_MONTHLY } from '@/lib/claimLimitTiers';
 
 interface VehicleData {
   regNumber: string;
@@ -2191,6 +2191,16 @@ Questions? Call 0330 229 5040`;
                         )}
                         <div className="font-semibold">{option.label}</div>
                         <div className="text-xs text-muted-foreground">{option.description}</div>
+                        {option.value === 5000 && (
+                          <div className="text-[11px] text-[#0BA360] font-medium mt-0.5">
+                            Just {Math.round((PREMIUM_CLAIM_MONTHLY[paymentType] * 12) / 365 * 100)}p/day more
+                          </div>
+                        )}
+                        {option.value === 3000 && (
+                          <div className="text-[11px] text-[#0BA360] font-medium mt-0.5">
+                            Just {Math.round((5 * 12) / 365 * 100)}p/day more
+                          </div>
+                        )}
                       </button>
                     ))}
                   </div>

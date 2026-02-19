@@ -112,13 +112,13 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
                     <div className="text-xs text-muted-foreground">per claim</div>
                     {/* Show monthly cost indicator for premium tiers */}
                     {tier.value === 5000 && (
-                      <div className="text-[10px] sm:text-xs text-primary font-medium mt-1">
-                        +£{PREMIUM_CLAIM_MONTHLY[paymentType]}/mo
+                      <div className="text-[10px] sm:text-xs text-[#0BA360] font-medium mt-1">
+                        Just {Math.round((PREMIUM_CLAIM_MONTHLY[paymentType] * 12) / 365 * 100)}p/day more
                       </div>
                     )}
                     {tier.value === 3000 && (
-                      <div className="text-[10px] sm:text-xs text-primary font-medium mt-1">
-                        +£{boostPrice}/mo
+                      <div className="text-[10px] sm:text-xs text-[#0BA360] font-medium mt-1">
+                        Just {Math.round((boostPrice * 12) / 365 * 100)}p/day more
                       </div>
                     )}
                   </button>
