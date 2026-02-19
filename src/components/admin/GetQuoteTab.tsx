@@ -3456,8 +3456,20 @@ Questions? Call 0330 229 5040`;
                           <div className="space-y-1.5">
                             <Label className="text-xs font-medium text-gray-500">Claim Limit</Label>
                             <select
-                              value={claimLimit}
-                              onChange={(e) => setClaimLimit(parseInt(e.target.value))}
+                              value={claimLimit === 2000 && boostAddon ? 3000 : claimLimit}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value);
+                                if (val === 3000) {
+                                  setClaimLimit(2000);
+                                  setBoostAddon(true);
+                                } else if (val === 5000) {
+                                  setClaimLimit(5000);
+                                  setBoostAddon(false);
+                                } else {
+                                  setClaimLimit(val);
+                                  setBoostAddon(false);
+                                }
+                              }}
                               className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors text-sm"
                             >
                               {getVisibleClaimLimits(vehicleData?.make).map(opt => (

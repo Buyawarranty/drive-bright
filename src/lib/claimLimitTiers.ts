@@ -51,8 +51,8 @@ export function getPremiumClaimSurcharge(paymentPeriod: string): number {
 
 /** Get the effective base claim limit for pricing matrix lookup */
 export function getBaseClaimLimit(claimLimit: number): number {
-  // £5000 and £3000 (via boost) both use £2000 base in the pricing matrix
-  if (claimLimit === 5000) return 2000;
+  // £5000 and £3000 both use £2000 base in the pricing matrix
+  if (claimLimit === 5000 || claimLimit === 3000) return 2000;
   return claimLimit;
 }
 
