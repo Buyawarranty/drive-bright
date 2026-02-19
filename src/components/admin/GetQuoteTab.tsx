@@ -2268,7 +2268,7 @@ Questions? Call 0330 229 5040`;
                       .filter((addon) => !['motFee', 'lostKey', 'consequential', 'motRepair'].includes(addon.key))
                       .map((addon) => {
                       const isAutoIncluded = addon.isAutoIncluded;
-                      const isUnavailable = ['wearAndTear', 'tyre'].includes(addon.key);
+                      const isUnavailable = ['wearAndTear'].includes(addon.key);
                       const isSelected = !isUnavailable && (selectedAddOns[addon.key] || isAutoIncluded);
                       // Display monthly price like Step 3
                       const monthlyPriceDisplay = addon.oneTimePrice 
