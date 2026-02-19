@@ -770,24 +770,19 @@ const VanWarrantyLanding: React.FC = () => {
               <div className="text-center lg:text-left">
                 {/* H1 Headline */}
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-3 md:mb-4">
-                  <span className="text-gray-900">Van Extended Warranty </span>
-                  <span className="text-brand-orange">in 60 Seconds!</span>
+                  <span className="text-gray-900">Affordable van warranty </span>
+                  <span className="text-brand-orange">in 60 seconds!</span>
                 </h1>
-
-                {/* Subheadline */}
-                <p className="text-base sm:text-lg md:text-xl text-gray-700 mb-4 md:mb-6">
-                  Keep your business moving with comprehensive van cover. UK-wide repairs, no-surprise costs, and instant protection for commercial vans.
-                </p>
 
                 {/* Benefits */}
                 <div className="mb-4 md:mb-6 text-gray-700 text-xs sm:text-sm md:text-base space-y-1.5 md:space-y-2">
                   <div className="flex items-center justify-center lg:justify-start">
                     <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
-                    <span className="font-medium">Commercial vans covered • Easy claims • Fast payouts</span>
+                    <span className="font-medium">From just 60p a day • Easy claims • Fast payouts</span>
                   </div>
                   <div className="flex items-center justify-center lg:justify-start">
                     <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1.5 md:mr-2 flex-shrink-0" />
-                    <span className="font-medium">Unlimited claims • Parts and Labour • No excess options</span>
+                    <span className="font-medium">Unlimited claims • Parts and Labour • No excess</span>
                   </div>
                 </div>
 
