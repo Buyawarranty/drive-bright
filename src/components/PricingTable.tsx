@@ -31,7 +31,7 @@ import {
   getMarketingSavings,
   type PaymentPeriod
 } from '@/lib/pricingMatrix';
-import { CLAIM_LIMIT_TIERS, PREMIUM_CLAIM_MONTHLY, isPremiumVehicle, getBaseClaimLimit, getPremiumClaimSurcharge } from '@/lib/claimLimitTiers';
+import { CLAIM_LIMIT_TIERS, PREMIUM_CLAIM_MONTHLY, isPremiumVehicle, getBaseClaimLimit, getPremiumClaimSurcharge, getDisplayClaimLimitValue } from '@/lib/claimLimitTiers';
 import pandaCarWarranty from "@/assets/panda-car-warranty-transparent.png";
 import pandaSavingsMascot from "@/assets/panda-savings-mascot.webp";
 import trustpilotLogo from "@/assets/trustpilot-excellent-box.webp";
@@ -1078,8 +1078,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
       });
       
       // Call onPlanSelected with the correct pricing data and selected options
-      // Calculate boosted claim limit if boost addon is selected
-      const effectiveClaimLimit = boostAddon ? selectedClaimLimit + 1000 : selectedClaimLimit;
+      // Claim limit is now set directly (3000/5000), no boost mapping needed
+      const effectiveClaimLimit = selectedClaimLimit;
       
       // Use displayMonthlyPrice * 12 as totalPrice to match what's shown in Step 3
       // Step 3 displays: "£X/month (12 payments)" with total = monthlyPrice × 12
@@ -2422,8 +2422,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
               ? CLAIM_LIMIT_TIERS.filter(t => t.value !== 5000)
               : [...CLAIM_LIMIT_TIERS];
             
-            // Determine displayed selection
-            const displayedLimit = (boostAddon && selectedClaimLimit === 2000) ? 3000 : selectedClaimLimit;
+            // Determine displayed selection - now direct since we set claim limit directly
+            const displayedLimit = selectedClaimLimit;
             
             return (
               <div className={cn(
@@ -2443,16 +2443,9 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           : 'border-2 border-gray-200 hover:border-orange-300 hover:shadow-md'
                       }`}
                       onClick={() => {
-                        if (tier.value === 3000) {
-                          setSelectedClaimLimit(2000);
-                          setBoostAddon(true);
-                        } else if (tier.value === 5000) {
-                          setSelectedClaimLimit(5000);
-                          setBoostAddon(false);
-                        } else {
-                          setSelectedClaimLimit(tier.value);
-                          setBoostAddon(false);
-                        }
+                        // Set claim limit directly - surcharge handles pricing for £3000/£5000
+                        setSelectedClaimLimit(tier.value);
+                        setBoostAddon(false);
                         setValidationErrors(prev => ({ ...prev, claimLimit: false }));
                       }}
                     >
@@ -2474,7 +2467,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
                           )}
                           {tier.value === 3000 && (
                             <div className="text-sm text-[#0BA360] font-medium mt-1">
-                              Just {Math.round((5 * 12) / 365 * 100)}p/day more
+                              Just {Math.round((PREMIUM_CLAIM_MONTHLY[paymentType as string] * 12) / 365 * 100)}p/day more
                             </div>
                           )}
                         </div>
@@ -2916,7 +2909,7 @@ const PricingTable: React.FC<PricingTableProps> = ({
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Claim Limit:</span>
-                <span className="font-bold">£{(boostAddon ? selectedClaimLimit + 1000 : selectedClaimLimit).toLocaleString()}</span>
+                <span className="font-bold">£{getDisplayClaimLimitValue(selectedClaimLimit).toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Excess:</span>
