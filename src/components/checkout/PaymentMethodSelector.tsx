@@ -6,6 +6,7 @@ interface PaymentMethodSelectorProps {
   onPaymentChange: (payment: 'monthly' | 'full') => void;
   monthlyPrice: number;
   totalPrice: number;
+  originalPrice?: number;
   fullPrice?: number;
   savings?: number;
 }
@@ -15,9 +16,11 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
   onPaymentChange,
   monthlyPrice,
   totalPrice,
+  originalPrice,
   fullPrice: fullPriceProp,
   savings: savingsProp,
 }) => {
+  const strikethroughPrice = originalPrice ?? totalPrice;
   // Use props from StreamlinedCheckout (source of truth) or fallback to Step 3's formula
   const stripeSavings = savingsProp ?? Math.floor(totalPrice * 0.10);
   const discountedPrice = fullPriceProp ?? (totalPrice - stripeSavings);
@@ -109,7 +112,7 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
                     Pay in Full: £{discountedPrice}
                   </p>
                   <p className="text-sm text-[#1a1a1a] mt-0.5">
-                    <span className="font-bold text-red-500 line-through">Was £{totalPrice}</span> <span className="font-bold text-green-600">Save £{savings}</span> <span className="text-gray-500">(10% off)</span>
+                    <span className="font-bold text-red-500 line-through">Was £{strikethroughPrice}</span> <span className="font-bold text-green-600">Save £{savings}</span> <span className="text-gray-500">(10% off)</span>
                   </p>
                 </div>
               </div>
