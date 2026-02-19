@@ -257,8 +257,8 @@ const evFAQs = [
     answer: "A reasonable service history is fine. Many vehicles are accepted even if servicing has been missed."
   },
   {
-    question: "Is £1,000, £2,000 or £3,000 the right claim limit for me?",
-    answer: "It depends on your vehicle and how much protection you want.\n\n£1,000 is ideal for smaller or lower-cost repairs.\n£2,000 offers broader cover for most mid-range repairs.\n£3,000 is our most popular option and covers the majority of common EV faults in full.\n\nEvery plan includes unlimited claims, and you're covered up to the value of your vehicle, whichever limit you choose."
+    question: "Is £1,000, £2,000, £3,000 or £5,000 the right claim limit for me?",
+    answer: "It depends on your vehicle and how much protection you want.\n\n£1,000 is ideal for smaller or lower‑cost repairs.\n£2,000 offers broader cover for most mid‑range repairs.\n£3,000 is our most popular option and covers the majority of common faults in full.\n£5,000 provides our highest level of protection and is best suited to newer, higher‑value or more complex vehicles where repair costs can be significantly higher.\n\nEvery plan includes unlimited claims, and you're covered up to the value of your vehicle, whichever limit you choose."
   },
   {
     question: "Are diagnostics covered?",
