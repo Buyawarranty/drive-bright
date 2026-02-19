@@ -5,7 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Users, X, Search, Loader2, UserPlus, Download, ArrowUpDown } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Users, X, Search, Loader2, UserPlus, Download, ArrowUpDown, ShieldCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -48,6 +49,7 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({ recipients
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [batchSize, setBatchSize] = useState('100');
+  const [excludePreviouslySent, setExcludePreviouslySent] = useState(true);
 
   // Search marketing_audience for autocomplete
   useEffect(() => {
@@ -77,6 +79,37 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({ recipients
     return () => clearTimeout(timer);
   }, [searchQuery, recipients]);
 
+  // Fetch all previously emailed addresses from email_logs
+  const fetchPreviouslySentEmails = async (): Promise<Set<string>> => {
+    const sentEmails = new Set<string>();
+    const PAGE_SIZE = 1000;
+    let from = 0;
+    let hasMore = true;
+
+    while (hasMore) {
+      const { data, error } = await supabase
+        .from('email_logs')
+        .select('recipient_email')
+        .range(from, from + PAGE_SIZE - 1);
+
+      if (error || !data || data.length === 0) {
+        hasMore = false;
+        break;
+      }
+
+      data.forEach(row => {
+        if (row.recipient_email) {
+          sentEmails.add(row.recipient_email.toLowerCase().trim());
+        }
+      });
+
+      hasMore = data.length === PAGE_SIZE;
+      from += PAGE_SIZE;
+    }
+
+    return sentEmails;
+  };
+
   const addRecipient = (r: Recipient) => {
     const email = r.email.toLowerCase().trim();
     if (!email) return;
@@ -103,22 +136,26 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({ recipients
   const importFromAudience = async (filter: string) => {
     setImporting(true);
     try {
+      // If excluding previously sent, fetch all sent emails first
+      let previouslySent = new Set<string>();
+      if (excludePreviouslySent) {
+        previouslySent = await fetchPreviouslySentEmails();
+      }
+
       const limit = batchSize === 'all' ? null : parseInt(batchSize);
-      let allContacts: any[] = [];
+      const existing = new Set(recipients.map(r => r.email.toLowerCase()));
+      const newRecipients: Recipient[] = [];
       const PAGE_SIZE = 1000;
       let from = 0;
       let hasMore = true;
 
       while (hasMore) {
-        const fetchSize = limit ? Math.min(PAGE_SIZE, limit - allContacts.length) : PAGE_SIZE;
-        if (limit && allContacts.length >= limit) break;
-
         let query = supabase
           .from('marketing_audience')
           .select('email, full_name, created_at')
           .not('email', 'is', null)
           .order('created_at', { ascending: sortOrder === 'oldest' })
-          .range(from, from + fetchSize - 1);
+          .range(from, from + PAGE_SIZE - 1);
 
         if (filter === 'unpaid_visitors') {
           query = query.eq('source_type', 'sales_lead')
@@ -131,26 +168,34 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({ recipients
 
         const { data, error } = await query;
         if (error) throw error;
-        allContacts = allContacts.concat(data || []);
-        hasMore = (data?.length || 0) === fetchSize && (!limit || allContacts.length < limit);
-        from += fetchSize;
+        if (!data || data.length === 0) break;
+
+        for (const c of data) {
+          if (!c.email) continue;
+          const email = c.email.toLowerCase().trim();
+          
+          // Skip if already in current recipients
+          if (existing.has(email)) continue;
+          // Skip if previously emailed
+          if (excludePreviouslySent && previouslySent.has(email)) continue;
+          
+          existing.add(email);
+          newRecipients.push({ email, name: c.full_name || '' });
+          
+          // Stop if we've reached the batch size
+          if (limit && newRecipients.length >= limit) break;
+        }
+
+        // Stop if we've reached the batch size or no more data
+        if (limit && newRecipients.length >= limit) break;
+        hasMore = data.length === PAGE_SIZE;
+        from += PAGE_SIZE;
       }
 
-      // Deduplicate and merge with existing
-      const existing = new Set(recipients.map(r => r.email.toLowerCase()));
-      const newRecipients: Recipient[] = [];
-      allContacts.forEach(c => {
-        if (c.email) {
-          const email = c.email.toLowerCase().trim();
-          if (!existing.has(email)) {
-            existing.add(email);
-            newRecipients.push({ email, name: c.full_name || '' });
-          }
-        }
-      });
-
       onChange([...recipients, ...newRecipients]);
-      toast.success(`Imported ${newRecipients.length} contacts`);
+      
+      const skippedCount = excludePreviouslySent ? ` (${previouslySent.size} previously emailed skipped)` : '';
+      toast.success(`Imported ${newRecipients.length} contacts${skippedCount}`);
     } catch {
       toast.error('Failed to import contacts');
     } finally {
@@ -285,6 +330,19 @@ export const RecipientSelector: React.FC<RecipientSelectorProps> = ({ recipients
             {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
             <span className="ml-1">Import</span>
           </Button>
+        </div>
+
+        {/* Exclude previously emailed toggle */}
+        <div className="flex items-center gap-2 pt-1">
+          <Checkbox
+            id="exclude-sent"
+            checked={excludePreviouslySent}
+            onCheckedChange={(checked) => setExcludePreviouslySent(checked === true)}
+          />
+          <label htmlFor="exclude-sent" className="text-xs text-muted-foreground flex items-center gap-1 cursor-pointer">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#0BA360]" />
+            Skip contacts already emailed (no duplicates)
+          </label>
         </div>
       </div>
 
