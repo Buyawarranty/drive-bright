@@ -719,6 +719,8 @@ export const GetQuoteTab: React.FC<GetQuoteTabProps> = ({ prePopulatedLead }) =>
         description: "Please fill in customer name and a valid email address",
         variant: "destructive",
       });
+      // Auto-scroll to the top so user can see the error fields
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     setStep(3);
