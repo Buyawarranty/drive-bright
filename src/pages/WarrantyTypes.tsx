@@ -15,6 +15,7 @@ import carImg from '@/assets/warranty-types-car.jpg';
 import vanImg from '@/assets/warranty-types-van.jpg';
 import evImg from '@/assets/warranty-types-ev.jpg';
 import motorcycleImg from '@/assets/warranty-types-motorcycle.jpg';
+import hybridImg from '@/assets/warranty-types-hybrid.jpg';
 
 interface DynamicLandingPage {
   id: string;
@@ -50,7 +51,15 @@ const defaultCategories = [
     brand_name: 'Electric Vehicle Warranty',
     icon: Battery,
     image: evImg,
-    description: 'Specialist protection for hybrid and electric vehicles including battery systems cover.',
+    description: 'Specialist protection for fully electric vehicles including battery systems cover.',
+  },
+  {
+    id: 'hybrid-warranty',
+    slug: 'warranty-types/hybrid',
+    brand_name: 'Hybrid Vehicle Warranty',
+    icon: Battery,
+    image: hybridImg,
+    description: 'Specialist cover for hybrid and plug-in hybrid vehicles. Motors, inverters, and 1,000+ components.',
   },
   {
     id: 'motorcycle-warranty',
