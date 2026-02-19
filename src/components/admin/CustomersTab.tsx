@@ -2681,7 +2681,7 @@ export const CustomersTab = () => {
               <TableHead>WarType</TableHead>
               <TableHead>Dur.</TableHead>
               <TableHead>Start Date</TableHead>
-              <TableHead className="bg-amber-50">Future Activation</TableHead>
+              
               <TableHead className="bg-gradient-to-r from-amber-50 to-orange-50">Upgrade</TableHead>
               <TableHead>Expiry Date</TableHead>
               <TableHead>Payment Method</TableHead>
@@ -3827,9 +3827,13 @@ Please log in and change your password after first login.`;
                             onUpdate={fetchCustomers}
                           />
                         </div>
-                        <InlineCustomerTags 
-                          customerId={customer.id} 
-                          onTagsUpdate={fetchCustomers}
+                        <InlineFutureActivationEdit
+                          customerId={customer.id}
+                          policyId={(customer.customer_policies as any)?.[0]?.id}
+                          currentDate={(customer.customer_policies as any)?.[0]?.policy_start_date || customer.signup_date}
+                          scheduledFor={customer.warranties_2000_scheduled_for}
+                          w2000Status={(customer.customer_policies as any)?.[0]?.warranties_2000_status}
+                          onUpdate={fetchCustomers}
                         />
                       </div>
                     </div>
@@ -3924,17 +3928,7 @@ Please log in and change your password after first login.`;
                         return <span className="text-gray-400">N/A</span>;
                       })()}
                     </TableCell>
-                    {/* Future Activation Column */}
-                    <TableCell className="text-center">
-                      <InlineFutureActivationEdit
-                        customerId={customer.id}
-                        policyId={(customer.customer_policies as any)?.[0]?.id}
-                        currentDate={(customer.customer_policies as any)?.[0]?.policy_start_date || customer.signup_date}
-                        scheduledFor={customer.warranties_2000_scheduled_for}
-                        w2000Status={(customer.customer_policies as any)?.[0]?.warranties_2000_status}
-                        onUpdate={fetchCustomers}
-                      />
-                    </TableCell>
+                    {/* Future Activation Column - moved to name cell */}
                     {/* Upgrade Column */}
                     <TableCell className="text-center">
                       <InlineUpgradeCell
