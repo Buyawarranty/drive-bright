@@ -61,6 +61,11 @@ const rightColumnFAQs = [
     id: 'diagnostics-covered',
     question: 'Are diagnostics covered?',
     answer: 'Diagnostics are usually covered when the fault is approved.'
+  },
+  {
+    id: '30-day-wait',
+    question: 'Is there a 30‑day wait for new customers?',
+    answer: "No - your cover begins immediately. As long as there are no pre‑existing faults on the vehicle, you're protected from the moment your warranty starts. The only things we can't cover are issues that were already present before the plan began."
   }
 ];
 
