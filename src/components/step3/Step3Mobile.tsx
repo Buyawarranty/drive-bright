@@ -235,14 +235,13 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
     // Apply user's selections consistently to ALL cards for fair comparison
     // Only claim limit differs between cards (based on promo defaults)
     const addOnPrice = calculateAddOnPrice(selectedProtectionAddOns, term, durationMonths);
-    const boostCost = calculateBoostAdjustment(boostAddon, term as PaymentPeriod);
     const labourAdjust = calculateLabourRateAdjustment(selectedLabourRate, term as PaymentPeriod);
     
-    // £5000 claim limit flat surcharge
-    const premiumSurcharge = termClaimLimit === 5000 ? getPremiumClaimSurcharge(term) : 0;
+    // £3000 and £5000 claim limit flat surcharge (£8/£9/£10 per month for 1yr/2yr/3yr)
+    const premiumSurcharge = (termClaimLimit >= 3000) ? getPremiumClaimSurcharge(term) : 0;
     
-    return adjustedPrice + addOnPrice + boostCost + labourAdjust + premiumSurcharge;
-  }, [paymentType, voluntaryExcess, selectedClaimLimit, vehicleData, selectedProtectionAddOns, boostAddon, selectedLabourRate, getBasePrice]);
+    return adjustedPrice + addOnPrice + labourAdjust + premiumSurcharge;
+  }, [paymentType, voluntaryExcess, selectedClaimLimit, vehicleData, selectedProtectionAddOns, selectedLabourRate, getBasePrice]);
 
   // Calculate monthly price (total / 12, ALWAYS rounded DOWN)
   const calculateMonthlyPrice = useCallback((term: string = paymentType || '24months') => {
@@ -294,7 +293,7 @@ const Step3Mobile: React.FC<Step3MobileProps> = ({
       const displayedMonthly = currentMonthlyPrice;
       const displayedTotal = currentTotalPrice;
       
-      const effectiveClaimLimit = boostAddon ? selectedClaimLimit! + 1000 : selectedClaimLimit!;
+      const effectiveClaimLimit = selectedClaimLimit!;
 
       // Track analytics
       trackStepCompletion(3, 'plan_selection', {
