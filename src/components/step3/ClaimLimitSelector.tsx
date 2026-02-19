@@ -12,7 +12,7 @@ interface ClaimLimitSelectorProps {
   boostAddon: boolean;
   onBoostChange: (boost: boolean) => void;
   boostPrice: number;
-  paymentType?: '12months' | '24months' | '36months';
+  paymentType?: '12months' | '24months' | '36months' | null;
   vehicleMake?: string;
 }
 
@@ -23,9 +23,11 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
   boostAddon,
   onBoostChange,
   boostPrice,
-  paymentType = '12months',
+  paymentType,
   vehicleMake
 }) => {
+  // Ensure paymentType is never null for calculations
+  const effectivePaymentType = paymentType || '12months';
   const [openDetails, setOpenDetails] = useState<number | null>(null);
   
   // Filter out £5000 for premium vehicles (Tesla, Jaguar, Range Rover, Porsche)
@@ -112,12 +114,12 @@ const ClaimLimitSelector: React.FC<ClaimLimitSelectorProps> = ({
                     <div className="text-xs text-muted-foreground">per claim</div>
                     {/* Show monthly cost indicator for premium tiers */}
                     {tier.value === 5000 && (
-                      <div className="text-[10px] sm:text-xs text-[#0BA360] font-medium mt-1">
-                        Just {Math.round((PREMIUM_CLAIM_MONTHLY[paymentType] * 12) / 365 * 100)}p/day more
+                      <div className="text-[11px] sm:text-xs text-[#0BA360] font-semibold mt-1">
+                        Just {Math.round((PREMIUM_CLAIM_MONTHLY[effectivePaymentType] * 12) / 365 * 100)}p/day more
                       </div>
                     )}
                     {tier.value === 3000 && (
-                      <div className="text-[10px] sm:text-xs text-[#0BA360] font-medium mt-1">
+                      <div className="text-[11px] sm:text-xs text-[#0BA360] font-semibold mt-1">
                         Just {Math.round((boostPrice * 12) / 365 * 100)}p/day more
                       </div>
                     )}
