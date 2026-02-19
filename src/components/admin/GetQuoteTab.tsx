@@ -2547,7 +2547,7 @@ Questions? Call 0330 229 5040`;
                     <div className="text-gray-400 text-2xl">|</div>
                     <div className="text-sm text-gray-700 font-medium">
                       <div>Total: £{currentPrice.monthlyPrice * 12}</div>
-                      <div>Claim: £{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()} | Labour: £{labourRate}/hr</div>
+                      <div>Claim: £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()} | Labour: £{labourRate}/hr</div>
                     </div>
                   </div>
                 </div>
@@ -2660,7 +2660,7 @@ Questions? Call 0330 229 5040`;
                     <p><strong>Mileage:</strong> {parseInt(vehicleData?.mileage || '0').toLocaleString()} miles</p>
                     <p><strong>Duration:</strong> {termOptions.find(t => t.id === paymentType)?.label}{freeExtendedCover !== 'none' && <span className="ml-1 text-green-600 font-semibold">+ {freeExtendedCover === '3months' ? '3' : '6'} months FREE</span>}</p>
                     <p><strong>Excess:</strong> £{excessAmount}</p>
-                    <p><strong>Claim Limit:</strong> £{(boostAddon ? claimLimit + 1000 : claimLimit).toLocaleString()}{boostAddon ? ' (boost)' : ''}</p>
+                    <p><strong>Claim Limit:</strong> £{(boostAddon ? getDisplayClaimLimitValue(claimLimit) + 1000 : getDisplayClaimLimitValue(claimLimit)).toLocaleString()}{boostAddon ? ' (boost)' : ''}</p>
                     <p><strong>Labour Rate:</strong> £{labourRate}/hr</p>
                     <p><strong>Total Price:</strong> £{currentPrice.monthlyPrice * 12}</p>
                     {additionalNotes && <p className="col-span-2"><strong>Notes:</strong> {additionalNotes}</p>}
