@@ -7,6 +7,7 @@ interface DesktopStickyBarProps {
   selectedPayment: 'monthly' | 'full';
   monthlyPrice: number;
   totalPrice: number;
+  originalPrice?: number;
   fullPrice: number;
   savings: number;
   duration: string;
@@ -23,6 +24,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
   selectedPayment,
   monthlyPrice,
   totalPrice,
+  originalPrice,
   fullPrice,
   savings,
   duration,
@@ -34,6 +36,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
   minimised = false,
   trustStripOnly = false,
 }) => {
+  const strikethroughPrice = originalPrice ?? totalPrice;
   if (!isVisible) return null;
 
   // Hide completely when inline CTA is visible, UNLESS we're at the bottom (trustStripOnly)
@@ -100,7 +103,7 @@ const DesktopStickyBar: React.FC<DesktopStickyBarProps> = ({
                   Pay in Full: £{fullPrice}
                 </div>
                 <div className="flex items-center gap-2 text-xs lg:text-sm mt-0.5 flex-wrap justify-center">
-                  <span className="line-through text-red-500">£{totalPrice}</span>
+                  <span className="line-through text-red-500">£{strikethroughPrice}</span>
                   <span className="font-bold text-green-600">Save £{savings}</span>
                   {hasPromoDiscount ? (
                     <span className="text-gray-600 whitespace-nowrap">(inc. promo)</span>

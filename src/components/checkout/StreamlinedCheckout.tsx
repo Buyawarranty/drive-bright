@@ -472,6 +472,10 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
     ? Math.max(1, Math.floor(discountedBumperPrice / 12)) 
     : monthlyPrice;
 
+  // Display total for monthly option: when promo applied, show discounted total (monthly * 12)
+  // This ensures "Total £X" always matches the displayed monthly price × 12
+  const displayBumperTotal = hasValidDiscountCodes ? discountedMonthlyPrice * 12 : bumperTotalPrice;
+
   // Check section completion status - now includes address fields
   const personalDetailsComplete = useMemo(() => {
     return !!(
@@ -1566,7 +1570,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               excess={updatedPricingData.voluntaryExcess || 100}
               selectedPayment={selectedPayment}
               monthlyPrice={discountedMonthlyPrice}
-              totalPrice={bumperTotalPrice}
+              totalPrice={displayBumperTotal}
               isLoading={isLoading}
               onPaymentChange={(p) => { setSelectedPayment(p); selectedPaymentRef.current = p; }}
               onPayClick={() => processPayment(selectedPayment || undefined)}
@@ -1597,7 +1601,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
               selectedPayment={selectedPayment}
               onPaymentChange={(p) => { setSelectedPayment(p); selectedPaymentRef.current = p; }}
               monthlyPrice={discountedMonthlyPrice}
-              totalPrice={bumperTotalPrice}
+              totalPrice={displayBumperTotal}
+              originalPrice={bumperTotalPrice}
               fullPrice={discountedStripePrice}
               savings={savings}
             />
@@ -2078,7 +2083,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
                 }
               }}
               monthlyPrice={discountedMonthlyPrice}
-              totalPrice={bumperTotalPrice}
+              totalPrice={displayBumperTotal}
               fullPrice={discountedStripePrice}
               originalPrice={bumperTotalPrice}
               savings={savings}
@@ -2178,7 +2183,7 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
             excess={updatedPricingData.voluntaryExcess || 100}
             selectedPayment={selectedPayment}
             monthlyPrice={discountedMonthlyPrice}
-            totalPrice={bumperTotalPrice}
+            totalPrice={displayBumperTotal}
             fullPrice={discountedStripePrice}
             savings={savings}
             isLoading={isLoading}
@@ -2191,7 +2196,8 @@ const StreamlinedCheckout: React.FC<StreamlinedCheckoutProps> = ({
       <DesktopStickyBar
         selectedPayment={selectedPayment}
         monthlyPrice={discountedMonthlyPrice}
-        totalPrice={bumperTotalPrice}
+        totalPrice={displayBumperTotal}
+        originalPrice={bumperTotalPrice}
         fullPrice={discountedStripePrice}
         savings={savings}
         duration={getDurationText()}
