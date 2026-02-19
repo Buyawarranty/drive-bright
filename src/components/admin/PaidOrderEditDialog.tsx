@@ -547,7 +547,7 @@ export const PaidOrderEditDialog: React.FC<PaidOrderEditDialogProps> = ({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="750">£750</SelectItem>
+                      <SelectItem value="750">£1,000</SelectItem>
                       <SelectItem value="1250">£1,250</SelectItem>
                       <SelectItem value="2000">£2,000</SelectItem>
                     </SelectContent>

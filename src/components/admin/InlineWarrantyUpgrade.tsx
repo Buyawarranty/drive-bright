@@ -26,7 +26,7 @@ const EXCESS_OPTIONS = [
 ];
 
 const CLAIM_LIMIT_OPTIONS = [
-  { value: 750, label: '£750' },
+  { value: 750, label: '£1,000' },
   { value: 1250, label: '£1,250' },
   { value: 2000, label: '£2,000' },
   { value: 2500, label: '£2,500' },
