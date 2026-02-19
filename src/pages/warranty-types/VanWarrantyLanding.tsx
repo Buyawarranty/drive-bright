@@ -205,7 +205,7 @@ const vanFAQs = [
   },
   {
     question: "How much does it cost?",
-    answer: "Warranty costs start from just £32 per month for vans, depending on your vehicle and the level of cover you choose. Get an instant quote by entering your registration number above."
+    answer: "Warranty costs start from just £19 per month for vans, depending on your vehicle and the level of cover you choose. Get an instant quote by entering your registration number above."
   },
   {
     question: "What about modified vehicles?",
@@ -481,7 +481,7 @@ const VanWarrantyLanding: React.FC = () => {
     "offers": {
       "@type": "Offer",
       "priceCurrency": "GBP",
-      "price": "32",
+      "price": "19",
       "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       "availability": "https://schema.org/InStock",
       "url": "https://buyawarranty.co.uk/warranty-types/vans/",
@@ -492,7 +492,7 @@ const VanWarrantyLanding: React.FC = () => {
       "itemCondition": "https://schema.org/NewCondition",
       "priceSpecification": {
         "@type": "UnitPriceSpecification",
-        "price": "32",
+        "price": "19",
         "priceCurrency": "GBP",
         "unitText": "month",
         "billingIncrement": 1
@@ -536,7 +536,7 @@ const VanWarrantyLanding: React.FC = () => {
       "name": "Buy A Warranty",
       "url": "https://buyawarranty.co.uk",
       "telephone": "+44-800-917-9270",
-      "priceRange": "£32-£95/month",
+      "priceRange": "£19-£95/month",
       "address": {
         "@type": "PostalAddress",
         "addressCountry": "GB"
@@ -707,7 +707,7 @@ const VanWarrantyLanding: React.FC = () => {
     <>
       <Helmet>
         <title>Van Warranty UK | Instant Van Cover Quotes | Buy A Warranty</title>
-        <meta name="description" content="Protect your commercial van with comprehensive extended warranty cover. Ford Transit, Mercedes Sprinter, VW Transporter, Renault Master, Vauxhall Vivaro & more. Engine, gearbox, electrics covered. Nationwide UK coverage, any garage. Prices from £32/month. Get your instant quote in 60 seconds." />
+        <meta name="description" content="Protect your commercial van with comprehensive extended warranty cover. Ford Transit, Mercedes Sprinter, VW Transporter, Renault Master, Vauxhall Vivaro & more. Engine, gearbox, electrics covered. Nationwide UK coverage, any garage. Prices from £19/month. Get your instant quote in 60 seconds." />
         <meta name="keywords" content="van extended warranty, commercial van warranty, van warranty UK, Ford Transit warranty, Ford Transit Custom warranty, Mercedes Sprinter warranty, VW Transporter warranty, VW Crafter warranty, Renault Master warranty, Renault Trafic warranty, Vauxhall Movano warranty, Vauxhall Vivaro warranty, Peugeot Boxer warranty, Citroen Relay warranty, Fiat Ducato warranty, Nissan NV400 warranty, Toyota Proace warranty, Iveco Daily warranty, MAN TGE warranty, used van warranty, second hand van warranty, van breakdown cover, commercial vehicle warranty, panel van warranty, transit van warranty, work van warranty, delivery van warranty UK" />
         <link rel="canonical" href="https://buyawarranty.co.uk/warranty-types/vans/" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -722,7 +722,7 @@ const VanWarrantyLanding: React.FC = () => {
         <meta httpEquiv="content-language" content="en-GB" />
         
         {/* Open Graph */}
-        <meta property="og:title" content="Van Warranty UK | Protect Your Commercial Van from £32/mo | Buy A Warranty" />
+        <meta property="og:title" content="Van Warranty UK | Protect Your Commercial Van from £19/mo | Buy A Warranty" />
         <meta property="og:description" content="Comprehensive van warranty coverage. Engine, gearbox, electrics & more. Ford Transit, Mercedes Sprinter, VW Transporter, Renault Master & all major makes covered. Nationwide UK coverage with any garage. Get your instant quote now." />
         <meta property="og:url" content="https://buyawarranty.co.uk/warranty-types/vans/" />
         <meta property="og:type" content="website" />
@@ -735,7 +735,7 @@ const VanWarrantyLanding: React.FC = () => {
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Van Extended Warranty UK | From £32/month" />
+        <meta name="twitter:title" content="Van Extended Warranty UK | From £19/month" />
         <meta name="twitter:description" content="Protect your commercial van with comprehensive extended warranty. Ford Transit, Mercedes Sprinter, VW Transporter & all major makes covered. Nationwide UK coverage. Get instant quote." />
         <meta name="twitter:image" content="https://buyawarranty.co.uk/lovable-uploads/53652a24-3961-4346-bf9d-6588ef727aeb.png" />
         <meta name="twitter:image:alt" content="Van Extended Warranty UK - Commercial Vehicle Cover" />
@@ -1003,7 +1003,7 @@ const VanWarrantyLanding: React.FC = () => {
             <div className="mt-8 md:mt-12 text-center">
               <div className="bg-brand-deep-blue rounded-2xl p-8 md:p-12 max-w-3xl mx-auto">
                 <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
-                  Warranty cover from just £32/month
+                  Warranty cover from just £19/month
                 </h3>
                 <p className="text-white/70 text-sm md:text-base mb-6">
                   That's less than a single diagnostic fee — and it covers all of the above.
@@ -1449,7 +1449,7 @@ const VanWarrantyLanding: React.FC = () => {
               Protect Your Van Today
             </h2>
             <p className="text-lg md:text-xl text-white/90 mb-6 md:mb-8 max-w-2xl mx-auto">
-              Get an instant quote in 60 seconds. Comprehensive cover from just £32/month.
+              Get an instant quote in 60 seconds. Comprehensive cover from just £19/month.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button
