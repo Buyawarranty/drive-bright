@@ -28,6 +28,18 @@ interface PrintWarrantyLetterButtonProps {
     policyEndDate: string;
     claimLimit?: number;
     voluntaryExcess?: number;
+    labourRate?: number;
+    breakdownRecovery?: boolean;
+    wearTear?: boolean;
+    europeCover?: boolean;
+    motFee?: boolean;
+    motRepair?: boolean;
+    tyreCover?: boolean;
+    lostKey?: boolean;
+    vehicleRental?: boolean;
+    transferCover?: boolean;
+    consequential?: boolean;
+    seasonalBonusMonths?: number;
   };
   variant?: 'default' | 'outline' | 'ghost';
   size?: 'default' | 'sm' | 'lg';
