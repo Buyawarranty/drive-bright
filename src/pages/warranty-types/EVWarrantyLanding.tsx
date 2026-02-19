@@ -1268,7 +1268,7 @@ const EVWarrantyLanding: React.FC = () => {
               Protect your electric vehicle today
             </h2>
             <p className="text-lg md:text-xl text-white/90 mb-6 md:mb-8 max-w-2xl mx-auto">
-              Get an instant quote in 60 seconds. Comprehensive EV cover from just £19/month.
+              Get an instant quote in 60 seconds. Comprehensive EV cover with easy claims.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button
