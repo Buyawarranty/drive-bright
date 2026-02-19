@@ -148,10 +148,10 @@ export function InlineFutureActivationEdit({
         <Button 
           variant="ghost" 
           size="sm" 
-          className="text-gray-400 hover:text-amber-600 hover:bg-amber-50"
+          className="h-7 w-7 p-0 text-muted-foreground hover:text-amber-600 hover:bg-amber-50"
+          title="Set warranty activation date"
         >
-          <Plus className="h-3 w-3 mr-1" />
-          Add
+          <Calendar className="h-4 w-4" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
