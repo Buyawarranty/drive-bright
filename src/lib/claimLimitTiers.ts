@@ -2,7 +2,7 @@
  * Claim limit tier configuration and £5000 premium surcharge utilities.
  * 
  * TIER STRUCTURE:
- * - AutoCare Basic: £750 per claim
+ * - AutoCare Basic: £1,000 per claim (internal value: 750, display: £1,000)
  * - AutoCare Essential: £2,000 per claim (MOST POPULAR)
  * - AutoCare Elite: £3,000 per claim (internally: £2000 base + boost)
  * - AutoCare Premium: £5,000 per claim (internally: £2000 base + flat surcharge)
@@ -11,10 +11,10 @@
  */
 
 export const CLAIM_LIMIT_TIERS = [
-  { value: 750, name: 'AutoCare Basic', shortName: 'Basic', popular: false },
-  { value: 2000, name: 'AutoCare Essential', shortName: 'Essential', popular: true },
-  { value: 3000, name: 'AutoCare Elite', shortName: 'Elite', popular: false },
-  { value: 5000, name: 'AutoCare Premium', shortName: 'Premium', popular: false },
+  { value: 750, displayValue: 1000, name: 'AutoCare Basic', shortName: 'Basic', popular: false },
+  { value: 2000, displayValue: 2000, name: 'AutoCare Essential', shortName: 'Essential', popular: true },
+  { value: 3000, displayValue: 3000, name: 'AutoCare Elite', shortName: 'Elite', popular: false },
+  { value: 5000, displayValue: 5000, name: 'AutoCare Premium', shortName: 'Premium', popular: false },
 ] as const;
 
 /**
@@ -62,7 +62,15 @@ export function getClaimLimitTierName(claimLimit: number): string {
   return tier?.name || `£${claimLimit.toLocaleString()}`;
 }
 
-/** Format claim limit for display */
+/** Format claim limit for display (maps internal 750 → £1,000) */
 export function getDisplayClaimLimit(claimLimit: number): string {
-  return `£${claimLimit.toLocaleString()}`;
+  const tier = CLAIM_LIMIT_TIERS.find(t => t.value === claimLimit);
+  const displayVal = tier?.displayValue ?? claimLimit;
+  return `£${displayVal.toLocaleString()}`;
+}
+
+/** Get display value number for a claim limit (maps 750 → 1000) */
+export function getDisplayClaimLimitValue(claimLimit: number): number {
+  const tier = CLAIM_LIMIT_TIERS.find(t => t.value === claimLimit);
+  return tier?.displayValue ?? claimLimit;
 }
