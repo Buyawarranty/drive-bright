@@ -1222,14 +1222,18 @@ Questions? Call 0330 229 5040`;
     toast({ title: "✓ Quote link copied!", duration: 2000 });
   };
 
-  // Generate warranty reference for confirmed orders
-  const generateWarrantyReference = (): string => {
-    const date = new Date();
-    const year = String(date.getFullYear()).slice(-2);
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const dateCode = `${year}${month}`;
-    const randomSerial = Math.floor(Math.random() * 100000) + 500000;
-    return `ADM-${dateCode}-${randomSerial}`;
+  // Generate warranty reference using the DB function (consistent BAW format)
+  const generateWarrantyReference = async (): Promise<string> => {
+    const { data, error } = await supabase.rpc('generate_warranty_number');
+    if (error) {
+      console.error('Error generating warranty number:', error);
+      // Fallback
+      const date = new Date();
+      const datePart = `${String(date.getDate()).padStart(2, '0')}${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const serial = Math.floor(Math.random() * 100000) + 500000;
+      return `BAW-${datePart}-${serial}`;
+    }
+    return data;
   };
 
   // Check for existing active policy on this vehicle
@@ -1393,7 +1397,7 @@ Questions? Call 0330 229 5040`;
     const hasPriceDifference = Math.abs(confirmedAmount - currentPrice.totalPrice) > 1;
 
     setIsConfirmingPaid(true);
-    const warrantyReference = generateWarrantyReference();
+    const warrantyReference = await generateWarrantyReference();
     const displayClaimLimit = boostAddon ? claimLimit + 1000 : claimLimit;
     const termOption = termOptions.find(t => t.id === paymentType);
     const durationMonths = termOption?.months || 12;
@@ -1446,6 +1450,26 @@ Questions? Call 0330 229 5040`;
         .ilike('email', finalEmail)
         .maybeSingle();
 
+      // 1b. Check for existing policy — reuse warranty number if found
+      let existingPolicyRecord: { id: string; warranty_number: string | null; policy_number: string } | null = null;
+      if (existingCustomer) {
+        const { data: policies } = await supabase
+          .from('customer_policies')
+          .select('id, warranty_number, policy_number')
+          .eq('customer_id', existingCustomer.id)
+          .not('is_deleted', 'eq', true)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        
+        if (policies && policies.length > 0) {
+          existingPolicyRecord = policies[0];
+          console.log('Found existing policy, reusing warranty number:', existingPolicyRecord.warranty_number);
+        }
+      }
+
+      // Use existing warranty number if available, otherwise use the generated one
+      const finalWarrantyReference = existingPolicyRecord?.warranty_number || warrantyReference;
+
       let customerId: string;
       
       // Use editable fields for final data
@@ -1469,7 +1493,7 @@ Questions? Call 0330 229 5040`;
         plan_type: 'Platinum',
         payment_type: paymentType,
         status: 'Active',
-        warranty_reference_number: warrantyReference,
+        warranty_reference_number: finalWarrantyReference,
         voluntary_excess: excessAmount,
         claim_limit: displayClaimLimit,
         labour_rate: labourRate,
@@ -1524,15 +1548,15 @@ Questions? Call 0330 229 5040`;
       // Check if this is a future start date for W2000 scheduling
       const isFutureStartDate = !isToday(warrantyStartDate) && warrantyStartDate > new Date();
 
-      // 5. Create policy record with payment confirmation metadata
+      // 5. Create or update policy record with payment confirmation metadata
       const policyData: Record<string, any> = {
         customer_id: customerId,
         email: finalEmail.toLowerCase(),
         customer_full_name: finalName,
         plan_type: 'platinum',
         payment_type: paymentType,
-        policy_number: warrantyReference,
-        warranty_number: warrantyReference, // Use same reference to prevent trigger from generating a duplicate
+        policy_number: existingPolicyRecord?.policy_number || finalWarrantyReference,
+        warranty_number: finalWarrantyReference,
         policy_start_date: startDate.toISOString(),
         policy_end_date: endDate.toISOString(),
         status: isFutureStartDate ? 'scheduled' : 'active',
@@ -1564,14 +1588,30 @@ Questions? Call 0330 229 5040`;
           county: customerCounty || '',
         };
       }
-      
-      const { data: newPolicy, error: policyError } = await supabase
-        .from('customer_policies')
-        .insert(policyData as any)
-        .select('id')
-        .single();
 
-      if (policyError) throw policyError;
+      let policyId: string;
+      
+      if (existingPolicyRecord) {
+        // Update existing policy instead of creating duplicate
+        const { error: policyUpdateError } = await supabase
+          .from('customer_policies')
+          .update({ ...policyData, updated_at: new Date().toISOString() })
+          .eq('id', existingPolicyRecord.id);
+
+        if (policyUpdateError) throw policyUpdateError;
+        policyId = existingPolicyRecord.id;
+        console.log('Updated existing policy:', policyId);
+      } else {
+        // Create new policy
+        const { data: newPolicy, error: policyError } = await supabase
+          .from('customer_policies')
+          .insert(policyData as any)
+          .select('id')
+          .single();
+
+        if (policyError) throw policyError;
+        policyId = newPolicy.id;
+      }
 
       // 6. Add admin note with payment confirmation details
       await supabase
@@ -1631,7 +1671,7 @@ Questions? Call 0330 229 5040`;
         try {
           const { error: w2kError } = await supabase.functions.invoke('send-to-warranties-2000', {
             body: { 
-              policyId: newPolicy.id,
+              policyId: policyId,
               customerId: customerId,
               force: true,
               additionalNotes: additionalNotes ? `External payment via ${paymentSource}. ${additionalNotes}`.trim() : `External payment via ${paymentSource}`.trim()
@@ -1653,7 +1693,7 @@ Questions? Call 0330 229 5040`;
         try {
           const { error: emailError } = await supabase.functions.invoke('send-welcome-email-manual', {
             body: { 
-              policyId: newPolicy.id,
+              policyId: policyId,
               customerId: customerId
             }
           });
@@ -1667,7 +1707,7 @@ Questions? Call 0330 229 5040`;
               email_sent_status: emailSentSuccess ? 'sent' : 'failed',
               email_sent_at: emailSentSuccess ? new Date().toISOString() : null
             })
-            .eq('id', newPolicy.id);
+            .eq('id', policyId);
         } catch (emailError) {
           console.error('Welcome email error:', emailError);
           emailSentSuccess = false;
@@ -1679,7 +1719,7 @@ Questions? Call 0330 229 5040`;
         policyCreated: true,
         emailSent: sendWelcomeEmail ? emailSentSuccess : null,
         w2000Sent: sendToW2k ? w2000SentSuccess : null,
-        warrantyReference,
+        warrantyReference: finalWarrantyReference,
         isFutureStart: isFutureStartDate
       });
       setExternalPaymentStep('complete');
@@ -1689,8 +1729,8 @@ Questions? Call 0330 229 5040`;
       toast({
         title: isFutureStartDate ? "✅ Policy Scheduled!" : "✅ Policy Activated!",
         description: isFutureStartDate 
-          ? `Warranty ${warrantyReference} created. Cover starts ${format(startDate, 'd MMM yyyy')}.`
-          : `Warranty ${warrantyReference} created successfully.`,
+          ? `Warranty ${finalWarrantyReference} created. Cover starts ${format(startDate, 'd MMM yyyy')}.`
+          : `Warranty ${finalWarrantyReference} created successfully.`,
         duration: 6000,
       });
 

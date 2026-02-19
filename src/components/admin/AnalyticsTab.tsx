@@ -26,6 +26,7 @@ interface Customer {
   final_amount: number | null;
   warranty_reference_number: string | null;
   purchase_source: string | null;
+  is_manual_entry: boolean | null;
   vehicle_fuel_type: string | null;
   vehicle_year: string | null;
   mileage: string | null;
@@ -79,7 +80,7 @@ export const AnalyticsTab = () => {
       // Match CustomersTab filtering exactly
       const { data, error } = await supabase
         .from('customers')
-        .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, vehicle_fuel_type, vehicle_year, mileage')
+        .select('id, name, email, plan_type, signup_date, status, final_amount, warranty_reference_number, purchase_source, is_manual_entry, vehicle_fuel_type, vehicle_year, mileage')
         .not('email', 'ilike', '%@test.com%')
         .not('email', 'ilike', '%testuser%')
         .not('email', 'ilike', '%guest@%')
@@ -214,18 +215,18 @@ export const AnalyticsTab = () => {
         }
       }
 
-      // Source filter
+      // Source filter - uses purchase_source and is_manual_entry (not warranty number prefix)
       if (sourceFilter !== 'all') {
-        const ref = customer.warranty_reference_number?.toUpperCase() || '';
         const source = customer.purchase_source?.toLowerCase() || '';
+        const isManual = customer.is_manual_entry === true;
         
         if (sourceFilter === 'website') {
-          // Website sales: BAW reference OR purchase_source is 'website'
-          const isWebsite = ref.startsWith('BAW-') || source === 'website';
+          // Website sales: not manual AND purchase_source is website/stripe/bumper/google_ads or empty (legacy online)
+          const isWebsite = !isManual && (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'google_ads' || source === '');
           if (!isWebsite) return false;
         } else if (sourceFilter === 'sales_team') {
-          // Sales team: ADM reference OR purchase_source is 'quote_link' or 'external'
-          const isSalesTeam = ref.startsWith('ADM-') || source === 'quote_link' || source === 'external';
+          // Sales team: manual entry OR purchase_source is quote_link/external/admin_external
+          const isSalesTeam = isManual || source === 'quote_link' || source === 'external' || source === 'admin_external';
           if (!isSalesTeam) return false;
         }
       }
@@ -240,12 +241,12 @@ export const AnalyticsTab = () => {
   }, [filteredCustomers]);
 
 
-  // Helper function to categorize customer by source
+  // Helper function to categorize customer by source - uses purchase_source and is_manual_entry
   const getCustomerSource = (customer: Customer): 'website' | 'sales_team' | 'unknown' => {
-    const ref = customer.warranty_reference_number?.toUpperCase() || '';
     const source = customer.purchase_source?.toLowerCase() || '';
-    if (ref.startsWith('BAW-') || source === 'website') return 'website';
-    if (ref.startsWith('ADM-') || source === 'quote_link' || source === 'external') return 'sales_team';
+    const isManual = customer.is_manual_entry === true;
+    if (isManual || source === 'quote_link' || source === 'external' || source === 'admin_external') return 'sales_team';
+    if (source === 'website' || source === 'stripe' || source === 'bumper' || source === 'google_ads' || source === '') return 'website';
     return 'unknown';
   };
 
@@ -829,10 +830,10 @@ export const AnalyticsTab = () => {
                   <div className="text-right">
                     <div className="flex items-center gap-2 justify-end">
                       <p className="text-sm font-medium">{customer.plan_type}</p>
-                      {customer.warranty_reference_number?.startsWith('BAW-') && (
+                      {getCustomerSource(customer) === 'website' && (
                         <Globe className="h-3 w-3 text-blue-500" />
                       )}
-                      {customer.warranty_reference_number?.startsWith('ADM-') && (
+                      {getCustomerSource(customer) === 'sales_team' && (
                         <Phone className="h-3 w-3 text-orange-500" />
                       )}
                     </div>
