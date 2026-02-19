@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
-import { Car, Truck, Shield, ArrowRight, Phone, Menu, Battery, Bike, Award, ChevronRight, Check, Star, MessageCircle } from 'lucide-react';
+import { Car, Truck, Shield, ArrowRight, Phone, Menu, Battery, Bike, Award, ChevronRight, Check, Star, MessageCircle, Plug } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +16,7 @@ import vanImg from '@/assets/warranty-types-van.jpg';
 import evImg from '@/assets/warranty-types-ev.jpg';
 import motorcycleImg from '@/assets/warranty-types-motorcycle.jpg';
 import hybridImg from '@/assets/warranty-types-hybrid.jpg';
+import phevImg from '@/assets/warranty-types-phev.jpg';
 
 interface DynamicLandingPage {
   id: string;
@@ -60,6 +61,14 @@ const defaultCategories = [
     icon: Battery,
     image: hybridImg,
     description: 'Specialist cover for hybrid and plug-in hybrid vehicles. Motors, inverters, and 1,000+ components.',
+  },
+  {
+    id: 'phev-warranty',
+    slug: 'warranty-types/phev',
+    brand_name: 'PHEV Plug-in Hybrid Warranty',
+    icon: Plug,
+    image: phevImg,
+    description: 'Specialist cover for plug-in hybrid vehicles. On-board chargers, inverters, electric motors & 1,000+ parts.',
   },
   {
     id: 'motorcycle-warranty',
