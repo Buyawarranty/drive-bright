@@ -8,6 +8,7 @@ export interface AddOnInfo {
   description: string;
   isAutoIncluded: boolean;
   displayPrice: string;
+  tooltipDetails?: string[];
 }
 
 // Normalize payment type to consistent format
@@ -86,7 +87,8 @@ export const getAddOnInfo = (paymentType: string, durationMonths: number = 12): 
       monthlyPrice: 7,
       description: 'Protection for tyre damage and punctures',
       isAutoIncluded: autoIncluded.includes('tyre'),
-      displayPrice: autoIncluded.includes('tyre') ? 'FREE' : `£${(7 * durationMonths)}`
+      displayPrice: autoIncluded.includes('tyre') ? 'FREE' : `£${(7 * durationMonths)}`,
+      tooltipDetails: ['Up to £150 per tyre replacement', 'Covers accidental damage and vandalism', 'Includes puncture repairs', 'Up to 4 replacements per year']
     },
     {
       key: 'wearAndTear',

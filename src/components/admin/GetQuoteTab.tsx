@@ -2292,7 +2292,25 @@ Questions? Call 0330 229 5040`;
                           )}
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <span className={cn("font-medium text-sm", isUnavailable && "line-through text-muted-foreground")}>{addon.name}</span>
+                            <div className="flex items-center gap-1">
+                              <span className={cn("font-medium text-sm", isUnavailable && "line-through text-muted-foreground")}>{addon.name}</span>
+                              {addon.tooltipDetails && !isUnavailable && (
+                                <div className="group relative">
+                                  <Info className="h-3.5 w-3.5 text-muted-foreground hover:text-primary cursor-help" />
+                                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 p-2.5 bg-popover border border-border rounded-lg shadow-lg text-xs opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                                    <p className="font-semibold text-foreground mb-1.5">{addon.name}</p>
+                                    <ul className="space-y-1 text-muted-foreground">
+                                      {addon.tooltipDetails.map((detail, idx) => (
+                                        <li key={idx} className="flex items-start gap-1.5">
+                                          <CheckCircle2 className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                                          <span>{detail}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                             {isUnavailable ? (
                               <Badge variant="outline" className="text-[10px] bg-muted border-border text-muted-foreground">UNAVAILABLE</Badge>
                             ) : isAutoIncluded ? (
