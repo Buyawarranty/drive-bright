@@ -1568,8 +1568,8 @@ const PricingTable: React.FC<PricingTableProps> = ({
               // Calculate add-on price for this duration using card-specific add-ons
               const durationAddOnPrice = calculateAddOnPrice(cardAddOns, durationId, durationMonths);
               
-              // Add £5000 claim limit surcharge if applicable for this card
-              const cardPremiumSurcharge = cardClaimLimit === 5000 ? getPremiumClaimSurcharge(durationId) : 0;
+               // Add £3000/£5000 claim limit surcharge if applicable for this card
+               const cardPremiumSurcharge = (cardClaimLimit >= 3000) ? getPremiumClaimSurcharge(durationId) : 0;
               
               // Calculate total price with all adjustments including add-ons
               const totalPriceWithAdjustments = finalBasePrice + labourTotalAdjust + boostTotalAdjust + durationAddOnPrice + cardPremiumSurcharge;
